@@ -62,7 +62,7 @@ ignore_missing_imports = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "-q --strict-markers"
+addopts = "-q --strict-markers -m 'not network'"
 markers = [
     "network: tests that hit live exchange APIs (deselected in CI)",
     "slow: long-running tests",

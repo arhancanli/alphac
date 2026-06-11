@@ -1,7 +1,9 @@
 # data & state (re-derivable or operational — never in git)
-data/
-var/
-artifacts/
+# NOTE: patterns are anchored to the repo root — an unanchored `data/` would
+# also ignore `src/alphaforge/data/` (it silently hid the Phase 2 sources).
+/data/
+/var/
+/artifacts/
 .env
 
 # python

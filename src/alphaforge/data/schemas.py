@@ -1,0 +1,396 @@
+"""Persisted Parquet schemas — the single source of truth for the data lake.
+
+Contract (dataDesign.md §2.3, leakage finding 17): every table written to or read from
+the lake conforms to one of the :class:`pyarrow.Schema` constants in this module. The
+writer calls :func:`validate_table` before every write; nothing above the storage layer
+defines its own column set. All timestamps are ``timestamp[ms, tz=UTC]`` — a naive
+timestamp column is a *type* mismatch and fails validation (dataDesign.md §5.4).
+
+Key conventions enforced here:
+
+- OHLCV bars are labeled by **open** time (``ts_open``); ``available_at`` is *not*
+  stored for OHLCV — it is always derived as ``ts_open + Δ`` by the reader (storing it
+  would invite drift; dataDesign.md §2.3).
+- Funding rows *do* store ``available_at = ts_funding + δ_funding`` (publication lag,
+  default 5 minutes; dataDesign.md §3.2). Per leakage finding 18, every consumer joins
+  on ``available_at``, full stop — never on ``ts_funding``.
+- Quality flags are a bitmask whose bits carry their **own** availability lag
+  (:data:`FLAG_AVAILABILITY_LAG_BARS`; leakage finding 5): a flag computed from future
+  bars must not be visible to a decision at the bar's close.
+
+File-format notes: compression (zstd level 3) and the sorted/unique-on-``ts_open``
+invariant are decided and enforced at the **writer** level, not here — schemas describe
+logical column contracts only.
+"""
+
+from __future__ import annotations
+
+from collections import Counter
+from enum import IntFlag, StrEnum
+from pathlib import PurePosixPath
+from typing import Final
+
+import pyarrow as pa
+
+from alphaforge.core.errors import SchemaError
+from alphaforge.core.time import Ms, Timeframe, available_at
+
+__all__ = [
+    "FLAG_AVAILABILITY_LAG_BARS",
+    "FUNDING_SCHEMA",
+    "OHLCV_SCHEMA",
+    "SCHEMA_VERSION",
+    "UNIVERSE_SCHEMA",
+    "Dataset",
+    "QualityFlag",
+    "empty_table",
+    "flag_available_at",
+    "lake_relpath",
+    "schema_for",
+    "validate_table",
+]
+
+SCHEMA_VERSION: Final[int] = 1
+"""Current lake schema version, embedded in every schema's key-value metadata under
+``b"alphaforge.schema_version"``. Bump on any breaking column change."""
+
+_METADATA_VERSION_KEY: Final[bytes] = b"alphaforge.schema_version"
+_METADATA_DATASET_KEY: Final[bytes] = b"alphaforge.dataset"
+
+
+class Dataset(StrEnum):
+    """Lake datasets. Values are the top-level lake directory names (partition labels)."""
+
+    OHLCV = "ohlcv"
+    FUNDING = "funding"
+    UNIVERSE_MEMBERSHIP = "universe_membership"
+
+
+class QualityFlag(IntFlag):
+    """Per-bar data-quality bitmask stored in the OHLCV ``quality_flags`` column.
+
+    Flags never modify price data — they annotate it; downstream feature code applies a
+    *declared* policy per bit (dataDesign.md §5.3). Each bit documents WHEN it can be
+    computed, because per leakage finding 5 the bits carry their own availability lag
+    (:data:`FLAG_AVAILABILITY_LAG_BARS`): a PIT reader must mask bits whose
+    :func:`flag_available_at` exceeds the decision timestamp, otherwise research sees
+    retroactively upgraded flags that live trading could not have seen.
+
+    - ``NONE``: clean bar. Known at the bar's own close (a bar is final at close).
+    - ``GAP_FILLED_NONE``: **reserved.** v1 declares no fill policy — missing bars raise
+      ``DataGapError`` instead of being synthesized. The bit is reserved so any future
+      fill policy is forced to mark synthetic rows explicitly. Timing if ever used: a
+      gap is confirmed by the *next* ingest cycle after the bar failed to arrive → the
+      synthetic row's flag lags one bar.
+    - ``OUTLIER_RETURN``: inline check (dataDesign.md §5.2 conditions 1-2): robust-z of
+      the bar's log return vs a trailing window ending *strictly before* the bar, plus
+      volume disconfirmation. Uses only data through the bar itself → computable at the
+      bar's close, lag 0.
+    - ``VOLUME_ANOMALY``: bar volume vs trailing median volume (trailing window only) →
+      computable at the bar's close, lag 0.
+    - ``BAD_PRINT_SUSPECT``: batch upgrade of ``OUTLIER_RETURN`` requiring the reversion
+      condition on ``close_{t+1}`` (dataDesign.md §5.2 condition 3) — the bit encodes
+      bar ``t+1`` information. Theoretical minimum availability is ``ts_open + 2Δ``
+      (leakage finding 5's fix); the declared lag of 2 extra bars (visible at
+      ``ts_open + 3Δ``) adds one bar of slack for the batch upgrade job. Late is safe:
+      a later ``available_at`` can only hide a flag, never leak one.
+    - ``EXCHANGE_DOWNTIME``: cross-symbol downtime classification (dataDesign.md §5.2)
+      needs the full panel at the gap timestamp, i.e. every active symbol's fetch for
+      that bar must have completed/failed → one bar of lag, visible at ``ts_open + 2Δ``.
+    """
+
+    NONE = 0
+    GAP_FILLED_NONE = 1
+    OUTLIER_RETURN = 2
+    VOLUME_ANOMALY = 4
+    BAD_PRINT_SUSPECT = 8
+    EXCHANGE_DOWNTIME = 16
+
+
+FLAG_AVAILABILITY_LAG_BARS: Final[dict[QualityFlag, int]] = {
+    QualityFlag.GAP_FILLED_NONE: 1,
+    QualityFlag.OUTLIER_RETURN: 0,
+    QualityFlag.VOLUME_ANOMALY: 0,
+    QualityFlag.BAD_PRINT_SUSPECT: 2,
+    QualityFlag.EXCHANGE_DOWNTIME: 1,
+}
+"""Availability lag per flag bit, in bars *beyond the bar's own close* (finding 5).
+
+A flag with lag ``L`` on the bar opening at ``ts_open`` becomes visible to decisions at
+``ts_open + (1 + L)·Δ`` (lag 0 = visible the moment the bar itself is available). The
+PIT reader masks bits that are not yet visible at ``as_of``; the feature-layer NaN
+policy may only consume visible bits. Covers every non-``NONE`` flag — enforced by a
+unit test so a new bit cannot be added without declaring its lag.
+"""
+
+
+def flag_available_at(ts_open: Ms, tf: Timeframe, flags: QualityFlag) -> Ms:
+    """Earliest decision timestamp (epoch ms UTC) at which ``flags`` is fully visible.
+
+    For a composite bitmask the answer is governed by the slowest bit:
+    ``available_at(ts_open, tf) + max(lag of set bits)·Δ``. ``QualityFlag.NONE`` (no
+    bits set) is visible at the bar's own close. Implements leakage finding 5: a PIT
+    read at ``as_of`` may expose a bit iff ``flag_available_at(...) <= as_of``.
+    """
+    max_lag = max(
+        (FLAG_AVAILABILITY_LAG_BARS[member] for member in QualityFlag if member in flags),
+        default=0,
+    )
+    return available_at(ts_open, tf) + max_lag * tf.ms
+
+
+def _ts_utc_ms() -> pa.DataType:
+    """The one sanctioned Arrow timestamp type: ``timestamp[ms, tz=UTC]``."""
+    return pa.timestamp("ms", tz="UTC")
+
+
+def _metadata(dataset: Dataset) -> dict[bytes, bytes]:
+    return {
+        _METADATA_VERSION_KEY: str(SCHEMA_VERSION).encode("ascii"),
+        _METADATA_DATASET_KEY: dataset.value.encode("ascii"),
+    }
+
+
+OHLCV_SCHEMA: Final[pa.Schema] = pa.schema(
+    [
+        pa.field(
+            "instrument_id",
+            pa.string(),
+            nullable=False,
+            metadata={"doc": "canonical id, e.g. BINANCE:PERP:BTCUSDT"},
+        ),
+        pa.field(
+            "ts_open",
+            _ts_utc_ms(),
+            nullable=False,
+            metadata={"doc": "bar OPEN time; available_at = ts_open + timeframe (derived)"},
+        ),
+        pa.field("open", pa.float64(), nullable=False, metadata={"doc": "open price, quote"}),
+        pa.field("high", pa.float64(), nullable=False, metadata={"doc": "high price, quote"}),
+        pa.field("low", pa.float64(), nullable=False, metadata={"doc": "low price, quote"}),
+        pa.field("close", pa.float64(), nullable=False, metadata={"doc": "close price, quote"}),
+        pa.field(
+            "volume",
+            pa.float64(),
+            nullable=False,
+            metadata={"doc": "traded volume, base-asset units"},
+        ),
+        pa.field(
+            "quote_volume",
+            pa.float64(),
+            nullable=True,
+            metadata={"doc": "exact quote-asset volume; null for sources lacking it"},
+        ),
+        pa.field(
+            "n_trades",
+            pa.int64(),
+            nullable=True,
+            metadata={"doc": "trade count in bar; null for sources lacking it"},
+        ),
+        pa.field(
+            "quality_flags",
+            pa.int32(),
+            nullable=False,
+            metadata={"doc": "QualityFlag bitmask; writer defaults to 0 (clean)"},
+        ),
+        pa.field(
+            "ingested_at",
+            _ts_utc_ms(),
+            nullable=False,
+            metadata={"doc": "wall clock at write; audit only, never a feature input"},
+        ),
+    ],
+    metadata=_metadata(Dataset.OHLCV),
+)
+"""OHLCV bars, labeled by open time. ``available_at`` is derived, never stored."""
+
+
+FUNDING_SCHEMA: Final[pa.Schema] = pa.schema(
+    [
+        pa.field(
+            "instrument_id",
+            pa.string(),
+            nullable=False,
+            metadata={"doc": "canonical id, e.g. BINANCE:PERP:BTCUSDT"},
+        ),
+        pa.field(
+            "ts_funding",
+            _ts_utc_ms(),
+            nullable=False,
+            metadata={"doc": "funding settlement time (e.g. 00:00/08:00/16:00 UTC)"},
+        ),
+        pa.field(
+            "rate",
+            pa.float64(),
+            nullable=False,
+            metadata={"doc": "per-interval decimal rate (0.0001 = 1 bp per interval)"},
+        ),
+        pa.field(
+            "available_at",
+            _ts_utc_ms(),
+            nullable=False,
+            metadata={
+                "doc": (
+                    "ts_funding + publication lag (default 5 min); ALL consumers join "
+                    "on this column, never on ts_funding (leakage finding 18)"
+                )
+            },
+        ),
+        pa.field(
+            "ingested_at",
+            _ts_utc_ms(),
+            nullable=False,
+            metadata={"doc": "wall clock at write; audit only"},
+        ),
+    ],
+    metadata=_metadata(Dataset.FUNDING),
+)
+"""Funding settlements with explicit point-in-time ``available_at``."""
+
+
+UNIVERSE_SCHEMA: Final[pa.Schema] = pa.schema(
+    [
+        pa.field(
+            "instrument_id",
+            pa.string(),
+            nullable=False,
+            metadata={"doc": "canonical id, e.g. BINANCE:PERP:BTCUSDT"},
+        ),
+        pa.field(
+            "effective_from",
+            _ts_utc_ms(),
+            nullable=False,
+            metadata={"doc": "first decision ts at which membership holds (= rebalance ts)"},
+        ),
+        pa.field(
+            "effective_to",
+            _ts_utc_ms(),
+            nullable=True,
+            metadata={"doc": "exclusive end of membership; null = currently a member"},
+        ),
+        pa.field(
+            "rank",
+            pa.int32(),
+            nullable=False,
+            metadata={"doc": "liquidity rank at entry (1 = most liquid)"},
+        ),
+        pa.field(
+            "reason",
+            pa.string(),
+            nullable=False,
+            metadata={"doc": "membership action rationale, e.g. enter_top40, delisted"},
+        ),
+    ],
+    metadata=_metadata(Dataset.UNIVERSE_MEMBERSHIP),
+)
+"""Point-in-time universe membership intervals — the table backtests join against.
+
+Half-open validity ``[effective_from, effective_to)``; membership at ``as_of`` means
+``effective_from <= as_of < coalesce(effective_to, +inf)``. Built with data available
+strictly at the rebalance timestamp, so survivorship peeking is structurally impossible.
+"""
+
+
+_SCHEMAS: Final[dict[Dataset, pa.Schema]] = {
+    Dataset.OHLCV: OHLCV_SCHEMA,
+    Dataset.FUNDING: FUNDING_SCHEMA,
+    Dataset.UNIVERSE_MEMBERSHIP: UNIVERSE_SCHEMA,
+}
+
+
+def schema_for(dataset: Dataset) -> pa.Schema:
+    """Return the declared :class:`pyarrow.Schema` for ``dataset``."""
+    return _SCHEMAS[dataset]
+
+
+def validate_table(tbl: pa.Table, dataset: Dataset) -> None:
+    """Validate ``tbl`` against the declared schema for ``dataset``.
+
+    Raises :class:`~alphaforge.core.errors.SchemaError` whose message lists **every**
+    mismatch (not just the first), each naming the offending column:
+
+    - missing columns;
+    - extra (undeclared) columns;
+    - duplicated column names;
+    - wrong column types (exact Arrow type equality — a tz-naive timestamp therefore
+      fails, enforcing the UTC discipline of dataDesign.md §5.4);
+    - null values in columns declared non-nullable (checked against the *data*; the
+      incoming table's declared nullable bit is advisory in Arrow and ignored here).
+
+    Column order is not significant. Returns ``None`` on success.
+    """
+    expected = schema_for(dataset)
+    problems: list[str] = []
+
+    name_counts = Counter(tbl.schema.names)
+    for name, count in sorted(name_counts.items()):
+        if count > 1:
+            problems.append(f"column '{name}': appears {count} times (duplicate column name)")
+
+    actual_names = set(name_counts)
+    expected_names = set(expected.names)
+
+    for name in sorted(expected_names - actual_names):
+        problems.append(f"column '{name}': missing")
+    for name in sorted(actual_names - expected_names):
+        problems.append(f"column '{name}': not in declared schema (extra column)")
+
+    for name in expected.names:
+        if name not in actual_names or name_counts[name] > 1:
+            continue
+        expected_field = expected.field(name)
+        actual_type = tbl.schema.field(name).type
+        if actual_type != expected_field.type:
+            problems.append(
+                f"column '{name}': expected type {expected_field.type}, got {actual_type}"
+            )
+            continue
+        if not expected_field.nullable:
+            null_count = tbl.column(name).null_count
+            if null_count > 0:
+                problems.append(
+                    f"column '{name}': {null_count} null value(s) in non-nullable column"
+                )
+
+    if problems:
+        raise SchemaError(
+            f"table does not conform to {dataset.value!r} schema "
+            f"(version {SCHEMA_VERSION}); {len(problems)} problem(s): " + "; ".join(problems)
+        )
+
+
+def empty_table(dataset: Dataset) -> pa.Table:
+    """Return a zero-row table conforming exactly to ``dataset``'s schema (incl. metadata).
+
+    Useful as the writer's seed for a new partition and as the canonical fixture in
+    tests; always passes :func:`validate_table`.
+    """
+    return schema_for(dataset).empty_table()
+
+
+def lake_relpath(dataset: Dataset, instrument_id: str, year: int) -> PurePosixPath:
+    """Hive-style relative path of a leaf partition inside the lake root.
+
+    Layout: ``<dataset>/instrument_id=<id>/year=<year>/data.parquet`` — e.g.
+    ``ohlcv/instrument_id=BINANCE:PERP:BTCUSDT/year=2024/data.parquet``. One file per
+    leaf, rewritten whole and atomically on update (writer's concern, as is the zstd
+    compression choice). Hive ``key=value`` segments let DuckDB push partition filters
+    into the file listing.
+
+    ``instrument_id`` must be a non-empty canonical id without path/hive
+    metacharacters (``/``, ``=``, NUL); ``year`` must be a 4-digit year (1000-9999).
+    Raises :class:`ValueError` otherwise.
+    """
+    if not instrument_id:
+        raise ValueError("instrument_id must be non-empty")
+    bad = [ch for ch in ("/", "=", "\x00") if ch in instrument_id]
+    if bad:
+        raise ValueError(f"instrument_id {instrument_id!r} contains forbidden character(s): {bad}")
+    if not 1000 <= year <= 9999:
+        raise ValueError(f"year must be a 4-digit year (1000-9999), got {year}")
+    return (
+        PurePosixPath(dataset.value)
+        / f"instrument_id={instrument_id}"
+        / f"year={year}"
+        / "data.parquet"
+    )

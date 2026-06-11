@@ -11,6 +11,7 @@ __all__ = [
     "AlphaForgeError",
     "ConfigError",
     "DataGapError",
+    "LockHeldError",
     "LookaheadError",
     "NaiveDatetimeError",
     "ReconciliationError",
@@ -41,6 +42,16 @@ class ConfigError(AlphaForgeError):
 
 class DataGapError(AlphaForgeError):
     """Raised when expected bars are absent from the lake and the caller declared no fill policy."""
+
+
+class LockHeldError(AlphaForgeError):
+    """Raised when another process holds the exclusive lock on a single-writer resource.
+
+    Single-writer jobs (ingestion today; any future state-mutating job) take an OS-level
+    ``flock`` before touching shared state, making concurrent writers mechanically
+    impossible rather than merely discouraged. The holder's pid is recorded in the lock
+    file and included in the message.
+    """
 
 
 class ReconciliationError(AlphaForgeError):

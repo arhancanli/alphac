@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import math
 import sqlite3
+import time
 from dataclasses import dataclass, fields
 from pathlib import Path
 from types import TracebackType
@@ -200,6 +201,29 @@ def _from_row(row: sqlite3.Row) -> Instrument:
     )
 
 
+def _enable_wal(conn: sqlite3.Connection, *, budget_s: float = 5.0) -> None:
+    """Switch ``conn``'s database to WAL journal mode, retrying briefly on contention.
+
+    The DELETE→WAL upgrade needs exclusive access, and SQLite returns
+    ``SQLITE_BUSY`` *without consulting the busy handler* in deadlock-prone lock
+    upgrades — so stores racing to open the same file (the ops db is shared with
+    ``CheckpointStore``) can see ``sqlite3.OperationalError: database is locked``
+    despite ``busy_timeout``. WAL mode is persistent in the file, so the retry
+    converges immediately once any opener succeeds. Re-raises after ``budget_s``
+    seconds of failures.
+    """
+    deadline = time.monotonic() + budget_s
+    while True:
+        try:
+            conn.execute("PRAGMA journal_mode=WAL")
+        except sqlite3.OperationalError:
+            if time.monotonic() >= deadline:
+                raise
+            time.sleep(0.01)
+        else:
+            return
+
+
 class InstrumentStore:
     """SCD2 instrument-version store over a single SQLite file (WAL mode).
 
@@ -213,8 +237,8 @@ class InstrumentStore:
         db_path.parent.mkdir(parents=True, exist_ok=True)
         self._conn = sqlite3.connect(db_path)
         self._conn.row_factory = sqlite3.Row
-        self._conn.execute("PRAGMA journal_mode=WAL")
         self._conn.execute("PRAGMA busy_timeout=5000")
+        _enable_wal(self._conn)
         self._conn.execute("PRAGMA foreign_keys=ON")
         with self._conn:
             self._conn.executescript(_CREATE_SQL)
