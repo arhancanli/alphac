@@ -1,0 +1,55 @@
+# AlphaForge base configuration. Loaded by alphaforge.config.settings.load_settings();
+# every value can be overridden by configs/<profile>.yaml then by AF_* environment variables.
+
+paths:
+  lake_dir: data/lake
+  features_dir: data/features
+  quality_dir: data/quality
+  predictions_dir: data/predictions
+  artifacts_dir: artifacts
+  var_dir: var
+
+data:
+  exchange: binanceusdm
+  timeframe: "1h"
+  backfill_start: "2020-01-01T00:00:00Z"
+  ingest_grace_ms: 30000
+
+universe:
+  size: 20
+  rank_window_days: 30
+  rebalance: monthly
+  entry_rank: 16        # hysteresis: enter at top-16
+  exit_rank: 26         # leave only when falling below 26
+
+signals:
+  horizon_bars: 72      # h: alpha horizon AND cost-amortization holding period (one constant)
+  ic_target: 0.02
+
+costs:
+  perp_maker_bps: 2.0
+  perp_taker_bps: 5.0
+  default_half_spread_bps: 2.5
+  impact_coef: 1.0
+  latency_addon_bps: 2.0   # conservative placeholder until calibrated from paper fills
+
+portfolio:
+  risk_aversion: 7.0
+  gross_max: 1.0
+  net_max: 0.5
+  w_max: 0.15
+  turnover_max: 0.10
+  vol_target_ann: 0.15
+  vol_scale_max: 1.5
+  no_trade_band: 0.0010
+
+risk:
+  max_order_adv_frac: 0.01
+  dd_halve_gross: -0.10
+  dd_flat_halt: -0.15
+  var_confidence: 0.99
+
+live:
+  cycle_grace_s: 90
+  tick_sleep_s: 45      # wall-clock re-check cadence (macOS monotonic clocks freeze in sleep)
+  paper: true

@@ -1,0 +1,16 @@
+# data & state (re-derivable or operational — never in git)
+data/
+var/
+artifacts/
+.env
+
+# python
+__pycache__/
+*.pyc
+.venv/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+.hypothesis/
+dist/
+*.egg-info/
