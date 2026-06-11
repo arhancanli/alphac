@@ -13,6 +13,15 @@ app = typer.Typer(
 )
 
 
+@app.callback()
+def _root() -> None:
+    """Root callback.
+
+    Forces Typer into multi-command mode so ``af version`` (and future subcommand
+    groups) resolve as subcommands even while only one command is registered.
+    """
+
+
 @app.command()
 def version() -> None:
     """Print the installed alphaforge version."""
