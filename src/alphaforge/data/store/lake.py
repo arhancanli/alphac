@@ -80,6 +80,24 @@ class LakePaths:
         """
         return str(self._root / dataset.value / "instrument_id=*" / "year=*" / _LEAF_FILENAME)
 
+    def instrument_ids(self, dataset: Dataset) -> list[str]:
+        """Sorted instrument ids physically present in the lake for ``dataset``.
+
+        Derived from the hive partition directories (``instrument_id=<id>``) — the
+        ids that are actually stored, not what some registry believes should be
+        stored. Returns ``[]`` for a missing dataset directory (or lake root).
+        Listing only; no file is opened.
+        """
+        dataset_dir = self._root / dataset.value
+        if not dataset_dir.is_dir():
+            return []
+        prefix = "instrument_id="
+        return sorted(
+            entry.name.removeprefix(prefix)
+            for entry in dataset_dir.iterdir()
+            if entry.is_dir() and entry.name.startswith(prefix)
+        )
+
     def years_for(self, dataset: Dataset, instrument_id: str) -> list[int]:
         """Sorted years for which a leaf file exists for ``(dataset, instrument_id)``.
 

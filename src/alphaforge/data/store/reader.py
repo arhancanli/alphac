@@ -40,6 +40,7 @@ from alphaforge.data.schemas import (
     FLAG_AVAILABILITY_LAG_BARS,
     Dataset,
     empty_table,
+    ohlcv_dataset,
     schema_for,
 )
 from alphaforge.data.store.lake import LakePaths
@@ -104,6 +105,12 @@ class PITDataReader:
     ) -> pa.Table:
         """Bars with ``start <= ts_open < end`` AND ``ts_open + tf.ms <= as_of``.
 
+        ``tf`` selects the dataset (``H1`` → native ``ohlcv``; ``H4``/``D1`` → the
+        resampler-derived ``ohlcv_4h``/``ohlcv_1d``) AND parameterizes the PIT
+        delta — a derived bar labeled ``ts_open`` is available at ``ts_open +
+        tf.ms`` (the close of its *window*), exactly like a native bar, and its
+        quality-flag bit lags are measured in ``tf`` bars.
+
         All bounds are epoch ms UTC; ``[start, end)`` is half-open on ``ts_open``.
         A bar closing exactly at ``as_of`` is visible; one millisecond earlier it
         is not. Returned ``quality_flags`` are PIT-masked per bit (see module
@@ -111,7 +118,7 @@ class PITDataReader:
         ``OHLCV_SCHEMA``, sorted by ``(instrument_id, ts_open)``; empty result for
         missing instruments/partitions or an empty interval.
         """
-        dataset = Dataset.OHLCV
+        dataset = ohlcv_dataset(tf)
         if end <= start or not instrument_ids:
             return empty_table(dataset)
         files = self._files(dataset, instrument_ids, start=start, end=end)
@@ -179,11 +186,13 @@ class PITDataReader:
         """Open of the freshest fully-available bar: max ``ts_open`` with close ``<= as_of``.
 
         The live loop's freshness probe — compare against the expected last close
-        to detect a stale feed. Returns ``None`` when no bar of ``instrument_id``
-        is available at ``as_of`` (epoch ms UTC) or the instrument has no data.
+        to detect a stale feed. ``tf`` selects the dataset (native 1h or derived
+        4h/1d) and the close delta. Returns ``None`` when no bar of
+        ``instrument_id`` is available at ``as_of`` (epoch ms UTC) or the
+        instrument has no data.
         """
         year_hi = min(from_ms(as_of).year, _MAX_YEAR)
-        files = self._paths.partition_paths(Dataset.OHLCV, instrument_id, year_max=year_hi)
+        files = self._paths.partition_paths(ohlcv_dataset(tf), instrument_id, year_max=year_hi)
         if not files:
             return None
         sql = f"""
@@ -208,14 +217,17 @@ class PITDataReader:
 
         Operational tool (gap detection / backfill targeting): compares the 24/7
         calendar grid (:func:`alphaforge.core.time.expected_bar_opens`) against
-        the *stored* opens — deliberately NO PIT filter, since ops must see the
-        lake as it physically is. Gaps are reported, never synthetically filled
-        (dataDesign.md §0.5). With no data at all, the entire grid is returned.
+        the *stored* opens of the ``tf``-resolved dataset (native 1h or derived
+        4h/1d) — deliberately NO PIT filter, since ops must see the lake as it
+        physically is. Gaps are reported, never synthetically filled
+        (dataDesign.md §0.5); note the resampler's completeness rule makes a 1h
+        gap propagate to a *missing* derived bar, which this tool surfaces. With
+        no data at all, the entire grid is returned.
         """
         expected = expected_bar_opens(start, end, tf)
         if not expected:
             return []
-        files = self._files(Dataset.OHLCV, [instrument_id], start=start, end=end)
+        files = self._files(ohlcv_dataset(tf), [instrument_id], start=start, end=end)
         if not files:
             return expected
         sql = f"""

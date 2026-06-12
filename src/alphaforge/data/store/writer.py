@@ -37,7 +37,13 @@ import pyarrow as pa
 import pyarrow.parquet as pq
 
 from alphaforge.core.time import Ms, Timeframe, now_ms
-from alphaforge.data.schemas import Dataset, empty_table, schema_for, validate_table
+from alphaforge.data.schemas import (
+    OHLCV_DATASETS,
+    Dataset,
+    empty_table,
+    schema_for,
+    validate_table,
+)
 from alphaforge.data.store.lake import LakePaths
 
 __all__ = [
@@ -48,6 +54,8 @@ __all__ = [
 
 NATURAL_KEY_COLUMN: Final[dict[Dataset, str]] = {
     Dataset.OHLCV: "ts_open",
+    Dataset.OHLCV_4H: "ts_open",
+    Dataset.OHLCV_1D: "ts_open",
     Dataset.FUNDING: "ts_funding",
     Dataset.UNIVERSE_MEMBERSHIP: "effective_from",
 }
@@ -118,8 +126,9 @@ class LakeWriter:
     ) -> WriteStats:
         """Upsert ``tbl`` into the lake; returns :class:`WriteStats`.
 
-        ``tf`` is the bar timeframe the table carries (v1 lake is 1h-only, hence
-        the H1 default); it parameterizes the OHLCV partial-bar guard only.
+        ``tf`` is the bar timeframe the table carries (ingestion is 1h-only, hence
+        the H1 default; the resampler passes ``tf=H4``/``D1`` when writing the
+        derived OHLCV datasets); it parameterizes the OHLCV partial-bar guard only.
         ``now`` is the guard's reference wall clock in epoch ms UTC (injectable
         for tests/replays; defaults to :func:`alphaforge.core.time.now_ms`). A bar
         closing exactly at ``now`` is final and is kept.
@@ -134,7 +143,7 @@ class LakeWriter:
         tbl = tbl.cast(schema_for(dataset))
 
         unclosed_dropped = 0
-        if dataset is Dataset.OHLCV:
+        if dataset in OHLCV_DATASETS:
             close_ms = _epoch_ms(tbl.column("ts_open")) + tf.ms
             tbl = tbl.filter(pa.array(close_ms <= now_val))
             unclosed_dropped = rows_in - tbl.num_rows

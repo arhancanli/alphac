@@ -191,12 +191,19 @@ class TestPITBoundary:
         out = reader.ohlcv([BTC], start=T0, end=T0 + HOUR, as_of=T0 + HOUR)
         assert opens_of(out) == [T0]
 
-    def test_pit_delta_comes_from_tf_param(self, one_bar_lake: None, reader: PITDataReader) -> None:
-        # Same stored row, same as_of: available as a 1h bar, not yet as a 4h bar.
+    def test_pit_delta_comes_from_tf_param(self, writer: LakeWriter, reader: PITDataReader) -> None:
+        # Same ts_open stored in both the native and the derived dataset: at the 1h
+        # close the 1h bar is available while the 4h bar (close = ts_open + 4h) is not.
+        writer.write(Dataset.OHLCV, ohlcv_table(bar(BTC, T0)), now=FAR_FUTURE)
+        writer.write(Dataset.OHLCV_4H, ohlcv_table(bar(BTC, T0)), tf=Timeframe.H4, now=FAR_FUTURE)
         as_of = T0 + HOUR
         end = T0 + 4 * HOUR
         assert reader.ohlcv([BTC], start=T0, end=end, as_of=as_of, tf=Timeframe.H1).num_rows == 1
         assert reader.ohlcv([BTC], start=T0, end=end, as_of=as_of, tf=Timeframe.H4).num_rows == 0
+        assert (
+            reader.ohlcv([BTC], start=T0, end=end, as_of=T0 + 4 * HOUR, tf=Timeframe.H4).num_rows
+            == 1
+        )
 
     def test_end_beyond_as_of_is_allowed(self, writer: LakeWriter, reader: PITDataReader) -> None:
         writer.write(
@@ -309,8 +316,15 @@ class TestQualityFlagMasking:
         assert self.read_flags(reader, T0 + HOUR) == 0  # masked at close
         assert self.read_flags(reader, T0 + 2 * HOUR) == int(QualityFlag.EXCHANGE_DOWNTIME)
 
-    def test_masking_uses_tf_delta(self, flagged_lake: None, reader: PITDataReader) -> None:
-        # With tf=H4 the BAD_PRINT bit needs ts_open + 3·4h; at ts_open + 4h it is masked.
+    def test_masking_uses_tf_delta(self, writer: LakeWriter, reader: PITDataReader) -> None:
+        # On a derived 4h bar the BAD_PRINT bit needs ts_open + 3·4h; at ts_open + 4h
+        # (the bar's own close) it is masked while lag-0 bits are visible.
+        writer.write(
+            Dataset.OHLCV_4H,
+            ohlcv_table(bar(BTC, T0, flags=self.SUSPECT)),
+            tf=Timeframe.H4,
+            now=FAR_FUTURE,
+        )
         out = reader.ohlcv([BTC], start=T0, end=T0 + 4 * HOUR, as_of=T0 + 4 * HOUR, tf=Timeframe.H4)
         assert flags_of(out) == [int(QualityFlag.OUTLIER_RETURN)]
 
@@ -392,8 +406,9 @@ class TestLatestBarOpen:
     def test_unknown_instrument_is_none(self, three_bar_lake: None, reader: PITDataReader) -> None:
         assert reader.latest_bar_open(ETH, as_of=FAR_FUTURE) is None
 
-    def test_respects_tf_delta(self, three_bar_lake: None, reader: PITDataReader) -> None:
-        # As a 4h bar, T0 closes only at T0 + 4h.
+    def test_respects_tf_delta(self, writer: LakeWriter, reader: PITDataReader) -> None:
+        # A derived 4h bar opening at T0 closes only at T0 + 4h.
+        writer.write(Dataset.OHLCV_4H, ohlcv_table(bar(BTC, T0)), tf=Timeframe.H4, now=FAR_FUTURE)
         assert reader.latest_bar_open(BTC, as_of=T0 + 4 * HOUR - 1, tf=Timeframe.H4) is None
         assert reader.latest_bar_open(BTC, as_of=T0 + 4 * HOUR, tf=Timeframe.H4) == T0
 

@@ -18,7 +18,7 @@ from typing import TYPE_CHECKING, Annotated, Final
 import typer
 
 from alphaforge.core.errors import NaiveDatetimeError, SchemaError
-from alphaforge.core.time import Ms, floor_bar, from_ms, now_ms, parse_utc
+from alphaforge.core.time import Ms, Timeframe, floor_bar, from_ms, now_ms, parse_utc
 from alphaforge.core.types import MarketType
 from alphaforge.data.schemas import Dataset
 
@@ -288,6 +288,71 @@ def backfill(
     _print_report(report)
     if report.failed_count:
         raise typer.Exit(1)
+
+
+def _parse_resample_targets(value: str) -> list[Timeframe]:
+    """``--target`` → derived timeframes: ``4h``, ``1d``, or ``all`` (= 4h then 1d)."""
+    name = value.strip().lower()
+    if name == "all":
+        return [Timeframe.H4, Timeframe.D1]
+    try:
+        target = Timeframe(name)
+    except ValueError as exc:
+        raise typer.BadParameter(f"--target: unknown timeframe {value!r} (4h, 1d, all)") from exc
+    if target not in (Timeframe.H4, Timeframe.D1):
+        raise typer.BadParameter(f"--target: {name!r} is not a derived timeframe (4h, 1d, all)")
+    return [target]
+
+
+@data_app.command()
+def resample(
+    symbols: Annotated[
+        str | None,
+        typer.Option(
+            "--symbols",
+            help="Comma-separated symbols (BTCUSDT or BINANCE:PERP:BTCUSDT). "
+            "Default: every instrument with 1h bars in the lake.",
+        ),
+    ] = None,
+    target: Annotated[
+        str,
+        typer.Option("--target", help="Derived timeframe to build: 4h, 1d, or all."),
+    ] = "all",
+    profile: _ProfileOpt = None,
+) -> None:
+    """Derive 4h/1d bars from stored 1h bars (incremental; rerun-safe).
+
+    Only fully-populated, fully-closed buckets are written: a 1h gap leaves the
+    covering 4h/1d bar MISSING (gaps propagate, never get synthesized), and
+    quality flags OR up into the derived bar. Rerunning with no new 1h data
+    reads and writes nothing.
+    """
+    from alphaforge.data.store.lake import LakePaths
+    from alphaforge.data.store.resample import Resampler
+
+    targets = _parse_resample_targets(target)
+    settings = _load_settings(profile)
+    _setup_logging(settings)
+
+    paths = LakePaths(settings.paths.lake_dir)
+    if symbols is not None:
+        instrument_ids = [_resolve_instrument_id(tok) for tok in symbols.split(",")]
+    else:
+        instrument_ids = paths.instrument_ids(Dataset.OHLCV)
+        if not instrument_ids:
+            typer.echo("no instruments with 1h bars in the lake — run `af data backfill` first")
+            raise typer.Exit(1)
+
+    resampler = Resampler(paths)
+    now = now_ms()
+    for tf_target in targets:
+        stats = resampler.resample(instrument_ids, target=tf_target, now=now)
+        typer.echo(
+            f"{tf_target.value}: instruments={stats.instruments} "
+            f"source_rows={stats.source_rows} bars_written={stats.bars_written} "
+            f"buckets_incomplete={stats.buckets_incomplete} "
+            f"buckets_unclosed={stats.buckets_unclosed}"
+        )
 
 
 @data_app.command()

@@ -22,6 +22,15 @@ universe:
   entry_rank: 16        # hysteresis: enter at top-16
   exit_rank: 26         # leave only when falling below 26
 
+quality:
+  ewma_span_bars: 168           # trailing EWMA sigma / volume-median span (7 days of 1h)
+  outlier_k: 8.0                # |log return| > k * sigma => OUTLIER_RETURN
+  bad_print_vol_frac: 0.25      # suspect print: volume < frac * trailing median volume
+  bad_print_reversion_frac: 0.5 # ...and |ln(c_{t+1}/c_{t-1})| < frac * |r_t| (snap-back)
+  downtime_frac: 0.8            # missing hour on >= 80% of active instruments = exchange downtime
+  stale_run_bars: 12            # identical closes with volume for >= 12 bars = stuck feed
+  min_history_bars: 24          # warmup before sigma/median estimates are trusted
+
 signals:
   horizon_bars: 72      # h: alpha horizon AND cost-amortization holding period (one constant)
   ic_target: 0.02

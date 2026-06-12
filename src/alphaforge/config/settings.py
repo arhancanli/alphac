@@ -45,6 +45,7 @@ __all__ = [
     "LiveCfg",
     "PathsCfg",
     "PortfolioCfg",
+    "QualityCfg",
     "RiskCfg",
     "Settings",
     "SignalsCfg",
@@ -136,6 +137,38 @@ class UniverseCfg(BaseModel):
                 "for hysteresis to dampen membership churn"
             )
         return self
+
+
+class QualityCfg(BaseModel):
+    """Data-quality engine thresholds (dataDesign.md §5.2; consumed by
+    ``alphaforge.data.quality``). Quality flags ANNOTATE bars, never alter prices —
+    these knobs tune detection sensitivity only.
+
+    - ``ewma_span_bars``: span of the trailing EWMA volatility estimate sigma and of the
+      trailing volume-median window, in 1h bars (168 = 7 days).
+    - ``outlier_k``: a bar is an outlier when ``|log return| > k*sigma`` (crypto 1h
+      returns genuinely reach 5-6sigma in cascades; 8 keeps real crashes unflagged).
+    - ``bad_print_vol_frac``: volume disconfirmation — a suspect print has bar volume
+      below this fraction of the trailing median volume.
+    - ``bad_print_reversion_frac``: reversion — the gap-over print snaps back when
+      ``|ln(close_{t+1}/close_{t-1})| < frac·|r_t|``.
+    - ``downtime_frac``: a missing hour is exchange downtime when at least this
+      fraction of instruments active at that hour are simultaneously missing it.
+    - ``stale_run_bars``: minimum run of consecutive identical closes (with trading
+      volume) reported as a stuck-feed symptom.
+    - ``min_history_bars``: warmup guard — outlier/bad-print conditions need at least
+      this many *prior* observations before sigma / median estimates are trusted.
+    """
+
+    model_config = _SECTION_CONFIG
+
+    ewma_span_bars: int = Field(default=168, gt=1)
+    outlier_k: float = Field(default=8.0, gt=0.0)
+    bad_print_vol_frac: float = Field(default=0.25, gt=0.0, lt=1.0)
+    bad_print_reversion_frac: float = Field(default=0.5, gt=0.0, le=1.0)
+    downtime_frac: float = Field(default=0.8, gt=0.0, le=1.0)
+    stale_run_bars: int = Field(default=12, gt=1)
+    min_history_bars: int = Field(default=24, ge=2)
 
 
 class SignalsCfg(BaseModel):
@@ -251,6 +284,7 @@ class Settings(BaseSettings):
     paths: PathsCfg = Field(default_factory=PathsCfg)
     data: DataCfg = Field(default_factory=DataCfg)
     universe: UniverseCfg = Field(default_factory=UniverseCfg)
+    quality: QualityCfg = Field(default_factory=QualityCfg)
     signals: SignalsCfg = Field(default_factory=SignalsCfg)
     costs: CostsCfg = Field(default_factory=CostsCfg)
     portfolio: PortfolioCfg = Field(default_factory=PortfolioCfg)

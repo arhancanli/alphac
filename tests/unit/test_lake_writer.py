@@ -224,6 +224,18 @@ class TestLakePaths:
         assert got == [paths.partition_path(Dataset.OHLCV, BTC, 2024)]
         assert len(paths.partition_paths(Dataset.OHLCV, BTC)) == 3
 
+    def test_instrument_ids_sorted_and_junk_ignored(
+        self, paths: LakePaths, writer: LakeWriter
+    ) -> None:
+        writer.write(Dataset.OHLCV, ohlcv_table(bar(ETH, T_2024), bar(BTC, T_2024)), now=FAR_FUTURE)
+        dataset_dir = paths.partition_path(Dataset.OHLCV, BTC, 2024).parent.parent.parent
+        (dataset_dir / "notakey=XXX").mkdir()  # wrong hive key
+        (dataset_dir / "stray.txt").write_text("junk")  # not a directory
+        assert paths.instrument_ids(Dataset.OHLCV) == [BTC, ETH]
+
+    def test_instrument_ids_empty_lake_and_missing_dataset(self, paths: LakePaths) -> None:
+        assert paths.instrument_ids(Dataset.OHLCV) == []  # lake root absent entirely
+
     def test_tmp_path_same_dir_prefix_and_unique(self, paths: LakePaths) -> None:
         target = paths.partition_path(Dataset.OHLCV, BTC, 2024)
         tmp1, tmp2 = paths.tmp_path(target), paths.tmp_path(target)

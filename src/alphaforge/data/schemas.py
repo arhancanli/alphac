@@ -38,6 +38,7 @@ from alphaforge.core.time import Ms, Timeframe, available_at
 __all__ = [
     "FLAG_AVAILABILITY_LAG_BARS",
     "FUNDING_SCHEMA",
+    "OHLCV_DATASETS",
     "OHLCV_SCHEMA",
     "SCHEMA_VERSION",
     "UNIVERSE_SCHEMA",
@@ -46,6 +47,7 @@ __all__ = [
     "empty_table",
     "flag_available_at",
     "lake_relpath",
+    "ohlcv_dataset",
     "schema_for",
     "validate_table",
 ]
@@ -59,11 +61,45 @@ _METADATA_DATASET_KEY: Final[bytes] = b"alphaforge.dataset"
 
 
 class Dataset(StrEnum):
-    """Lake datasets. Values are the top-level lake directory names (partition labels)."""
+    """Lake datasets. Values are the top-level lake directory names (partition labels).
+
+    The OHLCV family is one dataset *per timeframe*: ``ohlcv`` holds the native 1h
+    bars (the only ingested timeframe; dataDesign.md §4.4); ``ohlcv_4h``/``ohlcv_1d``
+    hold bars *derived* from stored 1h bars by the resampler — never fetched. All
+    three share :data:`OHLCV_SCHEMA` column-for-column; use :func:`ohlcv_dataset`
+    to resolve a :class:`~alphaforge.core.time.Timeframe` to its dataset.
+    """
 
     OHLCV = "ohlcv"
+    OHLCV_4H = "ohlcv_4h"
+    OHLCV_1D = "ohlcv_1d"
     FUNDING = "funding"
     UNIVERSE_MEMBERSHIP = "universe_membership"
+
+
+OHLCV_DATASETS: Final[frozenset[Dataset]] = frozenset(
+    {Dataset.OHLCV, Dataset.OHLCV_4H, Dataset.OHLCV_1D}
+)
+"""The OHLCV dataset family (native 1h + resampler-derived 4h/1d). Membership gates
+OHLCV-specific behavior — e.g. the writer's partial-bar guard — without enumerating
+timeframes at every call site."""
+
+_OHLCV_DATASET_BY_TF: Final[dict[Timeframe, Dataset]] = {
+    Timeframe.H1: Dataset.OHLCV,
+    Timeframe.H4: Dataset.OHLCV_4H,
+    Timeframe.D1: Dataset.OHLCV_1D,
+}
+
+
+def ohlcv_dataset(tf: Timeframe) -> Dataset:
+    """Resolve a bar timeframe to the lake dataset holding bars of that timeframe.
+
+    ``H1 → ohlcv`` (native, ingested), ``H4 → ohlcv_4h`` and ``D1 → ohlcv_1d``
+    (derived by the resampler from stored 1h bars). Total over every
+    :class:`~alphaforge.core.time.Timeframe` member — enforced by a unit test so a
+    new timeframe cannot be added without declaring its dataset.
+    """
+    return _OHLCV_DATASET_BY_TF[tf]
 
 
 class QualityFlag(IntFlag):
@@ -97,6 +133,15 @@ class QualityFlag(IntFlag):
     - ``EXCHANGE_DOWNTIME``: cross-symbol downtime classification (dataDesign.md §5.2)
       needs the full panel at the gap timestamp, i.e. every active symbol's fetch for
       that bar must have completed/failed → one bar of lag, visible at ``ts_open + 2Δ``.
+    - ``GAP_ADJACENT``: surviving bar immediately BEFORE or AFTER a run of missing
+      expected bars (dataDesign.md §5.2; gaps are reported, never filled — this bit
+      annotates the survivors). The bar after a gap carries a log return spanning the
+      gap; the bar before is the last clean print. A gap is only *confirmed* once the
+      missing bar failed to arrive by the next ingest cycle (same reasoning as
+      ``GAP_FILLED_NONE``) → one bar of lag: for the preceding bar that is exactly the
+      missing bar's own close. Late is safe — a later ``available_at`` can only hide a
+      flag, never leak one. (Value 64; 32 is left free for the resampler's
+      ``INCOMPLETE_AGGREGATE`` per dataDesign.md §5.3.)
     """
 
     NONE = 0
@@ -105,6 +150,7 @@ class QualityFlag(IntFlag):
     VOLUME_ANOMALY = 4
     BAD_PRINT_SUSPECT = 8
     EXCHANGE_DOWNTIME = 16
+    GAP_ADJACENT = 64
 
 
 FLAG_AVAILABILITY_LAG_BARS: Final[dict[QualityFlag, int]] = {
@@ -113,6 +159,7 @@ FLAG_AVAILABILITY_LAG_BARS: Final[dict[QualityFlag, int]] = {
     QualityFlag.VOLUME_ANOMALY: 0,
     QualityFlag.BAD_PRINT_SUSPECT: 2,
     QualityFlag.EXCHANGE_DOWNTIME: 1,
+    QualityFlag.GAP_ADJACENT: 1,
 }
 """Availability lag per flag bit, in bars *beyond the bar's own close* (finding 5).
 
@@ -293,6 +340,10 @@ strictly at the rebalance timestamp, so survivorship peeking is structurally imp
 
 _SCHEMAS: Final[dict[Dataset, pa.Schema]] = {
     Dataset.OHLCV: OHLCV_SCHEMA,
+    # Derived bars are column-for-column identical to native OHLCV (dataDesign.md
+    # §4.4); only the schema-level dataset tag in the key-value metadata differs.
+    Dataset.OHLCV_4H: OHLCV_SCHEMA.with_metadata(_metadata(Dataset.OHLCV_4H)),
+    Dataset.OHLCV_1D: OHLCV_SCHEMA.with_metadata(_metadata(Dataset.OHLCV_1D)),
     Dataset.FUNDING: FUNDING_SCHEMA,
     Dataset.UNIVERSE_MEMBERSHIP: UNIVERSE_SCHEMA,
 }
