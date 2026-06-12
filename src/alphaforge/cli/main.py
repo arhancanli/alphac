@@ -7,6 +7,7 @@ quality/universe (Phase 3), features (Phase 4), backtest (Phase 5+), paper/statu
 
 import typer
 
+from alphaforge.cli.backtest_cmds import backtest_app
 from alphaforge.cli.data_cmds import data_app
 from alphaforge.cli.instruments_cmds import instruments_app
 from alphaforge.cli.quality_cmds import quality_app
@@ -18,6 +19,7 @@ app = typer.Typer(
     help="AlphaForge — institutional-grade mid-frequency quant trading system.",
     no_args_is_help=True,
 )
+app.add_typer(backtest_app, name="backtest")
 app.add_typer(data_app, name="data")
 app.add_typer(instruments_app, name="instruments")
 app.add_typer(quality_app, name="quality")

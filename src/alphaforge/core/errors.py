@@ -10,6 +10,7 @@ from __future__ import annotations
 __all__ = [
     "AlphaForgeError",
     "ConfigError",
+    "CostModelMisuse",
     "DataGapError",
     "LockHeldError",
     "LookaheadError",
@@ -38,6 +39,20 @@ class SchemaError(AlphaForgeError):
 
 class ConfigError(AlphaForgeError):
     """Raised when settings are missing, malformed, or mutually inconsistent at load time."""
+
+
+class CostModelMisuse(AlphaForgeError):
+    """Raised when the transaction-cost model is evaluated outside its valid regime.
+
+    Two situations qualify: (a) an order's quote notional exceeds 5% of the
+    instrument's ADV, where the square-root impact law stops being trustworthy
+    (it *underestimates* cost exactly when cost matters most) — pre-trade checks
+    reject at 1% of ADV upstream (execDesign §7.1), so reaching 5% here means a
+    layer above is broken and the run must stop, not extrapolate; (b) a
+    non-finite or non-positive input (notional, ADV, reference price,
+    volatility) reached a cost computation, which would silently poison every
+    downstream P&L figure if let through.
+    """
 
 
 class DataGapError(AlphaForgeError):

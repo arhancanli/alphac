@@ -16,6 +16,7 @@ from alphaforge.core.calendar import Always24x7Calendar, TradingCalendar, calend
 from alphaforge.core.errors import (
     AlphaForgeError,
     ConfigError,
+    CostModelMisuse,
     DataGapError,
     LockHeldError,
     LookaheadError,
@@ -60,6 +61,7 @@ __all__ = [
     "Always24x7Calendar",
     "AssetClass",
     "ConfigError",
+    "CostModelMisuse",
     "DataGapError",
     "Fill",
     "Instrument",
