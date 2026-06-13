@@ -404,6 +404,11 @@ def test_golden_master_full(tmp_path: Path) -> None:
         "fills_applied": 6,
         "skipped_no_trade_band": 0,
         "skipped_below_min": 0,
+        # No reducing order is forced past the min filters in this script (every
+        # reducer clears min_qty/min_notional) and no order exceeds 1% of the
+        # StaticCostInputs ADV, so both new risk-guard counters stay 0 here.
+        "flatten_residual_forced": 0,
+        "orders_adv_clamped": 0,
         "dropped_no_decision_bar": 0,
         "dropped_missing_next_bar": 1,  # the SOL gap at bar 15
         "dropped_no_cost_inputs": 0,

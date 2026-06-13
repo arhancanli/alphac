@@ -167,9 +167,11 @@ class TestEnvOverride:
         self, tmp_root: Path, monkeypatch: pytest.MonkeyPatch
     ) -> None:
         _write(tmp_root / "configs" / "paper.yaml", "portfolio:\n  w_max: 0.12\n")
-        monkeypatch.setenv("AF_PORTFOLIO__W_MAX", "0.2")
+        # 0.14 wins over the overlay's 0.12 and base's 0.15, and stays <= the
+        # risk hard cap (0.15) so the cross-section validator is satisfied.
+        monkeypatch.setenv("AF_PORTFOLIO__W_MAX", "0.14")
         s = load_settings(profile="paper", root=tmp_root)
-        assert s.portfolio.w_max == 0.2
+        assert s.portfolio.w_max == 0.14
         assert s.portfolio.gross_max == 1.0  # env override is leaf-level, not section-level
 
     def test_env_bool_override(self, tmp_root: Path, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -281,3 +283,41 @@ class TestValidators:
         s = Settings()
         with pytest.raises(ValidationError):
             s.portfolio.w_max = 0.5  # type: ignore[misc]
+
+    def test_defaults_satisfy_risk_dominates_portfolio(self) -> None:
+        # The shipped defaults have equal caps (risk == portfolio); the
+        # cross-section validator uses >= so equality loads fine.
+        s = Settings()
+        assert s.risk.max_position_frac >= s.portfolio.w_max
+        assert s.risk.max_gross >= s.portfolio.gross_max
+        assert s.risk.max_net >= s.portfolio.net_max
+        assert load_settings(root=REPO_ROOT).risk.max_gross >= Settings().portfolio.gross_max
+
+    def test_risk_w_max_below_portfolio_w_max_raises(self) -> None:
+        with pytest.raises(ValidationError, match=r"max_position_frac.*must be >="):
+            Settings(
+                risk=RiskCfg(max_position_frac=0.10),
+                portfolio=PortfolioCfg(w_max=0.15),
+            )
+
+    def test_risk_gross_below_portfolio_gross_raises(self) -> None:
+        with pytest.raises(ValidationError, match=r"max_gross.*must be >="):
+            Settings(
+                risk=RiskCfg(max_gross=0.8),
+                portfolio=PortfolioCfg(gross_max=1.0),
+            )
+
+    def test_risk_net_below_portfolio_net_raises(self) -> None:
+        with pytest.raises(ValidationError, match=r"max_net.*must be >="):
+            Settings(
+                risk=RiskCfg(max_net=0.3),
+                portfolio=PortfolioCfg(net_max=0.5),
+            )
+
+    def test_cross_section_violation_via_yaml_is_config_error(self, tmp_root: Path) -> None:
+        _write(
+            tmp_root / "configs" / "bad.yaml",
+            "risk:\n  max_position_frac: 0.10\nportfolio:\n  w_max: 0.15\n",
+        )
+        with pytest.raises(ConfigError, match="max_position_frac"):
+            load_settings(profile="bad", root=tmp_root)

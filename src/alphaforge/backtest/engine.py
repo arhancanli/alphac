@@ -38,6 +38,34 @@ closes (execDesign.md §4.1)::
     5. discretize targets to orders (no-trade band, lot rounding, min-qty /
        min-notional filters) and queue them for t_{k+1}
 
+Risk guards enforced in the backtest path (execDesign.md §7.1) — the engine
+is the BACKTEST half of the capability matrix; the live loop's full
+:class:`PreTradeChecker` (hard w/gross/net caps, price collar, margin, kill
+switch) is the Phase-7 LIVE responsibility and is NOT replicated here:
+
+* **Reduce-only exemption (curve correctness).** An order that REDUCES the
+  held position toward zero (its signed delta opposes the position, shrinking
+  ``|qty|``) must ALWAYS execute, however small — it bypasses the no-trade
+  band AND the ``min_qty``/``min_notional`` skip and is emitted with
+  ``reduce_only=True`` (execDesign.md §7.1 check 7: you must always be able to
+  de-risk). Such forced reducers are counted ``flatten_residual_forced``;
+  ``skipped_below_min`` is then reserved for OPENING/INCREASING orders only.
+  Without this an absorbing flatten (all-zero targets, a drawdown-ladder halt)
+  could orphan a sub-min residual that keeps accruing PnL/funding — an
+  optimistic, dishonest curve. (Sub-LOT reducers still cannot trade: a residual
+  below one ``lot_size`` is an exchange-grid limit, not a min-filter defect, and
+  stays open — documented.)
+* **1% ADV participation cap (cost correctness, execDesign.md §3.2/§7.1).**
+  Before execution, a non-reduce-only order whose fill notional
+  (``qty * open_{t+1}``) exceeds ``max_order_adv_frac * adv_quote`` (default
+  0.01 = 1% of the decision bar's 30d-median ADV) is CLAMPED down to 1% of ADV
+  (lot-floored) and counted ``orders_adv_clamped`` — institutional behaviour:
+  trade what fits the sqrt-impact law's valid band, never skip the whole order
+  or price a fill where the law is extrapolated. This keeps every impact
+  evaluation inside the regime the cost model's 5%-of-ADV ``CostModelMisuse``
+  tripwire bounds. Reduce-only orders bypass the cap (de-risking is never
+  blocked, §7.1 check 7).
+
 Orders decided on the final bar have no ``t+1``: they are counted as
 ``unfilled_final_bar`` and produce **zero fills and no exception**.
 
@@ -53,6 +81,7 @@ from __future__ import annotations
 
 import math
 from collections.abc import Mapping, Sequence
+from dataclasses import replace
 from typing import Final, Protocol, cast
 
 import numpy as np
@@ -79,7 +108,7 @@ from alphaforge.core.types import (
     OrderType,
     Side,
 )
-from alphaforge.costs import TransactionCostModel
+from alphaforge.costs import MAX_ADV_PARTICIPATION, TransactionCostModel
 from alphaforge.data.store.reader import PITDataReader
 from alphaforge.features.library.vol import ewma_vol_halflife, log_returns
 
@@ -103,6 +132,8 @@ COUNTER_NAMES: Final[tuple[str, ...]] = (
     "fills_applied",
     "skipped_no_trade_band",
     "skipped_below_min",
+    "flatten_residual_forced",
+    "orders_adv_clamped",
     "dropped_no_decision_bar",
     "dropped_missing_next_bar",
     "dropped_no_cost_inputs",
@@ -459,9 +490,18 @@ class EventDrivenBacktester:
             :class:`LakeCostInputs` (1h-only — other timeframes must inject).
         no_trade_band_frac: Suppress orders with ``|Δnotional| <
             band * equity`` (default 0.001 = 10 bps of equity; mirrors
-            ``portfolio.no_trade_band``). Full exchange-filter discretization
-            is Phase 6; v1 applies lot-size rounding toward zero plus
-            ``min_qty``/``min_notional`` filters from the instrument record.
+            ``portfolio.no_trade_band``). Risk-REDUCING orders bypass this band
+            (you must always be able to de-risk). Full exchange-filter
+            discretization is Phase 6; v1 applies lot-size rounding toward zero
+            plus ``min_qty``/``min_notional`` filters from the instrument record
+            (reducing orders bypass those too — see the module docstring).
+        max_order_adv_frac: Per-order ADV participation cap as a fraction of
+            the decision bar's 30d-median ADV (default 0.01 = 1%; matches
+            ``RiskCfg.max_order_adv_frac`` / ``RiskLimits.max_adv_participation``
+            and the sqrt-impact validity guard, execDesign.md §3.2/§7.1). A
+            non-reduce-only order whose fill notional exceeds this is CLAMPED to
+            the cap (lot-floored) and counted ``orders_adv_clamped``, keeping
+            the impact law in its valid regime; reduce-only orders are exempt.
         config_echo: Extra key/values copied verbatim into the result config
             (callers pass cost parameters etc. for full reproducibility — the
             engine cannot introspect the cost model's internals and will not
@@ -474,6 +514,7 @@ class EventDrivenBacktester:
         "_cost_model",
         "_fill_model",
         "_instruments",
+        "_max_order_adv_frac",
         "_no_trade_band_frac",
         "_reader",
         "_tf",
@@ -489,11 +530,19 @@ class EventDrivenBacktester:
         fill_model: FillModel | None = None,
         cost_inputs: CostInputProvider | None = None,
         no_trade_band_frac: float = 0.001,
+        max_order_adv_frac: float = 0.01,
         config_echo: Mapping[str, object] | None = None,
     ) -> None:
         if not math.isfinite(no_trade_band_frac) or no_trade_band_frac < 0.0:
             raise ValueError(
                 f"no_trade_band_frac must be finite and >= 0, got {no_trade_band_frac!r}"
+            )
+        if not math.isfinite(max_order_adv_frac) or not (
+            0.0 < max_order_adv_frac <= MAX_ADV_PARTICIPATION
+        ):
+            raise ValueError(
+                "max_order_adv_frac must be finite and in (0, "
+                f"{MAX_ADV_PARTICIPATION}], got {max_order_adv_frac!r}"
             )
         if cost_inputs is None and tf is not Timeframe.H1:
             raise ValueError(
@@ -507,6 +556,7 @@ class EventDrivenBacktester:
         self._fill_model: FillModel = NextOpenFill(cost_model) if fill_model is None else fill_model
         self._cost_inputs = cost_inputs
         self._no_trade_band_frac = no_trade_band_frac
+        self._max_order_adv_frac = max_order_adv_frac
         self._config_echo: dict[str, object] = dict(config_echo or {})
 
     # ------------------------------------------------------------------- run
@@ -713,6 +763,13 @@ class EventDrivenBacktester:
         Missing next bar (per-instrument gap or delisting): the order is
         DROPPED and counted — never filled at a synthetic price. Missing
         ADV/sigma: dropped and counted — never a guessed cost.
+
+        ADV participation cap (execDesign.md §3.2/§7.1): a non-reduce-only order
+        whose fill notional (``qty * open_{t+1}``) exceeds
+        ``max_order_adv_frac * adv_quote`` is CLAMPED down to the cap (lot-
+        floored) so the sqrt-impact law is only ever evaluated inside its valid
+        band, then counted ``orders_adv_clamped``. Reduce-only orders bypass the
+        cap (de-risking is never blocked).
         """
         record = record_by_order[order.client_order_id]
         next_bar = bars[order.instrument_id].get(order.decision_ts)
@@ -725,9 +782,11 @@ class EventDrivenBacktester:
             counters["dropped_no_cost_inputs"] += 1
             record["status"] = "dropped_no_cost_inputs"
             return
+        inst = insts[order.instrument_id]
+        order = self._clamp_to_adv(order, inst, next_bar.open, adv_quote, counters, record)
         fill = self._fill_model.fill(
             order,
-            insts[order.instrument_id],
+            inst,
             next_bar,
             adv_quote=adv_quote,
             sigma_daily=sigma_daily,
@@ -740,6 +799,49 @@ class EventDrivenBacktester:
         ledger.apply_fill(fill)
         counters["fills_applied"] += 1
         record["status"] = "filled"
+
+    def _clamp_to_adv(
+        self,
+        order: OrderRequest,
+        inst: Instrument,
+        ref_price: float,
+        adv_quote: float,
+        counters: dict[str, int],
+        record: dict[str, object],
+    ) -> OrderRequest:
+        """Clamp an order's qty so its fill notional stays within 1% of ADV.
+
+        Institutional behaviour (execDesign.md §3.2/§7.1): rather than skip an
+        oversized order or price a fill where the sqrt-impact law is
+        extrapolated, trade exactly the cap. The fill notional is sized at the
+        fill reference (``qty * ref_price``, ``ref_price = open_{t+1}``), so the
+        clamped notional ``qty_cap * ref_price <= max_order_adv_frac * adv_quote``
+        by construction and the impact term is always evaluated in-band.
+
+        Reduce-only orders bypass the cap entirely (execDesign.md §7.1 check 7:
+        de-risking is never blocked). A clamp that floors below one ``lot_size``
+        is left UNCLAMPED so the cost model's 5%-of-ADV ``CostModelMisuse``
+        tripwire fires loudly (an ADV too small to host even one lot at 1% is a
+        broken-guard condition, never silently under-traded to nothing).
+
+        Note: an exempt reduce-only flatten still larger than 5% of ADV cannot
+        be priced by the sqrt-law fill model and will raise ``CostModelMisuse``
+        (the run halts loudly rather than print a fabricated price) — in v1 the
+        backtest universe is sized so a flatten never reaches that regime; the
+        live loop, which submits to a real book, has no such pricing limit.
+        """
+        if order.reduce_only:
+            return order
+        cap_notional = self._max_order_adv_frac * adv_quote
+        if order.qty * ref_price <= cap_notional:
+            return order
+        steps = math.floor(cap_notional / ref_price / inst.lot_size + 1e-9)
+        qty_cap = steps * inst.lot_size
+        if qty_cap <= 0.0 or qty_cap >= order.qty:
+            return order  # sub-lot cap: let the 5%-ADV tripwire halt loudly
+        counters["orders_adv_clamped"] += 1
+        record["qty"] = qty_cap  # artifact reflects the size that actually traded
+        return replace(order, qty=qty_cap)
 
     def _force_flat(
         self,
@@ -807,11 +909,23 @@ class EventDrivenBacktester:
     ) -> list[OrderRequest]:
         """Turn target weights into queued orders (band, lot, min filters).
 
-        Per instrument: ``Δnotional = w*equity - qty*close_t``; suppressed when
-        ``|Δnotional| < no_trade_band_frac * equity``; quantity rounded toward
-        zero to ``lot_size`` steps and filtered by ``min_qty``/``min_notional``
-        (a too-small flattening residual therefore stays open — documented v1
-        simplification, full exchange-filter discretization is Phase 6).
+        Per instrument: ``Δnotional = w*equity - qty*close_t``; quantity rounded
+        toward zero to ``lot_size`` steps.
+
+        Risk-REDUCING orders (signed ``Δnotional`` opposes the held position, so
+        ``|qty|`` shrinks toward zero) bypass BOTH the no-trade band and the
+        ``min_qty``/``min_notional`` skip and are emitted ``reduce_only=True``
+        (execDesign.md §7.1 check 7): a flatten or de-risk must always execute,
+        however small, so an absorbing flatten (all-zero targets / a halt) can
+        never orphan a sub-min residual that keeps accruing PnL & funding. Such
+        forced reducers are counted ``flatten_residual_forced``;
+        ``skipped_below_min`` is reserved for OPENING/INCREASING orders. (A
+        residual below one ``lot_size`` still cannot trade — an exchange-grid
+        limit, not a min-filter defect — and stays open: documented.)
+
+        OPENING/INCREASING orders keep the v1 band + lot + ``min_qty`` /
+        ``min_notional`` discretization (full exchange-filter handling is the
+        portfolio layer's :func:`~alphaforge.portfolio.discretize.weights_to_orders`).
         """
         positions = ledger.positions()
         orders: list[OrderRequest] = []
@@ -847,7 +961,13 @@ class EventDrivenBacktester:
             held_qty = 0.0 if pos is None else pos.qty
             delta_notional = weight * equity - held_qty * price
             side = Side.BUY if delta_notional > 0.0 else Side.SELL
-            if abs(delta_notional) < self._no_trade_band_frac * equity:
+            # A REDUCING order moves |held_qty| toward zero: its signed delta
+            # opposes the held position. (A target that crosses zero would both
+            # reduce and re-open; the engine emits one netting order, which the
+            # ledger flips internally — the reduce leg is what de-risks, so the
+            # whole order is treated as reducing for the exemption.)
+            reducing = held_qty != 0.0 and (delta_notional > 0.0) != (held_qty > 0.0)
+            if not reducing and abs(delta_notional) < self._no_trade_band_frac * equity:
                 counters["skipped_no_trade_band"] += 1
                 _skip(
                     "skipped_no_trade_band",
@@ -858,10 +978,19 @@ class EventDrivenBacktester:
                 continue
             steps = math.floor(abs(delta_notional) / price / inst.lot_size + 1e-9)
             qty = steps * inst.lot_size
-            if qty <= 0.0 or qty < inst.min_qty or qty * price < inst.min_notional:
+            if qty <= 0.0:
+                # Sub-lot residual: nothing trades on the exchange grid (a lot-
+                # size limit, not a min-filter defect) — reducers included.
                 counters["skipped_below_min"] += 1
                 _skip("skipped_below_min", price=price, side=side.value, qty=qty)
                 continue
+            below_min = qty < inst.min_qty or qty * price < inst.min_notional
+            if below_min and not reducing:
+                counters["skipped_below_min"] += 1
+                _skip("skipped_below_min", price=price, side=side.value, qty=qty)
+                continue
+            if below_min:  # reducing order forced through the min filters
+                counters["flatten_residual_forced"] += 1
             client_order_id = f"bt-{t}-{iid}"
             order = OrderRequest(
                 client_order_id=client_order_id,
@@ -869,6 +998,7 @@ class EventDrivenBacktester:
                 side=side,
                 qty=qty,
                 order_type=OrderType.MARKET,
+                reduce_only=reducing,
                 decision_ts=t,
                 decision_price=price,
                 reason="target_weight",
@@ -996,6 +1126,7 @@ class EventDrivenBacktester:
             "instrument_ids": list(ids),
             "initial_cash": initial_cash,
             "no_trade_band_frac": self._no_trade_band_frac,
+            "max_order_adv_frac": self._max_order_adv_frac,
             "fill_model": type(self._fill_model).__name__,
             "perp_instruments": sorted(
                 iid for iid, inst in insts.items() if inst.market_type is MarketType.PERP

@@ -223,7 +223,12 @@ class PortfolioCfg(BaseModel):
 
 
 class RiskCfg(BaseModel):
-    """Risk-engine thresholds.
+    """Risk-engine thresholds (execDesign §7; consumed by ``alphaforge.risk``).
+
+    These are the HARD caps enforced by the pre-trade checker — deliberately
+    at-or-above the optimizer's soft caps in :class:`PortfolioCfg` so normal
+    mark-to-market drift between rebalances never trips them; a trip means a
+    sizing bug upstream, not noise.
 
     Drawdown thresholds are NEGATIVE fractions from the high-water mark and
     must satisfy ``dd_flat_halt < dd_halve_gross < 0``: gross is halved at the
@@ -231,21 +236,41 @@ class RiskCfg(BaseModel):
     deeper one. ``max_order_adv_frac`` <= 0.05 keeps every order inside the
     square-root impact law's validity regime (the cost model raises beyond
     it), with 0.01 the conservative default pre-trade cap.
+    ``price_collar_frac`` bounds |decision_price - live close| as a fraction of
+    the close (stale-signal protection for market orders).
+    ``var_window_days`` is the lookback for historical VaR/CVaR computed on
+    DAILY-aggregated returns (leakageCritique finding 29: hourly VaR with
+    sqrt(24) iid scaling understates risk under vol clustering).
+    ``staleness_max_bars``: no fresh bar within this many bar intervals of now
+    ⇒ the staleness breaker forbids trading for the cycle.
     """
 
     model_config = _SECTION_CONFIG
 
+    max_position_frac: float = Field(default=0.15, gt=0.0, le=1.0)
+    max_gross: float = Field(default=1.0, gt=0.0)
+    max_net: float = Field(default=0.5, ge=0.0)
     max_order_adv_frac: float = Field(default=0.01, gt=0.0, le=0.05)
+    price_collar_frac: float = Field(default=0.05, gt=0.0, lt=1.0)
     dd_halve_gross: float = Field(default=-0.10, lt=0.0, gt=-1.0)
     dd_flat_halt: float = Field(default=-0.15, lt=0.0, gt=-1.0)
     var_confidence: float = Field(default=0.99, gt=0.0, lt=1.0)
+    var_window_days: int = Field(default=365, gt=1)
+    staleness_max_bars: int = Field(default=2, gt=0)
 
     @model_validator(mode="after")
-    def _check_dd_ordering(self) -> Self:
+    def _check_orderings(self) -> Self:
         if self.dd_flat_halt >= self.dd_halve_gross:
             raise ValueError(
                 f"dd_flat_halt ({self.dd_flat_halt}) must be < dd_halve_gross "
                 f"({self.dd_halve_gross}) < 0: the flatten/halt threshold is the deeper drawdown"
+            )
+        if self.max_net > self.max_gross:
+            raise ValueError(f"max_net ({self.max_net}) must be <= max_gross ({self.max_gross})")
+        if self.max_position_frac > self.max_gross:
+            raise ValueError(
+                f"max_position_frac ({self.max_position_frac}) must be <= "
+                f"max_gross ({self.max_gross})"
             )
         return self
 
@@ -290,6 +315,46 @@ class Settings(BaseSettings):
     portfolio: PortfolioCfg = Field(default_factory=PortfolioCfg)
     risk: RiskCfg = Field(default_factory=RiskCfg)
     live: LiveCfg = Field(default_factory=LiveCfg)
+
+    @model_validator(mode="after")
+    def _check_risk_dominates_portfolio(self) -> Self:
+        """Risk-engine HARD caps must be >= the optimizer's SOFT caps.
+
+        The narrative across :class:`PortfolioCfg`, :class:`RiskCfg`, and the
+        optimizer docstrings is "the risk engine holds separate, looser hard
+        caps" so normal mark-to-market drift between rebalances never trips a
+        pre-trade check; a trip then means a sizing bug upstream, not noise.
+        Nothing enforced that ordering across the two sections, so a config
+        where the risk cap sits BELOW the optimizer cap would size books the
+        live pre-trade checker then rejects -- a silent backtest-vs-live
+        divergence surface. We assert it here (``>=`` so the equal defaults in
+        ``configs/base.yaml`` remain valid; the design intends ``>`` as a drift
+        buffer but equality is admissible and must not be an error).
+        """
+        pairs = (
+            (
+                "risk.max_gross",
+                self.risk.max_gross,
+                "portfolio.gross_max",
+                self.portfolio.gross_max,
+            ),
+            ("risk.max_net", self.risk.max_net, "portfolio.net_max", self.portfolio.net_max),
+            (
+                "risk.max_position_frac",
+                self.risk.max_position_frac,
+                "portfolio.w_max",
+                self.portfolio.w_max,
+            ),
+        )
+        for hard_name, hard_val, soft_name, soft_val in pairs:
+            if hard_val < soft_val:
+                raise ValueError(
+                    f"{hard_name} ({hard_val}) must be >= {soft_name} ({soft_val}): the "
+                    "risk engine's hard caps cannot sit below the optimizer's soft caps, "
+                    "or the optimizer would size books the live pre-trade checker rejects "
+                    "(backtest-vs-live divergence)."
+                )
+        return self
 
     @classmethod
     def settings_customise_sources(
