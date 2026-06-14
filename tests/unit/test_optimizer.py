@@ -23,7 +23,7 @@ from alphaforge.portfolio import (
     check_mu_ann_contract,
 )
 from alphaforge.portfolio.optimizer import (
-    MU_ANN_SYSTEMATIC_CLIP_FRAC,
+    MU_ANN_SYSTEMATIC_MEDIAN_MAX,
     winsorize_mu_ann,
 )
 
@@ -58,41 +58,63 @@ def legit_tail_mu(n: int, tail_value: float, seed: int = 33) -> np.ndarray:
     return mu
 
 
+def crash_tail_mu(n: int, *, tail_frac: float, tail_value: float, seed: int = 7) -> np.ndarray:
+    """A market-wide-crash mu_ann vector: sane median, a FAT tail. ``tail_frac``
+    of names sit at +/-``tail_value`` (extreme but honest -- many alts at 650%+
+    vol at once), the rest at ~0.15 median. Models the LUNA/FTX regime that
+    killed the first 6y run (4.8% of names beyond 3.0, median 0.148)."""
+    rng = np.random.default_rng(seed)
+    mu = rng.normal(0.0, 0.18, size=n)
+    k = round(tail_frac * n)
+    signs = rng.choice([-1.0, 1.0], size=k)
+    mu[:k] = signs * tail_value
+    return mu
+
+
 class TestMuAnnTripwire:
-    """The finding-2 contract is now FRACTION-based (clip frac > 2% = a
-    systematic units bug), not a max()-based >=3.0 cutoff. A single extreme
-    value raises only when it is itself >2% of the vector (small vectors);
-    in a large vector the same value is winsorized, not refused."""
+    """The finding-2 contract is detected on the MEDIAN |mu_ann|: a systematic
+    ~72x units bug inflates every name (median explodes), so it raises; a
+    market-wide crash inflates only the tail (median stays sane), so it is
+    winsorized, never refused. This is the discriminator the fraction-based
+    check got wrong -- it killed the first 6y run at 4.8% tail / median 0.148."""
 
-    def test_single_breach_in_small_vector_raises(self) -> None:
-        # 1 of 3 names breaches = 33% > 2% -> systematic-error semantics fire.
-        with pytest.raises(ValueError, match="mu_ann contract"):
-            check_mu_ann_contract(np.array([0.1, -3.01, 0.2]))
-
-    def test_all_names_breach_is_systematic_error(self) -> None:
+    def test_all_names_inflated_is_systematic_error(self) -> None:
         # A double annualization / raw-per-h bug inflates the WHOLE vector:
-        # 100% clip fraction, the unambiguous systematic-error signature.
+        # median == 5.0 >> the bound -> the unambiguous systematic signature.
         with pytest.raises(ValueError, match="systematic"):
             check_mu_ann_contract(np.full(50, 5.0))
 
-    def test_one_name_in_four_breaching_raises(self) -> None:
-        # 1 of 4 = 25% > 2% -> still a small enough vector to be a bug, refuse.
+    def test_realistic_72x_unit_bug_raises(self) -> None:
+        # The exact finding-2 slip: a sane per-h distribution annualized by 8760
+        # instead of 8760/h (~72x). The median (~0.15 -> ~11) trips the bound.
+        rng = np.random.default_rng(1)
+        sane = np.abs(rng.normal(0.0, 0.18, size=300))
+        assert float(np.median(sane * 72.0)) > MU_ANN_SYSTEMATIC_MEDIAN_MAX
         with pytest.raises(ValueError, match="mu_ann contract"):
-            check_mu_ann_contract(np.array([4.0, 0.1, 0.1, 0.1]))
+            check_mu_ann_contract(sane * 72.0)
 
-    def test_breach_at_exactly_ceiling_in_singleton_raises(self) -> None:
-        # |mu| >= MU_ANN_ABS_MAX (>=, inclusive); 1 of 1 = 100%.
-        with pytest.raises(ValueError, match="mu_ann contract"):
-            check_mu_ann_contract(np.array([MU_ANN_ABS_MAX]))
+    def test_crash_tail_does_not_raise(self) -> None:
+        # THE regression: the 6y-killing regime. ~5% of names beyond 3.0 but a
+        # sane median -> an honest crash tail, winsorized downstream, NOT refused.
+        mu = crash_tail_mu(300, tail_frac=0.05, tail_value=4.2)
+        assert (np.abs(mu) >= MU_ANN_ABS_MAX).mean() >= 0.04  # the tail is real
+        assert float(np.median(np.abs(mu))) < MU_ANN_SYSTEMATIC_MEDIAN_MAX  # median sane
+        check_mu_ann_contract(mu)  # must NOT raise
 
-    def test_accepts_values_just_under_ceiling(self) -> None:
-        check_mu_ann_contract(np.array([2.99, -2.99]))  # 0% clip -> no raise
+    def test_single_tail_small_vector_sane_median_does_not_raise(self) -> None:
+        # One name at -3.01 among sane names: median ~0.2 -> winsorized, not a bug.
+        check_mu_ann_contract(np.array([0.1, -3.01, 0.2, 0.15]))
+
+    def test_accepts_near_ceiling_values_with_sane_median(self) -> None:
+        # Two names near the ceiling among sane names: median ~0.1, no raise
+        # (and they are under 3.0, so not even winsorized).
+        check_mu_ann_contract(np.array([2.99, -2.99, 0.1, 0.1, 0.1, 0.1]))
 
     def test_legit_single_tail_in_large_vector_does_not_raise(self) -> None:
-        # 200 names, median ~0.2, ONE name at 4.3: 1/200 = 0.5% <= 2% -> the
-        # honest extreme-vol tail must NOT kill a multi-year run.
+        # 200 names, median ~0.2, ONE name at 4.3 -> the honest extreme-vol tail
+        # must NOT kill a multi-year run (median is what matters, not the tail).
         mu = legit_tail_mu(200, tail_value=4.3)
-        assert (np.abs(mu) >= MU_ANN_ABS_MAX).mean() <= MU_ANN_SYSTEMATIC_CLIP_FRAC
+        assert float(np.median(np.abs(mu))) < MU_ANN_SYSTEMATIC_MEDIAN_MAX
         check_mu_ann_contract(mu)  # no raise
 
     def test_solve_refuses_systematic_violation(self) -> None:
@@ -100,7 +122,7 @@ class TestMuAnnTripwire:
         mvo = make_mvo(PortfolioConstraints())
         with pytest.raises(ValueError, match="mu_ann contract"):
             mvo.solve(
-                np.array([3.01, 0.1, 0.1, 0.1]),  # 25% breach
+                np.full(n, 5.0),  # whole vector inflated -> systematic
                 0.04 * np.eye(n),
                 np.zeros(n),
                 np.zeros(n),
@@ -112,18 +134,18 @@ class TestMuAnnTripwire:
         fb = RankEqualVolFallback()
         with pytest.raises(ValueError, match="mu_ann contract"):
             fb.solve(
-                np.array([-3.5, 0.1, 0.1, 0.1]),  # 25% breach
+                np.full(n, -5.0),  # whole vector inflated -> systematic
                 0.04 * np.eye(n),
                 np.zeros(n),
                 np.zeros(n),
                 np.ones(n),
             )
 
-    def test_solve_winsorizes_legit_tail_in_large_vector(self) -> None:
-        # A 200-name book with one honest tail at 4.3 solves WITHOUT raising;
-        # the offending entry is winsorized to the ceiling before sizing.
-        n = 200
-        mu = legit_tail_mu(n, tail_value=4.3)
+    def test_solve_winsorizes_crash_tail(self) -> None:
+        # A 300-name book in a crash (5% tail beyond 3.0, sane median) solves
+        # WITHOUT raising; the tail entries are winsorized to the ceiling.
+        n = 300
+        mu = crash_tail_mu(n, tail_frac=0.05, tail_value=4.2)
         cov = 0.04 * np.eye(n)
         res = make_mvo(PortfolioConstraints()).solve(mu, cov, np.zeros(n), np.zeros(n), np.ones(n))
         assert res.status in ("optimal", "fallback_used")

@@ -22,10 +22,12 @@ The alpha layer emits **annualized** expected returns::
     mu_ann = mu_h x (8760 / h),   h = settings.signals.horizon_bars
 
 and this module consumes them verbatim. The boundary tripwire
-:func:`check_mu_ann_contract` refuses any ``|mu_ann| >= 3.0`` (300% annualized):
-a per-h return passed raw, or a per-bar return annualized twice, lands orders
-of magnitude above that and is caught here instead of silently producing a
-maximally-levered book. The holding period ``h`` lives in exactly ONE settings
+:func:`check_mu_ann_contract` refuses a SYSTEMATIC scaling error by its effect on
+the MEDIAN ``|mu_ann|`` (a per-h return passed raw, or a per-bar return annualized
+twice, inflates every name ~72x and is caught here instead of silently producing a
+maximally-levered book); rare honest extreme-vol tails are winsorized to the 3.0
+ceiling (:func:`winsorize_mu_ann`) rather than refused. The holding period ``h``
+lives in exactly ONE settings
 field (``signals.horizon_bars``) consumed by both the signal layer and the
 cost-amortization factor ``A = 8760/h`` below (buildability finding 3.10) —
 never duplicate it.
@@ -53,7 +55,7 @@ if TYPE_CHECKING:
 
 __all__ = [
     "MU_ANN_ABS_MAX",
-    "MU_ANN_SYSTEMATIC_CLIP_FRAC",
+    "MU_ANN_SYSTEMATIC_MEDIAN_MAX",
     "MeanVarianceOptimizer",
     "OptResult",
     "PortfolioConstraints",
@@ -71,14 +73,21 @@ __all__ = [
 #: this ceiling is economically neutral and keeps the QP well-conditioned.
 MU_ANN_ABS_MAX: Final[float] = 3.0
 
-#: The finding-2 unit-bug tripwire. A SYSTEMATIC scaling error (a raw per-h
-#: return, or a double annualization — both ~72-121x too large) pushes the WHOLE
-#: distribution past the ceiling, so the clipped FRACTION explodes toward 1.0.
-#: Legitimate tails clip ~0% of names. Refusing when >2% of names clip catches
-#: the bug with enormous margin (real data clips ≈0%) while never false-tripping
-#: on the rare honest extreme — strictly more robust than a max()-based check,
-#: which one legitimate tail value could trip, killing a multi-year run.
-MU_ANN_SYSTEMATIC_CLIP_FRAC: Final[float] = 0.02
+#: The finding-2 unit-bug tripwire, detected on the MEDIAN |mu_ann|. A SYSTEMATIC
+#: scaling error (a raw per-h return, or a double annualization — both ~72-121x
+#: too large) multiplies EVERY name, so the median itself explodes (~0.2 -> ~14).
+#: A legitimate market-wide vol spike (LUNA/FTX: many alts at 650%+ annualized vol
+#: at once) inflates only the TAIL while the median stays sane (real 6y history:
+#: median ~0.15-0.20 even in the worst crash window, with up to ~5% of names in
+#: the >3 tail). So the median is the correct discriminator — a fraction-of-tail
+#: check false-trips on a crash (it killed the first 6y run at 4.8% tail / median
+#: 0.148). Set equal to the per-name ceiling: if the MEDIAN reaches 300% annual,
+#: the whole distribution is broken. That is ~15x the real median (0.2) yet ~5x
+#: below any real ~72x bug (~14) — enormous separation either way — while a uniform
+#: large-but-honest alpha (e.g. a 2-asset basis trade) is not mistaken for a bug.
+#: Tail values are winsorized to the ceiling regardless of count (economically
+#: neutral; w_max already binds).
+MU_ANN_SYSTEMATIC_MEDIAN_MAX: Final[float] = MU_ANN_ABS_MAX
 
 #: Ex-ante annualized portfolio vol above this is implausible for a gross<=1
 #: crypto book and indicates a broken covariance/solver -> fallback engages.
@@ -96,37 +105,40 @@ def check_mu_ann_contract(mu_ann: np.ndarray) -> None:
 
     The signal layer MUST emit ``mu_ann = mu_h * 8760 / h`` (annualized). A
     SYSTEMATIC units bug — a raw per-h return treated as annual, or a double
-    annualization (both ~72-121x too large) — pushes essentially every name past
-    the ``MU_ANN_ABS_MAX`` ceiling. So the violation is detected on the FRACTION
-    of names that breach the ceiling, not on the single worst value: a real bug
-    clips ~100% of names; a legitimate extreme-vol tail clips well under 2% (real
-    history: ≈0%). This is deliberately more robust than a ``max()``-based check,
-    which one honest tail value would trip — killing a multi-year backtest over a
-    single crashing altcoin. Tail values that pass this check are winsorized to
-    the ceiling downstream (see :func:`winsorize_mu_ann`), which is economically
-    neutral because ``w_max`` already binds for any such name.
+    annualization (both ~72-121x too large) — multiplies EVERY name, so the
+    MEDIAN ``|mu_ann|`` explodes (~0.2 -> ~14). So the violation is detected on
+    the median, not on the tail: a legitimate market-wide vol spike (LUNA/FTX:
+    many alts at 650%+ annualized vol at once) inflates only the tail while the
+    median stays sane (real 6y history: median ~0.15-0.20 even in the worst
+    crash, with up to ~5% of names beyond the ceiling). A fraction-of-tail check
+    false-trips on exactly that crash regime (it killed the first 6y run at 4.8%
+    tail / median 0.148); the median separates a real ~72x bug from an honest
+    crash tail with ~10x margin either way. Tail values that pass this check are
+    winsorized to the ceiling downstream (see :func:`winsorize_mu_ann`), which is
+    economically neutral because ``w_max`` already binds for any such name.
 
     Raises:
-        ValueError: when more than ``MU_ANN_SYSTEMATIC_CLIP_FRAC`` of names have
-            ``|mu_ann| >= MU_ANN_ABS_MAX`` — a systematic scaling error.
+        ValueError: when the median ``|mu_ann|`` exceeds
+            ``MU_ANN_SYSTEMATIC_MEDIAN_MAX`` — a systematic scaling error that
+            inflated the whole distribution, not a crash-driven tail.
     """
     if mu_ann.size == 0:
         return
     finite = mu_ann[np.isfinite(mu_ann)]
     if finite.size == 0:
         return
-    breach = np.abs(finite) >= MU_ANN_ABS_MAX
-    frac = float(breach.mean())
-    if frac > MU_ANN_SYSTEMATIC_CLIP_FRAC:
-        worst = float(np.abs(finite).max())
-        median = float(np.median(np.abs(finite)))
+    abs_mu = np.abs(finite)
+    median = float(np.median(abs_mu))
+    if median > MU_ANN_SYSTEMATIC_MEDIAN_MAX:
+        worst = float(abs_mu.max())
+        frac = float((abs_mu >= MU_ANN_ABS_MAX).mean())
         raise ValueError(
-            f"mu_ann contract violated: {frac:.1%} of names have |mu_ann| >= "
-            f"{MU_ANN_ABS_MAX} (median |mu_ann| = {median:.3f}, max = {worst:.4f}). "
-            "A systematic scaling error inflated the whole distribution — signals "
-            "must emit mu_ann = mu_h * 8760/h with h = settings.signals.horizon_bars "
-            "(leakageCritique finding 2); a raw per-horizon return or a double "
-            "annualization lands here. Refusing to size."
+            f"mu_ann contract violated: median |mu_ann| = {median:.3f} exceeds "
+            f"{MU_ANN_SYSTEMATIC_MEDIAN_MAX} ({frac:.1%} of names >= {MU_ANN_ABS_MAX}, "
+            f"max = {worst:.4f}). A systematic scaling error inflated the WHOLE "
+            "distribution — signals must emit mu_ann = mu_h * 8760/h with "
+            "h = settings.signals.horizon_bars (leakageCritique finding 2); a raw "
+            "per-horizon return or a double annualization lands here. Refusing to size."
         )
 
 
