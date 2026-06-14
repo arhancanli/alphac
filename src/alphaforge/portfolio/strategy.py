@@ -191,7 +191,9 @@ class BlendStrategy:
         # RiskCfg drawdowns are NEGATIVE fractions from HWM; the ladder takes
         # positive depths (same flip RiskLimits.from_cfg performs).
         self._ladder = DrawdownLadder(
-            dd_half_frac=abs(r.dd_halve_gross), dd_flat_frac=abs(r.dd_flat_halt)
+            dd_half_frac=abs(r.dd_halve_gross),
+            dd_flat_frac=abs(r.dd_flat_halt),
+            flat_cooldown_bars=r.flat_cooldown_bars,
         )
         self._staleness_max_bars = r.staleness_max_bars
         self._rebalance_bars = rebalance_bars
@@ -311,6 +313,10 @@ class BlendStrategy:
                 target book.
             bars_half_gross: bars emitted at the HALF_GROSS de-grossed level
                 (rebalance or every-bar re-emit, F-B).
+            n_auto_rearms: times the ladder auto-rearmed out of FLAT_HALTED
+                after the cooldown elapsed (resumed trading from a reset HWM).
+                Zero here means either no full halt occurred or the run ended
+                inside a cooldown; a permanently-absorbed run is now impossible.
         """
         return {
             "n_rebalances": self._n_rebalances,
@@ -321,6 +327,7 @@ class BlendStrategy:
             "hold_degenerate_xsection": self._n_hold_degenerate_xsection,
             "bars_halted_flat": self._n_bars_halted_flat,
             "bars_half_gross": self._n_bars_half_gross,
+            "n_auto_rearms": self._ladder.n_auto_rearms,
         }
 
     # ----------------------------------------------------------- the protocol

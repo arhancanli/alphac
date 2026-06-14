@@ -243,6 +243,16 @@ class RiskCfg(BaseModel):
     sqrt(24) iid scaling understates risk under vol clustering).
     ``staleness_max_bars``: no fresh bar within this many bar intervals of now
     ⇒ the staleness breaker forbids trading for the cycle.
+    ``flat_cooldown_bars``: how long (in bars) the drawdown ladder stays
+    flat-and-halted after a TIER2 full halt before it AUTO-REARMS — resetting
+    HWM to the then-current equity and resuming trading from a fresh
+    high-water mark. This is the unattended default (identical in backtest and
+    the 24/7 paper loop): a flat book marks no positions, so its equity freezes
+    and can NEVER recover on its own, which makes a recovery-based auto-rearm
+    impossible — the rearm MUST be time-based. Default 336 = 14 days of 1h
+    bars. The KillSwitch (§7.3, separate class) remains the ABSORBING manual
+    halt for human intervention; this cooldown only governs the ladder's own
+    self-recovery.
     """
 
     model_config = _SECTION_CONFIG
@@ -254,6 +264,7 @@ class RiskCfg(BaseModel):
     price_collar_frac: float = Field(default=0.05, gt=0.0, lt=1.0)
     dd_halve_gross: float = Field(default=-0.10, lt=0.0, gt=-1.0)
     dd_flat_halt: float = Field(default=-0.15, lt=0.0, gt=-1.0)
+    flat_cooldown_bars: int = Field(default=336, gt=0)
     var_confidence: float = Field(default=0.99, gt=0.0, lt=1.0)
     var_window_days: int = Field(default=365, gt=1)
     staleness_max_bars: int = Field(default=2, gt=0)

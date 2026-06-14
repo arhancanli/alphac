@@ -155,10 +155,148 @@ class TestDrawdownLadder:
     def test_invalid_inputs(self) -> None:
         with pytest.raises(ValueError, match="dd_half_frac"):
             DrawdownLadder(dd_half_frac=0.15, dd_flat_frac=0.10)
+        with pytest.raises(ValueError, match="flat_cooldown_bars"):
+            DrawdownLadder(flat_cooldown_bars=0)
+        with pytest.raises(ValueError, match="flat_cooldown_bars"):
+            DrawdownLadder(flat_cooldown_bars=-5)
         ladder = DrawdownLadder()
         for bad in (0.0, -1.0, math.nan, math.inf):
             with pytest.raises(ValueError, match="equity"):
                 ladder.update(bad)
+
+    # --------------------------------------------------- FLAT_HALTED cooldown
+
+    def test_absorbing_during_cooldown(self) -> None:
+        # FLAT_HALTED stays absorbing for < cooldown bars even on full equity
+        # recovery: gross 0, HWM frozen, no transition, no flapping.
+        ladder = DrawdownLadder(dd_half_frac=0.10, dd_flat_frac=0.15, flat_cooldown_bars=5)
+        ladder.update(100_000.0)
+        assert ladder.update(80_000.0) is DDState.FLAT_HALTED  # dd = 20%
+        assert ladder.hwm == 100_000.0
+        assert ladder.bars_in_halt == 0
+        # Drive recoveries for 4 < 5 cooldown bars; halt absorbs all of them.
+        for i, equity in enumerate((120_000.0, 130_000.0, 90_000.0, 200_000.0), start=1):
+            assert ladder.update(equity) is DDState.FLAT_HALTED
+            assert ladder.gross_multiplier() == 0.0
+            assert ladder.hwm == 100_000.0  # HWM frozen despite new highs
+            assert ladder.bars_in_halt == i
+        assert ladder.n_auto_rearms == 0
+
+    def test_auto_rearm_after_exact_cooldown(self) -> None:
+        # On the update where bars-in-halt REACHES flat_cooldown_bars: NORMAL,
+        # gross 1.0, HWM == current equity, drawdown 0, n_auto_rearms += 1.
+        cooldown = 5
+        ladder = DrawdownLadder(dd_half_frac=0.10, dd_flat_frac=0.15, flat_cooldown_bars=cooldown)
+        ladder.update(100_000.0)
+        ladder.update(80_000.0)  # FLAT_HALTED, dd = 20%
+        # The first (cooldown - 1) updates remain halted.
+        for _ in range(cooldown - 1):
+            assert ladder.update(82_000.0) is DDState.FLAT_HALTED
+        assert ladder.bars_in_halt == cooldown - 1
+        assert ladder.n_auto_rearms == 0
+        # The cooldown-th update auto-rearms at the CURRENT equity.
+        assert ladder.update(83_000.0) is DDState.NORMAL
+        assert ladder.gross_multiplier() == 1.0
+        assert ladder.hwm == 83_000.0  # fresh HWM = current equity, NOT 100k
+        assert ladder.drawdown == pytest.approx(0.0, abs=1e-12)
+        assert ladder.bars_in_halt == 0
+        assert ladder.n_auto_rearms == 1
+        # Resumed: a new high tracks HWM, a fresh 15% can halt again.
+        assert ladder.update(90_000.0) is DDState.NORMAL
+        assert ladder.hwm == 90_000.0
+
+    def test_ratchet_sustained_decline_does_not_die(self) -> None:
+        # A long sustained decline must AUTO-REARM repeatedly (never permanent
+        # death) and gross must stay within [0, 1] throughout.
+        cooldown = 4
+        ladder = DrawdownLadder(dd_half_frac=0.10, dd_flat_frac=0.15, flat_cooldown_bars=cooldown)
+        equity = 100_000.0
+        ladder.update(equity)
+        normal_bars_seen = 0
+        # ~50% total decline at 1% per bar over 700 bars; flat book means the
+        # decline only "registers" right after each rearm resets the HWM.
+        for _ in range(700):
+            equity *= 0.99
+            assert equity > 0.0
+            ladder.update(equity)
+            mult = ladder.gross_multiplier()
+            assert 0.0 <= mult <= 1.0
+            if ladder.state is DDState.NORMAL:
+                normal_bars_seen += 1
+        # It did NOT die permanently: many auto-rearms over the decline, and
+        # it spent live (NORMAL/HALF) bars between halts.
+        assert ladder.n_auto_rearms >= 5
+        assert normal_bars_seen > 0
+        # Manual rearm path is still available regardless of cooldown progress.
+        if ladder.state is DDState.FLAT_HALTED:
+            ladder.rearm()
+            assert ladder.state is DDState.NORMAL
+
+    def test_half_gross_hysteresis_unaffected_by_cooldown(self) -> None:
+        # HALF_GROSS still auto-recovers via the dd < 0.75*dd_half hysteresis;
+        # the cooldown only governs FLAT_HALTED.
+        ladder = DrawdownLadder(dd_half_frac=0.10, dd_flat_frac=0.15, flat_cooldown_bars=5)
+        ladder.update(100_000.0)
+        assert ladder.update(89_990.0) is DDState.HALF_GROSS  # dd = 10.01%
+        assert ladder.gross_multiplier() == 0.5
+        assert ladder.bars_in_halt == 0
+        assert ladder.update(92_600.0) is DDState.NORMAL  # dd = 7.4% < 7.5%
+        assert ladder.gross_multiplier() == 1.0
+        assert ladder.n_auto_rearms == 0
+
+    def test_manual_rearm_is_immediate_within_cooldown(self) -> None:
+        # rearm() exits FLAT_HALTED immediately, before the cooldown elapses,
+        # resetting HWM to current equity; it does NOT count as an auto-rearm.
+        ladder = DrawdownLadder(dd_half_frac=0.10, dd_flat_frac=0.15, flat_cooldown_bars=100)
+        ladder.update(100_000.0)
+        ladder.update(80_000.0)  # FLAT_HALTED
+        ladder.update(85_000.0)  # still halted, bars_in_halt = 1
+        assert ladder.state is DDState.FLAT_HALTED
+        assert ladder.bars_in_halt == 1
+        ladder.rearm()
+        assert ladder.state is DDState.NORMAL
+        assert ladder.hwm == 85_000.0
+        assert ladder.bars_in_halt == 0
+        assert ladder.n_auto_rearms == 0  # manual rearm is not an auto-rearm
+
+    def test_full_ladder_walk_with_cooldown_rearm(self) -> None:
+        # NORMAL -> HALF -> FLAT -> cooldown -> NORMAL, HWM asserted at every
+        # step (auto-rearm flavor of the full walk).
+        cooldown = 3
+        ladder = DrawdownLadder(dd_half_frac=0.10, dd_flat_frac=0.15, flat_cooldown_bars=cooldown)
+
+        assert ladder.update(100_000.0) is DDState.NORMAL
+        assert ladder.hwm == 100_000.0
+        assert ladder.update(105_000.0) is DDState.NORMAL
+        assert ladder.hwm == 105_000.0
+
+        # -10.001% -> HALF_GROSS, HWM held.
+        assert ladder.update(105_000.0 * (1.0 - 0.10001)) is DDState.HALF_GROSS
+        assert ladder.hwm == 105_000.0
+        assert ladder.gross_multiplier() == 0.5
+
+        # -15.0001% -> FLAT_HALTED, HWM frozen, cooldown clock starts.
+        flat_equity = 105_000.0 * (1.0 - 0.150001)
+        assert ladder.update(flat_equity) is DDState.FLAT_HALTED
+        assert ladder.hwm == 105_000.0
+        assert ladder.gross_multiplier() == 0.0
+        assert ladder.bars_in_halt == 0
+
+        # Cooldown: first (cooldown - 1) updates absorbed, HWM frozen.
+        for _ in range(cooldown - 1):
+            assert ladder.update(108_000.0) is DDState.FLAT_HALTED
+            assert ladder.hwm == 105_000.0
+            assert ladder.gross_multiplier() == 0.0
+
+        # cooldown-th update auto-rearms; HWM resets to current equity.
+        assert ladder.update(110_000.0) is DDState.NORMAL
+        assert ladder.hwm == 110_000.0
+        assert ladder.gross_multiplier() == 1.0
+        assert ladder.drawdown == pytest.approx(0.0, abs=1e-12)
+        assert ladder.n_auto_rearms == 1
+        # Trading resumed: new highs track HWM again.
+        assert ladder.update(115_000.0) is DDState.NORMAL
+        assert ladder.hwm == 115_000.0
 
 
 # ---------------------------------------------------------- staleness breaker

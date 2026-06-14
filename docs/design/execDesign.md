@@ -530,8 +530,14 @@ Action: if `VaR_1d,99 > 0.05 · E`, multiply the vol-target scale by `0.05·E / 
 ```
 HWM_t = max(HWM_{t-1}, E_t);   DD_t = 1 − E_t / HWM_t
 DD ≥ 0.10  → TIER1: gross & vol targets × 0.5; WARN alert.   Releases when DD < 0.075 (hysteresis, no flapping).
-DD ≥ 0.15  → TIER2: flatten everything (reduce_only market orders), engage kill-switch, CRIT alert.
-             Manual re-arm only (§7.3); on re-arm HWM resets to current equity (else it instantly re-trips).
+DD ≥ 0.15  → TIER2: flatten everything (reduce_only market orders), CRIT alert; stay flat (absorbing) for the cooldown.
+             TIME-BASED AUTO-REARM after `flat_cooldown_bars` (default 336 = 14d) → resume from a reset HWM (= current
+             equity, else it instantly re-trips). Identical in backtest and the unattended live loop — a recovery-based
+             rearm is impossible because a flat book's equity is frozen, so the rearm MUST be time-based. A sustained
+             downtrend ratchets (halt → cooldown → resume → maybe re-halt), bounded by the cooldown frequency; this is
+             correct always-on behavior and far better than the permanent absorption it replaces (which silently killed
+             the strategy for 16 of 21 walk-forward legs after the first -15% drawdown). The KillSwitch (§7.3) remains
+             the absorbing MANUAL halt for human-in-the-loop intervention; `DrawdownLadder.rearm()` is the manual override.
 ```
 
 **Per-asset stop (backstop, not the exit signal):** if adverse move from `avg_entry_price` exceeds `2.5 × σ_daily,i`, close next cycle (`reason="stop"`) and embargo re-entry for 24 bars. Persisted in `risk_events`.

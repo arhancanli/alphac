@@ -248,6 +248,7 @@ def test_save_writes_artifact_layout(world: World, tmp_path: Path) -> None:
         "hold_degenerate_xsection",
         "bars_halted_flat",
         "bars_half_gross",
+        "n_auto_rearms",
     }
     assert set(meta["config"]["risk_counters"]) == expected_keys
     for leg_row in meta["legs"]:

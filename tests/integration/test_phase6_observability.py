@@ -8,16 +8,20 @@ into ``walkforward.json``. This module drives the real
 tmp_path lake whose price path is engineered to exercise the two confessions
 the adversarial review demanded be visible:
 
-* **A leg that HALTS (F-A + F-E).** One test leg crashes the longed (highest
-  mu_ann) instrument and spikes the shorted (lowest mu_ann) one, so the
-  rank/inverse-vol book draws down past ``dd_flat_halt`` (15%) from its true
-  running high-water mark. That leg's per-leg ``risk_counters`` must show
-  ``bars_halted_flat > 0``, and -- the core F-A claim -- because ONE strategy
-  is reused across legs (the ladder persists), the halt does NOT reset at the
-  next leg boundary: the FLAT_HALTED state is absorbing, so once a later leg
-  inherits a halted ladder it stays halted (only a human ``rearm()`` exits).
-  A fresh-per-leg ladder (the old optimistic behaviour) would have silently
-  resurrected the book.
+* **A leg that HALTS, then AUTO-REARMS (F-A + F-E).** One test leg crashes the
+  longed (highest mu_ann) instrument and spikes the shorted (lowest mu_ann) one,
+  so the rank/inverse-vol book draws down past ``dd_flat_halt`` (15%) from its
+  true running high-water mark. That leg's per-leg ``risk_counters`` must show
+  ``bars_halted_flat > 0``, and -- the core F-A claim -- because ONE strategy is
+  reused across legs (the ladder persists), the halt does NOT reset at the next
+  leg boundary: the leg immediately after the halt is still inside the
+  ``flat_cooldown_bars`` window and stays (at least partly) halted. A
+  fresh-per-leg ladder (the old optimistic behaviour) would have silently
+  resurrected the book at the boundary. Then, once the cooldown elapses, the
+  ladder AUTO-REARMS from a reset high-water mark and a later leg RESUMES
+  trading (``n_auto_rearms > 0``): the strategy is never permanently absorbed,
+  the design flaw the 6-year walk-forward exposed (16 dead legs after the first
+  -15% drawdown). The KillSwitch remains the absorbing manual halt.
 
 * **A leg with a STALE/missing signal (F-E).** A signal source that returns an
   empty frame for one leg's window leaves the strategy with no fresh mu within
@@ -223,6 +227,7 @@ _EXPECTED_COUNTER_KEYS = {
     "hold_degenerate_xsection",
     "bars_halted_flat",
     "bars_half_gross",
+    "n_auto_rearms",
 }
 
 
@@ -270,21 +275,27 @@ def test_halting_leg_confesses_and_ladder_does_not_reset(tmp_path: Path) -> None
     assert sum(per_leg_halts) > 0, f"no leg halted; per-leg halts = {per_leg_halts}"
     first_halt_leg = next(i for i, h in enumerate(per_leg_halts) if h > 0)
 
-    # F-A: FLAT_HALTED is absorbing and the ladder PERSISTS across legs, so once
-    # a leg halts every later leg inherits the halt -- it never silently resets.
-    # (A fresh-per-leg ladder would reseed the HWM at the boundary and resurrect
-    # the book: the dishonest, optimistic curve this fix closes.)
+    # F-A: the ladder PERSISTS across legs (it never silently resets at a leg
+    # boundary -- a fresh-per-leg ladder would reseed the HWM and resurrect the
+    # book, the dishonest optimistic curve F-A closes). So the halt carries past
+    # the boundary: the leg immediately after the first halt is still inside the
+    # flat_cooldown window and stays (at least partly) halted.
     assert result.legs[-1].leg > first_halt_leg, "need a leg after the first halt to prove no reset"
-    for leg in result.legs[first_halt_leg + 1 :]:
-        rc = leg.risk_counters
-        # A halted ladder forces an all-zero book every bar: the leg is entirely
-        # halts, with no fresh rebalances (n_rebalances stays 0 for the leg).
-        assert int(rc["bars_halted_flat"]) > 0, (
-            f"leg {leg.leg} after the halt did not stay halted -> ladder reset (F-A regression)"
-        )
-        assert int(rc["n_rebalances"]) == 0, (
-            f"leg {leg.leg} rebalanced after a halt -> ladder resurrected (F-A regression)"
-        )
+    next_leg = result.legs[first_halt_leg + 1]
+    assert int(next_leg.risk_counters["bars_halted_flat"]) > 0, (
+        f"leg {next_leg.leg} after the halt did not inherit it -> ladder reset (F-A regression)"
+    )
+
+    # AUTO-REARM (the absorbing-death fix): after the cooldown elapses the ladder
+    # auto-rearms from a reset HWM and a LATER leg RESUMES trading -- the strategy
+    # is never permanently absorbed (the old design left every post-halt leg dead).
+    post_halt = result.legs[first_halt_leg + 1 :]
+    assert any(int(leg.risk_counters["n_rebalances"]) > 0 for leg in post_halt), (
+        "no leg resumed trading after the halt -> permanent absorption (auto-rearm regression)"
+    )
+    assert int(result.config["risk_counters"]["n_auto_rearms"]) > 0, (  # type: ignore[index]
+        "the ladder never auto-rearmed -> absorbing-death pathology not fixed"
+    )
 
     # The aggregate confession also shows the halt.
     agg = result.config["risk_counters"]

@@ -60,6 +60,7 @@ risk:
   price_collar_frac: 0.05   # |decision_price - close| <= 5% of close (stale-signal guard)
   dd_halve_gross: -0.10
   dd_flat_halt: -0.15
+  flat_cooldown_bars: 336   # bars (14d of 1h) flat-and-halted after a full halt before AUTO-REARM (resets HWM, resumes); time-based because a flat book can't self-recover. KillSwitch stays the manual absorbing halt.
   var_confidence: 0.99
   var_window_days: 365      # historical VaR/CVaR lookback, DAILY returns (finding 29)
   staleness_max_bars: 2     # no fresh bar within 2 bar intervals => no trading
