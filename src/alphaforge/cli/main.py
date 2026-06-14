@@ -10,6 +10,7 @@ import typer
 from alphaforge.cli.backtest_cmds import backtest_app
 from alphaforge.cli.data_cmds import data_app
 from alphaforge.cli.instruments_cmds import instruments_app
+from alphaforge.cli.paper_cmds import paper_app
 from alphaforge.cli.quality_cmds import quality_app
 from alphaforge.cli.research_cmds import research_app
 from alphaforge.cli.universe_cmds import universe_app
@@ -23,6 +24,7 @@ app = typer.Typer(
 app.add_typer(backtest_app, name="backtest")
 app.add_typer(data_app, name="data")
 app.add_typer(instruments_app, name="instruments")
+app.add_typer(paper_app, name="paper")
 app.add_typer(quality_app, name="quality")
 app.add_typer(research_app, name="research")
 app.add_typer(universe_app, name="universe")

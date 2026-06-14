@@ -15,6 +15,7 @@ __all__ = [
     "LockHeldError",
     "LookaheadError",
     "NaiveDatetimeError",
+    "NotArmedError",
     "ReconciliationError",
     "RiskLimitError",
     "SchemaError",
@@ -75,3 +76,17 @@ class ReconciliationError(AlphaForgeError):
 
 class RiskLimitError(AlphaForgeError):
     """Raised when a pre-trade check or portfolio monitor breaches a configured risk limit."""
+
+
+class NotArmedError(AlphaForgeError):
+    """Raised when a real-money broker action is attempted while the system is not armed.
+
+    AlphaForge trades PAPER money in v1. The real-money
+    :class:`~alphaforge.execution.ccxt_broker.CCXTBroker` implements the full
+    :class:`~alphaforge.execution.broker.Broker` interface but every
+    order-mutating call (``submit``, ``cancel``) raises this error: arming real
+    trading is a deliberate Phase-8+ step (an explicit config flip plus an arm
+    action), never reachable by accident through ordinary code paths. The
+    message names the exact gate so an operator who hits it understands it is a
+    safety stop, not a bug.
+    """
