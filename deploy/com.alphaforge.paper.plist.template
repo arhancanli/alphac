@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  AlphaForge 24/7 PAPER loop : macOS launchd LaunchAgent template.
+
+  This runs (caffeinate -i) (uv) run af paper run (forever) from the repo, kept
+  alive across logout and crash, with output captured to var/log. It is the
+  LAPTOP fallback for the soak; the institutional answer is a small always-on
+  arm64 VPS (see docs/RUNBOOK.md). PAPER money only : nothing here can place a
+  real order.
+
+  HONEST LAPTOP CAVEAT (buildabilityCritique.md section 4):
+    o KeepAlive=true plus caffeinate -i prevents IDLE sleep while on AC with the
+      lid OPEN. It does NOT survive a LID-CLOSE: macOS clamshell mode naps the
+      machine unless an external display AND power are attached. A napped laptop
+      does not run the loop, full stop.
+    o That is SAFE: the loop is idempotent and watermark-driven. Bars slept
+      through are SKIPPED (keyed on cycle_ts) and COUNTED, never back-filled by
+      trading; the data lake self-heals on wake. "af paper status" shows the N/M
+      cycle accounting so missed cycles are visible, never silent. The Phase-8
+      gate is at least 99 percent of expected cycles : a laptop that naps will
+      MISS that gate, which is precisely why the runbook recommends a VPS for the
+      real 30-day soak.
+
+  PLACEHOLDERS to fill before loading (docs/RUNBOOK.md explains each and gives the
+  exact sed command and launchctl load steps):
+    {{REPO_DIR}} : absolute path to the alphaforge repo (e.g. /Users/you/alphaforge).
+                   MUST NOT be inside an iCloud-synced folder (Desktop/Documents);
+                   the home root is safe by default.
+    {{UV_BIN}}   : absolute path to the uv binary ("command -v uv",
+                   typically /Users/you/.local/bin/uv).
+
+  STOP trading WITHOUT unloading (graceful, observable halt): "touch var/KILL".
+  Install/unload sequence: see docs/RUNBOOK.md section 3b.
+-->
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.alphaforge.paper</string>
+
+    <!--
+      caffeinate -i: hold off IDLE sleep so the loop keeps running on AC with the
+      lid open. The loop owns its OWN wall-clock schedule (it sleeps in short
+      ticks and recomputes the deadline from now_ms on every wake), so caffeinate
+      only keeps the machine awake; it does not drive timing. "af paper run
+      forever" is the single-timer 24/7 PAPER cycle.
+    -->
+    <key>ProgramArguments</key>
+    <array>
+        <string>/usr/bin/caffeinate</string>
+        <string>-i</string>
+        <string>{{UV_BIN}}</string>
+        <string>run</string>
+        <string>af</string>
+        <string>paper</string>
+        <string>run</string>
+        <string>--forever</string>
+    </array>
+
+    <!-- Run from the repo so "uv run" resolves the project venv and configs. -->
+    <key>WorkingDirectory</key>
+    <string>{{REPO_DIR}}</string>
+
+    <!-- Start at login and whenever the job exits (crash, OOM, signalled). -->
+    <key>RunAtLoad</key>
+    <true/>
+    <key>KeepAlive</key>
+    <true/>
+
+    <!--
+      Background process type: lower scheduling priority. caffeinate -i above is
+      what actually keeps the host awake.
+    -->
+    <key>ProcessType</key>
+    <string>Background</string>
+
+    <!--
+      Throttle restart storms: if the loop dies immediately (e.g. a config error),
+      wait 30s before relaunching instead of hot-looping launchd.
+    -->
+    <key>ThrottleInterval</key>
+    <integer>30</integer>
+
+    <!--
+      stdout/stderr go to var/log (the same dir setup_logging writes the structlog
+      JSONL to; log rotation and 30-day retention are configured there). Absolute
+      paths are required by launchd; the runbook's sed fills {{REPO_DIR}}.
+    -->
+    <key>StandardOutPath</key>
+    <string>{{REPO_DIR}}/var/log/paper.launchd.out.log</string>
+    <key>StandardErrorPath</key>
+    <string>{{REPO_DIR}}/var/log/paper.launchd.err.log</string>
+
+    <!--
+      Minimal, explicit environment. PATH includes ~/.local/bin so a uv that
+      shells out to itself resolves. Telegram credentials are NOT hard-coded here
+      (a plist is world-readable): export them in a sourced shell profile or a
+      LaunchAgent-specific secrets mechanism, or accept the structlog fallback.
+      Replace CHANGE_ME with your home directory before loading.
+    -->
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PATH</key>
+        <string>/Users/CHANGE_ME/.local/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+        <key>LANG</key>
+        <string>en_US.UTF-8</string>
+    </dict>
+</dict>
+</plist>

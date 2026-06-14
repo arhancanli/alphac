@@ -39,6 +39,20 @@ alert; the loop CONTINUES to the next cycle (one bad bar never kills the loop).
 On boot, :meth:`recover_on_boot` restores the paper account and reconciles the
 book BEFORE the first cycle.
 
+Per-cycle clock sanity (buildabilityCritique.md section 4, last bullet)
+----------------------------------------------------------------------
+An optional :class:`ClockSanityCheck` (Phase-8 ``ops/clock.py``) is consulted
+once per cycle: it compares the LOCAL wall clock against the exchange server
+time and reports the skew. The loop never HALTS on skew in v1 -- the staleness
+breaker plus the ingest grace already protect the DATA path -- but a large skew
+means the local clock has drifted versus the exchange, so the bar-close decision
+TIMING (when the loop believes a bar closed, and thus when it reads/decides) is
+unreliable even when the data is fresh. The loop therefore ALERTS (WARN) and
+COUNTS the breach (:attr:`clock_skew_alerts`, surfaced on the
+:class:`CycleReport`) so a 30-day unattended soak SURFACES clock drift rather
+than silently deciding on a mistimed bar. When no clock sanity is injected
+(backtests/tests) the check is skipped cleanly.
+
 Crash safety
 ------------
 Every external effect (an order submit) flows through
@@ -55,7 +69,7 @@ from __future__ import annotations
 import json
 import math
 import time as _time
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from typing import TYPE_CHECKING, Protocol, runtime_checkable
 
 from alphaforge.core.errors import (
@@ -100,6 +114,8 @@ if TYPE_CHECKING:
     from alphaforge.risk import DrawdownLadder, KillSwitch, PreTradeChecker, StalenessBreaker
 
 __all__ = [
+    "ClockSanityCheck",
+    "ClockSanityResult",
     "CostInputSource",
     "CycleReport",
     "DataUpdater",
@@ -191,6 +207,46 @@ class DecisionStrategy(Protocol):
 
 
 @runtime_checkable
+class ClockSanityResult(Protocol):
+    """The per-cycle clock-check outcome the loop reads (structural seam).
+
+    Satisfied by ``alphaforge.ops.clock.ClockCheck`` without importing it: the
+    loop only needs the two fields it acts on. ``ok`` is True iff the local clock
+    is within the configured skew of the exchange (``|skew_ms| <= max_skew_ms``);
+    ``skew_ms`` is the SIGNED local-minus-exchange skew in milliseconds, surfaced
+    in the alert/log so the operator can see the magnitude and direction of drift.
+    """
+
+    @property
+    def ok(self) -> bool:
+        """True iff ``|skew_ms| <= max_skew_ms`` (the local clock is trustworthy)."""
+        ...
+
+    @property
+    def skew_ms(self) -> int:
+        """Signed local-minus-exchange skew in milliseconds (positive = local ahead)."""
+        ...
+
+
+@runtime_checkable
+class ClockSanityCheck(Protocol):
+    """The per-cycle clock-sanity probe the loop OPTIONALLY consults (Phase-8 seam).
+
+    Satisfied structurally by ``alphaforge.ops.clock.ClockSanity`` (built in
+    ``ops/clock.py`` against the documented contract: ``ClockSanity(source, *,
+    max_skew_ms=2000)`` with ``check(*, now: Ms) -> ClockCheck``). The loop never
+    imports that concrete class -- it depends only on this shape so the two files
+    compose without a build-time coupling. ``check`` MUST NOT raise on a network
+    or exchange-time failure (the source owns that defence): a clock probe must
+    never be able to kill the 24/7 loop.
+    """
+
+    def check(self, *, now: Ms) -> ClockSanityResult:
+        """Compare the local clock ``now`` (epoch-ms UTC) against exchange time."""
+        ...
+
+
+@runtime_checkable
 class CostInputSource(Protocol):
     """Supplies ``(adv_quote, sigma_daily)`` per instrument for the pre-trade gate.
 
@@ -226,6 +282,14 @@ class CycleReport:
     silently dropped from sizing this cycle because no book mid could be marked
     (a missing/empty order book); a non-zero count means the universe the loop
     sized over was narrower than the PIT universe, which is otherwise invisible.
+
+    ``clock_skew`` is True when the per-cycle clock-sanity check FAILED this cycle
+    (the local clock drifted beyond ``max_skew_ms`` versus the exchange). The loop
+    did NOT halt -- it alerted and counted the breach -- but the operator must SEE
+    that the bar-close decision timing for this cycle was made on a clock the
+    system itself does not trust (a 30-day-soak surfacing signal, not a silent
+    log). False both when the clock was in-skew and when no clock sanity was
+    injected (backtests/tests).
     """
 
     cycle_ts: Ms
@@ -238,6 +302,7 @@ class CycleReport:
     detail: str
     degraded: bool = False
     dropped_book_instruments: int = 0
+    clock_skew: bool = False
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
@@ -418,6 +483,11 @@ class LiveLoop:
         staleness: the :class:`~alphaforge.risk.StalenessBreaker` freshness gate.
         kill: the file-sentinel :class:`~alphaforge.risk.KillSwitch`.
         alerter: the outbound :class:`~alphaforge.live.alerts.Alerter`.
+        clock_sanity: optional per-cycle :class:`ClockSanityCheck` (Phase-8
+            ``ops/clock.py``). When supplied, every cycle compares the local clock
+            against the exchange and a breach (``|skew| > max_skew_ms``) fires a
+            WARN alert + increments :attr:`clock_skew_alerts` (it never halts in
+            v1). ``None`` (the default; backtests/tests) skips the check cleanly.
         updater: the :class:`DataUpdater` the loop drives each cycle.
         watermark: the :class:`WatermarkSource` freshness probe.
         cost_inputs_factory: builds a per-cycle :class:`CostInputSource` over the
@@ -449,6 +519,7 @@ class LiveLoop:
         staleness: StalenessBreaker,
         kill: KillSwitch,
         alerter: Alerter,
+        clock_sanity: ClockSanityCheck | None = None,
         updater: DataUpdater,
         watermark: WatermarkSource,
         cost_inputs_factory: _CostInputsFactory,
@@ -471,6 +542,7 @@ class LiveLoop:
         self._staleness = staleness
         self._kill = kill
         self._alerter = alerter
+        self._clock_sanity = clock_sanity
         self._updater = updater
         self._watermark = watermark
         self._cost_inputs_factory = cost_inputs_factory
@@ -492,6 +564,9 @@ class LiveLoop:
         self._degraded_cycles = 0
         #: Total instruments dropped from sizing across cycles for want of a book mid.
         self._dropped_book_instruments = 0
+        #: Cycles whose per-cycle clock-sanity check FAILED (local clock drifted vs
+        #: the exchange beyond max_skew_ms). Counted + WARN-alerted, never halted.
+        self._clock_skew_alerts = 0
         #: Last bar open observed by run_forever, to count bars slept through (C8).
         self._last_seen_bar: Ms | None = None
 
@@ -531,6 +606,20 @@ class LiveLoop:
         silently shrinks the tradable set is visible, not inferred from logs.
         """
         return self._dropped_book_instruments
+
+    @property
+    def clock_skew_alerts(self) -> int:
+        """Cycles whose clock-sanity check FAILED since boot (local-vs-exchange drift).
+
+        Each such cycle found ``|local - exchange| > max_skew_ms`` and fired a WARN
+        alert; the loop did NOT halt (v1: the staleness breaker + ingest grace
+        already protect the DATA path, so a skew is a TIMING warning, not a stop).
+        A non-zero, climbing count over a soak means the local clock is drifting
+        versus the exchange and the bar-close decision timing is becoming
+        unreliable -- the operator should fix NTP/chrony before it widens. Always
+        0 when no :class:`ClockSanityCheck` was injected (the check is skipped).
+        """
+        return self._clock_skew_alerts
 
     def next_deadline(self, now: Ms) -> Ms:
         """Wall-clock instant the next cycle is due: next bar close + the grace.
@@ -843,17 +932,63 @@ class LiveLoop:
         if self._kill.engaged():
             return self._finish_skip(cycle_ts, "kill sentinel engaged", now=now)
 
+        # Per-cycle clock sanity (buildabilityCritique.md section 4): compare the
+        # local clock against the exchange ONCE per cycle. A breach is ALERTED +
+        # COUNTED and stamped onto the report, but the loop does NOT halt in v1 --
+        # a clock skew makes the bar-close decision TIMING unreliable, yet the
+        # staleness breaker + ingest grace already guard the DATA path.
+        clock_skew = self._check_clock_sanity(cycle_ts, now=now)
+
+        # The clock verdict is stamped onto WHICHEVER report this cycle produces
+        # (success, skip, halt, or fail) without touching the body/finishers --
+        # one place, additive, behavior-preserving.
         try:
-            return self._run_cycle_body(cycle_ts, now=now)
+            report = self._run_cycle_body(cycle_ts, now=now)
         except (RiskLimitError, ReconciliationError) as exc:
             # A risk/reconciliation breach is recorded distinctly as 'halted'.
-            return self._finish_failed(cycle_ts, f"risk halt: {exc}", now=now, halt=True)
+            report = self._finish_failed(cycle_ts, f"risk halt: {exc}", now=now, halt=True)
         except Exception as exc:
             # Catch-all over NORMAL exceptions ONLY (TransientBrokerError,
             # sqlite3.OperationalError, OSError, ccxt NetworkError, ...). NOT
             # BaseException: SystemExit/KeyboardInterrupt must still propagate so
             # recover_on_boot runs on the next process start.
-            return self._finish_failed(cycle_ts, f"{type(exc).__name__}: {exc}", now=now)
+            report = self._finish_failed(cycle_ts, f"{type(exc).__name__}: {exc}", now=now)
+        return replace(report, clock_skew=clock_skew) if clock_skew else report
+
+    def _check_clock_sanity(self, cycle_ts: Ms, *, now: Ms) -> bool:
+        """Probe local-vs-exchange clock skew this cycle; alert+count a breach.
+
+        No-op (returns False) when no :class:`ClockSanityCheck` was injected. When
+        one is present it is called with the loop's wall-clock ``now`` (the same
+        instant the cycle reads). On an in-skew result this is a quiet success. On
+        a breach (``not result.ok``) the loop fires a WARN alert naming the signed
+        skew, increments :attr:`clock_skew_alerts`, logs it, and returns True so
+        the caller can stamp the :class:`CycleReport`. It NEVER raises and NEVER
+        halts: a clock skew is a TIMING warning (the bar-close decision instant is
+        suspect), not a data-integrity stop -- the staleness breaker owns the data
+        path. A probe that itself raised would be caught by ``run_cycle``'s
+        catch-all and merely fail the cycle, so the contract asks the probe to be
+        total; here we additionally swallow any escape into a no-skew result so a
+        flaky clock source can never even fail a cycle.
+        """
+        if self._clock_sanity is None:
+            return False
+        try:
+            result = self._clock_sanity.check(now=now)
+        except Exception as exc:  # a clock probe must never disturb the cycle
+            _log.warning("cycle.clock_probe_failed", cycle_ts=cycle_ts, error=str(exc))
+            return False
+        if result.ok:
+            return False
+        self._clock_skew_alerts += 1
+        self._alerter.alert(
+            AlertLevel.WARN,
+            f"cycle {cycle_ts}: CLOCK SKEW {result.skew_ms:+d} ms vs exchange "
+            f"(local clock drifted; bar-close decision timing is unreliable -- "
+            f"check NTP/chrony). Trading continues (data path is guarded).",
+        )
+        _log.warning("cycle.clock_skew", cycle_ts=cycle_ts, skew_ms=result.skew_ms)
+        return True
 
     def _run_cycle_body(self, cycle_ts: Ms, *, now: Ms) -> CycleReport:
         """Steps 1-7 of :meth:`run_cycle` (exceptions handled by the caller)."""
