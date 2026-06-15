@@ -203,14 +203,36 @@ def ic_summary(ic: pd.Series, *, lags: int) -> ICSummary:
     )
 
 
-def non_overlapping(series: pd.Series, h_bars: int) -> pd.Series:
+def non_overlapping(series: pd.Series, h_bars: int, *, delta_ms: int | None = None) -> pd.Series:
     """Subsample a timestamp-indexed series to a non-overlapping ``h``-bar grid.
 
     ``h``-bar labels observed every bar overlap their ``h - 1`` neighbours; keeping
     every ``h``-th grid point makes consecutive observations non-overlapping, so
     plain i.i.d. inference (lags=0) is honest. The grid is the sorted unique
-    timestamps of the index (level 0 for a MultiIndexed panel series); rows whose
-    timestamp falls on grid positions ``0, h, 2h, …`` are kept, order preserved.
+    timestamps of the index (level 0 for a MultiIndexed panel series).
+
+    Two anchoring modes:
+
+    * ``delta_ms is None`` (default, back-compatible): keep grid POSITIONS
+      ``0, h, 2h, …`` of the slice's own sorted unique timestamps. The kept set is
+      anchored at the slice's first timestamp, so subsampling a sub-window of a
+      series can keep a DIFFERENT phase than subsampling the full series -- fine for
+      a one-shot batch IC report, WRONG when the same IC must be sliced many times
+      (the walk-forward, where a per-leg and a global pass would diverge).
+    * ``delta_ms`` set to the bar width (epoch-ms): keep timestamps on an ABSOLUTE,
+      epoch-fixed bar grid -- exactly the bars with ``(ts // delta_ms) % h == 0``.
+      The kept phase depends ONLY on the venue-fixed bar grid (the epoch), NEVER on
+      which window is being subsampled, so this is SLICE-INVARIANT:
+      ``non_overlapping(full, h, delta_ms=D)`` restricted to any sub-window equals
+      ``non_overlapping(window, h, delta_ms=D)`` for that window -- and in
+      particular two overlapping windows keep the SAME timestamps on their overlap.
+      This is what lets the walk-forward compute the IC once globally and have each
+      leg's slice carry the identical kept-IC phase a per-leg pass would (only the
+      EWMA warm-up depth differs). Kept points stay uniformly spaced by ``h*delta``
+      (so :func:`estimate_blend_weights`'s uniform-spacing assertion still holds).
+      The epoch phase differs from the slice-first phase the default mode uses, so
+      the two modes are NOT interchangeable -- ``delta_ms`` is for the rolling
+      walk-forward weights; ``None`` for one-shot batch IC reports.
 
     Returns a new (filtered) Series; the input is not mutated.
     """
@@ -221,6 +243,15 @@ def non_overlapping(series: pd.Series, h_bars: int) -> pd.Series:
         if isinstance(series.index, pd.MultiIndex)
         else series.index
     )
+    if delta_ms is None:
+        grid = np.unique(level0.to_numpy())
+        keep = grid[::h_bars]
+        return series[level0.isin(keep)]
+    if delta_ms <= 0:
+        raise ValueError(f"delta_ms must be > 0; got {delta_ms}")
     grid = np.unique(level0.to_numpy())
-    keep = grid[::h_bars]
+    if grid.size == 0:
+        return series[level0.isin(grid)]
+    bar_idx = grid.astype(np.int64) // np.int64(delta_ms)
+    keep = grid[(bar_idx % h_bars) == 0]
     return series[level0.isin(keep)]

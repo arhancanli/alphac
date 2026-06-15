@@ -175,26 +175,27 @@ class _MuSource:
 
 
 class _StaleForOneLegSource:
-    """Like :class:`_MuSource` but returns an EMPTY frame for the second test
-    leg's research window, simulating a dead/stale signal feed for that leg.
+    """Like :class:`_MuSource` but punches a HOLE in the global signal frame over
+    the second test leg's span, simulating a dead/stale signal feed for that leg.
 
-    The runner calls ``compute_research(train_start, test_end)`` once per leg;
-    leg 1's test span is [300 + 200, 300 + 400) so its train_start is
-    max(T0, (300+200-300)*HOUR) -> we key on the test_end to pick the leg.
+    The runner now computes the signal frame ONCE over ``[start, end)`` and slices
+    per leg, so a per-leg-keyed stub no longer fires; instead this drops every row
+    whose ``ts_open`` could feed a fresh mu to any decision in leg 1's test span.
+    Leg 1's test span is bars ``[_TRAIN + _TEST, _TRAIN + 2*_TEST)`` from T0; the
+    hole starts ``staleness_max_bars + 1`` bars early so the leg's very first
+    decision (reading ``ts_open = ctx.ts - 1h``) already finds the newest row too
+    old -> the whole leg HOLDS on ``hold_stale_signal`` and never rebalances.
     """
 
-    _STALE_TEST_END = T0 + (_TRAIN + 2 * _TEST) * HOUR  # leg 1's test_end
+    _STALE_LEAD_BARS = 3  # staleness_max_bars (2) + 1: first leg-1 decision is stale
+    _STALE_FROM = T0 + (_TRAIN + _TEST - _STALE_LEAD_BARS) * HOUR
+    _STALE_TO = T0 + (_TRAIN + 2 * _TEST) * HOUR  # leg 1's test_end (exclusive)
 
     def compute_research(self, start: Ms, end: Ms) -> pd.DataFrame:
-        if end == self._STALE_TEST_END:
-            # Empty (no rows) -> the strategy finds no fresh mu and HOLDS the
-            # whole leg on hold_stale_signal.
-            return (
-                pd.DataFrame({"ts_open": [], "instrument_id": [], "mu_ann": []})
-                .astype({"ts_open": "int64", "instrument_id": "object", "mu_ann": "float64"})
-                .set_index(["ts_open", "instrument_id"])
-            )
-        return _MuSource().compute_research(start, end)
+        frame = _MuSource().compute_research(start, end)
+        ts = frame.index.get_level_values("ts_open").to_numpy(dtype="int64")
+        hole = (ts >= self._STALE_FROM) & (ts < self._STALE_TO)
+        return frame.iloc[~hole]
 
 
 def _write_lake(tmp: Path) -> tuple[PITDataReader, InstrumentStore, UniverseStore]:

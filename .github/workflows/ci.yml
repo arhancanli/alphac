@@ -1,0 +1,86 @@
+name: ci
+
+# The enforced quality gate. Every quality claim about AlphaForge (ruff clean,
+# mypy --strict clean, the full offline test suite green) is converted here from
+# developer discipline into a required check on every push and pull request.
+#
+# Reproducibility: the environment is built from the committed uv.lock with
+# "uv sync --frozen" so CI resolves the EXACT pinned dependency set (it never
+# rewrites pyproject.toml or the lock). PYTHONHASHSEED is pinned for determinism
+# (belt-and-suspenders; the suite has no known hash-ordering dependency today).
+#
+# Offline by decree: pytest's addopts already deselect the "network" marker, so
+# no job ever reaches a live exchange API.
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+# Cancel superseded runs on the same ref to save CI minutes.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  PYTHONHASHSEED: "0"
+  # Keep uv's resolution and cache deterministic across runners.
+  UV_FROZEN: "1"
+
+jobs:
+  lint:
+    name: ruff (lint + format)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - name: Pin Python from .python-version
+        run: uv python install
+      - name: Sync the frozen environment
+        run: uv sync --frozen --dev
+      - name: ruff check
+        run: uv run ruff check .
+      - name: ruff format --check
+        run: uv run ruff format --check .
+
+  typecheck:
+    name: mypy --strict
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - name: Pin Python from .python-version
+        run: uv python install
+      - name: Sync the frozen environment
+        run: uv sync --frozen --dev
+      # strict + the package layout are configured in pyproject.toml [tool.mypy];
+      # this invocation adds nothing, so it cannot drift from the local run.
+      - name: mypy
+        run: uv run mypy
+
+  test:
+    name: pytest (offline)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - name: Pin Python from .python-version
+        run: uv python install
+      - name: Sync the frozen environment
+        run: uv sync --frozen --dev
+      # The "network" marker is deselected by pyproject addopts; the suite is
+      # deterministic and offline, so it runs unchanged here.
+      - name: pytest
+        run: uv run pytest

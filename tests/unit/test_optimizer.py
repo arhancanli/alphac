@@ -12,6 +12,9 @@ from __future__ import annotations
 
 import numpy as np
 import pytest
+from hypothesis import given, settings
+from hypothesis import strategies as st
+from hypothesis.extra import numpy as hnp
 
 from alphaforge.config.settings import Settings
 from alphaforge.portfolio import (
@@ -355,10 +358,35 @@ class TestRankEqualVolFallback:
         assert res.weights[3] == pytest.approx(-0.15, abs=1e-12)
         assert float(np.abs(res.weights).max()) <= 0.15 + 1e-12
 
-    def test_tiny_universe_returns_flat_book(self) -> None:
-        n = 3  # K = 0
+    @pytest.mark.parametrize("n", [2, 3])
+    def test_thin_universe_produces_a_real_long_short_book_not_a_silent_flat(self, n: int) -> None:
+        """A3: at N in {2,3} raw min(10, N//4)=0 used to emit an all-zero book
+        labelled status="fallback_used" — indistinguishable from a real flat
+        decision and counted as a rebalance upstream. The k>=1 floor must now
+        produce a NON-degenerate one-long/one-short rank book (gross > 0), never
+        a silent flat book that an mvo-vs-rank run cannot tell apart."""
+        mu = np.linspace(0.3, -0.3, n)  # strictly descending: clean rank
+        cov = 0.04 * np.eye(n)
+        res = RankEqualVolFallback().solve(mu, cov, np.zeros(n), np.zeros(n), np.ones(n))
+        gross = float(np.abs(res.weights).sum())
+        assert gross > 0.0, "thin universe must not return a silent flat book"
+        assert res.weights[0] > 0.0, "best-mu name is the long leg"
+        assert res.weights[-1] < 0.0, "worst-mu name is the short leg"
+        # Exactly one long and one short leg (k=1), no overlap, rest flat.
+        assert int(np.sum(res.weights > 0.0)) == 1
+        assert int(np.sum(res.weights < 0.0)) == 1
+        assert res.ex_ante_vol_ann > 0.0
+        # ex-ante vol still equals the quadratic form (no degenerate path).
+        assert res.ex_ante_vol_ann == pytest.approx(
+            float(np.sqrt(res.weights @ cov @ res.weights)), abs=1e-15
+        )
+
+    def test_single_name_universe_is_genuinely_flat(self) -> None:
+        """N=1 has no cross-sectional rank (long==short would be one name), so a
+        flat book is CORRECT here — distinct from the N in {2,3} thin-universe
+        hole. Guards the k = ... if n >= 2 else 0 branch against an overlap bug."""
         res = RankEqualVolFallback().solve(
-            np.array([0.1, 0.0, -0.1]), 0.04 * np.eye(n), np.zeros(n), np.zeros(n), np.ones(n)
+            np.array([0.1]), np.array([[0.04]]), np.zeros(1), np.zeros(1), np.ones(1)
         )
         assert np.all(res.weights == 0.0)
         assert res.ex_ante_vol_ann == 0.0
@@ -384,3 +412,129 @@ class TestOptResult:
         )
         with pytest.raises(ValueError, match="instrument_ids"):
             res.to_targets(["A", "B"])
+
+
+# --------------------------------------------------------------------------- #
+# A4: optimizer constraint-feasibility as a hypothesis property.
+# The constraint-binding tests above are hand-picked single cases; this fuzzes
+# random (mu, PSD Sigma) and asserts the returned book is ALWAYS inside the
+# caps and NEVER a silent infeasible result. hypothesis is already a dependency
+# (no pyproject change). derandomize=True keeps it deterministic & offline.
+# --------------------------------------------------------------------------- #
+
+_TOL = 1e-5  # solver tolerance (matches the binding tests above)
+_FUZZ_CONSTRAINTS = PortfolioConstraints(gross_max=1.0, net_max=0.5, w_max=0.15, turnover_max=0.10)
+
+
+def _psd_cov(a: np.ndarray) -> np.ndarray:
+    """A @ A.T + eps*I -> a strictly-PD annualized covariance (vols ~ A scale)."""
+    n = a.shape[0]
+    cov: np.ndarray = 1e-3 * np.eye(n) + a @ a.T
+    return cov
+
+
+def _assert_caps_hold(res: OptResult, short: np.ndarray, cons: PortfolioConstraints) -> None:
+    """Invariants that hold for BOTH allocator paths (solver AND rank fallback):
+    gross cap, per-name cap, the non-shortable mask, finite weights, and a
+    status drawn only from the two declared states (never silent infeasible)."""
+    w = res.weights
+    assert np.all(np.isfinite(w)), "weights must be finite"
+    assert res.status in {"optimal", "fallback_used"}, f"rogue status {res.status!r}"
+    assert float(np.abs(w).sum()) <= cons.gross_max + _TOL, "gross cap breached"
+    assert float(np.abs(w).max(initial=0.0)) <= cons.w_max + _TOL, "w_max breached"
+    # Non-shortable names (short==0) must never carry a negative weight.
+    non_shortable = short == 0.0
+    if np.any(non_shortable):
+        assert np.all(w[non_shortable] >= -_TOL), "non-shortable name went short"
+
+
+class TestOptimizerConstraintFeasibilityProperty:
+    """A4: random (mu, PSD Sigma) -> the book always respects the caps."""
+
+    @settings(max_examples=120, derandomize=True, deadline=None)
+    @given(
+        n=st.integers(min_value=2, max_value=8),
+        data=st.data(),
+    )
+    def test_mvo_from_flat_book_satisfies_every_constraint(
+        self, n: int, data: st.DataObject
+    ) -> None:
+        """With w_prev = 0 the turnover constraint sum|w-0| <= turnover_max is
+        feasible (w=0 always works), so the solver returns an OPTIMAL book and
+        EVERY constraint -- gross, net, w_max, turnover, non-shortable -- must
+        hold. This is the strongest always-feasible feasibility property."""
+        mu = data.draw(
+            hnp.arrays(
+                np.float64,
+                shape=n,
+                # inside the mu_ann tripwire (median |mu| << 3.0): sane alphas.
+                elements=st.floats(min_value=-1.5, max_value=1.5, allow_nan=False),
+            )
+        )
+        a = data.draw(
+            hnp.arrays(
+                np.float64,
+                shape=(n, n),
+                elements=st.floats(min_value=-0.5, max_value=0.5, allow_nan=False),
+            )
+        )
+        short = data.draw(hnp.arrays(np.float64, shape=n, elements=st.sampled_from([0.0, 1.0])))
+        cov = _psd_cov(a)
+        w_prev = np.zeros(n)
+        cost = np.zeros(n)
+        cons = _FUZZ_CONSTRAINTS
+        res = make_mvo(cons).solve(mu, cov, w_prev, cost, short)
+        _assert_caps_hold(res, short, cons)
+        if res.status == "optimal":
+            # Net and turnover only bind on the genuine solver solution; the
+            # rank fallback (degenerate-but-feasible inputs) ignores both.
+            assert float(abs(res.weights.sum())) <= cons.net_max + _TOL, "net cap breached"
+            turnover = float(np.abs(res.weights - w_prev).sum())
+            assert turnover <= cons.turnover_max + _TOL, "turnover cap breached"
+
+    @settings(max_examples=120, derandomize=True, deadline=None)
+    @given(
+        n=st.integers(min_value=2, max_value=8),
+        data=st.data(),
+    )
+    def test_any_w_prev_never_breaches_gross_wmax_or_shortable(
+        self, n: int, data: st.DataObject
+    ) -> None:
+        """With an ARBITRARY w_prev a tight turnover cap can make the MVO
+        infeasible and route to the rank fallback. Whichever path is taken, the
+        path-invariant caps (gross, w_max, non-shortable) and a valid status
+        must still hold -- the optimizer NEVER returns a silent infeasible book
+        nor a degenerate all-zero "fallback_used" for a sized universe."""
+        mu = data.draw(
+            hnp.arrays(
+                np.float64,
+                shape=n,
+                elements=st.floats(min_value=-1.5, max_value=1.5, allow_nan=False),
+            )
+        )
+        a = data.draw(
+            hnp.arrays(
+                np.float64,
+                shape=(n, n),
+                elements=st.floats(min_value=-0.5, max_value=0.5, allow_nan=False),
+            )
+        )
+        w_prev = data.draw(
+            hnp.arrays(
+                np.float64,
+                shape=n,
+                elements=st.floats(min_value=-0.3, max_value=0.3, allow_nan=False),
+            )
+        )
+        short = np.ones(n)  # all shortable: keeps the fallback book non-empty
+        cov = _psd_cov(a)
+        cost = np.full(n, 1e-3)
+        cons = _FUZZ_CONSTRAINTS
+        res = make_mvo(cons).solve(mu, cov, w_prev, cost, short)
+        _assert_caps_hold(res, short, cons)
+        # A3 corollary: when the rank FALLBACK is reached for a sized, all-
+        # shortable universe (n>=2) the book is a real long/short rank book,
+        # never the old silent all-zero "fallback_used". (A genuine solver
+        # decision to hold flat at mu~0 is NOT a bug, so this is fallback-only.)
+        if res.status == "fallback_used":
+            assert float(np.abs(res.weights).sum()) > 0.0, "fallback went silently flat"

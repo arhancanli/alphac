@@ -262,8 +262,17 @@ class RankEqualVolFallback:
     Algorithm (execDesign §6.2 fallback spec):
 
     1. Rank assets by ``mu_ann`` descending. Long top K, short bottom K,
-       ``K = min(10, ⌊N/4⌋)``. Shorts only where ``shortable`` (non-shortable
-       shorts are dropped, finding 22 — perps only in v1, so normally all 1).
+       ``K = max(1, min(10, ⌊N/4⌋))`` for ``N >= 2``. Shorts only where
+       ``shortable`` (non-shortable shorts are dropped, finding 22 — perps only
+       in v1, so normally all 1). The ``max(1, ...)`` floor is load-bearing: at
+       a thin ``N`` in {2, 3} the raw ``⌊N/4⌋`` is 0, which would emit an
+       all-zero book carrying ``status="fallback_used"`` — indistinguishable
+       from a real flat decision and silently counted as a rebalance upstream
+       (the de-risked-by-accident hole the equities sleeve walks straight into
+       at a cull or cold start). With the floor a 2-3 name universe produces the
+       correct one-long/one-short rank book; a genuine ``N < 2`` is rejected at
+       :func:`_validate_inputs` / held at the strategy's cross-section guard, so
+       this allocator is never asked to size fewer than two names.
     2. ``w_i ∝ sign_i / sigma_ann,i`` (inverse-vol from ``diag(cov_ann)``),
        normalized so ``Σ|w_i| = 0.5 · gross_max`` — half gross, deliberately
        conservative because when reached via the MVO we are in a degraded mode.
@@ -298,7 +307,13 @@ class RankEqualVolFallback:
         )
         n = mu.shape[0]
         c = self.constraints
-        k = min(10, n // 4)
+        # Floor k>=1 for a sized cross-section (n>=2), 0 for a single name. Raw
+        # min(10, n//4) is 0 at n in {2,3}, which would silently return an
+        # all-zero "fallback_used" book that reads as a real flat decision. The
+        # floor needs k <= n//2 so the long (order[:k]) and short (order[n-k:])
+        # legs never overlap; n=1 has no cross-sectional rank (long==short would
+        # be the same name) so it is genuinely flat, not a thin-universe hole.
+        k = max(1, min(10, n // 4)) if n >= 2 else 0
         weights = np.zeros(n, dtype=np.float64)
         if k > 0:
             order = np.argsort(-mu, kind="stable")

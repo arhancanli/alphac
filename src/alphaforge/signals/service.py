@@ -245,8 +245,17 @@ class SignalService:
         h = self._cfg.horizon_bars
         bars = frame[_OPEN_COLUMN].dropna().rename("open").reset_index()
         fwd = forward_returns(bars, h, timeframe=ANCHOR_TIMEFRAME).reindex(frame.index)
+        # ABSOLUTE-grid subsampling (delta_ms = the 1h bar width): the kept IC
+        # timestamps are pinned to a venue-fixed bar grid, NOT to this window's
+        # own first bar. That makes the rolling blend weights SLICE-INVARIANT, so
+        # the walk-forward's global-compute-and-slice path reproduces the per-leg
+        # path's decisions to the EWMA warm-up tolerance (the global pass, having
+        # more realized-IC history before each leg, is the MORE-correct reference).
+        delta = ANCHOR_TIMEFRAME.ms
         grid_ics = {
-            name: non_overlapping(rank_ic(zs[name], fwd, mask, min_members=self._min_members), h)
+            name: non_overlapping(
+                rank_ic(zs[name], fwd, mask, min_members=self._min_members), h, delta_ms=delta
+            )
             for name in self.alpha_names
         }
         return estimate_blend_weights(grid_ics, horizon_bars=h, timeframe=ANCHOR_TIMEFRAME)

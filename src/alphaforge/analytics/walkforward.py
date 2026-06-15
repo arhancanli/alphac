@@ -3,9 +3,10 @@
 Per leg of the :class:`~alphaforge.validation.splits.PurgedWalkForward`
 layout (THE one splitter library, leakage finding 16)::
 
-    strategy = BlendStrategy(precomputed, leg-0 signal_frame)              # ONCE
-    # leg 0 uses it as built; every later leg swaps its frame in:
-    strategy.load_leg(signal_frame)                                       # PER LEG
+    full_frame = signal_service.compute_research(start, end)              # ONCE
+    strategy   = BlendStrategy(precomputed, full_frame[leg-0 slice])      # ONCE
+    # leg 0 uses it as built; every later leg swaps its frame slice in:
+    strategy.load_leg(full_frame[leg-k slice])                            # PER LEG
     result_k = EventDrivenBacktester.run(
                    strategy, start=test_start, end=test_end,
                    initial_cash=prior leg's final equity)                 # COMPOUNDS
@@ -23,12 +24,26 @@ keeps the ladder (state + HWM) and the realized-vol equity history running on
 the true continuous OOS equity; only the per-leg signal frame is swapped (and
 the rebalance schedule reset) via ``load_leg``.
 
-Why computing the signal frame over ``[train_start, test_end)`` does NOT
-leak: the blend weights inside ``compute_research`` are ROLLING — the weight
-row in force at any decision ``t`` is estimated from Rank-ICs whose labels
-were fully realized by ``t`` (``t' + h·Δ <= t``, enforced mechanically inside
+The signal frame is computed ONCE over the whole ``[start, end)`` span and
+SLICED per leg (perf: the legacy per-leg ``compute_research`` calls overlapped
+~80%; one global pass over ~43k bar-rows replaces ~176k re-derived ones across
+16 legs). This is numerically EQUIVALENT, not a divergent speedup: every
+per-``(t, i)`` statistic is window-local -- the directional z-scores and the
+Grinold ``sigma_hat`` at bar ``t`` are functions of data through ``t`` only
+(each warmed with its declared lookback), and the rolling blend weight
+``w_k(t)`` is SLICE-INVARIANT because the rank-IC is subsampled on an ABSOLUTE
+bar grid (``non_overlapping(..., delta_ms=delta)``). The global pass carries
+MORE realized-IC history before each leg than a per-leg pass would, so it is the
+MORE-correct reference (it never under-warms a later leg's EWMA-IC); the
+residual vs the per-leg path is exactly that warm-up truncation, pinned below
+the blend-weight tolerance in ``tests/integration/test_walkforward_equivalence``.
+
+Why slicing the global frame to ``[train_start, test_end)`` does NOT leak: the
+blend weights inside ``compute_research`` are ROLLING — the weight row in force
+at any decision ``t`` is estimated from Rank-ICs whose labels were fully
+realized by ``t`` (``t' + h·Δ <= t``, enforced mechanically inside
 ``estimate_blend_weights``), and there is no full-sample weight vector
-anywhere. The train window therefore only WARMS UP the EWMA-IC state so the
+anywhere. The train slice therefore only WARMS the strategy's mu lookup so the
 test span starts with informed weights; no statistic computed over the test
 span ever influences a decision inside it. The splitter's purge matters for
 *fitted* models (Phase 9/10 ML CV — same splitter, real purging); here it is
@@ -508,6 +523,29 @@ class WalkForwardRunner:
         # rebalance schedule). Positions still flat-restart each leg (the
         # documented pessimistic one-extra-rebalance entry cost, F-N) — only the
         # RISK STATE is continuous.
+        # COMPUTE THE SIGNAL FRAME ONCE over the whole [start, end) span, then
+        # SLICE per leg (perf: the per-leg compute_research calls overlapped ~80%
+        # -- 16 legs over ~11k bars re-derived ~176k bar-rows where one global pass
+        # derives ~43k). This is numerically EQUIVALENT, not a divergent speedup,
+        # because every per-(t,i) statistic is window-local: the directional
+        # z-scores and the Grinold sigma_hat at bar t are functions of data through
+        # t only (the engine warms each up with its declared lookback), and the
+        # rolling blend weight w_k(t) is now SLICE-INVARIANT -- the rank-IC is
+        # subsampled on an ABSOLUTE bar grid (service.py delta_ms anchoring), so a
+        # leg's kept IC timestamps are a subset of the global pass's, and the
+        # lagged-EWMA blend weight at t over those identical kept ICs differs only
+        # by the warm-up truncation a per-leg pass would suffer at its own
+        # train_start. The global pass, carrying MORE realized-IC history before
+        # each leg, is therefore the MORE-correct reference (it never UNDER-warms a
+        # later leg). PIT is preserved by construction (module docstring): the
+        # weight in force at decision t still uses only ICs whose labels realized
+        # by t -- slicing the frame to [train_start, test_end) changes nothing
+        # about which row the strategy reads at each t, only how warm that row's
+        # weight estimate is. The equivalence is pinned by tests/integration/
+        # test_walkforward_equivalence.py.
+        full_frame = self._signals.compute_research(start, end)
+        full_ts = full_frame.index.get_level_values("ts_open").to_numpy(dtype=np.int64)
+
         strategy: BlendStrategy | None = None
         legs: list[LegResult] = []
         cash = initial_cash
@@ -515,10 +553,16 @@ class WalkForwardRunner:
             test_start = int(test_ts[0])
             test_end = int(test_ts[-1]) + tf.ms
             train_start = max(start, test_start - train_bars * tf.ms)
-            # ONE research pass per leg over [train_start, test_end): the train
-            # span warms the rolling blend weights; PIT by construction (module
-            # docstring — weights at t use ICs realized by t only).
-            signal_frame = self._signals.compute_research(train_start, test_end)
+            # Slice the global frame to this leg's [train_start, test_end) span
+            # (half-open, the same bounds the per-leg compute_research used). The
+            # train span only WARMS the strategy's mu lookup (BlendStrategy reads
+            # the row at ts_open = ctx.ts - delta and never trades the warm-up
+            # bars); PIT by construction (module docstring -- weights at t use ICs
+            # realized by t only). .loc on the ts_open level is avoided in favour
+            # of an explicit boolean mask so duplicate-free half-open semantics are
+            # exact regardless of index sort/label collisions.
+            in_leg = (full_ts >= train_start) & (full_ts < test_end)
+            signal_frame = full_frame.iloc[in_leg]
             if strategy is None:
                 strategy = BlendStrategy(
                     self._settings,
