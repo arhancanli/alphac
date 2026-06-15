@@ -169,3 +169,113 @@ def ic(
     typer.echo("")
     typer.echo(f"json: {out_dir / JSON_FILENAME}")
     typer.echo(f"text: {out_dir / TEXT_FILENAME}")
+
+
+@research_app.command()
+def evaluate(
+    run_dir: Annotated[
+        str,
+        typer.Argument(
+            help="A walk-forward run directory (containing equity.parquet from "
+            "`af research walkforward`)."
+        ),
+    ],
+    config_matrix: Annotated[
+        str | None,
+        typer.Option(
+            "--config-matrix",
+            help="Optional parquet of a T x N per-period return matrix (columns = "
+            "config variants) for the PBO CSCV test. Without it PBO is reported as "
+            "not-available (a single config cannot be ranked cross-sectionally).",
+        ),
+    ] = None,
+    log: Annotated[
+        str | None,
+        typer.Option(
+            "--log",
+            help="Experiment ledger path. Default: settings.paths.var_dir / experiments.jsonl.",
+        ),
+    ] = None,
+    profile: _ProfileOpt = None,
+) -> None:
+    """The honest anti-overfit verdict over a walk-forward run (alphaDesign.md section 7.4).
+
+    Loads the run's stitched OOS equity and the experiment ledger, computes the
+    Deflated Sharpe Ratio (PSR vs the expected-max Sharpe of every distinct trial
+    on the ledger) and prints the verdict: does it clear the DSR >= 0.95 deployment
+    gate? When a ``--config-matrix`` of variant returns is supplied, also runs the
+    PBO CSCV test (section 7.3) and reports whether PBO < 0.2.
+
+    Read-only: no artifacts are written, the clock is not read, the ledger is not
+    mutated. The trial count N is whatever the ledger already measured.
+    """
+    import numpy as np
+    import pandas as pd
+
+    from alphaforge.analytics.metrics import daily_returns
+    from alphaforge.core.logging import setup_logging
+    from alphaforge.validation import ExperimentLog, dsr_from_returns
+
+    settings = _load_settings(profile)
+    setup_logging(settings.paths.var_dir / "log")
+
+    equity_path = Path(run_dir) / "equity.parquet"
+    if not equity_path.exists():
+        typer.echo(f"error: no equity.parquet in {run_dir}", err=True)
+        raise typer.Exit(1)
+
+    frame = pd.read_parquet(equity_path)
+    equity = pd.Series(
+        frame["equity"].to_numpy(dtype="float64"),
+        index=pd.Index(frame["ts"].to_numpy(dtype="int64"), name="ts"),
+        name="equity",
+    )
+    rets = daily_returns(equity)
+    if len(rets) < 2:
+        typer.echo("error: OOS curve spans < 2 UTC days; DSR is undefined", err=True)
+        raise typer.Exit(1)
+
+    ledger = ExperimentLog(Path(log) if log is not None else None)
+    if log is None:
+        ledger = ExperimentLog(settings.paths.var_dir / "experiments.jsonl")
+    n_trials = ledger.n_trials()
+    var_sr = ledger.trial_sharpe_variance()
+    n_trials_used = max(2, n_trials)
+    report = dsr_from_returns(rets, n_trials_used, var_sr)
+    dsr_ok = report.dsr >= 0.95
+
+    typer.echo(f"run: {run_dir}")
+    typer.echo(f"ledger: {ledger.path}  (N_trials={n_trials}, used={n_trials_used})")
+    typer.echo("")
+    typer.echo(f"  SR (annualized) : {report.sr_ann: .4f}")
+    typer.echo(f"  PSR(0)          : {report.psr: .4f}")
+    typer.echo(f"  expected max SR*: {report.expected_max_sr: .4f}  (per period)")
+    typer.echo(f"  DSR             : {report.dsr: .4f}")
+    typer.echo(f"  DSR gate (>=0.95): {'CLEARS' if dsr_ok else 'FAILS'}")
+
+    if config_matrix is not None:
+        from alphaforge.validation import pbo_cscv
+
+        matrix_path = Path(config_matrix)
+        if not matrix_path.exists():
+            typer.echo(f"error: config matrix {config_matrix} not found", err=True)
+            raise typer.Exit(1)
+        matrix = pd.read_parquet(matrix_path)
+        try:
+            pbo = pbo_cscv(matrix)
+        except ValueError as exc:
+            typer.echo(f"error: PBO: {exc}", err=True)
+            raise typer.Exit(1) from exc
+        pbo_ok = pbo.pbo < 0.2
+        median_degradation = float(np.median(pbo.is_oos_pairs[:, 1]))
+        typer.echo("")
+        typer.echo(f"  PBO (CSCV)      : {pbo.pbo: .4f}  over {len(pbo.lambdas)} combinations")
+        typer.echo(f"  median OOS SR of IS-best: {median_degradation: .4f}")
+        typer.echo(f"  PBO gate (<0.20): {'CLEARS' if pbo_ok else 'FAILS'}")
+    else:
+        typer.echo("")
+        typer.echo("  PBO (CSCV)      : not available (supply --config-matrix of >=2 variants)")
+
+    typer.echo("")
+    eligible = dsr_ok if config_matrix is None else (dsr_ok and pbo_ok)
+    typer.echo(f"verdict: {'LIVE-ELIGIBLE' if eligible else 'NOT live-eligible'}")

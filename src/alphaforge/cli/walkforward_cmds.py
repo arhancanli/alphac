@@ -211,6 +211,11 @@ def walkforward(
                 initial_cash=cash,
                 instrument_ids=instrument_ids,
                 out_dir=out_dir,
+                # The wall-clock read happens HERE (the CLI edge), passed in so
+                # the runner stays deterministic; it stamps the experiment-ledger
+                # trial. alpha_names feeds the trial's anti-overfit config hash.
+                now_ms=now_ms(),
+                alpha_names=alpha_names,
             )
         except ValueError as exc:
             typer.echo(f"error: {exc}", err=True)
@@ -224,5 +229,13 @@ def walkforward(
             f"leg {leg.leg:02d}  test [{leg.test_start} .. {leg.test_end})  "
             f"equity {s.initial_equity:,.2f} -> {s.final_equity:,.2f}  "
             f"sharpe {s.sharpe:.2f}  max_dd {s.max_dd:.2%}"
+        )
+    if result.validation is not None:
+        v = result.validation
+        verdict = "CLEARS" if v.clears_dsr_gate else "FAILS"
+        typer.echo("")
+        typer.echo(
+            f"validation  PSR {v.psr:.4f}  DSR {v.dsr:.4f}  (gate 0.95: {verdict})  "
+            f"SR_ann {v.sr_ann:.2f}  N_trials {v.n_trials}  SR* {v.expected_max_sr:.4f}"
         )
     typer.echo(f"artifacts: {out_dir}")

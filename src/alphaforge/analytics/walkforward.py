@@ -62,13 +62,15 @@ import numpy as np
 import pandas as pd
 import pyarrow as pa
 
-from alphaforge.analytics import PerfSummary, build_tearsheet, render_text, summarize
+from alphaforge.analytics import PerfSummary, build_tearsheet, daily_returns, render_text, summarize
 from alphaforge.backtest import EventDrivenBacktester
 from alphaforge.core.time import Timeframe, expected_bar_opens
 from alphaforge.portfolio.strategy import BlendStrategy
+from alphaforge.validation.experiments import ExperimentLog
 from alphaforge.validation.splits import PurgedWalkForward
 
 if TYPE_CHECKING:
+    from collections.abc import Callable, Mapping
     from pathlib import Path
 
     from alphaforge.backtest import BacktestResult, CostInputProvider
@@ -78,8 +80,27 @@ if TYPE_CHECKING:
     from alphaforge.costs import TransactionCostModel
     from alphaforge.data.store.reader import PITDataReader
     from alphaforge.data.universe.store import UniverseStore
+    from alphaforge.validation.dsr import DSRReport
 
-__all__ = ["LegResult", "SignalSource", "WalkForwardResult", "WalkForwardRunner"]
+__all__ = [
+    "LegResult",
+    "SignalSource",
+    "ValidationReport",
+    "WalkForwardResult",
+    "WalkForwardRunner",
+    "compute_validation",
+]
+
+# Minimum n_trials the DSR expected-max-Sharpe form is defined for (alphaDesign.md
+# section 7.4 / dsr.expected_max_sharpe raises for n_trials < 2): with a single
+# trial there is no selection bias to deflate against. We report the HONEST
+# measured trial count in the block but feed max(2, n_trials) to the maths so a
+# first-ever run still produces a (provisional) DSR rather than crashing.
+_MIN_DSR_TRIALS: Final[int] = 2
+
+# Deployment gate (alphaDesign.md section 7.4): a configuration family is
+# live-eligible only when its Deflated Sharpe Ratio clears this threshold.
+_DSR_GATE: Final[float] = 0.95
 
 _EQUITY_FILE: Final[str] = "equity.parquet"
 _META_FILE: Final[str] = "walkforward.json"
@@ -115,6 +136,56 @@ class LegResult:
     risk_counters: dict[str, int]
 
 
+@dataclass(frozen=True, slots=True, kw_only=True)
+class ValidationReport:
+    """The anti-overfit verdict attached to a walk-forward run (alphaDesign.md section 7.4).
+
+    Built by :func:`compute_validation` from the stitched OOS daily returns and
+    the experiment ledger. All Sharpe quantities in ``psr``/``dsr``/
+    ``expected_max_sr`` are PER-PERIOD probabilities/Sharpes (the maths is
+    per-period; ``sr_ann`` is the human-facing annualized Sharpe).
+
+    - ``psr``: PSR against a zero benchmark -- P(true Sharpe > 0 | sample).
+    - ``dsr``: Deflated Sharpe Ratio -- PSR against the expected-max-Sharpe of
+      ``n_trials`` searched configs. THE deployment gate quantity (>= 0.95).
+    - ``sr_ann``: annualized Sharpe of the OOS daily returns (reporting only).
+    - ``n_trials``: HONEST measured number of distinct trials on the ledger.
+    - ``n_trials_used``: ``max(2, n_trials)`` -- what the deflation maths used
+      (the expected-max form needs >= 2 trials; equals ``n_trials`` once a
+      second config is logged).
+    - ``expected_max_sr``: the deflation benchmark ``SR*`` (per period).
+    - ``sr_trials_variance``: ``V[SR]`` used (ledger variance, or the documented
+      :data:`~alphaforge.validation.experiments.DEFAULT_SR_TRIALS_VARIANCE`
+      fallback when fewer than 2 finite trial Sharpes exist).
+    - ``n_obs``: number of daily return observations behind the statistics.
+    - ``clears_dsr_gate``: ``dsr >= 0.95`` (the design's live-eligibility gate).
+    """
+
+    psr: float
+    dsr: float
+    sr_ann: float
+    n_trials: int
+    n_trials_used: int
+    expected_max_sr: float
+    sr_trials_variance: float
+    n_obs: int
+    clears_dsr_gate: bool
+
+    def to_json_obj(self) -> dict[str, object]:
+        """JSON-safe dict (non-finite floats -> ``None``) for the ``validation`` block."""
+        return {
+            "psr": _json_float(self.psr),
+            "dsr": _json_float(self.dsr),
+            "sr_ann": _json_float(self.sr_ann),
+            "n_trials": int(self.n_trials),
+            "n_trials_used": int(self.n_trials_used),
+            "expected_max_sr": _json_float(self.expected_max_sr),
+            "sr_trials_variance": _json_float(self.sr_trials_variance),
+            "n_obs": int(self.n_obs),
+            "clears_dsr_gate": bool(self.clears_dsr_gate),
+        }
+
+
 @dataclass(frozen=True, kw_only=True)
 class WalkForwardResult:
     """Stitched OOS equity + per-leg results + the combined summary.
@@ -123,12 +194,18 @@ class WalkForwardResult:
     fills / funding / positions concatenated across legs), so the standard
     tearsheet renders the full OOS path. ``summary`` is recomputed over the
     stitched artifacts — the same convention as :class:`BacktestResult`.
+
+    ``validation`` is the anti-overfit (PSR/DSR) verdict, attached by
+    :meth:`WalkForwardRunner.run` after the run is stitched (alphaDesign.md
+    section 7.4); it is ``None`` only when no daily returns could be computed
+    (an OOS span shorter than two UTC days).
     """
 
     equity: pd.Series
     legs: tuple[LegResult, ...]
     summary: PerfSummary
     config: dict[str, object]
+    validation: ValidationReport | None = None
 
     # --------------------------------------------------------- ResultLike
 
@@ -187,6 +264,7 @@ class WalkForwardResult:
             "config": self.config,
             "summary": _summary_dict(self.summary),
             "legs": leg_rows,
+            "validation": None if self.validation is None else self.validation.to_json_obj(),
         }
         (out_dir / _META_FILE).write_text(
             json.dumps(meta, indent=2, sort_keys=True, default=str) + "\n",
@@ -219,6 +297,95 @@ def _summary_dict(summary: PerfSummary) -> dict[str, object]:
     for key, value in dataclasses.asdict(summary).items():
         out[key] = None if isinstance(value, float) and not math.isfinite(value) else value
     return out
+
+
+def _json_float(value: float) -> float | None:
+    """Non-finite float -> ``None`` (strict JSON has no NaN/Inf)."""
+    return None if not math.isfinite(value) else float(value)
+
+
+def compute_validation(
+    equity: pd.Series,
+    config: Mapping[str, object],
+    log: ExperimentLog,
+    now_ms: Ms,
+    *,
+    dsr_fn: Callable[..., DSRReport] | None = None,
+) -> ValidationReport | None:
+    """Record this trial on ``log`` and build its :class:`ValidationReport`.
+
+    Pipeline (alphaDesign.md section 7.4), leak-free and deterministic:
+
+    1. Compute UTC-DAILY returns from the stitched OOS ``equity`` (the headline
+       basis, leakageCritique finding 29). If the run spans fewer than two UTC
+       days there is no daily-return sample and this returns ``None``.
+    2. Derive the per-period (daily) and annualized Sharpe plus the daily-return
+       skewness and non-excess kurtosis, and ``record`` the trial on ``log``
+       keyed by ``config`` (idempotent on the config hash -- a re-run of an
+       identical configuration does not inflate ``N``). ``now_ms`` is the
+       caller-supplied timestamp; the clock is never read here.
+    3. Read ``N = log.n_trials()`` and ``V[SR] = log.trial_sharpe_variance()``
+       *after* recording (so this trial is counted), and compute the DSR via the
+       blessed :func:`~alphaforge.validation.dsr.dsr_from_returns` API. The
+       expected-max-Sharpe form requires ``N >= 2``; with a single trial we feed
+       ``max(2, N)`` to the maths and report the honest ``N`` in the block.
+
+    ``dsr_fn`` overrides the DSR implementation (tests inject a deterministic
+    stub); it defaults to ``dsr_from_returns`` (deferred import -- the DSR module
+    pulls scipy). ``config`` should be the trial's defining knobs (alphas /
+    rebalance / band / allocator / window); it is hashed verbatim.
+    """
+    rets = daily_returns(equity)
+    if len(rets) < 2:
+        return None
+
+    # Per-period (daily) and annualized Sharpe + the daily-return moments. These
+    # are the SAME estimators dsr_from_returns derives internally (recomputed
+    # here only to populate the ledger -- the DSR maths recomputes from the
+    # series so the trial Sharpe stored and the Sharpe judged never drift).
+    from scipy.stats import kurtosis as _kurtosis
+    from scipy.stats import skew as _skew
+
+    from alphaforge.analytics.metrics import DAYS_PER_YEAR, sharpe
+
+    vals = rets.to_numpy(dtype="float64")
+    sr_per_period = sharpe(rets, 1.0)  # per-period (A = 1)
+    sr_ann = sharpe(rets, DAYS_PER_YEAR)
+    skew = float(_skew(vals, bias=True))
+    kurt = float(_kurtosis(vals, fisher=False, bias=True))
+
+    log.record(
+        config,
+        sharpe_ann=sr_ann,
+        sharpe_per_period=sr_per_period,
+        n_obs=len(rets),
+        skew=skew,
+        kurtosis=kurt,
+        now_ms=now_ms,
+    )
+
+    n_trials = log.n_trials()
+    var_sr = log.trial_sharpe_variance()  # DEFAULT_SR_TRIALS_VARIANCE when < 2 trials
+    n_trials_used = max(_MIN_DSR_TRIALS, n_trials)
+
+    fn = dsr_fn
+    if fn is None:
+        from alphaforge.validation.dsr import dsr_from_returns
+
+        fn = dsr_from_returns
+    report = fn(rets, n_trials_used, var_sr, DAYS_PER_YEAR)
+
+    return ValidationReport(
+        psr=report.psr,
+        dsr=report.dsr,
+        sr_ann=report.sr_ann,
+        n_trials=n_trials,
+        n_trials_used=n_trials_used,
+        expected_max_sr=report.expected_max_sr,
+        sr_trials_variance=var_sr,
+        n_obs=report.n_obs,
+        clears_dsr_gate=math.isfinite(report.dsr) and report.dsr >= _DSR_GATE,
+    )
 
 
 class WalkForwardRunner:
@@ -274,6 +441,10 @@ class WalkForwardRunner:
         cov_halflife_bars: int = 720,
         cov_min_periods: int = 240,
         out_dir: Path | None = None,
+        now_ms: Ms | None = None,
+        alpha_names: list[str] | None = None,
+        experiment_log: ExperimentLog | None = None,
+        dsr_fn: Callable[..., DSRReport] | None = None,
     ) -> WalkForwardResult:
         """Run every leg over ``[start, end)``; return (and optionally save) the result.
 
@@ -285,6 +456,18 @@ class WalkForwardRunner:
         marked equity — the OOS curve compounds with no resets. Strategy
         knobs (``rebalance_bars`` etc.) pass through to
         :class:`~alphaforge.portfolio.strategy.BlendStrategy`.
+
+        ``now_ms`` is the caller's wall-clock epoch-ms (never read from the clock
+        here — determinism): it stamps the experiment-ledger trial. When it is
+        ``None`` the anti-overfit step is skipped entirely (``validation`` stays
+        ``None``, nothing is recorded) so callers that do not opt in pay no
+        clock/ledger cost. ``alpha_names`` (the blended factor names) feeds the
+        trial's config hash; ``experiment_log`` is the ledger the trial is
+        recorded on (default: ``settings.paths.var_dir / "experiments.jsonl"``).
+        After the OOS curve is stitched, the run records its trial and attaches a
+        :class:`ValidationReport` (PSR/DSR, alphaDesign.md section 7.4) to the
+        result and the saved ``walkforward.json`` ``validation`` block. ``dsr_fn``
+        overrides the DSR implementation (tests inject a deterministic stub).
 
         Raises ``ValueError`` on malformed bounds, an empty universe window,
         or a grid too short for one leg (via the splitter).
@@ -307,9 +490,7 @@ class WalkForwardRunner:
         # Default reads settings.portfolio.no_trade_band; an explicit override lets
         # a turnover/cost sweep widen it (the base over-trades a weak edge -- the
         # 10bps default lets through trades that can't clear their own cost hurdle).
-        band = (
-            self._settings.portfolio.no_trade_band if no_trade_band is None else no_trade_band
-        )
+        band = self._settings.portfolio.no_trade_band if no_trade_band is None else no_trade_band
 
         splitter = PurgedWalkForward.from_settings(
             self._settings, train_bars=train_bars, test_bars=test_bars, embargo_bars=embargo_bars
@@ -384,6 +565,50 @@ class WalkForwardRunner:
         # Legs tile, so per-leg close grids are disjoint and already ordered.
         equity = pd.concat([leg.result.equity for leg in legs])
         equity.name = "equity"
+        config: dict[str, object] = {
+            "start": start,
+            "end": end,
+            "train_bars": train_bars,
+            "test_bars": test_bars,
+            "purge_bars": splitter.purge_bars,
+            "embargo_bars": splitter.embargo_bars,
+            "allocator": allocator,
+            "rebalance_bars": rebalance_bars,
+            "no_trade_band": band,
+            "initial_cash": initial_cash,
+            "instrument_ids": list(ids),
+            "n_legs": len(legs),
+            # Aggregate observability counters (F-D / F-E): a run labelled
+            # allocator="mvo" whose n_fallback_used is near n_rebalances was
+            # mostly rank-fallback; a frozen book from a dead feed shows up
+            # as hold_stale_signal, distinct from hold_between_rebalance.
+            "risk_counters": risk_counters_total,
+        }
+        if alpha_names is not None:
+            config["alpha_names"] = list(alpha_names)
+
+        # Anti-overfit verdict (alphaDesign.md section 7.4): record THIS trial on
+        # the experiment ledger and attach the PSR/DSR report. The trial config
+        # hashed below is the run's DEFINING knobs (alphas / rebalance / band /
+        # allocator / window) -- NOT the observability counters or initial_cash
+        # (a re-run that produces different fallback counts or starts with more
+        # cash is the SAME trial and must not inflate N).
+        validation: ValidationReport | None = None
+        if now_ms is not None:
+            log = experiment_log if experiment_log is not None else self._default_log()
+            trial_config = {
+                "start": start,
+                "end": end,
+                "train_bars": train_bars,
+                "test_bars": test_bars,
+                "allocator": allocator,
+                "rebalance_bars": rebalance_bars,
+                "no_trade_band": band,
+                "instrument_ids": list(ids),
+                "alpha_names": list(alpha_names) if alpha_names is not None else None,
+            }
+            validation = compute_validation(equity, trial_config, log, now_ms, dsr_fn=dsr_fn)
+
         wf = WalkForwardResult(
             equity=equity,
             legs=tuple(legs),
@@ -393,29 +618,16 @@ class WalkForwardRunner:
                 funding=_concat_funding(legs),
                 positions=_concat_frames([leg.result.positions for leg in legs]),
             ),
-            config={
-                "start": start,
-                "end": end,
-                "train_bars": train_bars,
-                "test_bars": test_bars,
-                "purge_bars": splitter.purge_bars,
-                "embargo_bars": splitter.embargo_bars,
-                "allocator": allocator,
-                "rebalance_bars": rebalance_bars,
-                "no_trade_band": band,
-                "initial_cash": initial_cash,
-                "instrument_ids": list(ids),
-                "n_legs": len(legs),
-                # Aggregate observability counters (F-D / F-E): a run labelled
-                # allocator="mvo" whose n_fallback_used is near n_rebalances was
-                # mostly rank-fallback; a frozen book from a dead feed shows up
-                # as hold_stale_signal, distinct from hold_between_rebalance.
-                "risk_counters": risk_counters_total,
-            },
+            config=config,
+            validation=validation,
         )
         if out_dir is not None:
             wf.save(out_dir)
         return wf
+
+    def _default_log(self) -> ExperimentLog:
+        """The default experiment ledger: ``settings.paths.var_dir / experiments.jsonl``."""
+        return ExperimentLog(self._settings.paths.var_dir / "experiments.jsonl")
 
     def _window_ids(self, start: Ms, end: Ms) -> list[str]:
         """Sorted instruments whose membership interval overlaps ``[start, end)``."""

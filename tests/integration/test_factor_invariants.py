@@ -84,6 +84,7 @@ def _funding_rate(base: float, j: int) -> float:
     """Settlement-indexed funding rate: ``base + amp·sin(j)`` (deterministic)."""
     return float(base + _FUND_AMP * math.sin(float(j)))
 
+
 # Decision instants T = t* + Δ at bars 9520 / 9560 / 9599 — all with full history
 # for every registered spec (largest lookback 9480 needs bar index >= 9479).
 SAMPLE_BARS = (9_520, 9_560, 9_599)
