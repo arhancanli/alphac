@@ -83,6 +83,25 @@ def walkforward(
         str,
         typer.Option("--allocator", help="Portfolio allocator: 'rank' (v1 primary) or 'mvo'."),
     ] = "rank",
+    rebalance_bars: Annotated[
+        int,
+        typer.Option(
+            "--rebalance-bars",
+            min=1,
+            help="Bars between rebalances (turnover knob). Default 24 (daily); set to "
+            "signals.horizon_bars (72) to match the 3-day signal horizon and cut turnover.",
+        ),
+    ] = 24,
+    no_trade_band: Annotated[
+        float | None,
+        typer.Option(
+            "--no-trade-band",
+            min=0.0,
+            help="No-trade band as a fraction of equity (turnover knob). Default: "
+            "settings.portfolio.no_trade_band (0.0010 = 10bps). Widen (e.g. 0.0030) to "
+            "suppress sub-cost-hurdle churn.",
+        ),
+    ] = None,
     cash: Annotated[
         float,
         typer.Option("--cash", min=0.0, help="Initial cash in quote units (USDT), leg 0 only."),
@@ -171,6 +190,8 @@ def walkforward(
                 train_bars=train_days * _BARS_PER_DAY,
                 test_bars=test_days * _BARS_PER_DAY,
                 allocator="mvo" if alloc == "mvo" else "rank",
+                rebalance_bars=rebalance_bars,
+                no_trade_band=no_trade_band,
                 initial_cash=cash,
                 instrument_ids=instrument_ids,
                 out_dir=out_dir,

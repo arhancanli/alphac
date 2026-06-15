@@ -269,6 +269,7 @@ class WalkForwardRunner:
         initial_cash: float = 100_000.0,
         instrument_ids: list[str] | None = None,
         rebalance_bars: int = 24,
+        no_trade_band: float | None = None,
         cov_window_bars: int = 720,
         cov_halflife_bars: int = 720,
         cov_min_periods: int = 240,
@@ -301,6 +302,14 @@ class WalkForwardRunner:
         )
         if not ids:
             raise ValueError(f"no instruments overlap the window [{start}, {end})")
+
+        # Turnover knob: the no-trade band suppresses |Delta| < band*equity orders.
+        # Default reads settings.portfolio.no_trade_band; an explicit override lets
+        # a turnover/cost sweep widen it (the base over-trades a weak edge -- the
+        # 10bps default lets through trades that can't clear their own cost hurdle).
+        band = (
+            self._settings.portfolio.no_trade_band if no_trade_band is None else no_trade_band
+        )
 
         splitter = PurgedWalkForward.from_settings(
             self._settings, train_bars=train_bars, test_bars=test_bars, embargo_bars=embargo_bars
@@ -347,7 +356,7 @@ class WalkForwardRunner:
                 self._instruments,
                 self._cost_model,
                 cost_inputs=self._cost_inputs,
-                no_trade_band_frac=self._settings.portfolio.no_trade_band,
+                no_trade_band_frac=band,
                 config_echo={
                     "walkforward_leg": k,
                     "train_start": train_start,
@@ -393,6 +402,7 @@ class WalkForwardRunner:
                 "embargo_bars": splitter.embargo_bars,
                 "allocator": allocator,
                 "rebalance_bars": rebalance_bars,
+                "no_trade_band": band,
                 "initial_cash": initial_cash,
                 "instrument_ids": list(ids),
                 "n_legs": len(legs),
