@@ -121,6 +121,15 @@ def walkforward(
             help="Artifact directory. Default: <artifacts_dir>/walkforward/<UTC timestamp>.",
         ),
     ] = None,
+    alphas: Annotated[
+        str | None,
+        typer.Option(
+            "--alphas",
+            help="Comma-separated directional factor names to blend (factor-subset knob). "
+            "Default: all registered directional alphas. Use to drop high-turnover/flat "
+            "factors and tilt the book, e.g. 'carry_fund_21,carry_fund_90,mr_res_72'.",
+        ),
+    ] = None,
     profile: Annotated[
         str | None,
         typer.Option("--profile", help="Config profile overlay (configs/<profile>.yaml)."),
@@ -165,6 +174,12 @@ def walkforward(
         run_id = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
         out_dir = settings.paths.artifacts_dir / "walkforward" / run_id
 
+    alpha_names: list[str] | None = None
+    if alphas is not None:
+        alpha_names = [tok.strip() for tok in alphas.split(",") if tok.strip()]
+        if not alpha_names:
+            raise typer.BadParameter(f"--alphas: no factor names in {alphas!r}")
+
     paths = LakePaths(settings.paths.lake_dir)
     with InstrumentStore(settings.paths.var_dir / _OPS_DB) as store:
         reader = PITDataReader(paths)
@@ -174,6 +189,7 @@ def walkforward(
             universe,
             default_registry(),
             settings.signals,
+            alpha_names=alpha_names,
         )
         runner = WalkForwardRunner(
             reader,
