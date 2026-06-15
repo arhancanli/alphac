@@ -67,8 +67,22 @@ MIN5 = 300_000
 T0 = 1_672_531_200_000  # 2023-01-01T00:00:00Z — 1h-, 4h- and 8h-aligned
 N_BARS = 9_600  # > max registered lookback (reg_rvp_720: 9480) + sample headroom
 
-BTC_RATE = 1.0e-4  # constant funding => exact carry expectations
+BTC_RATE = 1.0e-4  # base funding level for the carry-level annualization fixture
 ETH_RATE = 1.0e-4
+
+# A deterministic, per-settlement-index funding rate with genuine variation. A
+# constant rate would make the self-relative funding z-score (``carry_z_252``)
+# all-NaN by correct design (zero trailing std => relative-eps sigma floor), which
+# is not a factor bug — it is a degenerate fixture. The settlement-indexed sinusoid
+# below gives every funding-dynamics factor a non-degenerate window while staying a
+# closed form the carry-annualization test can evaluate exactly. (Amplitude << base,
+# so the sign of the rate never flips: the carry-level economics are unchanged.)
+_FUND_AMP = 1.0e-5
+
+
+def _funding_rate(base: float, j: int) -> float:
+    """Settlement-indexed funding rate: ``base + amp·sin(j)`` (deterministic)."""
+    return float(base + _FUND_AMP * math.sin(float(j)))
 
 # Decision instants T = t* + Δ at bars 9520 / 9560 / 9599 — all with full history
 # for every registered spec (largest lookback 9480 needs bar index >= 9479).
@@ -197,10 +211,10 @@ def env(tmp_path_factory: pytest.TempPathFactory) -> Iterator[Env]:
     funding_rows: list[tuple[str, int, float, int]] = []
     for j in range(N_BARS // 8):  # BTC settles every 8h, published 5min later
         ts = T0 + j * 8 * HOUR
-        funding_rows.append((BTC, ts, BTC_RATE, ts + MIN5))
+        funding_rows.append((BTC, ts, _funding_rate(BTC_RATE, j), ts + MIN5))
     for j in range(N_BARS // 4):  # ETH settles every 4h (interval-aware fixture)
         ts = T0 + j * 4 * HOUR
-        funding_rows.append((ETH, ts, ETH_RATE, ts + MIN5))
+        funding_rows.append((ETH, ts, _funding_rate(ETH_RATE, j), ts + MIN5))
     writer.write(Dataset.FUNDING, _funding_table(funding_rows))
 
     universe = UniverseStore(paths)
@@ -226,9 +240,11 @@ def _spec(name: str) -> FeatureSpec:
 class TestTruncationAndParitySweep:
     def test_registry_is_the_full_v1_library(self) -> None:
         # The sweep below is only meaningful if it runs over the REAL library: the
-        # 24 registered v1 factors plus the two reference features.
-        assert len(ALL_SPECS) == 26
-        assert len(set(ALL_NAMES)) == 26
+        # 24 original v1 factors + the 6 build-slate additions (carry_z_252,
+        # carry_mom_21_63, lowvol_720, semivar_skew_504, beta_lowbeta_720,
+        # mom_res_2160_168) + the two reference features = 32.
+        assert len(ALL_SPECS) == 32
+        assert len(set(ALL_NAMES)) == 32
 
     @pytest.mark.parametrize("name", ALL_NAMES)
     def test_truncation_invariance_and_live_parity(self, env: Env, name: str) -> None:
@@ -323,14 +339,35 @@ class TestLookbackDerivesFromParams:
 
 
 class TestCarryFundingInterval:
+    @staticmethod
+    def _trailing_mean_asof(base: float, interval_h: int, decision_ts: int, k: int) -> float:
+        """Mean of the last ``k`` settlements published (available_at <= decision_ts).
+
+        Mirrors the carry factor's PIT contract on the fixture's known funding curve:
+        settlement ``j`` of an ``interval_h``-hour instrument has ts ``T0 + j·I`` and is
+        published at ``+ MIN5``; the trailing mean is over the ``k`` largest such ``j``.
+        """
+        last_j = -1
+        j = 0
+        while T0 + j * interval_h * HOUR + MIN5 <= decision_ts:
+            last_j = j
+            j += 1
+        js = range(last_j - k + 1, last_j + 1)
+        return sum(_funding_rate(base, jj) for jj in js) / float(k)
+
     def test_annualization_uses_instrument_interval(self, env: Env) -> None:
-        # Identical constant rates; BTC settles 8h, ETH settles 4h (SCD2 record).
-        # CARRY = -f̄ · 8760/interval ⇒ ETH must annualize at exactly twice BTC —
-        # a hard-coded 3·365 (8h) annualizer would make them equal.
+        # BTC settles 8h, ETH settles 4h (SCD2 record). CARRY = -f̄ · 8760/interval.
+        # The funding curve now VARIES per settlement (so the funding-dynamics factors
+        # are non-degenerate), so the expectation is the PIT trailing mean of the last
+        # K published rates — computed from the same known curve — times the
+        # interval-aware annualizer. A hard-coded 3·365 (8h) annualizer for ETH would
+        # break the ratio (ETH annualizes at exactly twice BTC for equal trailing means).
         ts = T0 + SAMPLE_BARS[0] * HOUR
-        for name, n_settlements in (("carry_fund_21", 21), ("carry_fund_90", 90)):
-            del n_settlements  # constant rates: the trailing mean is the rate itself
+        decision_ts = ts + HOUR  # the value at ts_open=ts is decided at the bar close
+        for name, k in (("carry_fund_21", 21), ("carry_fund_90", 90)):
+            btc_mean = self._trailing_mean_asof(BTC_RATE, 8, decision_ts, k)
+            eth_mean = self._trailing_mean_asof(ETH_RATE, 4, decision_ts, k)
             btc_carry = float(env.history.loc[(ts, BTC), name])
             eth_carry = float(env.history.loc[(ts, ETH), name])
-            assert btc_carry == pytest.approx(-BTC_RATE * 8760.0 / 8.0, rel=1e-12)
-            assert eth_carry == pytest.approx(-ETH_RATE * 8760.0 / 4.0, rel=1e-12)
+            assert btc_carry == pytest.approx(-btc_mean * 8760.0 / 8.0, rel=1e-9)
+            assert eth_carry == pytest.approx(-eth_mean * 8760.0 / 4.0, rel=1e-9)

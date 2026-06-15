@@ -38,6 +38,11 @@ from alphaforge.features.library.carry import (
     carry_fund_21,
     carry_fund_90,
 )
+from alphaforge.features.library.carry_dynamics import (
+    Z_CLIP,
+    carry_mom_21_63,
+    carry_z_252,
+)
 from alphaforge.features.library.liquidity import (
     AMIHUD_EPS,
     CS_DENOM,
@@ -56,6 +61,9 @@ from alphaforge.features.library.market import (
     adv_quote_30d,
     sigma_daily,
 )
+from alphaforge.features.library.market_state import (
+    beta_lowbeta_720,
+)
 from alphaforge.features.library.mean_reversion import (
     BETA_WINDOW,
     market_return,
@@ -73,6 +81,10 @@ from alphaforge.features.library.momentum import (
     mom_xs_2160_168,
     ts_momentum,
     xs_momentum,
+)
+from alphaforge.features.library.momentum_slow import (
+    mom_res_2160_168,
+    residual_momentum,
 )
 from alphaforge.features.library.regime_features import (
     BTC_ANCHOR,
@@ -94,6 +106,12 @@ from alphaforge.features.library.vol import (
     vol_yz_720,
     yang_zhang,
 )
+from alphaforge.features.library.vol_premium import (
+    LOWVOL_EPS,
+    lowvol_720,
+    semivar_skew_504,
+    semivariance_skew,
+)
 
 __all__ = [
     "AMIHUD_EPS",
@@ -105,12 +123,17 @@ __all__ = [
     "DAY_MS",
     "EWMA_VOL_SPAN",
     "HOURS_PER_YEAR",
+    "LOWVOL_EPS",
     "MAX_FUNDING_INTERVAL_HOURS",
     "SIGMA_DAILY_HALFLIFE",
+    "Z_CLIP",
     "adv_quote_30d",
     "amihud_illiq",
+    "beta_lowbeta_720",
     "carry_fund_21",
     "carry_fund_90",
+    "carry_mom_21_63",
+    "carry_z_252",
     "corwin_schultz_spread",
     "ewma_vol",
     "ewma_vol_from_returns",
@@ -119,7 +142,9 @@ __all__ = [
     "liq_volz_24h_sum",
     "liq_volz_720",
     "log_returns",
+    "lowvol_720",
     "market_return",
+    "mom_res_2160_168",
     "mom_ts_168",
     "mom_ts_504",
     "mom_ts_2160",
@@ -133,8 +158,11 @@ __all__ = [
     "reg_breadth_sma720",
     "reg_corr_btc_720",
     "reg_rvp_720",
+    "residual_momentum",
     "residual_reversal",
     "rolling_beta",
+    "semivar_skew_504",
+    "semivariance_skew",
     "sigma_daily",
     "ts_momentum",
     "vol_pk_168",
