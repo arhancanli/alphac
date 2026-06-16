@@ -1,0 +1,498 @@
+"""Honest trial count + must-beat-baseline gate (``12_FINAL.md`` test 5, D5/D6).
+
+This exercises the :class:`~alphaforge.analytics.walkforward.WalkForwardRunner`'s
+anti-overfit accounting END-TO-END against ONE shared
+:class:`~alphaforge.validation.experiments.ExperimentLog`, on a TINY synthetic
+``tmp_path`` lake driven by the REAL ``SignalService`` (no signal stubs — the runner's
+own gated machinery runs the four legs). A deterministic ``dsr_fn`` stub controls the
+DSR/Sharpe so the assertions never depend on the random fixture's realized curve.
+
+What is pinned (CRITIQUE_overfit #1/#2):
+
+* **D6 honest trial count.** Running blend-only, ``--ml``, ``--regime`` and
+  ``--ml --regime`` against the SAME ledger yields FOUR distinct config hashes
+  (``n_trials() == 4``); each gated run also re-records the blend-only baseline under
+  the SAME (gate-keyless) ``base_trial_config``, so it is idempotent and never a 5th
+  trial. Re-running any one combination is idempotent (still 4).
+* **D6 gate params are in the hash, not just the booleans.** Tuning a gate parameter —
+  ``regime_n_states`` 3→2, or the ml feature set — makes a FIFTH distinct hash, because
+  ``_gate_trial_config`` hashes the actual params (``regime_n_states`` /
+  ``ml_feature_set_sha`` …), not two flags.
+* **D5 must-beat-baseline.** A gated ``ValidationReport`` carries a ``baseline`` whose
+  DSR is the blend-only trial's; a gated variant whose ``dsr <= baseline.dsr`` OR
+  ``sr_ann <= baseline.sr_ann`` (we construct an exact tie) has
+  ``clears_baseline_gate is False`` and is reported NOT live-eligible.
+* **Round-trip.** ``validation.variant`` / ``clears_baseline_gate`` / nested
+  ``baseline`` survive ``to_json_obj`` and reload byte-for-byte.
+
+Offline, ``tmp_path`` lake only, deterministic (seeded rng), no network. The daily-BTC
+window is far shorter than ``MIN_FIT_DAYS`` (730), so ``--regime`` rides the documented
+IdentityRegime cold-start fallback (D3) — the real HMM fit is pinned elsewhere — keeping
+the whole module well under the fast-test budget.
+"""
+
+from __future__ import annotations
+
+import json
+from dataclasses import dataclass
+from pathlib import Path
+from typing import TYPE_CHECKING
+
+import numpy as np
+import pandas as pd
+import pyarrow as pa
+import pytest
+
+from alphaforge.analytics.walkforward import (
+    ValidationReport,
+    WalkForwardRunner,
+    compare_to_baseline,
+)
+from alphaforge.config.settings import Settings, SignalsCfg
+from alphaforge.core.instruments import Instrument, InstrumentStore
+from alphaforge.core.types import AssetClass, MarketType
+from alphaforge.costs import TransactionCostModel
+from alphaforge.data.schemas import Dataset
+from alphaforge.data.store.lake import LakePaths
+from alphaforge.data.store.reader import PITDataReader
+from alphaforge.data.store.writer import LakeWriter
+from alphaforge.data.universe.store import UniverseStore
+from alphaforge.features.engine import FeatureEngine
+from alphaforge.features.registry import default_registry
+from alphaforge.signals.service import SignalService
+from alphaforge.validation.experiments import ExperimentLog
+
+if TYPE_CHECKING:
+    from collections.abc import Iterator
+
+    from alphaforge.core.time import Ms
+    from alphaforge.validation.dsr import DSRReport
+
+HOUR = 3_600_000
+T0 = 1_672_531_200_000  # 2023-01-01T00:00:00Z (1h-aligned)
+# 44 days of 1h bars; the 31-day train warms all three real gates the OOS curve needs
+# (the 30-day-median ADV, the 240-bar covariance window, the 169-bar momentum lookback).
+# With train=744/test=96 the splitter tiles three OOS legs — mirrors test_cli_gated_flags.
+N_BARS = 1056
+_TRAIN_BARS = 31 * 24  # 744 bars
+_TEST_BARS = 4 * 24  # 96 bars OOS per leg
+_END = T0 + N_BARS * HOUR
+
+BTC = "BINANCE:PERP:BTCUSDT"
+MEMBERS = (BTC, *(f"BINANCE:PERP:{b}USDT" for b in ("ETH", "SOL", "ADA", "DOGE")))
+ALL_IDS = list(MEMBERS)
+_DRIFTS = (0.002, -0.002, 0.0015, -0.0015, 0.001)
+# ONE pure-price directional alpha that warms inside the train window (lookback 169 < 744).
+_ALPHA = "mom_xs_168_24"
+_ALPHAS = [_ALPHA]
+_INITIAL_CASH = 100_000.0
+_NOW_MS = 1_700_000_000_000
+
+
+def _closes(seed: int, n: int, level: float, drift: float) -> np.ndarray:
+    rng = np.random.default_rng(seed)
+    return np.asarray(level * np.exp(np.cumsum(rng.normal(drift, 0.012, n))))
+
+
+def _ohlcv_table(per_inst: dict[str, np.ndarray]) -> pa.Table:
+    iids: list[str] = []
+    ts: list[int] = []
+    opens: list[float] = []
+    closes: list[float] = []
+    for iid, close in per_inst.items():
+        n = len(close)
+        iids.extend([iid] * n)
+        ts.extend(T0 + k * HOUR for k in range(n))
+        opens.append(float(close[0]))
+        opens.extend(float(v) for v in close[:-1])
+        closes.extend(float(v) for v in close)
+    n_rows = len(iids)
+    return pa.table(
+        {
+            "instrument_id": pa.array(iids, type=pa.string()),
+            "ts_open": pa.array(ts, type=pa.timestamp("ms", tz="UTC")),
+            "open": pa.array(opens, type=pa.float64()),
+            "high": pa.array([v * 1.001 for v in closes], type=pa.float64()),
+            "low": pa.array([v * 0.999 for v in closes], type=pa.float64()),
+            "close": pa.array(closes, type=pa.float64()),
+            "volume": pa.array([100.0] * n_rows, type=pa.float64()),
+            "quote_volume": pa.array([1.0e7] * n_rows, type=pa.float64()),
+            "n_trades": pa.array([42] * n_rows, type=pa.int64()),
+            "quality_flags": pa.array([0] * n_rows, type=pa.int32()),
+            "ingested_at": pa.array(
+                [t + HOUR + 1000 for t in ts], type=pa.timestamp("ms", tz="UTC")
+            ),
+        }
+    )
+
+
+def _instrument(instrument_id: str) -> Instrument:
+    return Instrument(
+        instrument_id=instrument_id,
+        asset_class=AssetClass.CRYPTO_PERP,
+        market_type=MarketType.PERP,
+        base=instrument_id.split(":")[2].removesuffix("USDT"),
+        quote="USDT",
+        tick_size=0.1,
+        lot_size=0.001,
+        min_qty=0.001,
+        min_notional=5.0,
+        can_short=True,
+        maker_fee_bps=2.0,
+        taker_fee_bps=5.0,
+        funding_interval_hours=8,
+        listed_ts=T0 - 365 * 24 * HOUR,
+        delisted_ts=None,
+    )
+
+
+class _SyntheticDailyBtc:
+    """A :class:`~alphaforge.analytics.walkforward.DailyBtcReader` over a synthetic daily
+    BTC sine+noise series. The window is far shorter than ``MIN_FIT_DAYS`` (730), so every
+    leg's expanding ``ts_open < test_start`` slice cold-starts to IdentityRegime — the
+    documented D3 fallback the regime variant rides here (the real >=730-day HMM fit is
+    pinned by the runner's pipeline test)."""
+
+    def read_daily_btc(self, start: Ms, end: Ms) -> pd.DataFrame:
+        day = 24 * HOUR
+        ts = np.arange(int(start), int(end), day, dtype=np.int64)
+        k = np.arange(ts.size, dtype=float)
+        close = 30_000.0 * (1.0 + 0.05 * np.sin(k / 7.0))
+        return pd.DataFrame(
+            {
+                "open": close,
+                "high": close * 1.01,
+                "low": close * 0.99,
+                "close": close,
+            },
+            index=pd.Index(ts, dtype="int64", name="ts_open"),
+        )
+
+
+@dataclass(frozen=True)
+class Env:
+    reader: PITDataReader
+    instruments: InstrumentStore
+    universe: UniverseStore
+    cost_model: TransactionCostModel
+    settings: Settings
+    service_factory: object  # callable[[], SignalService]
+
+
+@pytest.fixture
+def env(tmp_path_factory: pytest.TempPathFactory) -> Iterator[Env]:
+    """A tiny synthetic lake + SCD2 instruments + PIT universe, all under tmp_path."""
+    tmp = tmp_path_factory.mktemp("honest_trial")
+    paths = LakePaths(tmp / "lake")
+    closes = {
+        iid: _closes(101 + k, N_BARS, 50.0 * (k + 1), _DRIFTS[k]) for k, iid in enumerate(ALL_IDS)
+    }
+    LakeWriter(paths).write(Dataset.OHLCV, _ohlcv_table(closes))
+
+    universe = UniverseStore(paths)
+    universe.write_intervals(
+        pa.table(
+            {
+                "instrument_id": pa.array(list(MEMBERS), type=pa.string()),
+                "effective_from": pa.array([T0] * len(MEMBERS), type=pa.timestamp("ms", tz="UTC")),
+                "effective_to": pa.array([None] * len(MEMBERS), type=pa.timestamp("ms", tz="UTC")),
+                "rank": pa.array([1] * len(MEMBERS), type=pa.int32()),
+                "reason": pa.array(["enter_top40"] * len(MEMBERS), type=pa.string()),
+            }
+        )
+    )
+
+    instruments = InstrumentStore(tmp / "instruments.db")
+    for iid in ALL_IDS:
+        instruments.upsert(_instrument(iid), as_of=T0 - 365 * 24 * HOUR)
+
+    reader = PITDataReader(paths)
+    cfg = SignalsCfg()
+
+    def make_service() -> SignalService:
+        return SignalService(
+            FeatureEngine(reader, instruments, universe),
+            universe,
+            default_registry(),
+            cfg,
+            alpha_names=_ALPHAS,
+        )
+
+    yield Env(
+        reader=reader,
+        instruments=instruments,
+        universe=universe,
+        cost_model=TransactionCostModel.from_settings(Settings()),
+        settings=Settings(),
+        service_factory=make_service,
+    )
+    instruments.close()
+
+
+def _runner(
+    env: Env,
+    *,
+    with_btc: bool = False,
+    regime_n_states: int = 3,
+) -> WalkForwardRunner:
+    """A runner over the synthetic lake. ``with_btc`` injects the daily-BTC adapter the
+    regime gate needs; ``regime_n_states`` tunes the HMM shape (a D6 trial-hash input)."""
+    make_service = env.service_factory
+    assert callable(make_service)
+    return WalkForwardRunner(
+        env.reader,
+        env.instruments,
+        env.universe,
+        env.cost_model,
+        make_service(),
+        env.settings,
+        daily_btc_reader=_SyntheticDailyBtc() if with_btc else None,
+        regime_n_states=regime_n_states,
+    )
+
+
+class _FixedDSR:
+    """A deterministic ``dsr_fn`` stub returning a FIXED :class:`DSRReport` per call.
+
+    Records each call's args so the test can prove the variant and the baseline are each
+    their own ``compute_validation`` (hence own ledger trial). Because variant and
+    baseline get IDENTICAL ``dsr``/``sr_ann``, ``compare_to_baseline`` (strict ``>``)
+    refuses the variant — the canonical D5 tie."""
+
+    def __init__(self, *, dsr: float = 0.97, sr_ann: float = 1.23) -> None:
+        self.calls: list[tuple[int, int, float, float]] = []
+        self._dsr = dsr
+        self._sr_ann = sr_ann
+
+    def __call__(
+        self,
+        daily_returns: pd.Series,
+        n_trials: int,
+        sr_trials_variance: float,
+        periods_per_year: float,
+    ) -> DSRReport:
+        from alphaforge.validation.dsr import DSRReport
+
+        self.calls.append((len(daily_returns), n_trials, sr_trials_variance, periods_per_year))
+        return DSRReport(
+            psr=0.80,
+            dsr=self._dsr,
+            sr_ann=self._sr_ann,
+            sr_per_period=0.064,
+            skew=-0.2,
+            kurtosis=4.1,
+            n_obs=len(daily_returns),
+            expected_max_sr=0.11,
+        )
+
+
+def _run(
+    env: Env,
+    log: ExperimentLog,
+    *,
+    ml: bool,
+    regime: bool,
+    regime_n_states: int = 3,
+    alphas: list[str] | None = None,
+    dsr_fn: _FixedDSR | None = None,
+) -> ValidationReport | None:
+    """Drive one ``runner.run`` over the tiny window, sharing ``log`` and ``dsr_fn``."""
+    runner = _runner(env, with_btc=regime, regime_n_states=regime_n_states)
+    result = runner.run(
+        T0,
+        _END,
+        train_bars=_TRAIN_BARS,
+        test_bars=_TEST_BARS,
+        allocator="rank",
+        initial_cash=_INITIAL_CASH,
+        now_ms=_NOW_MS,
+        alpha_names=_ALPHAS if alphas is None else alphas,
+        experiment_log=log,
+        dsr_fn=_FixedDSR() if dsr_fn is None else dsr_fn,
+        ml=ml,
+        regime=regime,
+    )
+    return result.validation
+
+
+class TestHonestTrialCount:
+    """D6 — four gate combinations are four distinct trials; gate params are in the hash."""
+
+    def test_four_combinations_are_four_distinct_trials(self, env: Env, tmp_path: Path) -> None:
+        log = ExperimentLog(tmp_path / "ledger.jsonl")
+        _run(env, log, ml=False, regime=False)
+        assert log.n_trials() == 1, "blend-only is one trial"
+        _run(env, log, ml=True, regime=False)
+        # The ml run records its own (ml) trial AND re-records the blend-only baseline
+        # under the SAME gate-keyless base_trial_config (idempotent) — net +1.
+        assert log.n_trials() == 2, "ml adds exactly one distinct trial (baseline is idempotent)"
+        _run(env, log, ml=False, regime=True)
+        assert log.n_trials() == 3, "regime adds exactly one distinct trial"
+        _run(env, log, ml=True, regime=True)
+        assert log.n_trials() == 4, "ml+regime adds exactly one distinct trial"
+
+    def test_rerun_is_idempotent(self, env: Env, tmp_path: Path) -> None:
+        log = ExperimentLog(tmp_path / "ledger.jsonl")
+        for ml, regime in ((False, False), (True, False), (False, True), (True, True)):
+            _run(env, log, ml=ml, regime=regime)
+        assert log.n_trials() == 4
+        # Re-run every combination: each hash already on the ledger, so N is unchanged.
+        for ml, regime in ((False, False), (True, False), (False, True), (True, True)):
+            _run(env, log, ml=ml, regime=regime)
+        assert log.n_trials() == 4, "re-running identical configs must not inflate N (idempotent)"
+
+    def test_tuning_regime_n_states_makes_a_fifth_hash(self, env: Env, tmp_path: Path) -> None:
+        """D6: ``regime_n_states`` is hashed into ``trial_config`` — 3 vs 2 are distinct."""
+        log = ExperimentLog(tmp_path / "ledger.jsonl")
+        _run(env, log, ml=False, regime=True, regime_n_states=3)
+        n3 = log.n_trials()  # regime(3) trial + blend baseline = 2
+        assert n3 == 2
+        _run(env, log, ml=False, regime=True, regime_n_states=2)
+        # A different n_states is a DISTINCT trial (the baseline is still idempotent).
+        assert log.n_trials() == 3, "regime_n_states 3->2 must be a fifth distinct trial (D6)"
+
+    def test_tuning_ml_feature_set_makes_a_distinct_hash(self, env: Env) -> None:
+        """D6: the ml feature set enters the hash via ``ml_feature_set_sha``.
+
+        We assert the trial-config helper directly (the runner pins ONE v1 feature set, so
+        we cannot vary it through ``run``): a different resolved feature tuple yields a
+        different ``ml_feature_set_sha`` and therefore a different config hash."""
+        from alphaforge.validation.experiments import config_hash
+
+        runner = _runner(env)
+        base = {"start": T0, "end": _END, "allocator": "rank"}
+        tc_a = {**base, **runner._gate_trial_config(ml=True, regime=False)}
+        # Same knobs but a different resolved ml feature set => different sha => different hash.
+        import hashlib
+
+        tc_b = dict(tc_a)
+        tc_b["ml_feature_set_sha"] = hashlib.sha256(b'["alpha_blend","ctx_vol"]').hexdigest()[:16]
+        assert tc_a["ml_feature_set_sha"] != tc_b["ml_feature_set_sha"]
+        assert config_hash(tc_a) != config_hash(tc_b), (
+            "a different ml feature set must hash to a distinct trial (D6)"
+        )
+
+    def test_blend_only_trial_config_has_no_gate_keys(self, env: Env) -> None:
+        """D7 on the ledger: with both gates off the trial config gains NO gate keys, so
+        the blend-only hash is byte-identical to today's HEAD ledger."""
+        runner = _runner(env)
+        assert runner._gate_trial_config(ml=False, regime=False) == {}
+        on = runner._gate_trial_config(ml=True, regime=True)
+        assert on["ml"] is True
+        assert on["regime"] is True
+        assert "ml_feature_set_sha" in on
+        assert on["regime_n_states"] == 3
+
+
+class TestBaselineGate:
+    """D5 — the gated report carries the blend-only baseline; a tie loses."""
+
+    def test_gated_variant_carries_blend_only_baseline_dsr(self, env: Env, tmp_path: Path) -> None:
+        log = ExperimentLog(tmp_path / "ledger.jsonl")
+        stub = _FixedDSR(dsr=0.97, sr_ann=1.23)
+        v = _run(env, log, ml=True, regime=False, dsr_fn=stub)
+        assert v is not None
+        assert v.variant == "ml"
+        assert v.baseline is not None, "a gated variant must carry a blend-only baseline"
+        # Two compute_validation calls: the variant, then the baseline (same stub).
+        assert len(stub.calls) == 2
+        # The baseline DSR is the blend-only trial's (the stub's fixed value here).
+        assert v.baseline.dsr == pytest.approx(0.97)
+        assert v.dsr == pytest.approx(0.97)
+
+    def test_tie_fails_baseline_gate_and_is_not_live_eligible(
+        self, env: Env, tmp_path: Path
+    ) -> None:
+        """A variant that exactly ties the baseline on DSR and Sharpe is refused (strict >).
+
+        Even though the variant's own DSR (0.97) clears the 0.95 gate, ``clears_baseline_gate``
+        is False because ``dsr > baseline.dsr`` and ``sr_ann > baseline.sr_ann`` are both
+        strict — a tie does not earn the extra trial it costs (CRITIQUE_overfit #1)."""
+        log = ExperimentLog(tmp_path / "ledger.jsonl")
+        v = _run(env, log, ml=True, regime=True, dsr_fn=_FixedDSR(dsr=0.97, sr_ann=1.23))
+        assert v is not None
+        assert v.clears_dsr_gate is True, "the variant's own DSR clears 0.95"
+        assert v.baseline is not None
+        assert v.dsr == pytest.approx(v.baseline.dsr)
+        assert v.sr_ann == pytest.approx(v.baseline.sr_ann)
+        assert v.clears_baseline_gate is False, "an exact tie must NOT clear the baseline gate"
+
+    def test_compare_to_baseline_predicate_strict_inequalities(self) -> None:
+        """``compare_to_baseline`` is the D5 predicate: a tie on EITHER DSR or Sharpe loses."""
+        base = _vr(dsr=0.96, sr_ann=1.0)
+        # Strictly beats on both -> clears.
+        assert compare_to_baseline(_vr(dsr=0.97, sr_ann=1.1), base) is True
+        # Ties DSR -> loses.
+        assert compare_to_baseline(_vr(dsr=0.96, sr_ann=1.1), base) is False
+        # Ties Sharpe -> loses.
+        assert compare_to_baseline(_vr(dsr=0.97, sr_ann=1.0), base) is False
+        # Beats baseline but own DSR below the 0.95 gate -> loses.
+        assert compare_to_baseline(_vr(dsr=0.94, sr_ann=1.1, clears=False), base) is False
+
+    def test_losing_variant_round_trips_as_not_eligible_through_evaluate_logic(
+        self, env: Env, tmp_path: Path
+    ) -> None:
+        """The same predicate the CLI ``evaluate`` reads: a gated, baseline-carrying report
+        with ``clears_baseline_gate=False`` is NOT live-eligible on the baseline ground."""
+        log = ExperimentLog(tmp_path / "ledger.jsonl")
+        v = _run(env, log, ml=True, regime=False, dsr_fn=_FixedDSR(dsr=0.97, sr_ann=1.23))
+        assert v is not None
+        obj = v.to_json_obj()
+        is_gated_variant = obj.get("baseline") is not None
+        baseline_ok = (not is_gated_variant) or bool(obj.get("clears_baseline_gate"))
+        assert is_gated_variant is True
+        assert baseline_ok is False, "the tie is reported NOT live-eligible (D5)"
+
+
+class TestValidationRoundTrip:
+    """D5/3b — variant / clears_baseline_gate / nested baseline survive to_json_obj."""
+
+    def test_gated_validation_round_trips(self, env: Env, tmp_path: Path) -> None:
+        log = ExperimentLog(tmp_path / "ledger.jsonl")
+        v = _run(env, log, ml=True, regime=True, dsr_fn=_FixedDSR(dsr=0.97, sr_ann=1.23))
+        assert v is not None
+        obj = v.to_json_obj()
+        # The Phase-12 gate keys are present on a gated report.
+        assert obj["variant"] == "ml+regime"
+        assert obj["clears_baseline_gate"] is False
+        assert isinstance(obj["baseline"], dict)
+        assert "gate_inactive_frac" in obj
+        # The nested baseline is itself a blend-only report (the nine pre-Phase-12 keys,
+        # NO recursive gate keys).
+        baseline_obj = obj["baseline"]
+        assert isinstance(baseline_obj, dict)
+        assert "variant" not in baseline_obj
+        assert "baseline" not in baseline_obj
+        assert baseline_obj["dsr"] == pytest.approx(0.97)
+        # Survives a JSON serialize/parse cycle unchanged (the persisted walkforward.json).
+        reparsed = json.loads(json.dumps(obj, sort_keys=True))
+        assert reparsed == obj
+
+    def test_blend_only_validation_omits_gate_keys(self, env: Env, tmp_path: Path) -> None:
+        """D7: the blend-only report emits EXACTLY the nine pre-Phase-12 keys."""
+        log = ExperimentLog(tmp_path / "ledger.jsonl")
+        v = _run(env, log, ml=False, regime=False, dsr_fn=_FixedDSR())
+        assert v is not None
+        obj = v.to_json_obj()
+        assert "variant" not in obj
+        assert "baseline" not in obj
+        assert "clears_baseline_gate" not in obj
+        assert "gate_inactive_frac" not in obj
+
+
+# --------------------------------------------------------------------------- helpers
+
+
+def _vr(*, dsr: float, sr_ann: float, clears: bool = True) -> ValidationReport:
+    """A minimal :class:`ValidationReport` for the pure-predicate assertions."""
+    return ValidationReport(
+        psr=0.8,
+        dsr=dsr,
+        sr_ann=sr_ann,
+        n_trials=2,
+        n_trials_used=2,
+        expected_max_sr=0.1,
+        sr_trials_variance=1.0,
+        n_obs=30,
+        clears_dsr_gate=clears,
+    )

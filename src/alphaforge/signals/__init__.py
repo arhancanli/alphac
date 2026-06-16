@@ -25,6 +25,7 @@ from alphaforge.signals.blending import (
     blend,
     estimate_blend_weights,
 )
+from alphaforge.signals.features_serve import assemble_meta_features
 from alphaforge.signals.service import SIGMA_COLUMN, SignalService
 from alphaforge.signals.sizing import MU_ANN_COLUMN, GrinoldSizer
 
@@ -38,6 +39,7 @@ __all__ = [
     "BlendWeights",
     "GrinoldSizer",
     "SignalService",
+    "assemble_meta_features",
     "blend",
     "estimate_blend_weights",
 ]

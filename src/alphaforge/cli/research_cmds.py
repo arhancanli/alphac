@@ -83,6 +83,30 @@ def _load_settings(profile: str | None) -> Settings:
     return load_settings(profile)
 
 
+def _read_validation(run_dir: Path) -> dict[str, object] | None:
+    """The ``validation`` block from a run's ``walkforward.json`` (or ``None``).
+
+    Returns ``None`` when the JSON is absent (an older or hand-built run dir), the
+    ``validation`` key is absent/``null`` (a span too short for daily returns), or the
+    file is malformed — the evaluate command then judges on DSR (+ PBO) alone, exactly
+    as before Phase 12. A present block carries the Phase-12 ``variant`` / ``baseline``
+    / ``clears_baseline_gate`` fields the must-beat-baseline gate (D5) reads.
+    """
+    import json
+
+    meta_path = run_dir / "walkforward.json"
+    if not meta_path.exists():
+        return None
+    try:
+        meta = json.loads(meta_path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return None
+    if not isinstance(meta, dict):
+        return None
+    validation = meta.get("validation")
+    return validation if isinstance(validation, dict) else None
+
+
 @research_app.callback()
 def _research() -> None:
     """Research diagnostics over the lake (read-only; artifacts under --out)."""
@@ -224,6 +248,12 @@ def evaluate(
         typer.echo(f"error: no equity.parquet in {run_dir}", err=True)
         raise typer.Exit(1)
 
+    # D5 / overfit #1: a GATED walk-forward (ml/regime) is live-eligible only if it
+    # also BEATS its blend-only baseline on the identical purged legs. Read that
+    # verdict off walkforward.json's validation block (written by the runner); a
+    # blend-only run carries no baseline and is judged on DSR (and PBO) alone.
+    validation = _read_validation(Path(run_dir))
+
     frame = pd.read_parquet(equity_path)
     equity = pd.Series(
         frame["equity"].to_numpy(dtype="float64"),
@@ -276,6 +306,32 @@ def evaluate(
         typer.echo("")
         typer.echo("  PBO (CSCV)      : not available (supply --config-matrix of >=2 variants)")
 
+    # D5 / overfit #1: a gated variant must beat its blend-only baseline. A blend-only
+    # run (no baseline) is judged on DSR (+ PBO) alone; a gated run additionally
+    # requires clears_baseline_gate (which already folds in dsr >= 0.95 vs the baseline).
+    baseline = None if validation is None else validation.get("baseline")
+    is_gated_variant = validation is not None and baseline is not None
+    baseline_ok = (not is_gated_variant) or (
+        validation is not None and bool(validation.get("clears_baseline_gate"))
+    )
+    if is_gated_variant and validation is not None:
+        variant = str(validation.get("variant", "?"))
+        baseline_dsr = baseline.get("dsr") if isinstance(baseline, dict) else None
+        baseline_str = "n/a" if baseline_dsr is None else f"{float(baseline_dsr): .4f}"
+        beats = "CLEARS" if baseline_ok else "FAILS"
+        typer.echo("")
+        typer.echo(f"  variant         : {variant}")
+        typer.echo(f"  baseline DSR    : {baseline_str}  (blend-only, identical legs)")
+        typer.echo(f"  must-beat-baseline gate: {beats}")
+
     typer.echo("")
-    eligible = dsr_ok if config_matrix is None else (dsr_ok and pbo_ok)
-    typer.echo(f"verdict: {'LIVE-ELIGIBLE' if eligible else 'NOT live-eligible'}")
+    base_eligible = dsr_ok if config_matrix is None else (dsr_ok and pbo_ok)
+    eligible = base_eligible and baseline_ok
+    if eligible:
+        typer.echo("verdict: LIVE-ELIGIBLE")
+    elif is_gated_variant and not baseline_ok:
+        # The must-beat-baseline gate is the binding overfit refusal for a gated
+        # variant (D5 / overfit #1): name it explicitly even if DSR also failed.
+        typer.echo("verdict: NOT live-eligible (does not beat blend baseline)")
+    else:
+        typer.echo("verdict: NOT live-eligible")

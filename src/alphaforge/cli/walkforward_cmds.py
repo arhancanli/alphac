@@ -24,7 +24,11 @@ from alphaforge.core.errors import NaiveDatetimeError
 from alphaforge.core.time import Ms, Timeframe, floor_bar, now_ms, parse_utc
 
 if TYPE_CHECKING:
+    import pandas as pd
+    import pyarrow as pa
+
     from alphaforge.config.settings import Settings
+    from alphaforge.data.store.reader import PITDataReader
 
 __all__ = ["walkforward", "walkforward_app"]
 
@@ -59,6 +63,66 @@ def _load_settings(profile: str | None) -> Settings:
     from alphaforge.config.settings import load_settings
 
     return load_settings(profile)
+
+
+# The "market" the HMM regime gate observes (regime_features.py's documented BTC
+# anchor): the one place the daily-BTC instrument is defined, reused here so the
+# regime gate and the regime-correlation factors agree on what "the market" is.
+_BTC_ANCHOR: Final[str] = "BINANCE:PERP:BTCUSDT"
+
+
+class _PITDailyBtcReader:
+    """Concrete :class:`~alphaforge.analytics.walkforward.DailyBtcReader` over the lake.
+
+    Returns daily BTC OHLC over ``[start, end)`` as the int64-``ts_open``-indexed float
+    OHLC frame :func:`alphaforge.regime.hmm.build_observations` consumes. The
+    point-in-time read is clamped at ``end`` (the runner already slices the result to
+    ``ts_open < test_start`` per leg, so the only freshness ``end`` adds is "no bar that
+    closes after the run window"). Daily bars come from the resampler-derived
+    ``ohlcv_1d`` dataset (``PITDataReader.ohlcv(tf=Timeframe.D1)``); when the lake has
+    no derived daily bars yet, falls back to the SANCTIONED in-memory resampler
+    (:func:`alphaforge.data.store.resample.resample_bars`, 1h→1d) — never an ad-hoc
+    pandas resample (D3 / dataDesign.md §4.4: one source of truth for derived bars).
+    """
+
+    def __init__(self, reader: PITDataReader, instrument_id: str = _BTC_ANCHOR) -> None:
+        self._reader = reader
+        self._instrument_id = instrument_id
+
+    def read_daily_btc(self, start: Ms, end: Ms) -> pd.DataFrame:
+        """Daily BTC OHLC over ``[start, end)`` indexed by int64 ``ts_open``."""
+        daily = self._reader.ohlcv(
+            [self._instrument_id], start=start, end=end, as_of=end, tf=Timeframe.D1
+        )
+        if daily.num_rows == 0:
+            # No derived 1d bars in the lake: resample the 1h BTC bars in-memory via the
+            # sanctioned resampler (closed-bucket + completeness rules), never ad hoc.
+            from alphaforge.data.store.resample import resample_bars
+
+            hourly = self._reader.ohlcv(
+                [self._instrument_id], start=start, end=end, as_of=end, tf=Timeframe.H1
+            )
+            daily = resample_bars(
+                hourly, source=Timeframe.H1, target=Timeframe.D1, now=end
+            ).table
+        return self._to_frame(daily)
+
+    @staticmethod
+    def _to_frame(daily: pa.Table) -> pd.DataFrame:
+        """Arrow daily OHLC -> int64-``ts_open``-indexed float OHLC frame (build_observations)."""
+        import pandas as pd
+        import pyarrow as pa
+
+        ts = daily.column("ts_open").cast(pa.int64()).to_numpy(zero_copy_only=False)
+        return pd.DataFrame(
+            {
+                "open": daily.column("open").to_numpy(zero_copy_only=False),
+                "high": daily.column("high").to_numpy(zero_copy_only=False),
+                "low": daily.column("low").to_numpy(zero_copy_only=False),
+                "close": daily.column("close").to_numpy(zero_copy_only=False),
+            },
+            index=pd.Index(ts, dtype="int64", name="ts_open"),
+        )
 
 
 @walkforward_app.command()
@@ -130,6 +194,22 @@ def walkforward(
             "factors and tilt the book, e.g. 'carry_fund_21,carry_fund_90,mr_res_72'.",
         ),
     ] = None,
+    ml: Annotated[
+        bool,
+        typer.Option(
+            "--ml/--no-ml",
+            help="Gate the blend by a per-leg-trained meta-model (|size| scales Ã; never "
+            "flips). Default OFF — byte-identical to the shipped blend-only run.",
+        ),
+    ] = False,
+    regime: Annotated[
+        bool,
+        typer.Option(
+            "--regime/--no-regime",
+            help="Multiply mu_ann by the per-leg-refit HMM gross multiplier G (filtered "
+            "through day d-1; no same-day leak). Default OFF.",
+        ),
+    ] = False,
     profile: Annotated[
         str | None,
         typer.Option("--profile", help="Config profile overlay (configs/<profile>.yaml)."),
@@ -191,6 +271,10 @@ def walkforward(
             settings.signals,
             alpha_names=alpha_names,
         )
+        # The regime gate needs a daily-BTC source for the per-leg expanding HMM fit
+        # (D3). Construct the thin PIT adapter ONLY when --regime is on; the blend-only
+        # and --ml paths never touch it, so their wiring is byte-identical to today.
+        daily_btc_reader = _PITDailyBtcReader(reader) if regime else None
         runner = WalkForwardRunner(
             reader,
             store,
@@ -198,6 +282,7 @@ def walkforward(
             TransactionCostModel.from_settings(settings),
             service,
             settings,
+            daily_btc_reader=daily_btc_reader,
         )
         try:
             result = runner.run(
@@ -216,6 +301,8 @@ def walkforward(
                 # trial. alpha_names feeds the trial's anti-overfit config hash.
                 now_ms=now_ms(),
                 alpha_names=alpha_names,
+                ml=ml,
+                regime=regime,
             )
         except ValueError as exc:
             typer.echo(f"error: {exc}", err=True)
@@ -238,4 +325,12 @@ def walkforward(
             f"validation  PSR {v.psr:.4f}  DSR {v.dsr:.4f}  (gate 0.95: {verdict})  "
             f"SR_ann {v.sr_ann:.2f}  N_trials {v.n_trials}  SR* {v.expected_max_sr:.4f}"
         )
+        # Phase-12 gate line: only when a gate is on (a gated run carries a baseline);
+        # the blend-only run's output is byte-identical to today.
+        if v.baseline is not None:
+            beats = "True" if v.clears_baseline_gate else "False"
+            typer.echo(
+                f"variant {v.variant}  DSR {v.dsr:.4f} vs baseline {v.baseline.dsr:.4f}  "
+                f"beats-baseline: {beats}  gate-inactive {v.gate_inactive_frac:.0%}"
+            )
     typer.echo(f"artifacts: {out_dir}")
