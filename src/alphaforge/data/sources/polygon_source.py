@@ -55,6 +55,7 @@ from alphaforge.core.time import Ms, Timeframe, from_ms, now_ms, parse_utc
 from alphaforge.core.types import AssetClass, MarketType
 from alphaforge.data.ingest.retry import RateBudget, transient_retry
 from alphaforge.data.schemas import (
+    CORPORATE_ACTIONS_SCHEMA,
     OHLCV_SCHEMA,
     Dataset,
     validate_table,
@@ -123,78 +124,6 @@ cost model, not the instrument fee fields). EQUITIES_SLEEVE.md §1.1."""
 _TRANSIENT_STATUS: Final[frozenset[int]] = frozenset({429, 500, 502, 503, 504})
 """HTTP statuses Polygon returns under transient pressure (rate limit + 5xx). 401/403
 (auth), 404 (bad ticker), and other 4xx are permanent and propagate immediately."""
-
-
-CORPORATE_ACTIONS_SCHEMA: Final[pa.Schema] = pa.schema(
-    [
-        pa.field(
-            "instrument_id",
-            pa.string(),
-            nullable=False,
-            metadata={"doc": "canonical id, e.g. XNAS:CASH:AAPLUSD"},
-        ),
-        pa.field(
-            "action_type",
-            pa.string(),
-            nullable=False,
-            metadata={"doc": "'split' or 'dividend'"},
-        ),
-        pa.field(
-            "ex_date",
-            pa.timestamp("ms", tz="UTC"),
-            nullable=False,
-            metadata={"doc": "ex/effective date, 00:00 UTC"},
-        ),
-        pa.field(
-            "available_at",
-            pa.timestamp("ms", tz="UTC"),
-            nullable=False,
-            metadata={
-                "doc": (
-                    "knowable_date + publication lag; ALL adjustment joins use this "
-                    "column, never ex_date (leakage finding 18)"
-                )
-            },
-        ),
-        pa.field(
-            "ratio",
-            pa.float64(),
-            nullable=False,
-            metadata={"doc": "split: split_to/split_from; dividend: 1.0"},
-        ),
-        pa.field(
-            "cash_amount",
-            pa.float64(),
-            nullable=True,
-            metadata={"doc": "dividend cash per share; null for splits"},
-        ),
-        pa.field(
-            "ingested_at",
-            pa.timestamp("ms", tz="UTC"),
-            nullable=False,
-            metadata={"doc": "wall clock at write; audit only"},
-        ),
-    ],
-    metadata={
-        b"alphaforge.schema_version": b"1",
-        # Dataset.CORPORATE_ACTIONS lands with the schema build; the literal matches its
-        # declared value so the promoted schema's metadata is byte-identical.
-        b"alphaforge.dataset": b"corporate_actions",
-    },
-)
-"""Corporate-action settlements (splits + dividends) with explicit point-in-time
-``available_at``.
-
-The equity analogue of :data:`~alphaforge.data.schemas.FUNDING_SCHEMA`: one row per
-action, an ``available_at`` that ALL downstream adjustment joins use (never ``ex_date``),
-and a ``ratio`` that the point-in-time adjusted-close reconstruction folds backward into
-history. Splits carry ``ratio = split_to/split_from`` and a null ``cash_amount``;
-dividends carry ``ratio = 1.0`` and the cash-per-share amount. This schema is pinned here
-so the adapter validates its own output; the schema build promotes it verbatim into
-:mod:`alphaforge.data.schemas` as ``CORPORATE_ACTIONS_SCHEMA`` /
-``Dataset.CORPORATE_ACTIONS`` (EQUITIES_SLEEVE.md §2), at which point this module imports
-it from there.
-"""
 
 
 class Adjustment(StrEnum):
@@ -745,7 +674,7 @@ class PolygonEquitiesSource(DataSource):
             },
             schema=CORPORATE_ACTIONS_SCHEMA,
         )
-        _validate_corporate_actions(table)
+        validate_table(table, Dataset.CORPORATE_ACTIONS)
         return table
 
 
@@ -805,38 +734,6 @@ def _ms_to_date(ms: Ms) -> str:
 def _empty_corporate_actions() -> pa.Table:
     """Zero-row table conforming to :data:`CORPORATE_ACTIONS_SCHEMA`."""
     return CORPORATE_ACTIONS_SCHEMA.empty_table()
-
-
-def _validate_corporate_actions(table: pa.Table) -> None:
-    """Validate a corporate-actions table against :data:`CORPORATE_ACTIONS_SCHEMA`.
-
-    Local mirror of :func:`~alphaforge.data.schemas.validate_table` (which is keyed on the
-    :class:`~alphaforge.data.schemas.Dataset` enum; the ``CORPORATE_ACTIONS`` member lands
-    with the schema build). Checks column names, exact Arrow types, and non-null
-    discipline — the same contract, so behavior is identical once the dataset is promoted.
-    """
-    expected = CORPORATE_ACTIONS_SCHEMA
-    problems: list[str] = []
-    actual_names = set(table.schema.names)
-    expected_names = set(expected.names)
-    for name in sorted(expected_names - actual_names):
-        problems.append(f"column '{name}': missing")
-    for name in sorted(actual_names - expected_names):
-        problems.append(f"column '{name}': not in declared schema (extra column)")
-    for name in expected.names:
-        if name not in actual_names:
-            continue
-        field = expected.field(name)
-        actual_type = table.schema.field(name).type
-        if actual_type != field.type:
-            problems.append(f"column '{name}': expected type {field.type}, got {actual_type}")
-        elif not field.nullable and table.column(name).null_count > 0:
-            problems.append(f"column '{name}': null value(s) in non-nullable column")
-    if problems:
-        raise SchemaError(
-            "table does not conform to 'corporate_actions' schema; "
-            f"{len(problems)} problem(s): " + "; ".join(problems)
-        )
 
 
 class PolygonTransientError(Exception):

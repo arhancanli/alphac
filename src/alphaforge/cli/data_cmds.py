@@ -26,10 +26,15 @@ if TYPE_CHECKING:
     from collections.abc import Iterator
     from pathlib import Path
 
+    import pyarrow as pa
+
     from alphaforge.config.settings import Settings
     from alphaforge.core.instruments import InstrumentStore
     from alphaforge.data.ingest.backfill import BackfillJob, BackfillReport
     from alphaforge.data.ingest.checkpoints import CheckpointStore
+    from alphaforge.data.ingest.equities import EquitiesIngestReport
+    from alphaforge.data.sources.polygon_flatfiles import PolygonFlatFilesSource
+    from alphaforge.data.sources.polygon_source import PolygonEquitiesSource
 
 __all__ = ["data_app"]
 
@@ -422,3 +427,200 @@ def status(profile: _ProfileOpt = None) -> None:
                 f"{iid:<30} {_fmt_ts(ohlcv_wm):<22} {_fmt_age(ohlcv_wm, now=now):>7} "
                 f"{_fmt_ts(funding_wm):<22} {_fmt_age(funding_wm, now=now):>7} {gaps:>8}"
             )
+
+
+# --------------------------------------------------------------------------- equities
+#
+# The REAL equities-bars path: Polygon S3 flat files (one gzipped CSV per session, every
+# ticker that traded → survivorship-free). The REST aggregates endpoint is NOT entitled on
+# this account; the flat files ARE (EQUITIES_INGEST.md §0). Corporate actions (splits +
+# dividends) come from the entitled REST reference adapter and land RAW in the lake; split/
+# dividend adjustment is reconstructed point-in-time at FEATURE time, never at ingest.
+
+
+def _build_flatfiles_source() -> PolygonFlatFilesSource:
+    """Construct the flat-files bar source from the ``POLYGON_S3_*`` env (operator-sourced).
+
+    A seam: tests monkeypatch this to return a fake-client-backed source, so no boto3 / no
+    network is ever touched offline. A missing credential raises ``ConfigError`` inside the
+    source constructor.
+    """
+    from alphaforge.data.sources.polygon_flatfiles import PolygonFlatFilesSource
+
+    return PolygonFlatFilesSource()
+
+
+def _build_equities_reference() -> PolygonEquitiesSource:
+    """Construct the REST reference adapter (splits/dividends) from ``POLYGON_API_KEY``.
+
+    Another seam for tests. ``PolygonEquitiesSource`` reads the key at construction and
+    raises ``ConfigError`` if it is absent with no injected client.
+    """
+    import os
+
+    from alphaforge.data.ingest.retry import RateBudget
+    from alphaforge.data.sources.polygon_source import PolygonEquitiesSource
+
+    return PolygonEquitiesSource(
+        api_key=os.environ.get("POLYGON_API_KEY"), rate_budget=RateBudget()
+    )
+
+
+def _print_equities_report(report: EquitiesIngestReport) -> None:
+    """Plain-text per-session report table plus a one-line summary (mirrors _print_report)."""
+    typer.echo(f"run {report.run_id} [ingest-equities]: {report.summary()}")
+    shown = [r for r in report.results if r.status != "skipped"]
+    if shown:
+        typer.echo(f"{'session':<12} {'status':<8} {'tickers':>8} {'rows':>9} notes")
+        for r in shown:
+            typer.echo(
+                f"{r.session:<12} {r.status:<8} {r.tickers:>8} {r.rows:>9} {r.error}"
+            )
+    if report.skipped_count:
+        typer.echo(f"+ {report.skipped_count} session(s) skipped (already ingested)")
+
+
+def _ingest_corporate_actions(
+    settings: Settings, checkpoints: CheckpointStore, *, until: Ms, now: Ms
+) -> tuple[int, int]:
+    """Per-instrument splits/dividends ingest for every id now present in ``ohlcv_1d``.
+
+    The reference endpoints are per-ticker, so this is a small per-instrument loop (NOT the
+    day-unit ``EquitiesFlatFilesJob``) resuming on the standard ``(CORPORATE_ACTIONS,
+    instrument_id)`` watermark keyed on ``ex_date``. Each action row already carries its PIT
+    ``available_at = knowable + CA_PUBLICATION_LAG_MS`` (set by the source); the lake stores
+    it raw and the adjustment join uses ``available_at`` only. Returns ``(instruments,
+    actions_written)``. A per-instrument failure is logged and isolated — it never aborts the
+    whole corp-actions pass.
+    """
+    from alphaforge.core.logging import get_logger
+    from alphaforge.data.store.lake import LakePaths
+    from alphaforge.data.store.writer import LakeWriter
+
+    log = get_logger(__name__)
+    paths = LakePaths(settings.paths.lake_dir)
+    ids = paths.instrument_ids(Dataset.OHLCV_1D)
+    if not ids:
+        return 0, 0
+    source = _build_equities_reference()
+    writer = LakeWriter(paths)
+    actions_total = 0
+    for instrument_id in ids:
+        watermark = checkpoints.get(Dataset.CORPORATE_ACTIONS, instrument_id)
+        since = 0 if watermark is None else watermark + 1
+        if until <= since:
+            continue
+        try:
+            tbl = source.fetch_corporate_actions(instrument_id, since=since, until=until)
+        except Exception as exc:  # isolate: one bad ticker never aborts the pass
+            log.error(
+                "equities_ingest.corp_actions_failed",
+                instrument_id=instrument_id,
+                error=repr(exc),
+            )
+            continue
+        if tbl.num_rows == 0:
+            continue
+        writer.write(Dataset.CORPORATE_ACTIONS, tbl, now=now)
+        max_ex = int(_max_epoch_ms(tbl, "ex_date"))
+        checkpoints.set(Dataset.CORPORATE_ACTIONS, instrument_id, max_ex)
+        actions_total += tbl.num_rows
+    return len(ids), actions_total
+
+
+def _max_epoch_ms(tbl: pa.Table, column: str) -> int:
+    """Max value of a ``timestamp[ms, UTC]`` column as epoch ms (exact)."""
+    import numpy as np
+
+    raw = tbl.column(column).to_numpy(zero_copy_only=False)
+    arr = raw.astype("datetime64[ms]").astype(np.int64)
+    return int(arr.max())
+
+
+@data_app.command(name="ingest-equities")
+def ingest_equities(
+    start: Annotated[
+        str,
+        typer.Option(
+            "--start", help="First session, UTC (YYYY-MM-DD or ISO-8601). Required."
+        ),
+    ],
+    until: Annotated[
+        str | None,
+        typer.Option("--until", help="Exclusive end, UTC. Default: now."),
+    ] = None,
+    max_tickers: Annotated[
+        int | None,
+        typer.Option(
+            "--max-tickers",
+            min=1,
+            help="Dev cap: keep the top-N tickers per day by dollar volume. "
+            "NON-survivorship-safe — research must run uncapped.",
+        ),
+    ] = None,
+    corp_actions: Annotated[
+        bool,
+        typer.Option(
+            "--corp-actions/--no-corp-actions",
+            help="After the bar ingest, pull splits/dividends for the ingested ids.",
+        ),
+    ] = True,
+    profile: _ProfileOpt = None,
+) -> None:
+    """Ingest US equity daily bars from the Polygon S3 flat files (resumable; rerun-safe).
+
+    One gzipped CSV per trading day holds EVERY ticker that traded — the lake is
+    survivorship-free by construction (delisted names land too). Prices are stored RAW;
+    split/dividend adjustment is reconstructed point-in-time at feature time, never here.
+    Crash/interrupt at any point and rerun: already-ingested sessions are skipped (a single
+    monotonic day watermark) and the writer dedupes any overlap. Exit code 1 if any session
+    failed.
+    """
+    from alphaforge.core.errors import ConfigError
+    from alphaforge.data.ingest.equities import EquitiesFlatFilesJob
+    from alphaforge.data.store.lake import LakePaths
+    from alphaforge.data.store.writer import LakeWriter
+
+    settings = _load_settings(profile)
+    _setup_logging(settings)
+    start_ms = _parse_cli_utc(start, param="--start")
+    until_ms = None if until is None else _parse_cli_utc(until, param="--until")
+    now = now_ms()
+
+    if max_tickers is not None:
+        typer.echo(
+            f"WARNING: --max-tickers {max_tickers} caps each day to the top-{max_tickers} "
+            "names by dollar volume — this is NON-survivorship-safe; research must run "
+            "uncapped.",
+            err=True,
+        )
+
+    with _open_stores(settings) as (_instruments, checkpoints):
+        try:
+            source = _build_flatfiles_source()
+        except ConfigError as exc:
+            typer.echo(f"error: {exc}", err=True)
+            raise typer.Exit(1) from exc
+        job = EquitiesFlatFilesJob(
+            source,
+            LakeWriter(LakePaths(settings.paths.lake_dir)),
+            checkpoints,
+            max_tickers=max_tickers,
+            lock_path=settings.paths.var_dir / "ingest.lock",
+        )
+        report = job.run(start=start_ms, until=until_ms, now=now)
+        _print_equities_report(report)
+
+        if corp_actions:
+            try:
+                instruments_n, actions_n = _ingest_corporate_actions(
+                    settings, checkpoints, until=now, now=now
+                )
+                typer.echo(
+                    f"corporate-actions: instruments={instruments_n} actions={actions_n}"
+                )
+            except ConfigError as exc:
+                typer.echo(f"corporate-actions skipped: {exc}", err=True)
+
+    if report.failed_count:
+        raise typer.Exit(1)

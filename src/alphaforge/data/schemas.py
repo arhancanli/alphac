@@ -36,6 +36,7 @@ from alphaforge.core.errors import SchemaError
 from alphaforge.core.time import Ms, Timeframe, available_at
 
 __all__ = [
+    "CORPORATE_ACTIONS_SCHEMA",
     "FLAG_AVAILABILITY_LAG_BARS",
     "FUNDING_SCHEMA",
     "OHLCV_DATASETS",
@@ -74,6 +75,7 @@ class Dataset(StrEnum):
     OHLCV_4H = "ohlcv_4h"
     OHLCV_1D = "ohlcv_1d"
     FUNDING = "funding"
+    CORPORATE_ACTIONS = "corporate_actions"
     UNIVERSE_MEMBERSHIP = "universe_membership"
 
 
@@ -295,6 +297,74 @@ FUNDING_SCHEMA: Final[pa.Schema] = pa.schema(
 """Funding settlements with explicit point-in-time ``available_at``."""
 
 
+CORPORATE_ACTIONS_SCHEMA: Final[pa.Schema] = pa.schema(
+    [
+        pa.field(
+            "instrument_id",
+            pa.string(),
+            nullable=False,
+            metadata={"doc": "canonical id, e.g. XNAS:CASH:AAPLUSD"},
+        ),
+        pa.field(
+            "action_type",
+            pa.string(),
+            nullable=False,
+            metadata={"doc": "'split' or 'dividend'"},
+        ),
+        pa.field(
+            "ex_date",
+            pa.timestamp("ms", tz="UTC"),
+            nullable=False,
+            metadata={"doc": "ex/effective date, 00:00 UTC"},
+        ),
+        pa.field(
+            "available_at",
+            pa.timestamp("ms", tz="UTC"),
+            nullable=False,
+            metadata={
+                "doc": (
+                    "knowable_date + publication lag; ALL adjustment joins use this "
+                    "column, never ex_date (leakage finding 18)"
+                )
+            },
+        ),
+        pa.field(
+            "ratio",
+            pa.float64(),
+            nullable=False,
+            metadata={"doc": "split: split_to/split_from; dividend: 1.0"},
+        ),
+        pa.field(
+            "cash_amount",
+            pa.float64(),
+            nullable=True,
+            metadata={"doc": "dividend cash per share; null for splits"},
+        ),
+        pa.field(
+            "ingested_at",
+            pa.timestamp("ms", tz="UTC"),
+            nullable=False,
+            metadata={"doc": "wall clock at write; audit only"},
+        ),
+    ],
+    metadata={
+        b"alphaforge.schema_version": b"1",
+        b"alphaforge.dataset": b"corporate_actions",
+    },
+)
+"""Corporate-action settlements (splits + dividends) with explicit point-in-time
+``available_at`` — the equity analogue of :data:`FUNDING_SCHEMA`.
+
+One row per action; ``available_at`` is the knowable-by timestamp ALL downstream
+adjustment joins use (never ``ex_date``; leakage finding 18). Splits carry
+``ratio = split_to/split_from`` with a null ``cash_amount``; dividends carry
+``ratio = 1.0`` and the cash-per-share amount. The PIT adjusted-close
+reconstruction (:func:`~alphaforge.features.library.equity_price.adjusted_close`)
+folds ``ratio`` backward into history. ``ex_date`` is the within-leaf dedupe/sort
+natural key (see :data:`~alphaforge.data.store.writer.NATURAL_KEY_COLUMN`).
+"""
+
+
 UNIVERSE_SCHEMA: Final[pa.Schema] = pa.schema(
     [
         pa.field(
@@ -345,6 +415,7 @@ _SCHEMAS: Final[dict[Dataset, pa.Schema]] = {
     Dataset.OHLCV_4H: OHLCV_SCHEMA.with_metadata(_metadata(Dataset.OHLCV_4H)),
     Dataset.OHLCV_1D: OHLCV_SCHEMA.with_metadata(_metadata(Dataset.OHLCV_1D)),
     Dataset.FUNDING: FUNDING_SCHEMA,
+    Dataset.CORPORATE_ACTIONS: CORPORATE_ACTIONS_SCHEMA,
     Dataset.UNIVERSE_MEMBERSHIP: UNIVERSE_SCHEMA,
 }
 

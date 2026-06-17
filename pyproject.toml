@@ -24,6 +24,7 @@ dependencies = [
     "clarabel>=0.11.1",
     "osqp>=1.1.2",
     "exchange-calendars>=4.5",
+    "boto3>=1.43.31",
 ]
 
 [project.scripts]
@@ -38,6 +39,7 @@ dev = [
     "mypy>=1.10",
     "pandas-stubs>=2.2",
     "types-pyyaml>=6.0",
+    "boto3-stubs[s3]>=1.43.31",
 ]
 
 [build-system]
@@ -64,7 +66,16 @@ packages = ["alphaforge"]
 warn_unreachable = true
 
 [[tool.mypy.overrides]]
-module = ["ccxt.*", "duckdb.*", "scipy.*", "sklearn.*", "joblib.*", "exchange_calendars.*"]
+module = [
+    "ccxt.*",
+    "duckdb.*",
+    "scipy.*",
+    "sklearn.*",
+    "joblib.*",
+    "exchange_calendars.*",
+    "boto3.*",
+    "botocore.*",
+]
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]
