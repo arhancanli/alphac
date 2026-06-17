@@ -38,6 +38,7 @@ from __future__ import annotations
 import csv
 import gzip
 import io
+import logging
 import os
 from collections.abc import Iterable
 from dataclasses import dataclass
@@ -50,6 +51,15 @@ from alphaforge.core.errors import ConfigError, SchemaError
 from alphaforge.core.symbols import SymbolMapper
 from alphaforge.core.time import Ms, Timeframe, floor_bar, from_ms, now_ms, to_ms
 from alphaforge.data.schemas import OHLCV_SCHEMA, Dataset, validate_table
+
+_LOG = logging.getLogger(__name__)
+
+# Max fraction of a day's tickers that may be skipped as unmappable before the day
+# fails loud. A handful of stray ETFs/special tickers (e.g. one whose canonical form
+# ends in the synthetic 'USD' quote) is expected and fine; a large fraction means a
+# systematic id-mapping regression, not data noise, and must NOT silently shrink the
+# universe.
+_MAX_SKIP_FRAC: Final[float] = 0.02
 
 if TYPE_CHECKING:
     from mypy_boto3_s3.client import S3Client
@@ -181,6 +191,18 @@ def parse_day_csv(data: bytes) -> list[_DayRow]:
         ticker = record["ticker"].strip()
         if not ticker:
             raise SchemaError(f"day-aggs row has an empty ticker: {raw!r}")
+        # Common-stock filter. Polygon encodes preferred shares / warrants / units /
+        # rights with a LOWERCASE letter in the ticker (e.g. "BCpC" is a preferred
+        # class, distinct from common "BCPC"; "TpC" vs "TPC"). Those are NOT the equity
+        # factor sleeve's target (momentum / low-vol / betting-against-beta are
+        # common-stock anomalies), and after the case-folding canonicalization they
+        # collide with the common stock (the writer correctly refuses to merge two
+        # distinct securities into one id). Skipping them yields the common-stock
+        # universe, still survivorship-free for common stock (delisted commons are kept;
+        # only non-common instruments are dropped). Class shares like "BRK.B" are
+        # all-uppercase and are retained.
+        if any(c.islower() for c in ticker):
+            continue
         out.append(
             _DayRow(
                 ticker=ticker,
@@ -398,13 +420,23 @@ class PolygonFlatFilesSource:
         """Map parsed rows → an :data:`OHLCV_SCHEMA` table, guarded + sorted + unique."""
         d_ms = Timeframe.D1.ms
         mapped: dict[str, tuple[Ms, _DayRow]] = {}
+        skipped_unmappable = 0
         for row in rows:
             ts_open = floor_bar(row.window_start_ns // _NS_PER_MS, Timeframe.D1)
             if ts_open + d_ms > now:
                 continue  # in-progress bar: close is in the future — never serve it
-            instrument_id = SymbolMapper.equity_instrument_id(
-                self._mic, _canonical_ticker(row.ticker)
-            )
+            try:
+                instrument_id = SymbolMapper.equity_instrument_id(
+                    self._mic, _canonical_ticker(row.ticker)
+                )
+            except SchemaError:
+                # A ticker that cannot form a valid equity id (e.g. one whose canonical
+                # form ends in the synthetic 'USD' quote, like the 'USD' ETF). These are
+                # rare and never common-stock factor targets; skip + count rather than
+                # fail the whole day. A SYSTEMATIC mapping problem still fails loud via
+                # the high-skip-fraction guard below.
+                skipped_unmappable += 1
+                continue
             if instrument_id in mapped:
                 raise SchemaError(
                     f"duplicate (instrument_id, ts_open) within one day-aggs file: "
@@ -412,6 +444,20 @@ class PolygonFlatFilesSource:
                     "two tickers canonicalize to the same equity id"
                 )
             mapped[instrument_id] = (ts_open, row)
+
+        total = len(mapped) + skipped_unmappable
+        if total and skipped_unmappable / total > _MAX_SKIP_FRAC:
+            raise SchemaError(
+                f"day-aggs: skipped {skipped_unmappable}/{total} unmappable tickers "
+                f"(> {_MAX_SKIP_FRAC:.0%}) — a systematic id-mapping regression, not stray "
+                "ETFs; refusing to silently shrink the universe"
+            )
+        if skipped_unmappable:
+            _LOG.info(
+                "day-aggs: skipped %d unmappable ticker(s); kept %d",
+                skipped_unmappable,
+                len(mapped),
+            )
 
         ordered = sorted(mapped.items())  # sort by instrument_id; one ts_open per id
         table = pa.Table.from_pydict(
