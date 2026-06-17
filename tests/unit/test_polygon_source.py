@@ -10,7 +10,7 @@ import pyarrow as pa
 import pytest
 
 from alphaforge.core.errors import ConfigError, SchemaError
-from alphaforge.core.symbols import SymbolMapper
+from alphaforge.core.symbols import EQUITY_MIC, SymbolMapper
 from alphaforge.core.time import Timeframe, parse_utc
 from alphaforge.core.types import AssetClass, MarketType
 from alphaforge.data.schemas import Dataset, validate_table
@@ -27,9 +27,11 @@ D = Timeframe.D1.ms
 T0 = 1_704_067_200_000  # 2024-01-01T00:00:00Z (a session-date open, 00:00 UTC)
 AS_OF = 1_717_200_000_000  # 2024-06-01T00:00:00Z
 
-AAPL_ID = SymbolMapper.equity_instrument_id("XNAS", "AAPL")  # XNAS:CASH:AAPLUSD
-BRKB_ID = SymbolMapper.equity_instrument_id("XNYS", "BRKB")  # XNYS:CASH:BRKBUSD
-LEHMQ_ID = SymbolMapper.equity_instrument_id("XNYS", "LEHMQ")  # delisted name
+# All equity ids use the canonical synthetic venue EQUITY_MIC ("XUSE") — the seeder ignores
+# the real primary_exchange so its ids match the flat-files bars (which carry no exchange).
+AAPL_ID = SymbolMapper.equity_instrument_id(EQUITY_MIC, "AAPL")  # XUSE:CASH:AAPLUSD
+BRKB_ID = SymbolMapper.equity_instrument_id(EQUITY_MIC, "BRKB")  # XUSE:CASH:BRKBUSD
+LEHMQ_ID = SymbolMapper.equity_instrument_id(EQUITY_MIC, "LEHMQ")  # delisted name
 
 LEHMAN_LIST_DATE = "1994-09-01"
 LEHMAN_DELIST = "2008-09-17T00:00:00Z"  # Lehman delisting (the equity FTT analogue)
@@ -279,8 +281,8 @@ class TestListInstruments:
         src = make_source(FakeClient(active_tickers=active))
         ids = [inst.instrument_id for inst in src.list_instruments(as_of=AS_OF)]
         assert ids == [
-            SymbolMapper.equity_instrument_id("XNAS", "AAPL"),
-            SymbolMapper.equity_instrument_id("XNAS", "TSM"),
+            SymbolMapper.equity_instrument_id(EQUITY_MIC, "AAPL"),
+            SymbolMapper.equity_instrument_id(EQUITY_MIC, "TSM"),
         ]
 
     def test_equity_instrument_fields(self) -> None:
@@ -370,7 +372,9 @@ class TestListInstruments:
         ]
         src = make_source(FakeClient(ticker_pages=pages, inactive_tickers=[]))
         ids = [inst.instrument_id for inst in src.list_instruments(as_of=AS_OF)]
-        assert ids == [SymbolMapper.equity_instrument_id("XNAS", t) for t in ("AAA", "BBB", "CCC")]
+        assert ids == [
+            SymbolMapper.equity_instrument_id(EQUITY_MIC, t) for t in ("AAA", "BBB", "CCC")
+        ]
 
     def test_rate_budget_charged_per_request_default_no_enrichment(self) -> None:
         budget = SpyBudget()

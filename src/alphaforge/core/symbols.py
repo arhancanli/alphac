@@ -23,6 +23,7 @@ from alphaforge.core.errors import SchemaError
 from alphaforge.core.types import MarketType
 
 __all__ = [
+    "EQUITY_MIC",
     "KNOWN_QUOTES",
     "SymbolMapper",
 ]
@@ -49,6 +50,16 @@ KNOWN_QUOTES: Final[tuple[str, ...]] = (
 #: currency. Stripped by fixed length in :meth:`SymbolMapper.parse_equity_id` (never by
 #: KNOWN_QUOTES suffix matching), so quote-colliding tickers round-trip (critique B4).
 _EQUITY_QUOTE: Final[str] = "USD"
+
+#: Canonical synthetic venue segment for EVERY US cash-equity instrument_id ("XUSE" =
+#: "US equities, exchange-unspecified"). It is THE single source of truth for the equity
+#: id's MIC segment: the Polygon flat-files day-aggs carry no per-row listing exchange, so
+#: bars must use a synthetic venue — and the reference seeder MUST use the SAME one or the
+#: bars and the SCD2 instrument record key under different ids and never join. The real
+#: listing venue is intentionally NOT in the id (and is not needed: ``calendar_for`` is
+#: keyed on AssetClass, not MIC). Both ``polygon_flatfiles`` and ``polygon_source`` build
+#: ids with this constant.
+EQUITY_MIC: Final[str] = "XUSE"
 
 _MARKET_LABELS: Final[dict[str, MarketType]] = {m.name: m for m in MarketType}
 

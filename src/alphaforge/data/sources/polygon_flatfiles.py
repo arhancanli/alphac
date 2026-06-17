@@ -48,7 +48,7 @@ from typing import TYPE_CHECKING, Final, Protocol
 import pyarrow as pa
 
 from alphaforge.core.errors import ConfigError, SchemaError
-from alphaforge.core.symbols import SymbolMapper
+from alphaforge.core.symbols import EQUITY_MIC, SymbolMapper
 from alphaforge.core.time import Ms, Timeframe, floor_bar, from_ms, now_ms, to_ms
 from alphaforge.data.schemas import OHLCV_SCHEMA, Dataset, validate_table
 
@@ -78,16 +78,18 @@ DAY_AGGS_PREFIX: Final[str] = "us_stocks_sip/day_aggs_v1"
 
 _NS_PER_MS: Final[int] = 1_000_000
 
-FLATFILES_MIC: Final[str] = "XUSE"
-"""Default MIC segment for a flat-files ticker.
+FLATFILES_MIC: Final[str] = EQUITY_MIC
+"""MIC segment for a flat-files ticker — the canonical
+:data:`~alphaforge.core.symbols.EQUITY_MIC` (``"XUSE"``).
 
-The day-aggs file carries no listing exchange, so flat-files bars use a single
-synthetic venue segment (``"XUSE"`` — "US equities, exchange-unspecified") and the
-*real* listing MIC is attached later by the SCD2 :class:`~alphaforge.core.instruments.Instrument`
-record (EQUITIES_INGEST.md §1.6). The SCD2 record for an equity is stored under THIS
-flat-files id so bar partitions, universe intervals, and factor reads all key
-identically; the real MIC is carried as an Instrument attribute, never in the id. This
-keeps bar ids stable and collision-free without a per-row reference lookup at ingest.
+The day-aggs file carries no listing exchange, so flat-files bars use the single synthetic
+venue segment ``EQUITY_MIC`` ("US equities, exchange-unspecified"). The reference seeder
+(:mod:`~alphaforge.data.sources.polygon_source`) builds its SCD2
+:class:`~alphaforge.core.instruments.Instrument` ids from the SAME constant, so bar
+partitions, universe intervals, and factor reads all key identically — the bars and the
+instrument record can never diverge under different MICs. The real listing venue is
+intentionally NOT in the id (and is not needed: ``calendar_for`` is keyed on AssetClass),
+so no per-row reference lookup is required at ingest.
 """
 
 #: CSV header the day-aggs files carry, in their exact column order. Validated on every

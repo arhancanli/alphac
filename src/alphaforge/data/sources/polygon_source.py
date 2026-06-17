@@ -22,10 +22,12 @@ Why this differs from the crypto (ccxt) source, and how the difference is handle
 * **Session calendar, daily bars.** Daily (:data:`~alphaforge.core.time.Timeframe.D1`)
   is the v1 native timeframe; an intraday request raises ``NotImplementedError`` so an
   accidental mis-aligned fetch fails loud rather than returning bad bars.
-* **Survivorship-free identity.** Equity ids are collision-free
-  (``"XNAS:CASH:AAPLUSD"`` via :meth:`SymbolMapper.equity_instrument_id`); a ticker that
-  itself ends in a crypto quote token (``BTC``, ``ETH``) round-trips intact, never
-  mis-split by the crypto ``KNOWN_QUOTES`` matcher (EQUITIES_CRITIQUE.md B4).
+* **Survivorship-free identity.** Equity ids are collision-free and built on the
+  canonical synthetic venue ``EQUITY_MIC`` (``"XUSE:CASH:AAPLUSD"`` via
+  :meth:`SymbolMapper.equity_instrument_id`) — the SAME MIC the flat-files bar ingest uses,
+  so a name's reference record and its bars key identically; a ticker that itself ends in a
+  crypto quote token (``BTC``, ``ETH``) round-trips intact, never mis-split by the crypto
+  ``KNOWN_QUOTES`` matcher (EQUITIES_CRITIQUE.md B4).
 
 The concrete REST shape is Polygon's documented API (aggregates/bars, reference tickers
 + delisted tickers, splits, dividends), reached through :class:`PolygonClientProtocol`
@@ -50,7 +52,7 @@ import pyarrow as pa
 
 from alphaforge.core.errors import ConfigError, SchemaError
 from alphaforge.core.instruments import Instrument
-from alphaforge.core.symbols import SymbolMapper
+from alphaforge.core.symbols import EQUITY_MIC, SymbolMapper
 from alphaforge.core.time import Ms, Timeframe, from_ms, now_ms, parse_utc
 from alphaforge.core.types import AssetClass, MarketType
 from alphaforge.data.ingest.retry import RateBudget, transient_retry
@@ -97,17 +99,6 @@ _COMMON_EQUITY_TYPES: Final[frozenset[str]] = frozenset({"CS", "ADRC"})
 Depositary Receipt common (``ADRC``). ETFs, ETNs, warrants, units, preferred shares,
 funds, and indices are excluded — the equity analogue of the crypto USDT-perp-only
 filter. Documented so widening the universe is a one-line, reviewable change."""
-
-_PRIMARY_EXCHANGE_TO_MIC: Final[dict[str, str]] = {
-    "XNAS": "XNAS",
-    "XNYS": "XNYS",
-    "ARCX": "ARCX",
-    "BATS": "BATS",
-    "XASE": "XASE",
-}
-"""Polygon ``primary_exchange`` MIC → canonical id exchange segment. Polygon already
-reports MICs, so this is largely identity; unlisted MICs fall back to the raw value
-uppercased (a new venue must not silently drop instruments)."""
 
 _DEFAULT_TICK_SIZE: Final[float] = 0.01
 """Penny tick — the US equity default (sub-dollar names trade in 0.0001 increments;
@@ -353,12 +344,17 @@ class PolygonEquitiesSource(DataSource):
     ) -> Instrument:
         """Map a Polygon ticker (listing row + details) to a populated :class:`Instrument`.
 
-        Identity: ``primary_exchange`` (MIC) + the canonicalized ticker build the
-        collision-free id via :meth:`SymbolMapper.equity_instrument_id`; the raw vendor
-        ticker is recorded in ``self._vendor_ticker`` for the fetch round-trip. Lifecycle
-        is the **survivorship spine**: ``list_date`` → ``listed_ts`` (0 when absent),
-        ``delisted_utc`` → ``delisted_ts`` (``None`` while active). Filters/fees are
-        documented US-equity defaults (Polygon exposes no per-symbol tick).
+        Identity: the canonical synthetic venue :data:`~alphaforge.core.symbols.EQUITY_MIC`
+        + the canonicalized ticker build the id via :meth:`SymbolMapper.equity_instrument_id`;
+        the raw vendor ticker is recorded in ``self._vendor_ticker`` for the fetch round-trip.
+        The id MUST use ``EQUITY_MIC`` (not the real ``primary_exchange``): the flat-files
+        day-aggs that supply the bars carry no per-row exchange, so they key on ``EQUITY_MIC``
+        — using the real listing MIC here would put a name's reference record and its bars
+        under different ids that never join. The real venue is not needed downstream
+        (``calendar_for`` is keyed on AssetClass, not MIC). Lifecycle is the **survivorship
+        spine**: ``list_date`` → ``listed_ts`` (0 when absent), ``delisted_utc`` →
+        ``delisted_ts`` (``None`` while active). Filters/fees are documented US-equity
+        defaults (Polygon exposes no per-symbol tick).
 
         Raises:
             SchemaError: a ticker row with no usable ``ticker`` field.
@@ -366,12 +362,8 @@ class PolygonEquitiesSource(DataSource):
         vendor_ticker = listing.get("ticker") or details.get("ticker")
         if not isinstance(vendor_ticker, str) or not vendor_ticker:
             raise SchemaError(f"Polygon ticker row missing 'ticker': {listing!r}")
-        raw_mic = str(
-            listing.get("primary_exchange") or details.get("primary_exchange") or ""
-        ).upper()
-        mic = _PRIMARY_EXCHANGE_TO_MIC.get(raw_mic, raw_mic or "XNAS")
         canonical = self._canonical_ticker(vendor_ticker)
-        instrument_id = SymbolMapper.equity_instrument_id(mic, canonical)
+        instrument_id = SymbolMapper.equity_instrument_id(EQUITY_MIC, canonical)
         self._vendor_ticker[instrument_id] = vendor_ticker
 
         list_date = listing.get("list_date") or details.get("list_date")
