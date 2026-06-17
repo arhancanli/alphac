@@ -154,8 +154,10 @@ def concurrency(events: pd.DataFrame, *, timeframe: Timeframe = Timeframe.H1) ->
 
     if not counts:
         return pd.Series(
-            [], index=pd.MultiIndex.from_arrays([[], []], names=_INDEX_NAMES),
-            dtype="int64", name="concurrency",
+            [],
+            index=pd.MultiIndex.from_arrays([[], []], names=_INDEX_NAMES),
+            dtype="int64",
+            name="concurrency",
         )
     index = pd.MultiIndex.from_tuples(sorted(counts), names=_INDEX_NAMES)
     values = [counts[key] for key in index]
@@ -329,9 +331,7 @@ def sample_weights(
     _validate_event_frame(events)
     returns = _bar_open_returns(bars, timeframe=timeframe)
     conc = concurrency(events, timeframe=timeframe)
-    weights = attribution_weights(
-        events, returns, conc, time_decay=time_decay, timeframe=timeframe
-    )
+    weights = attribution_weights(events, returns, conc, time_decay=time_decay, timeframe=timeframe)
     weights = weights * _cross_sectional_decorr(weights.index)
     weights.name = "sample_weight"
     return weights
@@ -361,8 +361,10 @@ def _to_series(data: dict[tuple[int, str], float], *, name: str) -> pd.Series:
     """Build a float64 Series on the sorted ``(ts_open, instrument_id)`` MultiIndex."""
     if not data:
         return pd.Series(
-            [], index=pd.MultiIndex.from_arrays([[], []], names=_INDEX_NAMES),
-            dtype="float64", name=name,
+            [],
+            index=pd.MultiIndex.from_arrays([[], []], names=_INDEX_NAMES),
+            dtype="float64",
+            name=name,
         )
     index = pd.MultiIndex.from_tuples(sorted(data), names=_INDEX_NAMES)
     return pd.Series([data[key] for key in index], index=index, dtype="float64", name=name)
@@ -421,13 +423,12 @@ def _bar_open_returns(bars: pd.DataFrame, *, timeframe: Timeframe) -> pd.Series:
         nxt = opens.reindex(ts + step).to_numpy()
         with np.errstate(divide="ignore", invalid="ignore"):
             log_ret = np.log(nxt / opens.to_numpy())
-        idx = pd.MultiIndex.from_arrays(
-            [ts, np.full(len(ts), instrument_id)], names=_INDEX_NAMES
-        )
+        idx = pd.MultiIndex.from_arrays([ts, np.full(len(ts), instrument_id)], names=_INDEX_NAMES)
         pieces.append(pd.Series(log_ret, index=idx))
     if not pieces:
         return pd.Series(
-            [], index=pd.MultiIndex.from_arrays([[], []], names=_INDEX_NAMES),
+            [],
+            index=pd.MultiIndex.from_arrays([[], []], names=_INDEX_NAMES),
             dtype="float64",
         )
     result: pd.Series = pd.concat(pieces).sort_index()

@@ -281,9 +281,7 @@ def _gate(research: pd.DataFrame, magnitude: pd.Series, names: tuple[str, ...]) 
     ``gate_signal_frame`` with an IdentityRegime (all-1.0 ``G`` — the meta gate is the one
     under test here; the regime gate is exercised in its own dedicated test).
     """
-    feature_frame = (
-        assemble_meta_features(research, {}, names) if names else None
-    )
+    feature_frame = assemble_meta_features(research, {}, names) if names else None
     meta = _StubMeta(magnitude, names)
     days = pd.Index(
         sorted({(int(t) // DAY) * DAY for t in research.index.get_level_values("ts_open")}),
@@ -297,9 +295,7 @@ def _gate(research: pd.DataFrame, magnitude: pd.Series, names: tuple[str, ...]) 
 
 def _finite_blend_rows(research: pd.DataFrame) -> npt.NDArray[np.bool_]:
     """Boolean mask of rows whose ungated blend Ã is finite (the tradable cross-section)."""
-    finite: npt.NDArray[np.bool_] = np.isfinite(
-        research[ALPHA_BLEND_COLUMN].to_numpy(dtype=float)
-    )
+    finite: npt.NDArray[np.bool_] = np.isfinite(research[ALPHA_BLEND_COLUMN].to_numpy(dtype=float))
     return finite
 
 

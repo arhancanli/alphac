@@ -165,9 +165,7 @@ class TripleBarrierConfig:
         if self.vol_span < 1:
             raise ValueError(f"vol_span must be >= 1; got {self.vol_span}")
         if self.vertical_zero_band < 0.0:
-            raise ValueError(
-                f"vertical_zero_band must be >= 0; got {self.vertical_zero_band}"
-            )
+            raise ValueError(f"vertical_zero_band must be >= 0; got {self.vertical_zero_band}")
 
 
 def _validate_bars(bars: pd.DataFrame) -> None:
@@ -176,9 +174,7 @@ def _validate_bars(bars: pd.DataFrame) -> None:
     if missing:
         raise ValueError(f"bars is missing required columns: {sorted(missing)}")
     if not pd.api.types.is_integer_dtype(bars["ts_open"]):
-        raise TypeError(
-            f"ts_open must be int64 epoch-ms UTC; got dtype {bars['ts_open'].dtype}"
-        )
+        raise TypeError(f"ts_open must be int64 epoch-ms UTC; got dtype {bars['ts_open'].dtype}")
     if bars.duplicated(["instrument_id", "ts_open"]).any():
         raise ValueError("bars contains duplicate (instrument_id, ts_open) rows")
     for col in ("open", "high", "low", "close"):
@@ -194,9 +190,7 @@ def _validate_events(events: pd.DataFrame) -> None:
     if missing:
         raise ValueError(f"events is missing required columns: {sorted(missing)}")
     if not pd.api.types.is_integer_dtype(events["ts"]):
-        raise TypeError(
-            f"events.ts must be int64 epoch-ms UTC; got dtype {events['ts'].dtype}"
-        )
+        raise TypeError(f"events.ts must be int64 epoch-ms UTC; got dtype {events['ts'].dtype}")
     if events.duplicated(["ts", "instrument_id"]).any():
         raise ValueError("events contains duplicate (ts, instrument_id) rows")
     sides = events["side"].to_numpy()
@@ -219,9 +213,7 @@ def _grid_sigma(close: pd.Series, ts: np.ndarray, span: int, step: int) -> pd.Se
     return sigma_grid.reindex(ts)
 
 
-def _funding_asof(
-    funding: pd.DataFrame, instrument_id: str, decision_ts: np.ndarray
-) -> np.ndarray:
+def _funding_asof(funding: pd.DataFrame, instrument_id: str, decision_ts: np.ndarray) -> np.ndarray:
     """Last-known funding ``rate`` per decision instant for one instrument.
 
     Reuses the sanctioned backward as-of mechanics of
@@ -590,9 +582,7 @@ def apply_triple_barrier(
         # meta_label = 1{ net ret > 0 }, on the SIDE-SIGNED net return (finding 2).
         meta_label = np.where(np.isnan(ret), 0, (ret > 0.0).astype(np.int8)).astype(np.int8)
 
-        index = pd.MultiIndex.from_arrays(
-            [event_ts, np.full(n_events, iid)], names=_INDEX_NAMES
-        )
+        index = pd.MultiIndex.from_arrays([event_ts, np.full(n_events, iid)], names=_INDEX_NAMES)
         frame = pd.DataFrame(
             {
                 "entry_ts": scan["entry_ts"],

@@ -443,9 +443,7 @@ def gated_run(env: Env, tmp_path_factory: pytest.TempPathFactory) -> Iterator[_G
 class TestNoTestSpanLeak:
     """D3/D4: NO ``ts_open >= test_start`` row enters EITHER real fit, for every leg."""
 
-    def test_at_least_one_real_meta_and_hmm_fit_fired(
-        self, gated_run: _GatedRun
-    ) -> None:
+    def test_at_least_one_real_meta_and_hmm_fit_fired(self, gated_run: _GatedRun) -> None:
         """The spies fired — a real HistGBM AND a real RegimeHMM fit actually ran.
 
         Guards against a vacuous leak proof: if every leg cold-started to identity, the
@@ -460,9 +458,7 @@ class TestNoTestSpanLeak:
             "(the daily-BTC series is too short to cross MIN_FIT_DAYS on any leg)"
         )
 
-    def test_no_meta_fit_consumed_a_test_span_decision_bar(
-        self, gated_run: _GatedRun
-    ) -> None:
+    def test_no_meta_fit_consumed_a_test_span_decision_bar(self, gated_run: _GatedRun) -> None:
         """Every meta fit's max decision ``ts_open`` precedes its leg's ``test_start`` (D4).
 
         The fits fire in leg order; each captured max must sit strictly before SOME leg's
@@ -485,9 +481,7 @@ class TestNoTestSpanLeak:
                 f"{leg_test_start} (a test-span bar leaked into the per-leg meta fit)"
             )
 
-    def test_no_hmm_fit_consumed_a_test_span_daily_obs(
-        self, gated_run: _GatedRun
-    ) -> None:
+    def test_no_hmm_fit_consumed_a_test_span_daily_obs(self, gated_run: _GatedRun) -> None:
         """Every HMM fit's max daily ``obs.index`` precedes its leg's ``test_start`` (D3).
 
         The expanding window is sliced ``ts_open < test_start`` BEFORE build_observations, so the
@@ -528,9 +522,7 @@ class TestColdStartFallback:
             "(the daily-BTC anchor no longer straddles MIN_FIT_DAYS across the leg fan)"
         )
 
-    def test_cold_start_count_matches_legs_below_min_fit_days(
-        self, gated_run: _GatedRun
-    ) -> None:
+    def test_cold_start_count_matches_legs_below_min_fit_days(self, gated_run: _GatedRun) -> None:
         """The fallback count equals the number of legs whose < test_start window is < MIN_FIT_DAYS.
 
         Cross-checks the runner's ``gate_inactive`` against the daily series directly: a leg
@@ -575,9 +567,7 @@ class TestColdStartFallback:
 class TestOneStitchedArtifactSet:
     """One stitched OOS artifact set is written for the whole gated walk-forward."""
 
-    def test_single_equity_json_tearsheet_and_legs_tree(
-        self, gated_run: _GatedRun
-    ) -> None:
+    def test_single_equity_json_tearsheet_and_legs_tree(self, gated_run: _GatedRun) -> None:
         out_dir = gated_run.out_dir
         assert (out_dir / "equity.parquet").exists()
         assert (out_dir / "walkforward.json").exists()

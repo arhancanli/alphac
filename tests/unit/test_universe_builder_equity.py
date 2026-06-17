@@ -161,9 +161,7 @@ def all_seven() -> list[Instrument]:
 def standard_jan_adv(env: Env) -> None:
     """7 names, Jan daily dollar volumes 7e9..1e9 → ADV ranks AAPL=1 .. TSLA=7 at T_FEB."""
     advs = (7e9, 6e9, 5e9, 4e9, 3e9, 2e9, 1e9)
-    for instrument_id, dv in zip(
-        (AAPL, MSFT, NVDA, AMZN, GOOG, META, TSLA), advs, strict=True
-    ):
+    for instrument_id, dv in zip((AAPL, MSFT, NVDA, AMZN, GOOG, META, TSLA), advs, strict=True):
         env.write_daily(instrument_id, JAN_DAYS, dv)
 
 

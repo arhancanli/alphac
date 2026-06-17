@@ -218,8 +218,7 @@ def build_observations(daily_btc: pd.DataFrame) -> pd.DataFrame:
     frame = frame.loc[finite]
     if len(frame) < MIN_FIT_DAYS:
         raise ValueError(
-            f"need >= {MIN_FIT_DAYS} finite daily observations to fit the HMM; "
-            f"got {len(frame)}"
+            f"need >= {MIN_FIT_DAYS} finite daily observations to fit the HMM; got {len(frame)}"
         )
     frame[_AVAILABLE_AT] = frame[_AVAILABLE_AT].astype(np.int64)
     result: pd.DataFrame = frame.copy()
@@ -270,9 +269,7 @@ def _log_emissions(
     n_states = means.shape[0]
     out = np.empty((x.shape[0], n_states), dtype=np.float64)
     for k in range(n_states):
-        out[:, k] = multivariate_normal.logpdf(
-            x, mean=means[k], cov=covs[k], allow_singular=False
-        )
+        out[:, k] = multivariate_normal.logpdf(x, mean=means[k], cov=covs[k], allow_singular=False)
     return out
 
 
@@ -327,9 +324,7 @@ def _backward(
     return beta
 
 
-def _kmeanspp_means(
-    x: npt.NDArray[np.float64], n_states: int, rng: np.random.Generator
-) -> _F64:
+def _kmeanspp_means(x: npt.NDArray[np.float64], n_states: int, rng: np.random.Generator) -> _F64:
     """k-means++-style pick of ``n_states`` observation rows as initial means.
 
     The first centre is a uniform random row; each subsequent centre is drawn with
@@ -340,9 +335,7 @@ def _kmeanspp_means(
     first = int(rng.integers(n_obs))
     centres = [x[first]]
     for _ in range(1, n_states):
-        dist_sq = np.min(
-            np.stack([np.sum((x - c) ** 2, axis=1) for c in centres], axis=0), axis=0
-        )
+        dist_sq = np.min(np.stack([np.sum((x - c) ** 2, axis=1) for c in centres], axis=0), axis=0)
         total = float(dist_sq.sum())
         if total <= 0.0:  # all points coincide with a centre — fall back to uniform
             idx = int(rng.integers(n_obs))
@@ -553,21 +546,22 @@ class RegimeHMM:
         """
         x = self._extract(obs)
         if x.shape[0] < MIN_FIT_DAYS:
-            raise ValueError(
-                f"need >= {MIN_FIT_DAYS} observations to fit; got {x.shape[0]}"
-            )
+            raise ValueError(f"need >= {MIN_FIT_DAYS} observations to fit; got {x.shape[0]}")
         if not np.all(np.isfinite(x)):
             raise ValueError("obs contains non-finite m/v values; clean gaps before fit")
 
         seed_seq = np.random.SeedSequence(self._random_state)
         child_seeds = seed_seq.spawn(self._n_seeds)
-        best: tuple[
-            npt.NDArray[np.float64],
-            npt.NDArray[np.float64],
-            npt.NDArray[np.float64],
-            npt.NDArray[np.float64],
-            float,
-        ] | None = None
+        best: (
+            tuple[
+                npt.NDArray[np.float64],
+                npt.NDArray[np.float64],
+                npt.NDArray[np.float64],
+                npt.NDArray[np.float64],
+                float,
+            ]
+            | None
+        ) = None
         best_seed = -1
         for seed_idx, child in enumerate(child_seeds):
             rng = np.random.default_rng(child)

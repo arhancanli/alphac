@@ -602,9 +602,7 @@ class PolygonEquitiesSource(DataSource):
             f"(instrument {instrument_id!r})"
         )
 
-    def fetch_corporate_actions(
-        self, instrument_id: str, *, since: Ms, until: Ms
-    ) -> pa.Table:
+    def fetch_corporate_actions(self, instrument_id: str, *, since: Ms, until: Ms) -> pa.Table:
         """Fetch splits + dividends with ``ex_date`` in ``[since, until)`` (the settlement leg).
 
         Splits come from ``/v3/reference/splits`` (``execution_date`` is the ex/effective

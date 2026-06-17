@@ -81,9 +81,7 @@ def test_ingest_exit_zero_and_report(repo: Path, monkeypatch: pytest.MonkeyPatch
     assert "2024-01-02" in result.output
 
 
-def test_resume_message_on_second_invocation(
-    repo: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_resume_message_on_second_invocation(repo: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     client = FakeFlatFilesClient()
     _seed_days(client, [date(2024, 1, 2), date(2024, 1, 3)], ["AAPL"])
     _patch_source(monkeypatch, client)
@@ -119,8 +117,7 @@ def test_failed_day_exits_one(repo: Path, monkeypatch: pytest.MonkeyPatch) -> No
     client.put_raw(
         day_aggs_key(bad),
         make_day_csv_raw(
-            "ticker,volume,open,close,high,low,window_start,transactions\n"
-            "AAPL,bad,1,1,1,1,1,1\n"
+            "ticker,volume,open,close,high,low,window_start,transactions\nAAPL,bad,1,1,1,1,1,1\n"
         ),
     )
     _patch_source(monkeypatch, client)
@@ -175,9 +172,7 @@ def test_max_tickers_warning_emitted(repo: Path, monkeypatch: pytest.MonkeyPatch
 # --------------------------------------------------------------------------- missing creds
 
 
-def test_missing_credentials_exits_one(
-    repo: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_missing_credentials_exits_one(repo: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """No injected source + no env creds -> the source factory raises ConfigError -> exit 1."""
     for var in (
         "POLYGON_S3_ENDPOINT",

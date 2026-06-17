@@ -266,9 +266,7 @@ class TestFetchDay:
     def test_closed_bar_kept_exactly_at_close(self) -> None:
         client = FakeFlatFilesClient()
         client.put_day(DAY_2024_01_02, [csv_row("AAPL", DAY_2024_01_02)])
-        tbl = make_source(client).fetch_day(
-            DAY_2024_01_02, now=_day_open_ms(DAY_2024_01_02) + D1
-        )
+        tbl = make_source(client).fetch_day(DAY_2024_01_02, now=_day_open_ms(DAY_2024_01_02) + D1)
         assert tbl.num_rows == 1  # a bar closing exactly at now is final
 
     def test_sorted_and_unique_on_id(self) -> None:
@@ -293,9 +291,7 @@ class TestFetchDay:
         body = ",".join(_COLUMNS) + "\n" + "AAPL,1000,100.0,oops,102.0,99.0,1000000000,50\n"
         client.put_raw(day_aggs_key(DAY_2024_01_02), make_day_csv_raw(body))
         with pytest.raises(SchemaError):
-            make_source(client).fetch_day(
-                DAY_2024_01_02, now=_day_open_ms(DAY_2024_01_02) + 5 * D1
-            )
+            make_source(client).fetch_day(DAY_2024_01_02, now=_day_open_ms(DAY_2024_01_02) + 5 * D1)
 
 
 # ----------------------------------------------------------------- available_sessions

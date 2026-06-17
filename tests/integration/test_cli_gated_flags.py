@@ -157,8 +157,7 @@ def repo(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Iterator[Path]:
 
     paths = LakePaths(lake_dir)
     closes = {
-        iid: _closes(101 + k, N_BARS, 50.0 * (k + 1), _DRIFTS[k])
-        for k, iid in enumerate(ALL_IDS)
+        iid: _closes(101 + k, N_BARS, 50.0 * (k + 1), _DRIFTS[k]) for k, iid in enumerate(ALL_IDS)
     }
     LakeWriter(paths).write(Dataset.OHLCV, _ohlcv_table(closes))
 

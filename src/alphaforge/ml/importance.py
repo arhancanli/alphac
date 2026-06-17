@@ -66,9 +66,7 @@ _RANK_IC_LOSS_LABELS: Final[tuple[float, float]] = (0.0, 1.0)
 slice never silently relabels the binary outcome."""
 
 
-def cluster_features(
-    X: pd.DataFrame, *, corr_threshold: float = 0.7
-) -> dict[str, list[str]]:
+def cluster_features(X: pd.DataFrame, *, corr_threshold: float = 0.7) -> dict[str, list[str]]:
     """Hierarchical clustering on ``d = 1 - |rho_Spearman|`` (average linkage).
 
     Columns are grouped so that ``|rho| >= corr_threshold`` forces co-membership
@@ -227,9 +225,7 @@ def mda_importance(
             increments = per_member_set.setdefault(member_key, [])
             delta_sum = 0.0
             for r in range(n_repeats):
-                rng = np.random.RandomState(
-                    seed + fold_idx * 1_000_003 + cluster_ord * 1_009 + r
-                )
+                rng = np.random.RandomState(seed + fold_idx * 1_000_003 + cluster_ord * 1_009 + r)
                 X_perm = X_test.copy()
                 perm = rng.permutation(len(X_test.index))
                 for col in members:

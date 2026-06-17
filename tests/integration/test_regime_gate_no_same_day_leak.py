@@ -245,7 +245,7 @@ class TestDayBoundaryBroadcast:
             # The 00:00 (exact-match) hour AND every later hour of the day map to g[D].
             np.testing.assert_allclose(applied[day_rows], expected, rtol=0.0, atol=1e-12)
             # Pin the 00:00 boundary explicitly: the first hour is the exact-match key.
-            open_row = (hour_ts == day_open)
+            open_row = hour_ts == day_open
             assert bool(open_row.any())
             np.testing.assert_allclose(applied[open_row], expected, rtol=0.0, atol=1e-12)
             checked += 1

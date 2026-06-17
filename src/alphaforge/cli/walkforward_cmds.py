@@ -102,9 +102,7 @@ class _PITDailyBtcReader:
             hourly = self._reader.ohlcv(
                 [self._instrument_id], start=start, end=end, as_of=end, tf=Timeframe.H1
             )
-            daily = resample_bars(
-                hourly, source=Timeframe.H1, target=Timeframe.D1, now=end
-            ).table
+            daily = resample_bars(hourly, source=Timeframe.H1, target=Timeframe.D1, now=end).table
         return self._to_frame(daily)
 
     @staticmethod

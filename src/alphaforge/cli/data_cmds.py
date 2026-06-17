@@ -473,9 +473,7 @@ def _print_equities_report(report: EquitiesIngestReport) -> None:
     if shown:
         typer.echo(f"{'session':<12} {'status':<8} {'tickers':>8} {'rows':>9} notes")
         for r in shown:
-            typer.echo(
-                f"{r.session:<12} {r.status:<8} {r.tickers:>8} {r.rows:>9} {r.error}"
-            )
+            typer.echo(f"{r.session:<12} {r.status:<8} {r.tickers:>8} {r.rows:>9} {r.error}")
     if report.skipped_count:
         typer.echo(f"+ {report.skipped_count} session(s) skipped (already ingested)")
 
@@ -541,9 +539,7 @@ def _max_epoch_ms(tbl: pa.Table, column: str) -> int:
 def ingest_equities(
     start: Annotated[
         str,
-        typer.Option(
-            "--start", help="First session, UTC (YYYY-MM-DD or ISO-8601). Required."
-        ),
+        typer.Option("--start", help="First session, UTC (YYYY-MM-DD or ISO-8601). Required."),
     ],
     until: Annotated[
         str | None,
@@ -616,9 +612,7 @@ def ingest_equities(
                 instruments_n, actions_n = _ingest_corporate_actions(
                     settings, checkpoints, until=now, now=now
                 )
-                typer.echo(
-                    f"corporate-actions: instruments={instruments_n} actions={actions_n}"
-                )
+                typer.echo(f"corporate-actions: instruments={instruments_n} actions={actions_n}")
             except ConfigError as exc:
                 typer.echo(f"corporate-actions skipped: {exc}", err=True)
 

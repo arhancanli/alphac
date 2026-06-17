@@ -238,9 +238,9 @@ def env(tmp_path_factory: pytest.TempPathFactory) -> Iterator[Env]:
     instruments.close()
 
 
-def _panel(env: Env, start: int, end: int) -> tuple[
-    pd.DataFrame, pd.Series, Mapping[str, pd.Series]
-]:
+def _panel(
+    env: Env, start: int, end: int
+) -> tuple[pd.DataFrame, pd.Series, Mapping[str, pd.Series]]:
     """The engine's processed surface BOTH train and serve assemble X from.
 
     Replicates ``SignalService._panel`` (the seam both ``compute_research`` and the

@@ -364,12 +364,8 @@ class TestEquityDeterminism:
         b = two_runs.second.equity
         assert a.equals(b), "gated equity diverged between two identical runs (non-determinism)"
         # Belt-and-braces over Series.equals: the raw arrays are bit-identical too.
-        assert np.array_equal(
-            a.to_numpy(dtype="float64"), b.to_numpy(dtype="float64")
-        )
-        assert np.array_equal(
-            a.index.to_numpy(dtype="int64"), b.index.to_numpy(dtype="int64")
-        )
+        assert np.array_equal(a.to_numpy(dtype="float64"), b.to_numpy(dtype="float64"))
+        assert np.array_equal(a.index.to_numpy(dtype="int64"), b.index.to_numpy(dtype="int64"))
 
     def test_final_equity_matches_exactly(self, two_runs: _TwoRuns) -> None:
         """The headline number — final marked OOS equity — is identical to the last bit."""

@@ -370,9 +370,7 @@ class TestListInstruments:
         ]
         src = make_source(FakeClient(ticker_pages=pages, inactive_tickers=[]))
         ids = [inst.instrument_id for inst in src.list_instruments(as_of=AS_OF)]
-        assert ids == [
-            SymbolMapper.equity_instrument_id("XNAS", t) for t in ("AAA", "BBB", "CCC")
-        ]
+        assert ids == [SymbolMapper.equity_instrument_id("XNAS", t) for t in ("AAA", "BBB", "CCC")]
 
     def test_rate_budget_charged_per_request_default_no_enrichment(self) -> None:
         budget = SpyBudget()
@@ -535,9 +533,7 @@ class TestCorporateActions:
     def test_split_and_dividend_rows_pit_available_at(self) -> None:
         splits = {"AAPL": [split_row("2024-02-15", split_from=1, split_to=4)]}
         dividends = {
-            "AAPL": [
-                dividend_row("2024-02-09", cash_amount=0.24, declaration_date="2024-02-01")
-            ]
+            "AAPL": [dividend_row("2024-02-09", cash_amount=0.24, declaration_date="2024-02-01")]
         }
         src = make_source(FakeClient(splits=splits, dividends=dividends))
         tbl = src.fetch_corporate_actions(AAPL_ID, since=T0, until=T0 + 365 * D)
@@ -564,9 +560,7 @@ class TestCorporateActions:
         # not the ex-date — the corporate-actions analogue of funding finding 18.
         splits = {
             "AAPL": [
-                split_row(
-                    "2024-06-03", split_from=1, split_to=2, declaration_date="2024-05-01"
-                )
+                split_row("2024-06-03", split_from=1, split_to=2, declaration_date="2024-05-01")
             ]
         }
         src = make_source(FakeClient(splits=splits))

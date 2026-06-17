@@ -809,11 +809,22 @@ class WalkForwardRunner:
         # straight into the strategy). gate_inactive counts cold-start IdentityRegime
         # fallbacks for the observability field (3b / leakage #19).
         legs, strategy, gate_inactive = self._run_leg_set(
-            splitter, grid, ids, full_frame, full_ts,
-            train_bars=train_bars, allocator=allocator, band=band,
-            rebalance_bars=rebalance_bars, cov_window_bars=cov_window_bars,
-            cov_halflife_bars=cov_halflife_bars, cov_min_periods=cov_min_periods,
-            initial_cash=initial_cash, ml=ml, regime=regime, daily_btc=daily_btc,
+            splitter,
+            grid,
+            ids,
+            full_frame,
+            full_ts,
+            train_bars=train_bars,
+            allocator=allocator,
+            band=band,
+            rebalance_bars=rebalance_bars,
+            cov_window_bars=cov_window_bars,
+            cov_halflife_bars=cov_halflife_bars,
+            cov_min_periods=cov_min_periods,
+            initial_cash=initial_cash,
+            ml=ml,
+            regime=regime,
+            daily_btc=daily_btc,
         )
 
         # Aggregate risk counters across legs = the final cumulative strategy
@@ -886,11 +897,22 @@ class WalkForwardRunner:
                 # slices) once, record it as its OWN distinct trial (base_trial_config — no
                 # gate keys), and attach it as the variant's baseline companion.
                 base_legs, _base_strategy, _ = self._run_leg_set(
-                    splitter, grid, ids, full_frame, full_ts,
-                    train_bars=train_bars, allocator=allocator, band=band,
-                    rebalance_bars=rebalance_bars, cov_window_bars=cov_window_bars,
-                    cov_halflife_bars=cov_halflife_bars, cov_min_periods=cov_min_periods,
-                    initial_cash=initial_cash, ml=False, regime=False, daily_btc=None,
+                    splitter,
+                    grid,
+                    ids,
+                    full_frame,
+                    full_ts,
+                    train_bars=train_bars,
+                    allocator=allocator,
+                    band=band,
+                    rebalance_bars=rebalance_bars,
+                    cov_window_bars=cov_window_bars,
+                    cov_halflife_bars=cov_halflife_bars,
+                    cov_min_periods=cov_min_periods,
+                    initial_cash=initial_cash,
+                    ml=False,
+                    regime=False,
+                    daily_btc=None,
                 )
                 base_equity = pd.concat([leg.result.equity for leg in base_legs])
                 base_equity.name = "equity"

@@ -520,9 +520,7 @@ def _run_block(
             # it as a failed config and CONTINUE, so the verdict still writes over the
             # configs that did complete. The failure (and its reason) is the finding.
             elapsed_ms = now_ms() - t0
-            _LOG.exception(
-                "FAILED %s after %.1fs: %s", config.config_id, elapsed_ms / 1000.0, exc
-            )
+            _LOG.exception("FAILED %s after %.1fs: %s", config.config_id, elapsed_ms / 1000.0, exc)
             _append_jsonl(
                 run_dir / _PROGRESS_FILE,
                 {

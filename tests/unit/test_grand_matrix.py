@@ -580,8 +580,14 @@ class TestWriters:
         _, _, cross, pbo, cap, winner, rows = self._full_artifacts(tmp_path)
         out = tmp_path / "matrix.json"
         write_matrix_json(
-            out, rows=rows, cross=cross, pbo=pbo, capacity=cap, winner=winner,
-            window=(_T0, _T0 + _DAY * 100), run_ts="ts",
+            out,
+            rows=rows,
+            cross=cross,
+            pbo=pbo,
+            capacity=cap,
+            winner=winner,
+            window=(_T0, _T0 + _DAY * 100),
+            run_ts="ts",
         )
         # No leftover temp files in the dir.
         assert [p.name for p in tmp_path.iterdir() if p.name.startswith(".matrix.json")] == []
@@ -593,7 +599,12 @@ class TestWriters:
         _, _, cross, pbo, cap, winner, rows = self._full_artifacts(tmp_path)
         out = tmp_path / "verdict.md"
         write_verdict(
-            out, rows=rows, cross=cross, pbo=pbo, capacity=cap, winner=winner,
+            out,
+            rows=rows,
+            cross=cross,
+            pbo=pbo,
+            capacity=cap,
+            winner=winner,
             window=(_T0, _T0 + 365 * _DAY * 5),
         )
         md = out.read_text()
@@ -625,7 +636,12 @@ class TestWriters:
         )
         out = tmp_path / "verdict.md"
         write_verdict(
-            out, rows=rows, cross=cross, pbo=pbo, capacity=(), winner=None,
+            out,
+            rows=rows,
+            cross=cross,
+            pbo=pbo,
+            capacity=(),
+            winner=None,
             window=(_T0, _T0 + 365 * _DAY * 5),
         )
         md = out.read_text()

@@ -62,9 +62,7 @@ class _SyntheticDataset:
         rng = np.random.RandomState(seed)
         days = [T0 + d * DAY for d in range(n_days)]
         iids = [f"I{k}" for k in range(n_iids)]
-        index = pd.MultiIndex.from_product(
-            [days, iids], names=("ts_open", "instrument_id")
-        )
+        index = pd.MultiIndex.from_product([days, iids], names=("ts_open", "instrument_id"))
         n = len(index)
         feats = {f"f{j}": rng.randn(n) for j in range(4)}
         self._X = pd.DataFrame(feats, index=index)
@@ -146,8 +144,11 @@ class TestDatasetContentSha:
         a = dataset_content_sha(X, y, w, t1, windows)
         shuffled = X.sample(frac=1.0, random_state=3)
         b = dataset_content_sha(
-            shuffled, y.reindex(shuffled.index), w.reindex(shuffled.index),
-            t1.reindex(shuffled.index), windows,
+            shuffled,
+            y.reindex(shuffled.index),
+            w.reindex(shuffled.index),
+            t1.reindex(shuffled.index),
+            windows,
         )
         assert a == b
 
@@ -229,8 +230,13 @@ class TestJudgePromotion:
             chal, fit_end=chal.windows.fit_end, val_logloss=0.69, val_rank_ic=0.02
         )
         verdict = judge_promotion(
-            chal, champ_card, ds, Settings(), ASOF_NOW,
-            embargo_bars=DEFAULT_EMBARGO_BARS, min_oos=200,
+            chal,
+            champ_card,
+            ds,
+            Settings(),
+            ASOF_NOW,
+            embargo_bars=DEFAULT_EMBARGO_BARS,
+            min_oos=200,
         )
         assert verdict.promote is False
         assert verdict.reason == "insufficient-oos"
@@ -289,15 +295,25 @@ class TestWeeklyRetrain:
         log = ExperimentLog(tmp_path / "exp.jsonl")
         with _registry(tmp_path) as reg:
             weekly_retrain(
-                asof, registry=reg, dataset=ds, settings=Settings(),
-                code_git_sha="abc", model_id="m1", experiment_log=log,
+                asof,
+                registry=reg,
+                dataset=ds,
+                settings=Settings(),
+                code_git_sha="abc",
+                model_id="m1",
+                experiment_log=log,
             )
             assert log.n_trials() == 1
             # Re-running the SAME retrain (same asof, same data -> same config hash)
             # is idempotent: N does not inflate.
             weekly_retrain(
-                asof, registry=reg, dataset=ds, settings=Settings(),
-                code_git_sha="abc", model_id="m1b", experiment_log=log,
+                asof,
+                registry=reg,
+                dataset=ds,
+                settings=Settings(),
+                code_git_sha="abc",
+                model_id="m1b",
+                experiment_log=log,
             )
             assert log.n_trials() == 1
 
@@ -310,12 +326,22 @@ class TestWeeklyRetrain:
         log = ExperimentLog(tmp_path / "exp.jsonl")
         with _registry(tmp_path) as reg:
             weekly_retrain(
-                asof, registry=reg, dataset=ds, settings=Settings(),
-                code_git_sha="abc", model_id="m1", experiment_log=log,
+                asof,
+                registry=reg,
+                dataset=ds,
+                settings=Settings(),
+                code_git_sha="abc",
+                model_id="m1",
+                experiment_log=log,
             )
             weekly_retrain(
-                asof, registry=reg, dataset=ds, settings=Settings(),
-                code_git_sha="abc", model_id="m2", experiment_log=log,
+                asof,
+                registry=reg,
+                dataset=ds,
+                settings=Settings(),
+                code_git_sha="abc",
+                model_id="m2",
+                experiment_log=log,
                 window_days=300,  # a different window_days -> a different trial config
             )
         assert log.n_trials() == 2
@@ -327,8 +353,12 @@ class TestWeeklyRetrain:
         asof = T0 + 460 * DAY
         with _registry(tmp_path) as reg:
             _card, verdict = weekly_retrain(
-                asof, registry=reg, dataset=ds, settings=Settings(),
-                code_git_sha="abc", model_id="m1",
+                asof,
+                registry=reg,
+                dataset=ds,
+                settings=Settings(),
+                code_git_sha="abc",
+                model_id="m1",
                 experiment_log=__import__(
                     "alphaforge.validation.experiments", fromlist=["ExperimentLog"]
                 ).ExperimentLog(tmp_path / "e.jsonl"),

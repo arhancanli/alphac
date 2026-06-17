@@ -283,16 +283,12 @@ class EquitiesFlatFilesJob:
         _log.info("equities_ingest.run_finished", run_id=run_id, summary=report.summary())
         return report
 
-    def _process_day(
-        self, session: date, *, watermark: Ms | None, now: Ms
-    ) -> EquitiesIngestResult:
+    def _process_day(self, session: date, *, watermark: Ms | None, now: Ms) -> EquitiesIngestResult:
         """Ingest one session day (or skip it if already checkpointed)."""
         label = session.isoformat()
         session_open = self._source.session_open_ms(session)
         if watermark is not None and session_open <= watermark:
-            return EquitiesIngestResult(
-                session=label, status="skipped", tickers=0, rows=0
-            )
+            return EquitiesIngestResult(session=label, status="skipped", tickers=0, rows=0)
         try:
             table = self._source.fetch_day(session, now=now)
             if self._max_tickers is not None:
@@ -307,9 +303,7 @@ class EquitiesFlatFilesJob:
                 tickers=tickers,
                 rows=tickers,
             )
-            return EquitiesIngestResult(
-                session=label, status="ok", tickers=tickers, rows=tickers
-            )
+            return EquitiesIngestResult(session=label, status="ok", tickers=tickers, rows=tickers)
         except Exception as exc:
             _log.error("equities_ingest.session_failed", session=label, error=repr(exc))
             return EquitiesIngestResult(

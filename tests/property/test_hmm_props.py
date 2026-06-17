@@ -181,20 +181,14 @@ def test_merge_asof_never_selects_a_future_day(n_days: int, seed: int) -> None:
     hmm = RegimeHMM(n_states=2)
     # hand-built posterior -> gate; no fit needed for the join-boundary property.
     rows = rng.dirichlet(np.ones(2), size=n_days)
-    probs = pd.DataFrame(
-        rows, index=obs.index, columns=["state_0", "state_1"]
-    )
+    probs = pd.DataFrame(rows, index=obs.index, columns=["state_0", "state_1"])
     gate = hmm.gross_multiplier(probs).shift(1).fillna(1.0)
 
     # Build an hourly grid straddling every 00:00 boundary (the off-by-one zone).
     day_opens = obs.index.to_numpy(dtype=np.int64)
-    hours = np.concatenate(
-        [d + np.arange(24, dtype=np.int64) * _HOUR_MS for d in day_opens]
-    )
+    hours = np.concatenate([d + np.arange(24, dtype=np.int64) * _HOUR_MS for d in day_opens])
     left = pd.DataFrame({"ts": hours})
-    right = pd.DataFrame(
-        {"day_ts": gate.index.to_numpy(dtype=np.int64), "gate": gate.to_numpy()}
-    )
+    right = pd.DataFrame({"day_ts": gate.index.to_numpy(dtype=np.int64), "gate": gate.to_numpy()})
     merged = pd.merge_asof(
         left.sort_values("ts", kind="stable"),
         right.sort_values("day_ts", kind="stable"),

@@ -143,8 +143,7 @@ class TestAttribution:
         events = make_events([(1, 3, BTC), (1, 3, ETH)])
         conc = concurrency(events)
         idx = pd.MultiIndex.from_tuples(
-            [(T0 + k * HOUR, BTC) for k in range(5)]
-            + [(T0 + k * HOUR, ETH) for k in range(5)],
+            [(T0 + k * HOUR, BTC) for k in range(5)] + [(T0 + k * HOUR, ETH) for k in range(5)],
             names=["ts_open", "instrument_id"],
         )
         # BTC has signal, ETH is flat (all zero) -> ETH attribution 0
@@ -162,9 +161,7 @@ class TestAttribution:
         )
         conc = concurrency(events)
         assert conc.loc[(T0 + 1 * HOUR, BTC)] == 2
-        idx = pd.MultiIndex.from_tuples(
-            [(T0 + 1 * HOUR, BTC)], names=["ts_open", "instrument_id"]
-        )
+        idx = pd.MultiIndex.from_tuples([(T0 + 1 * HOUR, BTC)], names=["ts_open", "instrument_id"])
         returns = pd.Series([0.1], index=idx)
         # raw attribution per event = |0.1 / 2| = 0.05, equal -> both normalize to 1.0
         w = attribution_weights(events, returns, conc, time_decay=1.0)
@@ -247,9 +244,7 @@ class TestCrossSectionalDecorrelation:
         conc = concurrency(events)
         attr = attribution_weights(events, returns, conc, time_decay=0.75)
         w = sample_weights(events, bars)
-        pd.testing.assert_series_equal(
-            w.rename("attribution_weight"), attr, check_names=True
-        )
+        pd.testing.assert_series_equal(w.rename("attribution_weight"), attr, check_names=True)
 
 
 class TestSampleWeightsComposer:

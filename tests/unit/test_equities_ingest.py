@@ -137,7 +137,7 @@ def test_resume_skips_checkpointed(tmp_path: Path) -> None:
     assert statuses["2024-01-04"] == "ok"
     assert statuses["2024-01-05"] == "ok"
     # the skipped days were NOT re-downloaded
-    new_downloads = client.get_calls[len(first_get_calls):]
+    new_downloads = client.get_calls[len(first_get_calls) :]
     assert all("2024-01-02" not in k and "2024-01-03" not in k for k in new_downloads)
     # no duplicate rows in the lake
     counts = read_back(

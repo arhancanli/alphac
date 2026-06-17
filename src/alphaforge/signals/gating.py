@@ -111,9 +111,7 @@ def apply_meta_gate(
     if x is None:
         # No model features ⇒ identity gate; return Ã unchanged (no perturbation).
         return a_tilde.copy()
-    side = pd.Series(
-        np.sign(a_tilde.to_numpy(dtype=float)), index=a_tilde.index, name="side"
-    )
+    side = pd.Series(np.sign(a_tilde.to_numpy(dtype=float)), index=a_tilde.index, name="side")
     size = meta.bet_size(x, side).reindex(a_tilde.index)
     magnitude = size.abs().to_numpy(dtype=float)
     # `mask` is documented as the PIT membership the caller passes; NaN Ã already
@@ -244,9 +242,7 @@ def gate_signal_frame(
     if feature_frame is None:
         magnitude = pd.Series(1.0, index=a_tilde.index)
     else:
-        side = pd.Series(
-            np.sign(a_tilde.to_numpy(dtype=float)), index=a_tilde.index, name="side"
-        )
+        side = pd.Series(np.sign(a_tilde.to_numpy(dtype=float)), index=a_tilde.index, name="side")
         magnitude = meta.bet_size(feature_frame, side).reindex(a_tilde.index).abs()
 
     del sigma  # documented signature; the multiply (linearity) form needs no recompute

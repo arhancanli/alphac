@@ -295,9 +295,7 @@ def make_meta_label_dataset(
     for h in forward_horizons:
         fwd_frames.append(forward_returns(bars, h, timeframe=cfg.timeframe))
     if 72 in tuple(forward_horizons):
-        fwd_frames.append(
-            forward_returns(bars, 72, vol_scaled=True, timeframe=cfg.timeframe)
-        )
+        fwd_frames.append(forward_returns(bars, 72, vol_scaled=True, timeframe=cfg.timeframe))
 
     # The dataset rows are the events that resolved AND earned a finite weight: an inner
     # alignment of the labels' decision index with the weight index (never bridged).

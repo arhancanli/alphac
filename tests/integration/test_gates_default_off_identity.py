@@ -170,8 +170,7 @@ def lake(tmp_path_factory: pytest.TempPathFactory) -> Iterator[Path]:
     tmp = tmp_path_factory.mktemp("gates_off_identity")
     paths = LakePaths(tmp / "lake")
     closes = {
-        iid: _closes(101 + k, N_BARS, 50.0 * (k + 1), _DRIFTS[k])
-        for k, iid in enumerate(ALL_IDS)
+        iid: _closes(101 + k, N_BARS, 50.0 * (k + 1), _DRIFTS[k]) for k, iid in enumerate(ALL_IDS)
     }
     LakeWriter(paths).write(Dataset.OHLCV, _ohlcv_table(closes))
 
@@ -269,9 +268,7 @@ def _run_off(
 class TestGateFunctionIdentity:
     """Seam 1: the gating math is a byte-exact identity under IdentityMeta + empty G."""
 
-    def test_gate_signal_frame_identity_equals_ungated_compute_research(
-        self, lake: Path
-    ) -> None:
+    def test_gate_signal_frame_identity_equals_ungated_compute_research(self, lake: Path) -> None:
         """``gate_signal_frame`` with identity meta + empty G == the ungated frame.
 
         This is the function-level D7 guarantee the runner's OFF path inherits: an
@@ -300,9 +297,7 @@ class TestGateFunctionIdentity:
         pd.testing.assert_series_equal(
             gated[ALPHA_BLEND_COLUMN], frame[ALPHA_BLEND_COLUMN], check_exact=True
         )
-        pd.testing.assert_series_equal(
-            gated[MU_ANN_COLUMN], frame[MU_ANN_COLUMN], check_exact=True
-        )
+        pd.testing.assert_series_equal(gated[MU_ANN_COLUMN], frame[MU_ANN_COLUMN], check_exact=True)
         assert frame.equals(gated[[ALPHA_BLEND_COLUMN, MU_ANN_COLUMN]])
 
     def test_identity_frame_is_non_vacuous(self, lake: Path) -> None:

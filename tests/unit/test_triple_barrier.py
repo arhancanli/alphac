@@ -346,12 +346,22 @@ def test_funding_count_scales_with_interval() -> None:
         }
     )
     out8 = _run(
-        bars8, events, cfg, cost_model=cost,
-        instruments={_PERP_ID: _perp(funding_interval_hours=8)}, funding=funding, vol=vol,
+        bars8,
+        events,
+        cfg,
+        cost_model=cost,
+        instruments={_PERP_ID: _perp(funding_interval_hours=8)},
+        funding=funding,
+        vol=vol,
     )
     out4 = _run(
-        bars8, events, cfg, cost_model=cost,
-        instruments={_PERP_ID: _perp(funding_interval_hours=4)}, funding=funding, vol=vol,
+        bars8,
+        events,
+        cfg,
+        cost_model=cost,
+        instruments={_PERP_ID: _perp(funding_interval_hours=4)},
+        funding=funding,
+        vol=vol,
     )
     n8 = int(out8.iloc[0]["n_funding"])
     n4 = int(out4.iloc[0]["n_funding"])
@@ -370,8 +380,12 @@ def test_negative_funding_increases_long_label() -> None:
     cost = TransactionCostModel()
     inst = _perp()
     neg = pd.DataFrame(
-        {"ts_funding": np.array([0], dtype=np.int64), "instrument_id": [_PERP_ID],
-         "rate": [-0.001], "available_at": np.array([0], dtype=np.int64)}
+        {
+            "ts_funding": np.array([0], dtype=np.int64),
+            "instrument_id": [_PERP_ID],
+            "rate": [-0.001],
+            "available_at": np.array([0], dtype=np.int64),
+        }
     )
     out_neg = _run(
         bars, events, cfg, cost_model=cost, instruments={_PERP_ID: inst}, funding=neg, vol=vol
@@ -525,8 +539,12 @@ def test_immutability() -> None:
     bars = _bars(_PERP_ID, opens)
     events = _event(0, side=1)
     funding = pd.DataFrame(
-        {"ts_funding": np.array([0], dtype=np.int64), "instrument_id": [_PERP_ID],
-         "rate": [0.001], "available_at": np.array([0], dtype=np.int64)}
+        {
+            "ts_funding": np.array([0], dtype=np.int64),
+            "instrument_id": [_PERP_ID],
+            "rate": [0.001],
+            "available_at": np.array([0], dtype=np.int64),
+        }
     )
     bars_copy = bars.copy(deep=True)
     events_copy = events.copy(deep=True)
@@ -604,8 +622,18 @@ def test_output_schema_and_index() -> None:
     bars = _bars(_PERP_ID, opens)
     out = _run(bars, _event(0), cfg)
     assert list(out.columns) == [
-        "entry_ts", "entry_price", "t1", "exit_price", "ret_gross", "ret",
-        "label_tb", "touch", "side", "meta_label", "vol_at_entry", "n_funding",
+        "entry_ts",
+        "entry_price",
+        "t1",
+        "exit_price",
+        "ret_gross",
+        "ret",
+        "label_tb",
+        "touch",
+        "side",
+        "meta_label",
+        "vol_at_entry",
+        "n_funding",
     ]
     assert out.index.names == ["ts_open", "instrument_id"]
     assert out["label_tb"].dtype == np.int8

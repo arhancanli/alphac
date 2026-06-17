@@ -143,8 +143,7 @@ def _to_float(value: str, *, column: str, ticker: str) -> float:
         return float(value)
     except (TypeError, ValueError) as exc:
         raise SchemaError(
-            f"day-aggs row for ticker {ticker!r}: column {column!r} is not a number: "
-            f"{value!r}"
+            f"day-aggs row for ticker {ticker!r}: column {column!r} is not a number: {value!r}"
         ) from exc
 
 
@@ -154,8 +153,7 @@ def _to_int(value: str, *, column: str, ticker: str) -> int:
         return int(value)
     except (TypeError, ValueError) as exc:
         raise SchemaError(
-            f"day-aggs row for ticker {ticker!r}: column {column!r} is not an integer: "
-            f"{value!r}"
+            f"day-aggs row for ticker {ticker!r}: column {column!r} is not an integer: {value!r}"
         ) from exc
 
 
@@ -184,8 +182,7 @@ def parse_day_csv(data: bytes) -> list[_DayRow]:
             continue
         if len(raw) != len(_EXPECTED_COLUMNS):
             raise SchemaError(
-                f"day-aggs row has {len(raw)} fields, expected {len(_EXPECTED_COLUMNS)}: "
-                f"{raw!r}"
+                f"day-aggs row has {len(raw)} fields, expected {len(_EXPECTED_COLUMNS)}: {raw!r}"
             )
         record = dict(zip(_EXPECTED_COLUMNS, raw, strict=True))
         ticker = record["ticker"].strip()
@@ -211,9 +208,7 @@ def parse_day_csv(data: bytes) -> list[_DayRow]:
                 low=_to_float(record["low"], column="low", ticker=ticker),
                 close=_to_float(record["close"], column="close", ticker=ticker),
                 volume=_to_float(record["volume"], column="volume", ticker=ticker),
-                transactions=_to_int(
-                    record["transactions"], column="transactions", ticker=ticker
-                ),
+                transactions=_to_int(record["transactions"], column="transactions", ticker=ticker),
                 window_start_ns=_to_int(
                     record["window_start"], column="window_start", ticker=ticker
                 ),
@@ -414,9 +409,7 @@ class PolygonFlatFilesSource:
 
     # ------------------------------------------------------------------ internals
 
-    def _rows_to_table(
-        self, rows: Iterable[_DayRow], *, now: Ms, ingested_at: Ms
-    ) -> pa.Table:
+    def _rows_to_table(self, rows: Iterable[_DayRow], *, now: Ms, ingested_at: Ms) -> pa.Table:
         """Map parsed rows → an :data:`OHLCV_SCHEMA` table, guarded + sorted + unique."""
         d_ms = Timeframe.D1.ms
         mapped: dict[str, tuple[Ms, _DayRow]] = {}

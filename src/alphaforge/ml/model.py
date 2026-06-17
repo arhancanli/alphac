@@ -205,11 +205,7 @@ def _require_panel_frame(X: pd.DataFrame) -> None:
 
 def _assert_features_disjoint_from_labels(columns: tuple[str, ...]) -> None:
     """Refuse any X column that is a post-decision / label quantity (09_ml.md §3)."""
-    leaked = [
-        c
-        for c in columns
-        if any(bad in c for bad in _LABEL_FORBIDDEN_SUBSTRINGS)
-    ]
+    leaked = [c for c in columns if any(bad in c for bad in _LABEL_FORBIDDEN_SUBSTRINGS)]
     if leaked:
         raise ValueError(
             "feature set must be disjoint from label columns (09_ml.md §3); "
@@ -359,9 +355,7 @@ class HistGBMMetaModel:
         iso_mask = (decision_ts >= windows.iso_start) & (decision_ts <= windows.fit_end)
 
         # Purge train rows whose label interval overlaps the ES block (finding 7/9).
-        keep = _purge_overlapping(
-            decision_ts[train_mask], t1_arr[train_mask], windows.es_start
-        )
+        keep = _purge_overlapping(decision_ts[train_mask], t1_arr[train_mask], windows.es_start)
         train_idx = np.flatnonzero(train_mask)[keep]
         es_idx = np.flatnonzero(es_mask)
         iso_idx = np.flatnonzero(iso_mask)
@@ -427,9 +421,7 @@ class HistGBMMetaModel:
         no_change = 0
         for k, raw in enumerate(estimator.staged_decision_function(x_es), start=1):
             proba = 1.0 / (1.0 + np.exp(-np.asarray(raw, dtype=np.float64).ravel()))
-            loss = float(
-                log_loss(y_es, proba, sample_weight=w_es, labels=[0.0, 1.0])
-            )
+            loss = float(log_loss(y_es, proba, sample_weight=w_es, labels=[0.0, 1.0]))
             if loss < best_loss - 1e-12:
                 best_loss = loss
                 best_iter = k
@@ -466,12 +458,8 @@ class HistGBMMetaModel:
         """
         estimator, calibrator = self._check_fitted()
         aligned = X[list(self._feature_names)]  # KeyError on a missing column
-        raw = self._raw_score_at(
-            estimator, aligned.to_numpy(dtype=np.float64), self._best_n_iter
-        )
-        proba: npt.NDArray[np.float64] = np.asarray(
-            calibrator.predict(raw), dtype=np.float64
-        )
+        raw = self._raw_score_at(estimator, aligned.to_numpy(dtype=np.float64), self._best_n_iter)
+        proba: npt.NDArray[np.float64] = np.asarray(calibrator.predict(raw), dtype=np.float64)
         return np.clip(proba, 0.0, 1.0)
 
     def bet_size(self, x: pd.DataFrame, side: pd.Series) -> pd.Series:

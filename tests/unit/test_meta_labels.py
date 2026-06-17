@@ -276,14 +276,17 @@ class TestMakeMetaLabelDataset:
         # second event's decision tau is the last bar -> entry bar missing -> sentinel.
         events = _events([(0, _PERP_ID, 1), (7 * _H1_MS, _PERP_ID, 1)])
         cfg = TripleBarrierConfig(horizon_bars=4, cost_honest=False)
-        feat_idx = pd.MultiIndex.from_arrays(
-            [[0, 7 * _H1_MS], [_PERP_ID] * 2], names=_INDEX_NAMES
-        )
+        feat_idx = pd.MultiIndex.from_arrays([[0, 7 * _H1_MS], [_PERP_ID] * 2], names=_INDEX_NAMES)
         features = _features(feat_idx)
         vol = _vol_series(bars, 0.02)
         ds = make_meta_label_dataset(
-            bars, events, features, cfg, cost_model=TransactionCostModel(),
-            instruments={_PERP_ID: _perp()}, vol=vol,
+            bars,
+            events,
+            features,
+            cfg,
+            cost_model=TransactionCostModel(),
+            instruments={_PERP_ID: _perp()},
+            vol=vol,
         )
         assert (0, _PERP_ID) in ds.target.index
         assert (7 * _H1_MS, _PERP_ID) not in ds.target.index
@@ -309,7 +312,13 @@ class TestMakeMetaLabelDataset:
         features = _features(feat_idx, n_cols=4)
         vol = _vol_series(bars, 0.02)
         ds = make_meta_label_dataset(
-            bars, events, features, cfg, cost_model=cm, instruments=insts, vol=vol,
+            bars,
+            events,
+            features,
+            cfg,
+            cost_model=cm,
+            instruments=insts,
+            vol=vol,
             feature_names=["f2", "f0"],
         )
         assert ds.feature_names == ("f2", "f0")
@@ -324,7 +333,13 @@ class TestMakeMetaLabelDataset:
         vol = _vol_series(bars, 0.02)
         with pytest.raises(KeyError, match="not in features"):
             make_meta_label_dataset(
-                bars, events, features, cfg, cost_model=cm, instruments=insts, vol=vol,
+                bars,
+                events,
+                features,
+                cfg,
+                cost_model=cm,
+                instruments=insts,
+                vol=vol,
                 feature_names=["f0", "does_not_exist"],
             )
 
@@ -332,9 +347,7 @@ class TestMakeMetaLabelDataset:
         bars, events, cfg, cm, insts = _resolving_setup()
         features = pd.DataFrame({"f0": [1.0]}, index=pd.RangeIndex(1))
         with pytest.raises(ValueError, match="MultiIndex"):
-            make_meta_label_dataset(
-                bars, events, features, cfg, cost_model=cm, instruments=insts
-            )
+            make_meta_label_dataset(bars, events, features, cfg, cost_model=cm, instruments=insts)
 
     def test_inputs_not_mutated(self) -> None:
         bars, events, cfg, cm, insts = _resolving_setup()
@@ -372,15 +385,20 @@ class TestMakeMetaLabelDataset:
         features = _features(feat_idx)
         vol = _vol_series(bars, 0.02)
         ds = make_meta_label_dataset(
-            bars, events, features, cfg, cost_model=cm, instruments=insts,
-            funding=funding, vol=vol,
+            bars,
+            events,
+            features,
+            cfg,
+            cost_model=cm,
+            instruments=insts,
+            funding=funding,
+            vol=vol,
         )
         # ret is net of round-trip cost (2·(fee+half_spread)) -> strictly below ret_gross.
         net = ds.labels["ret"].to_numpy()
         gross = ds.labels["ret_gross"].to_numpy()
         assert np.all(net < gross)
         roundtrip = 2.0 * (
-            cm.fee_frac(insts[_PERP_ID], Liquidity.TAKER)
-            + cm.half_spread_frac(insts[_PERP_ID])
+            cm.fee_frac(insts[_PERP_ID], Liquidity.TAKER) + cm.half_spread_frac(insts[_PERP_ID])
         )
         assert roundtrip > 0.0

@@ -182,9 +182,7 @@ def build_fit_windows(
     non-positive day counts or a window too short to carve strictly-increasing bounds.
     """
     if window_days <= 0 or es_days <= 0 or iso_days <= 0:
-        raise ValueError(
-            f"window/es/iso days must be > 0; got {window_days}/{es_days}/{iso_days}"
-        )
+        raise ValueError(f"window/es/iso days must be > 0; got {window_days}/{es_days}/{iso_days}")
     if horizon_bars <= 0:
         raise ValueError(f"horizon_bars must be > 0; got {horizon_bars}")
 
@@ -224,9 +222,15 @@ def dataset_content_sha(
         ).encode("ascii")
     )
     digest.update(np.ascontiguousarray(sorted_X.to_numpy(dtype=np.float64)).tobytes())
-    digest.update(np.ascontiguousarray(y.reindex(order).sort_index().to_numpy(dtype=np.float64)).tobytes())
-    digest.update(np.ascontiguousarray(w.reindex(order).sort_index().to_numpy(dtype=np.float64)).tobytes())
-    digest.update(np.ascontiguousarray(t1.reindex(order).sort_index().to_numpy(dtype=np.int64)).tobytes())
+    digest.update(
+        np.ascontiguousarray(y.reindex(order).sort_index().to_numpy(dtype=np.float64)).tobytes()
+    )
+    digest.update(
+        np.ascontiguousarray(w.reindex(order).sort_index().to_numpy(dtype=np.float64)).tobytes()
+    )
+    digest.update(
+        np.ascontiguousarray(t1.reindex(order).sort_index().to_numpy(dtype=np.int64)).tobytes()
+    )
     return digest.hexdigest()
 
 
@@ -293,9 +297,7 @@ def _oos_metrics(
     w_arr = w.reindex(X.index).to_numpy(dtype=np.float64)
     logloss = float(log_loss(y_arr, proba, sample_weight=w_arr, labels=[0.0, 1.0]))
 
-    size = bet_size_from_prob(
-        pd.Series(proba, index=X.index, name="p_win"), side.reindex(X.index)
-    )
+    size = bet_size_from_prob(pd.Series(proba, index=X.index, name="p_win"), side.reindex(X.index))
     ret_signed = dataset.ret_signed(oos_start, oos_end).reindex(X.index)
     # Direction-consistent IC on the non-overlapping h-grid (finding 10): treat all
     # rows as universe members (the dataset already universe-masked at build time).
@@ -380,8 +382,12 @@ def judge_promotion(
 
     if champion_model is not None:
         champ_logloss, champ_ic, _ = _oos_metrics(
-            champion_model, dataset, oos_start, oos_end,
-            horizon_bars=horizon_bars, bar_ms=bar_ms,
+            champion_model,
+            dataset,
+            oos_start,
+            oos_end,
+            horizon_bars=horizon_bars,
+            bar_ms=bar_ms,
         )
         fallback = ""
     else:

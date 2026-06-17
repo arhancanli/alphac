@@ -334,9 +334,7 @@ class TestEquityD1Guard:
     is asserted to NOT trip the guard (byte-identity invariant).
     """
 
-    def _engine(
-        self, env: Env, *, anchor_tf: Timeframe, asset_class: AssetClass
-    ) -> FeatureEngine:
+    def _engine(self, env: Env, *, anchor_tf: Timeframe, asset_class: AssetClass) -> FeatureEngine:
         return FeatureEngine(
             env.reader,
             env.instruments,

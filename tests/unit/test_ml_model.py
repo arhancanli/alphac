@@ -194,9 +194,7 @@ class TestPredict:
         assert float(p.min()) >= 0.0
         assert float(p.max()) <= 1.0
         # Monotone in the raw score: sort by raw, assert p non-decreasing.
-        raw = m._raw_score_at(
-            m._check_fitted()[0], X.to_numpy(dtype=np.float64), m.best_n_iter
-        )
+        raw = m._raw_score_at(m._check_fitted()[0], X.to_numpy(dtype=np.float64), m.best_n_iter)
         order = np.argsort(raw)
         assert bool(np.all(np.diff(p[order]) >= -1e-9))
 

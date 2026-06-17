@@ -62,9 +62,7 @@ T0 = 1_672_531_200_000  # 2023-01-01T00:00:00Z, a clean UTC-day boundary
 
 def _panel_index(ts: list[int], instruments: list[str]) -> pd.MultiIndex:
     """A ``(ts_open, instrument_id)`` MultiIndex — the engine panel shape."""
-    return pd.MultiIndex.from_product(
-        [ts, instruments], names=["ts_open", "instrument_id"]
-    )
+    return pd.MultiIndex.from_product([ts, instruments], names=["ts_open", "instrument_id"])
 
 
 def _hourly_index(n_hours: int, instruments: list[str], *, start: int = T0) -> pd.MultiIndex:
@@ -151,9 +149,7 @@ def test_apply_regime_gate_identity_reproduces_mu_ann() -> None:
         rng.normal(0.0, 0.2, size=len(idx)), index=idx, name=MU_ANN_COLUMN, dtype=float
     )
     days = pd.Index([T0, T0 + DAY], name="ts_open")
-    g_series = IdentityRegime().gross_multiplier_series(
-        pd.DataFrame(index=days), lag_days=1
-    )
+    g_series = IdentityRegime().gross_multiplier_series(pd.DataFrame(index=days), lag_days=1)
     out = apply_regime_gate(mu_ann, g_series)
     pd.testing.assert_series_equal(out, mu_ann)
 
@@ -174,9 +170,7 @@ def test_gate_signal_frame_double_identity_is_byte_for_byte() -> None:
     signal_frame.iloc[3, 1] = np.nan
     sigma = pd.Series(0.5, index=idx)
     days = pd.Index([T0, T0 + DAY], name="ts_open")
-    g_series = IdentityRegime().gross_multiplier_series(
-        pd.DataFrame(index=days), lag_days=1
-    )
+    g_series = IdentityRegime().gross_multiplier_series(pd.DataFrame(index=days), lag_days=1)
     out = gate_signal_frame(
         signal_frame,
         feature_frame=None,  # identity meta
@@ -205,9 +199,7 @@ def test_meta_gate_preserves_sign_never_flips() -> None:
         dtype=float,
     )
     # Non-constant magnitudes in [0, 1], including a 0 (floor) and a small value.
-    magnitude = pd.Series(
-        [0.9, 0.1, 0.0, 0.5, 0.05, 0.8, 0.3, 0.6], index=idx, dtype=float
-    )
+    magnitude = pd.Series([0.9, 0.1, 0.0, 0.5, 0.05, 0.8, 0.3, 0.6], index=idx, dtype=float)
     x = pd.DataFrame({"mag": magnitude}, index=idx)
     meta = _StubMeta("mag", ("mag",))
     mask = pd.Series(True, index=idx)
@@ -255,9 +247,7 @@ def test_gated_mu_ann_clears_contract() -> None:
     )
     check_mu_ann_contract(mu_blend.to_numpy(dtype=float))  # baseline is clean
 
-    magnitude = pd.Series(
-        rng.uniform(0.0, 1.0, size=len(idx)), index=idx, dtype=float
-    )
+    magnitude = pd.Series(rng.uniform(0.0, 1.0, size=len(idx)), index=idx, dtype=float)
     mu_gated = mu_blend * magnitude
     check_mu_ann_contract(mu_gated.to_numpy(dtype=float))  # must not raise
     # And shrinkage holds row-wise.
@@ -329,9 +319,7 @@ def test_assemble_meta_features_is_nan_preserving() -> None:
 def test_serve_surface_matches_training_surface_parity() -> None:
     """One helper, two callers (train + serve) ⇒ byte-identical X (the parity pin)."""
     idx = _hourly_index(3, ["BTC", "ETH"])
-    frame = pd.DataFrame(
-        {"mom": [9.0, 8.0, 7.0, 6.0, 5.0, 4.0], "ctx": np.arange(6.0)}, index=idx
-    )
+    frame = pd.DataFrame({"mom": [9.0, 8.0, 7.0, 6.0, 5.0, 4.0], "ctx": np.arange(6.0)}, index=idx)
     zs = {"mom": pd.Series(np.linspace(-1.0, 1.0, 6), index=idx, dtype=float)}
     names = ("mom", "ctx")
     x_train = assemble_meta_features(frame, zs, names)
@@ -411,15 +399,13 @@ def test_regime_gate_single_merge_asof_no_double_lag() -> None:
     """
     idx = _hourly_index(72, ["BTC"])  # 3 days
     mu_ann = pd.Series(2.0, index=idx, name=MU_ANN_COLUMN, dtype=float)
-    g_series = _FlipRegime(
-        {T0: 0.3, T0 + DAY: 0.5, T0 + 2 * DAY: 0.7}
-    ).gross_multiplier_series(pd.DataFrame(index=pd.Index([T0, T0 + DAY, T0 + 2 * DAY])))
+    g_series = _FlipRegime({T0: 0.3, T0 + DAY: 0.5, T0 + 2 * DAY: 0.7}).gross_multiplier_series(
+        pd.DataFrame(index=pd.Index([T0, T0 + DAY, T0 + 2 * DAY]))
+    )
     out = apply_regime_gate(mu_ann, g_series)
     ts = out.index.get_level_values("ts_open").to_numpy(dtype=np.int64)
     np.testing.assert_allclose(out.to_numpy()[ts < T0 + DAY], 2.0 * 0.3)
-    np.testing.assert_allclose(
-        out.to_numpy()[(ts >= T0 + DAY) & (ts < T0 + 2 * DAY)], 2.0 * 0.5
-    )
+    np.testing.assert_allclose(out.to_numpy()[(ts >= T0 + DAY) & (ts < T0 + 2 * DAY)], 2.0 * 0.5)
     np.testing.assert_allclose(out.to_numpy()[ts >= T0 + 2 * DAY], 2.0 * 0.7)
 
 
@@ -431,15 +417,11 @@ def test_regime_gate_shrinks_magnitude_and_preserves_nan() -> None:
         rng.normal(0.0, 0.3, size=len(idx)), index=idx, name=MU_ANN_COLUMN, dtype=float
     )
     mu_ann.iloc[5] = np.nan  # a NaN must survive the gate
-    g_series = _FlipRegime({T0: 0.5}).gross_multiplier_series(
-        pd.DataFrame(index=pd.Index([T0]))
-    )
+    g_series = _FlipRegime({T0: 0.5}).gross_multiplier_series(pd.DataFrame(index=pd.Index([T0])))
     out = apply_regime_gate(mu_ann, g_series)
     assert bool(np.isnan(out.to_numpy()[5]))
     finite = np.isfinite(mu_ann.to_numpy())
-    assert (
-        np.abs(out.to_numpy())[finite] <= np.abs(mu_ann.to_numpy())[finite] + 1e-12
-    ).all()
+    assert (np.abs(out.to_numpy())[finite] <= np.abs(mu_ann.to_numpy())[finite] + 1e-12).all()
 
 
 # ===================================================== combined gate (D1 then D2)
@@ -452,9 +434,7 @@ def test_gate_signal_frame_applies_both_gates_keeps_ungated_alpha_blend() -> Non
         np.linspace(-1.5, 1.5, len(idx)), index=idx, name=ALPHA_BLEND_COLUMN, dtype=float
     )
     mu_blend = pd.Series(0.2, index=idx, name=MU_ANN_COLUMN, dtype=float)
-    signal_frame = pd.DataFrame(
-        {ALPHA_BLEND_COLUMN: a_tilde, MU_ANN_COLUMN: mu_blend}, index=idx
-    )
+    signal_frame = pd.DataFrame({ALPHA_BLEND_COLUMN: a_tilde, MU_ANN_COLUMN: mu_blend}, index=idx)
     magnitude = pd.Series(
         np.clip(np.linspace(0.0, 1.0, len(idx)), 0.0, 1.0), index=idx, dtype=float
     )
@@ -485,9 +465,7 @@ def test_gate_signal_frame_recompute_path_is_guarded() -> None:
     signal_frame = pd.DataFrame(
         {ALPHA_BLEND_COLUMN: [0.5, -0.5], MU_ANN_COLUMN: [0.1, -0.1]}, index=idx
     )
-    g_series = IdentityRegime().gross_multiplier_series(
-        pd.DataFrame(index=pd.Index([T0]))
-    )
+    g_series = IdentityRegime().gross_multiplier_series(pd.DataFrame(index=pd.Index([T0])))
     with pytest.raises(NotImplementedError):
         gate_signal_frame(
             signal_frame,

@@ -341,9 +341,7 @@ class ModelRegistry:
 
     def champion(self) -> ModelCard | None:
         """The current champion's card, or ``None`` if no champion is registered."""
-        row = self._conn.execute(
-            "SELECT * FROM models WHERE status = 'champion'"
-        ).fetchone()
+        row = self._conn.execute("SELECT * FROM models WHERE status = 'champion'").fetchone()
         return None if row is None else _card_from_row(row)
 
     def load_champion(self) -> ModelProtocol | None:
@@ -362,9 +360,7 @@ class ModelRegistry:
 
     def get_card(self, model_id: str) -> ModelCard:
         """The card for ``model_id`` (raises ``KeyError`` if unknown)."""
-        row = self._conn.execute(
-            "SELECT * FROM models WHERE model_id = ?", (model_id,)
-        ).fetchone()
+        row = self._conn.execute("SELECT * FROM models WHERE model_id = ?", (model_id,)).fetchone()
         if row is None:
             raise KeyError(f"unknown model_id {model_id!r}")
         return _card_from_row(row)
@@ -392,8 +388,7 @@ class ModelRegistry:
             if target is None:
                 raise KeyError(f"unknown model_id {model_id!r}")
             self._conn.execute(
-                "UPDATE models SET status = 'retired' "
-                "WHERE status = 'champion' AND model_id != ?",
+                "UPDATE models SET status = 'retired' WHERE status = 'champion' AND model_id != ?",
                 (model_id,),
             )
             self._conn.execute(
@@ -402,7 +397,5 @@ class ModelRegistry:
 
     def history(self) -> list[ModelCard]:
         """Every registered card, newest-first (by insert order, clock-independent)."""
-        rows = self._conn.execute(
-            "SELECT * FROM models ORDER BY registered_at DESC"
-        ).fetchall()
+        rows = self._conn.execute("SELECT * FROM models ORDER BY registered_at DESC").fetchall()
         return [_card_from_row(row) for row in rows]
