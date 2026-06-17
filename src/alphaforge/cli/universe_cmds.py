@@ -125,6 +125,7 @@ def rebuild(
     survivorship and lookahead bias by construction. Rerun-safe: rebuilding twice
     yields identical intervals.
     """
+    from alphaforge.config.sleeve import sleeve_for
     from alphaforge.core.instruments import InstrumentStore
     from alphaforge.core.logging import setup_logging
     from alphaforge.data.store.lake import LakePaths
@@ -140,10 +141,19 @@ def rebuild(
     )
     end_ms = now if end is None else _parse_cli_utc(end, param="--end")
 
+    # The liquidity-ranking read timeframe is the sleeve's anchor TF: H1 for crypto (intraday
+    # bars summed into a daily ADV — unchanged), D1 for equities (native daily bars are the
+    # ADV). Crypto resolves H1, so this is byte-identical to the prior hard-coded default.
+    rank_tf = sleeve_for(settings.data.asset_class).anchor_tf
+
     paths = LakePaths(settings.paths.lake_dir)
     with InstrumentStore(_ops_db_path(settings)) as instruments:
         builder = UniverseBuilder(
-            PITDataReader(paths), instruments, UniverseStore(paths), settings.universe
+            PITDataReader(paths),
+            instruments,
+            UniverseStore(paths),
+            settings.universe,
+            rank_tf=rank_tf,
         )
         try:
             stats = builder.rebuild(start=start_ms, end=end_ms, now=now)
