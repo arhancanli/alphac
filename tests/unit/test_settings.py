@@ -21,6 +21,7 @@ from alphaforge.config.settings import (
 )
 from alphaforge.core.errors import ConfigError
 from alphaforge.core.time import Timeframe, parse_utc
+from alphaforge.core.types import AssetClass
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
@@ -66,6 +67,7 @@ class TestLoadBase:
         s = load_settings(root=REPO_ROOT)
         assert s.data.exchange == "binanceusdm"
         assert s.data.timeframe is Timeframe.H1
+        assert s.data.asset_class is AssetClass.CRYPTO_PERP
         assert s.data.ingest_grace_ms == 30_000
         assert s.universe.size == 20
         assert s.universe.rank_window_days == 30
@@ -262,6 +264,13 @@ class TestValidators:
     def test_net_max_le_gross_max(self) -> None:
         with pytest.raises(ValidationError, match="net_max"):
             PortfolioCfg(gross_max=1.0, net_max=1.2)
+
+    def test_asset_class_defaults_to_crypto_perp(self) -> None:
+        # The byte-identity default: an un-set asset_class is the crypto perp sleeve.
+        assert DataCfg().asset_class is AssetClass.CRYPTO_PERP
+
+    def test_asset_class_accepts_equity(self) -> None:
+        assert DataCfg(asset_class="equity").asset_class is AssetClass.EQUITY
 
     def test_backfill_start_naive_rejected(self) -> None:
         with pytest.raises(ValidationError, match="offset"):

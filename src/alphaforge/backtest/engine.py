@@ -97,10 +97,12 @@ from alphaforge.backtest.result import (
     POSITIONS_COLUMNS,
     BacktestResult,
 )
+from alphaforge.core.calendar import TradingCalendar, calendar_for
 from alphaforge.core.errors import LookaheadError
 from alphaforge.core.instruments import Instrument, InstrumentStore
 from alphaforge.core.time import Ms, Timeframe, expected_bar_opens
 from alphaforge.core.types import (
+    AssetClass,
     Fill,
     Liquidity,
     MarketType,
@@ -157,9 +159,13 @@ class StrategyContext:
     History access goes through :meth:`bars`, which reads the lake with
     ``as_of = ts`` — bars closing after ``ts`` are structurally invisible, so
     a strategy cannot look ahead even by bug.
+
+    ``asset_class`` selects the sleeve's :attr:`calendar` (the grid + annualization
+    source); the default ``CRYPTO_PERP`` resolves the 24/7 calendar, byte-identical to
+    the bare ``core.time`` arithmetic the spine used before the calendar was threaded.
     """
 
-    __slots__ = ("_equity", "_instruments", "_positions", "_reader", "_tf", "_ts")
+    __slots__ = ("_asset_class", "_equity", "_instruments", "_positions", "_reader", "_tf", "_ts")
 
     def __init__(
         self,
@@ -170,6 +176,7 @@ class StrategyContext:
         equity: float,
         positions: Mapping[str, float],
         instruments: Mapping[str, Instrument],
+        asset_class: AssetClass = AssetClass.CRYPTO_PERP,
     ) -> None:
         self._reader = reader
         self._tf = tf
@@ -177,6 +184,7 @@ class StrategyContext:
         self._equity = equity
         self._positions = dict(positions)
         self._instruments = dict(instruments)
+        self._asset_class = asset_class
 
     @property
     def ts(self) -> Ms:
@@ -187,6 +195,22 @@ class StrategyContext:
     def tf(self) -> Timeframe:
         """The engine's bar timeframe."""
         return self._tf
+
+    @property
+    def asset_class(self) -> AssetClass:
+        """The sleeve's asset class — selects the trading :attr:`calendar`."""
+        return self._asset_class
+
+    @property
+    def calendar(self) -> TradingCalendar:
+        """The trading calendar for this sleeve — the ONE grid/annualization source.
+
+        ``calendar_for(self.asset_class)``: the 24/7 calendar for crypto (whose grid
+        and ``periods_per_year`` delegate to the bare ``core.time`` kernel /
+        ``tf.bars_per_year``, hence byte-identical), the XNYS session calendar for
+        equities (252-day basis, weekend/holiday gaps).
+        """
+        return calendar_for(self._asset_class)
 
     @property
     def equity(self) -> float:
@@ -484,7 +508,18 @@ class EventDrivenBacktester:
             (per-bar SCD2 resolution arrives with the execution layer).
         cost_model: THE shared cost authority; consumed only through the fill
             model, never reimplemented (buildabilityCritique.md §3.7).
-        tf: Bar timeframe (default 1h).
+        tf: Bar timeframe (default 1h). Must be the sleeve's anchor TF — the grid
+            and bar-arithmetic step the engine values on.
+        asset_class: Selects the trading ``calendar`` (when ``calendar`` is not
+            passed explicitly) and is forwarded to :class:`StrategyContext`. The
+            default ``CRYPTO_PERP`` resolves the 24/7 calendar, so the grid /
+            next-bar / floor-bar arithmetic reduces to the bare ``ts_open ± tf.ms``
+            steps the engine used before the calendar was threaded — byte-identical.
+        calendar: The :class:`~alphaforge.core.calendar.TradingCalendar` whose
+            sessions define the bar grid, the next-bar fill target, and the
+            prior-bar mark/funding lookup. Defaults to ``calendar_for(asset_class)``;
+            crypto resolves the 24/7 calendar (grid step ``+tf.ms``, prior open
+            ``-tf.ms``), equities the XNYS session calendar (weekend/holiday hops).
         fill_model: Defaults to :class:`NextOpenFill` over ``cost_model``.
         cost_inputs: ADV/sigma provider; defaults to a per-run
             :class:`LakeCostInputs` (1h-only — other timeframes must inject).
@@ -509,6 +544,8 @@ class EventDrivenBacktester:
     """
 
     __slots__ = (
+        "_asset_class",
+        "_calendar",
         "_config_echo",
         "_cost_inputs",
         "_cost_model",
@@ -527,6 +564,8 @@ class EventDrivenBacktester:
         cost_model: TransactionCostModel,
         *,
         tf: Timeframe = Timeframe.H1,
+        asset_class: AssetClass = AssetClass.CRYPTO_PERP,
+        calendar: TradingCalendar | None = None,
         fill_model: FillModel | None = None,
         cost_inputs: CostInputProvider | None = None,
         no_trade_band_frac: float = 0.001,
@@ -553,6 +592,10 @@ class EventDrivenBacktester:
         self._instruments = instruments
         self._cost_model = cost_model
         self._tf = tf
+        self._asset_class = asset_class
+        self._calendar: TradingCalendar = (
+            calendar_for(asset_class) if calendar is None else calendar
+        )
         self._fill_model: FillModel = NextOpenFill(cost_model) if fill_model is None else fill_model
         self._cost_inputs = cost_inputs
         self._no_trade_band_frac = no_trade_band_frac
@@ -609,13 +652,28 @@ class EventDrivenBacktester:
             insts[iid] = inst
 
         bars = self._load_bars(ids, start=start, end=end)
-        grid = sorted({ts_open + self._tf.ms for rows in bars.values() for ts_open in rows})
+        # The decision grid is the set of bar *closes*, each modelled as the open
+        # of the bar an order would fill into: the close of bar ``o`` is
+        # ``calendar.next_bar_open(o, tf)`` — for the 24/7 crypto calendar this is
+        # exactly ``o + tf.ms`` (byte-identical to the prior bare-step grid), and for
+        # an XNYS session calendar a Friday close maps to the following Monday open so
+        # the fill target ``bars[iid].get(decision_ts)`` lands on a real session bar
+        # instead of a phantom weekend slot.
+        grid = sorted(
+            {
+                self._calendar.next_bar_open(ts_open, self._tf)
+                for rows in bars.values()
+                for ts_open in rows
+            }
+        )
         if len(grid) < 2:
             raise ValueError(
                 f"need at least 2 bar closes in [{start}, {end}) for {ids}, got {len(grid)}"
             )
         last_close_of: dict[str, Ms] = {
-            iid: max(rows) + self._tf.ms for iid, rows in bars.items() if rows
+            iid: self._calendar.next_bar_open(max(rows), self._tf)
+            for iid, rows in bars.items()
+            if rows
         }
         funding_events = self._load_funding(insts, start=start, end=end)
         funding_ptr: dict[str, int] = dict.fromkeys(funding_events, 0)
@@ -637,6 +695,12 @@ class EventDrivenBacktester:
 
         for t in grid:
             counters["bars_processed"] += 1
+            # The bar that just closed at decision instant ``t`` is the session bar
+            # whose open is ``floor_bar(t - 1, tf)``: for the 24/7 calendar this is
+            # exactly ``t - tf.ms`` (byte-identical), and for an XNYS session calendar
+            # the prior open of a Monday decision is the preceding Friday session
+            # (never a phantom weekend slot at ``t - tf.ms``).
+            prev_open = self._calendar.floor_bar(t - 1, self._tf)
 
             # (0) fill orders queued at the previous close against the bar
             #     opening at that close (ts_open == decision_ts).
@@ -651,7 +715,7 @@ class EventDrivenBacktester:
                 while ptr < len(events) and events[ptr][0] <= t:
                     ts_funding, rate = events[ptr]
                     ptr += 1
-                    bar = bars[iid].get(t - self._tf.ms)
+                    bar = bars[iid].get(prev_open)
                     mark = bar.close if bar is not None else last_close.get(iid)
                     if mark is not None:  # no close ever seen => provably flat: no-op
                         ledger.apply_funding(iid, ts_funding, rate, mark)
@@ -660,7 +724,7 @@ class EventDrivenBacktester:
             # (2) mark at close[t] (last-known closes carry across per-
             #     instrument gaps so open positions always mark — documented).
             for iid, rows in bars.items():
-                bar = rows.get(t - self._tf.ms)
+                bar = rows.get(prev_open)
                 if bar is not None:
                     last_close[iid] = bar.close
             state = ledger.mark(
@@ -711,6 +775,7 @@ class EventDrivenBacktester:
                 equity=equity,
                 positions={p.instrument_id: p.qty for p in state.positions},
                 instruments=insts,
+                asset_class=self._asset_class,
             )
             targets = strategy.on_bar_close(ctx)
 
@@ -722,6 +787,7 @@ class EventDrivenBacktester:
                 ledger,
                 equity,
                 t,
+                prev_open,
                 counters,
                 order_records,
                 reason_by_order,
@@ -902,6 +968,7 @@ class EventDrivenBacktester:
         ledger: Ledger,
         equity: float,
         t: Ms,
+        prev_open: Ms,
         counters: dict[str, int],
         order_records: list[dict[str, object]],
         reason_by_order: dict[str, str],
@@ -910,7 +977,9 @@ class EventDrivenBacktester:
         """Turn target weights into queued orders (band, lot, min filters).
 
         Per instrument: ``Δnotional = w*equity - qty*close_t``; quantity rounded
-        toward zero to ``lot_size`` steps.
+        toward zero to ``lot_size`` steps. ``prev_open`` is the open of the bar
+        whose close IS the decision instant ``t`` (``calendar.floor_bar(t-1, tf)``;
+        ``t - tf.ms`` on the 24/7 calendar) — the bar carrying ``close_t``.
 
         Risk-REDUCING orders (signed ``Δnotional`` opposes the held position, so
         ``|qty|`` shrinks toward zero) bypass BOTH the no-trade band and the
@@ -937,7 +1006,7 @@ class EventDrivenBacktester:
                 raise ValueError(f"strategy emitted non-finite weight for {iid!r}: {weight!r}")
             counters["orders_decided"] += 1
             inst = insts[iid]
-            bar = bars[iid].get(t - self._tf.ms)
+            bar = bars[iid].get(prev_open)
 
             def _skip(status: str, *, price: float, side: str, qty: float, _iid: str = iid) -> None:
                 order_records.append(
@@ -1123,6 +1192,7 @@ class EventDrivenBacktester:
             "start": start,
             "end": end,
             "tf": self._tf.value,
+            "asset_class": self._asset_class.value,
             "instrument_ids": list(ids),
             "initial_cash": initial_cash,
             "no_trade_band_frac": self._no_trade_band_frac,

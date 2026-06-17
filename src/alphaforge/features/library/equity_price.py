@@ -52,18 +52,21 @@ to rows at/after its ``ex_date`` — the per-decision-row PIT discipline of
 clothing (EQUITIES_CRITIQUE B5). A 2:1 split must NOT print as a -50% momentum return,
 and a split must be invisible to decisions taken before its ``available_at``.
 
-BUILD-ORDER GAP (documented, not a defect): the PIT-aware engine/calendar wiring
-(EQUITIES_CRITIQUE B1: threading ``anchor_tf=D1`` + an ``XNYSCalendar`` through
-``FeatureEngine``/``FeatureContext``/``parity``) and the corporate-actions read path
-(``PITDataReader.corporate_actions`` + ``FeatureContext.corporate_actions``) are
-SEPARATE builds (engine/context/reader files this module must not edit). Until they
-land, :func:`_adjusted_close_panel` feature-detects ``ctx.corporate_actions`` and
-falls back to the raw close panel (an unadjusted but parity-clean series) — so every
-factor body, its parity, and its truncation invariance are already correct on the
-session-positional grid, and the moment the context exposes corporate actions the
-SAME bodies become split/dividend-adjusted with no further change. The pure
-:func:`adjusted_close` reconstruction is fully unit-tested here against a planted
-split (cross-row PIT), which is the load-bearing correctness gate.
+CORPORATE-ACTIONS READ PATH (now wired, SPINE_ARC P1): ``PITDataReader.corporate_actions``
++ ``FeatureContext.corporate_actions`` serve the :data:`_CA_COLUMNS` projection, masked
+PIT on the stored ``available_at`` (never ``ex_date``; leakage finding 18). So
+:func:`_adjusted_close_panel` reads the actions and reconstructs the adjusted close via
+:func:`adjusted_close` — and FAILS CLOSED (raises) if a context ever exposes no
+``corporate_actions`` getter, rather than silently feeding raw unadjusted prices to the
+factors (a 2:1 split would otherwise print as a -50% return; leakage G1/G2). An empty
+actions frame is the only pass-through (no action in the window ⇒ ``C* == C_raw``),
+which is also the crypto path (perps have no corporate actions). The PIT-aware
+engine/calendar wiring (EQUITIES_CRITIQUE B1: ``anchor_tf=D1`` + ``XNYSCalendar``
+threaded through ``FeatureEngine``/``FeatureContext``) is also wired in this arc, but
+the equity *compute* path is held behind a fail-closed engine guard until the equity
+as-of window + ``forward_returns``/blend session hops are verified (SPINE_ARC §4). The
+pure :func:`adjusted_close` reconstruction is fully unit-tested here against a planted
+split (cross-row PIT), the load-bearing correctness gate.
 
 Shared non-negotiables (identical to the crypto library): every value at decision
 bar ``t`` is a pure function of data available at the bar close ``t + Δ``; window math
@@ -81,6 +84,8 @@ from typing import TYPE_CHECKING, Final
 import numpy as np
 import pandas as pd
 
+from alphaforge.core.errors import ConfigError
+from alphaforge.core.time import Timeframe
 from alphaforge.features.context import long_series
 from alphaforge.features.library.liquidity import amihud_illiq
 from alphaforge.features.library.mean_reversion import (
@@ -253,32 +258,41 @@ def adjusted_close(raw_close: pd.DataFrame, actions: pd.DataFrame, *, tf_ms: int
 def _adjusted_close_panel(ctx: FeatureContext) -> pd.DataFrame:
     """The sanctioned PIT adjusted-close panel for the equity price factors.
 
-    Reads the raw close panel and, when the context exposes corporate actions,
-    reconstructs the PIT split/total-return-adjusted close via :func:`adjusted_close`
-    (EQUITIES_SLEEVE.md §4.3 — the ONE place equity adjustment happens, so the
-    convention cannot drift between factors). Every equity price factor calls this; it
-    is the single-site discipline that the crypto ``adv_quote_30d``/``sigma_daily``
-    shared inputs use.
+    Reads the raw close panel and reconstructs the PIT split/total-return-adjusted
+    close via :func:`adjusted_close` (EQUITIES_SLEEVE.md §4.3 — the ONE place equity
+    adjustment happens, so the convention cannot drift between factors). Every equity
+    price factor calls this; it is the single-site discipline that the crypto
+    ``adv_quote_30d``/``sigma_daily`` shared inputs use.
 
-    Forward-compatible feature-detect (documented build-order gap, see module
-    docstring): until ``FeatureContext.corporate_actions`` (a separate build's edit to
-    the context/reader) lands, this returns the RAW close panel unchanged — a clean,
-    parity-correct (but unadjusted) series. The moment the method exists the SAME
-    bodies become split/dividend-adjusted with no factor-code change.
+    FAIL-CLOSED on a missing corporate-actions surface (the P1 teeth, SPINE_ARC §2.3):
+    an equity price factor must NEVER silently run on raw unadjusted close — a 2:1
+    split would print as a -50% return into momentum/reversal/beta/vol (leakage
+    G1/G2). If the context exposes no ``corporate_actions`` getter at all, this RAISES
+    rather than returning raw. The only surviving pass-through is an EMPTY actions
+    frame: no corporate action in the window legitimately means ``C* == C_raw`` (the
+    crypto path always hits this branch — perps have no corporate actions — so it is
+    byte-identical there). The §4 ``FeatureEngine`` guard additionally rejects the whole
+    EQUITY/D1 compute path until verified, so this raise is the safety net for the day
+    that guard is lifted.
     """
     raw = ctx.panel("close")
     ca_getter = getattr(ctx, "corporate_actions", None)
     if ca_getter is None:
-        return raw
+        raise ConfigError(  # FAIL-CLOSED: never silently feed raw prices to equity factors
+            "equity price factors require a corporate-actions surface; FeatureContext "
+            "exposes no corporate_actions() — refusing to run on raw unadjusted prices "
+            "(a 2:1 split would print as a -50% return; leakage G1/G2)."
+        )
     actions = ca_getter()
-    if not isinstance(actions, pd.DataFrame) or actions.empty:
-        return raw
+    if not isinstance(actions, pd.DataFrame):
+        raise ConfigError("FeatureContext.corporate_actions() must return a DataFrame")
+    if actions.empty:
+        return raw  # legitimately no actions in the window: raw == adjusted
     # The decision-availability lag of a daily equity bar is exactly D1.ms (§3.2:
-    # available_at = ts_open + 86_400_000). The factors are valued on the daily grid,
-    # so the grid step IS the bar duration.
-    grid = np.asarray(raw.index, dtype="int64")
-    tf_ms = int(grid[1] - grid[0]) if len(grid) >= 2 else 86_400_000
-    return adjusted_close(raw, actions, tf_ms=tf_ms)
+    # available_at = ts_open + 86_400_000) — independent of session gaps. Using the
+    # explicit bar duration (not the inferred grid[1]-grid[0]) avoids a 2-session
+    # lookahead when the first grid gap is a Fri→Mon hop (SPINE_ARC §2.4 / P18).
+    return adjusted_close(raw, actions, tf_ms=Timeframe.D1.ms)
 
 
 # --------------------------------------------------------------------- factor kernels

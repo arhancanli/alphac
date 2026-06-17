@@ -29,7 +29,10 @@ from typing import TYPE_CHECKING, Final
 
 import pandas as pd
 
-from alphaforge.core.time import Ms, Timeframe, bar_open_for_decision, expected_bar_opens
+from alphaforge.config.sleeve import CRYPTO_PERP_SLEEVE
+from alphaforge.core.calendar import TradingCalendar, calendar_for
+from alphaforge.core.time import Ms, Timeframe, bar_open_for_decision
+from alphaforge.core.types import AssetClass
 from alphaforge.features.context import FeatureContext
 
 if TYPE_CHECKING:
@@ -42,22 +45,46 @@ if TYPE_CHECKING:
 
 __all__ = ["ANCHOR_TIMEFRAME", "FeatureEngine"]
 
-ANCHOR_TIMEFRAME: Final[Timeframe] = Timeframe.H1
-"""The grid features are valued on; ``lookback_bars`` counts bars of this timeframe."""
+#: The crypto sleeve's anchor timeframe, re-exported for the un-migrated importers
+#: (``signals/service.py``, ``features/parity.py``, ``research/ic_report.py``) until
+#: they resolve their anchor through :func:`~alphaforge.config.sleeve.sleeve_for`. It
+#: is defined as ``CRYPTO_PERP_SLEEVE.anchor_tf`` (``Timeframe.H1``) so the symbol IS
+#: the crypto default — byte-identical to the old module constant — and the engine
+#: itself no longer reads it (it reads its per-instance ``_anchor_tf``).
+ANCHOR_TIMEFRAME: Final[Timeframe] = CRYPTO_PERP_SLEEVE.anchor_tf
+"""The crypto sleeve's anchor TF (``Timeframe.H1``); ``lookback_bars`` counts bars of
+the per-sleeve anchor timeframe (this constant is the crypto default)."""
 
 
 class FeatureEngine:
-    """Computes registered features over PIT windows (see module docstring)."""
+    """Computes registered features over PIT windows (see module docstring).
+
+    The engine is valued on its sleeve's **anchor timeframe** and builds every grid
+    from the sleeve's :class:`~alphaforge.core.calendar.TradingCalendar`. The defaults
+    (``anchor_tf=H1``, the 24/7 crypto calendar) reproduce the old hard-coded
+    ``ANCHOR_TIMEFRAME``/``expected_bar_opens`` behavior bit-for-bit; the equity sleeve
+    passes ``anchor_tf=D1`` + ``asset_class=EQUITY`` so the grid is XNYS sessions.
+    """
 
     def __init__(
         self,
         reader: PITDataReader,
         instruments: InstrumentStore,
         universe: UniverseStore,
+        *,
+        anchor_tf: Timeframe = Timeframe.H1,
+        asset_class: AssetClass = AssetClass.CRYPTO_PERP,
+        calendar: TradingCalendar | None = None,
     ) -> None:
         self._reader = reader
         self._instruments = instruments
         self._universe = universe
+        # The sleeve resolution: anchor TF + calendar + asset class. Defaults are the
+        # crypto sleeve (H1 + 24/7), byte-identical to the old module constant. The
+        # calendar may be passed explicitly or resolved from ``asset_class`` here.
+        self._anchor_tf = anchor_tf
+        self._asset_class = asset_class
+        self._calendar = calendar if calendar is not None else calendar_for(asset_class)
 
     def compute_history(
         self,
@@ -82,9 +109,10 @@ class FeatureEngine:
         :meth:`compute_asof` produces live at that instant.
         """
         checked_specs, ids = _checked(specs, instrument_ids)
+        self._guard_equity_unverified()
         if end <= start:
             raise ValueError(f"compute_history requires end > start, got [{start}, {end})")
-        tf = ANCHOR_TIMEFRAME
+        tf = self._anchor_tf
         max_lookback = max(s.lookback_bars for s in checked_specs)
         ctx = FeatureContext(
             reader=self._reader,
@@ -93,8 +121,10 @@ class FeatureEngine:
             instrument_ids=ids,
             start=start - max_lookback * tf.ms,
             end=end,
+            calendar=self._calendar,
+            asset_class=self._asset_class,
         )
-        grid = expected_bar_opens(start, end, tf)
+        grid = self._calendar.expected_bar_opens(start, end, tf)
         target = pd.MultiIndex.from_product([grid, ids], names=("ts_open", "instrument_id"))
         return _compute(ctx, checked_specs, target)
 
@@ -123,7 +153,8 @@ class FeatureEngine:
         :func:`alphaforge.features.parity.verify_parity` in CI and ops.
         """
         checked_specs, ids = _checked(specs, instrument_ids)
-        tf = ANCHOR_TIMEFRAME
+        self._guard_equity_unverified()
+        tf = self._anchor_tf
         max_lookback = max(s.lookback_bars for s in checked_specs)
         t_star = bar_open_for_decision(as_of, tf)
         ctx = FeatureContext(
@@ -133,9 +164,29 @@ class FeatureEngine:
             instrument_ids=ids,
             start=t_star - (max_lookback - 1) * tf.ms,
             end=t_star + tf.ms,
+            calendar=self._calendar,
+            asset_class=self._asset_class,
         )
         target = pd.MultiIndex.from_product([[t_star], ids], names=("ts_open", "instrument_id"))
         return _compute(ctx, checked_specs, target)
+
+    def _guard_equity_unverified(self) -> None:
+        """Fail-closed on EQUITY/D1 specs until the equity spine is verified in this arc.
+
+        The calendar-aware grid (batch) and the corp-actions read path are wired, but
+        the equity as-of *window* arithmetic and the ``forward_returns`` /
+        ``estimate_blend_weights`` session hops are NOT yet verified (SPINE_ARC §3.1,
+        §3.6, §8). Rather than silently compute equity features on a partially-migrated
+        path, the engine refuses EQUITY/D1 specs loudly. CRYPTO_PERP/H1 never trips it,
+        so the crypto path is unchanged. Removed once the equity E2E parity is green.
+        """
+        if self._asset_class is AssetClass.EQUITY or self._anchor_tf is Timeframe.D1:
+            raise NotImplementedError(
+                "FeatureEngine rejects EQUITY/D1 specs in this arc: the calendar-aware "
+                "spine is wired but the equity as-of window + forward_returns/blend "
+                "session hops are not yet verified; refusing to silently compute on a "
+                "partially-migrated path (SPINE_ARC §4)."
+            )
 
 
 def _checked(

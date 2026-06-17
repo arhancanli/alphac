@@ -610,3 +610,121 @@ def test_output_schema_and_index() -> None:
     assert out.index.names == ["ts_open", "instrument_id"]
     assert out["label_tb"].dtype == np.int8
     assert out["side"].dtype == np.int8
+
+
+# --------------------------------------------------- equity D1 session hops (P2)
+
+# Real XNYS sessions around a weekend (00:00 UTC daily-bar opens).
+_EQ_THU = 1_704_326_400_000  # 2024-01-04 (Thursday)
+_EQ_FRI = 1_704_412_800_000  # 2024-01-05 (Friday — entry session)
+_EQ_MON = 1_704_672_000_000  # 2024-01-08 (Monday — Sat/Sun hopped)
+_EQ_TUE = 1_704_758_400_000  # 2024-01-09 (Tuesday — vertical exit)
+_EQUITY_ID = "XNAS:CASH:AAPLUSD"
+
+
+def _equity(instrument_id: str = _EQUITY_ID) -> Instrument:
+    ticker = instrument_id.split(":")[2].removesuffix("USD")
+    return Instrument(
+        instrument_id=instrument_id,
+        asset_class=AssetClass.EQUITY,
+        market_type=MarketType.CASH,
+        base=ticker,
+        quote="USD",
+        tick_size=0.01,
+        lot_size=1.0,
+        min_qty=1.0,
+        min_notional=1.0,
+        can_short=True,
+        maker_fee_bps=0.0,
+        taker_fee_bps=0.0,
+        funding_interval_hours=None,
+        listed_ts=0,
+        delisted_ts=None,
+    )
+
+
+def _equity_bars(opens: list[float], sessions: list[int]) -> pd.DataFrame:
+    """OHLC panel for an equity on explicit XNYS session opens (high/low == open)."""
+    return pd.DataFrame(
+        {
+            "instrument_id": _EQUITY_ID,
+            "ts_open": np.array(sessions, dtype=np.int64),
+            "open": np.array(opens, dtype=float),
+            "high": np.array(opens, dtype=float),
+            "low": np.array(opens, dtype=float),
+            "close": np.array(opens, dtype=float),
+        }
+    )
+
+
+def test_equity_d1_vertical_exit_hops_the_weekend() -> None:
+    # An equity event whose 2-session hold starts Friday must hop Sat/Sun to Monday
+    # then Tuesday — resolving at the Tuesday vertical, NOT a NaN sentinel from a
+    # missing Saturday slot (the §3.4 session-hop fix vs the old +Δ positional walk).
+    cfg = _free_cfg(horizon_bars=2, timeframe=Timeframe.D1)
+    sessions = [_EQ_THU, _EQ_FRI, _EQ_MON, _EQ_TUE]
+    # Flat prices: no horizontal barrier is touched -> resolves at the vertical.
+    bars = _equity_bars([100.0, 100.0, 100.0, 100.0], sessions)
+    events = _event(_EQ_THU, instrument_id=_EQUITY_ID, side=1)
+    vol = pd.Series(
+        0.01,
+        index=pd.MultiIndex.from_arrays(
+            [bars["ts_open"].to_numpy(), bars["instrument_id"].to_numpy()],
+            names=("ts_open", "instrument_id"),
+        ),
+        dtype="float64",
+    )
+    out = apply_triple_barrier(
+        bars,
+        events,
+        cfg,
+        cost_model=TransactionCostModel(),
+        instruments={_EQUITY_ID: _equity()},
+        vol=vol,
+    )
+    row = out.iloc[0]
+    # Entry = next session open after τ=Thu -> Friday. The weekend hop is proven by the
+    # PATH/vertical: Fri -> Mon -> Tue (not Fri -> Sat -> Sun which have no bars).
+    assert int(row["entry_ts"]) == _EQ_FRI
+    assert row["entry_price"] == pytest.approx(100.0)
+    # Vertical exit at the 2nd session after entry: Fri -> Mon -> Tue (weekend hopped).
+    assert row["touch"] == 0
+    assert int(row["t1"]) == _EQ_TUE
+    assert row["exit_price"] == pytest.approx(100.0)
+    assert not np.isnan(row["ret_gross"])  # resolved, NOT a gap sentinel
+
+
+def test_equity_d1_path_barrier_touch_after_weekend() -> None:
+    # A profit-take that is only reached on MONDAY (the session after the weekend)
+    # must resolve on Monday, proving the path walk hops Fri->Mon instead of breaking
+    # on a missing Saturday bar (which the old +Δ walk would have flagged as gapped).
+    cfg = _free_cfg(horizon_bars=3, timeframe=Timeframe.D1)
+    sessions = [_EQ_THU, _EQ_FRI, _EQ_MON, _EQ_TUE]
+    p0 = 100.0
+    w = 0.01 * np.sqrt(3)
+    up = p0 * np.exp(w)
+    opens = [100.0, 100.0, up + 1.0, 100.0]  # Monday opens above the PT barrier
+    bars = _equity_bars(opens, sessions)
+    bars["high"] = bars["open"]  # high == open so the PT triggers on the Monday bar
+    events = _event(_EQ_THU, instrument_id=_EQUITY_ID, side=1)
+    vol = pd.Series(
+        0.01,
+        index=pd.MultiIndex.from_arrays(
+            [bars["ts_open"].to_numpy(), bars["instrument_id"].to_numpy()],
+            names=("ts_open", "instrument_id"),
+        ),
+        dtype="float64",
+    )
+    out = apply_triple_barrier(
+        bars,
+        events,
+        cfg,
+        cost_model=TransactionCostModel(),
+        instruments={_EQUITY_ID: _equity()},
+        vol=vol,
+    )
+    row = out.iloc[0]
+    assert int(row["entry_ts"]) == _EQ_FRI
+    assert row["touch"] == 1  # PT touched
+    assert int(row["t1"]) == _EQ_MON  # on the Monday session (weekend hopped)
+    assert row["exit_price"] == pytest.approx(up)  # PT fills at the limit

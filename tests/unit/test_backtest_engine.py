@@ -30,7 +30,7 @@ from alphaforge.backtest.engine import (
 )
 from alphaforge.backtest.result import BacktestResult
 from alphaforge.core.instruments import Instrument, InstrumentStore
-from alphaforge.core.time import Ms
+from alphaforge.core.time import Ms, Timeframe
 from alphaforge.core.types import AssetClass, MarketType
 from alphaforge.costs import TransactionCostModel
 from alphaforge.data.schemas import Dataset
@@ -662,8 +662,6 @@ def test_run_validation_errors(tmp_path: Path) -> None:
 
 
 def test_default_cost_inputs_rejects_non_h1(tmp_path: Path) -> None:
-    from alphaforge.core.time import Timeframe
-
     paths = LakePaths(tmp_path / "lake")
     store = InstrumentStore(tmp_path / "ops.sqlite")
     with pytest.raises(ValueError, match="1h-only"):
@@ -678,3 +676,111 @@ def test_equity_series_is_consumable_by_analytics(golden_result: BacktestResult)
     assert list(eq.index) == sorted(set(eq.index))
     assert golden_result.summary.n_periods == 15
     assert golden_result.summary.initial_equity == pytest.approx(CASH0)
+
+
+# ------------------------------------------------- equity D1 session-grid (P2)
+
+# Real XNYS sessions around a weekend: Thu/Fri/Mon/Tue (Sat+Sun absent).
+EQ_THU = 1_704_326_400_000  # 2024-01-04T00:00:00Z (Thursday session open)
+EQ_FRI = 1_704_412_800_000  # 2024-01-05T00:00:00Z (Friday)
+EQ_MON = 1_704_672_000_000  # 2024-01-08T00:00:00Z (Monday — Sat/Sun hopped)
+EQ_TUE = 1_704_758_400_000  # 2024-01-09T00:00:00Z (Tuesday)
+EQ_WED = 1_704_844_800_000  # 2024-01-10T00:00:00Z (Wednesday — run end)
+AAPL = "XNAS:CASH:AAPLUSD"  # canonical equity id (<EXCHANGE>:CASH:<TICKER>USD)
+
+
+def make_equity_instrument(instrument_id: str) -> Instrument:
+    ticker = instrument_id.split(":")[2].removesuffix("USD")
+    return Instrument(
+        instrument_id=instrument_id,
+        asset_class=AssetClass.EQUITY,
+        market_type=MarketType.CASH,
+        base=ticker,
+        quote="USD",
+        tick_size=0.01,
+        lot_size=1.0,
+        min_qty=1.0,
+        min_notional=1.0,
+        contract_multiplier=1.0,
+        can_short=True,
+        maker_fee_bps=0.0,
+        taker_fee_bps=0.0,
+        funding_interval_hours=None,
+        listed_ts=LISTED,
+        delisted_ts=None,
+    )
+
+
+def test_equity_d1_fills_via_next_session_open_hopping_weekend(tmp_path: Path) -> None:
+    # The §3.3 fix: on the XNYS session calendar an order whose decision bar is the
+    # FRIDAY session fills at MONDAY's open (the next *session*), never dropped as a
+    # missing Saturday slot. A weekend bar never prints, yet the fill lands. The grid
+    # value for a decision on the Friday-close is EQ_MON == next_bar_open(EQ_FRI), and
+    # the order then fills against bars.get(EQ_MON) = the Monday bar's open.
+    bars = [
+        bar_row(AAPL, EQ_THU, open_=100.0, close=100.0),
+        bar_row(AAPL, EQ_FRI, open_=100.0, close=100.0),
+        bar_row(AAPL, EQ_MON, open_=110.0, close=120.0),  # Monday opens at 110
+        bar_row(AAPL, EQ_TUE, open_=120.0, close=120.0),
+    ]
+    paths = LakePaths(tmp_path / "lake")
+    writer = LakeWriter(paths)
+    writer.write(Dataset.OHLCV_1D, ohlcv_table(bars))  # D1 reads route to ohlcv_1d
+    store = InstrumentStore(tmp_path / "ops.sqlite")
+    store.upsert(make_equity_instrument(AAPL), as_of=1)
+    engine = EventDrivenBacktester(
+        PITDataReader(paths),
+        store,
+        TransactionCostModel(),
+        tf=Timeframe.D1,
+        asset_class=AssetClass.EQUITY,
+        cost_inputs=StaticCostInputs(adv_quote=ADV, sigma_daily=SIGMA),
+        no_trade_band_frac=0.0,
+    )
+    # Decide a long on the FRIDAY session (grid value EQ_MON = next_bar_open(EQ_FRI),
+    # whose floor_bar(EQ_MON-1) decision bar is the Friday session); the order must
+    # fill at Monday's open (110.0), hopping Sat/Sun — not at a phantom weekend slot.
+    result = engine.run(
+        ScriptedStrategy({EQ_MON: {AAPL: 1.0}}),
+        [AAPL],
+        start=EQ_THU,
+        end=EQ_WED,
+    )
+    assert result.counters["dropped_missing_next_bar"] == 0
+    assert result.counters["fills_applied"] == 1
+    assert len(result.fills) == 1
+    fill = result.fills.iloc[0]
+    assert fill["instrument_id"] == AAPL
+    # Fill at the MONDAY open (110.0 + buy slippage), not a phantom weekend slot.
+    assert fill["price"] == pytest.approx(110.0, rel=2e-3)
+    assert int(fill["ts"]) == EQ_MON  # fills at the Monday bar's open ts
+    assert result.config["asset_class"] == AssetClass.EQUITY.value
+    assert result.config["tf"] == Timeframe.D1.value
+
+
+def test_equity_d1_grid_hops_sessions_not_calendar_days(tmp_path: Path) -> None:
+    # The decision grid is the set of session closes mapped to next-session opens:
+    # {Fri, Mon, Tue, Wed} — four steps, NOT a calendar-day grid that would insert
+    # phantom Sat/Sun rows. bars_processed counts exactly the four grid steps.
+    bars = [
+        bar_row(AAPL, EQ_THU, open_=100.0, close=100.0),
+        bar_row(AAPL, EQ_FRI, open_=100.0, close=100.0),
+        bar_row(AAPL, EQ_MON, open_=100.0, close=100.0),
+        bar_row(AAPL, EQ_TUE, open_=100.0, close=100.0),
+    ]
+    paths = LakePaths(tmp_path / "lake")
+    writer = LakeWriter(paths)
+    writer.write(Dataset.OHLCV_1D, ohlcv_table(bars))  # D1 reads route to ohlcv_1d
+    store = InstrumentStore(tmp_path / "ops.sqlite")
+    store.upsert(make_equity_instrument(AAPL), as_of=1)
+    engine = EventDrivenBacktester(
+        PITDataReader(paths),
+        store,
+        TransactionCostModel(),
+        tf=Timeframe.D1,
+        asset_class=AssetClass.EQUITY,
+        cost_inputs=StaticCostInputs(adv_quote=ADV, sigma_daily=SIGMA),
+    )
+    result = engine.run(ScriptedStrategy({}), [AAPL], start=EQ_THU, end=EQ_WED)
+    # grid = {nbo(Thu)=Fri, nbo(Fri)=Mon, nbo(Mon)=Tue, nbo(Tue)=Wed} -> 4 steps.
+    assert result.counters["bars_processed"] == 4

@@ -38,6 +38,7 @@ from pydantic_settings import BaseSettings, PydanticBaseSettingsSource, Settings
 
 from alphaforge.core.errors import ConfigError, NaiveDatetimeError
 from alphaforge.core.time import Ms, Timeframe, parse_utc
+from alphaforge.core.types import AssetClass
 
 __all__ = [
     "CostsCfg",
@@ -80,12 +81,19 @@ class DataCfg(BaseModel):
     epoch-ms via the :attr:`backfill_start_ms` property. This is the
     "validator-checked string + converting property" choice — no second
     mutable copy of the timestamp exists on the model.
+
+    ``asset_class`` selects the sleeve (anchor timeframe + trading calendar) the
+    engine spine values on; the default ``CRYPTO_PERP`` resolves to the H1 + 24/7
+    sleeve, preserving the current behavior byte-for-byte. ``timeframe`` stays the
+    ingest/anchor TF (default H1 unchanged); the sleeve is
+    :func:`~alphaforge.config.sleeve.sleeve_for` of ``asset_class``.
     """
 
     model_config = _SECTION_CONFIG
 
     exchange: str = Field(default="binanceusdm", min_length=1)
     timeframe: Timeframe = Timeframe.H1
+    asset_class: AssetClass = AssetClass.CRYPTO_PERP
     backfill_start: str = "2020-01-01T00:00:00Z"
     ingest_grace_ms: int = Field(default=30_000, ge=0)
 

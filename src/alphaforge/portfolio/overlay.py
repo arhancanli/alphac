@@ -12,7 +12,11 @@
 * ``s_max = 1.5`` prevents levering up when a quiet regime makes ex-ante vol
   deceptively small — exactly the moment vol targeting blows accounts up.
 * ``sigma_realized`` is supplied by the caller: the EWMA std of realized portfolio
-  1h returns (halflife 240 bars) x sqrt(8760).
+  per-bar returns (halflife 240 bars) x ``sqrt(calendar.periods_per_year)`` — the
+  sleeve calendar's annualization basis (``8760`` for the crypto H1 sleeve, ``252`` for
+  equity D1), never a hard-coded constant (SPINE_ARC §3.5). The annualization happens in
+  the caller (``BlendStrategy._realized_vol_ann``); this overlay takes the already-
+  annualized scalar.
 
 Fractional Kelly note (documented here, NOT a separate mechanism): the
 unconstrained MVO solution ``w* = (1/λ)Σ⁻¹μ`` *is* ``(1/λ) x full-Kelly``
@@ -49,8 +53,9 @@ def vol_target(
     Args:
         w_opt: optimized weights (fractions of equity).
         cov_ann: annualized covariance aligned with ``w_opt``.
-        realized_vol_ann: annualized realized portfolio vol (EWMA std of 1h
-            portfolio returns, halflife 240 bars, x sqrt(8760)); must be >= 0.
+        realized_vol_ann: annualized realized portfolio vol (EWMA std of per-bar
+            portfolio returns, halflife 240 bars, x ``sqrt(calendar.periods_per_year)`` —
+            ``sqrt(8760)`` for the crypto H1 sleeve); must be >= 0.
         target: annualized vol target sigma_target (default 0.15).
         s_max: scale ceiling (default 1.5) — quiet-regime leverage guard.
         gross_max: gross cap re-applied after scaling (default 1.0).

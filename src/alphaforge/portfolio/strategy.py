@@ -77,7 +77,7 @@ import numpy.typing as npt
 import pandas as pd
 import pyarrow as pa
 
-from alphaforge.core.time import Ms, Timeframe, expected_bar_opens
+from alphaforge.core.time import Ms, Timeframe
 from alphaforge.portfolio.covariance import (
     annualize_cov,
     ewma_cov,
@@ -460,7 +460,11 @@ class BlendStrategy:
                 cov_bar[np.ix_(full, full)],
             )
             cov_bar[np.ix_(full, full)] = block
-        cov_ann = annualize_cov(nearest_psd(cov_bar), tf.bars_per_year)
+        # Annualization basis from the sleeve calendar (the ONE source): 8760.0 for the
+        # crypto H1 sleeve (Always24x7.periods_per_year(H1) == H1.bars_per_year, hence
+        # byte-identical), 252.0 for equity D1 (XNYS) — never a bare tf.bars_per_year.
+        periods_per_year = ctx.calendar.periods_per_year(tf)
+        cov_ann = annualize_cov(nearest_psd(cov_bar), periods_per_year)
 
         mu = np.array([mu_map[iid] for iid in ids], dtype=np.float64)
         last_close = closes.iloc[-1]
@@ -483,7 +487,7 @@ class BlendStrategy:
         w_vt, scale = vol_target(
             result.weights,
             cov_ann,
-            self._realized_vol_ann(tf),
+            self._realized_vol_ann(periods_per_year),
             target=self._vol_target_ann,
             s_max=self._vol_scale_max,
             gross_max=self._gross_max,
@@ -524,7 +528,12 @@ class BlendStrategy:
         """
         window = self._cov_window_bars + 1
         tbl = ctx.bars(ids, window)
-        grid = expected_bar_opens(ctx.ts - window * ctx.tf.ms, ctx.ts, ctx.tf)
+        # Grid from the sleeve calendar (the ONE grid source): the 24/7 crypto calendar
+        # delegates to the same core.time.expected_bar_opens this called before (hence
+        # byte-identical); the equity calendar session-filters out weekend/holiday slots.
+        # The window-start ms arithmetic is harmless warm-up width — the calendar filters
+        # which opens are actually in the grid.
+        grid = ctx.calendar.expected_bar_opens(ctx.ts - window * ctx.tf.ms, ctx.ts, ctx.tf)
         index = pd.Index(grid, dtype="int64", name="ts_open")
         if tbl.num_rows == 0:
             return pd.DataFrame(np.nan, index=index, columns=ids, dtype="float64")
@@ -541,14 +550,18 @@ class BlendStrategy:
             .astype("float64")
         )
 
-    def _realized_vol_ann(self, tf: Timeframe) -> float:
+    def _realized_vol_ann(self, periods_per_year: float) -> float:
         """Annualized zero-mean EWMA vol of realized per-bar equity returns.
 
-        ``sqrt(EWMA_halflife(r²)) * sqrt(bars_per_year)`` over the equity
+        ``sqrt(EWMA_halflife(r²)) * sqrt(periods_per_year)`` over the equity
         history this strategy has observed (§6.3: realized leg of
-        ``sigma_hat = max(ex-ante, realized)``). 0.0 with < 2 equity points —
-        the overlay then sizes off ex-ante vol alone. Recomputed from scratch
-        each rebalance (O(run length), trivially cheap at daily cadence).
+        ``sigma_hat = max(ex-ante, realized)``). ``periods_per_year`` is the sleeve
+        calendar's annualization basis for the anchor TF (``8760.0`` for the crypto H1
+        sleeve, ``252.0`` for equity D1) — the ONE annualization source, never a bare
+        ``tf.bars_per_year``. For crypto this is ``sqrt(8760)`` exactly as before.
+        0.0 with < 2 equity points — the overlay then sizes off ex-ante vol alone.
+        Recomputed from scratch each rebalance (O(run length), trivially cheap at daily
+        cadence).
         """
         eq = np.asarray(self._equity_hist, dtype=np.float64)
         if eq.size < 2:
@@ -561,7 +574,7 @@ class BlendStrategy:
             .mean()
             .iloc[-1]
         )
-        return float(np.sqrt(max(float(var), 0.0)) * np.sqrt(tf.bars_per_year))
+        return float(np.sqrt(max(float(var), 0.0)) * np.sqrt(periods_per_year))
 
 
 def _validate_signal_frame(frame: pd.DataFrame) -> tuple[pd.Series, npt.NDArray[np.int64]]:

@@ -43,8 +43,10 @@ from typing import TYPE_CHECKING
 import pandas as pd
 import pyarrow as pa
 
+from alphaforge.core.calendar import TradingCalendar, calendar_for
 from alphaforge.core.errors import LookaheadError
-from alphaforge.core.time import Ms, Timeframe, expected_bar_opens
+from alphaforge.core.time import Ms, Timeframe
+from alphaforge.core.types import AssetClass
 from alphaforge.data.schemas import FLAG_AVAILABILITY_LAG_BARS
 
 if TYPE_CHECKING:
@@ -76,7 +78,21 @@ _BAR_COLUMNS: tuple[str, ...] = (
 
 _FUNDING_COLUMNS: tuple[str, ...] = ("instrument_id", "ts_funding", "rate", "available_at")
 
-_TS_COLUMNS: frozenset[str] = frozenset({"ts_open", "ts_funding", "available_at"})
+#: Corporate-action columns served by :meth:`FeatureContext.corporate_actions` — the
+#: projection the equity adjusted-close kernel consumes (the ``_CA_COLUMNS`` of
+#: :mod:`alphaforge.features.library.equity_price`). ``ex_date``/``available_at`` are
+#: cast to int64 ms (both are in :data:`_TS_COLUMNS`); ALL adjustment joins gate on
+#: ``available_at``, never ``ex_date`` (leakage finding 18).
+_CA_COLUMNS: tuple[str, ...] = (
+    "instrument_id",
+    "ex_date",
+    "available_at",
+    "action_type",
+    "ratio",
+    "cash_amount",
+)
+
+_TS_COLUMNS: frozenset[str] = frozenset({"ts_open", "ts_funding", "available_at", "ex_date"})
 
 
 def long_series(wide: pd.DataFrame, *, name: str | None = None) -> pd.Series:
@@ -112,6 +128,8 @@ class FeatureContext:
         instrument_ids: Sequence[str],
         start: Ms,
         end: Ms,
+        calendar: TradingCalendar | None = None,
+        asset_class: AssetClass = AssetClass.CRYPTO_PERP,
     ) -> None:
         if end <= start:
             raise ValueError(f"FeatureContext window requires end > start, got [{start}, {end})")
@@ -124,9 +142,18 @@ class FeatureContext:
         self._instrument_ids = ids
         self._start = start
         self._end = end
+        # The grid source for :meth:`panel` and the asset class for the corp-actions
+        # read. ``asset_class`` defaults CRYPTO_PERP ⇒ the 24/7 calendar, whose
+        # ``expected_bar_opens`` delegates to the same ``core.time`` kernel the panel
+        # used before the calendar was threaded (byte-identical). The calendar may be
+        # passed explicitly (the engine threads its sleeve calendar) or resolved from
+        # ``asset_class`` here — both must agree; the explicit form avoids a re-resolve.
+        self._asset_class = asset_class
+        self._calendar = calendar if calendar is not None else calendar_for(asset_class)
         self._bars_cache: dict[Timeframe, pd.DataFrame] = {}
         self._panel_cache: dict[tuple[Timeframe, str], pd.DataFrame] = {}
         self._funding_cache: pd.DataFrame | None = None
+        self._ca_cache: pd.DataFrame | None = None
 
     # ------------------------------------------------------------- identity
 
@@ -201,19 +228,55 @@ class FeatureContext:
             self._funding_cache = self._to_pandas(tbl, _FUNDING_COLUMNS)
         return self._funding_cache.copy(deep=False)
 
+    def corporate_actions(self) -> pd.DataFrame:
+        """Corporate-action rows in the window, pre-filtered to ``available_at <= end``.
+
+        The equity analogue of :meth:`funding` — splits/dividends instead of perp
+        settlements. Columns: ``instrument_id``, ``ex_date`` (int64 epoch ms),
+        ``available_at`` (int64 epoch ms), ``action_type`` (``'split'``/``'dividend'``),
+        ``ratio`` (split factor, 1.0 for a dividend), ``cash_amount`` (per-share
+        dividend cash, null for splits); sorted by ``(instrument_id, ex_date)``.
+
+        Masked on the stored ``available_at`` (never ``ex_date``; leakage finding 18) —
+        the rows served are those knowable by the window end. Per-decision-row PIT
+        inside the window is the consumer's responsibility and is solved by the
+        adjusted-close kernel
+        (:func:`~alphaforge.features.library.equity_price.adjusted_close`), which folds
+        each action only into rows whose own decision could know it
+        (``available_at <= ts_open + Δ``). Served to the equity price factors; the
+        crypto path never calls it (no corporate actions exist for perps, so the read
+        is empty even if it did). Converted once and cached; returns a copy-on-write
+        shallow copy.
+        """
+        if self._ca_cache is None:
+            tbl = self._reader.corporate_actions(
+                list(self._instrument_ids),
+                start=self._start,
+                end=self._end,
+                as_of=self._end,
+            )
+            self._ca_cache = self._to_pandas(tbl, _CA_COLUMNS)
+        return self._ca_cache.copy(deep=False)
+
     # ------------------------------------------------------------- derived views
 
     def panel(self, column: str = "close", tf: Timeframe = Timeframe.H1) -> pd.DataFrame:
         """Wide float64 frame of ``column`` on the COMPLETE expected ``tf`` bar grid.
 
-        Index: every aligned ``ts_open`` (int64 epoch ms) in ``[start, end)`` per
-        :func:`~alphaforge.core.time.expected_bar_opens` — including grid slots with
-        no stored bar (NaN rows). Columns: all requested ``instrument_ids`` (NaN
-        columns for instruments without data). Because the grid is complete, row
-        position == time slot, so ``shift``/``rolling``/``ewm`` are exact *time*
-        operations and batch/as-of parity holds across data gaps. This is THE
-        sanctioned layout for feature window math. Cached per ``(tf, column)``;
+        Index: every aligned ``ts_open`` (int64 epoch ms) in ``[start, end)`` per the
+        sleeve calendar's
+        :meth:`~alphaforge.core.calendar.TradingCalendar.expected_bar_opens` —
+        including grid slots with no stored bar (NaN rows). Columns: all requested
+        ``instrument_ids`` (NaN columns for instruments without data). Because the grid
+        is complete, row position == time slot, so ``shift``/``rolling``/``ewm`` are
+        exact *time* operations and batch/as-of parity holds across data gaps. This is
+        THE sanctioned layout for feature window math. Cached per ``(tf, column)``;
         returns a copy-on-write shallow copy.
+
+        The grid is the calendar grid: for the default crypto sleeve the 24/7 calendar
+        delegates to the same ``core.time`` kernel the panel used before the calendar
+        was threaded (byte-identical); for the equity D1 sleeve the XNYS calendar emits
+        only session opens, so weekend/holiday slots are correctly absent (not NaN-padded).
         """
         key = (tf, column)
         cached = self._panel_cache.get(key)
@@ -228,7 +291,7 @@ class FeatureContext:
                     f"{sorted(set(_BAR_COLUMNS) - {'ts_open', 'instrument_id'})}, "
                     f"got {column!r}"
                 )
-            grid = expected_bar_opens(self._start, self._end, tf)
+            grid = self._calendar.expected_bar_opens(self._start, self._end, tf)
             wide = bars.pivot(index="ts_open", columns="instrument_id", values=column)
             wide = wide.reindex(index=grid, columns=list(self._instrument_ids))
             wide = wide.astype("float64")

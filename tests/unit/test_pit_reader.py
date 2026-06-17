@@ -16,6 +16,7 @@ import pyarrow.parquet as pq
 import pytest
 
 from alphaforge.core.time import Timeframe
+from alphaforge.core.types import AssetClass
 from alphaforge.data.schemas import (
     FLAG_AVAILABILITY_LAG_BARS,
     Dataset,
@@ -29,6 +30,7 @@ from alphaforge.data.store.writer import LakeWriter
 
 BTC = "BINANCE:PERP:BTCUSDT"
 ETH = "BINANCE:PERP:ETHUSDT"
+AAPL = "XNAS:CASH:AAPLUSD"  # equity id for the corporate-actions PIT tests
 
 H1 = Timeframe.H1
 HOUR = 3_600_000
@@ -120,6 +122,46 @@ def funding_table(*rows: dict[str, object]) -> pa.Table:
     )
 
 
+def corp_action_row(
+    instrument_id: str,
+    ex_date: int,
+    *,
+    action_type: str = "split",
+    ratio: float = 0.5,
+    cash_amount: float | None = None,
+    available_at: int | None = None,
+) -> dict[str, object]:
+    # available_at = declaration/knowable date + publication lag (default ex_date - 7d,
+    # the realistic weeks-ahead split announcement); the PIT predicate gates on it.
+    avail = ex_date - 7 * 24 * HOUR if available_at is None else available_at
+    return {
+        "instrument_id": instrument_id,
+        "action_type": action_type,
+        "ex_date": ex_date,
+        "available_at": avail,
+        "ratio": ratio,
+        "cash_amount": cash_amount,
+        "ingested_at": avail + 1_000,
+    }
+
+
+def corp_actions_table(*rows: dict[str, object]) -> pa.Table:
+    def ts(name: str) -> pa.Array:
+        return pa.array([r[name] for r in rows], type=pa.timestamp("ms", tz="UTC"))
+
+    return pa.table(
+        {
+            "instrument_id": pa.array([r["instrument_id"] for r in rows], type=pa.string()),
+            "action_type": pa.array([r["action_type"] for r in rows], type=pa.string()),
+            "ex_date": ts("ex_date"),
+            "available_at": ts("available_at"),
+            "ratio": pa.array([r["ratio"] for r in rows], type=pa.float64()),
+            "cash_amount": pa.array([r["cash_amount"] for r in rows], type=pa.float64()),
+            "ingested_at": ts("ingested_at"),
+        }
+    )
+
+
 def read_leaf(path: Path) -> pa.Table:
     """Read one leaf file directly. ``pq.read_table`` would run dataset/hive
     discovery over the ``key=value`` path segments and clash with the in-file
@@ -167,6 +209,11 @@ class TestEmptyLake:
         out = reader.funding([BTC], start=T0, end=T0 + 24 * HOUR, as_of=FAR_FUTURE)
         assert out.num_rows == 0
         assert out.equals(empty_table(Dataset.FUNDING))
+
+    def test_corporate_actions_schema_stable(self, reader: PITDataReader) -> None:
+        out = reader.corporate_actions([AAPL], start=T0, end=T0 + 24 * HOUR, as_of=FAR_FUTURE)
+        assert out.num_rows == 0
+        assert out.equals(empty_table(Dataset.CORPORATE_ACTIONS))
 
     def test_latest_bar_open_none(self, reader: PITDataReader) -> None:
         assert reader.latest_bar_open(BTC, as_of=FAR_FUTURE) is None
@@ -381,6 +428,72 @@ class TestFundingPIT:
         assert out.schema.equals(schema_for(Dataset.FUNDING), check_metadata=True)
 
 
+# ------------------------------------------------------------------ corporate actions
+
+
+class TestCorporateActionsPIT:
+    """corporate_actions mirrors funding() EXACTLY: range on ex_date, mask on
+    available_at (NEVER ex_date) — the equity leakage-finding-18 analogue."""
+
+    def test_available_at_boundary(self, writer: LakeWriter, reader: PITDataReader) -> None:
+        # A split declared (knowable) at `avail` is invisible to a decision one ms before
+        # and visible exactly at `avail` — gated on available_at, not ex_date.
+        ex = T0 + 30 * 24 * HOUR
+        avail = T0  # declared a month before ex
+        writer.write(
+            Dataset.CORPORATE_ACTIONS,
+            corp_actions_table(corp_action_row(AAPL, ex, ratio=0.5, available_at=avail)),
+        )
+        window = {"start": ex - HOUR, "end": ex + HOUR}
+        assert reader.corporate_actions([AAPL], as_of=avail - 1, **window).num_rows == 0
+        out = reader.corporate_actions([AAPL], as_of=avail, **window)
+        assert out.num_rows == 1
+        assert out.column("ratio")[0].as_py() == 0.5
+        assert out.column("action_type")[0].as_py() == "split"
+
+    def test_window_half_open_on_ex_date(self, writer: LakeWriter, reader: PITDataReader) -> None:
+        # The within-range key is ex_date: [start, end) half-open on ex_date.
+        day = 24 * HOUR
+        writer.write(
+            Dataset.CORPORATE_ACTIONS,
+            corp_actions_table(
+                corp_action_row(AAPL, T0, available_at=T0 - day),
+                corp_action_row(AAPL, T0 + day, available_at=T0 - day),
+                corp_action_row(AAPL, T0 + 2 * day, available_at=T0 - day),
+            ),
+        )
+        out = reader.corporate_actions([AAPL], start=T0, end=T0 + 2 * day, as_of=FAR_FUTURE)
+        got = [int(v.cast(pa.int64()).as_py()) for v in out.column("ex_date")]
+        assert got == [T0, T0 + day]
+
+    def test_only_requested_instruments(self, writer: LakeWriter, reader: PITDataReader) -> None:
+        writer.write(
+            Dataset.CORPORATE_ACTIONS,
+            corp_actions_table(corp_action_row(AAPL, T0), corp_action_row(ETH, T0)),
+        )
+        out = reader.corporate_actions([ETH], start=T0 - HOUR, end=T0 + HOUR, as_of=FAR_FUTURE)
+        assert out.column("instrument_id").to_pylist() == [ETH]
+
+    def test_dividend_carries_cash_amount(self, writer: LakeWriter, reader: PITDataReader) -> None:
+        writer.write(
+            Dataset.CORPORATE_ACTIONS,
+            corp_actions_table(
+                corp_action_row(AAPL, T0, action_type="dividend", ratio=1.0, cash_amount=0.24)
+            ),
+        )
+        out = reader.corporate_actions([AAPL], start=T0 - HOUR, end=T0 + HOUR, as_of=FAR_FUTURE)
+        assert out.column("cash_amount")[0].as_py() == pytest.approx(0.24)
+
+    def test_result_schema_exact(self, writer: LakeWriter, reader: PITDataReader) -> None:
+        writer.write(Dataset.CORPORATE_ACTIONS, corp_actions_table(corp_action_row(AAPL, T0)))
+        out = reader.corporate_actions([AAPL], start=T0 - HOUR, end=T0 + HOUR, as_of=FAR_FUTURE)
+        assert out.schema.equals(schema_for(Dataset.CORPORATE_ACTIONS), check_metadata=True)
+
+    def test_empty_interval(self, reader: PITDataReader) -> None:
+        out = reader.corporate_actions([AAPL], start=T0, end=T0, as_of=FAR_FUTURE)
+        assert out.equals(empty_table(Dataset.CORPORATE_ACTIONS))
+
+
 # ----------------------------------------------------------------- freshness + gaps
 
 
@@ -446,3 +559,26 @@ class TestGaps:
 
     def test_empty_interval(self, reader: PITDataReader) -> None:
         assert reader.gaps(BTC, start=T0, end=T0) == []
+
+    def test_equity_asset_class_skips_weekends(
+        self, writer: LakeWriter, reader: PITDataReader
+    ) -> None:
+        # SPINE_ARC §3.8 / audit G8: with asset_class=EQUITY the expected grid is the
+        # XNYS session grid, so a weekend is correctly ABSENT (not reported as a gap).
+        # 2024-01-05 is a Friday; the next session is Monday 2024-01-08 (Sat/Sun skipped).
+        day = 24 * HOUR
+        fri = 1_704_412_800_000  # 2024-01-05T00:00:00Z (Friday session open)
+        mon = fri + 3 * day  # 2024-01-08T00:00:00Z (next session, Sat+Sun hopped)
+        writer.write(
+            Dataset.OHLCV_1D,
+            ohlcv_table(bar(AAPL, fri), bar(AAPL, mon)),
+            tf=Timeframe.D1,
+            now=FAR_FUTURE,
+        )
+        # 24/7 grid would report Sat+Sun as gaps; the XNYS grid reports none.
+        crypto_gaps = reader.gaps(AAPL, start=fri, end=mon + day, tf=Timeframe.D1)
+        assert crypto_gaps == [fri + day, fri + 2 * day]  # Sat, Sun (the 24/7 default)
+        equity_gaps = reader.gaps(
+            AAPL, start=fri, end=mon + day, tf=Timeframe.D1, asset_class=AssetClass.EQUITY
+        )
+        assert equity_gaps == []  # both sessions present; weekend correctly absent

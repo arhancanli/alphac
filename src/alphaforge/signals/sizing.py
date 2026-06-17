@@ -63,28 +63,55 @@ class GrinoldSizer:
 
     ``horizon_bars`` must be ``SignalsCfg.horizon_bars`` — construct via
     :meth:`from_cfg` so the ONE shared horizon constant is consumed, not retyped.
+
+    ``periods_per_year`` is the ANNUALIZATION basis — the sleeve calendar's
+    :meth:`~alphaforge.core.calendar.TradingCalendar.periods_per_year` of the anchor
+    TF (``8760.0`` for the crypto H1 sleeve, ``252.0`` for the equity D1 sleeve), NOT a
+    bare ``timeframe.bars_per_year``: annualization is sourced from the ONE calendar so
+    no 8760/252 leaks here (SPINE_ARC §3.6). The crypto default preserves the prior
+    ``Timeframe.H1.bars_per_year`` value, so an un-migrated caller is byte-identical.
     """
 
     ic_target: float = 0.02
     horizon_bars: int
     timeframe: Timeframe = Timeframe.H1
+    periods_per_year: float = Timeframe.H1.bars_per_year
 
     def __post_init__(self) -> None:
         if not (0.0 < self.ic_target < 1.0):
             raise ValueError(f"ic_target must be in (0, 1); got {self.ic_target}")
         if self.horizon_bars <= 0:
             raise ValueError(f"horizon_bars must be > 0; got {self.horizon_bars}")
+        if not (self.periods_per_year > 0.0):
+            raise ValueError(f"periods_per_year must be > 0; got {self.periods_per_year}")
 
     @classmethod
-    def from_cfg(cls, cfg: SignalsCfg, *, timeframe: Timeframe = Timeframe.H1) -> GrinoldSizer:
+    def from_cfg(
+        cls,
+        cfg: SignalsCfg,
+        *,
+        timeframe: Timeframe = Timeframe.H1,
+        periods_per_year: float = Timeframe.H1.bars_per_year,
+    ) -> GrinoldSizer:
         """Build from settings — the sanctioned constructor: ``ic_target`` and the
-        ONE horizon constant both come from ``SignalsCfg`` (finding 2 / §3.10)."""
-        return cls(ic_target=cfg.ic_target, horizon_bars=cfg.horizon_bars, timeframe=timeframe)
+        ONE horizon constant both come from ``SignalsCfg`` (finding 2 / §3.10).
+
+        ``periods_per_year`` is the sleeve calendar's annualization basis for the anchor
+        TF (``calendar.periods_per_year(anchor_tf)``); the crypto default ``8760.0``
+        keeps an un-migrated caller byte-identical."""
+        return cls(
+            ic_target=cfg.ic_target,
+            horizon_bars=cfg.horizon_bars,
+            timeframe=timeframe,
+            periods_per_year=periods_per_year,
+        )
 
     @property
     def annualization(self) -> float:
-        """``bars_per_year / h`` — the horizon-μ → mu_ann factor (8760/72 for 1h/72)."""
-        return self.timeframe.bars_per_year / self.horizon_bars
+        """``periods_per_year / h`` — the horizon-μ → mu_ann factor (8760/72 for the
+        crypto H1 sleeve). Annualization is sourced from the sleeve calendar's
+        ``periods_per_year`` (SPINE_ARC §3.6), never a bare ``timeframe.bars_per_year``."""
+        return self.periods_per_year / self.horizon_bars
 
     def mu_ann(self, alpha_tilde: pd.Series, sigma_bar: pd.Series) -> pd.Series:
         """The Grinold expected-return vector, ANNUALIZED (finding 2)::

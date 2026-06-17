@@ -44,10 +44,11 @@ import numpy as np
 import pandas as pd
 import pyarrow as pa
 
+from alphaforge.config.sleeve import CRYPTO_PERP_SLEEVE, Sleeve
 from alphaforge.core.time import Ms, bar_open_for_decision
 from alphaforge.features.context import FeatureContext, long_series
 from alphaforge.features.cross_section import CSPipeline
-from alphaforge.features.engine import ANCHOR_TIMEFRAME, FeatureEngine
+from alphaforge.features.engine import FeatureEngine
 from alphaforge.features.library.vol import EWMA_HEADROOM_SPANS, EWMA_VOL_SPAN, ewma_vol
 from alphaforge.features.spec import Family, FeatureSpec
 from alphaforge.labeling import forward_returns
@@ -127,6 +128,11 @@ class SignalService:
             (default winsorize → zscore). ``cross_sectional=False`` alphas
             (e.g. vol-normalized TS-momentum) pass through mask-only.
         min_members: Minimum cross-section size for z-scores and Rank-ICs.
+        sleeve: The asset-class sleeve supplying the anchor timeframe + calendar
+            (the ONE grid/annualization source, SPINE_ARC §3.6). Default
+            :data:`~alphaforge.config.sleeve.CRYPTO_PERP_SLEEVE` (H1 + 24/7) keeps the
+            crypto path byte-identical: the anchor TF is H1 and the annualization basis
+            ``calendar.periods_per_year(H1) == 8760.0 == Timeframe.H1.bars_per_year``.
     """
 
     def __init__(
@@ -139,6 +145,7 @@ class SignalService:
         alpha_names: Sequence[str] | None = None,
         pipeline: CSPipeline | None = None,
         min_members: int = 5,
+        sleeve: Sleeve = CRYPTO_PERP_SLEEVE,
     ) -> None:
         if alpha_names is None:
             specs = [s for s in registry.all_specs() if s.direction != 0]
@@ -162,7 +169,15 @@ class SignalService:
         self._alpha_specs: tuple[FeatureSpec, ...] = tuple(specs)
         self._pipeline = pipeline if pipeline is not None else CSPipeline()
         self._min_members = min_members
-        self._sizer = GrinoldSizer.from_cfg(cfg, timeframe=ANCHOR_TIMEFRAME)
+        # Sleeve-resolved anchor TF + calendar — the ONE grid/annualization source.
+        # Crypto (H1 + 24/7) reduces to the prior ANCHOR_TIMEFRAME==H1 / bars_per_year
+        # path byte-identically (periods_per_year(H1) == 8760.0).
+        self._anchor_tf = sleeve.anchor_tf
+        self._calendar = sleeve.calendar
+        self._periods_per_year = sleeve.periods_per_year()
+        self._sizer = GrinoldSizer.from_cfg(
+            cfg, timeframe=self._anchor_tf, periods_per_year=self._periods_per_year
+        )
 
     @property
     def alpha_names(self) -> tuple[str, ...]:
@@ -198,7 +213,8 @@ class SignalService:
     def on_bar_close(self, as_of: Ms, *, weights: BlendWeights | None = None) -> pd.DataFrame:
         """One live decision row per universe member at ``as_of`` (epoch-ms UTC).
 
-        The decision bar is ``t* = bar_open_for_decision(as_of, 1h)``; the
+        The decision bar is ``t* = bar_open_for_decision(as_of, anchor_tf)`` (the
+        sleeve's anchor TF, ``1h`` for the crypto sleeve); the
         cross-section is the PIT membership at ``t*``. ``weights`` is the latest
         stored/recomputed :class:`BlendWeights` (from :meth:`estimate_weights` /
         :meth:`compute_research`); ``None`` = documented cold start, equal
@@ -211,7 +227,7 @@ class SignalService:
         the EWMA sigma_hat truncation convention applies). That parity is the deployed
         contract, enforced by the seam tests.
         """
-        t_star = bar_open_for_decision(as_of, ANCHOR_TIMEFRAME)
+        t_star = bar_open_for_decision(as_of, self._anchor_tf)
         members = sorted(self._universe.membership_asof(t_star))
         if not members:
             raise ValueError(f"universe is empty at decision bar {t_star} (as_of={as_of})")
@@ -244,21 +260,21 @@ class SignalService:
         :func:`estimate_blend_weights` (only ``t' + h·Δ <= t`` enters ÎC_t)."""
         h = self._cfg.horizon_bars
         bars = frame[_OPEN_COLUMN].dropna().rename("open").reset_index()
-        fwd = forward_returns(bars, h, timeframe=ANCHOR_TIMEFRAME).reindex(frame.index)
+        fwd = forward_returns(bars, h, timeframe=self._anchor_tf).reindex(frame.index)
         # ABSOLUTE-grid subsampling (delta_ms = the 1h bar width): the kept IC
         # timestamps are pinned to a venue-fixed bar grid, NOT to this window's
         # own first bar. That makes the rolling blend weights SLICE-INVARIANT, so
         # the walk-forward's global-compute-and-slice path reproduces the per-leg
         # path's decisions to the EWMA warm-up tolerance (the global pass, having
         # more realized-IC history before each leg, is the MORE-correct reference).
-        delta = ANCHOR_TIMEFRAME.ms
+        delta = self._anchor_tf.ms
         grid_ics = {
             name: non_overlapping(
                 rank_ic(zs[name], fwd, mask, min_members=self._min_members), h, delta_ms=delta
             )
             for name in self.alpha_names
         }
-        return estimate_blend_weights(grid_ics, horizon_bars=h, timeframe=ANCHOR_TIMEFRAME)
+        return estimate_blend_weights(grid_ics, horizon_bars=h, timeframe=self._anchor_tf)
 
     def _emit(
         self,

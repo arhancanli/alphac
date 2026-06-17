@@ -35,7 +35,9 @@ from typing import Final
 import duckdb
 import pyarrow as pa
 
-from alphaforge.core.time import Ms, Timeframe, expected_bar_opens, from_ms
+from alphaforge.core.calendar import calendar_for
+from alphaforge.core.time import Ms, Timeframe, from_ms
+from alphaforge.core.types import AssetClass
 from alphaforge.data.schemas import (
     FLAG_AVAILABILITY_LAG_BARS,
     Dataset,
@@ -176,6 +178,47 @@ class PITDataReader:
         result: pa.Table = self._con.execute(sql, params).to_arrow_table()
         return result.cast(schema_for(dataset))
 
+    def corporate_actions(
+        self,
+        instrument_ids: Sequence[str],
+        *,
+        start: Ms,
+        end: Ms,
+        as_of: Ms,
+    ) -> pa.Table:
+        """Corp-action rows with ``start <= ex_date < end`` AND ``available_at <= as_of``.
+
+        The equity analogue of :meth:`funding` — same PIT shape, splits/dividends
+        instead of perp settlements. Bounds in epoch ms UTC. The PIT predicate uses the
+        stored ``available_at`` (declaration/knowable date + publication lag) — NEVER
+        ``ex_date`` (leakage finding 18): a split declared one millisecond after
+        ``as_of`` is invisible, exactly as a settlement is. ``ex_date`` is used only as
+        the within-range window key (the schema natural sort/dedupe key), so the served
+        rows are the actions whose ex-date falls in ``[start, end)`` and which were
+        knowable by ``as_of``. Result conforms exactly to ``CORPORATE_ACTIONS_SCHEMA``,
+        sorted by ``(instrument_id, ex_date)``; empty result for missing
+        instruments/partitions or an empty interval.
+        """
+        dataset = Dataset.CORPORATE_ACTIONS
+        if end <= start or not instrument_ids:
+            return empty_table(dataset)
+        files = self._files(dataset, instrument_ids, start=start, end=end)
+        if not files:
+            return empty_table(dataset)
+        sql = f"""
+            SELECT instrument_id, action_type, ex_date, available_at, ratio,
+                   cash_amount, ingested_at
+            FROM read_parquet({_sql_file_list(files)})
+            WHERE list_contains(?::VARCHAR[], instrument_id)
+              AND epoch_ms(ex_date) >= ?
+              AND epoch_ms(ex_date) < ?
+              AND epoch_ms(available_at) <= ?
+            ORDER BY instrument_id, ex_date
+        """
+        params = [list(instrument_ids), start, end, as_of]
+        result: pa.Table = self._con.execute(sql, params).to_arrow_table()
+        return result.cast(schema_for(dataset))
+
     def latest_bar_open(
         self,
         instrument_id: str,
@@ -212,19 +255,25 @@ class PITDataReader:
         start: Ms,
         end: Ms,
         tf: Timeframe = Timeframe.H1,
+        asset_class: AssetClass = AssetClass.CRYPTO_PERP,
     ) -> list[Ms]:
         """Expected ``tf`` bar opens in ``[start, end)`` missing from the lake, ascending.
 
-        Operational tool (gap detection / backfill targeting): compares the 24/7
-        calendar grid (:func:`alphaforge.core.time.expected_bar_opens`) against
-        the *stored* opens of the ``tf``-resolved dataset (native 1h or derived
-        4h/1d) — deliberately NO PIT filter, since ops must see the lake as it
-        physically is. Gaps are reported, never synthetically filled
-        (dataDesign.md §0.5); note the resampler's completeness rule makes a 1h
-        gap propagate to a *missing* derived bar, which this tool surfaces. With
-        no data at all, the entire grid is returned.
+        Operational tool (gap detection / backfill targeting): compares the calendar
+        grid (:meth:`~alphaforge.core.calendar.TradingCalendar.expected_bar_opens` of
+        ``calendar_for(asset_class)``) against the *stored* opens of the ``tf``-resolved
+        dataset (native 1h or derived 4h/1d) — deliberately NO PIT filter, since ops
+        must see the lake as it physically is. Gaps are reported, never synthetically
+        filled (dataDesign.md §0.5); note the resampler's completeness rule makes a 1h
+        gap propagate to a *missing* derived bar, which this tool surfaces. With no data
+        at all, the entire grid is returned.
+
+        ``asset_class`` selects the calendar (default ``CRYPTO_PERP`` ⇒ the 24/7 grid,
+        byte-identical to the bare ``core.time`` kernel used before the calendar was
+        threaded); the equity path passes ``AssetClass.EQUITY`` so weekends/holidays
+        are correctly absent from the expected grid and not reported as gaps (audit G8).
         """
-        expected = expected_bar_opens(start, end, tf)
+        expected = calendar_for(asset_class).expected_bar_opens(start, end, tf)
         if not expected:
             return []
         files = self._files(ohlcv_dataset(tf), [instrument_id], start=start, end=end)

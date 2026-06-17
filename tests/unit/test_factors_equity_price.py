@@ -14,9 +14,11 @@ crypto factor-test discipline (test_factors_momentum / _reversal / _vol / _liqui
   taken BEFORE its ``available_at`` and visible to a later one (per-decision-row PIT,
   asserted ACROSS rows, not at one timestamp). Plus the dividend total-return factor
   and the empty-actions identity.
-* The forward-compatible feature-detect (:func:`_adjusted_close_panel`): raw fallback
-  when the context has no ``corporate_actions`` (the documented build-order gap) and
-  adjusted output when a fake context exposes it.
+* The corporate-actions surface (:func:`_adjusted_close_panel`, SPINE_ARC P1): raw
+  pass-through ONLY when the context's ``corporate_actions`` returns an empty frame
+  (no action in the window ⇒ ``C* == C_raw``, the crypto/real-engine path), adjusted
+  output when a fake context exposes actions, and a FAIL-CLOSED raise when a context
+  exposes no ``corporate_actions`` getter at all (never silently feed raw prices).
 * Low-vol direction (``eq_lowvol_252.direction == -1``; CS-ranked low-vol scores
   higher) and BAB sign (a synthetic low-beta name outranks a high-beta name).
 * Gap propagation (a missing endpoint NaNs exactly the touched windows, never
@@ -50,6 +52,7 @@ import pandas as pd
 import pyarrow as pa
 import pytest
 
+from alphaforge.core.errors import ConfigError
 from alphaforge.core.instruments import InstrumentStore
 from alphaforge.data.schemas import UNIVERSE_SCHEMA, Dataset
 from alphaforge.data.store.lake import LakePaths
@@ -451,10 +454,12 @@ class TestAdjustedClosePIT:
 
 class TestAdjustedClosePanelFeatureDetect:
     def test_raw_fallback_when_no_corporate_actions(self, env: Env) -> None:
-        # The documented build-order gap: a context without `corporate_actions` yields
-        # the raw close panel unchanged (parity-clean, unadjusted). We assert the engine
-        # path (which uses _adjusted_close_panel inside the bodies) equals the helper on
-        # the raw close — i.e. no adjustment is silently applied.
+        # The real engine context now exposes `corporate_actions`, but this synthetic
+        # lake has none planted, so the served CA frame is EMPTY -> the adjusted-close
+        # panel is the raw close unchanged (no action in the window ⇒ C* == C_raw, the
+        # only legitimate raw pass-through). We assert the engine path (which uses
+        # _adjusted_close_panel inside the bodies) equals the helper on the raw close —
+        # i.e. no adjustment is silently applied when there are no actions.
         from alphaforge.features.library import equity_price as ep
 
         out = env.engine.compute_history(
@@ -505,13 +510,17 @@ class TestAdjustedClosePanelFeatureDetect:
         assert panel["A"].iloc[3] == pytest.approx(50.0, rel=1e-12)
         assert panel["A"].nunique() == 1  # split neutralized -> constant adjusted price
 
-        # And without the feature-detect (a context lacking corporate_actions), the raw
-        # panel passes through unchanged (the documented build-order fallback).
+        # FAIL-CLOSED (SPINE_ARC §2.3, the P1 teeth): a context lacking corporate_actions
+        # entirely must NOT silently pass raw unadjusted prices through — it raises, so a
+        # 2:1 split can never print as a -50% return into the factors. (An EMPTY actions
+        # frame is the only legitimate raw pass-through, covered by the empty-actions
+        # identity tests above and by the real-engine raw-fallback test below.)
         class _NoCA:
             def panel(self, column: str = "close") -> pd.DataFrame:
                 return raw
 
-        pd.testing.assert_frame_equal(ep._adjusted_close_panel(_NoCA()), raw)  # type: ignore[arg-type]
+        with pytest.raises(ConfigError, match="corporate-actions surface"):
+            ep._adjusted_close_panel(_NoCA())  # type: ignore[arg-type]
 
 
 # ------------------------------------------------------ momentum / beta reuse fidelity

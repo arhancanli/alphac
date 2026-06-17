@@ -83,7 +83,7 @@ from typing import TYPE_CHECKING, Final
 import numpy as np
 import pandas as pd
 
-from alphaforge.core.calendar import calendar_for
+from alphaforge.core.calendar import TradingCalendar, calendar_for
 from alphaforge.core.time import Timeframe
 from alphaforge.core.types import Liquidity, MarketType
 from alphaforge.features.library.vol import EWMA_VOL_SPAN, ewma_vol
@@ -272,6 +272,7 @@ def _scan_one_instrument(
     event_ts: np.ndarray,
     event_side: np.ndarray,
     cfg: TripleBarrierConfig,
+    calendar: TradingCalendar,
 ) -> dict[str, np.ndarray]:
     """Pure-numpy first-touch scan for one instrument (the labeling contract).
 
@@ -281,8 +282,15 @@ def _scan_one_instrument(
     (``entry_ts``, ``entry_price``, ``t1``, ``exit_price``, ``ret_gross``, ``label_tb``,
     ``touch``, ``vol_at_entry``) aligned to ``event_ts``; an unresolved event carries
     NaN prices / sentinel ``t1 = -1`` and ``label_tb = touch = 0``.
+
+    Bar hops walk the ``calendar`` sessions, never a fixed ``+Δ``: the entry bar is
+    ``calendar.next_bar_open(τ, tf)`` and each subsequent path/vertical bar is the next
+    session open. For the 24/7 crypto calendar this reduces *exactly* to the prior
+    ``τ + (1 + k)·Δ`` arithmetic (``next_bar_open(t, H1) == t + H1.ms``), so the crypto
+    labels are byte-identical; for an XNYS session calendar a hold spanning a weekend
+    hops Friday→Monday instead of falling into a phantom (missing) weekend slot.
     """
-    delta = cfg.timeframe.ms
+    tf = cfg.timeframe
     horizon = cfg.horizon_bars
     n = len(event_ts)
 
@@ -301,8 +309,18 @@ def _scan_one_instrument(
     for e in range(n):
         tau = int(event_ts[e])
         side = int(event_side[e])
-        ent_ts = tau + delta
+        # Entry at the next session open O(τ): +Δ on the 24/7 calendar, Fri->Mon on XNYS.
+        ent_ts = calendar.next_bar_open(tau, tf)
         entry_ts[e] = ent_ts
+
+        # The hold's session opens: entry, then the next ``horizon`` sessions. Path bar k
+        # (k=1..horizon) is ``path_opens[k]``; the vertical bar is ``path_opens[horizon]``.
+        # On 24/7 ``path_opens[k] == tau + (1 + k)·Δ`` exactly (byte-identical).
+        path_opens = [ent_ts]
+        cursor = ent_ts
+        for _ in range(horizon):
+            cursor = calendar.next_bar_open(cursor, tf)
+            path_opens.append(cursor)
 
         # sigma_hat is read at the decision bar τ (PIT). sigma_hat NaN/non-positive => NaN label.
         tau_pos = pos_of.get(tau)
@@ -326,7 +344,7 @@ def _scan_one_instrument(
         resolved = False
         gapped = False
         for k in range(1, horizon + 1):
-            bar_ts = tau + (1 + k) * delta
+            bar_ts = path_opens[k]
             bpos = pos_of.get(bar_ts)
             if bpos is None:
                 gapped = True  # interior path bar missing -> NaN (never bridge)
@@ -375,8 +393,9 @@ def _scan_one_instrument(
         if resolved:
             continue
 
-        # Vertical barrier: exit at the NEXT OPEN O(τ + (1+H)·Δ), never a close.
-        vert_ts = tau + (1 + horizon) * delta
+        # Vertical barrier: exit at the NEXT OPEN O(τ + (1+H)·Δ) = the H-th session open
+        # after entry, never a close (the same instant as the last path bar above).
+        vert_ts = path_opens[horizon]
         vpos = pos_of.get(vert_ts)
         if vpos is None:
             entry_price[e] = np.nan  # vertical bar missing -> NaN sentinel
@@ -507,6 +526,11 @@ def apply_triple_barrier(
         event_ts = ev_sorted["ts"].to_numpy(dtype=np.int64)
         event_side = ev_sorted["side"].to_numpy(dtype=np.int64)
 
+        # The ONE calendar seam (already used at :534 for funding counting): the bar
+        # walk hops its sessions instead of a fixed +Δ. Crypto resolves the 24/7
+        # calendar, so the walk reduces to ``τ + (1 + k)·Δ`` and labels are byte-identical.
+        cal = calendar_for(inst.asset_class)
+
         scan = _scan_one_instrument(
             ts=ts,
             open_=open_,
@@ -516,6 +540,7 @@ def apply_triple_barrier(
             event_ts=event_ts,
             event_side=event_side,
             cfg=cfg,
+            calendar=cal,
         )
 
         # --- cost-honest net return + funding (per-instrument, vectorized) -----
@@ -531,7 +556,8 @@ def apply_triple_barrier(
             if is_perp:
                 interval = inst.funding_interval_hours
                 assert interval is not None  # perps require it (Instrument invariant)
-                cal = calendar_for(inst.asset_class)
+                # ``cal`` resolved above (the same calendar drives the bar walk);
+                # availability stays pure-integer (τ + Δ), never a session hop.
                 decision_ts = event_ts + delta
                 f_hat = (
                     _funding_asof(funding, iid, decision_ts)

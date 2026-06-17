@@ -82,7 +82,8 @@ import pyarrow as pa
 
 from alphaforge.analytics import PerfSummary, build_tearsheet, daily_returns, render_text, summarize
 from alphaforge.backtest import EventDrivenBacktester
-from alphaforge.core.time import Timeframe, expected_bar_opens
+from alphaforge.config.sleeve import sleeve_for
+from alphaforge.core.time import Timeframe
 from alphaforge.ml.model import HistGBMMetaModel, IdentityMeta, MetaModel
 from alphaforge.ml.retrain import build_fit_windows
 from alphaforge.portfolio.strategy import BlendStrategy
@@ -659,6 +660,12 @@ class WalkForwardRunner:
         self._cost_model = cost_model
         self._signals = signal_service
         self._settings = settings
+        # Sleeve-resolved anchor TF + calendar (the ONE grid/annualization source,
+        # SPINE_ARC §3.7). The default crypto sleeve (settings.data.asset_class ==
+        # CRYPTO_PERP) anchors H1 on the 24/7 calendar, whose expected_bar_opens
+        # delegates to the same core.time kernel the runner used before — byte-identical.
+        self._sleeve = sleeve_for(settings.data.asset_class)
+        self._calendar = self._sleeve.calendar
         self._cost_inputs = cost_inputs
         self._registry = registry
         self._daily_btc_reader = daily_btc_reader
@@ -717,7 +724,7 @@ class WalkForwardRunner:
         Raises ``ValueError`` on malformed bounds, an empty universe window,
         or a grid too short for one leg (via the splitter).
         """
-        tf = Timeframe.H1
+        tf = self._sleeve.anchor_tf
         if end <= start:
             raise ValueError(f"end ({end}) must be > start ({start})")
         if start % tf.ms or end % tf.ms:
@@ -740,7 +747,14 @@ class WalkForwardRunner:
         splitter = PurgedWalkForward.from_settings(
             self._settings, train_bars=train_bars, test_bars=test_bars, embargo_bars=embargo_bars
         )
-        grid = np.asarray(expected_bar_opens(start, end, tf), dtype=np.int64)
+        # Grid from the sleeve calendar (the ONE grid source): the 24/7 crypto calendar
+        # delegates to the same core.time.expected_bar_opens (byte-identical), so the WF
+        # leg layout is unchanged for crypto; the equity calendar session-filters the
+        # grid, which is what makes the bar-count purge/embargo measure SESSIONS, not
+        # calendar days, for free (SPINE_ARC §3.7). Equity WF is gated off this arc by the
+        # FeatureEngine D1/EQUITY fail-closed guard (the compute_research call below would
+        # raise), so only the crypto path is exercised here.
+        grid = np.asarray(self._calendar.expected_bar_opens(start, end, tf), dtype=np.int64)
 
         # ONE strategy reused across all legs (F-A): the OOS equity stream is
         # CONTINUOUS (leg k+1's initial_cash is leg k's final equity), so the
@@ -950,7 +964,10 @@ class WalkForwardRunner:
         IdentityRegime fallbacks (the 3b observability fraction's numerator).
         """
         gated = ml or regime
-        tf = Timeframe.H1
+        # Anchor TF from the sleeve (crypto == H1, byte-identical). ``tf.ms`` here is the
+        # bar DURATION (test_end = last test-bar open + one bar; warm-up window width),
+        # not a next-session hop, so it is correct for both sleeves.
+        tf = self._sleeve.anchor_tf
         strategy: BlendStrategy | None = None
         legs: list[LegResult] = []
         gate_inactive = 0
