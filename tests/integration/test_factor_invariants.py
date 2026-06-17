@@ -249,9 +249,12 @@ class TestTruncationAndParitySweep:
         # factors are positional on ctx.panel, so the truncation/parity/warmup sweep
         # below exercises them on this crypto lake too (they fall back to the raw close
         # panel when the context exposes no corporate actions — the documented build-order
-        # gap — and remain finite-window ⇒ atol = 0).
-        assert len(ALL_SPECS) == 39
-        assert len(set(ALL_NAMES)) == 39
+        # gap — and remain finite-window ⇒ atol = 0). PLUS the 2 EQUITIES-sleeve breadth
+        # additions (S6 eq_rev_resid_21 — beta-residualized reversal; S7 eq_ilrev —
+        # illiquidity-premium alpha) = 41. Both are finite-window, EQUITY-sleeve opt-in
+        # (NOT in any crypto active set), so the sweep covers them at atol = 0 too.
+        assert len(ALL_SPECS) == 41
+        assert len(set(ALL_NAMES)) == 41
 
     @pytest.mark.parametrize("name", ALL_NAMES)
     def test_truncation_invariance_and_live_parity(self, env: Env, name: str) -> None:

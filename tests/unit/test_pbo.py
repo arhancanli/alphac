@@ -25,6 +25,9 @@ from itertools import combinations
 import numpy as np
 import pandas as pd
 import pytest
+from hypothesis import HealthCheck, given, settings
+from hypothesis import strategies as st
+from hypothesis.extra import numpy as hnp
 
 from alphaforge.validation.pbo import PBOResult, _sharpe, pbo_cscv
 
@@ -289,3 +292,172 @@ class TestValidation:
     def test_rejects_non_2d(self) -> None:
         with pytest.raises(ValueError, match="2-D"):
             pbo_cscv(np.zeros((10, 5, 2)), n_splits=4)
+
+
+# --------------------------------------------------------------------------- #
+# Hypothesis property tests (A5-1). Four load-bearing CSCV invariants, each
+# stated as a property over a generated family of inputs rather than a single
+# fixture:
+#
+#   1. RANGE          PBO is always a probability in [0, 1] (and PBO is exactly
+#                     the left-tail fraction of a finite lambda vector), for ANY
+#                     finite per-period return matrix and any valid knobs.
+#   2. NULL           on i.i.d.-noise PnL (no cross-sectional edge) the IS-best
+#                     pick is a winner's curse that regresses to the OOS median,
+#                     so PBO concentrates near 0.5 across many seeds.
+#   3. REAL SIGNAL    when one column dominates OOS consistently, the IS-best is
+#                     also OOS-best almost everywhere -> PBO is LOW (< gate 0.2).
+#   4. OVERFIT        a deliberately rank-inverting (mirror-pair) construction,
+#                     where the IS-best is engineered to be OOS-worst, drives
+#                     PBO HIGH (-> 1).
+#
+# Examples are capped and deadlines disabled because each example runs a full
+# CSCV sweep (up to thousands of combinations); derandomize keeps the suite
+# reproducible. All data is seeded/synthetic - never the live data lake.
+# --------------------------------------------------------------------------- #
+_NULL_SEEDS = list(range(40))
+
+
+def _iid_noise(t: int, n: int, seed: int, *, scale: float = 0.01) -> np.ndarray:
+    """A pure i.i.d.-Gaussian return matrix: T x N with no cross-sectional edge."""
+    return np.asarray(np.random.default_rng(seed).standard_normal((t, n)) * scale, dtype=float)
+
+
+class TestPropertyRange:
+    """Property 1: PBO is a probability and equals the lambda left-tail fraction."""
+
+    @given(
+        t=st.integers(min_value=64, max_value=400),
+        n=st.integers(min_value=2, max_value=12),
+        n_splits=st.sampled_from([2, 4, 6, 8]),
+        max_combinations=st.integers(min_value=1, max_value=80),
+        seed=st.integers(min_value=0, max_value=10_000),
+        data=st.data(),
+    )
+    @settings(max_examples=60, derandomize=True, deadline=None)
+    def test_pbo_is_a_probability_and_left_tail_fraction(
+        self,
+        t: int,
+        n: int,
+        n_splits: int,
+        max_combinations: int,
+        seed: int,
+        data: st.DataObject,
+    ) -> None:
+        # Arbitrary finite returns (bounded so std is well-defined; values may be
+        # any sign / magnitude in band, including degenerate all-equal columns).
+        matrix = data.draw(
+            hnp.arrays(
+                np.float64,
+                shape=(t, n),
+                elements=st.floats(
+                    min_value=-1.0, max_value=1.0, allow_nan=False, allow_infinity=False
+                ),
+            )
+        )
+        res = pbo_cscv(matrix, n_splits=n_splits, max_combinations=max_combinations, seed=seed)
+        assert isinstance(res, PBOResult)
+        # Probability range.
+        assert 0.0 <= res.pbo <= 1.0
+        # The defining identity: PBO is the fraction of combos with lambda <= 0.
+        assert res.pbo == pytest.approx(float(np.mean(res.lambdas <= 0.0)), abs=1e-15)
+        # omega = rank/(N+1) is strictly inside (0, 1) -> every logit is finite.
+        assert np.all(np.isfinite(res.lambdas))
+        # Bookkeeping: result arrays are sized by the number of combos evaluated.
+        full = math.comb(n_splits, n_splits // 2)
+        assert res.n_combinations == min(full, max_combinations)
+        assert res.lambdas.shape == (res.n_combinations,)
+        assert res.is_oos_pairs.shape == (res.n_combinations, 2)
+
+
+class TestPropertyNull:
+    """Property 2: i.i.d. noise (no signal) -> PBO concentrates near 0.5."""
+
+    @given(seed=st.sampled_from(_NULL_SEEDS))
+    @settings(max_examples=len(_NULL_SEEDS), derandomize=True, deadline=None)
+    def test_each_noise_seed_never_a_confident_verdict(self, seed: int) -> None:
+        # A SINGLE i.i.d.-noise draw has substantial PBO sampling variance (with
+        # N=20 configs the per-seed PBO empirically wanders the ~[0.23, 0.88]
+        # range), so the per-seed property is NOT a tight band around 0.5 - that
+        # is statistically false for one draw. What IS always true under the null
+        # is that no noise draw produces a *confident* verdict at either extreme:
+        # it never looks like a clean edge (PBO -> 0) or a clean overfit
+        # (PBO -> 1). The sharp ~0.5 statement is the multi-seed mean below.
+        matrix = _iid_noise(1600, 20, seed)
+        res = pbo_cscv(matrix, n_splits=16, max_combinations=2000, seed=42)
+        assert 0.1 <= res.pbo <= 0.9
+
+    def test_mean_pbo_over_many_seeds_is_approximately_half(self) -> None:
+        # The sharp statement: averaged over many independent noise matrices the
+        # mean PBO is ~0.5 (the CSCV null), with a tight tolerance the per-seed
+        # band cannot give. This is the BBLZ 2017 calibration of the statistic.
+        pbos = [
+            pbo_cscv(_iid_noise(1600, 20, s), n_splits=16, max_combinations=2000, seed=42).pbo
+            for s in _NULL_SEEDS
+        ]
+        assert np.mean(pbos) == pytest.approx(0.5, abs=0.06)
+
+
+class TestPropertyRealSignal:
+    """Property 3: one OOS-consistent dominant column -> PBO is LOW."""
+
+    @given(
+        seed=st.integers(min_value=0, max_value=10_000),
+        edge=st.floats(min_value=0.003, max_value=0.01),
+        n=st.integers(min_value=5, max_value=25),
+    )
+    @settings(
+        max_examples=30,
+        derandomize=True,
+        deadline=None,
+        suppress_health_check=[HealthCheck.too_slow],
+    )
+    def test_dominant_column_drives_pbo_below_gate(self, seed: int, edge: float, n: int) -> None:
+        # Column 0 carries a genuine, time-stable positive mean edge added on top
+        # of common noise: it is IS-best AND OOS-best in essentially every split,
+        # so the IS-best is (almost) never below the OOS median -> PBO is LOW and
+        # clears the live-eligibility gate (alphaDesign.md section 7.3: < 0.2).
+        matrix = _iid_noise(1600, n, seed)
+        matrix[:, 0] += edge
+        res = pbo_cscv(matrix, n_splits=16, max_combinations=2000, seed=42)
+        assert res.pbo < 0.2
+
+
+class TestPropertyOverfit:
+    """Property 4: a rank-inverting mirror-pair construction -> PBO is HIGH."""
+
+    @given(seed=st.integers(min_value=0, max_value=10_000))
+    @settings(
+        max_examples=25,
+        derandomize=True,
+        deadline=None,
+        suppress_health_check=[HealthCheck.too_slow],
+    )
+    def test_mirror_pair_overfit_drives_pbo_high(self, seed: int) -> None:
+        # Deliberately overfit / rank-inverting: a pure mirror pair (the only two
+        # configs) with near-zero within-block variance (enormous |block Sharpe|)
+        # whose block means are large + on one time-half and large - on the
+        # mirrored half. Whichever half is "+ heavy" in-sample makes one of the
+        # pair IS-best; that same config is then OOS-worst on its "-" half, so the
+        # IS-best is OOS-worst on every TIME-BALANCED split -> PBO is HIGH.
+        #
+        # We enumerate the FULL C(16, 8) here (max_combinations above the count)
+        # rather than sub-sampling: the inversion is exact only for balanced
+        # splits, and the minority of unbalanced sampled splits adds variance
+        # that, on an adverse seed, can drag a sub-sampled PBO down toward ~0.65.
+        # Full enumeration keeps the property robustly HIGH (> 0.6) across all
+        # construction seeds while staying far above the 0.5 null and the 0.2
+        # gate - the qualitative "overfit" verdict the statistic must deliver.
+        rng = np.random.default_rng(seed)
+        n_splits = 16
+        t = 1600
+        block_len = t // n_splits
+        matrix = np.empty((t, 2), dtype=np.float64)
+        for b in range(n_splits):
+            seg = slice(b * block_len, (b + 1) * block_len)
+            first_half = b < n_splits // 2
+            matrix[seg, 0] = (0.10 if first_half else -0.10) + rng.standard_normal(block_len) * 1e-4
+            matrix[seg, 1] = (-0.10 if first_half else 0.10) + rng.standard_normal(block_len) * 1e-4
+        res = pbo_cscv(matrix, n_splits=n_splits, max_combinations=13_000, seed=42)
+        assert res.n_combinations == math.comb(16, 8)  # full enumeration, no sub-sampling
+        assert res.pbo > 0.6

@@ -16,3 +16,9 @@ __pycache__/
 .hypothesis/
 dist/
 *.egg-info/
+
+# coverage (pytest-cov writes these on every run; the report is CI-only)
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/

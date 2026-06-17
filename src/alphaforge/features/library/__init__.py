@@ -51,6 +51,10 @@ from alphaforge.features.library.carry_dynamics import (
     carry_mom_21_63,
     carry_z_252,
 )
+from alphaforge.features.library.equity_liquidity_alpha import (
+    ILREV_WINDOW,
+    eq_ilrev,
+)
 from alphaforge.features.library.equity_price import (
     SESSIONS_PER_YEAR,
     adjusted_close,
@@ -63,6 +67,11 @@ from alphaforge.features.library.equity_price import (
     eq_vol_252,
     realized_vol,
     reversal,
+)
+from alphaforge.features.library.equity_residual import (
+    EQ_BETA_WINDOW,
+    eq_rev_resid_21,
+    residual_reversal_finite,
 )
 from alphaforge.features.library.liquidity import (
     AMIHUD_EPS,
@@ -142,8 +151,10 @@ __all__ = [
     "BTC_ANCHOR",
     "CS_DENOM",
     "DAY_MS",
+    "EQ_BETA_WINDOW",
     "EWMA_VOL_SPAN",
     "HOURS_PER_YEAR",
+    "ILREV_WINDOW",
     "LOWVOL_EPS",
     "MAX_FUNDING_INTERVAL_HOURS",
     "SESSIONS_PER_YEAR",
@@ -161,9 +172,11 @@ __all__ = [
     "eq_amihud_63",
     "eq_bab_252",
     "eq_beta_252",
+    "eq_ilrev",
     "eq_lowvol_252",
     "eq_mom_252_21",
     "eq_rev_21",
+    "eq_rev_resid_21",
     "eq_vol_252",
     "ewma_vol",
     "ewma_vol_from_returns",
@@ -191,6 +204,7 @@ __all__ = [
     "reg_rvp_720",
     "residual_momentum",
     "residual_reversal",
+    "residual_reversal_finite",
     "reversal",
     "rolling_beta",
     "semivar_skew_504",

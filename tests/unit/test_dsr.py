@@ -24,6 +24,8 @@ from itertools import pairwise
 import numpy as np
 import pandas as pd
 import pytest
+from hypothesis import given, settings
+from hypothesis import strategies as st
 from scipy.stats import kurtosis as scipy_kurtosis
 from scipy.stats import norm
 from scipy.stats import skew as scipy_skew
@@ -263,3 +265,182 @@ class TestDsrFromReturns:
             dsr_from_returns(
                 self._daily_series(np.full(20, 0.001)), n_trials=5, sr_trials_variance=0.01
             )
+
+
+# --------------------------------------------------------------------- property tests
+#
+# Hypothesis @given idiom (mirrors tests/property/test_hmm_props.py): capped examples,
+# deadline disabled so a slow scipy import on the first draw cannot flake the run. Every
+# strategy is hand-bounded to the regime where the PSR/DSR formulas are analytically
+# well-behaved, so each property holds EXACTLY rather than statistically:
+#
+# * ``skew`` in [-0.5, 0.5] and ``kurtosis`` >= 3 with |sr| <= 1.5 keep the denominator
+#   variance term ``1 - skew*sr + ((kurtosis-1)/4)*sr^2`` >= 0.875 > 0 across the whole
+#   envelope, so the function never hits its degenerate-moment ``ValueError`` guard.
+# * The "increasing in observed Sharpe" properties FIX ``skew = 0`` and keep
+#   ``sr >= benchmark >= 0``: there the z-score derivative ``(1 + b*bench*sr) /
+#   (1 + b*sr^2)^{3/2}`` (with ``b = (kurtosis-1)/4 > 0``) is strictly positive, so PSR/DSR
+#   rise with ``sr``. Outside that regime (very negative sr against a positive benchmark)
+#   the growing denominator can reverse the order, so we do NOT assert monotonicity there.
+# * Strict deflation needs ``sr_trials_variance > 0`` and strictly increasing ``n_trials``;
+#   with zero cross-trial variance the benchmark is pinned at 0 and DSR == PSR.
+
+# A bounded-moment regime that keeps the PSR denominator variance term strictly positive.
+_SR = st.floats(min_value=-1.5, max_value=1.5, allow_nan=False, allow_infinity=False)
+_SKEW = st.floats(min_value=-0.5, max_value=0.5, allow_nan=False, allow_infinity=False)
+_KURTOSIS = st.floats(min_value=3.0, max_value=15.0, allow_nan=False, allow_infinity=False)
+_N_OBS = st.integers(min_value=2, max_value=10_000)
+_N_TRIALS = st.integers(min_value=2, max_value=5_000)
+_POS_VAR = st.floats(min_value=1e-4, max_value=0.2, allow_nan=False, allow_infinity=False)
+
+
+class TestPSRDSRProperties:
+    @given(sr=_SR, n_obs=_N_OBS, skew=_SKEW, kurtosis=_KURTOSIS, bench=_SR)
+    @settings(max_examples=200, deadline=None)
+    def test_psr_is_a_probability(
+        self, sr: float, n_obs: int, skew: float, kurtosis: float, bench: float
+    ) -> None:
+        # PSR = Phi(z): a standard-normal CDF lies in [0, 1]. For an extreme z (a large
+        # Sharpe gap over many observations) the float CDF saturates exactly at the
+        # 0.0 / 1.0 boundary, so the honest invariant is the CLOSED interval.
+        psr = probabilistic_sharpe_ratio(
+            sr, n_obs, skew=skew, kurtosis=kurtosis, sr_benchmark=bench
+        )
+        assert 0.0 <= psr <= 1.0
+
+    @given(
+        sr=_SR,
+        n_obs=_N_OBS,
+        skew=_SKEW,
+        kurtosis=_KURTOSIS,
+        n_trials=_N_TRIALS,
+        var=_POS_VAR,
+    )
+    @settings(max_examples=200, deadline=None)
+    def test_dsr_is_a_probability(
+        self,
+        sr: float,
+        n_obs: int,
+        skew: float,
+        kurtosis: float,
+        n_trials: int,
+        var: float,
+    ) -> None:
+        dsr = deflated_sharpe_ratio(sr, n_obs, skew, kurtosis, n_trials, var)
+        assert 0.0 <= dsr <= 1.0
+
+    @given(
+        sr=_SR,
+        n_obs=_N_OBS,
+        skew=_SKEW,
+        kurtosis=_KURTOSIS,
+        n_trials=_N_TRIALS,
+        var=_POS_VAR,
+    )
+    @settings(max_examples=200, deadline=None)
+    def test_dsr_never_exceeds_zero_benchmark_psr(
+        self,
+        sr: float,
+        n_obs: int,
+        skew: float,
+        kurtosis: float,
+        n_trials: int,
+        var: float,
+    ) -> None:
+        # Deflation can only LOWER the verdict: a strictly positive expected-max
+        # benchmark (var > 0) pulls DSR at or below the zero-benchmark PSR.
+        psr = probabilistic_sharpe_ratio(sr, n_obs, skew=skew, kurtosis=kurtosis)
+        dsr = deflated_sharpe_ratio(sr, n_obs, skew, kurtosis, n_trials, var)
+        assert dsr <= psr
+
+    @given(
+        sr=_SR,
+        n_obs=_N_OBS,
+        skew=_SKEW,
+        kurtosis=_KURTOSIS,
+        var=_POS_VAR,
+        n_low=st.integers(min_value=2, max_value=2_500),
+        bump=st.integers(min_value=1, max_value=2_500),
+    )
+    @settings(max_examples=200, deadline=None)
+    def test_dsr_monotone_decreasing_in_n_trials(
+        self,
+        sr: float,
+        n_obs: int,
+        skew: float,
+        kurtosis: float,
+        var: float,
+        n_low: int,
+        bump: int,
+    ) -> None:
+        # More trials -> higher expected-max benchmark -> higher SR* -> smaller z ->
+        # lower DSR, holding everything else fixed (requires var > 0 so the benchmark
+        # actually moves). The deflation benchmark itself is STRICTLY increasing in
+        # n_trials; the DSR is non-increasing always (and strictly so wherever the
+        # float CDF has not yet saturated to the 0.0 / 1.0 boundary).
+        n_high = n_low + bump
+        bench_low = expected_max_sharpe(n_low, var)
+        bench_high = expected_max_sharpe(n_high, var)
+        assert bench_high > bench_low  # the mechanism: SR* strictly rises with N
+        dsr_low = deflated_sharpe_ratio(sr, n_obs, skew, kurtosis, n_low, var)
+        dsr_high = deflated_sharpe_ratio(sr, n_obs, skew, kurtosis, n_high, var)
+        assert dsr_high <= dsr_low
+
+    @given(
+        sr_low=st.floats(min_value=0.0, max_value=1.4, allow_nan=False, allow_infinity=False),
+        bump=st.floats(min_value=1e-3, max_value=0.5, allow_nan=False, allow_infinity=False),
+        n_obs=_N_OBS,
+        kurtosis=_KURTOSIS,
+    )
+    @settings(max_examples=200, deadline=None)
+    def test_psr_monotone_increasing_in_observed_sharpe(
+        self, sr_low: float, bump: float, n_obs: int, kurtosis: float
+    ) -> None:
+        # Fixing skew=0 and benchmark=0 with sr >= 0, a larger observed Sharpe is never
+        # less convincing. >= (not >) tolerates the fp plateau as PSR saturates to 1.0.
+        psr_low = probabilistic_sharpe_ratio(sr_low, n_obs, skew=0.0, kurtosis=kurtosis)
+        psr_high = probabilistic_sharpe_ratio(sr_low + bump, n_obs, skew=0.0, kurtosis=kurtosis)
+        assert psr_high >= psr_low
+
+    @given(
+        sr_above_bench=st.floats(
+            min_value=1e-3, max_value=1.4, allow_nan=False, allow_infinity=False
+        ),
+        bump=st.floats(min_value=1e-3, max_value=0.5, allow_nan=False, allow_infinity=False),
+        n_obs=_N_OBS,
+        kurtosis=_KURTOSIS,
+        n_trials=_N_TRIALS,
+        var=_POS_VAR,
+    )
+    @settings(max_examples=200, deadline=None)
+    def test_dsr_monotone_increasing_in_observed_sharpe(
+        self,
+        sr_above_bench: float,
+        bump: float,
+        n_obs: int,
+        kurtosis: float,
+        n_trials: int,
+        var: float,
+    ) -> None:
+        # Same property against the deflated benchmark: measure both Sharpes RELATIVE to
+        # the (fixed) expected-max benchmark so the numerator stays non-negative, where
+        # the z-score is strictly increasing in sr. skew=0 keeps the denominator even.
+        bench = expected_max_sharpe(n_trials, var)
+        sr_low = bench + sr_above_bench
+        dsr_low = deflated_sharpe_ratio(sr_low, n_obs, 0.0, kurtosis, n_trials, var)
+        dsr_high = deflated_sharpe_ratio(sr_low + bump, n_obs, 0.0, kurtosis, n_trials, var)
+        assert dsr_high >= dsr_low
+
+    @given(skew=_SKEW, kurtosis=_KURTOSIS, sr=_SR)
+    @settings(max_examples=120, deadline=None)
+    def test_small_n_regime_is_sane(self, skew: float, kurtosis: float, sr: float) -> None:
+        # The smallest admissible sample (n_obs == 2) collapses sqrt(n_obs - 1) to 1 but
+        # still yields a valid probability; n_obs == 1 must raise. A zero edge against a
+        # zero benchmark is exactly 0.5 regardless of the (finite) moments.
+        psr = probabilistic_sharpe_ratio(sr, 2, skew=skew, kurtosis=kurtosis)
+        assert 0.0 < psr < 1.0
+        assert probabilistic_sharpe_ratio(0.0, 2, skew=skew, kurtosis=kurtosis) == pytest.approx(
+            0.5, abs=1e-12
+        )
+        with pytest.raises(ValueError, match="n_obs must be >= 2"):
+            probabilistic_sharpe_ratio(sr, 1, skew=skew, kurtosis=kurtosis)

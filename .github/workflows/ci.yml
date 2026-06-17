@@ -81,6 +81,19 @@ jobs:
       - name: Sync the frozen environment
         run: uv sync --frozen --dev
       # The "network" marker is deselected by pyproject addopts; the suite is
-      # deterministic and offline, so it runs unchanged here.
-      - name: pytest
-        run: uv run pytest
+      # deterministic and offline, so it runs unchanged here. Branch coverage of
+      # the alphaforge package is collected by the pyproject addopts
+      # (--cov=alphaforge --cov-branch) on every run; -p no:randomly is not used
+      # because nothing here is order-dependent. We emit an XML report and a
+      # terminal summary as build artifacts. No --cov-fail-under is enforced yet
+      # (see pyproject): a floor is pinned once a true baseline is observed,
+      # rather than redding CI aspirationally.
+      - name: pytest (with branch coverage)
+        run: uv run pytest --cov-report=xml --cov-report=term
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-xml
+          path: coverage.xml
+          if-no-files-found: warn

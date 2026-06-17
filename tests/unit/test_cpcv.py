@@ -20,6 +20,8 @@ from math import comb
 
 import numpy as np
 import pytest
+from hypothesis import HealthCheck, given, settings
+from hypothesis import strategies as st
 
 from alphaforge.config.settings import Settings
 from alphaforge.validation.cpcv import CombinatorialPurgedCV
@@ -375,3 +377,165 @@ def test_accepts_plain_sequence_input() -> None:
     train, test_groups = splits[0]
     assert train.dtype == np.int64
     assert test_groups[0].dtype == np.int64
+
+
+# ----------------------------------------------- hypothesis property sweep
+#
+# The parametrized SWEEP above pins a hand-picked lattice; these @given tests
+# FUZZ the same leakage contract over the whole valid (n_groups, k_test,
+# purge_bars, embargo_bars) grid -- and an independently-drawn grid length n --
+# so corners between the lattice points (k == N-1, purge spanning >1 group,
+# embargo spilling past the grid end, unequal group sizes) get hit too. Every
+# drawn config is valid by construction: the splitter must never raise here.
+# Bounds stay modest so the inner double loop over C(N, k) splits stays cheap.
+
+# n_groups capped at 9 so the largest C(N,k) (C(9,4)=126) is still fast to
+# fully enumerate inside one example; the math invariants are size-agnostic.
+_MAX_N_GROUPS = 9
+
+# (n_groups, k_test, purge_bars, embargo_bars, n) -- a valid CPCV config + grid.
+_Cfg = tuple[int, int, int, int, int]
+
+
+@st.composite
+def _valid_cpcv_grid(draw: st.DrawFn) -> _Cfg:
+    """Draw a (n_groups, k_test, purge_bars, embargo_bars, n) tuple in valid bounds.
+
+    Constraints mirror the constructor + ``split`` preconditions exactly so the
+    splitter is never expected to raise: ``2 <= N``, ``1 <= k < N``,
+    ``purge, embargo >= 0``, and ``n >= N`` (every group holds >= 1 bar). ``n``
+    is drawn freely across the divisible / non-divisible boundary so unequal
+    ``array_split`` group sizes are exercised.
+    """
+    n_groups = draw(st.integers(min_value=2, max_value=_MAX_N_GROUPS))
+    k_test = draw(st.integers(min_value=1, max_value=n_groups - 1))
+    purge_bars = draw(st.integers(min_value=0, max_value=40))
+    embargo_bars = draw(st.integers(min_value=0, max_value=40))
+    # at least one bar per group; allow lengths that don't divide n_groups.
+    n = draw(st.integers(min_value=n_groups, max_value=n_groups * 12))
+    return n_groups, k_test, purge_bars, embargo_bars, n
+
+
+@given(cfg=_valid_cpcv_grid())
+@settings(max_examples=200, deadline=None, suppress_health_check=[HealthCheck.too_slow])
+def test_property_path_count_matches_combinatorial_formula(cfg: _Cfg) -> None:
+    """phi = k*C(N,k)/N is integral and == C(N-1, k-1) == n_splits*k/N for any valid grid."""
+    n_groups, k_test, purge_bars, embargo_bars, _n = cfg
+    cv = CombinatorialPurgedCV(n_groups, k_test, purge_bars=purge_bars, embargo_bars=embargo_bars)
+
+    assert cv.n_splits == comb(n_groups, k_test)
+    phi = k_test * comb(n_groups, k_test) / n_groups
+    assert phi == float(int(phi))  # k*C(N,k) is always divisible by N
+    assert cv.n_backtest_paths == int(phi)
+    assert cv.n_backtest_paths == comb(n_groups - 1, k_test - 1)
+    assert cv.n_backtest_paths * n_groups == cv.n_splits * k_test
+
+
+@given(cfg=_valid_cpcv_grid())
+@settings(max_examples=200, deadline=None, suppress_health_check=[HealthCheck.too_slow])
+def test_property_split_invariants(cfg: _Cfg) -> None:
+    """Fuzz the full leakage contract: count, disjointness, purge, embargo, coverage.
+
+    For every valid drawn config the splitter must yield exactly ``C(N, k)``
+    splits in which: train and test are DISJOINT; purged train positions whose
+    label horizon reaches a test block are excluded; embargoed positions just
+    after a test block are excluded; and across all paths each grid position is
+    a test position in EXACTLY ``C(N-1, k-1)`` splits -- no more, no less.
+    """
+    n_groups, k_test, purge_bars, embargo_bars, n = cfg
+    cv = CombinatorialPurgedCV(n_groups, k_test, purge_bars=purge_bars, embargo_bars=embargo_bars)
+    g = grid(n)
+    splits = list(cv.split(g))
+
+    assert len(splits) == cv.n_splits == comb(n_groups, k_test) > 0
+    g_set = set(g.tolist())
+    ts_to_pos = {int(t): i for i, t in enumerate(g)}
+
+    test_count = np.zeros(n, dtype=np.int64)
+
+    for train_ts, test_groups in splits:
+        assert len(test_groups) == k_test
+
+        flat_test_pos: list[int] = []
+        prev_end = -1
+        for tg in test_groups:
+            assert tg.size >= 1
+            assert set(tg.tolist()) <= g_set
+            assert bool(np.all(np.diff(tg) > 0))  # ascending
+            pos = [ts_to_pos[int(t)] for t in tg]
+            # contiguous block, in ascending grid order, blocks mutually disjoint
+            assert pos == list(range(pos[0], pos[0] + len(pos)))
+            assert pos[0] > prev_end
+            prev_end = pos[-1]
+            flat_test_pos.extend(pos)
+            test_count[pos] += 1
+
+        train_pos = np.array([ts_to_pos[int(t)] for t in train_ts], dtype=np.int64)
+        test_pos_set = set(flat_test_pos)
+
+        # train is grid points, strictly ascending, DISJOINT from test
+        assert set(train_ts.tolist()) <= g_set
+        assert bool(np.all(np.diff(train_ts) > 0)) or train_ts.size <= 1
+        assert set(train_pos.tolist()).isdisjoint(test_pos_set)
+
+        # purge + embargo enforced against EVERY test block independently
+        for tg in test_groups:
+            block = [ts_to_pos[int(t)] for t in tg]
+            a, b_excl = block[0], block[-1] + 1
+            # nothing inside the block
+            assert not bool(((train_pos >= a) & (train_pos < b_excl)).any())
+            # purge: a train p before the block must satisfy p + purge < a, so
+            # its label interval [p, p+purge] cannot reach into the block.
+            before = train_pos[train_pos < a]
+            assert bool(np.all(before + purge_bars < a))
+            # embargo: no surviving train position in [b_excl, b_excl + embargo)
+            in_embargo = (train_pos >= b_excl) & (train_pos < b_excl + embargo_bars)
+            assert not bool(in_embargo.any())
+
+    # coverage / path accounting: every position is a test position in EXACTLY
+    # C(N-1, k-1) splits -- not fewer, not more -- which is what assembles the
+    # phi == n_backtest_paths complete OOS paths.
+    assert bool(np.all(test_count == cv.n_backtest_paths))
+    # total test placements == n positions each covered phi times.
+    assert int(test_count.sum()) == n * cv.n_backtest_paths
+
+
+@given(
+    n_groups=st.integers(min_value=2, max_value=_MAX_N_GROUPS),
+    embargo_bars=st.integers(min_value=0, max_value=30),
+    bars_per_group=st.integers(min_value=2, max_value=8),
+    data=st.data(),
+)
+@settings(max_examples=120, deadline=None, suppress_health_check=[HealthCheck.too_slow])
+def test_property_single_trailing_group_matches_walk_forward(
+    n_groups: int, embargo_bars: int, bars_per_group: int, data: st.DataObject
+) -> None:
+    """Fuzzed equivalence: testing ONLY the last group reproduces one WF leg.
+
+    With k_test == 1 the final combination selects only the last group as test
+    and all earlier groups as train -- the exact shape of a single
+    PurgedWalkForward leg. The surviving train and the test block must match
+    position-for-position across the whole valid (purge, embargo, layout) grid,
+    proving CPCV reuses the shared purge/embargo arithmetic rather than its own.
+    """
+    n = n_groups * bars_per_group  # divisible -> equal groups, simple WF mapping
+    g = grid(n)
+    bounds = CombinatorialPurgedCV._group_bounds(n, n_groups)
+    last_lo, last_hi = bounds[-1]
+    test_block_len = last_hi - last_lo
+    # WF requires purge_bars < train_bars (== last_lo, all earlier groups);
+    # draw within that bound so both splitters are constructible and comparable.
+    purge_bars = data.draw(st.integers(min_value=0, max_value=last_lo - 1), label="purge_bars")
+    cv = CombinatorialPurgedCV(n_groups, 1, purge_bars=purge_bars, embargo_bars=embargo_bars)
+
+    wf = PurgedWalkForward(
+        last_lo, test_block_len, purge_bars=purge_bars, embargo_bars=embargo_bars
+    )
+    wf_splits = list(wf.split(g))
+    assert len(wf_splits) == 1
+    wf_train, wf_test = wf_splits[0]
+
+    cpcv_train, cpcv_test_groups = list(cv.split(g))[-1]
+    assert len(cpcv_test_groups) == 1
+    np.testing.assert_array_equal(cpcv_test_groups[0], wf_test)
+    np.testing.assert_array_equal(cpcv_train, wf_train)

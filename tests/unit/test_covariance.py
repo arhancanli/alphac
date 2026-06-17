@@ -11,6 +11,8 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 import pytest
+from hypothesis import HealthCheck, given, settings
+from hypothesis import strategies as st
 
 from alphaforge.portfolio import annualize_cov, ewma_cov, ledoit_wolf_cc, nearest_psd
 
@@ -233,3 +235,215 @@ class TestAnnualizeCov:
     def test_bad_periods_per_year_raises(self, ppy: float) -> None:
         with pytest.raises(ValueError, match="periods_per_year"):
             annualize_cov(np.eye(2), ppy)
+
+
+# ======================================================================= property
+#
+# Hypothesis @given property tests for the estimator INVARIANTS (idiom mirrors
+# tests/property/test_hmm_props.py: small synthetic panels, capped examples,
+# deadline disabled because the eigendecompositions are cheap but variable).
+#
+# The example-based tests above pin the exact numerics against a brute-force
+# transcription; these assert the structural guarantees that must hold for
+# EVERY admissible input, not just the seeded fixtures:
+#
+#   * ewma_cov / ledoit_wolf_cc / nearest_psd outputs are exactly symmetric;
+#   * the annualize→nearest_psd pipeline is PSD (min eigenvalue >= -tiny tol);
+#   * the Ledoit-Wolf intensity delta* always lands in [0, 1] and rises as the
+#     sampling noise grows (shorter windows shrink harder toward the target);
+#   * annualize_cov scales every entry by exactly periods_per_year (sign +
+#     magnitude), preserving symmetry.
+#
+# Panel strategy: a TxN matrix of small zero-mean returns with a planted
+# correlation structure (a random loading on a common factor plus idiosyncratic
+# noise) so the panels resemble real return cross-sections rather than pure
+# white noise.
+
+
+def _returns_panel(t_obs: int, n: int, seed: int, noise: float = 1.0) -> np.ndarray:
+    """A TxN zero-mean return panel: one common factor + idiosyncratic noise.
+
+    ``noise`` scales the idiosyncratic part only; it leaves the population
+    second moments finite and the columns genuinely correlated (so the
+    constant-correlation target is non-trivial).
+    """
+    rng = np.random.default_rng(seed)
+    factor = rng.normal(0.0, 0.01, size=(t_obs, 1))
+    loadings = rng.uniform(0.3, 1.0, size=(1, n))
+    idio = rng.normal(0.0, 0.01 * noise, size=(t_obs, n))
+    return factor @ loadings + idio
+
+
+@st.composite
+def _panels(
+    draw: st.DrawFn,
+    *,
+    min_t: int = 12,
+    max_t: int = 60,
+    min_n: int = 2,
+    max_n: int = 6,
+) -> tuple[np.ndarray, np.ndarray]:
+    """Draw a (window, sample-cov) pair: a TxN panel and its zero-mean cov S."""
+    t_obs = draw(st.integers(min_value=min_t, max_value=max_t))
+    n = draw(st.integers(min_value=min_n, max_value=max_n))
+    seed = draw(st.integers(min_value=0, max_value=2**31 - 1))
+    x = _returns_panel(t_obs, n, seed)
+    s = (x.T @ x) / float(t_obs)  # zero-mean sample cov (the canonical LW input)
+    return x, s
+
+
+_SLOW = settings(
+    max_examples=50,
+    deadline=None,
+    suppress_health_check=[HealthCheck.too_slow],
+)
+
+
+class TestCovarianceProperties:
+    # ----------------------------------------------------------------- symmetry
+    @given(panel=_panels())
+    @_SLOW
+    def test_ewma_cov_is_exactly_symmetric(self, panel: tuple[np.ndarray, np.ndarray]) -> None:
+        x, _ = panel
+        t_obs, _ = x.shape
+        min_periods = max(2, t_obs // 2)
+        out = ewma_cov(pd.DataFrame(x), halflife_bars=20, min_periods=min_periods)
+        np.testing.assert_array_equal(out, out.T)  # bit-identical, not just close
+
+    @given(panel=_panels())
+    @_SLOW
+    def test_ledoit_wolf_output_is_exactly_symmetric(
+        self, panel: tuple[np.ndarray, np.ndarray]
+    ) -> None:
+        x, s = panel
+        sigma, _ = ledoit_wolf_cc(x, s)
+        np.testing.assert_array_equal(sigma, sigma.T)
+
+    @given(panel=_panels())
+    @_SLOW
+    def test_nearest_psd_output_is_exactly_symmetric(
+        self, panel: tuple[np.ndarray, np.ndarray]
+    ) -> None:
+        _, s = panel
+        out = nearest_psd(s)
+        np.testing.assert_array_equal(out, out.T)
+
+    # ---------------------------------------------------------------------- PSD
+    @given(panel=_panels())
+    @_SLOW
+    def test_full_pipeline_is_psd(self, panel: tuple[np.ndarray, np.ndarray]) -> None:
+        # The production pipeline: shrink -> nearest_psd -> annualize. The PSD
+        # repair guarantees min eigenvalue >= eps = eps_rel * tr/N > 0, so the
+        # annualized matrix (a positive scalar multiple) stays PSD.
+        x, s = panel
+        n = s.shape[0]
+        sigma, _ = ledoit_wolf_cc(x, s)
+        psd = nearest_psd(sigma)
+        ann = annualize_cov(psd, 8760.0)
+        eps = 1e-10 * float(np.trace(psd)) / n
+        min_eig = float(np.linalg.eigvalsh(psd).min())
+        assert min_eig >= eps - 1e-12  # repaired floor honoured
+        assert float(np.linalg.eigvalsh(ann).min()) >= -1e-8  # scaled, still PSD
+
+    @given(panel=_panels())
+    @_SLOW
+    def test_nearest_psd_repairs_planted_negative_eigenvalue(
+        self, panel: tuple[np.ndarray, np.ndarray]
+    ) -> None:
+        # Perturb the sample cov with a symmetric negative-definite kick so a
+        # genuinely indefinite matrix is fed in; nearest_psd must lift every
+        # eigenvalue to the scale-aware floor.
+        _, s = panel
+        n = s.shape[0]
+        # Subtract a multiple of the identity large enough to drive eigenvalues
+        # negative while keeping the trace strictly positive (the loud-failure
+        # guard requires tr > 0).
+        lam_min = float(np.linalg.eigvalsh(s).min())
+        kick = (lam_min + 0.5 * float(np.trace(s)) / n) * np.eye(n)
+        indefinite = s - kick
+        if float(np.trace(indefinite)) <= 0.0:
+            return  # guard domain; covered by the example-based negative-trace test
+        out = nearest_psd(indefinite)
+        eps = 1e-10 * float(np.trace(indefinite)) / n
+        assert float(np.linalg.eigvalsh(out).min()) >= eps - 1e-12
+
+    # ------------------------------------------------- shrinkage intensity bounds
+    @given(panel=_panels())
+    @_SLOW
+    def test_delta_star_always_in_unit_interval(self, panel: tuple[np.ndarray, np.ndarray]) -> None:
+        x, s = panel
+        _, delta = ledoit_wolf_cc(x, s)
+        assert 0.0 <= delta <= 1.0
+
+    @given(
+        n=st.sampled_from([5, 6]),
+        pop_seed=st.integers(min_value=0, max_value=2**31 - 1),
+    )
+    @settings(
+        max_examples=25,  # ~30 ms/example (two reps-loops); keep runtime modest
+        deadline=None,
+        suppress_health_check=[HealthCheck.too_slow],
+    )
+    def test_delta_star_rises_as_sampling_noise_grows(self, n: int, pop_seed: int) -> None:
+        # Ledoit-Wolf optimal intensity delta* = (pi_hat - rho_hat)/(gamma_hat T).
+        # Holding the POPULATION fixed, a shorter estimation window carries more
+        # sampling error, so the optimal intensity shrinks harder toward the
+        # structured constant-correlation target (delta* is monotone-decreasing
+        # in T in expectation). A single draw is far too noisy to see this, so we
+        # average delta* over many independent samples from one fixed factor
+        # population at a short vs a long window. (The relationship is genuinely
+        # NON-monotone per single draw and per other "noise" knobs such as the
+        # idiosyncratic-to-factor ratio, which change the population correlation
+        # and hence the target fit -- window length is the clean knob here.)
+        short_t, long_t, reps = 12, 600, 160
+
+        def fixed_pop_panel(t_obs: int, samp_seed: int) -> np.ndarray:
+            # Loadings depend ONLY on pop_seed (population is fixed); the factor
+            # and idiosyncratic draws vary with samp_seed (independent samples).
+            pop_rng = np.random.default_rng(pop_seed)
+            loadings = pop_rng.uniform(0.3, 1.0, size=(1, n))
+            samp_rng = np.random.default_rng(samp_seed)
+            factor = samp_rng.normal(0.0, 0.01, size=(t_obs, 1))
+            idio = samp_rng.normal(0.0, 0.01, size=(t_obs, n))
+            return factor @ loadings + idio
+
+        def mean_delta(t_obs: int) -> float:
+            deltas = []
+            for k in range(reps):
+                x = fixed_pop_panel(t_obs, samp_seed=pop_seed * 7919 + k)
+                s = (x.T @ x) / float(t_obs)
+                _, d = ledoit_wolf_cc(x, s)
+                deltas.append(d)
+            return float(np.mean(deltas))
+
+        short_delta = mean_delta(short_t)
+        long_delta = mean_delta(long_t)
+        assert 0.0 <= short_delta <= 1.0
+        assert 0.0 <= long_delta <= 1.0
+        # More sampling noise (short window) => at least as much shrinkage as the
+        # long window. Tiny tolerance guards the already-saturated (both ~1.0)
+        # corner so a clipped delta* never makes the property spuriously flaky.
+        assert short_delta >= long_delta - 1e-9
+
+    # --------------------------------------------------------------- annualization
+    @given(
+        panel=_panels(),
+        ppy=st.floats(min_value=1.0, max_value=1e5, allow_nan=False, allow_infinity=False),
+    )
+    @_SLOW
+    def test_annualize_scales_every_entry(
+        self, panel: tuple[np.ndarray, np.ndarray], ppy: float
+    ) -> None:
+        # Run on a genuine PSD covariance so the scaling acts on a realistic
+        # matrix. Σ_ann = Σ_bar * ppy entrywise: sign preserved (ppy > 0),
+        # magnitude scaled exactly, symmetry preserved.
+        _, s = panel
+        psd = nearest_psd(s)
+        ann = annualize_cov(psd, ppy)
+        np.testing.assert_allclose(ann, psd * ppy, rtol=0.0, atol=0.0)
+        np.testing.assert_array_equal(ann, ann.T)  # symmetry preserved
+        # Sign: a positive scale never flips any entry's sign.
+        assert np.all(np.sign(ann) == np.sign(psd))
+        # Diagonal (variances) scale up for ppy > 1 and stay non-negative.
+        if ppy >= 1.0:
+            assert np.all(np.diag(ann) >= np.diag(psd) - 1e-18)

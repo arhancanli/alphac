@@ -10,10 +10,13 @@ per-year bucketing, and non-overlapping grid subsampling.
 from __future__ import annotations
 
 import math
+from itertools import pairwise
 
 import numpy as np
 import pandas as pd
 import pytest
+from hypothesis import given, settings
+from hypothesis import strategies as st
 
 from alphaforge.validation import (
     ic_summary,
@@ -189,3 +192,206 @@ class TestNonOverlapping:
         pd.testing.assert_series_equal(non_overlapping(s, 1), s)
         with pytest.raises(ValueError, match="h_bars"):
             non_overlapping(s, 0)
+
+
+# --------------------------------------------------------------------------- #
+# Property tests (A5-1). These complement the hand-computed fixtures above:    #
+# the invariants must hold across a wide input distribution, not just the      #
+# planted examples. Examples are capped to keep the suite fast.                #
+# --------------------------------------------------------------------------- #
+
+
+def _distinct_floats(min_size: int, max_size: int) -> st.SearchStrategy[list[float]]:
+    """Lists of pairwise-distinct finite floats (no ties → a non-degenerate ranking)."""
+    return st.lists(
+        st.floats(
+            min_value=-1e6,
+            max_value=1e6,
+            allow_nan=False,
+            allow_infinity=False,
+            width=64,
+        ),
+        min_size=min_size,
+        max_size=max_size,
+        unique=True,
+    )
+
+
+class TestRankIcProperties:
+    @given(
+        factor_vals=_distinct_floats(5, 40),
+        data=st.data(),
+    )
+    @settings(max_examples=80, deadline=None)
+    def test_ic_is_bounded_in_unit_interval(
+        self, factor_vals: list[float], data: st.DataObject
+    ) -> None:
+        # An arbitrary (possibly correlated, possibly not) cross-section at one ts.
+        n = len(factor_vals)
+        fwd_vals = data.draw(
+            st.lists(
+                st.floats(
+                    min_value=-1e6, max_value=1e6, allow_nan=False, allow_infinity=False, width=64
+                ),
+                min_size=n,
+                max_size=n,
+            )
+        )
+        factor = panel({(T0, f"I{i}"): v for i, v in enumerate(factor_vals)})
+        fwd = panel({(T0, f"I{i}"): v for i, v in enumerate(fwd_vals)})
+        ic = rank_ic(factor, fwd, full_mask(factor), min_members=2).loc[T0]
+        if math.isnan(ic):  # degenerate (constant-rank) cross-section is allowed to be NaN
+            return
+        assert -1.0 - 1e-12 <= ic <= 1.0 + 1e-12
+
+    @given(factor_vals=_distinct_floats(5, 40), increasing=st.booleans())
+    @settings(max_examples=80, deadline=None)
+    def test_strict_monotone_relationship_is_plus_or_minus_one(
+        self, factor_vals: list[float], increasing: bool
+    ) -> None:
+        # fwd is a strictly monotone transform of factor: ranks coincide (↑) or
+        # reverse (↓) exactly, so RankIC must hit the +1 / -1 boundary.
+        order = np.argsort(np.asarray(factor_vals))
+        ranks = np.empty(len(factor_vals), dtype=float)
+        ranks[order] = np.arange(len(factor_vals), dtype=float)
+        sign = 1.0 if increasing else -1.0
+        fwd_vals = (sign * ranks).tolist()  # strictly monotone in the factor's order
+        factor = panel({(T0, f"I{i}"): v for i, v in enumerate(factor_vals)})
+        fwd = panel({(T0, f"I{i}"): v for i, v in enumerate(fwd_vals)})
+        ic = rank_ic(factor, fwd, full_mask(factor), min_members=2).loc[T0]
+        assert ic == pytest.approx(sign, abs=1e-12)
+
+
+class TestNeweyWestTstatProperties:
+    @given(
+        vals=st.lists(
+            st.floats(
+                min_value=-1e3, max_value=1e3, allow_nan=False, allow_infinity=False, width=64
+            ),
+            min_size=2,
+            max_size=60,
+        ),
+        lags=st.integers(min_value=0, max_value=20),
+    )
+    @settings(max_examples=120, deadline=None)
+    def test_finite_and_sign_consistent_with_mean(self, vals: list[float], lags: int) -> None:
+        x = pd.Series(vals)
+        t = newey_west_tstat(x, lags)
+        if math.isnan(t):  # tiny-sample truncated-Bartlett var ≤ 0 is allowed to be NaN
+            return
+        assert math.isfinite(t)
+        mean = float(np.mean(vals))
+        # t = mean / sqrt(positive var) ⇒ sign(t) == sign(mean) (both zero handled together).
+        assert math.copysign(1.0, t) == math.copysign(1.0, mean) or mean == 0.0
+
+    @given(
+        seed=st.integers(min_value=0, max_value=2**31 - 1),
+        n=st.integers(min_value=24, max_value=120),
+        phi=st.floats(min_value=0.3, max_value=0.9, allow_nan=False, allow_infinity=False),
+    )
+    @settings(max_examples=80, deadline=None)
+    def test_magnitude_non_increasing_while_added_autocovariance_stays_positive(
+        self, seed: int, n: int, phi: float
+    ) -> None:
+        # Variance-inflation guarantee (§7.2): S(L) = gamma_0 + 2·Σ_{l<=L} w_l·gamma_l with
+        # Bartlett w_l = 1 - l/(L+1). Growing L from L to L+1 (a) raises w_l for every
+        # already-included lag (the L+1 denominator grows) AND (b) adds a fresh
+        # w_{L+1}·gamma_{L+1} term. When the relevant sample autocovariances are POSITIVE
+        # both effects strictly inflate S, so |t_NW| is non-increasing. We build a
+        # persistent AR(1)-with-drift series (positive serial correlation by construction)
+        # and assert the monotone step only across the contiguous lag prefix whose sample
+        # autocovariance is positive — the exact regime where the theorem applies.
+        rng = np.random.default_rng(seed)
+        e = rng.normal(0.0, 1.0, n)
+        levels = np.empty(n, dtype=float)
+        levels[0] = e[0]
+        for k in range(1, n):
+            levels[k] = phi * levels[k - 1] + e[k]
+        levels += 5.0  # non-zero mean so the t-stat is well away from zero
+        x = pd.Series(levels)
+
+        demeaned = levels - levels.mean()
+        # Largest prefix of lags 1..L whose sample autocovariance is strictly positive.
+        max_pos_lag = 0
+        for lag in range(1, min(8, n - 1) + 1):
+            gamma = float(demeaned[lag:] @ demeaned[:-lag]) / n
+            if gamma <= 0.0:
+                break
+            max_pos_lag = lag
+
+        mags: list[float] = []
+        for lag in range(0, max_pos_lag + 1):
+            t = newey_west_tstat(x, lag)
+            if not math.isfinite(t):
+                return  # a non-positive truncated variance breaks the chain; skip
+            mags.append(abs(t))
+        for prev, cur in pairwise(mags):
+            assert cur <= prev + 1e-9
+
+
+class TestNonOverlappingProperties:
+    @given(
+        n=st.integers(min_value=1, max_value=60),
+        h=st.integers(min_value=1, max_value=12),
+    )
+    @settings(max_examples=100, deadline=None)
+    def test_kept_grid_points_are_spaced_at_least_h_bars(self, n: int, h: int) -> None:
+        ts = [T0 + i * HOUR for i in range(n)]
+        s = pd.Series(range(n), index=pd.Index(ts, name="ts_open"), dtype=float)
+        out = non_overlapping(s, h)
+        kept = sorted(set(out.index))
+        # Kept timestamps are a subset of the input grid, strictly increasing, and any
+        # two consecutive kept points are >= h bars apart (non-overlapping by construction).
+        assert set(kept) <= set(ts)
+        positions = [(t - T0) // HOUR for t in kept]
+        for prev, cur in pairwise(positions):
+            assert cur - prev >= h
+
+    @given(
+        n=st.integers(min_value=1, max_value=60),
+        h=st.integers(min_value=1, max_value=12),
+    )
+    @settings(max_examples=100, deadline=None)
+    def test_subsampling_never_invents_or_duplicates_rows(self, n: int, h: int) -> None:
+        ts = [T0 + i * HOUR for i in range(n)]
+        s = pd.Series(np.arange(n, dtype=float), index=pd.Index(ts, name="ts_open"))
+        out = non_overlapping(s, h)
+        assert len(out) <= len(s)
+        # values are carried verbatim from the source rows (no mutation / interpolation)
+        source = dict(zip(s.index.to_numpy().tolist(), s.to_numpy().tolist(), strict=True))
+        for idx, val in zip(out.index.to_numpy().tolist(), out.to_numpy().tolist(), strict=True):
+            assert source[idx] == val
+
+
+class TestIcSummaryProperties:
+    @given(
+        ic_vals=st.lists(
+            st.floats(min_value=-1.0, max_value=1.0, allow_nan=False, allow_infinity=False),
+            min_size=1,
+            max_size=60,
+        ),
+        lags=st.integers(min_value=0, max_value=12),
+    )
+    @settings(max_examples=100, deadline=None)
+    def test_aggregates_are_internally_consistent(self, ic_vals: list[float], lags: int) -> None:
+        n = len(ic_vals)
+        index = pd.Index([T0 + i * HOUR for i in range(n)], name="ts_open")
+        ic = pd.Series(ic_vals, index=index, dtype=float)
+        summary = ic_summary(ic, lags=lags)
+
+        assert summary.n == n  # no NaNs were planted ⇒ none dropped
+        # mean of values that all lie in [-1, 1] stays in [-1, 1]; matches numpy.
+        assert -1.0 <= summary.mean <= 1.0
+        assert summary.mean == pytest.approx(float(np.mean(ic_vals)), abs=1e-12)
+        # hit_rate is a share in [0, 1] and equals the empirical fraction of strictly-positive ICs.
+        assert 0.0 <= summary.hit_rate <= 1.0
+        assert summary.hit_rate == pytest.approx(
+            float(np.mean([v > 0.0 for v in ic_vals])), abs=1e-12
+        )
+        if n >= 2 and math.isfinite(summary.std) and summary.std > 0.0:
+            assert summary.ic_ir == pytest.approx(summary.mean / summary.std, abs=1e-9)
+        else:
+            assert math.isnan(summary.ic_ir)
+        # by_year means are themselves bounded by the global IC range.
+        for year_mean in summary.by_year.values():
+            assert -1.0 <= year_mean <= 1.0
