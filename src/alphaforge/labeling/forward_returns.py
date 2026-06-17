@@ -13,10 +13,16 @@ label is indexed at the *decision bar* τ so it joins 1:1 against factor values;
 future prices it contains make it a **training/evaluation target only** — it must
 never be fed back in as a feature.
 
-Gap discipline: entry/exit bars are looked up by exact ``ts_open`` arithmetic, never
-by positional shift. If the entry or exit bar is missing from the panel (exchange
-outage, delisting window) the label is NaN — gaps are NEVER bridged, because a live
-system could not have traded a bar that did not print.
+Gap discipline: entry/exit bars are the next **session** opens on the sleeve's trading
+calendar, looked up against the panel by exact ``ts_open`` — never by positional shift.
+The entry bar is ``calendar.next_bar_open(τ)`` and the exit bar is the open ``h`` sessions
+after that (``1 + h`` sessions after τ). For the 24/7 crypto calendar a session hop is just
+``+ Δ`` (``next_bar_open(t, H1) == t + Δ``), so the targets are ``τ + Δ`` and
+``τ + (1 + h)·Δ`` exactly and the crypto labels are byte-identical to the prior fixed-offset
+implementation; for an XNYS daily calendar a Friday's next open is the following Monday, not
+a phantom Saturday slot. If the entry or exit session bar is missing from the panel (exchange
+outage, delisting window, a halted name) the label is NaN — gaps are NEVER bridged, because a
+live system could not have traded a bar that did not print.
 
 This module never mutates its input frame.
 """
@@ -28,12 +34,23 @@ from typing import Final
 import numpy as np
 import pandas as pd
 
+from alphaforge.core.calendar import Always24x7Calendar, TradingCalendar
 from alphaforge.core.time import Timeframe
 from alphaforge.features.library.vol import EWMA_VOL_SPAN, ewma_vol
 
 __all__ = ["forward_returns"]
 
 _REQUIRED_COLUMNS: Final[frozenset[str]] = frozenset({"instrument_id", "ts_open", "open"})
+
+_DEFAULT_CALENDAR: Final[Always24x7Calendar] = Always24x7Calendar()
+"""Default calendar — the 24/7 grid, under which a session hop reduces to ``+ Δ`` so existing
+(crypto) callers that pass no calendar stay byte-identical to the fixed-offset arithmetic."""
+
+# Extra calendar time appended to the session grid past the last decision bar so the
+# (1 + h)-session-ahead exit target of the final bars is itself resolvable on the grid (it
+# still NaNs after the panel reindex — no future bar printed — exactly as the old +Δ math did).
+# A fortnight comfortably clears any weekend/holiday cluster at session granularity.
+_GRID_LOOKAHEAD_PAD_MS: Final[int] = 14 * 86_400_000
 
 
 def _sigma_at_decision(close: pd.Series, span: int = EWMA_VOL_SPAN) -> pd.Series:
@@ -55,12 +72,20 @@ def forward_returns(
     vol_scaled: bool = False,
     vol: pd.Series | None = None,
     timeframe: Timeframe = Timeframe.H1,
+    calendar: TradingCalendar | None = None,
 ) -> pd.Series:
     """Execution-aware forward log return per (decision bar τ, instrument).
 
-    Formula (alphaDesign.md §5.1), with ``Δ = timeframe.ms`` and ``h = horizon_bars``::
+    Formula (alphaDesign.md §5.1), with ``h = horizon_bars`` and entry/exit at **session**
+    opens on ``calendar`` (the next session after τ, and the open ``h`` sessions after that)::
 
-        y_h(τ) = ln( O(τ + (1 + h)·Δ) / O(τ + Δ) )
+        y_h(τ) = ln( O(session τ+1+h) / O(session τ+1) )
+
+    On the 24/7 calendar (``calendar=None``, the default) a session hop is ``+ Δ`` with
+    ``Δ = timeframe.ms``, so this is exactly ``ln( O(τ + (1 + h)·Δ) / O(τ + Δ) )`` —
+    byte-identical to the prior fixed-offset implementation. On an XNYS daily calendar the
+    hops skip weekends/holidays. Pass ``calendar=calendar_for(asset_class)`` on the equity
+    path; leaving it ``None`` keeps the crypto contract.
 
     Vol-scaled variant (``vol_scaled=True``)::
 
@@ -105,9 +130,21 @@ def forward_returns(
     if not np.all(opens_all[np.isfinite(opens_all)] > 0.0):
         raise ValueError("bars contains non-positive open prices; log returns undefined")
 
+    cal = calendar if calendar is not None else _DEFAULT_CALENDAR
     delta = timeframe.ms
-    entry_offset = delta
-    exit_offset = (1 + horizon_bars) * delta
+
+    # The sleeve's expected session grid spanning the panel plus enough look-ahead that the
+    # (1 + h)-session exit of the last decision bar resolves on the grid. On the 24/7 calendar
+    # this is the contiguous ``+Δ`` grid, so ``grid[pos+1] == τ + Δ`` and
+    # ``grid[pos+1+h] == τ + (1 + h)·Δ`` exactly (byte-identical crypto); on XNYS it skips
+    # weekends/holidays. Entry/exit are then looked up against each instrument's own opens, so
+    # a session the instrument did not print stays NaN (gap discipline preserved).
+    ts_all = bars["ts_open"].to_numpy(dtype=np.int64)
+    grid_end = int(ts_all.max()) + (horizon_bars + 2) * delta + _GRID_LOOKAHEAD_PAD_MS
+    grid = np.asarray(
+        cal.expected_bar_opens(int(ts_all.min()), grid_end, timeframe), dtype=np.int64
+    )
+    n_grid = grid.shape[0]
 
     pieces: list[pd.Series] = []
     vol_pieces: list[pd.Series] = []
@@ -115,8 +152,20 @@ def forward_returns(
         ordered = group.sort_values("ts_open")
         ts = ordered["ts_open"].to_numpy(dtype=np.int64)
         opens = pd.Series(ordered["open"].to_numpy(dtype=float), index=ts)
-        entry = opens.reindex(ts + entry_offset).to_numpy()
-        exit_ = opens.reindex(ts + exit_offset).to_numpy()
+        # Locate each decision bar on the session grid, then hop 1 and 1+h sessions forward.
+        pos = np.searchsorted(grid, ts)
+        on_grid = grid[np.minimum(pos, n_grid - 1)] == ts  # bar τ is itself a session
+        entry_idx = pos + 1
+        exit_idx = pos + 1 + horizon_bars
+        sentinel = np.int64(-1)  # never a valid epoch-ms key → reindex → NaN
+        entry_ts = np.where(
+            on_grid & (entry_idx < n_grid), grid[np.minimum(entry_idx, n_grid - 1)], sentinel
+        )
+        exit_ts = np.where(
+            on_grid & (exit_idx < n_grid), grid[np.minimum(exit_idx, n_grid - 1)], sentinel
+        )
+        entry = opens.reindex(entry_ts).to_numpy()
+        exit_ = opens.reindex(exit_ts).to_numpy()
         with np.errstate(divide="ignore", invalid="ignore"):
             log_ret = np.log(exit_ / entry)
         index = pd.MultiIndex.from_arrays(

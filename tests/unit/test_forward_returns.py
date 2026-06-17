@@ -201,3 +201,67 @@ class TestValidationAndImmutability:
     def test_rejects_non_positive_prices(self) -> None:
         with pytest.raises(ValueError, match="non-positive"):
             forward_returns(make_bars([100.0, -1.0, 102.0]), 1)
+
+
+class TestSessionCalendarHops:
+    """Equity D1 labels must hop trading SESSIONS, not a fixed +Δ that lands on weekends.
+
+    This is the fix the ``_guard_equity_unverified`` gate protected against: with the wrong
+    (24/7) calendar a Friday's +1-day entry target is Saturday, which never printed, so every
+    label straddling a weekend is NaN. With the XNYS calendar the entry is the next session
+    (Monday) and the label is finite. Crypto stays byte-identical because a 24/7 session hop
+    is exactly ``+ Δ``.
+    """
+
+    EQ = "XNAS:CASH:AAPLUSD"
+
+    @staticmethod
+    def _ms(date: str) -> int:
+        return int(pd.Timestamp(date, tz="UTC").value // 1_000_000)
+
+    def _equity_panel(self) -> tuple[pd.DataFrame, list[int], list[float]]:
+        pytest.importorskip("exchange_calendars")
+        from alphaforge.core.calendar import calendar_for
+        from alphaforge.core.instruments import AssetClass
+
+        cal = calendar_for(AssetClass.EQUITY)
+        sessions = cal.expected_bar_opens(
+            self._ms("2024-01-02"), self._ms("2024-01-20"), Timeframe.D1
+        )
+        opens = [100.0 + i for i in range(len(sessions))]
+        rows = [
+            {"instrument_id": self.EQ, "ts_open": s, "open": o, "close": o}
+            for s, o in zip(sessions, opens, strict=True)
+        ]
+        bars = pd.DataFrame(rows).astype({"ts_open": "int64"})
+        return bars, list(sessions), opens
+
+    def test_equity_d1_hops_friday_to_monday(self) -> None:
+        from alphaforge.core.calendar import calendar_for
+        from alphaforge.core.instruments import AssetClass
+
+        bars, sessions, opens = self._equity_panel()
+        cal = calendar_for(AssetClass.EQUITY)
+        out = forward_returns(bars, 1, timeframe=Timeframe.D1, calendar=cal)
+        # Friday 2024-01-05 → entry Monday 2024-01-08 (the >1-day weekend jump), exit Tue 01-09.
+        fri = self._ms("2024-01-05")
+        i = sessions.index(fri)
+        assert sessions[i + 1] - sessions[i] > Timeframe.D1.ms  # weekend was hopped, not bridged
+        expected = math.log(opens[i + 2] / opens[i + 1])
+        assert out.loc[(fri, self.EQ)] == pytest.approx(expected, abs=1e-15)
+        assert not math.isnan(out.loc[(fri, self.EQ)])
+
+    def test_wrong_24x7_calendar_nans_the_weekend_label(self) -> None:
+        # Same equity panel through the DEFAULT 24/7 calendar: Friday's +1-day entry is the
+        # phantom Saturday slot → NaN. Demonstrates exactly why the equity guard exists.
+        bars, _sessions, _opens = self._equity_panel()
+        out = forward_returns(bars, 1, timeframe=Timeframe.D1)  # calendar=None → 24/7
+        assert math.isnan(out.loc[(self._ms("2024-01-05"), self.EQ)])
+
+    def test_explicit_24x7_calendar_byte_identical_to_default(self) -> None:
+        from alphaforge.core.calendar import Always24x7Calendar
+
+        opens = [100.0 + i for i in range(12)]
+        default = forward_returns(make_bars(opens), 2)
+        explicit = forward_returns(make_bars(opens), 2, calendar=Always24x7Calendar())
+        pd.testing.assert_series_equal(default, explicit)
