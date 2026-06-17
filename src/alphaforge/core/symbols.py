@@ -44,6 +44,12 @@ KNOWN_QUOTES: Final[tuple[str, ...]] = (
     "USD",
 )
 
+#: Synthetic quote currency pinned to every CASH-equity exchange symbol so the canonical
+#: id grammar and the Instrument ``base+quote`` invariant hold without a real quote
+#: currency. Stripped by fixed length in :meth:`SymbolMapper.parse_equity_id` (never by
+#: KNOWN_QUOTES suffix matching), so quote-colliding tickers round-trip (critique B4).
+_EQUITY_QUOTE: Final[str] = "USD"
+
 _MARKET_LABELS: Final[dict[str, MarketType]] = {m.name: m for m in MarketType}
 
 
@@ -109,14 +115,83 @@ class SymbolMapper:
         )
 
     @staticmethod
+    def equity_instrument_id(mic: str, ticker: str) -> str:
+        """Build a canonical CASH-equity instrument_id from a listing MIC and ticker.
+
+        Equities have no quote currency, but the canonical id grammar
+        ``"<EXCHANGE>:<MARKET>:<EXCHANGE_SYMBOL>"`` and the
+        :class:`~alphaforge.core.instruments.Instrument` ``base+quote`` invariant both
+        want a non-empty quote. We pin a synthetic quote ``"USD"`` and store the
+        exchange symbol as ``"<TICKER>USD"``, so ``"XNAS:CASH:AAPLUSD"`` reconstructs
+        from ``base="AAPL"`` + ``quote="USD"``. **Crucially this is NOT routed through
+        :meth:`split_exchange_symbol`** — equity tickers collide with the crypto quote
+        vocabulary (``BTC``, ``ETH``, ``EUR`` are real tickers), and longest-suffix
+        matching would mis-split them (EQUITIES_CRITIQUE.md B4). Recover the ticker only
+        via :meth:`parse_equity_id`, never via ``split_exchange_symbol``.
+
+        Dotted/class tickers (``BRK.B``) must be canonicalized to a separator-free form
+        (``BRKB``) by the caller before this call; the raw vendor ticker is carried
+        separately by the source for the fetch round-trip. ``mic`` is the listing MIC
+        (``XNAS``, ``XNYS``, ...). Raises :class:`SchemaError` if either string is
+        empty, contains ``":"``, or — for ``ticker`` — contains a ``"."`` (un-normalized
+        dotted ticker) or already ends in the synthetic ``"USD"`` quote (which would make
+        the id non-round-trippable).
+        """
+        for name, value in (("mic", mic), ("ticker", ticker)):
+            if not value or ":" in value:
+                raise SchemaError(f"{name} must be a non-empty string without ':', got {value!r}")
+        if "." in ticker:
+            raise SchemaError(
+                f"ticker {ticker!r} contains '.'; canonicalize dotted/class tickers "
+                "(e.g. 'BRK.B' -> 'BRKB') before building an equity id"
+            )
+        if ticker.upper().endswith(_EQUITY_QUOTE):
+            raise SchemaError(
+                f"ticker {ticker!r} ends with the synthetic equity quote {_EQUITY_QUOTE!r}; "
+                "such tickers cannot round-trip through parse_equity_id"
+            )
+        return f"{mic.upper()}:{MarketType.CASH.name}:{ticker.upper()}{_EQUITY_QUOTE}"
+
+    @staticmethod
+    def parse_equity_id(instrument_id: str) -> tuple[str, str]:
+        """Split a CASH-equity instrument_id into ``(mic, ticker)`` — collision-free.
+
+        Inverse of :meth:`equity_instrument_id`: validates the market segment is
+        ``CASH`` and strips exactly the synthetic ``"USD"`` quote suffix (a fixed-length
+        strip, NOT a :data:`KNOWN_QUOTES` longest-suffix match), so a ticker that itself
+        ends in a crypto quote token is recovered intact. Raises :class:`SchemaError` on
+        a malformed id, a non-``CASH`` market segment, or a symbol not ending in the
+        synthetic quote.
+        """
+        exchange, market_type, symbol = SymbolMapper.parse_instrument_id(instrument_id)
+        if market_type is not MarketType.CASH:
+            raise SchemaError(
+                f"parse_equity_id expects a CASH-equity id, got market type "
+                f"{market_type.value!r} in {instrument_id!r}"
+            )
+        if not symbol.endswith(_EQUITY_QUOTE) or symbol == _EQUITY_QUOTE:
+            raise SchemaError(
+                f"equity exchange symbol {symbol!r} of {instrument_id!r} does not end in "
+                f"the synthetic quote {_EQUITY_QUOTE!r}"
+            )
+        return exchange, symbol[: -len(_EQUITY_QUOTE)]
+
+    @staticmethod
     def to_ccxt(instrument_id: str) -> str:
         """Canonical instrument_id → ccxt unified symbol.
 
         ``"BINANCE:PERP:BTCUSDT"`` → ``"BTC/USDT:USDT"`` (linear perp, settle = quote);
         ``"BINANCE:SPOT:BTCUSDT"`` → ``"BTC/USDT"``. Raises :class:`SchemaError` on a
-        malformed id or an unrecognized quote suffix.
+        malformed id, an unrecognized quote suffix, or a ``CASH``-equity id (ccxt is a
+        crypto-venue vocabulary; routing an equity id here would emit a spurious crypto
+        market symbol — critique B4 — so it is rejected loudly, not mis-translated).
         """
         _, market_type, symbol = SymbolMapper.parse_instrument_id(instrument_id)
+        if market_type is MarketType.CASH:
+            raise SchemaError(
+                f"cannot map CASH-equity id {instrument_id!r} to a ccxt symbol; equities "
+                "are not a ccxt venue (use the equities source's own routing)"
+            )
         base, quote = SymbolMapper.split_exchange_symbol(symbol)
         if market_type is MarketType.PERP:
             return f"{base}/{quote}:{quote}"

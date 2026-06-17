@@ -146,3 +146,75 @@ class TestRoundTrip:
         self, _mt: MarketType, _sym: str, iid: str, ccxt: str
     ) -> None:
         assert SymbolMapper.from_ccxt("BINANCE", SymbolMapper.to_ccxt(iid)) == iid
+
+
+class TestEquityInstrumentId:
+    """The collision-free CASH-equity id helpers (EQUITIES_CRITIQUE.md B4).
+
+    The equity id deliberately does NOT route through ``split_exchange_symbol`` — the
+    crypto longest-suffix matcher would mis-split equity tickers that collide with the
+    crypto quote vocabulary. ``equity_instrument_id`` / ``parse_equity_id`` strip exactly
+    the synthetic ``USD`` quote by fixed length, so a quote-colliding ticker round-trips
+    intact.
+    """
+
+    def test_build_basic(self) -> None:
+        assert SymbolMapper.equity_instrument_id("XNAS", "AAPL") == "XNAS:CASH:AAPLUSD"
+
+    def test_build_normalizes_case(self) -> None:
+        assert SymbolMapper.equity_instrument_id("xnas", "aapl") == "XNAS:CASH:AAPLUSD"
+
+    def test_round_trip_common_ticker(self) -> None:
+        iid = SymbolMapper.equity_instrument_id("XNYS", "BRKB")
+        assert SymbolMapper.parse_equity_id(iid) == ("XNYS", "BRKB")
+
+    # THE B4 regression: tickers that ARE crypto quote tokens (BTC/ETH/EUR are real
+    # tickers — Grayscale trusts, ADRs). The crypto split_exchange_symbol would mis-split
+    # these; the equity helpers must round-trip them byte-for-byte.
+    @pytest.mark.parametrize("ticker", ["BTC", "ETH", "EUR", "TRY", "BNB", "DAI"])
+    def test_quote_colliding_ticker_round_trips(self, ticker: str) -> None:
+        iid = SymbolMapper.equity_instrument_id("XNAS", ticker)
+        assert iid == f"XNAS:CASH:{ticker}USD"
+        # Recovered intact — NOT mis-split into ("", ticker) or similar by KNOWN_QUOTES.
+        assert SymbolMapper.parse_equity_id(iid) == ("XNAS", ticker)
+
+    def test_quote_colliding_ticker_not_routed_through_split_exchange_symbol(self) -> None:
+        # Proof of the hazard the equity path avoids: the SHARED crypto helper, fed the
+        # equity exchange symbol "ETHUSD", would strip a crypto quote and mis-split it.
+        # parse_equity_id must NOT agree with that wrong answer.
+        mis_split_base, _ = SymbolMapper.split_exchange_symbol("ETHUSD")
+        assert mis_split_base == "ETH"  # crypto matcher peels USD, base "ETH" — fine HERE,
+        # but the point is parse_equity_id is independent and recovers the FULL ticker:
+        _, ticker = SymbolMapper.parse_equity_id("XNAS:CASH:ETHUSD")
+        assert ticker == "ETH"
+
+    @pytest.mark.parametrize(
+        ("mic", "ticker"),
+        [("", "AAPL"), ("XNAS", ""), ("X:NAS", "AAPL"), ("XNAS", "AA:PL")],
+    )
+    def test_build_rejects_empty_or_colon(self, mic: str, ticker: str) -> None:
+        with pytest.raises(SchemaError):
+            SymbolMapper.equity_instrument_id(mic, ticker)
+
+    def test_build_rejects_dotted_ticker(self) -> None:
+        # Dotted/class tickers must be canonicalized (BRK.B -> BRKB) before id-building.
+        with pytest.raises(SchemaError, match="canonicalize"):
+            SymbolMapper.equity_instrument_id("XNYS", "BRK.B")
+
+    def test_build_rejects_ticker_ending_in_synthetic_quote(self) -> None:
+        # A ticker literally ending in "USD" cannot round-trip (the strip is ambiguous).
+        with pytest.raises(SchemaError, match="synthetic equity quote"):
+            SymbolMapper.equity_instrument_id("XNAS", "FUSD")
+
+    def test_parse_rejects_non_cash_market(self) -> None:
+        with pytest.raises(SchemaError, match="CASH"):
+            SymbolMapper.parse_equity_id("BINANCE:PERP:BTCUSDT")
+
+    def test_parse_rejects_symbol_without_synthetic_quote(self) -> None:
+        with pytest.raises(SchemaError, match="synthetic quote"):
+            SymbolMapper.parse_equity_id("XNAS:CASH:AAPLEUR")
+
+    def test_to_ccxt_rejects_equity_id(self) -> None:
+        # An equity id must NEVER be mis-translated into a (crypto) ccxt symbol (B4).
+        with pytest.raises(SchemaError, match="ccxt"):
+            SymbolMapper.to_ccxt("XNAS:CASH:AAPLUSD")

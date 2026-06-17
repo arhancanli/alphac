@@ -23,11 +23,25 @@ Implements dataDesign.md §6 with the leakage-critique fixes baked in:
   of truth and regeneration must not leave stale intervals behind.
 
 Ranking signal at rebalance ``T`` (dataDesign.md §6.1): the trailing
-``rank_window_days``-day **median of daily quote volume**, from 1h bars with
+``rank_window_days``-day **median of daily quote volume**, from ``rank_tf`` bars with
 ``ts_open in [T - window, T)`` available at ``T``, summed per UTC day (per-bar
 fallback ``volume * close`` where ``quote_volume`` is null). Median over ~30 days is
 robust to single-day listing/news spikes. Raw bars are consumed as stored — quality
 flags annotate, nothing is altered or filled here.
+
+``rank_tf`` selects the source timeframe of the ranking read (EQUITIES_SLEEVE.md §5):
+
+- **Crypto** (default ``Timeframe.H1``): many intraday bars per UTC day are summed into
+  a daily quote volume, then the trailing median is taken — exactly dataDesign.md §6.1.
+- **Equities** (``Timeframe.D1``): the native bar IS daily and ``quote_volume`` is
+  already that session's dollar volume, so the per-UTC-day summing collapses to a
+  pass-through (one bar per session) and the trailing median over the window IS the
+  classic **ADV (average dollar volume)** ranking signal. Pass ``D1`` and feed the
+  builder an equity SCD2 record (including delisted names — §6.2 survivorship); no
+  other change. The PIT rule is identical: a session bar for date ``D`` (labeled
+  ``ts_open`` = ``D`` 00:00 UTC) is available at ``D + tf.ms`` and so a bar straddling
+  the 00:00-on-the-1st rebalance instant ``T`` is correctly invisible at ``T`` — the
+  equity window sees the sessions through the prior day, as a trader at ``T`` would.
 """
 
 from __future__ import annotations
@@ -121,9 +135,15 @@ class UniverseBuilder:
         *,
         min_days: int = DEFAULT_MIN_DAYS,
         min_listing_age_ms: Ms = DEFAULT_MIN_LISTING_AGE_MS,
+        rank_tf: Timeframe = Timeframe.H1,
     ) -> None:
         """Raises :class:`ConfigError` unless ``cfg.rebalance == "monthly"`` — the v1
-        schedule is fixed at 00:00 UTC on the 1st (dataDesign.md §6.1)."""
+        schedule is fixed at 00:00 UTC on the 1st (dataDesign.md §6.1).
+
+        ``rank_tf`` is the source timeframe for the liquidity read (see module
+        docstring): ``Timeframe.H1`` for crypto (intraday bars summed per UTC day),
+        ``Timeframe.D1`` for equities (native daily bars → ADV pass-through).
+        """
         if cfg.rebalance != "monthly":
             raise ConfigError(
                 f"UniverseBuilder v1 supports monthly rebalance only, got {cfg.rebalance!r}"
@@ -138,6 +158,7 @@ class UniverseBuilder:
         self._cfg = cfg
         self._min_days = min_days
         self._min_listing_age_ms = min_listing_age_ms
+        self._rank_tf = rank_tf
 
     def rebuild(self, *, start: Ms, end: Ms, now: Ms) -> RebuildStats:
         """Regenerate the full membership history over ``[start, end]`` (epoch ms UTC).
@@ -274,18 +295,19 @@ class UniverseBuilder:
     def _median_daily_quote_volume(self, instrument_ids: list[str], t: Ms) -> dict[str, float]:
         """Trailing median of daily quote volume per instrument, PIT at ``t``.
 
-        Reads 1h bars (the v1 lake's native timeframe) with ``ts_open`` in
-        ``[t - window, t)`` and ``as_of=t`` — the reader's PIT rule guarantees every
-        consumed bar closed at or before ``t``. Per bar, quote volume is the stored
-        ``quote_volume`` or the ``volume * close`` fallback when null (dataDesign.md
-        §6.1); bars are summed per UTC day and instruments with fewer than
-        ``min_days`` distinct days are dropped (ineligible).
+        Reads ``rank_tf`` bars with ``ts_open`` in ``[t - window, t)`` and ``as_of=t``
+        — the reader's PIT rule guarantees every consumed bar closed at or before
+        ``t``. Per bar, quote volume is the stored ``quote_volume`` or the
+        ``volume * close`` fallback when null (dataDesign.md §6.1); bars are summed per
+        UTC day and instruments with fewer than ``min_days`` distinct days are dropped
+        (ineligible). For an equity ``D1`` read the per-day sum is a one-bar
+        pass-through, so the trailing median is the average daily dollar volume (ADV).
         """
         if not instrument_ids:
             return {}
         window_start = t - self._cfg.rank_window_days * _DAY_MS
         bars = self._reader.ohlcv(
-            instrument_ids, start=window_start, end=t, as_of=t, tf=Timeframe.H1
+            instrument_ids, start=window_start, end=t, as_of=t, tf=self._rank_tf
         )
         ids: list[str] = bars.column("instrument_id").to_pylist()
         opens: list[int] = bars.column("ts_open").cast(pa.int64()).to_pylist()

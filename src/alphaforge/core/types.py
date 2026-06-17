@@ -40,10 +40,11 @@ class AssetClass(StrEnum):
 
 
 class MarketType(StrEnum):
-    """Venue market segment; matches the lake partition value (``market=perp|spot``)."""
+    """Venue market segment; matches the lake partition value (``market=perp|spot|cash``)."""
 
     PERP = "perp"
     SPOT = "spot"
+    CASH = "cash"
 
 
 class Side(StrEnum):

@@ -23,6 +23,7 @@ dependencies = [
     "cvxpy-base>=1.9.1",
     "clarabel>=0.11.1",
     "osqp>=1.1.2",
+    "exchange-calendars>=4.5",
 ]
 
 [project.scripts]
@@ -63,7 +64,7 @@ packages = ["alphaforge"]
 warn_unreachable = true
 
 [[tool.mypy.overrides]]
-module = ["ccxt.*", "duckdb.*", "scipy.*", "sklearn.*", "joblib.*"]
+module = ["ccxt.*", "duckdb.*", "scipy.*", "sklearn.*", "joblib.*", "exchange_calendars.*"]
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]

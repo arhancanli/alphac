@@ -13,16 +13,20 @@ ranges are half-open ``[start_ms, end_ms)``.
 
 from __future__ import annotations
 
+import bisect
 from abc import ABC, abstractmethod
+from functools import lru_cache
 from typing import Final
 
 from alphaforge.core import time as core_time
+from alphaforge.core.errors import ConfigError
 from alphaforge.core.time import Ms, Timeframe
 from alphaforge.core.types import AssetClass
 
 __all__ = [
     "Always24x7Calendar",
     "TradingCalendar",
+    "XNYSCalendar",
     "calendar_for",
 ]
 
@@ -129,21 +133,172 @@ class Always24x7Calendar(TradingCalendar):
 
 _ALWAYS_24X7: Final[Always24x7Calendar] = Always24x7Calendar()
 
+# Bounded session horizon for the cached XNYS schedule (EQUITIES_SLEEVE.md §3.1, and the
+# N2 caveat in EQUITIES_CRITIQUE.md). The start covers pre-2008 fixtures (Lehman/LEHMQ
+# survivorship); the end is a few years past the live horizon. ``exchange_calendars``
+# future sessions are *estimates* — the LIVE loop must not trust a cached forward window
+# for a late-announced ad-hoc closure (presidential funeral, etc.) and should refresh the
+# calendar, the same spirit as the universe finding-21 ordering contract. For a settled
+# backtest the cached history is exact.
+_XNYS_HORIZON_START: Final[str] = "2004-01-01"
+_XNYS_HORIZON_END: Final[str] = "2030-12-31"
+
+_XNYS_SESSIONS_PER_YEAR: Final[float] = 252.0
+"""Annualization basis for XNYS daily bars (the ~252-session trading year)."""
+
+
+@lru_cache(maxsize=1)
+def _xnys_session_opens() -> tuple[Ms, ...]:
+    """Sorted XNYS session opens as UTC-midnight epoch ms over the bounded horizon.
+
+    Lazily wraps the ``exchange_calendars`` ``XNYS`` calendar (the sanctioned holiday
+    source — we never reimplement the rules). A session label is a tz-naive midnight
+    ``Timestamp`` whose date IS the session date; its ns value equals that date at
+    00:00 UTC, which is exactly the equity daily-bar ``ts_open`` convention
+    (EQUITIES_SLEEVE.md §3.2). Cached once (``maxsize=1``) — the schedule is static
+    for the backtest horizon.
+
+    Raises:
+        ConfigError: if ``exchange_calendars`` is not installed (a hard dependency for
+            any equity path; never silently fall back to a 24/7 grid).
+    """
+    try:
+        import exchange_calendars as xcals
+    except ImportError as exc:  # pragma: no cover - dependency is declared in pyproject
+        raise ConfigError(
+            "exchange_calendars is required for the XNYS equities calendar; "
+            "install the 'exchange-calendars' package"
+        ) from exc
+    cal = xcals.get_calendar("XNYS", start=_XNYS_HORIZON_START, end=_XNYS_HORIZON_END)
+    # ``sessions`` is a tz-naive DatetimeIndex of midnight labels; asi8 is ns since epoch.
+    return tuple(int(ns) // 1_000_000 for ns in cal.sessions.asi8)
+
+
+class XNYSCalendar(TradingCalendar):
+    """NYSE (``XNYS``) session calendar — equities daily bars, ~252-session year.
+
+    Sessions filter the 24/7 grid: a daily bar exists only on an XNYS trading session,
+    so a missing bar on a session is a real gap (a halted name) while a weekend/holiday
+    is correctly absent (EQUITIES_SLEEVE.md §3.1). Backed by the ``exchange_calendars``
+    package — holiday rules are wrapped, never reimplemented. Stateless and shared via
+    :func:`calendar_for`; the session schedule is cached once over a bounded horizon.
+
+    THE BAR/AVAILABILITY BOUNDARY (EQUITIES_CRITIQUE.md B2): availability math stays
+    pure-integer (a daily bar labeled ``ts_open`` is available at ``ts_open + tf.ms`` —
+    the reader's predicate is unchanged). But bar *selection* — :meth:`floor_bar`,
+    :meth:`next_bar_open`, :meth:`expected_bar_opens` — MUST hop sessions, never add
+    ``tf.ms``: ``next_bar_open`` of a Friday is the following Monday session, not
+    Saturday. Anything doing ``ts + tf.ms`` to find the next equity bar is a bug.
+
+    v1 supports ``Timeframe.D1`` only; intraday (open/close-minute precision) is post-v1
+    and any other timeframe raises :class:`NotImplementedError` so an accidental
+    intraday equity request fails loud rather than returning mis-aligned bars.
+    """
+
+    __slots__ = ()
+
+    @staticmethod
+    def _require_d1(tf: Timeframe) -> None:
+        if tf is not Timeframe.D1:
+            raise NotImplementedError(
+                f"XNYSCalendar supports Timeframe.D1 only in v1, got {tf.value!r}: "
+                "intraday equity bars (session open/close minutes) are post-v1"
+            )
+
+    def is_session(self, ts: Ms) -> bool:
+        """Return True iff the UTC day containing ``ts`` is an XNYS trading session.
+
+        v1 works at session (date) granularity: ``ts`` is floored to its UTC midnight
+        and tested for session membership; intraday open/close-minute precision is
+        post-v1.
+        """
+        opens = _xnys_session_opens()
+        day_open = core_time.floor_bar(ts, Timeframe.D1)
+        idx = bisect.bisect_left(opens, day_open)
+        return idx < len(opens) and opens[idx] == day_open
+
+    def expected_bar_opens(self, start_ms: Ms, end_ms: Ms, tf: Timeframe) -> list[Ms]:
+        """Return every XNYS session open (00:00 UTC) in ``[start_ms, end_ms)``, sorted.
+
+        The session-filtered grid: the equities analogue of the crypto full grid, and
+        the reference for gap detection (a missing session bar is a real gap). ``tf``
+        must be :data:`Timeframe.D1` (v1).
+        """
+        self._require_d1(tf)
+        opens = _xnys_session_opens()
+        lo = bisect.bisect_left(opens, start_ms)
+        hi = bisect.bisect_left(opens, end_ms)
+        return list(opens[lo:hi])
+
+    def periods_per_year(self, tf: Timeframe) -> float:
+        """Return ``252.0`` for ``D1`` — the single annualization source for equities.
+
+        Sharpe/vol/covariance pull annualization from here, so no hard-coded 8760/365
+        (the 24/7 :attr:`Timeframe.bars_per_year`) leaks into the equity path
+        (EQUITIES_SLEEVE.md §3.1). ``tf`` must be :data:`Timeframe.D1` (v1).
+        """
+        self._require_d1(tf)
+        return _XNYS_SESSIONS_PER_YEAR
+
+    def floor_bar(self, ts: Ms, tf: Timeframe) -> Ms:
+        """Return the open (00:00 UTC) of the session covering ``ts``.
+
+        The greatest session open ``<= ts``: if ``ts`` falls on a non-session day
+        (weekend/holiday) this is the *prior* session's open, NOT a phantom weekend
+        slot (EQUITIES_CRITIQUE.md B2). ``tf`` must be :data:`Timeframe.D1` (v1).
+
+        Raises:
+            ValueError: if ``ts`` precedes the first cached session.
+        """
+        self._require_d1(tf)
+        opens = _xnys_session_opens()
+        idx = bisect.bisect_right(opens, ts) - 1
+        if idx < 0:
+            raise ValueError(
+                f"ts {ts} precedes the first XNYS session {opens[0]} "
+                f"({_XNYS_HORIZON_START}); widen the calendar horizon"
+            )
+        return opens[idx]
+
+    def next_bar_open(self, ts: Ms, tf: Timeframe) -> Ms:
+        """Return the open of the first XNYS session strictly after ``ts``.
+
+        Hops weekends/holidays: the bar after a Friday session is the following
+        Monday session, never ``ts + tf.ms`` (EQUITIES_CRITIQUE.md B2). ``tf`` must be
+        :data:`Timeframe.D1` (v1).
+
+        Raises:
+            ValueError: if no cached session follows ``ts`` (past the horizon end).
+        """
+        self._require_d1(tf)
+        opens = _xnys_session_opens()
+        idx = bisect.bisect_right(opens, ts)
+        if idx >= len(opens):
+            raise ValueError(
+                f"ts {ts} is at or past the last cached XNYS session {opens[-1]} "
+                f"({_XNYS_HORIZON_END}); widen the calendar horizon"
+            )
+        return opens[idx]
+
+
+_XNYS: Final[XNYSCalendar] = XNYSCalendar()
+
 
 def calendar_for(asset_class: AssetClass) -> TradingCalendar:
     """Return the trading calendar for ``asset_class`` (shared stateless instance).
 
-    CRYPTO_PERP and CRYPTO_SPOT map to the singleton :class:`Always24x7Calendar`.
+    CRYPTO_PERP and CRYPTO_SPOT map to the singleton :class:`Always24x7Calendar`;
+    EQUITY maps to the singleton :class:`XNYSCalendar` (NYSE sessions, 252-day basis,
+    via ``exchange_calendars``).
 
     Raises:
-        NotImplementedError: for EQUITY (and any future asset class) — the equities
-            session calendar (via ``exchange_calendars``) is explicitly post-v1; see
-            buildabilityCritique.md §5 backlog.
+        NotImplementedError: for any future asset class with no registered calendar.
     """
     if asset_class in (AssetClass.CRYPTO_PERP, AssetClass.CRYPTO_SPOT):
         return _ALWAYS_24X7
+    if asset_class is AssetClass.EQUITY:
+        return _XNYS
     raise NotImplementedError(
         f"no TradingCalendar registered for asset class {asset_class.value!r}: "
-        "equities session calendars (exchange_calendars) are post-v1; "
-        "only crypto_perp/crypto_spot are supported"
+        "only crypto_perp/crypto_spot and equity are supported"
     )

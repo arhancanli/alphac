@@ -241,11 +241,17 @@ def _spec(name: str) -> FeatureSpec:
 class TestTruncationAndParitySweep:
     def test_registry_is_the_full_v1_library(self) -> None:
         # The sweep below is only meaningful if it runs over the REAL library: the
-        # 24 original v1 factors + the 6 build-slate additions (carry_z_252,
+        # 24 original v1 crypto factors + the 6 build-slate additions (carry_z_252,
         # carry_mom_21_63, lowvol_720, semivar_skew_504, beta_lowbeta_720,
-        # mom_res_2160_168) + the two reference features = 32.
-        assert len(ALL_SPECS) == 32
-        assert len(set(ALL_NAMES)) == 32
+        # mom_res_2160_168) + the two reference features = 32, PLUS the 7 EQUITIES-sleeve
+        # price factors (eq_mom_252_21, eq_rev_21, eq_lowvol_252, eq_beta_252,
+        # eq_bab_252, eq_vol_252, eq_amihud_63 — EQUITIES_SLEEVE.md §4) = 39. The equity
+        # factors are positional on ctx.panel, so the truncation/parity/warmup sweep
+        # below exercises them on this crypto lake too (they fall back to the raw close
+        # panel when the context exposes no corporate actions — the documented build-order
+        # gap — and remain finite-window ⇒ atol = 0).
+        assert len(ALL_SPECS) == 39
+        assert len(set(ALL_NAMES)) == 39
 
     @pytest.mark.parametrize("name", ALL_NAMES)
     def test_truncation_invariance_and_live_parity(self, env: Env, name: str) -> None:

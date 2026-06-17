@@ -23,6 +23,14 @@ buildabilityCritique.md ruling 3.4). Registered (Phase 4):
 * :mod:`~alphaforge.features.library.regime_features` (§2.7) — ``reg_rvp_720``,
   ``reg_corr_btc_720``, ``reg_breadth_sma720``, ``reg_breadth_mom168``
   (broadcast/per-symbol regime context; direction 0, not CS).
+* :mod:`~alphaforge.features.library.equity_price` (EQUITIES_SLEEVE.md §4) — the
+  first EQUITIES-sleeve factors on daily (D1 session) bars: ``eq_mom_252_21`` (12-1
+  momentum), ``eq_rev_21`` (1-month reversal), ``eq_lowvol_252`` (low-vol anomaly,
+  direction -1), ``eq_beta_252`` (rolling market beta, direction 0), ``eq_bab_252``
+  (betting-against-beta, direction +1), ``eq_vol_252`` / ``eq_amihud_63`` (vol +
+  Amihud illiquidity context, direction 0). Reuse the crypto factor math verbatim
+  where structurally identical (skip-momentum, ``rolling_beta``, ``amihud_illiq``) on
+  a PIT split/dividend-adjusted close panel.
 
 Shared non-negotiables: every value at decision bar ``t`` is a pure function of
 data available at the bar close ``t + Δ``; window math runs on the complete
@@ -42,6 +50,19 @@ from alphaforge.features.library.carry_dynamics import (
     Z_CLIP,
     carry_mom_21_63,
     carry_z_252,
+)
+from alphaforge.features.library.equity_price import (
+    SESSIONS_PER_YEAR,
+    adjusted_close,
+    eq_amihud_63,
+    eq_bab_252,
+    eq_beta_252,
+    eq_lowvol_252,
+    eq_mom_252_21,
+    eq_rev_21,
+    eq_vol_252,
+    realized_vol,
+    reversal,
 )
 from alphaforge.features.library.liquidity import (
     AMIHUD_EPS,
@@ -125,8 +146,10 @@ __all__ = [
     "HOURS_PER_YEAR",
     "LOWVOL_EPS",
     "MAX_FUNDING_INTERVAL_HOURS",
+    "SESSIONS_PER_YEAR",
     "SIGMA_DAILY_HALFLIFE",
     "Z_CLIP",
+    "adjusted_close",
     "adv_quote_30d",
     "amihud_illiq",
     "beta_lowbeta_720",
@@ -135,6 +158,13 @@ __all__ = [
     "carry_mom_21_63",
     "carry_z_252",
     "corwin_schultz_spread",
+    "eq_amihud_63",
+    "eq_bab_252",
+    "eq_beta_252",
+    "eq_lowvol_252",
+    "eq_mom_252_21",
+    "eq_rev_21",
+    "eq_vol_252",
     "ewma_vol",
     "ewma_vol_from_returns",
     "liq_amihud_720",
@@ -154,12 +184,14 @@ __all__ = [
     "mr_res_24",
     "mr_res_72",
     "parkinson",
+    "realized_vol",
     "reg_breadth_mom168",
     "reg_breadth_sma720",
     "reg_corr_btc_720",
     "reg_rvp_720",
     "residual_momentum",
     "residual_reversal",
+    "reversal",
     "rolling_beta",
     "semivar_skew_504",
     "semivariance_skew",
