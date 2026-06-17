@@ -235,7 +235,8 @@ def make_source(
 
 
 def ts_open_ints(tbl: pa.Table) -> list[int]:
-    return tbl.column("ts_open").cast(pa.int64()).to_pylist()
+    values: list[int] = tbl.column("ts_open").cast(pa.int64()).to_pylist()
+    return values
 
 
 # ----------------------------------------------------------------- construction
@@ -406,7 +407,7 @@ class TestFetchOhlcv:
 
     def test_split_only_adjustment_requests_adjusted_true(self) -> None:
         client = FakeClient(aggs={"AAPL": make_aggs(3)})
-        src = PolygonEquitiesSource(client=client, adjustment=Adjustment.SPLIT_ONLY)  # type: ignore[arg-type]
+        src = PolygonEquitiesSource(client=client, adjustment=Adjustment.SPLIT_ONLY)
         src.fetch_ohlcv(AAPL_ID, tf=Timeframe.D1, since=T0, until=T0 + 5 * D, now=T0 + 9 * D)
         assert all(kw["adjusted"] is True for m, kw in client.calls if m == "get_aggs")
 

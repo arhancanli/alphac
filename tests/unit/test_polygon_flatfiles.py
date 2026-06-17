@@ -129,11 +129,13 @@ ETH_ID = SymbolMapper.equity_instrument_id(FLATFILES_MIC, "ETH")  # quote-token 
 
 
 def col(tbl: pa.Table, name: str) -> list[object]:
-    return tbl.column(name).to_pylist()
+    values: list[object] = tbl.column(name).to_pylist()
+    return values
 
 
 def ts_open_ints(tbl: pa.Table) -> list[int]:
-    return tbl.column("ts_open").cast(pa.int64()).to_pylist()
+    values: list[int] = tbl.column("ts_open").cast(pa.int64()).to_pylist()
+    return values
 
 
 # ----------------------------------------------------------------- key helpers
@@ -278,7 +280,7 @@ class TestFetchDay:
         tbl = make_source(client).fetch_day(
             DAY_2024_01_02, now=_day_open_ms(DAY_2024_01_02) + 5 * D1
         )
-        ids = col(tbl, "instrument_id")
+        ids: list[str] = tbl.column("instrument_id").to_pylist()
         assert ids == sorted(ids)
 
     def test_missing_object_raises_keyerror(self) -> None:
