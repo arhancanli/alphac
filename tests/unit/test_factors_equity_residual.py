@@ -64,7 +64,7 @@ DAY = 86_400_000
 T0 = 1_577_836_800_000  # 2020-01-01T00:00:00Z (aligned)
 WINDOW = 21
 BETA_WINDOW = EQ_BETA_WINDOW  # 252
-N_BARS = BETA_WINDOW + 2 + WINDOW + 40  # ample headroom past the 254-bar warmup
+N_BARS = BETA_WINDOW + WINDOW + 1 + 40  # ample headroom past the 274-bar warmup
 
 
 # --------------------------------------------------------------------- synthetic ctx
@@ -320,7 +320,10 @@ class TestRegisteredSpec:
         assert spec.family is Family.REVERSAL
         assert spec.direction == 1
         assert spec.cross_sectional is True
-        assert spec.lookback_bars == BETA_WINDOW + 2  # beta requirement dominates W
+        # The oldest residual in the W-session sum carries its OWN beta window, so the
+        # formation window SHIFTS the beta window back by W-1 (it does not vanish under
+        # the larger beta_window): lookback = beta_window + window + 1 = 274.
+        assert spec.lookback_bars == BETA_WINDOW + WINDOW + 1
         assert not spec.is_ewma_family  # finite window: parity atol = 0
         assert spec.params["window"] == WINDOW
         assert spec.params["beta_window"] == BETA_WINDOW
