@@ -1,0 +1,33 @@
+# AlphaForge — US equities sleeve profile (S5). Deep-merges over configs/base.yaml.
+# Resolve with:  af --profile equity <command>
+#
+# Setting data.asset_class=equity makes alphaforge.config.sleeve.sleeve_for() resolve the
+# D1 + XNYS (252-session) sleeve EVERYWHERE the spine asks for its anchor TF / calendar:
+# the feature engine grid, forward_returns/label session hops, the universe rank_tf, the
+# covariance annualizer, and the walk-forward purge/embargo. Only the keys that differ
+# from base are listed; everything else is inherited.
+
+data:
+  asset_class: equity
+  timeframe: "1d"
+  # Equity bars come from the Polygon S3 flat files (survivorship-free day-aggs), NOT a
+  # ccxt venue. This field is unused on the equity research path (ingest-equities, universe
+  # rebuild, research ic/walkforward all read the lake); it only labels the crypto-only
+  # ccxt ingest/clock/live paths, so the value is a placeholder for the equity profile.
+  exchange: polygon
+  # Survivorship-free history floor; matches the detached flat-files ingest window.
+  backfill_start: "2015-01-01T00:00:00Z"
+
+universe:
+  # Equities trade for BREADTH (the sqrt(N) decorrelation edge), so the liquid cross
+  # section is far wider than the 20-name crypto book: top-200 by 30-session median dollar
+  # volume, with entry/exit hysteresis. This is a credible cross-section for the first
+  # Rank-IC read while staying tractable for the (not-yet-columnar) backtester; widen
+  # toward ~500-1000 once the scale arc (P6/P7) lands — the scale-guard tripwire gates it.
+  size: 200
+  entry_rank: 160     # hysteresis: enter at top-160
+  exit_rank: 260      # leave only when falling below 260
+
+# NOTE: an equity costs block (commission + realistic spread + sqrt-impact + short borrow)
+# is added here once S2 defines those CostsCfg fields; until then the equity walk-forward
+# (S12) must not be trusted for a NET Sharpe — only the raw Rank-IC (S11) is meaningful.
