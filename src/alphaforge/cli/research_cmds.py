@@ -132,7 +132,11 @@ def ic(
     ] = None,
     horizons: Annotated[
         str,
-        typer.Option("--horizons", help="Comma-separated forward-return horizons in 1h bars."),
+        typer.Option(
+            "--horizons",
+            help="Comma-separated forward-return horizons in anchor-TF bars "
+            "(1h crypto; sessions for equities, e.g. 5,21).",
+        ),
     ] = "24,72",
     out: Annotated[
         str | None,
@@ -177,11 +181,12 @@ def ic(
         reader = PITDataReader(paths)
         universe = UniverseStore(paths)
         runner = ICReportRunner(
-            FeatureEngine(reader, instruments, universe),
+            FeatureEngine(reader, instruments, universe, asset_class=settings.data.asset_class),
             reader,
             universe,
             default_registry(),
             paths=paths,
+            asset_class=settings.data.asset_class,
         )
         try:
             report = runner.run(start=start_ms, end=end_ms, horizons=horizon_bars, out_dir=out_dir)

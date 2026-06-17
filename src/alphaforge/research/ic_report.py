@@ -47,10 +47,11 @@ import numpy as np
 import pandas as pd
 import pyarrow as pa
 
+from alphaforge.config.sleeve import sleeve_for
 from alphaforge.core.time import Ms, from_ms, now_ms
-from alphaforge.data.schemas import Dataset
+from alphaforge.core.types import AssetClass
+from alphaforge.data.schemas import ohlcv_dataset
 from alphaforge.features.cross_section import CSPipeline
-from alphaforge.features.engine import ANCHOR_TIMEFRAME
 from alphaforge.labeling import forward_returns
 from alphaforge.validation import ICSummary, ic_summary, non_overlapping, rank_ic
 
@@ -285,12 +286,20 @@ class ICReportRunner:
         registry: FeatureRegistry,
         *,
         paths: LakePaths,
+        asset_class: AssetClass = AssetClass.CRYPTO_PERP,
     ) -> None:
         self._engine = engine
         self._reader = reader
         self._universe = universe
         self._registry = registry
         self._paths = paths
+        # Sleeve resolves the anchor TF (H1 crypto / D1 equity), the trading calendar
+        # (24/7 / XNYS) for the forward-return session hops, and the OHLCV dataset
+        # (OHLCV / OHLCV_1D). Default CRYPTO_PERP keeps the crypto path byte-identical.
+        sleeve = sleeve_for(asset_class)
+        self._tf = sleeve.anchor_tf
+        self._calendar = sleeve.calendar
+        self._dataset = ohlcv_dataset(self._tf)
 
     def run(
         self,
@@ -335,7 +344,7 @@ class ICReportRunner:
                 "no directional specs registered (direction != 0); "
                 "import alphaforge.features.library before building the registry"
             )
-        instrument_ids = self._paths.instrument_ids(Dataset.OHLCV)
+        instrument_ids = self._paths.instrument_ids(self._dataset)
         if not instrument_ids:
             raise ValueError("no instruments with OHLCV data in the lake; backfill first")
 
@@ -345,7 +354,7 @@ class ICReportRunner:
 
         rows: list[ICRow] = []
         for h in hs:
-            fwd = forward_returns(bars, h)
+            fwd = forward_returns(bars, h, timeframe=self._tf, calendar=self._calendar)
             for spec in specs:
                 ic_dense = rank_ic(adjusted[spec.name], fwd, mask)
                 summary: ICSummary = ic_summary(non_overlapping(ic_dense, h), lags=NW_LAGS)
@@ -425,9 +434,11 @@ class ICReportRunner:
         the future by construction (they never re-enter the feature path).
         ``ts_open`` is cast to int64 epoch ms (the labeler's contract).
         """
-        delta = ANCHOR_TIMEFRAME.ms
+        delta = self._tf.ms
         read_end = end + (h_max + 1) * delta
-        tbl = self._reader.ohlcv(instrument_ids, start=start, end=read_end, as_of=read_end)
+        tbl = self._reader.ohlcv(
+            instrument_ids, start=start, end=read_end, as_of=read_end, tf=self._tf
+        )
         ts = tbl.column("ts_open").cast(pa.int64()).combine_chunks().to_numpy(zero_copy_only=False)
         return pd.DataFrame(
             {
