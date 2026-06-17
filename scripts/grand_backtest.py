@@ -499,19 +499,42 @@ def _run_block(
             config.no_trade_band,
             config.initial_cash,
         )
-        result = _run_one_config(
-            config,
-            settings=settings,
-            run_dir=run_dir,
-            now=now,
-            window=window,
-            train_bars=train_bars,
-            test_bars=test_bars,
-            embargo_bars=embargo_bars,
-            instrument_ids=instrument_ids,
-            daily_btc_factory=daily_btc_factory,
-            signal_factory=signal_factory,
-        )
+        try:
+            result = _run_one_config(
+                config,
+                settings=settings,
+                run_dir=run_dir,
+                now=now,
+                window=window,
+                train_bars=train_bars,
+                test_bars=test_bars,
+                embargo_bars=embargo_bars,
+                instrument_ids=instrument_ids,
+                daily_btc_factory=daily_btc_factory,
+                signal_factory=signal_factory,
+            )
+        except Exception as exc:  # one config must not kill the whole matrix run
+            # A config can legitimately fail: e.g. at very large capital the order
+            # notional exceeds the liquidity the cost model can honestly price
+            # (CostModelMisuse, the capacity ceiling the sweep exists to find). Record
+            # it as a failed config and CONTINUE, so the verdict still writes over the
+            # configs that did complete. The failure (and its reason) is the finding.
+            elapsed_ms = now_ms() - t0
+            _LOG.exception(
+                "FAILED %s after %.1fs: %s", config.config_id, elapsed_ms / 1000.0, exc
+            )
+            _append_jsonl(
+                run_dir / _PROGRESS_FILE,
+                {
+                    "config_id": config.config_id,
+                    "out_dirname": config.out_dirname(),
+                    "status": "failed",
+                    "error": f"{type(exc).__name__}: {exc}",
+                    "elapsed_ms": int(elapsed_ms),
+                    "finished_ms": int(now_ms()),
+                },
+            )
+            continue
         results[config.config_id] = result
         elapsed_ms = now_ms() - t0
         v = result.validation
@@ -664,8 +687,21 @@ def _write_verdict_artifacts(
     )
     from alphaforge.validation.experiments import ExperimentLog
 
-    block_b_ids = [c.config_id for c in all_configs if c.block == "B"]
-    variant_ids = [c.config_id for c in all_configs if c.block in ("A", "C")]
+    # Tolerate configs that failed to produce a result (e.g. a capacity point whose
+    # orders exceeded the liquidity the cost model can price): the verdict is written
+    # over the configs that DID complete; the failed ones are recorded in
+    # progress.jsonl + the driver log. This keeps the run resilient and the verdict
+    # honest about what ran.
+    present = [c for c in all_configs if c.config_id in results]
+    failed_ids = [c.config_id for c in all_configs if c.config_id not in results]
+    if failed_ids:
+        _LOG.warning(
+            "verdict excludes %d config(s) with no result (failed/capacity-exceeded): %s",
+            len(failed_ids),
+            failed_ids,
+        )
+    block_b_ids = [c.config_id for c in present if c.block == "B"]
+    variant_ids = [c.config_id for c in present if c.block in ("A", "C")]
 
     # The shared deflation context: read off the dedicated ledger AFTER every distinct
     # trial is recorded, so EVERY config is judged against the SAME final N / V[SR] /
@@ -675,7 +711,7 @@ def _write_verdict_artifacts(
     pbo = matrix_pbo(results, variant_ids, n_splits=pbo_splits)
     capacity = capacity_curve(results, block_b_ids, cross) if block_b_ids else ()
     winner = select_deflated_winner(results, cross)
-    rows = build_matrix_rows(all_configs, results, cross)
+    rows = build_matrix_rows(present, results, cross)
 
     write_matrix_json(
         run_dir / _MATRIX_FILE,
