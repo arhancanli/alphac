@@ -1,9 +1,18 @@
 """``af instruments`` — instrument catalog commands: refresh (seed) and show (SCD2).
 
-``refresh`` merges the venue's live listing with the Binance Vision archive catalog
-(:class:`~alphaforge.data.ingest.seed.InstrumentSeeder`) so pre-go-live delistings
-enter the SCD2 store — the survivorship-bias fix (leakage finding 1). ``show``
-prints an instrument's full SCD2 version history.
+``refresh`` seeds the SCD2 store survivorship-free, dispatching on ``--market``:
+
+* ``crypto`` (default, back-compat) merges the venue's live listing with the Binance
+  Vision archive catalog (:class:`~alphaforge.data.ingest.seed.InstrumentSeeder` with a
+  :class:`~alphaforge.data.sources.vision.BinanceVisionClient`) so pre-go-live
+  delistings enter the store — the survivorship-bias fix (leakage finding 1).
+* ``equities`` seeds from :class:`~alphaforge.data.sources.polygon_source.PolygonEquitiesSource`
+  whose ``list_instruments`` is *already* survivorship-free (Polygon's reference
+  endpoints return delisted US stocks alongside active ones), so the same generic
+  seeder runs with no Vision archive — active AND delisted instruments land in the
+  SCD2 store in one pass (EQUITIES_INGEST.md §1.6).
+
+``show`` prints an instrument's full SCD2 version history.
 
 State lives in ``settings.paths.var_dir / "ops.sqlite"`` (shared with the ingest
 watermarks). Heavy imports (ccxt, httpx) are deferred into command bodies so
@@ -12,11 +21,13 @@ watermarks). Heavy imports (ccxt, httpx) are deferred into command bodies so
 
 from __future__ import annotations
 
+import os
+from enum import StrEnum
 from typing import TYPE_CHECKING, Annotated, Final
 
 import typer
 
-from alphaforge.core.errors import SchemaError
+from alphaforge.core.errors import ConfigError, SchemaError
 from alphaforge.core.time import Ms, from_ms, now_ms
 from alphaforge.core.types import MarketType
 
@@ -24,6 +35,8 @@ if TYPE_CHECKING:
     from pathlib import Path
 
     from alphaforge.config.settings import Settings
+    from alphaforge.core.instruments import InstrumentStore
+    from alphaforge.data.ingest.seed import InstrumentSeeder
 
 __all__ = ["instruments_app"]
 
@@ -35,10 +48,27 @@ instruments_app = typer.Typer(
 
 _OPS_DB: Final[str] = "ops.sqlite"
 _VISION_DELAY_S: Final[float] = 0.1
+_POLYGON_API_KEY_ENV: Final[str] = "POLYGON_API_KEY"
+_POLYGON_FREE_TIER_REQ_PER_MIN: Final[int] = 5
+"""Polygon's free-tier REST cap (5 req/min). The seeder's reference walk is metered by a
+:class:`RateBudget` of this capacity so the listing pull never trips a 429; the source
+also retries transient 429s, so the budget is prevention and the retry is the backstop."""
+
+
+class Market(StrEnum):
+    """Which sleeve ``refresh`` seeds — selects the live source + archive wiring."""
+
+    CRYPTO = "crypto"
+    EQUITIES = "equities"
+
 
 _ProfileOpt = Annotated[
     str | None,
     typer.Option("--profile", help="Config profile overlay (configs/<profile>.yaml)."),
+]
+_MarketOpt = Annotated[
+    Market,
+    typer.Option("--market", help="Sleeve to seed: crypto (live+Vision) or equities (Polygon)."),
 ]
 
 
@@ -75,33 +105,72 @@ def _ops_db_path(settings: Settings) -> Path:
     return settings.paths.var_dir / _OPS_DB
 
 
-@instruments_app.command()
-def refresh(profile: _ProfileOpt = None) -> None:
-    """Seed/refresh the SCD2 instrument store from the live venue + Vision archive.
-
-    Live instruments are upserted with real exchange filters/fees; archive-only
-    symbols (delisted before go-live) become HISTORY-ONLY records so backtest
-    universes see the full point-in-time listing. Idempotent: unchanged inputs
-    write zero new SCD2 versions.
-    """
-    from alphaforge.core.instruments import InstrumentStore
-    from alphaforge.core.logging import setup_logging
+def _crypto_seeder(settings: Settings, store: InstrumentStore) -> InstrumentSeeder:
+    """Wire the crypto seeder: ccxt live source + Binance Vision archive (finding 1)."""
     from alphaforge.data.ingest.retry import RateBudget
     from alphaforge.data.ingest.seed import InstrumentSeeder
     from alphaforge.data.sources.ccxt_source import CCXTDataSource
     from alphaforge.data.sources.vision import BinanceVisionClient
 
+    return InstrumentSeeder(
+        CCXTDataSource(settings.data.exchange, rate_budget=RateBudget()),
+        BinanceVisionClient(delay_s=_VISION_DELAY_S),
+        store,
+    )
+
+
+def _equities_seeder(store: InstrumentStore) -> InstrumentSeeder:
+    """Wire the equities seeder: Polygon reference source, no Vision archive.
+
+    Polygon's ``list_instruments`` already returns delisted tickers, so the listing is
+    survivorship-free on its own and ``vision`` is left ``None`` — the generic seeder
+    upserts active AND delisted US stocks in one pass. The free-tier 5 req/min cap is
+    handled by a :class:`RateBudget`; transient 429s are retried inside the source. A
+    missing ``POLYGON_API_KEY`` raises :class:`ConfigError` rather than issuing an
+    unauthenticated call.
+    """
+    from alphaforge.data.ingest.retry import RateBudget
+    from alphaforge.data.ingest.seed import InstrumentSeeder
+    from alphaforge.data.sources.polygon_source import PolygonEquitiesSource
+
+    api_key = os.environ.get(_POLYGON_API_KEY_ENV)
+    if not api_key:
+        raise ConfigError(
+            f"{_POLYGON_API_KEY_ENV} is not set; cannot seed equities instruments "
+            "(refusing to issue unauthenticated Polygon requests)"
+        )
+    source = PolygonEquitiesSource(
+        api_key=api_key,
+        rate_budget=RateBudget(capacity_per_min=_POLYGON_FREE_TIER_REQ_PER_MIN),
+    )
+    return InstrumentSeeder(source, store=store)
+
+
+@instruments_app.command()
+def refresh(market: _MarketOpt = Market.CRYPTO, profile: _ProfileOpt = None) -> None:
+    """Seed/refresh the SCD2 instrument store survivorship-free (dispatched by ``--market``).
+
+    ``crypto`` (default) merges the ccxt live listing with the Binance Vision archive:
+    live instruments keep their real exchange filters/fees; archive-only symbols
+    (delisted before go-live) become HISTORY-ONLY records. ``equities`` seeds from
+    Polygon's reference endpoints, whose listing already includes delisted US stocks, so
+    active AND delisted instruments land directly (no archive merge). Idempotent in both
+    modes: unchanged inputs write zero new SCD2 versions.
+    """
+    from alphaforge.core.instruments import InstrumentStore
+    from alphaforge.core.logging import setup_logging
+
     settings = _load_settings(profile)
     setup_logging(settings.paths.var_dir / "log")
     as_of = now_ms()
     with InstrumentStore(_ops_db_path(settings)) as store:
-        seeder = InstrumentSeeder(
-            CCXTDataSource(settings.data.exchange, rate_budget=RateBudget()),
-            BinanceVisionClient(delay_s=_VISION_DELAY_S),
-            store,
+        seeder = (
+            _equities_seeder(store)
+            if market is Market.EQUITIES
+            else _crypto_seeder(settings, store)
         )
         report = seeder.seed(as_of=as_of)
-    typer.echo(f"seeded as of {_fmt_ts(as_of)}")
+    typer.echo(f"seeded {market.value} as of {_fmt_ts(as_of)}")
     typer.echo(f"  live instruments upserted:    {report.live_count}")
     typer.echo(f"  archive-only symbols found:   {report.vision_only_count}")
     typer.echo(f"  HISTORY-ONLY records written: {report.delisted}")

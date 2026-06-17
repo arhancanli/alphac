@@ -21,6 +21,18 @@ closes the hole by merging two sources:
    intra-month delisting instant is unknown, so the month edge is the conservative
    upper bound).
 
+**Sources whose live listing is already survivorship-free skip the archive merge.**
+The Binance Vision archive exists only because the crypto venue's live endpoint hides
+delisted markets. An equity source
+(:class:`~alphaforge.data.sources.polygon_source.PolygonEquitiesSource`) draws from
+Polygon's reference endpoints, which return *delisted* tickers alongside active ones —
+its ``list_instruments(as_of=...)`` is already the full point-in-time listing (dead names
+carry a real ``delisted_ts``). For such a source ``vision`` is left ``None``:
+:meth:`InstrumentSeeder.seed` upserts the live listing verbatim and the HISTORY-ONLY
+merge is a no-op (there is nothing the live endpoint hides). The seeding algorithm is
+otherwise identical, so a single generic seeder serves both sleeves; only the wired
+:class:`DataSource` (and the presence/absence of ``vision``) differs.
+
 HISTORY-ONLY placeholder trading parameters (the live exchange filters of a delisted
 market are unrecoverable, and :class:`~alphaforge.core.instruments.Instrument` rejects
 zero values by design):
@@ -101,18 +113,24 @@ class InstrumentSeeder:
     Args:
         live_source: A :class:`DataSource` whose ``list_instruments`` reflects the
             venue's current listing (e.g. ``CCXTDataSource`` on ``binanceusdm``).
-        vision: Archive catalog client; only :meth:`list_symbols` and
+        vision: Optional archive catalog client; only :meth:`list_symbols` and
             :meth:`month_range` are used here (bar/funding fetching is the backfill
-            job's concern).
+            job's concern). ``None`` when the live source is *already*
+            survivorship-free (it returns delisted instruments itself, e.g.
+            :class:`~alphaforge.data.sources.polygon_source.PolygonEquitiesSource`):
+            the HISTORY-ONLY merge is then skipped and the live listing is upserted
+            verbatim. Defaults to ``None``.
         store: The SCD2 instrument store both sources are upserted into.
     """
 
     def __init__(
         self,
         live_source: DataSource,
-        vision: BinanceVisionClient,
-        store: InstrumentStore,
+        vision: BinanceVisionClient | None = None,
+        store: InstrumentStore | None = None,
     ) -> None:
+        if store is None:
+            raise ValueError("InstrumentSeeder requires a store")
         self._live_source = live_source
         self._vision = vision
         self._store = store
@@ -124,13 +142,17 @@ class InstrumentSeeder:
 
         1. Upsert every instrument from the live listing (SCD2-versioned at
            ``as_of``) — authoritative metadata for currently listed markets.
-        2. List the archive's full historical symbol catalog; every symbol **not**
-           in the live listing is delisted or never-ccxt-visible. For each, derive
-           its lifetime from archive coverage and upsert a HISTORY-ONLY instrument
-           (module docstring: placeholder filters, real default fees, conservative
+        2. **Only when an archive (``vision``) is configured:** list the archive's
+           full historical symbol catalog; every symbol **not** in the live listing
+           is delisted or never-ccxt-visible. For each, derive its lifetime from
+           archive coverage and upsert a HISTORY-ONLY instrument (module docstring:
+           placeholder filters, real default fees, conservative
            ``listed_ts``/``delisted_ts``). Symbols with no archived 1h months or an
            unparseable quote are skipped with a structlog warning — they carry no
-           backtestable history.
+           backtestable history. When ``vision`` is ``None`` (the live source is
+           already survivorship-free, e.g. the Polygon equities reference adapter
+           which returns delisted tickers itself) this step is skipped and the
+           report's ``vision_only_count``/``delisted`` are 0.
 
         Idempotent: re-running with unchanged live + archive state writes zero new
         SCD2 rows. Returns a :class:`SeedReport`.
@@ -139,16 +161,34 @@ class InstrumentSeeder:
         for inst in live:
             self._store.upsert(inst, as_of)
 
+        if self._vision is None:
+            report = SeedReport(
+                live_count=len(live),
+                vision_only_count=0,
+                delisted=0,
+                examples=(),
+            )
+            _log.info(
+                "seed.completed",
+                as_of=as_of,
+                live_count=report.live_count,
+                vision_only_count=report.vision_only_count,
+                delisted=report.delisted,
+                examples=list(report.examples),
+            )
+            return report
+
+        vision = self._vision  # narrowed to non-None by the guard above
         live_symbols = {
             SymbolMapper.parse_instrument_id(inst.instrument_id)[2]
             for inst in live
             if inst.market_type is MarketType.PERP
         }
-        vision_only = sorted(set(self._vision.list_symbols()) - live_symbols)
+        vision_only = sorted(set(vision.list_symbols()) - live_symbols)
 
         recorded: list[str] = []
         for symbol in vision_only:
-            hist_inst = self._history_only_instrument(symbol)
+            hist_inst = self._history_only_instrument(vision, symbol)
             if hist_inst is None:
                 continue
             self._store.upsert(hist_inst, as_of)
@@ -170,7 +210,9 @@ class InstrumentSeeder:
         )
         return report
 
-    def _history_only_instrument(self, symbol: str) -> Instrument | None:
+    def _history_only_instrument(
+        self, vision: BinanceVisionClient, symbol: str
+    ) -> Instrument | None:
         """Build the HISTORY-ONLY :class:`Instrument` for an archive-only symbol.
 
         Returns ``None`` (after a structlog warning) when the symbol has no archived
@@ -183,7 +225,7 @@ class InstrumentSeeder:
         except SchemaError:
             _log.warning("seed.skip_symbol", symbol=symbol, reason="unparseable_quote")
             return None
-        coverage = self._vision.month_range(symbol)
+        coverage = vision.month_range(symbol)
         if coverage is None:
             _log.warning("seed.skip_symbol", symbol=symbol, reason="no_archived_months")
             return None
