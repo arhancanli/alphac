@@ -255,6 +255,7 @@ class PolygonEquitiesSource(DataSource):
         rate_budget: RateBudget | None = None,
         client: PolygonClientProtocol | None = None,
         adjustment: Adjustment = Adjustment.SPLIT_NONE,
+        enrich_details: bool = False,
     ) -> None:
         if client is None:
             if not api_key:
@@ -266,6 +267,14 @@ class PolygonEquitiesSource(DataSource):
         self._client = client
         self._budget = rate_budget
         self._adjustment = adjustment
+        #: When True, each listing is enriched via a per-ticker ``/v3/reference/tickers/{t}``
+        #: detail call (adds ``list_date``). DEFAULT FALSE: the listing row alone already
+        #: carries every survivorship-spine field (``type``, ``primary_exchange``,
+        #: ``delisted_utc``) — verified against the live API — and ``listed_ts`` falls back
+        #: to 0 when ``list_date`` is absent. Enabling enrichment issues one HTTP round-trip
+        #: PER TICKER (tens of thousands for the full active+delisted universe → hours),
+        #: so the bulk seed must run with it off; reserve it for small, targeted refreshes.
+        self._enrich_details = enrich_details
         self.name = "polygon.equities"
         self._retry = transient_retry((PolygonTransientError, httpx.TransportError))
         #: instrument_id -> raw vendor ticker (e.g. "BRK.B"), built in list_instruments
@@ -414,9 +423,13 @@ class PolygonEquitiesSource(DataSource):
 
         Both the active and inactive ``/v3/reference/tickers`` pages are walked
         (cursor-paginated) and filtered to the common-equity ``type`` set
-        (:data:`_COMMON_EQUITY_TYPES`); ETFs/warrants/units are excluded. Each ticker is
-        enriched via ``/v3/reference/tickers/{ticker}`` for ``list_date`` / ``delisted_utc``
-        / ``primary_exchange``, building the ``instrument_id ↔ vendor_ticker`` map. The
+        (:data:`_COMMON_EQUITY_TYPES`); ETFs/warrants/units are excluded. The listing row
+        alone supplies the survivorship-spine fields (``type`` / ``primary_exchange`` /
+        ``delisted_utc``) and builds the ``instrument_id ↔ vendor_ticker`` map; ``listed_ts``
+        falls back to 0 when ``list_date`` is absent. A per-ticker
+        ``/v3/reference/tickers/{ticker}`` enrichment call (adding ``list_date``) runs ONLY
+        when ``enrich_details=True`` — off by default because it is one round-trip per
+        ticker (tens of thousands across the full universe). The
         result is de-duplicated on ``instrument_id`` (a name can appear on both pages
         across a re-list) keeping the most-recently-observed record, and sorted by
         ``instrument_id`` (the :class:`DataSource` contract).
@@ -444,7 +457,9 @@ class PolygonEquitiesSource(DataSource):
                     continue
                 vendor_ticker = listing.get("ticker")
                 details: Mapping[str, Any] = (
-                    self._ticker_details(str(vendor_ticker), date_str) if vendor_ticker else {}
+                    self._ticker_details(str(vendor_ticker), date_str)
+                    if vendor_ticker and self._enrich_details
+                    else {}
                 )
                 inst = self._instrument_from_ticker(listing, details, as_of)
                 by_id[inst.instrument_id] = inst

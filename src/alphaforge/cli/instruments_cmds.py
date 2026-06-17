@@ -49,10 +49,29 @@ instruments_app = typer.Typer(
 _OPS_DB: Final[str] = "ops.sqlite"
 _VISION_DELAY_S: Final[float] = 0.1
 _POLYGON_API_KEY_ENV: Final[str] = "POLYGON_API_KEY"
+_POLYGON_REQ_PER_MIN_ENV: Final[str] = "POLYGON_REQ_PER_MIN"
 _POLYGON_FREE_TIER_REQ_PER_MIN: Final[int] = 5
-"""Polygon's free-tier REST cap (5 req/min). The seeder's reference walk is metered by a
-:class:`RateBudget` of this capacity so the listing pull never trips a 429; the source
-also retries transient 429s, so the budget is prevention and the retry is the backstop."""
+_POLYGON_PAID_TIER_REQ_PER_MIN: Final[int] = 1000
+"""Polygon REST request budget for the reference walk, in req/min.
+
+The free tier caps at 5 req/min; the paid Stocks plans lift that (effectively unlimited).
+The seeder reads :data:`_POLYGON_REQ_PER_MIN_ENV` (default
+:data:`_POLYGON_PAID_TIER_REQ_PER_MIN`) so a paid key seeds the full active+delisted
+universe in seconds rather than minutes; set ``POLYGON_REQ_PER_MIN=5`` to fall back to the
+free-tier pace. A :class:`RateBudget` of this capacity meters the walk so it never trips a
+429; the source also retries transient 429s, so the budget is prevention, the retry the
+backstop."""
+
+
+def _polygon_req_per_min() -> int:
+    """Resolve the Polygon REST budget (env override → paid-tier default), floored at 1."""
+    raw = os.environ.get(_POLYGON_REQ_PER_MIN_ENV)
+    if raw is None:
+        return _POLYGON_PAID_TIER_REQ_PER_MIN
+    try:
+        return max(1, int(raw))
+    except ValueError:
+        return _POLYGON_PAID_TIER_REQ_PER_MIN
 
 
 class Market(StrEnum):
@@ -141,7 +160,7 @@ def _equities_seeder(store: InstrumentStore) -> InstrumentSeeder:
         )
     source = PolygonEquitiesSource(
         api_key=api_key,
-        rate_budget=RateBudget(capacity_per_min=_POLYGON_FREE_TIER_REQ_PER_MIN),
+        rate_budget=RateBudget(capacity_per_min=_polygon_req_per_min()),
     )
     return InstrumentSeeder(source, store=store)
 

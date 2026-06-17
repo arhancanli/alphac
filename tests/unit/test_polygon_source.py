@@ -229,9 +229,16 @@ class SpyBudget:
 
 
 def make_source(
-    client: FakeClient, budget: SpyBudget | None = None
+    client: FakeClient,
+    budget: SpyBudget | None = None,
+    *,
+    enrich_details: bool = False,
 ) -> PolygonEquitiesSource:
-    return PolygonEquitiesSource(client=client, rate_budget=budget)  # type: ignore[arg-type]
+    return PolygonEquitiesSource(
+        client=client,  # type: ignore[arg-type]
+        rate_budget=budget,
+        enrich_details=enrich_details,
+    )
 
 
 def ts_open_ints(tbl: pa.Table) -> list[int]:
@@ -367,13 +374,39 @@ class TestListInstruments:
             SymbolMapper.equity_instrument_id("XNAS", t) for t in ("AAA", "BBB", "CCC")
         ]
 
-    def test_rate_budget_charged_per_request(self) -> None:
+    def test_rate_budget_charged_per_request_default_no_enrichment(self) -> None:
         budget = SpyBudget()
         active = [ticker_row("AAPL"), ticker_row("MSFT")]
         src = make_source(FakeClient(active_tickers=active, inactive_tickers=[]), budget)
         src.list_instruments(as_of=AS_OF)
-        # 1 active list page + 2 detail calls + 1 inactive list page = 4 requests.
+        # DEFAULT (enrich_details=False): 1 active list page + 1 inactive list page = 2
+        # requests. NO per-ticker detail calls — the listing row carries the spine fields,
+        # so the full active+delisted universe seeds in ~page-count calls, not ~N calls.
+        assert budget.acquired == [1, 1]
+
+    def test_rate_budget_charged_per_request_with_enrichment(self) -> None:
+        budget = SpyBudget()
+        active = [ticker_row("AAPL"), ticker_row("MSFT")]
+        src = make_source(
+            FakeClient(active_tickers=active, inactive_tickers=[]),
+            budget,
+            enrich_details=True,
+        )
+        src.list_instruments(as_of=AS_OF)
+        # enrich_details=True: 1 active page + 2 detail calls + 1 inactive page = 4 requests.
         assert budget.acquired == [1, 1, 1, 1]
+
+    def test_default_seed_issues_no_per_ticker_detail_calls(self) -> None:
+        client = FakeClient(active_tickers=[ticker_row("AAPL")], inactive_tickers=[])
+        make_source(client).list_instruments(as_of=AS_OF)
+        assert client.n_calls("get_ticker_details") == 0
+
+    def test_enrichment_issues_one_detail_call_per_ticker(self) -> None:
+        client = FakeClient(
+            active_tickers=[ticker_row("AAPL"), ticker_row("MSFT")], inactive_tickers=[]
+        )
+        make_source(client, enrich_details=True).list_instruments(as_of=AS_OF)
+        assert client.n_calls("get_ticker_details") == 2
 
 
 # ------------------------------------------------------------------ fetch_ohlcv
