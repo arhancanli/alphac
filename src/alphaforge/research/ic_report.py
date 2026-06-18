@@ -296,6 +296,7 @@ class ICReportRunner:
         # Sleeve resolves the anchor TF (H1 crypto / D1 equity), the trading calendar
         # (24/7 / XNYS) for the forward-return session hops, and the OHLCV dataset
         # (OHLCV / OHLCV_1D). Default CRYPTO_PERP keeps the crypto path byte-identical.
+        self._asset_class = asset_class
         sleeve = sleeve_for(asset_class)
         self._tf = sleeve.anchor_tf
         self._calendar = sleeve.calendar
@@ -338,15 +339,34 @@ class ICReportRunner:
         if len(set(hs)) != len(hs):
             raise ValueError(f"horizons must be unique; got {hs}")
 
-        specs = [s for s in self._registry.all_specs() if s.direction != 0]
+        directional = [s for s in self._registry.all_specs() if s.direction != 0]
+        # Scope factors to the SLEEVE: the eq_* library for EQUITY, everything else (the
+        # crypto library, incl. funding/carry factors that have no equity analogue) for
+        # crypto. Running a crypto carry factor on equity data errors (no funding metadata).
+        is_equity = self._asset_class is AssetClass.EQUITY
+        specs = [s for s in directional if s.name.startswith("eq_") == is_equity]
         if not specs:
             raise ValueError(
-                "no directional specs registered (direction != 0); "
+                f"no directional specs for the {self._asset_class.value} sleeve; "
                 "import alphaforge.features.library before building the registry"
             )
-        instrument_ids = self._paths.instrument_ids(self._dataset)
+        # Scope instruments to the candidate set. EQUITY: the liquid universe's members
+        # (ever) that have bars — NOT every one of the ~10k tickers in the lake (many are
+        # not even in the SCD2 store, e.g. non-common types). Crypto: the full lake (its
+        # ~tens of names ARE the candidate set), unchanged so the crypto IC is byte-identical.
+        if is_equity:
+            universe_members = set(
+                self._universe.read_intervals().column("instrument_id").to_pylist()
+            )
+            in_lake = set(self._paths.instrument_ids(self._dataset))
+            instrument_ids = sorted(universe_members & in_lake)
+        else:
+            instrument_ids = self._paths.instrument_ids(self._dataset)
         if not instrument_ids:
-            raise ValueError("no instruments with OHLCV data in the lake; backfill first")
+            raise ValueError(
+                "no instruments with OHLCV data for the candidate set; ingest bars "
+                "(and, for equities, build the universe via 'af universe rebuild') first"
+            )
 
         adjusted = self._adjusted_factors(specs, instrument_ids, start=start, end=end)
         mask = _membership_mask(self._universe, adjusted)
