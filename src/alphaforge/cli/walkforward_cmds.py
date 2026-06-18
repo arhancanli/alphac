@@ -268,10 +268,11 @@ def walkforward(
         reader = PITDataReader(paths)
         universe = UniverseStore(paths)
         service = SignalService(
-            FeatureEngine(reader, store, universe),
+            FeatureEngine(reader, store, universe, asset_class=settings.data.asset_class),
             universe,
             default_registry(),
             settings.signals,
+            sleeve=sleeve,
             alpha_names=alpha_names,
         )
         # The regime gate needs a daily-BTC source for the per-leg expanding HMM fit

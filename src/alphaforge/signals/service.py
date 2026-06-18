@@ -260,7 +260,9 @@ class SignalService:
         :func:`estimate_blend_weights` (only ``t' + h·Δ <= t`` enters ÎC_t)."""
         h = self._cfg.horizon_bars
         bars = frame[_OPEN_COLUMN].dropna().rename("open").reset_index()
-        fwd = forward_returns(bars, h, timeframe=self._anchor_tf).reindex(frame.index)
+        fwd = forward_returns(bars, h, timeframe=self._anchor_tf, calendar=self._calendar).reindex(
+            frame.index
+        )
         # ABSOLUTE-grid subsampling (delta_ms = the 1h bar width): the kept IC
         # timestamps are pinned to a venue-fixed bar grid, NOT to this window's
         # own first bar. That makes the rolling blend weights SLICE-INVARIANT, so

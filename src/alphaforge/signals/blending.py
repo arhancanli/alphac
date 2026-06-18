@@ -320,7 +320,13 @@ def estimate_blend_weights(
     grid = first.to_numpy(dtype=np.int64)
     if grid.size == 0:
         return BlendWeights.equal(names)
-    if grid.size > 1:
+    # The uniform-spacing requirement enforces the realized-label one-grid-step lag rule,
+    # which only governs the RELATIVE weighting of MULTIPLE alphas. A single alpha is
+    # definitionally weight 1 (max(IC,0)+κ normalized over one term == 1) regardless of the
+    # lag/spacing, so the assertion does not apply — and a session (XNYS) grid is uniform in
+    # SESSIONS but not wall-clock, so this would otherwise reject every equity single-alpha
+    # book. (Multi-alpha EQUITY blends need session-aware non_overlapping; deferred.)
+    if grid.size > 1 and len(names) > 1:
         spacing = np.diff(grid)
         expected = horizon_bars * timeframe.ms
         if not bool(np.all(spacing == expected)):

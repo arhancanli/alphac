@@ -158,14 +158,14 @@ class PurgedWalkForward:
         """Yield ``(train_ts, test_ts)`` epoch-ms arrays per split (module docstring).
 
         ``ts_grid`` is the full decision-bar grid (epoch-ms UTC, strictly
-        increasing, UNIFORM spacing — asserted, because purge/embargo are bar
-        counts and only equal time offsets on a uniform grid). Yields arrays
-        of grid *timestamps* (int64 copies, safe to mutate).
+        increasing). Spacing need NOT be uniform: purge/embargo are bar COUNTS
+        applied positionally (grid-index offsets), so the splitter is correct on
+        both the contiguous H1 crypto grid and the gappy XNYS session grid (a bar
+        is a session for D1). Yields arrays of grid *timestamps* (int64 copies).
 
         Raises:
-            ValueError: empty/non-1-D/non-increasing/non-uniform grid, or a
-                grid too short for even one split
-                (``len(ts_grid) <= train_bars``).
+            ValueError: empty/non-1-D/non-increasing grid, or a grid too short for
+                even one split (``len(ts_grid) <= train_bars``).
         """
         grid = np.asarray(ts_grid, dtype=np.int64)
         if grid.ndim != 1:
@@ -179,11 +179,12 @@ class PurgedWalkForward:
         spacing = np.diff(grid)
         if not bool(np.all(spacing > 0)):
             raise ValueError("ts_grid must be strictly increasing")
-        if not bool(np.all(spacing == spacing[0])):
-            raise ValueError(
-                "ts_grid must be uniformly spaced (purge/embargo are bar counts; "
-                f"got spacings {sorted(set(spacing.tolist()))})"
-            )
+        # No uniform-spacing requirement: the split below is PURELY POSITIONAL (purge/embargo
+        # are bar COUNTS applied as grid-index offsets), so it is correct on any strictly
+        # increasing decision grid — the contiguous H1 crypto grid AND the gappy XNYS session
+        # grid alike (a "bar" is a session for D1). On a uniform grid the result is identical
+        # to before (the assertion only ever passed there); on a session grid the bar counts
+        # are session counts, which is exactly the intended purge/embargo semantics.
 
         for k in range(self.n_splits(n)):
             a = self.train_bars + k * self.test_bars  # test start position

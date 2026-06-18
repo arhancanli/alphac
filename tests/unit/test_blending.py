@@ -85,12 +85,25 @@ class TestLagEnforcement:
             "rows after j must SEE the realized perturbation"
         )
 
-    def test_non_uniform_grid_is_refused(self) -> None:
-        """The shift-is-the-rule equivalence holds only on a uniform h-grid."""
+    def test_non_uniform_grid_is_refused_for_multiple_alphas(self) -> None:
+        """The shift-is-the-rule equivalence holds only on a uniform h-grid — enforced
+        when MULTIPLE alphas are weighted relative to one another."""
         idx = pd.Index(np.array([T0, T0 + H * HOUR, T0 + 3 * H * HOUR], dtype=np.int64))
-        ics = {"a": pd.Series([0.1, 0.1, 0.1], index=idx)}
+        ics = {
+            "a": pd.Series([0.1, 0.1, 0.1], index=idx),
+            "b": pd.Series([0.05, 0.05, 0.05], index=idx),
+        }
         with pytest.raises(ValueError, match="uniformly spaced"):
             estimate_blend_weights(ics, horizon_bars=H)
+
+    def test_single_alpha_accepts_non_uniform_grid(self) -> None:
+        """A single alpha is definitionally weight 1 (no relative weighting), so the
+        uniform-spacing rule does not apply — a session (gappy) grid is accepted. This is
+        what lets an equity single-factor (momentum) book run the walk-forward on the XNYS
+        session grid."""
+        idx = pd.Index(np.array([T0, T0 + H * HOUR, T0 + 3 * H * HOUR], dtype=np.int64))
+        w = estimate_blend_weights({"a": pd.Series([0.1, -0.2, 0.1], index=idx)}, horizon_bars=H)
+        assert np.allclose(w.weights["a"].to_numpy(dtype=float), 1.0)  # one alpha -> weight 1
 
 
 class TestKappaFloor:

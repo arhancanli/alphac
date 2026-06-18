@@ -1049,6 +1049,8 @@ class WalkForwardRunner:
                 self._reader,
                 self._instruments,
                 self._cost_model,
+                tf=self._sleeve.anchor_tf,
+                asset_class=self._sleeve.asset_class,
                 cost_inputs=self._cost_inputs,
                 no_trade_band_frac=band,
                 config_echo={

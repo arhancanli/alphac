@@ -76,10 +76,24 @@ def test_split_rejects_bad_grids() -> None:
     decreasing = grid(100)[::-1].copy()
     with pytest.raises(ValueError, match="strictly increasing"):
         list(sp.split(decreasing))
-    irregular = grid(100)
-    irregular[50] += 1
-    with pytest.raises(ValueError, match="uniformly spaced"):
-        list(sp.split(irregular))
+
+
+def test_split_accepts_non_uniform_grid() -> None:
+    """Purge/embargo are POSITIONAL bar counts, so the splitter works on a non-uniform
+    (gappy) grid — the XNYS session grid (weekends/holidays) is exactly this. The split
+    POSITIONS are identical to a uniform grid of the same length; only the timestamps the
+    positions map to differ."""
+    sp = PurgedWalkForward(48, 24, purge_bars=4)
+    uniform = grid(120)
+    irregular = grid(120)
+    irregular[50:] += 5 * HOUR  # a gap (a "weekend"): strictly increasing, non-uniform
+    splits_u = list(sp.split(uniform))
+    splits_i = list(sp.split(irregular))
+    assert len(splits_i) == len(splits_u) and len(splits_i) > 0
+    # Same POSITIONS chosen (the logic is positional); the irregular grid just carries the
+    # gapped timestamps at those positions.
+    for (tr_u, te_u), (tr_i, te_i) in zip(splits_u, splits_i, strict=True):
+        assert len(tr_i) == len(tr_u) and len(te_i) == len(te_u)
 
 
 # ---------------------------------------------------------- exhaustive sweep
