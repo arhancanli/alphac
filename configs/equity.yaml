@@ -28,6 +28,11 @@ universe:
   entry_rank: 160     # hysteresis: enter at top-160
   exit_rank: 260      # leave only when falling below 260
 
-# NOTE: an equity costs block (commission + realistic spread + sqrt-impact + short borrow)
-# is added here once S2 defines those CostsCfg fields; until then the equity walk-forward
-# (S12) must not be trusted for a NET Sharpe — only the raw Rank-IC (S11) is meaningful.
+costs:
+  # US-equity frictions (only consulted because asset_class=equity). Deliberately
+  # conservative so the net-of-cost walk-forward (S12) is honest rather than flattering:
+  equity_commission_bps: 1.0        # ~1 bp/side all-in (exchange/SEC/TAF + per-share)
+  equity_half_spread_bps: 3.0       # liquid top-200 half-spread (mega-caps ~1bp; conservative)
+  equity_borrow_bps_annual: 50.0    # 0.5%/yr general-collateral short borrow, charged per day
+  impact_coef: 1.0                  # sqrt-impact Y on D1 ADV (shared with crypto)
+  latency_addon_bps: 2.0            # decision->fill arrival drift placeholder

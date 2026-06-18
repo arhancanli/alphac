@@ -39,8 +39,15 @@ from types import MappingProxyType
 from typing import TYPE_CHECKING
 
 from alphaforge.core.errors import CostModelMisuse
-from alphaforge.core.types import Liquidity, MarketType, Side
-from alphaforge.costs.fees import BINANCE_VIP0_PERP, BINANCE_VIP0_SPOT, FeeSchedule
+from alphaforge.core.types import AssetClass, Liquidity, MarketType, Side
+from alphaforge.costs.fees import (
+    BINANCE_VIP0_PERP,
+    BINANCE_VIP0_SPOT,
+    US_EQUITY_DEFAULT,
+    FeeSchedule,
+)
+
+_DAYS_PER_YEAR: float = 365.0
 
 if TYPE_CHECKING:
     from alphaforge.config.settings import Settings
@@ -83,22 +90,29 @@ class TransactionCostModel:
         self,
         spot_fees: FeeSchedule = BINANCE_VIP0_SPOT,
         perp_fees: FeeSchedule = BINANCE_VIP0_PERP,
+        equity_fees: FeeSchedule = US_EQUITY_DEFAULT,
         impact_coef: float = 1.0,
         default_half_spread_bps: float = 2.5,
         latency_bps: float = 2.0,
+        borrow_bps_annual: float = 0.0,
         half_spread_overrides: Mapping[str, float] | None = None,
     ) -> None:
         _require_param("impact_coef", impact_coef)
         _require_param("default_half_spread_bps", default_half_spread_bps)
         _require_param("latency_bps", latency_bps)
+        _require_param("borrow_bps_annual", borrow_bps_annual)
         overrides: dict[str, float] = dict(half_spread_overrides or {})
         for instrument_id, bps in overrides.items():
             _require_param(f"half_spread_overrides[{instrument_id!r}]", bps)
         self._spot_fees = spot_fees
         self._perp_fees = perp_fees
+        self._equity_fees = equity_fees
         self._impact_coef = impact_coef
         self._default_half_spread_frac = default_half_spread_bps * 1e-4
         self._latency_frac = latency_bps * 1e-4
+        # Short-borrow as a per-DAY fraction of notional (annual GC rate / 365); the ledger
+        # multiplies it by holding days x short notional, mirroring the perp funding leg.
+        self._borrow_frac_per_day = (borrow_bps_annual * 1e-4) / _DAYS_PER_YEAR
         self._half_spread_frac_overrides: Mapping[str, float] = MappingProxyType(
             {iid: bps * 1e-4 for iid, bps in overrides.items()}
         )
@@ -113,14 +127,27 @@ class TransactionCostModel:
         in the current system; the constant exists so the routing is total).
         Half-spread overrides start empty — they are populated from observed
         spreads, not config guesses.
+
+        SLEEVE-AWARE: for the EQUITY sleeve (``data.asset_class == EQUITY``) the
+        commission schedule, the half-spread default and the short-borrow rate are
+        taken from the equity ``CostsCfg`` fields, so an equity backtest is NOT priced
+        on the Binance crypto schedule. Crypto profiles resolve byte-identically (no
+        equity field touched, borrow 0).
         """
         cfg = settings.costs
+        is_equity = settings.data.asset_class is AssetClass.EQUITY
         return cls(
             spot_fees=BINANCE_VIP0_SPOT,
             perp_fees=FeeSchedule(maker_bps=cfg.perp_maker_bps, taker_bps=cfg.perp_taker_bps),
+            equity_fees=FeeSchedule(
+                maker_bps=cfg.equity_commission_bps, taker_bps=cfg.equity_commission_bps
+            ),
             impact_coef=cfg.impact_coef,
-            default_half_spread_bps=cfg.default_half_spread_bps,
+            default_half_spread_bps=(
+                cfg.equity_half_spread_bps if is_equity else cfg.default_half_spread_bps
+            ),
             latency_bps=cfg.latency_addon_bps,
+            borrow_bps_annual=cfg.equity_borrow_bps_annual if is_equity else 0.0,
             half_spread_overrides=None,
         )
 
@@ -129,11 +156,26 @@ class TransactionCostModel:
     def fee_frac(self, inst: Instrument, liquidity: Liquidity) -> float:
         """Commission as a fraction of quote notional.
 
-        Schedule routed by ``inst.market_type``: PERP → perp schedule,
-        anything else → spot schedule. ``fee_frac = fee_bps * 1e-4``.
+        Schedule routed by ``inst.market_type``: PERP → perp schedule, CASH → equity
+        schedule, anything else → spot schedule. ``fee_frac = fee_bps * 1e-4``.
         """
-        schedule = self._perp_fees if inst.market_type is MarketType.PERP else self._spot_fees
+        if inst.market_type is MarketType.PERP:
+            schedule = self._perp_fees
+        elif inst.market_type is MarketType.CASH:
+            schedule = self._equity_fees
+        else:
+            schedule = self._spot_fees
         return schedule.fee_frac(liquidity)
+
+    def borrow_frac_per_day(self) -> float:
+        """Short-borrow cost as a per-DAY fraction of the short notional.
+
+        The general-collateral annual borrow rate / 365 (0 for crypto perps, which have
+        no borrow leg). The ledger accrues ``borrow_frac_per_day * holding_days *
+        short_notional`` on the SHORT side of an equity book, mirroring the per-interval
+        funding leg of a perp. A continuous carry, NOT a per-trade friction — separate from
+        :meth:`oneway_cost_frac`."""
+        return self._borrow_frac_per_day
 
     def half_spread_frac(self, inst: Instrument) -> float:
         """Half the bid-ask spread as a fraction of price.

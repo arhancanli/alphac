@@ -29,6 +29,7 @@ from alphaforge.core.types import Liquidity
 __all__ = [
     "BINANCE_VIP0_PERP",
     "BINANCE_VIP0_SPOT",
+    "US_EQUITY_DEFAULT",
     "FeeSchedule",
 ]
 
@@ -77,3 +78,13 @@ BINANCE_VIP0_SPOT = FeeSchedule(maker_bps=10.0, taker_bps=10.0)
 
 BINANCE_VIP0_PERP = FeeSchedule(maker_bps=2.0, taker_bps=5.0)
 """Binance USDⓈ-M perp VIP0: 0.02% maker / 0.05% taker (execDesign §3.1)."""
+
+US_EQUITY_DEFAULT = FeeSchedule(maker_bps=1.0, taker_bps=1.0)
+"""US cash-equity commission default: a conservative 1 bp per side (EQUITIES_SLEEVE §6).
+
+US equity commissions are near-zero at retail but an institutional book pays exchange/SEC/
+TAF fees plus a small per-share commission; 1 bp all-in (maker == taker — there is no perp
+maker-rebate analogue here) is a deliberately conservative round number. The real equity
+frictions are the bid-ask spread and impact, not commission. Overridable via
+``CostsCfg.equity_commission_bps``; the borrow leg for shorts is separate (see
+``TransactionCostModel.borrow_frac_per_day``)."""

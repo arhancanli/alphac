@@ -202,6 +202,13 @@ class CostsCfg(BaseModel):
     default_half_spread_bps: float = Field(default=2.5, ge=0.0)
     impact_coef: float = Field(default=1.0, ge=0.0)
     latency_addon_bps: float = Field(default=2.0, ge=0.0)
+    # US-equity sleeve (consumed only when data.asset_class == EQUITY; configs/equity.yaml).
+    # Commission per side (1 bp conservative), the liquid-universe half-spread default
+    # (top-200 names; mega-caps ~1bp, mid-caps more, so 3 bps is conservative), and the annual
+    # short-borrow (general-collateral) rate charged per holding day on short equity notional.
+    equity_commission_bps: float = Field(default=1.0, ge=0.0)
+    equity_half_spread_bps: float = Field(default=3.0, ge=0.0)
+    equity_borrow_bps_annual: float = Field(default=50.0, ge=0.0)
 
 
 class PortfolioCfg(BaseModel):
