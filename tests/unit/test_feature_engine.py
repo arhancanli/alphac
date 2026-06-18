@@ -321,56 +321,11 @@ class TestComputeAsof:
 # ------------------------------------------------------- fail-closed EQUITY/D1 guard
 
 
-class TestEquityD1Guard:
-    """The fail-closed guard (engine.py:_guard_equity_unverified, SPINE_ARC §4).
-
-    Until the equity as-of window + forward_returns/blend session hops are verified,
-    ``FeatureEngine`` MUST reject EQUITY/D1 specs loudly rather than silently compute
-    on the partially-migrated path. This is the single most important safety line in
-    the spine arc; without these tests a future edit could delete the guard (or flip
-    the ``is``/``or`` logic) and the suite would stay green while equity compute ran
-    on a broken path. Both trigger branches (``asset_class is EQUITY`` and
-    ``anchor_tf is D1``) are exercised on BOTH compute paths, and the crypto default
-    is asserted to NOT trip the guard (byte-identity invariant).
-    """
-
-    def _engine(self, env: Env, *, anchor_tf: Timeframe, asset_class: AssetClass) -> FeatureEngine:
-        return FeatureEngine(
-            env.reader,
-            env.instruments,
-            env.universe,
-            anchor_tf=anchor_tf,
-            asset_class=asset_class,
-        )
-
-    def test_equity_asset_class_rejected_on_compute_history(self, env: Env) -> None:
-        engine = self._engine(env, anchor_tf=H1, asset_class=AssetClass.EQUITY)
-        with pytest.raises(NotImplementedError, match="EQUITY/D1"):
-            engine.compute_history(_specs(), [BTC], start=T0, end=T0 + N_BARS * HOUR)
-
-    def test_equity_asset_class_rejected_on_compute_asof(self, env: Env) -> None:
-        engine = self._engine(env, anchor_tf=H1, asset_class=AssetClass.EQUITY)
-        with pytest.raises(NotImplementedError, match="EQUITY/D1"):
-            engine.compute_asof(_specs(), [BTC], as_of=T0 + 10 * HOUR)
-
-    def test_d1_anchor_rejected_on_compute_history(self, env: Env) -> None:
-        # The other trigger branch: a D1 anchor even with a crypto asset class.
-        engine = self._engine(env, anchor_tf=Timeframe.D1, asset_class=AssetClass.CRYPTO_PERP)
-        with pytest.raises(NotImplementedError, match="EQUITY/D1"):
-            engine.compute_history(_specs(), [BTC], start=T0, end=T0 + N_BARS * HOUR)
-
-    def test_d1_anchor_rejected_on_compute_asof(self, env: Env) -> None:
-        engine = self._engine(env, anchor_tf=Timeframe.D1, asset_class=AssetClass.CRYPTO_PERP)
-        with pytest.raises(NotImplementedError, match="EQUITY/D1"):
-            engine.compute_asof(_specs(), [BTC], as_of=T0 + 10 * HOUR)
-
-    def test_crypto_default_does_not_trip_guard(self, env: Env) -> None:
-        # The byte-identity invariant: CRYPTO_PERP / H1 (the default engine) computes
-        # normally — the guard must NOT fire on the unchanged crypto path.
-        out = env.engine.compute_history(_specs(), [BTC], start=T0, end=T0 + N_BARS * HOUR)
-        assert len(out) == N_BARS
-        asof = env.engine.compute_asof(_specs(), [BTC], as_of=T0 + 10 * HOUR)
-        assert list(asof.index) == [(T0 + 9 * HOUR, BTC)]
+# The fail-closed _guard_equity_unverified was LIFTED once equity D1 batch-vs-as-of parity
+# was proven exact (atol=0) on the real calendar-aware path. The permanent regression guard
+# is now the parity test in tests/integration/test_equity_d1_parity.py (compute_history ==
+# compute_asof over an XNYS session grid spanning weekends + a split). The crypto default
+# path is exercised byte-identically by the many CRYPTO_PERP/H1 tests above.
 
 
 # -------------------------------------------------------------- engine fn validation

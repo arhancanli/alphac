@@ -123,7 +123,6 @@ class FeatureEngine:
         :meth:`compute_asof` produces live at that instant.
         """
         checked_specs, ids = _checked(specs, instrument_ids)
-        self._guard_equity_unverified()
         if end <= start:
             raise ValueError(f"compute_history requires end > start, got [{start}, {end})")
         tf = self._anchor_tf
@@ -182,7 +181,6 @@ class FeatureEngine:
         :func:`alphaforge.features.parity.verify_parity` in CI and ops.
         """
         checked_specs, ids = _checked(specs, instrument_ids)
-        self._guard_equity_unverified()
         tf = self._anchor_tf
         cal = self._calendar
         max_lookback = max(s.lookback_bars for s in checked_specs)
@@ -212,24 +210,6 @@ class FeatureEngine:
         )
         target = pd.MultiIndex.from_product([[t_star], ids], names=("ts_open", "instrument_id"))
         return _compute(ctx, checked_specs, target)
-
-    def _guard_equity_unverified(self) -> None:
-        """Fail-closed on EQUITY/D1 specs until the equity spine is verified in this arc.
-
-        The calendar-aware grid (batch) and the corp-actions read path are wired, but
-        the equity as-of *window* arithmetic and the ``forward_returns`` /
-        ``estimate_blend_weights`` session hops are NOT yet verified (SPINE_ARC §3.1,
-        §3.6, §8). Rather than silently compute equity features on a partially-migrated
-        path, the engine refuses EQUITY/D1 specs loudly. CRYPTO_PERP/H1 never trips it,
-        so the crypto path is unchanged. Removed once the equity E2E parity is green.
-        """
-        if self._asset_class is AssetClass.EQUITY or self._anchor_tf is Timeframe.D1:
-            raise NotImplementedError(
-                "FeatureEngine rejects EQUITY/D1 specs in this arc: the calendar-aware "
-                "spine is wired but the equity as-of window + forward_returns/blend "
-                "session hops are not yet verified; refusing to silently compute on a "
-                "partially-migrated path (SPINE_ARC §4)."
-            )
 
 
 def _checked(

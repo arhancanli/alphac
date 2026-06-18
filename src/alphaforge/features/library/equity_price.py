@@ -145,8 +145,22 @@ _CA_COLUMNS: Final[tuple[str, ...]] = (
 # --------------------------------------------------------------- adjusted-close (PIT)
 
 
-def adjusted_close(raw_close: pd.DataFrame, actions: pd.DataFrame, *, tf_ms: int) -> pd.DataFrame:
+def adjusted_close(
+    raw_close: pd.DataFrame,
+    actions: pd.DataFrame,
+    *,
+    tf_ms: int,
+    include_dividends: bool = True,
+) -> pd.DataFrame:
     """PIT split/total-return-adjusted close on the complete (session) grid.
+
+    ``include_dividends=False`` applies SPLITS ONLY (the v1 factor path: see
+    :func:`_adjusted_close_panel`). The dividend total-return factor anchors on the close
+    AT the ex-date, which is a FUTURE price for a not-yet-ex dividend — so the batch panel
+    (which has that future bar) and the live minimal as-of window (which does not) disagree,
+    and the batch fold is itself a lookahead. Splits are a pure ratio with no anchor price,
+    so they are window-invariant and batch/as-of parity-exact. Dividends remain implemented
+    (and tested) here for a future PIT-correct total-return factor/label.
 
     Each grid row ``s`` is itself a decision (the value labeled ``ts_open=s`` is
     decision-usable at its close ``s + Δ``), so the adjustment is computed PER ROW
@@ -233,6 +247,8 @@ def adjusted_close(raw_close: pd.DataFrame, actions: pd.DataFrame, *, tf_ms: int
         if action_type == "split":
             factor[applies, j] *= float(a_ratio[k])
         elif action_type == "dividend":
+            if not include_dividends:
+                continue  # v1 factor path: SPLIT-ONLY (window-invariant, no ex-close anchor)
             cash = float(a_cash[k])
             if math.isnan(cash):
                 continue
@@ -292,7 +308,14 @@ def _adjusted_close_panel(ctx: FeatureContext) -> pd.DataFrame:
     # available_at = ts_open + 86_400_000) — independent of session gaps. Using the
     # explicit bar duration (not the inferred grid[1]-grid[0]) avoids a 2-session
     # lookahead when the first grid gap is a Fri→Mon hop (SPINE_ARC §2.4 / P18).
-    return adjusted_close(raw, actions, tf_ms=Timeframe.D1.ms)
+    #
+    # SPLIT-ONLY (v1, owner-confirmed): the dividend total-return factor anchors on the
+    # ex-date close — a FUTURE price for a not-yet-ex dividend — so the batch panel folds
+    # it (lookahead) while the live minimal window cannot, breaking batch/as-of parity.
+    # Splits are window-invariant (pure ratio), so a split-only panel is parity-exact and
+    # lookahead-free — the standard basis for price momentum/reversal/vol. Dividend
+    # total-return is deferred to a separate PIT-correct factor/label.
+    return adjusted_close(raw, actions, tf_ms=Timeframe.D1.ms, include_dividends=False)
 
 
 # --------------------------------------------------------------------- factor kernels
