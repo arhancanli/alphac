@@ -50,6 +50,11 @@ class Sleeve:
 
     asset_class: AssetClass
     anchor_tf: Timeframe
+    #: Walk-forward / CPCV embargo in ANCHOR-TF BARS (= sessions for D1, hours for H1). Must
+    #: be >= the sleeve's deepest active factor lookback so a train sample adjacent to a test
+    #: fold cannot share feature-window data with it. Crypto: 168 (the 7-day-in-hours default).
+    #: Equity: 274 (> eq_beta_252 / eq_rev_resid_21's ~254-274-session lookbacks).
+    embargo_bars: int = 168
 
     @property
     def calendar(self) -> TradingCalendar:
@@ -68,7 +73,9 @@ class Sleeve:
 
 CRYPTO_PERP_SLEEVE: Final = Sleeve(asset_class=AssetClass.CRYPTO_PERP, anchor_tf=Timeframe.H1)
 CRYPTO_SPOT_SLEEVE: Final = Sleeve(asset_class=AssetClass.CRYPTO_SPOT, anchor_tf=Timeframe.H1)
-EQUITY_SLEEVE: Final = Sleeve(asset_class=AssetClass.EQUITY, anchor_tf=Timeframe.D1)
+EQUITY_SLEEVE: Final = Sleeve(
+    asset_class=AssetClass.EQUITY, anchor_tf=Timeframe.D1, embargo_bars=274
+)
 
 _REGISTRY: Final[dict[AssetClass, Sleeve]] = {
     s.asset_class: s for s in (CRYPTO_PERP_SLEEVE, CRYPTO_SPOT_SLEEVE, EQUITY_SLEEVE)

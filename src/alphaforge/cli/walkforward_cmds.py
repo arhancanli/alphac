@@ -39,7 +39,6 @@ walkforward_app = typer.Typer(
 )
 
 _OPS_DB: Final[str] = "ops.sqlite"
-_BARS_PER_DAY: Final[int] = 24
 
 
 def _parse_cli_utc(value: str, *, param: str) -> Ms:
@@ -215,9 +214,16 @@ def walkforward(
 ) -> None:
     """Run the purged walk-forward and persist stitched equity + per-leg artifacts."""
     # Argument parsing FIRST — bad input must exit before any filesystem touch.
+    from alphaforge.config.sleeve import sleeve_for
+
     start_ms = _parse_cli_utc(start, param="--start")
+    settings = _load_settings(profile)
+    sleeve = sleeve_for(settings.data.asset_class)
+    # Days are ANCHOR-TF bars: 24 for H1 (crypto), 1 for D1 (equity, one bar per session).
+    bars_per_day = 86_400_000 // sleeve.anchor_tf.ms
+    # Default end floors to the sleeve anchor (D1 midnight for equity, the hour for crypto).
     end_ms = (
-        floor_bar(now_ms(), Timeframe.H1) if end is None else _parse_cli_utc(end, param="--end")
+        floor_bar(now_ms(), sleeve.anchor_tf) if end is None else _parse_cli_utc(end, param="--end")
     )
     if allocator not in ("rank", "mvo"):
         raise typer.BadParameter(f"--allocator: must be 'rank' or 'mvo', got {allocator!r}")
@@ -244,7 +250,6 @@ def walkforward(
     from alphaforge.features.registry import default_registry
     from alphaforge.signals.service import SignalService
 
-    settings = _load_settings(profile)
     setup_logging(settings.paths.var_dir / "log")
     if out is not None:
         out_dir = Path(out)
@@ -286,9 +291,10 @@ def walkforward(
             result = runner.run(
                 start_ms,
                 end_ms,
-                train_bars=train_days * _BARS_PER_DAY,
-                test_bars=test_days * _BARS_PER_DAY,
+                train_bars=train_days * bars_per_day,
+                test_bars=test_days * bars_per_day,
                 allocator="mvo" if alloc == "mvo" else "rank",
+                embargo_bars=sleeve.embargo_bars,
                 rebalance_bars=rebalance_bars,
                 no_trade_band=no_trade_band,
                 initial_cash=cash,
