@@ -99,6 +99,7 @@ if TYPE_CHECKING:
 
     from alphaforge.backtest import StrategyContext
     from alphaforge.config.settings import Settings
+    from alphaforge.core.calendar import TradingCalendar
 
 __all__ = ["MU_ANN_COLUMN", "BlendStrategy"]
 
@@ -365,7 +366,7 @@ class BlendStrategy:
             self._n_hold_between_rebalance += 1
             return {}
 
-        mu_map = self._mu_asof(ctx.ts, ctx.tf)
+        mu_map = self._mu_asof(ctx.ts, ctx.tf, ctx.calendar)
         if mu_map is None:
             self._n_hold_stale_signal += 1
             return {}  # stale/missing signal: hold, retry next bar (docstring)
@@ -373,18 +374,31 @@ class BlendStrategy:
         targets = self._rebalance(ctx, mu_map)
         if targets is None:
             return {}  # cold start / degenerate xsection: counted inside _rebalance
-        self._next_rebalance_ts = ctx.ts + self._rebalance_bars * ctx.tf.ms
+        # Advance the schedule by rebalance_bars BARS through the calendar (NOT calendar
+        # time): on the 24/7 grid next_bar_open(o) == o + tf.ms, so looping is byte-
+        # identical to ``ctx.ts + rebalance_bars * tf.ms``; on the XNYS session grid it
+        # hops weekends/holidays, so a 21-bar cadence is 21 SESSIONS (a true trading
+        # month), not 21 calendar days pinned to a weekday (EQUITIES: F-cadence).
+        nxt = ctx.ts
+        for _ in range(self._rebalance_bars):
+            nxt = ctx.calendar.next_bar_open(nxt, ctx.tf)
+        self._next_rebalance_ts = nxt
         if state is DDState.HALF_GROSS:
             self._n_bars_half_gross += 1
         return targets
 
     # ------------------------------------------------------------- mu lookup
 
-    def _mu_asof(self, ts: Ms, tf: Timeframe) -> dict[str, float] | None:
+    def _mu_asof(self, ts: Ms, tf: Timeframe, calendar: TradingCalendar) -> dict[str, float] | None:
         """Finite mu_ann per instrument for the decision at close ``ts``.
 
-        Precomputed mode: the row at ``ts_open = ts - Δ``, else the newest row
-        within ``staleness_max_bars`` bars (grace), else None (stale -> hold).
+        Precomputed mode: the row at the decision bar's open — the bar that CLOSED at
+        ``ts``, whose open is ``calendar.floor_bar(ts - 1, tf)`` — else the newest row
+        within ``staleness_max_bars`` bars (grace), else None (stale -> hold). The open
+        is resolved through the CALENDAR, not naive ``ts - tf.ms``: byte-identical on
+        the 24/7 grid, but on the XNYS session grid a Monday/post-holiday decision's
+        prior session is the preceding Friday, so the staleness gap is measured from the
+        true prior session (a weekend is 0 bars stale, not 2 calendar days).
         Live mode: the provider's mapping, None when empty/all-NaN.
         """
         if self._mu_provider is not None:
@@ -393,7 +407,7 @@ class BlendStrategy:
             return out or None
 
         assert self._mu is not None  # constructor invariant; mypy aid
-        want = ts - tf.ms
+        want = calendar.floor_bar(ts - 1, tf)
         pos = int(np.searchsorted(self._signal_ts, want, side="right")) - 1
         if pos < 0:
             return None
