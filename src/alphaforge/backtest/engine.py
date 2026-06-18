@@ -100,7 +100,7 @@ from alphaforge.backtest.result import (
 from alphaforge.core.calendar import TradingCalendar, calendar_for
 from alphaforge.core.errors import LookaheadError
 from alphaforge.core.instruments import Instrument, InstrumentStore
-from alphaforge.core.time import Ms, Timeframe, expected_bar_opens
+from alphaforge.core.time import Ms, Timeframe
 from alphaforge.core.types import (
     AssetClass,
     Fill,
@@ -401,15 +401,17 @@ class LakeCostInputs:
     the per-decision truncation is positional (only rows with
     ``ts_open <= decision_ts - Δ`` ever feed a lookup at ``decision_ts``).
 
-    1h-only: the formulas' constants (sqrt(24), halflife 240 bars, day
-    bucketing) are defined on the 1h grid; for any other engine timeframe a
-    custom :class:`CostInputProvider` must be injected.
+    Sleeve-aware: the per-bar→daily sigma scale (``sqrt(bars_per_day)`` =
+    ``_DAY_MS // anchor_tf.ms``: 24 for H1, 1 for D1), the grid, and the warmup are
+    resolved from the sleeve ``anchor_tf`` + ``calendar``. On H1/CRYPTO_PERP every value
+    is byte-identical to the prior hard-coded 1h math (calendar passthrough, sqrt(24),
+    33-day warmup); D1/EQUITY walks XNYS sessions and warms up the 240-SESSION sigma.
     """
 
     ADV_DAYS: Final[int] = 30
     SIGMA_HALFLIFE_BARS: Final[float] = 240.0
-    BARS_PER_DAY: Final[int] = 24
-    #: 30 complete UTC days + the partial decision day + sigma warmup headroom.
+    #: H1 warmup: 30 complete UTC days (ADV) + partial decision day + sigma headroom. The D1
+    #: warmup is far longer (the 240-session sigma); it is derived in __init__ per calendar.
     WARMUP_MS: Final[int] = 33 * _DAY_MS
 
     __slots__ = ("_adv", "_sigma", "_tf")
@@ -421,11 +423,26 @@ class LakeCostInputs:
         *,
         start: Ms,
         end: Ms,
+        anchor_tf: Timeframe = Timeframe.H1,
+        calendar: TradingCalendar | None = None,
     ) -> None:
-        self._tf = Timeframe.H1
-        read_start = start - self.WARMUP_MS
+        self._tf = anchor_tf
+        cal = calendar if calendar is not None else calendar_for(AssetClass.CRYPTO_PERP)
+        # bars per calendar day for the sigma per-bar -> daily scaling: 24 (H1), 1 (D1).
+        bars_per_day = _DAY_MS // anchor_tf.ms
+        # Warmup must cover the EWMA-sigma halflife (240 BARS) + the 30-bar/day ADV window in
+        # CALENDAR time. For H1 the 30-day ADV (33 days) dominates the 10-day sigma -> 33 days
+        # (UNCHANGED, crypto byte-identical). For D1 the 240-SESSION sigma dominates (~1 year),
+        # so size the warmup to ~(240 + 30 + buffer) sessions of calendar time via the calendar.
+        if anchor_tf is Timeframe.H1:
+            warmup_ms = self.WARMUP_MS
+        else:
+            warmup_bars = self.SIGMA_HALFLIFE_BARS + self.ADV_DAYS + 30.0
+            cal_days_per_bar = 365.0 / cal.periods_per_year(anchor_tf)
+            warmup_ms = math.ceil(warmup_bars * cal_days_per_bar) * _DAY_MS
+        read_start = start - warmup_ms
         tbl = reader.ohlcv(instrument_ids, start=read_start, end=end, as_of=end, tf=self._tf)
-        grid = expected_bar_opens(read_start, end, self._tf)
+        grid = cal.expected_bar_opens(read_start, end, self._tf)
         index = pd.Index(grid, dtype="int64", name="ts_open")
         ids = sorted(dict.fromkeys(instrument_ids))
         if tbl.num_rows == 0:
@@ -452,9 +469,10 @@ class LakeCostInputs:
             .astype("float64")
         )
 
-        # sigma_daily = EWMA_halflife240(1h log returns) * sqrt(24)  (market.py formula)
+        # sigma_daily = EWMA_halflife240(per-bar log returns) * sqrt(bars_per_day): sqrt(24)
+        # for H1 (per-market.py), sqrt(1)=1 for D1 (a session's return IS already daily).
         self._sigma = ewma_vol_halflife(log_returns(closes), self.SIGMA_HALFLIFE_BARS) * math.sqrt(
-            float(self.BARS_PER_DAY)
+            float(bars_per_day)
         )
 
         # adv_quote = rolling 30-day MEDIAN of complete-UTC-day quote volume,
@@ -583,10 +601,10 @@ class EventDrivenBacktester:
                 "max_order_adv_frac must be finite and in (0, "
                 f"{MAX_ADV_PARTICIPATION}], got {max_order_adv_frac!r}"
             )
-        if cost_inputs is None and tf is not Timeframe.H1:
+        if cost_inputs is None and tf not in (Timeframe.H1, Timeframe.D1):
             raise ValueError(
-                "the default LakeCostInputs provider is 1h-only; inject cost_inputs "
-                f"for tf={tf.value}"
+                "the default LakeCostInputs provider supports H1 (crypto) and D1 (equity) "
+                f"sleeves; inject cost_inputs for tf={tf.value}"
             )
         self._reader = reader
         self._instruments = instruments
@@ -678,7 +696,14 @@ class EventDrivenBacktester:
         funding_events = self._load_funding(insts, start=start, end=end)
         funding_ptr: dict[str, int] = dict.fromkeys(funding_events, 0)
         provider: CostInputProvider = (
-            LakeCostInputs(self._reader, ids, start=start, end=end)
+            LakeCostInputs(
+                self._reader,
+                ids,
+                start=start,
+                end=end,
+                anchor_tf=self._tf,
+                calendar=self._calendar,
+            )
             if self._cost_inputs is None
             else self._cost_inputs
         )

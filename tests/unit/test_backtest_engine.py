@@ -661,11 +661,21 @@ def test_run_validation_errors(tmp_path: Path) -> None:
         engine.run(strat, [BTC], start=T0 - 4 * HOUR, end=T0)
 
 
-def test_default_cost_inputs_rejects_non_h1(tmp_path: Path) -> None:
+def test_default_cost_inputs_rejects_unsupported_tf(tmp_path: Path) -> None:
     paths = LakePaths(tmp_path / "lake")
     store = InstrumentStore(tmp_path / "ops.sqlite")
-    with pytest.raises(ValueError, match="1h-only"):
+    # H4 is neither sleeve anchor (H1 crypto / D1 equity) -> the default LakeCostInputs
+    # rejects it; a custom CostInputProvider must be injected.
+    with pytest.raises(ValueError, match="supports H1"):
         EventDrivenBacktester(PITDataReader(paths), store, TransactionCostModel(), tf=Timeframe.H4)
+    # D1 (equity) is now accepted by the sleeve-aware default LakeCostInputs (S12 S1).
+    EventDrivenBacktester(
+        PITDataReader(paths),
+        store,
+        TransactionCostModel(),
+        tf=Timeframe.D1,
+        asset_class=AssetClass.EQUITY,
+    )
 
 
 def test_equity_series_is_consumable_by_analytics(golden_result: BacktestResult) -> None:
