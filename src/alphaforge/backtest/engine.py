@@ -414,7 +414,7 @@ class LakeCostInputs:
     #: warmup is far longer (the 240-session sigma); it is derived in __init__ per calendar.
     WARMUP_MS: Final[int] = 33 * _DAY_MS
 
-    __slots__ = ("_adv", "_sigma", "_tf")
+    __slots__ = ("_adv", "_cal", "_sigma", "_tf")
 
     def __init__(
         self,
@@ -428,6 +428,7 @@ class LakeCostInputs:
     ) -> None:
         self._tf = anchor_tf
         cal = calendar if calendar is not None else calendar_for(AssetClass.CRYPTO_PERP)
+        self._cal = cal  # retained for the calendar-aware decision-bar lookup (cost_inputs)
         # bars per calendar day for the sigma per-bar -> daily scaling: 24 (H1), 1 (D1).
         bars_per_day = _DAY_MS // anchor_tf.ms
         # Warmup must cover the EWMA-sigma halflife (240 BARS) + the 30-bar/day ADV window in
@@ -491,13 +492,22 @@ class LakeCostInputs:
         self._adv = adv.astype("float64")
 
     def cost_inputs(self, instrument_id: str, decision_ts: Ms) -> tuple[float, float]:
-        """``(adv_quote, sigma_daily)`` from the decision bar (``ts_open = ts - Δ``).
+        """``(adv_quote, sigma_daily)`` from the decision bar (the bar that CLOSED at
+        the decision instant — its open is ``floor_bar(decision_ts - 1, tf)``).
+
+        The prior-bar open is resolved through the CALENDAR, not naive
+        ``decision_ts - tf.ms`` arithmetic: on the contiguous 24/7 crypto grid the two
+        are byte-identical (every hour is a grid point), but on the gappy XNYS session
+        grid ``decision_ts - 1 day`` of a Monday/post-holiday decision lands on a
+        non-session (a weekend/holiday) and would spuriously miss the index — silently
+        dropping every Monday and post-holiday trade. ``floor_bar`` hops to the true
+        prior session (mirrors the engine loop's ``prev_open`` at the decision instant).
 
         Returns ``(nan, nan)`` for unknown instruments, off-grid timestamps,
         or insufficient history — the engine drops such orders loudly rather
         than guessing a cost.
         """
-        ts_open = decision_ts - self._tf.ms
+        ts_open = self._cal.floor_bar(decision_ts - 1, self._tf)
         if instrument_id not in self._sigma.columns or ts_open not in self._sigma.index:
             return (math.nan, math.nan)
         adv = cast(float, self._adv.at[ts_open, instrument_id])
