@@ -269,14 +269,25 @@ class SignalService:
         # the walk-forward's global-compute-and-slice path reproduces the per-leg
         # path's decisions to the EWMA warm-up tolerance (the global pass, having
         # more realized-IC history before each leg, is the MORE-correct reference).
-        delta = self._anchor_tf.ms
+        # CONTIGUOUS grid (crypto 24/7): epoch-fixed phase ((ts//Δ)%h==0) -> slice-invariant
+        # blend weights (the comment above). GAPPY session grid (XNYS): (ts//Δ) skips
+        # weekend/holiday indices, so the epoch anchor would NOT keep every h-th session;
+        # use the POSITIONAL subsample (every h-th unique SESSION from the window start),
+        # which is the correct non-overlapping h-session grid. The research WF is a single
+        # global compute_research, so the positional phase is consistent across the run; a
+        # session-INDEX absolute anchor (for equity-live per-leg slice-invariance) is a
+        # deferred refinement (no equity live path yet).
+        contiguous = self._calendar.contiguous
+        delta = self._anchor_tf.ms if contiguous else None
         grid_ics = {
             name: non_overlapping(
                 rank_ic(zs[name], fwd, mask, min_members=self._min_members), h, delta_ms=delta
             )
             for name in self.alpha_names
         }
-        return estimate_blend_weights(grid_ics, horizon_bars=h, timeframe=self._anchor_tf)
+        return estimate_blend_weights(
+            grid_ics, horizon_bars=h, timeframe=self._anchor_tf, contiguous=contiguous
+        )
 
     def _emit(
         self,

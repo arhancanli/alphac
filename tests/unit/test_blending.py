@@ -105,6 +105,29 @@ class TestLagEnforcement:
         w = estimate_blend_weights({"a": pd.Series([0.1, -0.2, 0.1], index=idx)}, horizon_bars=H)
         assert np.allclose(w.weights["a"].to_numpy(dtype=float), 1.0)  # one alpha -> weight 1
 
+    def test_non_uniform_grid_accepted_for_multiple_alphas_when_not_contiguous(self) -> None:
+        """On a GAPPY session (XNYS) grid the non-overlapping subsample keeps every h-th
+        SESSION positionally — consecutive points are one label horizon apart BY
+        CONSTRUCTION, but their ms spacing varies (weekends/holidays). With
+        ``contiguous=False`` the blend trusts that construction instead of asserting ms
+        uniformity, so a MULTI-alpha equity blend runs on the session grid. (Default
+        ``contiguous=True`` still refuses it — see the test above — protecting the crypto
+        path where the ms invariant IS the guarantee.)"""
+        idx = pd.Index(np.array([T0, T0 + H * HOUR, T0 + 3 * H * HOUR], dtype=np.int64))
+        ics = {
+            "a": pd.Series([0.10, 0.10, 0.10], index=idx),
+            "b": pd.Series([0.05, 0.05, 0.05], index=idx),
+        }
+        # contiguous=True refuses (the crypto guard); contiguous=False accepts (equity).
+        with pytest.raises(ValueError, match="uniformly spaced"):
+            estimate_blend_weights(ics, horizon_bars=H, contiguous=True)
+        bw = estimate_blend_weights(ics, horizon_bars=H, contiguous=False)
+        w = bw.weights
+        assert np.isfinite(w.to_numpy()).all()
+        np.testing.assert_allclose(w.sum(axis=1).to_numpy(), 1.0, rtol=1e-12)  # weights normalize
+        # the stronger alpha 'a' (IC 0.10 vs 0.05) carries more weight at steady state
+        assert float(w["a"].iloc[-1]) > float(w["b"].iloc[-1])
+
 
 class TestKappaFloor:
     def test_all_negative_ics_degrade_to_equal_weights(self) -> None:

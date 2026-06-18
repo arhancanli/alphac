@@ -252,6 +252,7 @@ def estimate_blend_weights(
     grid_turnover: Mapping[str, pd.Series] | None = None,
     cost_frac: float = DEFAULT_COST_FRAC,
     lambda_cost: float | None = None,
+    contiguous: bool = True,
 ) -> BlendWeights:
     """Estimate walk-forward NET-of-cost blend weights from non-overlapping-grid Rank-ICs.
 
@@ -321,12 +322,14 @@ def estimate_blend_weights(
     if grid.size == 0:
         return BlendWeights.equal(names)
     # The uniform-spacing requirement enforces the realized-label one-grid-step lag rule,
-    # which only governs the RELATIVE weighting of MULTIPLE alphas. A single alpha is
-    # definitionally weight 1 (max(IC,0)+κ normalized over one term == 1) regardless of the
-    # lag/spacing, so the assertion does not apply — and a session (XNYS) grid is uniform in
-    # SESSIONS but not wall-clock, so this would otherwise reject every equity single-alpha
-    # book. (Multi-alpha EQUITY blends need session-aware non_overlapping; deferred.)
-    if grid.size > 1 and len(names) > 1:
+    # which only governs the RELATIVE weighting of MULTIPLE alphas (a single alpha is
+    # definitionally weight 1). It is checkable in WALL-CLOCK ms only on a CONTIGUOUS grid
+    # (crypto 24/7), where consecutive non-overlapping points are exactly horizon_bars·Δ
+    # apart. On a gappy session (XNYS) grid the non-overlapping subsample keeps every h-th
+    # SESSION positionally (metrics.non_overlapping delta_ms=None): consecutive points are
+    # h sessions == one label horizon apart BY CONSTRUCTION, but their ms spacing varies
+    # (weekends/holidays), so the ms invariant is trusted-by-construction, not asserted.
+    if contiguous and grid.size > 1 and len(names) > 1:
         spacing = np.diff(grid)
         expected = horizon_bars * timeframe.ms
         if not bool(np.all(spacing == expected)):

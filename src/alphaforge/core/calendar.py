@@ -72,6 +72,24 @@ class TradingCalendar(ABC):
     def next_bar_open(self, ts: Ms, tf: Timeframe) -> Ms:
         """Return the open of the first ``tf`` bar strictly after ``ts``."""
 
+    @property
+    def contiguous(self) -> bool:
+        """True iff every aligned Δ-instant is a bar — no session gaps — so the absolute
+        epoch-anchored bar index ``ts // Δ`` is dense and consecutive.
+
+        Only on a contiguous grid is the EPOCH-FIXED non-overlapping subsample valid
+        (:func:`alphaforge.validation.metrics.non_overlapping` with ``delta_ms`` set:
+        keep bars where ``(ts // Δ) % h == 0``) AND the uniform-ms-spacing invariant the
+        blend asserts (consecutive non-overlapping points exactly ``h·Δ`` apart). On a
+        GAPPY session calendar both break: ``ts // Δ`` skips weekend/holiday indices, so
+        the subsample must instead keep every ``h``-th SESSION POSITIONALLY and the blend
+        must trust that positional construction rather than ms spacing.
+
+        Default ``False`` (the safe choice for any session calendar);
+        :class:`Always24x7Calendar` overrides to ``True``.
+        """
+        return False
+
     def funding_events_in(self, start_ms: Ms, end_ms: Ms, interval_hours: int) -> list[Ms]:
         """Return scheduled perp funding-settlement instants in ``[start_ms, end_ms)``.
 
@@ -129,6 +147,11 @@ class Always24x7Calendar(TradingCalendar):
     def next_bar_open(self, ts: Ms, tf: Timeframe) -> Ms:
         """Return :func:`alphaforge.core.time.next_bar_open` — every aligned bar exists."""
         return core_time.next_bar_open(ts, tf)
+
+    @property
+    def contiguous(self) -> bool:
+        """Always True — the 24/7 grid has no session gaps (every aligned Δ is a bar)."""
+        return True
 
 
 _ALWAYS_24X7: Final[Always24x7Calendar] = Always24x7Calendar()
