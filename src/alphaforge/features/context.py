@@ -43,6 +43,7 @@ from typing import TYPE_CHECKING
 import pandas as pd
 import pyarrow as pa
 
+from alphaforge.config.sleeve import sleeve_for
 from alphaforge.core.calendar import TradingCalendar, calendar_for
 from alphaforge.core.errors import LookaheadError
 from alphaforge.core.time import Ms, Timeframe
@@ -130,6 +131,7 @@ class FeatureContext:
         end: Ms,
         calendar: TradingCalendar | None = None,
         asset_class: AssetClass = AssetClass.CRYPTO_PERP,
+        anchor_tf: Timeframe | None = None,
     ) -> None:
         if end <= start:
             raise ValueError(f"FeatureContext window requires end > start, got [{start}, {end})")
@@ -150,6 +152,11 @@ class FeatureContext:
         # ``asset_class`` here — both must agree; the explicit form avoids a re-resolve.
         self._asset_class = asset_class
         self._calendar = calendar if calendar is not None else calendar_for(asset_class)
+        # The sleeve's anchor TF is the DEFAULT timeframe for bars()/panel(): factor bodies
+        # call ctx.panel("close") with no tf and must get H1 on crypto, D1 on equities (an
+        # XNYS calendar rejects H1). Defaults from the sleeve of ``asset_class`` so the
+        # crypto path stays H1 (byte-identical); the engine threads its own anchor_tf.
+        self._anchor_tf = anchor_tf if anchor_tf is not None else sleeve_for(asset_class).anchor_tf
         self._bars_cache: dict[Timeframe, pd.DataFrame] = {}
         self._panel_cache: dict[tuple[Timeframe, str], pd.DataFrame] = {}
         self._funding_cache: pd.DataFrame | None = None
@@ -177,8 +184,8 @@ class FeatureContext:
 
     # ------------------------------------------------------------- raw tables
 
-    def bars(self, tf: Timeframe = Timeframe.H1) -> pd.DataFrame:
-        """OHLCV bars of timeframe ``tf`` in the window, as a long pandas frame.
+    def bars(self, tf: Timeframe | None = None) -> pd.DataFrame:
+        """OHLCV bars of timeframe ``tf`` (default: the sleeve anchor TF) in the window.
 
         Columns: ``ts_open`` (int64 epoch ms), ``instrument_id``, ``open``, ``high``,
         ``low``, ``close``, ``volume``, ``quote_volume``, ``quality_flags``; sorted by
@@ -196,6 +203,7 @@ class FeatureContext:
         :data:`FLAG_AVAILABILITY_LAG_BARS` (module docstring). Converted from Arrow
         once and cached; the returned frame is a copy-on-write shallow copy.
         """
+        tf = tf if tf is not None else self._anchor_tf
         cached = self._bars_cache.get(tf)
         if cached is None:
             tbl = self._reader.ohlcv(
@@ -260,8 +268,10 @@ class FeatureContext:
 
     # ------------------------------------------------------------- derived views
 
-    def panel(self, column: str = "close", tf: Timeframe = Timeframe.H1) -> pd.DataFrame:
-        """Wide float64 frame of ``column`` on the COMPLETE expected ``tf`` bar grid.
+    def panel(self, column: str = "close", tf: Timeframe | None = None) -> pd.DataFrame:
+        """Wide float64 frame of ``column`` on the COMPLETE expected bar grid.
+
+        ``tf`` defaults to the sleeve anchor TF (H1 crypto / D1 equity).
 
         Index: every aligned ``ts_open`` (int64 epoch ms) in ``[start, end)`` per the
         sleeve calendar's
@@ -278,6 +288,7 @@ class FeatureContext:
         was threaded (byte-identical); for the equity D1 sleeve the XNYS calendar emits
         only session opens, so weekend/holiday slots are correctly absent (not NaN-padded).
         """
+        tf = tf if tf is not None else self._anchor_tf
         key = (tf, column)
         cached = self._panel_cache.get(key)
         if cached is None:
@@ -302,7 +313,7 @@ class FeatureContext:
         return cached.copy(deep=False)
 
     def funding_asof_join(
-        self, bars_index: pd.MultiIndex, *, tf: Timeframe = Timeframe.H1
+        self, bars_index: pd.MultiIndex, *, tf: Timeframe | None = None
     ) -> pd.Series:
         """Last-known funding rate per ``(ts_open, instrument_id)``, PIT-correct per row.
 
@@ -321,6 +332,7 @@ class FeatureContext:
         truncation harness (:func:`alphaforge.features.parity.verify_truncation`)
         will fail it.
         """
+        tf = tf if tf is not None else self._anchor_tf
         if bars_index.nlevels != 2:
             raise ValueError(
                 f"bars_index must be a 2-level (ts_open, instrument_id) MultiIndex, "

@@ -29,9 +29,9 @@ from typing import TYPE_CHECKING, Final
 
 import pandas as pd
 
-from alphaforge.config.sleeve import CRYPTO_PERP_SLEEVE
+from alphaforge.config.sleeve import CRYPTO_PERP_SLEEVE, sleeve_for
 from alphaforge.core.calendar import TradingCalendar, calendar_for
-from alphaforge.core.time import Ms, Timeframe, bar_open_for_decision
+from alphaforge.core.time import Ms, Timeframe
 from alphaforge.core.types import AssetClass
 from alphaforge.features.context import FeatureContext
 
@@ -72,19 +72,33 @@ class FeatureEngine:
         instruments: InstrumentStore,
         universe: UniverseStore,
         *,
-        anchor_tf: Timeframe = Timeframe.H1,
+        anchor_tf: Timeframe | None = None,
         asset_class: AssetClass = AssetClass.CRYPTO_PERP,
         calendar: TradingCalendar | None = None,
     ) -> None:
         self._reader = reader
         self._instruments = instruments
         self._universe = universe
-        # The sleeve resolution: anchor TF + calendar + asset class. Defaults are the
-        # crypto sleeve (H1 + 24/7), byte-identical to the old module constant. The
-        # calendar may be passed explicitly or resolved from ``asset_class`` here.
-        self._anchor_tf = anchor_tf
+        # The sleeve resolution: anchor TF + calendar + asset class. ``anchor_tf`` and
+        # ``calendar`` default to the sleeve of ``asset_class`` (sleeve_for) so passing only
+        # ``asset_class=EQUITY`` yields a CONSISTENT D1 + XNYS engine — never H1 + XNYS. The
+        # crypto default (CRYPTO_PERP) resolves H1 + 24/7, byte-identical to the old constant.
         self._asset_class = asset_class
+        self._anchor_tf = anchor_tf if anchor_tf is not None else sleeve_for(asset_class).anchor_tf
         self._calendar = calendar if calendar is not None else calendar_for(asset_class)
+
+    @property
+    def anchor_tf(self) -> Timeframe:
+        """The sleeve's anchor timeframe (H1 crypto / D1 equity) — the grid this engine
+        is valued on. Consumers (e.g. parity verification) must read it here, never assume
+        the crypto :data:`ANCHOR_TIMEFRAME` constant."""
+        return self._anchor_tf
+
+    @property
+    def calendar(self) -> TradingCalendar:
+        """The sleeve's trading calendar (24/7 crypto / XNYS equity) — the session grid
+        for every bar hop. Decision-bar and window arithmetic must hop this, never ``+Δ``."""
+        return self._calendar
 
     def compute_history(
         self,
@@ -114,15 +128,28 @@ class FeatureEngine:
             raise ValueError(f"compute_history requires end > start, got [{start}, {end})")
         tf = self._anchor_tf
         max_lookback = max(s.lookback_bars for s in checked_specs)
+        # Session-aware warmup headroom: max_lookback SESSION opens before `start` (NOT
+        # max_lookback fixed-Δ slots — on a session calendar that is far fewer sessions,
+        # leaving values near `start` under-warmed and breaking as-of parity there). For
+        # the 24/7 grid this reduces to start - max_lookback·Δ exactly (byte-identical).
+        warm = self._calendar.expected_bar_opens(
+            start - (2 * max_lookback + 8) * tf.ms, start + tf.ms, tf
+        )
+        ctx_start = (
+            warm[-(max_lookback + 1)]
+            if len(warm) >= max_lookback + 1
+            else (warm[0] if warm else start - max_lookback * tf.ms)
+        )
         ctx = FeatureContext(
             reader=self._reader,
             instruments=self._instruments,
             universe=self._universe,
             instrument_ids=ids,
-            start=start - max_lookback * tf.ms,
+            start=ctx_start,
             end=end,
             calendar=self._calendar,
             asset_class=self._asset_class,
+            anchor_tf=self._anchor_tf,
         )
         grid = self._calendar.expected_bar_opens(start, end, tf)
         target = pd.MultiIndex.from_product([grid, ids], names=("ts_open", "instrument_id"))
@@ -137,11 +164,13 @@ class FeatureEngine:
     ) -> pd.DataFrame:
         """Live pass: one row per instrument at the last bar available at ``as_of``.
 
-        The decision bar is ``t* = bar_open_for_decision(as_of, 1h)`` (greatest
-        ``ts_open`` with ``ts_open + Δ <= as_of``). The context window is the
-        MINIMAL one: exactly ``max(lookback_bars)`` grid slots ending at ``t*``,
-        i.e. ``[t* - (L_max - 1)·Δ, t* + Δ)`` with ``as_of = t* + Δ`` — the live
-        path proves, every bar, that the declared lookbacks are sufficient.
+        The decision bar is ``t* = calendar.floor_bar(as_of - Δ, tf)`` — the greatest
+        SESSION open with ``ts_open + Δ <= as_of`` (a Monday ``as_of`` resolves to Friday
+        on XNYS; identically ``bar_open_for_decision(as_of)`` on the 24/7 grid). The context
+        window is the MINIMAL one: exactly ``max(lookback_bars)`` SESSION opens ending at
+        ``t*`` (the last ``L_max`` opens of ``calendar.expected_bar_opens`` ≤ ``t*``), with
+        ``as_of = t* + Δ`` — the live path proves, every bar, that the declared lookbacks are
+        sufficient on the sleeve's trading calendar.
         Returns a float64 frame indexed by ``(t*, instrument_id)`` for ALL
         requested instruments (NaN row where an instrument has no data), one
         column per spec in input order.
@@ -155,17 +184,31 @@ class FeatureEngine:
         checked_specs, ids = _checked(specs, instrument_ids)
         self._guard_equity_unverified()
         tf = self._anchor_tf
+        cal = self._calendar
         max_lookback = max(s.lookback_bars for s in checked_specs)
-        t_star = bar_open_for_decision(as_of, tf)
+        # Decision bar t*: the last SESSION open available at as_of (ts_open + Δ <= as_of).
+        # floor_bar hops the calendar — a Monday as_of resolves to Friday on XNYS, never a
+        # phantom weekend slot; for the 24/7 calendar floor_bar(as_of - Δ) is identically
+        # bar_open_for_decision(as_of) (crypto byte-identical).
+        t_star = cal.floor_bar(as_of - tf.ms, tf)
+        # Minimal window = the max_lookback session opens ENDING at t* (NOT max_lookback
+        # fixed-Δ slots: on a session calendar, L-1 calendar days is far fewer than L-1
+        # sessions, so a fixed-Δ window starves a 252-session lookback to ~173 sessions and
+        # the live row never warms up). Build the session grid back with a generous calendar
+        # buffer and take the last max_lookback opens; for 24/7 grid[-L] == t* - (L-1)·Δ.
+        window_lo = t_star - (2 * max_lookback + 8) * tf.ms
+        grid = cal.expected_bar_opens(window_lo, t_star + tf.ms, tf)
+        start = grid[-max_lookback] if len(grid) >= max_lookback else (grid[0] if grid else t_star)
         ctx = FeatureContext(
             reader=self._reader,
             instruments=self._instruments,
             universe=self._universe,
             instrument_ids=ids,
-            start=t_star - (max_lookback - 1) * tf.ms,
+            start=start,
             end=t_star + tf.ms,
             calendar=self._calendar,
             asset_class=self._asset_class,
+            anchor_tf=self._anchor_tf,
         )
         target = pd.MultiIndex.from_product([[t_star], ids], names=("ts_open", "instrument_id"))
         return _compute(ctx, checked_specs, target)

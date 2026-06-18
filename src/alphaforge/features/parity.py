@@ -27,8 +27,8 @@ from typing import TYPE_CHECKING, Final
 
 import numpy as np
 
-from alphaforge.core.time import Ms, bar_open_for_decision
-from alphaforge.features.engine import ANCHOR_TIMEFRAME, FeatureEngine
+from alphaforge.core.time import Ms
+from alphaforge.features.engine import FeatureEngine
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -110,7 +110,7 @@ def verify_parity(
     """Batch-vs-live parity check at sampled decision times (epoch ms UTC).
 
     For each sample ``T``: the live row is ``compute_asof(as_of=T)`` (decision bar
-    ``t* = bar_open_for_decision(T, 1h)``, minimal window); the batch value is read
+    ``t* = engine.calendar.floor_bar(T - Δ, tf)``, minimal window); the batch value is read
     from ONE ``compute_history`` pass spanning all samples, starting at
     ``history_start`` (default: the earliest sampled ``t*``). With ``history_start``
     well before the samples, the batch side sees far more history than the live
@@ -119,10 +119,14 @@ def verify_parity(
     """
     if not ts_samples:
         raise ValueError("at least one ts_sample is required")
-    tf = ANCHOR_TIMEFRAME
+    # Sleeve-aware: the engine's anchor TF + trading calendar, NOT the crypto ANCHOR_TIMEFRAME
+    # constant. The decision bar of a sample is the last SESSION open available at it
+    # (floor_bar hops the calendar; identical to bar_open_for_decision on the 24/7 grid).
+    tf = engine.anchor_tf
+    cal = engine.calendar
     spec_list = list(specs)
     ids = list(dict.fromkeys(instrument_ids))
-    t_stars = sorted({bar_open_for_decision(t, tf) for t in ts_samples})
+    t_stars = sorted({cal.floor_bar(t - tf.ms, tf) for t in ts_samples})
     start = t_stars[0] if history_start is None else history_start
     if start > t_stars[0]:
         raise ValueError(
