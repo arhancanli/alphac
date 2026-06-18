@@ -154,6 +154,7 @@ def rebuild(
             UniverseStore(paths),
             settings.universe,
             rank_tf=rank_tf,
+            asset_class=settings.data.asset_class,
         )
         try:
             stats = builder.rebuild(start=start_ms, end=end_ms, now=now)

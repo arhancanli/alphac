@@ -59,6 +59,7 @@ from alphaforge.core.time import Ms, Timeframe, from_ms, to_ms
 if TYPE_CHECKING:
     from alphaforge.config.settings import UniverseCfg
     from alphaforge.core.instruments import Instrument, InstrumentStore
+    from alphaforge.core.types import AssetClass
     from alphaforge.data.store.reader import PITDataReader
     from alphaforge.data.universe.store import UniverseStore
 
@@ -68,7 +69,17 @@ _DAY_MS: Final[int] = 86_400_000
 
 DEFAULT_MIN_DAYS: Final[int] = 20
 """Minimum distinct UTC days with volume inside the ranking window (excludes zombie
-listings whose sparse prints would make a 30d median meaningless)."""
+listings whose sparse prints would make a 30d median meaningless). Calibrated for the
+24/7 crypto sleeve, where a ``rank_window_days``-day window spans that many distinct UTC
+days. See :data:`DEFAULT_MIN_DAYS_D1` for the equity (session-calendar) default."""
+
+DEFAULT_MIN_DAYS_D1: Final[int] = 15
+"""Minimum distinct session days for a D1 (equity) sleeve. A 30-CALENDAR-day window holds
+only ~19-23 XNYS SESSIONS (not 30), so the crypto default of 20 would drop EVERY name in a
+19-session month and collapse the universe to empty. 15 (~70% of a ~21-session window)
+keeps fully-liquid names while still excluding sparse/halted zombies. The window itself
+(``rank_window_days`` calendar days) is unchanged — only the distinct-day floor adapts to
+the trading calendar."""
 
 DEFAULT_MIN_LISTING_AGE_MS: Final[Ms] = 30 * _DAY_MS
 """Minimum age since ``listed_ts`` at the rebalance instant — no week-old listings
@@ -133,9 +144,10 @@ class UniverseBuilder:
         store: UniverseStore,
         cfg: UniverseCfg,
         *,
-        min_days: int = DEFAULT_MIN_DAYS,
+        min_days: int | None = None,
         min_listing_age_ms: Ms = DEFAULT_MIN_LISTING_AGE_MS,
         rank_tf: Timeframe = Timeframe.H1,
+        asset_class: AssetClass | None = None,
     ) -> None:
         """Raises :class:`ConfigError` unless ``cfg.rebalance == "monthly"`` — the v1
         schedule is fixed at 00:00 UTC on the 1st (dataDesign.md §6.1).
@@ -143,22 +155,41 @@ class UniverseBuilder:
         ``rank_tf`` is the source timeframe for the liquidity read (see module
         docstring): ``Timeframe.H1`` for crypto (intraday bars summed per UTC day),
         ``Timeframe.D1`` for equities (native daily bars → ADV pass-through).
+
+        ``asset_class`` restricts the candidate set to ONE sleeve. The SCD2 store holds
+        every sleeve (crypto perps AND equities), and crypto perps carry resampled D1 bars
+        too, so an equity (D1) rank that did not filter would rank crypto perps INTO the
+        equity universe. ``None`` (the default) ranks every known instrument — byte-identical
+        to the pre-sleeve behavior on a single-sleeve store; the CLI passes the profile's
+        ``asset_class`` so each sleeve's universe contains only its own names.
+
+        ``min_days`` (distinct-day floor inside the window) defaults per sleeve when left
+        ``None``: :data:`DEFAULT_MIN_DAYS` (20) for H1 crypto, :data:`DEFAULT_MIN_DAYS_D1`
+        (15) for D1 equities — a 30-calendar-day window holds ~30 distinct UTC days on the
+        24/7 grid but only ~19-23 XNYS sessions, so the crypto floor would empty the equity
+        universe in a short month. An explicit value overrides the per-sleeve default.
         """
         if cfg.rebalance != "monthly":
             raise ConfigError(
                 f"UniverseBuilder v1 supports monthly rebalance only, got {cfg.rebalance!r}"
             )
-        if min_days <= 0:
-            raise ConfigError(f"min_days must be > 0, got {min_days}")
+        resolved_min_days = (
+            min_days
+            if min_days is not None
+            else (DEFAULT_MIN_DAYS_D1 if rank_tf is Timeframe.D1 else DEFAULT_MIN_DAYS)
+        )
+        if resolved_min_days <= 0:
+            raise ConfigError(f"min_days must be > 0, got {resolved_min_days}")
         if min_listing_age_ms < 0:
             raise ConfigError(f"min_listing_age_ms must be >= 0, got {min_listing_age_ms}")
         self._reader = reader
         self._instruments = instruments
         self._store = store
         self._cfg = cfg
-        self._min_days = min_days
+        self._min_days = resolved_min_days
         self._min_listing_age_ms = min_listing_age_ms
         self._rank_tf = rank_tf
+        self._asset_class = asset_class
 
     def rebuild(self, *, start: Ms, end: Ms, now: Ms) -> RebuildStats:
         """Regenerate the full membership history over ``[start, end]`` (epoch ms UTC).
@@ -175,7 +206,11 @@ class UniverseBuilder:
         if end < start:
             raise ValueError(f"end ({end}) must be >= start ({start})")
         instants = [t for t in _monthly_rebalances(start, end) if t <= now]
-        lifecycle = {i.instrument_id: i for i in self._instruments.all_known(as_of=now)}
+        lifecycle = {
+            i.instrument_id: i
+            for i in self._instruments.all_known(as_of=now)
+            if self._asset_class is None or i.asset_class is self._asset_class
+        }
 
         open_members: dict[str, _Span] = {}
         closed: list[_Span] = []
