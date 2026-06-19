@@ -70,6 +70,7 @@ refuses ``|mu_ann| >= 3.0`` (the strategy never weakens it).
 from __future__ import annotations
 
 import math
+from dataclasses import replace
 from typing import TYPE_CHECKING, Final, Literal
 
 import numpy as np
@@ -150,7 +151,7 @@ class BlendStrategy:
         *,
         signal_frame: pd.DataFrame | None = None,
         mu_provider: Callable[[Ms], Mapping[str, float]] | None = None,
-        allocator: Literal["rank", "mvo"] = "rank",
+        allocator: Literal["rank", "rank_long", "mvo"] = "rank",
         rebalance_bars: int = 24,
         cov_window_bars: int = 720,
         cov_halflife_bars: int = 720,
@@ -178,15 +179,21 @@ class BlendStrategy:
         p = settings.portfolio
         r = settings.risk
         constraints = PortfolioConstraints.from_settings(settings)
-        self._allocator_name: Literal["rank", "mvo"] = allocator
+        self._allocator_name: Literal["rank", "rank_long", "mvo"] = allocator
         if allocator == "rank":
             self._allocator: RankEqualVolFallback | MeanVarianceOptimizer = RankEqualVolFallback(
                 constraints
             )
+        elif allocator == "rank_long":
+            # Long-only factor-tilt book (no short leg): top-K longs at full gross. Earns
+            # market beta + the factor tilt, not market-neutral alpha (evaluate vs a
+            # buy-and-hold benchmark). Byte-identical to 'rank' on crypto since it is an
+            # explicit equity opt-in (the crypto path never selects it).
+            self._allocator = RankEqualVolFallback(replace(constraints, long_only=True))
         elif allocator == "mvo":
             self._allocator = MeanVarianceOptimizer.from_settings(settings)
         else:  # pragma: no cover - Literal narrows, guard for untyped callers
-            raise ValueError(f"allocator must be 'rank' or 'mvo', got {allocator!r}")
+            raise ValueError(f"allocator must be 'rank', 'rank_long', or 'mvo', got {allocator!r}")
 
         self._vol_target_ann = p.vol_target_ann
         self._vol_scale_max = p.vol_scale_max

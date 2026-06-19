@@ -225,8 +225,10 @@ def walkforward(
     end_ms = (
         floor_bar(now_ms(), sleeve.anchor_tf) if end is None else _parse_cli_utc(end, param="--end")
     )
-    if allocator not in ("rank", "mvo"):
-        raise typer.BadParameter(f"--allocator: must be 'rank' or 'mvo', got {allocator!r}")
+    if allocator not in ("rank", "rank_long", "mvo"):
+        raise typer.BadParameter(
+            f"--allocator: must be 'rank', 'rank_long', or 'mvo', got {allocator!r}"
+        )
     alloc: str = allocator
     instrument_ids: list[str] | None = None
     if ids is not None:
@@ -294,7 +296,7 @@ def walkforward(
                 end_ms,
                 train_bars=train_days * bars_per_day,
                 test_bars=test_days * bars_per_day,
-                allocator="mvo" if alloc == "mvo" else "rank",
+                allocator=alloc,  # "rank" | "rank_long" | "mvo" (validated above)
                 embargo_bars=sleeve.embargo_bars,
                 rebalance_bars=rebalance_bars,
                 no_trade_band=no_trade_band,

@@ -163,6 +163,16 @@ class PortfolioConstraints:
     net_max: float = 0.5
     w_max: float = 0.15
     turnover_max: float = 0.10
+    #: LONG-ONLY mode (default OFF -> the L/S path is byte-identical). When True the rank
+    #: allocator holds ONLY the top-``long_only_k`` names by mu_ann (no short leg) at FULL
+    #: gross — the standard long-only factor-tilt book. Honest framing: such a book earns
+    #: market BETA + the factor tilt, not market-neutral alpha; evaluate vs a buy-and-hold
+    #: benchmark to isolate the tilt. The equity short leg is the documented worst part of
+    #: momentum (losers rebound violently), so long-only is a genuine, principled lever.
+    long_only: bool = False
+    #: Number of top names held in long-only mode (a broad tilt basket, not 10 concentrated
+    #: bets). Ignored when long_only is False.
+    long_only_k: int = 50
 
     def __post_init__(self) -> None:
         for name in ("gross_max", "net_max", "w_max", "turnover_max"):
@@ -171,6 +181,8 @@ class PortfolioConstraints:
                 raise ValueError(f"PortfolioConstraints.{name} must be finite and > 0")
         if self.w_max > self.gross_max:
             raise ValueError(f"w_max ({self.w_max}) must be <= gross_max ({self.gross_max})")
+        if self.long_only_k < 1:
+            raise ValueError(f"long_only_k must be >= 1, got {self.long_only_k}")
 
     @classmethod
     def from_settings(cls, settings: Settings) -> Self:
@@ -307,6 +319,8 @@ class RankEqualVolFallback:
         )
         n = mu.shape[0]
         c = self.constraints
+        if c.long_only:
+            return self._solve_long_only(mu, cov, n)
         # Floor k>=1 for a sized cross-section (n>=2), 0 for a single name. Raw
         # min(10, n//4) is 0 at n in {2,3}, which would silently return an
         # all-zero "fallback_used" book that reads as a real flat decision. The
@@ -340,6 +354,42 @@ class RankEqualVolFallback:
                 if gross_clipped > 0.0 and max_abs > 0.0:
                     weights *= min(target_gross / gross_clipped, c.w_max / max_abs)
 
+        ex_ante = float(np.sqrt(max(weights @ cov @ weights, 0.0)))
+        return OptResult(
+            weights=weights,
+            status="fallback_used",
+            ex_ante_vol_ann=ex_ante,
+            objective=float(mu @ weights),
+        )
+
+    def _solve_long_only(self, mu: np.ndarray, cov: np.ndarray, n: int) -> OptResult:
+        """Long-only top-K book: hold the top ``long_only_k`` names by mu_ann, inverse-vol
+        weighted, at FULL gross (no short leg). The standard long-only factor-tilt
+        construction; earns market beta + the factor tilt (NOT market-neutral alpha).
+
+        Same inverse-vol -> normalize-to-gross -> w_max-clip -> renormalize pipeline as the
+        L/S path, but a single long leg and ``target_gross = gross_max`` (fully invested)."""
+        c = self.constraints
+        k = min(c.long_only_k, n)  # hold up to long_only_k names (or all n if fewer)
+        weights = np.zeros(n, dtype=np.float64)
+        if k > 0:
+            longs = np.argsort(-mu, kind="stable")[:k]
+            sigma = np.sqrt(np.clip(np.diag(cov), 0.0, None))
+            if np.any(~(sigma[longs] > 0.0)):
+                raise ValueError(
+                    "cov_ann has a non-positive variance for a selected asset; "
+                    "inverse-vol weights are undefined"
+                )
+            weights[longs] = 1.0 / sigma[longs]
+            target_gross = c.gross_max  # FULL gross (no short leg to balance)
+            gross = float(np.abs(weights).sum())
+            if gross > 0.0:
+                weights *= target_gross / gross
+                weights = np.clip(weights, 0.0, c.w_max)
+                gross_clipped = float(weights.sum())
+                max_abs = float(weights.max())
+                if gross_clipped > 0.0 and max_abs > 0.0:
+                    weights *= min(target_gross / gross_clipped, c.w_max / max_abs)
         ex_ante = float(np.sqrt(max(weights @ cov @ weights, 0.0)))
         return OptResult(
             weights=weights,
