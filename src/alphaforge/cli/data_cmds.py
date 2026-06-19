@@ -618,3 +618,101 @@ def ingest_equities(
 
     if report.failed_count:
         raise typer.Exit(1)
+
+
+def _universe_ever_members(settings: Settings) -> list[str]:
+    """Distinct instrument ids that were EVER in the tradeable universe (incl. delisted).
+
+    Read from the ``universe_membership`` intervals — the survivorship-free set fundamentals
+    are worth fetching for (the live top-N alone would be survivorship-biased). Sorted,
+    deterministic; empty if the universe has not been built yet.
+    """
+    from alphaforge.data.store.lake import LakePaths
+    from alphaforge.data.universe.store import UniverseStore
+
+    store = UniverseStore(LakePaths(settings.paths.lake_dir))
+    tbl = store.read_intervals()  # all intervals, knowable-to-now
+    if tbl.num_rows == 0:
+        return []
+    return sorted(set(tbl.column("instrument_id").to_pylist()))
+
+
+@data_app.command(name="ingest-fundamentals")
+def ingest_fundamentals(
+    since: Annotated[
+        str,
+        typer.Option("--since", help="First fiscal period_end, UTC (YYYY-MM-DD). Required."),
+    ],
+    until: Annotated[
+        str | None,
+        typer.Option("--until", help="Exclusive end on period_end, UTC. Default: now."),
+    ] = None,
+    all_lake: Annotated[
+        bool,
+        typer.Option(
+            "--all-lake/--universe",
+            help="Ingest for ALL ohlcv_1d ids instead of just the universe-ever-members "
+            "(default: universe only — fundamentals matter for tradeable names).",
+        ),
+    ] = False,
+    profile: _ProfileOpt = None,
+) -> None:
+    """Ingest PIT quarterly fundamentals (Polygon financials) for the equity universe.
+
+    One instrument = one unit of work; resumable on the ``(FUNDAMENTALS, instrument_id)``
+    watermark. Each row carries ``available_at`` (SEC filing_date, conservative fallback when
+    absent) — the factor layer filters ``available_at <= decision_t``, so a quarter is unseen
+    until its filing. Survivorship-free: the default id set is every universe-EVER-member
+    (delisted names included). Crash/interrupt and rerun: done instruments are skipped, the
+    writer dedupes. Exit code 1 if any instrument failed.
+    """
+    import os
+
+    from alphaforge.core.errors import ConfigError
+    from alphaforge.data.ingest.fundamentals import FundamentalsJob
+    from alphaforge.data.ingest.retry import RateBudget
+    from alphaforge.data.sources.polygon_source import PolygonEquitiesSource
+    from alphaforge.data.store.lake import LakePaths
+    from alphaforge.data.store.writer import LakeWriter
+
+    settings = _load_settings(profile)
+    _setup_logging(settings)
+    since_ms = _parse_cli_utc(since, param="--since")
+    until_ms = None if until is None else _parse_cli_utc(until, param="--until")
+    now = now_ms()
+
+    paths = LakePaths(settings.paths.lake_dir)
+    ids = paths.instrument_ids(Dataset.OHLCV_1D) if all_lake else _universe_ever_members(settings)
+    if not ids:
+        hint = (
+            "ohlcv_1d lake is empty" if all_lake else "universe not built — run af universe rebuild"
+        )
+        typer.echo(f"error: no instruments to ingest ({hint})", err=True)
+        raise typer.Exit(1)
+    scope = "all-lake" if all_lake else "universe-ever-members"
+    typer.echo(f"ingesting fundamentals for {len(ids)} instrument(s) ({scope})")
+
+    with _open_stores(settings) as (_instruments, checkpoints):
+        try:
+            source = PolygonEquitiesSource(
+                api_key=os.environ.get("POLYGON_API_KEY"), rate_budget=RateBudget()
+            )
+        except ConfigError as exc:
+            typer.echo(f"error: {exc}", err=True)
+            raise typer.Exit(1) from exc
+        job = FundamentalsJob(
+            source,
+            LakeWriter(paths),
+            checkpoints,
+            lock_path=settings.paths.var_dir / "ingest.lock",
+        )
+        report = job.run(ids, since=since_ms, until=until_ms, now=now)
+
+    typer.echo(
+        f"fundamentals: ok={report.ok_count} failed={report.failed_count} "
+        f"skipped={report.skipped_count} rows={report.total_rows}"
+    )
+    for r in report.failures()[:10]:
+        typer.echo(f"  FAILED {r.instrument_id}: {r.error}", err=True)
+    if report.failed_count:
+        raise typer.Exit(1)
