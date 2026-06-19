@@ -109,6 +109,9 @@ __all__ = ["MU_ANN_COLUMN", "BlendStrategy"]
 #: the strategy) is the Phase-7 refinement; the rank allocator ignores it.
 _DEFAULT_COST_FRAC: Final[float] = 0.0010
 
+_DAY_MS: Final[int] = 86_400_000
+"""One UTC day in ms — the calendar over-reach unit for the gappy-grid covariance window."""
+
 
 class BlendStrategy:
     """The Phase-6 product strategy (module docstring = the contract).
@@ -542,12 +545,16 @@ class BlendStrategy:
         """
         window = self._cov_window_bars + 1
         tbl = ctx.bars(ids, window)
-        # Grid from the sleeve calendar (the ONE grid source): the 24/7 crypto calendar
-        # delegates to the same core.time.expected_bar_opens this called before (hence
-        # byte-identical); the equity calendar session-filters out weekend/holiday slots.
-        # The window-start ms arithmetic is harmless warm-up width — the calendar filters
-        # which opens are actually in the grid.
-        grid = ctx.calendar.expected_bar_opens(ctx.ts - window * ctx.tf.ms, ctx.ts, ctx.tf)
+        # Grid = the last `window` BARS (sessions) ending at ctx.ts on the sleeve calendar.
+        # CONTIGUOUS (24/7 crypto): ctx.ts - window*tf.ms gives exactly `window` opens —
+        # byte-identical to before. GAPPY (XNYS): a `window`-CALENDAR-DAY start would yield
+        # only ~0.69*window SESSIONS (weekends/holidays), silently shrinking the covariance
+        # window; over-reach in calendar time then keep the last `window` expected opens.
+        if ctx.calendar.contiguous:
+            start = ctx.ts - window * ctx.tf.ms
+        else:
+            start = ctx.ts - (window * 2 + 32) * _DAY_MS  # >= 2x sessions + holiday slack
+        grid = ctx.calendar.expected_bar_opens(start, ctx.ts, ctx.tf)[-window:]
         index = pd.Index(grid, dtype="int64", name="ts_open")
         if tbl.num_rows == 0:
             return pd.DataFrame(np.nan, index=index, columns=ids, dtype="float64")
