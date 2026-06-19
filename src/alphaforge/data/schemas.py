@@ -38,6 +38,7 @@ from alphaforge.core.time import Ms, Timeframe, available_at
 __all__ = [
     "CORPORATE_ACTIONS_SCHEMA",
     "FLAG_AVAILABILITY_LAG_BARS",
+    "FUNDAMENTALS_SCHEMA",
     "FUNDING_SCHEMA",
     "OHLCV_DATASETS",
     "OHLCV_SCHEMA",
@@ -76,6 +77,7 @@ class Dataset(StrEnum):
     OHLCV_1D = "ohlcv_1d"
     FUNDING = "funding"
     CORPORATE_ACTIONS = "corporate_actions"
+    FUNDAMENTALS = "fundamentals"
     UNIVERSE_MEMBERSHIP = "universe_membership"
 
 
@@ -365,6 +367,114 @@ natural key (see :data:`~alphaforge.data.store.writer.NATURAL_KEY_COLUMN`).
 """
 
 
+FUNDAMENTALS_SCHEMA: Final[pa.Schema] = pa.schema(
+    [
+        pa.field(
+            "instrument_id",
+            pa.string(),
+            nullable=False,
+            metadata={"doc": "canonical id, e.g. XUSE:CASH:AAPLUSD"},
+        ),
+        pa.field(
+            "period_end",
+            pa.timestamp("ms", tz="UTC"),
+            nullable=False,
+            metadata={
+                "doc": "fiscal-period end (end_date), 00:00 UTC; the within-leaf dedupe/sort key"
+            },
+        ),
+        pa.field(
+            "available_at",
+            pa.timestamp("ms", tz="UTC"),
+            nullable=False,
+            metadata={
+                "doc": (
+                    "SEC filing_date (point-in-time knowability); ALL factor reads filter "
+                    "available_at <= decision_t, NEVER period_end (leakage: fundamentals are "
+                    "known only when FILED, ~30-75d after the period ends). Fallback when the "
+                    "API omits filing_date: period_end + conservative SEC deadline."
+                )
+            },
+        ),
+        pa.field(
+            "fiscal_period",
+            pa.string(),
+            nullable=False,
+            metadata={"doc": "'Q1'..'Q4' (or 'FY'); with fiscal_year identifies the period"},
+        ),
+        pa.field(
+            "fiscal_year",
+            pa.int32(),
+            nullable=False,
+            metadata={"doc": "fiscal year of the period"},
+        ),
+        # --- line items (quote currency, nullable: filings omit fields) ----------------
+        # The minimal set spanning value (E/P, B/P, S/P) and quality (gross profitability,
+        # ROE, margins). Market cap is price x diluted_shares at decision time (price from
+        # the OHLCV lake, shares from here) — never stored, always PIT-joined.
+        pa.field(
+            "revenues",
+            pa.float64(),
+            nullable=True,
+            metadata={"doc": "total revenue (S/P, margins)"},
+        ),
+        pa.field(
+            "cost_of_revenue", pa.float64(), nullable=True, metadata={"doc": "COGS (gross profit)"}
+        ),
+        pa.field(
+            "gross_profit",
+            pa.float64(),
+            nullable=True,
+            metadata={"doc": "revenue - COGS if reported"},
+        ),
+        pa.field(
+            "operating_income", pa.float64(), nullable=True, metadata={"doc": "operating margin"}
+        ),
+        pa.field(
+            "net_income", pa.float64(), nullable=True, metadata={"doc": "net income (E/P, ROE)"}
+        ),
+        pa.field(
+            "equity",
+            pa.float64(),
+            nullable=True,
+            metadata={"doc": "total shareholders' equity (B/P, ROE)"},
+        ),
+        pa.field(
+            "assets",
+            pa.float64(),
+            nullable=True,
+            metadata={"doc": "total assets (gross profitability, ROA)"},
+        ),
+        pa.field(
+            "diluted_shares",
+            pa.float64(),
+            nullable=True,
+            metadata={"doc": "diluted share count (per-share, market cap)"},
+        ),
+        pa.field(
+            "ingested_at",
+            pa.timestamp("ms", tz="UTC"),
+            nullable=False,
+            metadata={"doc": "wall clock at write; audit only"},
+        ),
+    ],
+    metadata={
+        b"alphaforge.schema_version": b"1",
+        b"alphaforge.dataset": b"fundamentals",
+    },
+)
+"""Point-in-time quarterly financial-statement line items (Polygon vX financials / SEC
+filings) — the survivorship-free fundamentals table feeding value + quality factors.
+
+One row per (instrument, fiscal period); ``period_end`` is the dedupe/sort key (a
+restatement of the same period is overwritten by the later ingest — a documented v1
+simplification, conservative since the row's ``available_at`` is the filing date).
+``available_at`` is the ONLY column factor reads may filter on for knowability: a
+period ending March is not knowable until its ~May 10-Q filing. Line items are
+nullable (filings omit fields); market cap is joined PIT from the OHLCV lake (price x
+``diluted_shares``), never stored. Partition year is the ``period_end`` year."""
+
+
 UNIVERSE_SCHEMA: Final[pa.Schema] = pa.schema(
     [
         pa.field(
@@ -416,6 +526,7 @@ _SCHEMAS: Final[dict[Dataset, pa.Schema]] = {
     Dataset.OHLCV_1D: OHLCV_SCHEMA.with_metadata(_metadata(Dataset.OHLCV_1D)),
     Dataset.FUNDING: FUNDING_SCHEMA,
     Dataset.CORPORATE_ACTIONS: CORPORATE_ACTIONS_SCHEMA,
+    Dataset.FUNDAMENTALS: FUNDAMENTALS_SCHEMA,
     Dataset.UNIVERSE_MEMBERSHIP: UNIVERSE_SCHEMA,
 }
 

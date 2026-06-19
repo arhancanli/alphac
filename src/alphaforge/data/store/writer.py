@@ -58,6 +58,7 @@ NATURAL_KEY_COLUMN: Final[dict[Dataset, str]] = {
     Dataset.OHLCV_1D: "ts_open",
     Dataset.FUNDING: "ts_funding",
     Dataset.CORPORATE_ACTIONS: "ex_date",
+    Dataset.FUNDAMENTALS: "period_end",
     Dataset.UNIVERSE_MEMBERSHIP: "effective_from",
 }
 """Per-dataset dedupe key column. Within a leaf partition ``instrument_id`` is
