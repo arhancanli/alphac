@@ -58,6 +58,7 @@ from alphaforge.core.types import AssetClass, MarketType
 from alphaforge.data.ingest.retry import RateBudget, transient_retry
 from alphaforge.data.schemas import (
     CORPORATE_ACTIONS_SCHEMA,
+    FUNDAMENTALS_SCHEMA,
     OHLCV_SCHEMA,
     Dataset,
     validate_table,
@@ -67,10 +68,22 @@ from alphaforge.data.sources.base import DataSource
 __all__ = [
     "CA_PUBLICATION_LAG_MS",
     "CORPORATE_ACTIONS_SCHEMA",
+    "FUNDAMENTALS_FILING_LAG_MS",
+    "FUNDAMENTALS_SCHEMA",
     "Adjustment",
     "PolygonClientProtocol",
     "PolygonEquitiesSource",
 ]
+
+FUNDAMENTALS_FILING_LAG_MS: Final[int] = 90 * 86_400_000
+"""Fallback filing lag for a fundamentals row whose ``filing_date`` the API omits: 90 days.
+
+The point-in-time ``available_at`` is the SEC ``filing_date`` whenever Polygon provides it.
+When it is absent (most often the Q4/annual aggregate built from the 10-K), ``available_at``
+falls back to ``period_end + FUNDAMENTALS_FILING_LAG_MS``. 90 days covers the SEC 10-K
+deadline (60-90d by filer class) — deliberately CONSERVATIVE: a too-late ``available_at``
+can only delay when a factor sees the data (hiding it), never leak it early. Real filing
+dates (the common case) are used verbatim and are far tighter (~40d for a 10-Q)."""
 
 CA_PUBLICATION_LAG_MS: Final[int] = 86_400_000
 """Corporate-action publication lag δ_ca: 1 day, in milliseconds.
@@ -90,6 +103,10 @@ _AGGS_PAGE_LIMIT: Final[int] = 50_000
 
 _REFERENCE_PAGE_LIMIT: Final[int] = 1000
 """Max rows per ``/v3/reference/*`` request (Polygon hard cap)."""
+
+_FINANCIALS_PAGE_LIMIT: Final[int] = 100
+"""Max rows per ``/vX/reference/financials`` request (Polygon caps this endpoint at 100,
+not the 1000 of the v3 reference endpoints — limit>100 returns HTTP 400)."""
 
 _REQUEST_WEIGHT: Final[int] = 1
 """Budget weight charged per Polygon REST request (Polygon meters req/min, not weight)."""
@@ -191,6 +208,18 @@ class PolygonClientProtocol(Protocol):
         cursor: str | None,
     ) -> Mapping[str, Any]:
         """``GET /v3/reference/dividends`` (one page)."""
+        ...
+
+    def list_financials(
+        self,
+        *,
+        ticker: str | None,
+        timeframe: str,
+        period_of_report_date_lte: str | None,
+        limit: int,
+        cursor: str | None,
+    ) -> Mapping[str, Any]:
+        """``GET /vX/reference/financials`` (one page; quarterly statements)."""
         ...
 
 
@@ -682,6 +711,118 @@ class PolygonEquitiesSource(DataSource):
         validate_table(table, Dataset.CORPORATE_ACTIONS)
         return table
 
+    def fetch_fundamentals(self, instrument_id: str, *, since: Ms, until: Ms) -> pa.Table:
+        """Fetch quarterly financial-statement rows with ``period_end`` in ``[since, until)``.
+
+        Source: ``/vX/reference/financials`` with ``timeframe=quarterly`` — one row per
+        fiscal quarter carrying the income-statement / balance-sheet line items the value
+        and quality factors consume. Cursor-paginated.
+
+        **Point-in-time stamping (the §3.2 finding-18 discipline, fundamentals edition):**
+        each row's ``available_at`` is the SEC ``filing_date`` when present, else the
+        conservative fallback ``period_end + FUNDAMENTALS_FILING_LAG_MS``. A factor at
+        decision ``T`` reads ONLY rows with ``available_at <= T`` — a quarter ending in
+        March is not knowable until its ~May filing, so reading it on a March decision
+        would be lookahead.
+
+        Line items are nullable (filings omit fields; navigated defensively). ``period_end``
+        is the natural/dedupe key; a restated quarter is overwritten by the later ingest
+        (documented v1 simplification — conservative, since ``available_at`` is the filing
+        date). Market cap is NOT fetched here; it is joined point-in-time at feature time
+        (price from the OHLCV lake x ``diluted_shares``).
+
+        Args:
+            instrument_id: Canonical CASH-equity id, e.g. ``"XUSE:CASH:AAPLUSD"``.
+            since: Inclusive lower bound on ``period_end`` (epoch ms UTC).
+            until: Exclusive upper bound on ``period_end`` (epoch ms UTC).
+
+        Returns:
+            Table conforming to :data:`FUNDAMENTALS_SCHEMA`, sorted by ``period_end``
+            (possibly empty; ``until == since`` is an empty no-op).
+
+        Raises:
+            ValueError: ``until < since``, or a non-``CASH`` id this source does not serve.
+            SchemaError: malformed id or an unparseable report date.
+        """
+        ticker = self._resolve_ticker(instrument_id)
+        if until < since:
+            raise ValueError(f"until ({until}) must be >= since ({since})")
+        if until == since:
+            return FUNDAMENTALS_SCHEMA.empty_table()
+        ingested_at: Ms = now_ms()
+        until_date = _ms_to_date(until - 1)
+
+        rows: list[dict[str, Any]] = []
+        for fin in self._paginate(
+            self._client.list_financials,
+            ticker=ticker,
+            timeframe="quarterly",
+            period_of_report_date_lte=until_date,
+            limit=_FINANCIALS_PAGE_LIMIT,
+        ):
+            end_raw = fin.get("end_date")
+            if not end_raw:
+                continue
+            period_end = _date_to_ms(str(end_raw))
+            if not since <= period_end < until:
+                continue
+            filing_raw = fin.get("filing_date")
+            available_at = (
+                _date_to_ms(str(filing_raw))
+                if filing_raw
+                else period_end + FUNDAMENTALS_FILING_LAG_MS
+            )
+            statements = fin.get("financials") or {}
+            inc = statements.get("income_statement") or {}
+            bs = statements.get("balance_sheet") or {}
+            # Polygon's DERIVED Q4 quarterly (FY minus the three reported quarters) can emit a
+            # nonsensical (often negative) diluted_average_shares; a share count <= 0 is
+            # unambiguous garbage that would corrupt market cap, so null it (F2 carries the
+            # last good positive value forward). Equity may legitimately be negative
+            # (distressed firms) so it is NOT guarded.
+            diluted_shares = _fin_value(inc, "diluted_average_shares")
+            if diluted_shares is not None and diluted_shares <= 0.0:
+                diluted_shares = None
+            rows.append(
+                {
+                    "period_end": period_end,
+                    "available_at": available_at,
+                    "fiscal_period": str(fin.get("fiscal_period") or ""),
+                    "fiscal_year": int(fin.get("fiscal_year") or 0),
+                    "revenues": _fin_value(inc, "revenues"),
+                    "cost_of_revenue": _fin_value(inc, "cost_of_revenue"),
+                    "gross_profit": _fin_value(inc, "gross_profit"),
+                    "operating_income": _fin_value(inc, "operating_income_loss"),
+                    "net_income": _fin_value(inc, "net_income_loss"),
+                    "equity": _fin_value(bs, "equity"),
+                    "assets": _fin_value(bs, "assets"),
+                    "diluted_shares": diluted_shares,
+                }
+            )
+
+        rows.sort(key=lambda r: r["period_end"])
+        table = pa.Table.from_pydict(
+            {
+                "instrument_id": [instrument_id] * len(rows),
+                "period_end": [r["period_end"] for r in rows],
+                "available_at": [r["available_at"] for r in rows],
+                "fiscal_period": [r["fiscal_period"] for r in rows],
+                "fiscal_year": [r["fiscal_year"] for r in rows],
+                "revenues": [r["revenues"] for r in rows],
+                "cost_of_revenue": [r["cost_of_revenue"] for r in rows],
+                "gross_profit": [r["gross_profit"] for r in rows],
+                "operating_income": [r["operating_income"] for r in rows],
+                "net_income": [r["net_income"] for r in rows],
+                "equity": [r["equity"] for r in rows],
+                "assets": [r["assets"] for r in rows],
+                "diluted_shares": [r["diluted_shares"] for r in rows],
+                "ingested_at": [ingested_at] * len(rows),
+            },
+            schema=FUNDAMENTALS_SCHEMA,
+        )
+        validate_table(table, Dataset.FUNDAMENTALS)
+        return table
+
 
 def _dollar_volume(agg: Mapping[str, Any]) -> float | None:
     """Dollar (quote) volume for one aggregate: ``vw * v`` when ``vw`` present, else ``c * v``.
@@ -698,6 +839,19 @@ def _dollar_volume(agg: Mapping[str, Any]) -> float | None:
         return vwap * volume
     close = _opt_float(agg.get("c"))
     return None if close is None else close * volume
+
+
+def _fin_value(statement: Mapping[str, Any], key: str) -> float | None:
+    """Extract a Polygon financials line-item value, or ``None`` if absent/unparseable.
+
+    Each line item is ``{"value": <num>, "unit": ..., "label": ..., "order": ...}`` or
+    missing entirely; this navigates ``statement[key]["value"]`` defensively so a filing
+    that omits a field yields a null column rather than raising (filings legitimately omit
+    fields — e.g. a financial firm has no ``cost_of_revenue``)."""
+    item = statement.get(key)
+    if not isinstance(item, Mapping):
+        return None
+    return _opt_float(item.get("value"))
 
 
 def _split_ratio(split: Mapping[str, Any]) -> float:
@@ -848,6 +1002,26 @@ class _HttpxPolygonClient:
             {
                 "ticker": ticker,
                 "ex_dividend_date.lte": ex_date_lte,
+                "limit": limit,
+                "cursor": cursor,
+            },
+        )
+
+    def list_financials(
+        self,
+        *,
+        ticker: str | None,
+        timeframe: str,
+        period_of_report_date_lte: str | None,
+        limit: int,
+        cursor: str | None,
+    ) -> Mapping[str, Any]:
+        return self._get(
+            "/vX/reference/financials",
+            {
+                "ticker": ticker,
+                "timeframe": timeframe,
+                "period_of_report_date.lte": period_of_report_date_lte,
                 "limit": limit,
                 "cursor": cursor,
             },
