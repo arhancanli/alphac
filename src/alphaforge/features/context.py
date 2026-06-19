@@ -93,7 +93,29 @@ _CA_COLUMNS: tuple[str, ...] = (
     "cash_amount",
 )
 
-_TS_COLUMNS: frozenset[str] = frozenset({"ts_open", "ts_funding", "available_at", "ex_date"})
+#: Fundamentals columns served to the equity value/quality factors. ``period_end`` and
+#: ``available_at`` are timestamps cast to int64 ms (both in :data:`_TS_COLUMNS`); ALL
+#: factor joins gate on ``available_at`` (the SEC filing date), NEVER ``period_end`` —
+#: a quarter is unknowable until filed (the fundamentals analogue of finding 18).
+_FUND_COLUMNS: tuple[str, ...] = (
+    "instrument_id",
+    "period_end",
+    "available_at",
+    "fiscal_period",
+    "fiscal_year",
+    "revenues",
+    "cost_of_revenue",
+    "gross_profit",
+    "operating_income",
+    "net_income",
+    "equity",
+    "assets",
+    "diluted_shares",
+)
+
+_TS_COLUMNS: frozenset[str] = frozenset(
+    {"ts_open", "ts_funding", "available_at", "ex_date", "period_end"}
+)
 
 
 def long_series(wide: pd.DataFrame, *, name: str | None = None) -> pd.Series:
@@ -161,6 +183,7 @@ class FeatureContext:
         self._panel_cache: dict[tuple[Timeframe, str], pd.DataFrame] = {}
         self._funding_cache: pd.DataFrame | None = None
         self._ca_cache: pd.DataFrame | None = None
+        self._fund_cache: pd.DataFrame | None = None
 
     # ------------------------------------------------------------- identity
 
@@ -265,6 +288,93 @@ class FeatureContext:
             )
             self._ca_cache = self._to_pandas(tbl, _CA_COLUMNS)
         return self._ca_cache.copy(deep=False)
+
+    def fundamentals(self) -> pd.DataFrame:
+        """Quarterly fundamentals rows in the window, pre-filtered to ``available_at <= end``.
+
+        The fundamentals analogue of :meth:`funding`/:meth:`corporate_actions`: one row per
+        ``(instrument, fiscal quarter)`` carrying the income-statement + balance-sheet line
+        items (columns: :data:`_FUND_COLUMNS`, with ``period_end`` / ``available_at`` as
+        int64 epoch ms). Masked on the stored ``available_at`` (the SEC filing date) — NEVER
+        ``period_end`` — so the served rows are the quarters knowable by the window end.
+        Per-decision-row PIT inside the window is the consumer's responsibility and is solved
+        by :meth:`fundamentals_asof_join` (each quarter folds only into bars whose own
+        decision could know it, ``available_at <= ts_open + Δ``). The crypto path reads empty
+        (perps have no fundamentals partitions), so it never perturbs a crypto factor —
+        byte-identical. Converted once and cached; returns a copy-on-write shallow copy.
+        """
+        if self._fund_cache is None:
+            tbl = self._reader.fundamentals(
+                list(self._instrument_ids),
+                start=self._start,
+                end=self._end,
+                as_of=self._end,
+            )
+            self._fund_cache = self._to_pandas(tbl, _FUND_COLUMNS)
+        return self._fund_cache.copy(deep=False)
+
+    def fundamentals_asof_join(
+        self,
+        bars_index: pd.MultiIndex,
+        *,
+        column: str,
+        frame: pd.DataFrame | None = None,
+        tf: Timeframe | None = None,
+    ) -> pd.Series:
+        """Last-known fundamentals ``column`` per ``(ts_open, instrument_id)``, PIT per row.
+
+        For each index entry the decision time is the bar close ``ts_open + tf.ms``; the
+        joined value is the latest fundamentals row of that instrument with
+        ``available_at <= ts_open + tf.ms`` (backward as-of merge on the stored
+        ``available_at`` — a quarter filed at ``available_at`` is invisible to decisions
+        before it). This forward-fills the latest FILED quarter across every daily session
+        until the next filing. NaN where no quarter is known yet.
+
+        ``frame`` defaults to :meth:`fundamentals`; a caller may pass a frame with DERIVED
+        columns (e.g. per-instrument TTM rolling sums computed on the sparse quarterly grid
+        BEFORE this join) as long as it carries ``instrument_id``, ``available_at``, and
+        ``column``. Returns a float64 Series named ``column`` aligned exactly to
+        ``bars_index``. Lookback discipline matches :meth:`funding_asof_join` — a consuming
+        spec must declare ``lookback_bars`` covering its filing-recency + TTM horizon or the
+        truncation harness fails it.
+        """
+        tf = tf if tf is not None else self._anchor_tf
+        if bars_index.nlevels != 2:
+            raise ValueError(
+                f"bars_index must be a 2-level (ts_open, instrument_id) MultiIndex, "
+                f"got {bars_index.nlevels} level(s)"
+            )
+        fund = self.fundamentals() if frame is None else frame
+        if fund.empty or column not in fund.columns:
+            return pd.Series(float("nan"), index=bars_index, dtype="float64", name=column)
+        left = pd.DataFrame(
+            {
+                "ts_open": bars_index.get_level_values(0).to_numpy(dtype="int64"),
+                "instrument_id": bars_index.get_level_values(1),
+            }
+        )
+        left["decision_ts"] = left["ts_open"] + tf.ms
+        right = fund[["instrument_id", "available_at", column]].copy()
+        right["available_at"] = right["available_at"].to_numpy(dtype="int64")
+        merged = pd.merge_asof(
+            left.sort_values("decision_ts", kind="stable"),
+            right.sort_values("available_at", kind="stable"),
+            left_on="decision_ts",
+            right_on="available_at",
+            by="instrument_id",
+            direction="backward",
+            allow_exact_matches=True,
+        )
+        out = pd.Series(
+            merged[column].to_numpy(dtype="float64"),
+            index=pd.MultiIndex.from_arrays(
+                [merged["ts_open"], merged["instrument_id"]],
+                names=("ts_open", "instrument_id"),
+            ),
+            dtype="float64",
+            name=column,
+        )
+        return out.reindex(bars_index).rename(column)
 
     # ------------------------------------------------------------- derived views
 

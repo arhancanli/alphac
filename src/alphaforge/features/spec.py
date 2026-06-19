@@ -67,6 +67,8 @@ class Family(StrEnum):
     LIQUIDITY = "liquidity"
     MARKET = "market"
     REGIME = "regime"
+    VALUE = "value"
+    QUALITY = "quality"
 
 
 type FeatureFn = Callable[[FeatureContext, FeatureSpec], pd.Series]

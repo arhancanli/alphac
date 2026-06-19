@@ -253,8 +253,12 @@ class TestTruncationAndParitySweep:
         # additions (S6 eq_rev_resid_21 — beta-residualized reversal; S7 eq_ilrev —
         # illiquidity-premium alpha) = 41. Both are finite-window, EQUITY-sleeve opt-in
         # (NOT in any crypto active set), so the sweep covers them at atol = 0 too.
-        assert len(ALL_SPECS) == 41
-        assert len(set(ALL_NAMES)) == 41
+        # PLUS the 6 F2 FUNDAMENTAL factors (eq_earnings_yield / eq_book_to_price /
+        # eq_sales_to_price value; eq_gross_profitability / eq_roe / eq_operating_margin
+        # quality) = 47. On the crypto lake their fundamentals read is empty -> all-NaN, so
+        # the sweep covers them at atol = 0 (NaN == NaN) and they never touch a crypto set.
+        assert len(ALL_SPECS) == 47
+        assert len(set(ALL_NAMES)) == 47
 
     @pytest.mark.parametrize("name", ALL_NAMES)
     def test_truncation_invariance_and_live_parity(self, env: Env, name: str) -> None:

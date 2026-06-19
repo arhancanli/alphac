@@ -219,6 +219,47 @@ class PITDataReader:
         result: pa.Table = self._con.execute(sql, params).to_arrow_table()
         return result.cast(schema_for(dataset))
 
+    def fundamentals(
+        self,
+        instrument_ids: Sequence[str],
+        *,
+        start: Ms,
+        end: Ms,
+        as_of: Ms,
+    ) -> pa.Table:
+        """Fundamentals rows with ``start <= period_end < end`` AND ``available_at <= as_of``.
+
+        The same PIT shape as :meth:`corporate_actions` — quarterly financial-statement
+        line items instead of splits/dividends. The PIT predicate uses the stored
+        ``available_at`` (SEC ``filing_date``) — NEVER ``period_end`` (a quarter ending
+        March is not knowable until its ~May filing, so reading it on a March decision is
+        lookahead). ``period_end`` is only the within-range window key (the schema natural
+        sort/dedupe key + partition year). Result conforms exactly to
+        ``FUNDAMENTALS_SCHEMA``, sorted by ``(instrument_id, period_end)``; empty for
+        missing instruments/partitions or an empty interval (crypto perps have no
+        fundamentals partitions, so the read is empty — byte-identical).
+        """
+        dataset = Dataset.FUNDAMENTALS
+        if end <= start or not instrument_ids:
+            return empty_table(dataset)
+        files = self._files(dataset, instrument_ids, start=start, end=end)
+        if not files:
+            return empty_table(dataset)
+        sql = f"""
+            SELECT instrument_id, period_end, available_at, fiscal_period, fiscal_year,
+                   revenues, cost_of_revenue, gross_profit, operating_income, net_income,
+                   equity, assets, diluted_shares, ingested_at
+            FROM read_parquet({_sql_file_list(files)})
+            WHERE list_contains(?::VARCHAR[], instrument_id)
+              AND epoch_ms(period_end) >= ?
+              AND epoch_ms(period_end) < ?
+              AND epoch_ms(available_at) <= ?
+            ORDER BY instrument_id, period_end
+        """
+        params = [list(instrument_ids), start, end, as_of]
+        result: pa.Table = self._con.execute(sql, params).to_arrow_table()
+        return result.cast(schema_for(dataset))
+
     def latest_bar_open(
         self,
         instrument_id: str,

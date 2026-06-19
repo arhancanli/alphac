@@ -68,6 +68,14 @@ from alphaforge.features.library.equity_price import (
     realized_vol,
     reversal,
 )
+from alphaforge.features.library.equity_fundamental import (
+    eq_book_to_price,
+    eq_earnings_yield,
+    eq_gross_profitability,
+    eq_operating_margin,
+    eq_roe,
+    eq_sales_to_price,
+)
 from alphaforge.features.library.equity_residual import (
     EQ_BETA_WINDOW,
     eq_rev_resid_21,
@@ -172,11 +180,17 @@ __all__ = [
     "eq_amihud_63",
     "eq_bab_252",
     "eq_beta_252",
+    "eq_book_to_price",
+    "eq_earnings_yield",
+    "eq_gross_profitability",
     "eq_ilrev",
     "eq_lowvol_252",
     "eq_mom_252_21",
+    "eq_operating_margin",
     "eq_rev_21",
     "eq_rev_resid_21",
+    "eq_roe",
+    "eq_sales_to_price",
     "eq_vol_252",
     "ewma_vol",
     "ewma_vol_from_returns",
