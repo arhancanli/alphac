@@ -118,6 +118,8 @@ class Ledger:
     """
 
     __slots__ = (
+        "_borrow_records",
+        "_borrow_total",
         "_cash",
         "_equity_ts",
         "_equity_values",
@@ -142,8 +144,10 @@ class Ledger:
         self._realized: dict[str, float] = {}
         self._total_fees: float = 0.0
         self._funding_total: float = 0.0
+        self._borrow_total: float = 0.0
         self._fill_records: list[dict[str, object]] = []
         self._funding_records: list[dict[str, object]] = []
+        self._borrow_records: list[dict[str, object]] = []
         self._equity_ts: list[Ms] = []
         self._equity_values: list[float] = []
 
@@ -306,6 +310,64 @@ class Ledger:
         )
         return payment
 
+    def apply_borrow(
+        self,
+        instrument_id: str,
+        ts: Ms,
+        borrow_frac_per_day: float,
+        days: float,
+        mark_price: float,
+    ) -> float:
+        """Accrue short-borrow carry over ``days`` CALENDAR days on a SHORT position.
+
+        The continuous short-financing leg of an equity long/short book (the analogue of
+        a perp's funding): a short seller pays the general-collateral borrow rate on the
+        short notional for every calendar day held, weekends included. Charged as::
+
+            payment = pos.qty * mark_price * borrow_frac_per_day * days     (pos.qty < 0)
+
+        so a SHORT (``qty < 0``) always pays (``payment < 0``, cash decreases). LONG/flat
+        positions never borrow (returns ``0.0``), and ``borrow_frac_per_day == 0`` (every
+        crypto perp — there is no borrow leg) is a no-op, keeping the crypto path
+        byte-identical. ``days`` is the calendar gap between consecutive marks (1.0 over a
+        weekday, 3.0 across a Fri->Mon hold), so borrow accrues over wall-clock time, not
+        sessions. Unknown instrument raises; a flat/absent position is a silent no-op.
+        """
+        if borrow_frac_per_day == 0.0 or days <= 0.0:
+            return 0.0
+        if self._instruments.get(instrument_id) is None:
+            raise KeyError(
+                f"borrow references unknown instrument {instrument_id!r}; "
+                "the ledger universe is fixed at construction"
+            )
+        _require_finite("borrow_frac_per_day", borrow_frac_per_day)
+        _require_finite("borrow days", days)
+        _require_finite("borrow mark_price", mark_price)
+        if mark_price <= 0.0:
+            raise ValueError(f"borrow mark_price must be > 0, got {mark_price!r}")
+
+        pos = self._positions.get(instrument_id)
+        if pos is None or pos.qty >= 0.0:
+            return 0.0  # only short positions borrow
+
+        payment = pos.qty * mark_price * borrow_frac_per_day * days  # qty<0 -> payment<0
+        new_cash = self._cash + payment
+        _require_finite(f"cash after borrow for {instrument_id!r}", new_cash)
+        self._cash = new_cash
+        self._borrow_total += payment
+        self._borrow_records.append(
+            {
+                "ts_borrow": ts,
+                "instrument_id": instrument_id,
+                "borrow_frac_per_day": borrow_frac_per_day,
+                "days": days,
+                "mark_price": mark_price,
+                "position_qty": pos.qty,
+                "payment_quote": payment,
+            }
+        )
+        return payment
+
     def mark(self, closes: Mapping[str, float], ts: Ms) -> AccountState:
         """Mark the book to market and record an equity-curve point.
 
@@ -373,6 +435,11 @@ class Ledger:
     def total_funding(self) -> float:
         """Cumulative net funding received in quote units (signed)."""
         return self._funding_total
+
+    @property
+    def total_borrow(self) -> float:
+        """Cumulative short-borrow carry paid in quote units (<= 0; 0 for a crypto book)."""
+        return self._borrow_total
 
     def positions(self) -> dict[str, Position]:
         """Open positions keyed by instrument id (frozen values, fresh dict)."""

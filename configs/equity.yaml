@@ -25,8 +25,16 @@ universe:
   # Rank-IC read while staying tractable for the (not-yet-columnar) backtester; widen
   # toward ~500-1000 once the scale arc (P6/P7) lands — the scale-guard tripwire gates it.
   size: 200
-  entry_rank: 160     # hysteresis: enter at top-160
-  exit_rank: 260      # leave only when falling below 260
+  entry_rank: 160     # hysteresis: enter at top-160 (top-200 is the best honest config;
+  exit_rank: 260      # wider top-500 DILUTED momentum net Sharpe 0.24 -> 0.07, 2026-06-19)
+
+signals:
+  # THE holding-period horizon h (sessions), shared by: the non-overlapping Rank-IC grid
+  # + EWMA-IC blend weighting, the walk-forward PURGE (purge_bars = h), and the mu_ann
+  # annualization. 21 sessions == a trading month == the rebalance cadence; it is also
+  # where equity momentum's Rank-IC is strongest (h=5/21 t~1.5-1.9 vs h=63 t~0.6). The
+  # crypto default is 72 (1h bars); equities hold a month, not three hours.
+  horizon_bars: 21
 
 costs:
   # US-equity frictions (only consulted because asset_class=equity). Deliberately

@@ -415,6 +415,10 @@ def test_golden_master_full(tmp_path: Path) -> None:
         "unfilled_final_bar": 1,  # the C29-close BTC flatten
         "forced_flat": 0,  # every instrument has bars to the end
         "funding_events_applied": 8,
+        # Crypto perps have no borrow leg (borrow_frac_per_day == 0), so the short-borrow
+        # accrual is skipped entirely -> 0 charges. This 0 is the byte-identity proof: the
+        # equity-only borrow leg leaves the crypto golden master untouched.
+        "borrow_charges_applied": 0,
     }
     orders = result.orders
     assert (orders["status"] == "dropped_missing_next_bar").sum() == 1

@@ -84,7 +84,9 @@ def _fill(
 
 
 def _assert_identity(ledger: Ledger, closes: dict[str, float], ts: int) -> None:
-    """equity == initial + realized + unrealized - fees + funding, continuously."""
+    """equity == initial + realized + unrealized - fees + funding + borrow, continuously
+    (total_borrow is <= 0 and 0 unless a short paid borrow, so this is unchanged for the
+    existing crypto tests)."""
     state = ledger.mark(closes, ts)
     unrealized = sum(
         p.qty * (closes[iid] - p.avg_entry_price) for iid, p in ledger.positions().items()
@@ -95,6 +97,7 @@ def _assert_identity(ledger: Ledger, closes: dict[str, float], ts: int) -> None:
         + unrealized
         - ledger.total_fees
         + ledger.total_funding
+        + ledger.total_borrow
     )
     assert state.equity_quote == pytest.approx(expected, abs=1e-9)
 
@@ -338,3 +341,66 @@ class TestMarkAndEquityCurve:
         view = ledger.positions()
         view.clear()
         assert PERP_ID in ledger.positions()
+
+
+class TestBorrow:
+    """The short-borrow carry leg (equity long/short financing analogue of funding)."""
+
+    RATE = 0.5 / 365.0  # 50 bp/yr general collateral as a per-day fraction
+
+    def test_short_pays_borrow_over_calendar_days(self, ledger: Ledger) -> None:
+        ledger.apply_fill(_fill(Side.SELL, 2.0, 100.0, 0.0, ts=1_000))  # short 2 @ 100
+        cash_before = ledger.cash
+        # 3 calendar days (a Fri->Mon hold), mark 100 -> notional 200 -> cost 200*rate*3
+        payment = ledger.apply_borrow(
+            PERP_ID, ts=2_000, borrow_frac_per_day=self.RATE, days=3.0, mark_price=100.0
+        )
+        expected = -2.0 * 100.0 * self.RATE * 3.0  # qty<0 -> payment<0 (a cost)
+        assert payment == pytest.approx(expected, abs=1e-12)
+        assert payment < 0.0
+        assert ledger.cash == pytest.approx(cash_before + expected, abs=1e-12)
+        assert ledger.total_borrow == pytest.approx(expected, abs=1e-12)
+        _assert_identity(ledger, {PERP_ID: 100.0}, ts=2_000)
+
+    def test_long_and_flat_never_borrow(self, ledger: Ledger) -> None:
+        ledger.apply_fill(_fill(Side.BUY, 2.0, 100.0, 0.0, ts=1_000))  # long
+        cash_after_fill = ledger.cash  # the buy spent cash; borrow must not move it
+        assert (
+            ledger.apply_borrow(
+                PERP_ID, ts=2_000, borrow_frac_per_day=self.RATE, days=1.0, mark_price=100.0
+            )
+            == 0.0
+        )
+        # flat instrument
+        assert (
+            ledger.apply_borrow(
+                SPOT_ID, ts=2_000, borrow_frac_per_day=self.RATE, days=1.0, mark_price=100.0
+            )
+            == 0.0
+        )
+        assert ledger.cash == cash_after_fill
+        assert ledger.total_borrow == 0.0
+
+    def test_zero_rate_is_noop_byte_identity(self, ledger: Ledger) -> None:
+        """borrow_frac_per_day == 0 (every crypto perp) is a pure no-op — the byte-identity
+        guarantee that the equity-only leg never perturbs a crypto book."""
+        ledger.apply_fill(_fill(Side.SELL, 5.0, 100.0, 0.0, ts=1_000))
+        cash_before = ledger.cash
+        assert (
+            ledger.apply_borrow(
+                PERP_ID, ts=2_000, borrow_frac_per_day=0.0, days=10.0, mark_price=100.0
+            )
+            == 0.0
+        )
+        assert ledger.cash == cash_before
+        assert ledger.total_borrow == 0.0
+
+    def test_borrow_unknown_instrument_raises(self, ledger: Ledger) -> None:
+        with pytest.raises(KeyError, match="unknown instrument"):
+            ledger.apply_borrow(
+                "BINANCE:PERP:ETHUSDT",
+                ts=1,
+                borrow_frac_per_day=self.RATE,
+                days=1.0,
+                mark_price=1.0,
+            )

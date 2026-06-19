@@ -142,6 +142,7 @@ COUNTER_NAMES: Final[tuple[str, ...]] = (
     "unfilled_final_bar",
     "forced_flat",
     "funding_events_applied",
+    "borrow_charges_applied",
 )
 
 
@@ -727,6 +728,11 @@ class EventDrivenBacktester:
         last_close: dict[str, float] = {}
         pending: list[OrderRequest] = []
         final_close = grid[-1]
+        # Short-borrow carry: a single general-collateral per-day rate (0 for a crypto
+        # perp book -> the accrual below is skipped, byte-identical). Accrued on the SHORT
+        # leg over the CALENDAR days between consecutive bars (weekends included).
+        borrow_rate = self._cost_model.borrow_frac_per_day()
+        prev_bar_ts: Ms | None = None
 
         for t in grid:
             counters["bars_processed"] += 1
@@ -736,6 +742,21 @@ class EventDrivenBacktester:
             # the prior open of a Monday decision is the preceding Friday session
             # (never a phantom weekend slot at ``t - tf.ms``).
             prev_open = self._calendar.floor_bar(t - 1, self._tf)
+
+            # (0a) short-borrow carry for the interval [prev_bar_ts, t] on the position
+            #      held INTO this bar (BEFORE today's fills change it), marked at the prior
+            #      close. days is the CALENDAR gap (1 over a weekday, 3 across a weekend),
+            #      so borrow accrues over wall-clock time. Skipped entirely when borrow_rate
+            #      is 0 (every crypto book) -> byte-identical.
+            if borrow_rate > 0.0 and prev_bar_ts is not None:
+                days = (t - prev_bar_ts) / _DAY_MS
+                for iid, pos in ledger.positions().items():
+                    if pos.qty < 0.0:
+                        mark = last_close.get(iid)
+                        if mark is not None:
+                            ledger.apply_borrow(iid, t, borrow_rate, days, mark)
+                            counters["borrow_charges_applied"] += 1
+            prev_bar_ts = t
 
             # (0) fill orders queued at the previous close against the bar
             #     opening at that close (ts_open == decision_ts).
@@ -1230,6 +1251,7 @@ class EventDrivenBacktester:
             "asset_class": self._asset_class.value,
             "instrument_ids": list(ids),
             "initial_cash": initial_cash,
+            "borrow_total": ledger.total_borrow,
             "no_trade_band_frac": self._no_trade_band_frac,
             "max_order_adv_frac": self._max_order_adv_frac,
             "fill_model": type(self._fill_model).__name__,
