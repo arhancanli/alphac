@@ -60,19 +60,34 @@ class UniverseStore:
         self._paths = paths
         self._writer = LakeWriter(paths)
 
-    def write_intervals(self, tbl: pa.Table, *, replace: bool = True) -> WriteStats:
+    def write_intervals(
+        self,
+        tbl: pa.Table,
+        *,
+        replace: bool = True,
+        scope_ids: frozenset[str] | None = None,
+    ) -> WriteStats:
         """Persist membership intervals; returns the writer's :class:`WriteStats`.
 
         ``tbl`` must conform to ``UNIVERSE_SCHEMA`` (validated *before* anything is
         touched on disk — a failed call leaves the lake unchanged, raising
         :class:`~alphaforge.core.errors.SchemaError`).
 
-        - ``replace=True`` (default, the rebuild path): the entire
-          ``universe_membership`` dataset directory is removed first, then ``tbl`` is
-          written. Full-replace is the correct semantic for a rebuild because the
-          table is **derived** — a pure function of the OHLCV lake + instrument
-          record; stale intervals from a previous parameterization must not survive a
-          regeneration (the lake, not this table, is the source of truth).
+        - ``replace=True``, ``scope_ids=None`` (default, single-sleeve rebuild): the
+          entire ``universe_membership`` dataset directory is removed first, then
+          ``tbl`` is written. Full-replace is the correct semantic for a single-sleeve
+          rebuild because the table is **derived** — a pure function of the OHLCV lake
+          + instrument record; stale intervals from a previous parameterization must
+          not survive a regeneration (the lake, not this table, is the source of truth).
+        - ``replace=True``, ``scope_ids`` given (**per-sleeve / cross-asset rebuild**):
+          remove ONLY the partitions whose ``instrument_id`` is in ``scope_ids``, then
+          write ``tbl``. ``scope_ids`` is the full instrument-id set of the sleeve being
+          rebuilt (every name the SCD2 record knows for that asset class — including
+          delisted ones, so stale spans of names that left the universe are still
+          cleared). Other sleeves' partitions are left untouched, so a crypto rebuild no
+          longer wipes the equity universe and the two coexist in one lake — the
+          foundation of the unified cross-asset book. The derived-data guarantee holds
+          per sleeve: each sleeve's spans are a pure function of its own lake slice.
         - ``replace=False`` (incremental, e.g. the live loop closing a delisting):
           merge-upsert by natural key ``(instrument_id, effective_from)`` — an
           incoming row supersedes the stored row with the same key (so closing an
@@ -82,7 +97,17 @@ class UniverseStore:
         if replace:
             dataset_dir = self._paths.root / Dataset.UNIVERSE_MEMBERSHIP.value
             if dataset_dir.is_dir():
-                shutil.rmtree(dataset_dir)
+                if scope_ids is None:
+                    shutil.rmtree(dataset_dir)
+                else:
+                    _prefix = "instrument_id="
+                    for part_dir in dataset_dir.iterdir():
+                        if (
+                            part_dir.is_dir()
+                            and part_dir.name.startswith(_prefix)
+                            and part_dir.name.removeprefix(_prefix) in scope_ids
+                        ):
+                            shutil.rmtree(part_dir)
         return self._writer.write(Dataset.UNIVERSE_MEMBERSHIP, tbl)
 
     def read_intervals(self, as_of: Ms | None = None) -> pa.Table:

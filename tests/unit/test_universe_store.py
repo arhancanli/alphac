@@ -105,6 +105,42 @@ class TestWriteRead:
         store.write_intervals(intervals((BTC, T_2024_FEB, None, 1, "enter_top20")))
         assert rows_of(store.read_intervals()) == [(BTC, T_2024_FEB, None, 1, "enter_top20")]
 
+    def test_scoped_replace_preserves_other_sleeves(self, store: UniverseStore) -> None:
+        """Per-sleeve rebuild: scope_ids clears only the named sleeve, not the lake.
+
+        This is the single-tenant fix the unified cross-asset book depends on — a crypto
+        universe rebuild must not wipe the equity universe (and vice versa).
+        """
+        eq_a = "XUSE:CASH:AAPLUSD"
+        eq_b = "XUSE:CASH:MSFTUSD"
+        # Both sleeves coexist after independent writes.
+        store.write_intervals(
+            intervals(
+                (BTC, T_2023_JUL, None, 1, "enter_top20"),
+                (ETH, T_2023_JUL, None, 2, "enter_top20"),
+            )
+        )
+        store.write_intervals(
+            intervals(
+                (eq_a, T_2023_JUL, None, 1, "enter_top200"),
+                (eq_b, T_2023_JUL, None, 2, "enter_top200"),
+            ),
+            scope_ids=frozenset({eq_a, eq_b}),
+        )
+        assert store.membership_asof(T_2023_JUL) == frozenset({BTC, ETH, eq_a, eq_b})
+        # Rebuild ONLY crypto (scope = every crypto id, incl. a delisted one not present).
+        store.write_intervals(
+            intervals((BTC, T_2024_FEB, None, 1, "enter_top20")),
+            scope_ids=frozenset({BTC, ETH, FTT}),
+        )
+        # Crypto replaced (ETH dropped, BTC re-dated); equity untouched.
+        assert store.membership_asof(T_2024_FEB) == frozenset({BTC, eq_a, eq_b})
+        assert rows_of(store.read_intervals()) == [
+            (BTC, T_2024_FEB, None, 1, "enter_top20"),
+            (eq_a, T_2023_JUL, None, 1, "enter_top200"),
+            (eq_b, T_2023_JUL, None, 2, "enter_top200"),
+        ]
+
     def test_merge_upsert_closes_open_interval_without_replace(self, store: UniverseStore) -> None:
         store.write_intervals(intervals((FTT, T_2023_JUL, None, 5, "enter_top20")))
         # Live loop observes the delisting: same natural key, effective_to now set.

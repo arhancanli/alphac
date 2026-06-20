@@ -249,7 +249,13 @@ class UniverseBuilder:
             closed + list(open_members.values()),
             key=lambda s: (s.instrument_id, s.effective_from),
         )
-        self._store.write_intervals(_spans_table(spans), replace=True)
+        # Per-sleeve replace when this builder is scoped to one asset class: clear only
+        # THIS sleeve's partitions (every known instrument_id of the class, incl. delisted)
+        # so a rebuild of one sleeve never wipes the other — the two universes coexist in
+        # one lake for the unified cross-asset book. ``asset_class=None`` keeps the legacy
+        # full-replace (single-sleeve store; byte-identical to pre-sleeve behavior).
+        scope_ids = frozenset(lifecycle) if self._asset_class is not None else None
+        self._store.write_intervals(_spans_table(spans), replace=True, scope_ids=scope_ids)
         return RebuildStats(
             rebalances=len(instants),
             intervals=len(spans),
