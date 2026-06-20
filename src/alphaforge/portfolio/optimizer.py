@@ -173,6 +173,12 @@ class PortfolioConstraints:
     #: Number of top names held in long-only mode (a broad tilt basket, not 10 concentrated
     #: bets). Ignored when long_only is False.
     long_only_k: int = 50
+    #: L/S breadth: names held PER SIDE (top-K long / bottom-K short). ``None`` keeps the v1
+    #: default K = max(1, min(10, n//4)) — byte-identical. A larger K (e.g. 50) harvests the
+    #: universe's breadth (fundamental law: IR ≈ IC·√breadth); 10/10 on a 200-name universe
+    #: throws away ~95% of the cross-section. Capped at n//2 so the long/short legs never
+    #: overlap. The single highest-impact, non-data-mining Sharpe lever (deep-audit DESK 3).
+    rank_top_k: int | None = None
 
     def __post_init__(self) -> None:
         for name in ("gross_max", "net_max", "w_max", "turnover_max"):
@@ -181,6 +187,10 @@ class PortfolioConstraints:
                 raise ValueError(f"PortfolioConstraints.{name} must be finite and > 0")
         if self.w_max > self.gross_max:
             raise ValueError(f"w_max ({self.w_max}) must be <= gross_max ({self.gross_max})")
+        if self.long_only_k < 1:
+            raise ValueError(f"long_only_k must be >= 1, got {self.long_only_k}")
+        if self.rank_top_k is not None and self.rank_top_k < 1:
+            raise ValueError(f"rank_top_k must be >= 1 or None, got {self.rank_top_k}")
         if self.long_only_k < 1:
             raise ValueError(f"long_only_k must be >= 1, got {self.long_only_k}")
 
@@ -193,6 +203,7 @@ class PortfolioConstraints:
             net_max=p.net_max,
             w_max=p.w_max,
             turnover_max=p.turnover_max,
+            rank_top_k=p.rank_top_k,
         )
 
 
@@ -327,7 +338,12 @@ class RankEqualVolFallback:
         # floor needs k <= n//2 so the long (order[:k]) and short (order[n-k:])
         # legs never overlap; n=1 has no cross-sectional rank (long==short would
         # be the same name) so it is genuinely flat, not a thin-universe hole.
-        k = max(1, min(10, n // 4)) if n >= 2 else 0
+        # Names per side: the configurable breadth (rank_top_k) capped so long/short never
+        # overlap (k <= n//2); else the v1 default min(10, n//4) (byte-identical when unset).
+        if c.rank_top_k is not None:
+            k = max(1, min(c.rank_top_k, n // 2)) if n >= 2 else 0
+        else:
+            k = max(1, min(10, n // 4)) if n >= 2 else 0
         weights = np.zeros(n, dtype=np.float64)
         if k > 0:
             order = np.argsort(-mu, kind="stable")

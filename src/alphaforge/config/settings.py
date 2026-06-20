@@ -227,6 +227,9 @@ class PortfolioCfg(BaseModel):
     vol_target_ann: float = Field(default=0.15, gt=0.0, le=1.0)
     vol_scale_max: float = Field(default=1.5, ge=1.0)
     no_trade_band: float = Field(default=0.0010, ge=0.0, lt=0.1)
+    #: L/S rank-allocator breadth (names per side). None -> v1 default min(10, n//4); a
+    #: larger value (e.g. 50) harvests universe breadth for a higher Sharpe (IR ≈ IC·√N).
+    rank_top_k: int | None = Field(default=None, ge=1)
 
     @model_validator(mode="after")
     def _check_limit_ordering(self) -> Self:
