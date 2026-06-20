@@ -179,6 +179,10 @@ class PortfolioConstraints:
     #: throws away ~95% of the cross-section. Capped at n//2 so the long/short legs never
     #: overlap. The single highest-impact, non-data-mining Sharpe lever (deep-audit DESK 3).
     rank_top_k: int | None = None
+    #: Enforce exact dollar-neutrality (Σw = 0) on the L/S rank book by normalizing each leg
+    #: to equal gross. Default OFF -> the v1 'union to half-gross' path is byte-identical.
+    #: Removes the inverse-vol net-dollar tilt (uncompensated variance + hidden short-beta).
+    dollar_neutral: bool = False
 
     def __post_init__(self) -> None:
         for name in ("gross_max", "net_max", "w_max", "turnover_max"):
@@ -204,6 +208,7 @@ class PortfolioConstraints:
             w_max=p.w_max,
             turnover_max=p.turnover_max,
             rank_top_k=p.rank_top_k,
+            dollar_neutral=p.dollar_neutral,
         )
 
 
@@ -360,15 +365,34 @@ class RankEqualVolFallback:
                     "inverse-vol weights are undefined"
                 )
             weights[active] = sign[active] / sigma[active]
-            target_gross = 0.5 * c.gross_max
-            gross = float(np.abs(weights).sum())
-            if gross > 0.0:
-                weights *= target_gross / gross
+            if c.dollar_neutral:
+                # DOLLAR-NEUTRAL: normalize each leg to equal gross (0.25*gross_max) so
+                # Σw = 0 exactly. The default 'normalize the union to half-gross' lets the
+                # inverse-vol asymmetry between legs leak a net-dollar tilt (measured -11%
+                # net-short on momentum -> ~11% uncompensated variance + a hidden short-beta
+                # bet; deep-audit LEVER 1). Per-leg w_max clip + per-leg renorm preserves
+                # the balance. Default OFF -> the union path below is byte-identical.
+                half = 0.25 * c.gross_max
+                for leg in (weights > 0.0, weights < 0.0):
+                    g = float(np.abs(weights[leg]).sum())
+                    if g > 0.0:
+                        weights[leg] *= half / g
                 weights = np.clip(weights, -c.w_max, c.w_max)
-                gross_clipped = float(np.abs(weights).sum())
-                max_abs = float(np.abs(weights).max())
-                if gross_clipped > 0.0 and max_abs > 0.0:
-                    weights *= min(target_gross / gross_clipped, c.w_max / max_abs)
+                for leg in (weights > 0.0, weights < 0.0):
+                    g = float(np.abs(weights[leg]).sum())
+                    ma = float(np.abs(weights[leg]).max()) if bool(leg.any()) else 0.0
+                    if g > 0.0 and ma > 0.0:
+                        weights[leg] *= min(half / g, c.w_max / ma)
+            else:
+                target_gross = 0.5 * c.gross_max
+                gross = float(np.abs(weights).sum())
+                if gross > 0.0:
+                    weights *= target_gross / gross
+                    weights = np.clip(weights, -c.w_max, c.w_max)
+                    gross_clipped = float(np.abs(weights).sum())
+                    max_abs = float(np.abs(weights).max())
+                    if gross_clipped > 0.0 and max_abs > 0.0:
+                        weights *= min(target_gross / gross_clipped, c.w_max / max_abs)
 
         ex_ante = float(np.sqrt(max(weights @ cov @ weights, 0.0)))
         return OptResult(
