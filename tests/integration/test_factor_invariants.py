@@ -93,6 +93,24 @@ SAMPLES = [T0 + (k + 1) * HOUR for k in SAMPLE_BARS]
 ALL_SPECS: list[FeatureSpec] = default_registry().all_specs()
 ALL_NAMES = [s.name for s in ALL_SPECS]
 
+#: F2 fundamental factors REQUIRE the fundamentals lake (Dataset.FUNDAMENTALS), which this
+#: crypto test fixture has none of -> they are legitimately all-NaN here. The truncation/
+#: parity sweep still covers them (NaN == NaN, atol=0); the NON-NaN warmup-boundary tests
+#: (which assert a real value warms up) cannot apply without fundamentals data, so they are
+#: parametrized over the non-fundamental factors only. Their warmup is covered on real data
+#: by the equity IC report + the equity integration parity test.
+_NEEDS_FUNDAMENTALS: frozenset[str] = frozenset(
+    {
+        "eq_earnings_yield",
+        "eq_book_to_price",
+        "eq_sales_to_price",
+        "eq_gross_profitability",
+        "eq_roe",
+        "eq_operating_margin",
+    }
+)
+WARMUP_NAMES = [n for n in ALL_NAMES if n not in _NEEDS_FUNDAMENTALS]
+
 
 # ------------------------------------------------------------------------ lake build
 
@@ -279,7 +297,7 @@ class TestTruncationAndParitySweep:
 
 
 class TestWarmupBoundary:
-    @pytest.mark.parametrize("name", ALL_NAMES)
+    @pytest.mark.parametrize("name", WARMUP_NAMES)
     def test_non_nan_at_sampled_decision_bars(self, env: Env, name: str) -> None:
         # Non-vacuity for the parity sweep: every spec produces a real value for
         # every instrument at every sampled decision bar.
@@ -289,7 +307,7 @@ class TestWarmupBoundary:
                 value = env.history.loc[(ts, iid), name]
                 assert math.isfinite(float(value)), f"{name} NaN at bar {k} for {iid}"
 
-    @pytest.mark.parametrize("name", ALL_NAMES)
+    @pytest.mark.parametrize("name", WARMUP_NAMES)
     def test_nan_at_genesis_and_first_valid_within_lookback(self, env: Env, name: str) -> None:
         spec = _spec(name)
         deadline = T0 + (spec.lookback_bars - 1) * HOUR

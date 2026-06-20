@@ -237,16 +237,29 @@ def adjusted_close(
             continue
         ex_date = int(a_ex[k])
         avail = int(a_avail[k])
-        # Per-row PIT gate: knowable by this row's close AND still future-relative to
-        # the row being adjusted (ex strictly after the bar). A row with ts_open >=
-        # ex_date is already on the post-action side and needs no back-adjustment.
-        applies = (decision >= avail) & (grid < ex_date)
-        if not applies.any():
-            continue
         action_type = str(a_type[k])
         if action_type == "split":
-            factor[applies, j] *= float(a_ratio[k])
+            # SPLITS back-adjust EVERY pre-ex bar (grid < ex_date). NOT the per-row
+            # `decision >= avail` gate (the historical-bug: with available_at = ex_date + lag
+            # and no declaration_date it was UNSATISFIABLE -> not ONE of ~6,900 splits ever
+            # adjusted, so every price factor ran on split-broken prices -- a fake -90% crash
+            # on every split, hitting exactly the momentum winners). The frame is already
+            # masked to available_at <= as_of by the reader (ctx.corporate_actions uses
+            # as_of=end), so every split here is knowable by the panel's decision cutoff.
+            # Back-adjustment is the right model for a factor: a split inside the lookback is
+            # in the PAST relative to the factor's decision T (T > ex) and must fold into the
+            # pre-ex bars; a split AFTER T cancels in any ratio factor (both endpoints
+            # adjusted) -> PIT-safe and batch/as-of FACTOR-parity-safe.
+            applies = grid < ex_date
+            if applies.any():
+                factor[applies, j] *= float(a_ratio[k])
         elif action_type == "dividend":
+            # Dividends keep the per-row PIT gate (the total-return factor anchors on the
+            # ex-close, so it is path-dependent, NOT a window-invariant ratio). v1 factor
+            # path is SPLIT-ONLY (include_dividends=False), so this branch is inert there.
+            applies = (decision >= avail) & (grid < ex_date)
+            if not applies.any():
+                continue
             if not include_dividends:
                 continue  # v1 factor path: SPLIT-ONLY (window-invariant, no ex-close anchor)
             cash = float(a_cash[k])

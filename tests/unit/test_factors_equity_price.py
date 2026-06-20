@@ -354,37 +354,47 @@ class TestAdjustedClosePIT:
         raw_ret = math.log(raw["A"].iloc[ex_pos] / raw["A"].iloc[ex_pos - 1])
         assert raw_ret < -0.6  # the un-adjusted garbage we are neutralizing
 
-    def test_split_invisible_before_declaration_per_decision_row(self) -> None:
-        # The CROSS-ROW PIT assertion (EQUITIES_CRITIQUE B5). A split is DECLARED
-        # (knowable) at `decl_pos` and goes ex at `ex_pos` (decl < ex, the realistic
-        # weeks-ahead announcement). The per-decision-row gate folds the split into a
-        # pre-ex bar `s` ONLY when it is knowable at s's own close (available_at <=
-        # ts_open_s + Δ) — so a pre-ex bar BEFORE the declaration stays RAW (a PIT
-        # trader standing there did not know the split existed), while a pre-ex bar
-        # AT/AFTER the declaration folds x0.5. This proves the factor is a function of
-        # the ROW, not back-applied window-wide (the exact funding-finding-18 trap).
+    def test_split_back_adjusts_every_pre_ex_bar_in_frame(self) -> None:
+        # CORRECTED MODEL (replaces test_split_invisible_before_declaration_per_decision_row,
+        # which asserted a per-decision-row gate that was UNSATISFIABLE in production:
+        # available_at = ex_date + lag and no declaration_date made (decision >= avail) &
+        # (grid < ex) always FALSE -> not ONE of ~6,900 lake splits ever adjusted, so every
+        # equity price factor silently ran on split-broken prices, a fake -50%..-98% crash on
+        # every split). Back-adjustment is the right model for a FACTOR: a split inside the
+        # lookback is PAST relative to the factor's decision T (T > ex) and must fold into the
+        # pre-ex bars; a split AFTER T cancels in any ratio factor (both endpoints adjusted),
+        # so adjusting the as-of-masked panel is PIT-safe. PIT knowability is enforced UPSTREAM
+        # by the reader (FeatureContext.corporate_actions masks available_at <= as_of=end), so
+        # a not-yet-knowable split is simply ABSENT from `actions` here, never adjusted per-row.
         n = 14
-        decl_pos = 4  # declaration / available_at
-        ex_pos = 9  # ex-date (5 bars after declaration)
+        ex_pos = 9
         idx = [T0 + k * DAY for k in range(n)]
         raw = pd.DataFrame({"A": [100.0] * ex_pos + [50.0] * (n - ex_pos)}, index=idx)
-        actions = self._actions("A", ex_date=idx[ex_pos], available_at=idx[decl_pos], ratio=0.5)
+        # available_at = ex_date + 1 day: the EXACT flat-files case (no declaration_date) that
+        # the old gate made unsatisfiable. Every pre-ex bar must STILL fold x0.5.
+        actions = self._actions("A", ex_date=idx[ex_pos], available_at=idx[ex_pos] + DAY, ratio=0.5)
         adj = adjusted_close(raw, actions, tf_ms=DAY)
-        # Pre-declaration pre-ex bars whose decision_ts is strictly < available_at:
-        # UNKNOWABLE -> stay raw 100 (PIT). Row s has decision_ts = idx[s] + Δ, so the
-        # last strictly-unknowable row is decl_pos - 2 (idx[decl_pos-2]+Δ = idx[decl_pos-1]
-        # < available_at = idx[decl_pos]).
-        for p in range(decl_pos - 1):  # rows 0..decl_pos-2
-            assert adj["A"].iloc[p] == pytest.approx(100.0, rel=1e-12), p
-        # The bar at decl_pos-1 has decision_ts = idx[decl_pos] == available_at, so it
-        # is exactly knowable (boundary: available_at <= ts_open + Δ) -> folds x0.5.
-        assert adj["A"].iloc[decl_pos - 1] == pytest.approx(50.0, rel=1e-12)
-        # Declared-and-pre-ex bars: knowable AND future-relative -> fold x0.5.
-        for p in range(decl_pos, ex_pos):
+        for p in range(ex_pos):  # EVERY pre-ex bar back-adjusts x0.5 (was the bug: stayed 100)
             assert adj["A"].iloc[p] == pytest.approx(50.0, rel=1e-12), p
-        # Post-ex bars: already post-split -> raw.
-        for p in range(ex_pos, n):
-            assert adj["A"].iloc[p] == pytest.approx(50.0, rel=1e-12), p  # raw is already 50
+        for p in range(ex_pos, n):  # post-ex bars untouched (already 50)
+            assert adj["A"].iloc[p] == pytest.approx(50.0, rel=1e-12), p
+        # the cross-split ADJUSTED close-to-close return is ~0 (the fake crash is neutralized)
+        assert abs(math.log(adj["A"].iloc[ex_pos] / adj["A"].iloc[ex_pos - 1])) < 1e-12
+
+    def test_unknowable_split_is_absent_from_frame_not_adjusted_per_row(self) -> None:
+        # The PIT guarantee the old per-row test was groping for, stated correctly: knowability
+        # is the READER's job (it masks available_at <= as_of), NOT adjusted_close's. A split
+        # the reader has NOT yet served (because available_at > as_of) is simply absent from
+        # `actions`, so the panel is raw -- there is no per-row "invisible" adjustment. Here we
+        # pass an EMPTY actions frame (the reader's output when nothing is knowable yet): the
+        # panel must equal raw exactly (no lookahead-folded split).
+        n = 6
+        idx = [T0 + k * DAY for k in range(n)]
+        raw = pd.DataFrame({"A": [100.0, 100.0, 100.0, 50.0, 50.0, 50.0]}, index=idx)
+        empty = self._actions("A", ex_date=idx[3], available_at=idx[3], ratio=0.5).iloc[0:0]
+        adj = adjusted_close(raw, empty, tf_ms=DAY)
+        for p in range(n):
+            assert adj["A"].iloc[p] == pytest.approx(raw["A"].iloc[p], rel=1e-12), p
 
     def test_post_ex_rows_are_never_back_adjusted(self) -> None:
         # A split only folds into rows STRICTLY BEFORE its ex-date; rows on/after the
