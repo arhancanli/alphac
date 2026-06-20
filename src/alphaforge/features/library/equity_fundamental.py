@@ -48,12 +48,15 @@ if TYPE_CHECKING:
     from alphaforge.features.context import FeatureContext
 
 __all__ = [
+    "eq_asset_growth",
     "eq_book_to_price",
     "eq_earnings_yield",
     "eq_gross_profitability",
     "eq_operating_margin",
+    "eq_quality_composite",
     "eq_roe",
     "eq_sales_to_price",
+    "eq_value_composite",
 ]
 
 _TTM_QUARTERS: Final[int] = 4
@@ -262,6 +265,102 @@ def _eq_operating_margin_fn(ctx: FeatureContext, spec: FeatureSpec) -> pd.Series
     return pd.Series(out, index=idx, dtype="float64", name=spec.name)
 
 
+# --------------------------------------------------------------- pre-registered composites
+# docs/design/PRE_REGISTRATION.md: equal-weight cross-sectional z-composites (NOT IC-weighted
+# blends — IC weighting is an in-sample fit). Each component is winsorized 1/99 then z-scored
+# within the PIT cross-section; the composite is the mean of the AVAILABLE component z-scores
+# (>= min_valid required). The engine re-winsorizes/z-scores the result (ordering-preserving).
+
+_WINSOR: Final[float] = 0.01
+_MIN_CS_NAMES: Final[int] = 5
+"""Minimum names in a cross-section before a z-score is meaningful (else all-NaN that bar)."""
+
+
+def _cs_zscore(s: pd.Series) -> pd.Series:
+    """Winsorize 1/99 then z-score WITHIN each ts_open cross-section (index level 0).
+
+    Prefix-independent: each ts_open is standardized in isolation, so a truncated frame's
+    overlapping bars are byte-identical (the cross-section at t depends only on bar-t values).
+    """
+
+    def _z(g: pd.Series) -> pd.Series:
+        v = g.to_numpy(dtype="float64")
+        finite = np.isfinite(v)
+        if int(finite.sum()) < _MIN_CS_NAMES:
+            return pd.Series(np.nan, index=g.index, dtype="float64")
+        lo = np.nanquantile(v, _WINSOR)
+        hi = np.nanquantile(v, 1.0 - _WINSOR)
+        w = np.clip(v, lo, hi)
+        mu = np.nanmean(w)
+        sd = np.nanstd(w)
+        out = (w - mu) / sd if sd > 0.0 else np.zeros_like(w)
+        out[~finite] = np.nan
+        return pd.Series(out, index=g.index, dtype="float64")
+
+    return s.groupby(level=0, group_keys=False).apply(_z)
+
+
+def _equal_weight_composite(
+    components: list[pd.Series], idx: pd.MultiIndex, *, min_valid: int, name: str
+) -> pd.Series:
+    """Mean of the available per-component cross-sectional z-scores; NaN if < min_valid present."""
+    zs = [_cs_zscore(c).reindex(idx) for c in components]
+    mat = pd.concat(zs, axis=1)
+    valid = mat.notna().sum(axis=1).to_numpy()
+    comp = mat.mean(axis=1, skipna=True).to_numpy(dtype="float64")
+    comp[valid < min_valid] = np.nan
+    return pd.Series(comp, index=idx, dtype="float64", name=name)
+
+
+def _eq_value_composite_fn(ctx: FeatureContext, spec: FeatureSpec) -> pd.Series:
+    """Value composite = equal-weight CS-z of [B/P, E/P, S/P], >=2-of-3 required (Asness/HML)."""
+    idx = _grid_index(ctx)
+    if _fundamental_frame(ctx).empty:
+        return pd.Series(np.nan, index=idx, dtype="float64", name=spec.name)
+    comps = [_eq_book_to_price_fn(ctx, spec), _eq_earnings_yield_fn(ctx, spec),
+             _eq_sales_to_price_fn(ctx, spec)]
+    return _equal_weight_composite(comps, idx, min_valid=2, name=spec.name)
+
+
+def _eq_quality_composite_fn(ctx: FeatureContext, spec: FeatureSpec) -> pd.Series:
+    """Quality composite = equal-weight CS-z of [GP/A, ROE], >=1 required (Novy-Marx/QMJ)."""
+    idx = _grid_index(ctx)
+    if _fundamental_frame(ctx).empty:
+        return pd.Series(np.nan, index=idx, dtype="float64", name=spec.name)
+    comps = [_eq_gross_profitability_fn(ctx, spec), _eq_roe_fn(ctx, spec)]
+    return _equal_weight_composite(comps, idx, min_valid=1, name=spec.name)
+
+
+def _lag_by_instrument(frame: pd.DataFrame, col: str, k: int) -> pd.Series:
+    """Value of ``col`` from ``k`` reported quarters earlier, per instrument (prefix-safe)."""
+    vals = frame[col].to_numpy(dtype="float64")
+    out = np.full(len(frame), np.nan, dtype="float64")
+    for positions in frame.groupby("instrument_id", sort=False).indices.values():
+        if len(positions) > k:
+            out[positions[k:]] = vals[positions[:-k]]
+    return pd.Series(out, index=frame.index, dtype="float64")
+
+
+def _eq_asset_growth_fn(ctx: FeatureContext, spec: FeatureSpec) -> pd.Series:
+    """Asset growth = TTM-lag YoY total-asset growth (Fama-French CMA / Cooper-Gulen-Schill).
+
+    growth = assets_t / assets_{t-4q} - 1. direction = -1 (LOW asset growth -> high expected
+    return: the conservative-minus-aggressive investment premium). NaN where the 4-quarters-ago
+    asset base is non-positive or unavailable.
+    """
+    f = ctx.fundamentals()
+    idx = _grid_index(ctx)
+    if f.empty:
+        return pd.Series(np.nan, index=idx, dtype="float64", name=spec.name)
+    f = f.sort_values(["instrument_id", "period_end"], kind="stable").reset_index(drop=True)
+    f["assets_lag4"] = _lag_by_instrument(f, "assets", _TTM_QUARTERS)
+    a = ctx.fundamentals_asof_join(idx, column="assets", frame=f).to_numpy(dtype="float64")
+    a4 = ctx.fundamentals_asof_join(idx, column="assets_lag4", frame=f).to_numpy(dtype="float64")
+    out = a / a4 - 1.0
+    out[~(a4 > 0.0)] = np.nan
+    return pd.Series(out, index=idx, dtype="float64", name=spec.name)
+
+
 # --------------------------------------------------------------- registered factories
 
 
@@ -316,3 +415,36 @@ def eq_roe() -> FeatureSpec:
 def eq_operating_margin() -> FeatureSpec:
     """Operating-margin quality factor: TTM operating income / TTM revenues. direction +1, CS."""
     return _spec("eq_operating_margin", Family.QUALITY, _eq_operating_margin_fn)
+
+
+@feature
+def eq_value_composite() -> FeatureSpec:
+    """Pre-registered VALUE composite: equal-weight CS-z of B/P+E/P+S/P (>=2-of-3). +1, CS."""
+    return _spec("eq_value_composite", Family.VALUE, _eq_value_composite_fn)
+
+
+@feature
+def eq_quality_composite() -> FeatureSpec:
+    """Pre-registered QUALITY composite: equal-weight CS-z of GP/A+ROE (>=1). +1, CS."""
+    return _spec("eq_quality_composite", Family.QUALITY, _eq_quality_composite_fn)
+
+
+@feature
+def eq_asset_growth() -> FeatureSpec:
+    """Pre-registered INVESTMENT factor: YoY asset growth (Fama-French CMA). direction -1, CS.
+
+    Larger lookback than the ratio factors: the YoY lag needs 5 reported quarters (current +
+    4 back) inside compute_asof's minimal window, plus the filing-recency reach."""
+    return FeatureSpec(
+        name="eq_asset_growth",
+        family=Family.QUALITY,
+        direction=-1,  # LOW asset growth = high expected return (conservative-minus-aggressive)
+        cross_sectional=True,
+        lookback_bars=(_TTM_QUARTERS + 2) * _SESSIONS_PER_QUARTER + _RECENCY_SESSIONS + 1,
+        params={
+            "ttm_quarters": _TTM_QUARTERS,
+            "sessions_per_quarter": _SESSIONS_PER_QUARTER,
+            "recency_sessions": _RECENCY_SESSIONS,
+        },
+        fn=_eq_asset_growth_fn,
+    )
