@@ -85,6 +85,7 @@ class BookResult:
     sleeve_returns: dict[str, np.ndarray]  # daily returns per sleeve (0 where flat)
     weights: dict[str, np.ndarray]  # applied capital weight per sleeve per day
     leverage: np.ndarray  # applied book leverage per day (vol-target; 1.0 if off)
+    sleeve_gross_exposure: dict[str, np.ndarray]  # realized gross per sleeve (lev*w*sleeve_gross)
     book_returns: np.ndarray  # final book daily returns (post weights + leverage)
     equity_curve: np.ndarray  # cumprod(1 + book_returns), starts at 1.0
 
@@ -155,6 +156,8 @@ def combine_book(
     rebalance_days: int = 21,
     vol_target_ann: float | None = None,
     max_leverage: float = 3.0,
+    sleeve_gross: Mapping[str, float] | None = None,
+    venue_gross_cap: Mapping[str, float] | None = None,
     trading_days: int = 365,
 ) -> BookResult:
     """Combine independent sleeve equity curves into one PIT cross-asset book.
@@ -164,6 +167,15 @@ def combine_book(
     cadence. ``vol_target_ann`` (e.g. 0.20) scales the book to a target annual vol via
     trailing realized vol, capped at ``max_leverage`` — ``None`` leaves the book unscaled
     (leverage 1.0). All estimates use only data strictly before the day they act on.
+
+    ``sleeve_gross`` is each sleeve's INTERNAL gross exposure per unit of allocated capital
+    (default 1.0). A dollar-neutral L/S sleeve deploys 2.0 (1 long + 1 short per $1 of NAV);
+    its own returns/vol already reflect that, but the FEASIBILITY of book leverage does not —
+    so ``venue_gross_cap`` (max deployable gross at each sleeve's venue, e.g. equity Reg-T
+    2.0) additionally caps the vol-target leverage so no sleeve's realized gross
+    (``leverage * weight * sleeve_gross``) exceeds its venue cap. Without this, a book-level
+    vol-target silently demands equity gross that breaches Reg-T (the audit finding). Both
+    default to no constraint — byte-identical to the unconstrained book.
 
     The book runs over the COMMON live window = [max(sleeve start), min(sleeve end)] so every
     sleeve is live throughout — the honest apples-to-apples diversification measurement.
@@ -226,7 +238,13 @@ def combine_book(
 
     weighted = np.einsum("ij,ij->i", ret_matrix, weights_ts)  # book return pre-leverage
 
-    # ---- book-level vol target (PIT) ----
+    # per-sleeve internal gross + venue caps (the feasibility constraint on book leverage)
+    sgross = np.array([float((sleeve_gross or {}).get(name, 1.0)) for name in names], dtype=float)
+    vcap = np.array(
+        [float((venue_gross_cap or {}).get(name, math.inf)) for name in names], dtype=float
+    )
+
+    # ---- book-level vol target (PIT), feasibility-capped per sleeve ----
     leverage = np.ones(n, dtype=float)
     if vol_target_ann is not None:
         cur_lev = 1.0
@@ -234,10 +252,19 @@ def combine_book(
             if i >= vol_lookback_days and (i - vol_lookback_days) % rebalance_days == 0:
                 realized = _annualized_vol(weighted[i - vol_lookback_days : i], trading_days)
                 cur_lev = min(max_leverage, vol_target_ann / max(realized, _EPS))
+                # bind to the most-constrained sleeve: leverage * w_j * sgross_j <= vcap_j
+                denom = weights_ts[i, :] * sgross
+                feasible = np.where(denom > _EPS, vcap / np.maximum(denom, _EPS), math.inf)
+                cur_lev = float(min(cur_lev, feasible.min()))
             leverage[i] = cur_lev
 
     book_returns = weighted * leverage
     equity_curve = np.cumprod(1.0 + book_returns)
+
+    # realized per-sleeve gross exposure (transparency: the audit's "equity gross 2.75x" series)
+    sleeve_gross_exposure = {
+        name: leverage * weights_ts[:, j] * sgross[j] for j, name in enumerate(names)
+    }
 
     # ---- metrics ----
     sharpe = (
@@ -288,6 +315,7 @@ def combine_book(
         sleeve_returns=aligned,
         weights={name: weights_ts[:, j] for j, name in enumerate(names)},
         leverage=leverage,
+        sleeve_gross_exposure=sleeve_gross_exposure,
         book_returns=book_returns,
         equity_curve=equity_curve,
         sharpe=sharpe,

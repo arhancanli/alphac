@@ -57,8 +57,15 @@ def main() -> None:
         "trading_days": 365,
     }
 
+    # Equity sleeve is dollar-neutral L/S => 2x internal gross; carry ~1x (audit-verified).
+    # Reg-T caps equity deployable gross at 2x; crypto venue is generous.
+    sgross = {"equity_mom": 2.0, "crypto_carry": 1.0}
+    vcap = {"equity_mom": 2.0, "crypto_carry": 3.0}
+
     static = combine_book(sleeves, scheme="static", **base)
-    pit = combine_book(sleeves, scheme="equal_risk", **base)
+    deploy = combine_book(
+        sleeves, scheme="fixed", fixed_weights={"equity_mom": 0.5, "crypto_carry": 0.5}, **base
+    )
 
     print("=" * 84)
     print("UNIFIED CROSS-ASSET BOOK  (equity momentum + crypto funding-carry)")
@@ -69,31 +76,43 @@ def main() -> None:
     corr_key = ("crypto_carry", "equity_mom")
     print(
         f"  correlation crypto_carry vs equity_mom: {static.corr[corr_key]:+.3f}  "
-        f"(diversification ratio {pit.diversification_ratio:.2f})"
+        f"(div-ratio {deploy.diversification_ratio:.2f}; stable & strengthens in stress)"
     )
-    print(f"  theory ceiling sqrt(Sum Sharpe^2) = {static.sharpe_theory_uncorr:.2f}")
     print()
-    print("  -- unscaled (1x) --")
-    print(_line(static, "static full-sample*"))
-    print(_line(pit, "PIT trailing-vol (DEPLOY)"))
-    print("  * static uses full-sample vol for weights = mild hindsight; the PIT line is honest.")
+    print("  -- IN-WINDOW (2023-07..2026-06, FAVOURABLE era; deflate hard for forward) --")
+    print(_line(deploy, "DEPLOY: fixed 50/50"))
+    print(_line(combine_book(sleeves, scheme="equal_risk", **base), "dynamic equal_risk (worse)"))
+    print("  (audit: dynamic 21d reweighting adds nothing + cross-venue drag -> use fixed 50/50.)")
     print()
-    print(f"  -- PIT + book-level vol-target (max-leverage {args.max_leverage:g}x) --")
-    for tgt in (0.10, 0.15, 0.20, 0.25):
+    print("  -- Reg-T-FEASIBLE vol-target (per-sleeve gross cap; equity gross <= 2.0x) --")
+    for tgt in (0.10, 0.15, 0.20):
         b = combine_book(
             sleeves,
-            scheme="equal_risk",
+            scheme="fixed",
+            fixed_weights={"equity_mom": 0.5, "crypto_carry": 0.5},
             vol_target_ann=tgt,
             max_leverage=args.max_leverage,
+            sleeve_gross=sgross,
+            venue_gross_cap=vcap,
             **base,
         )
-        print(_line(b, f"vol-target {tgt * 100:.0f}%"))
+        eqg = b.sleeve_gross_exposure["equity_mom"].max()
+        print(_line(b, f"vol-target {tgt * 100:.0f}%") + f"  eqGross_max {eqg:.2f}")
     print()
-    print("  HONESTY: window is crypto-carry's FAVOURABLE era (excludes the 2022 funding-")
-    print("  inversion bear, Sharpe -1.6 there). Carry is structurally DECAYING (funding")
-    print("  dispersion 82%->18%/yr). Leverage for 20-25% is real (~2.5x) with real tail")
-    print("  risk. Forward expectation: conservative (~1.0-1.2 Sharpe). Deeper history (the")
-    print("  data investment) is what converts this from strong-in-sample to deflation-proven.")
+    print("  ===================  HONEST FORWARD VERDICT (adversarial audit w1947t1pb)  ========")
+    print("  STRUCTURE (underwrite): cross-asset diversification is REAL & robust. Combiner is")
+    print("    PIT-clean; corr -0.016 is stable AND strengthens negative in stress (-0.44 on")
+    print("    down days); sleeves anti-cluster (never both in worst-2.5% same day).")
+    print("  MAGNITUDE (deflate): in-window 1.5 does NOT survive deflation -- DSR 0.44 @ N=69")
+    print("    trials, 0.19 @ N=518, vs 0.95 gate; excluding the 5-mo 2026 spike -> ~1.04.")
+    print("    Window excludes crypto carry's -1.63 2022. HONEST FORWARD Sharpe ~0.7-1.0,")
+    print("    ~7-10% net unscaled / ~13-16% net at a feasible ~14% vol-target.")
+    print("  RESILIENCE: if carry edge decays to ZERO the book still holds ~1.0 (equity is the")
+    print("    ballast); the real tail is a carry SIGN-FLIP year (2022 repeat -> book ~-13% DD).")
+    print("  -> Deploy SMALL pilot, fixed 50/50, after Phase-8 pre-arm gates + 6-12mo OOS.")
+    print(
+        "     The DATA INVESTMENT (deeper history) is the only path to a deflation-proven verdict."
+    )
 
 
 if __name__ == "__main__":

@@ -124,6 +124,44 @@ class TestVolTarget:
         assert 0.13 < book.vol < 0.30
         assert np.all(book.leverage > 0)
 
+    def test_per_sleeve_gross_cap_binds_below_book_leverage(self) -> None:
+        """A dollar-neutral sleeve (gross 2x) under a Reg-T 2x venue cap must constrain the
+        book leverage below what the vol-target alone would demand."""
+        rng = _rng(17)
+        a = 0.0003 + 0.006 * rng.standard_normal(2000)  # low vol -> vol-target wants high lev
+        b = 0.0003 + 0.006 * rng.standard_normal(2000)
+        uncapped = combine_book(
+            [_curve("eq", a), _curve("cr", b)],
+            scheme="equal_risk",
+            vol_target_ann=0.30,
+            max_leverage=5.0,
+        )
+        capped = combine_book(
+            [_curve("eq", a), _curve("cr", b)],
+            scheme="equal_risk",
+            vol_target_ann=0.30,
+            max_leverage=5.0,
+            sleeve_gross={"eq": 2.0, "cr": 1.0},  # eq is dollar-neutral L/S
+            venue_gross_cap={"eq": 2.0, "cr": 3.0},  # Reg-T 2x on equity
+        )
+        # equity realized gross must never breach its venue cap
+        assert np.max(capped.sleeve_gross_exposure["eq"]) <= 2.0 + 1e-9
+        # the cap genuinely bit: capped leverage is strictly lower where eq weight is high
+        assert capped.leverage.mean() < uncapped.leverage.mean()
+
+    def test_gross_exposure_reported_without_cap(self) -> None:
+        rng = _rng(23)
+        a = 0.0005 + 0.01 * rng.standard_normal(600)
+        b = 0.0005 + 0.01 * rng.standard_normal(600)
+        book = combine_book(
+            [_curve("eq", a), _curve("cr", b)],
+            scheme="equal_weight",
+            sleeve_gross={"eq": 2.0, "cr": 1.0},
+        )
+        # unleveraged book: eq gross = 1.0*0.5*2.0 = 1.0, cr gross = 1.0*0.5*1.0 = 0.5
+        np.testing.assert_allclose(book.sleeve_gross_exposure["eq"], 1.0, atol=1e-9)
+        np.testing.assert_allclose(book.sleeve_gross_exposure["cr"], 0.5, atol=1e-9)
+
     def test_max_leverage_caps(self) -> None:
         rng = _rng(13)
         a = 0.0001 + 0.001 * rng.standard_normal(1500)  # tiny vol → wants huge leverage
