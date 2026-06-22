@@ -20,10 +20,23 @@ import pyarrow.parquet as pq
 from alphaforge.portfolio.book import SleeveCurve, combine_book
 
 GO_LIVE = "2026-06-21"  # the day the live paper track record begins
+# The REAL deployed book: two decorrelated, walk-forward-validated, net-of-cost sleeves.
+# (We do NOT have managed-futures data; there is no futures sleeve. Equity factors other
+#  than momentum were tested deep-history and do not survive net of cost.)
 SLEEVES = [
-    ("prereg_investment", "Equity Investment", "Asset-growth / CMA, US wide universe", 0.83),
-    ("prereg_trend", "Managed-Futures Trend", "Multi-horizon TSMOM, 18 futures", 0.32),
-    ("prereg_crypto_trend", "Crypto Trend", "Multi-horizon TSMOM, 10 majors", 0.97),
+    (
+        "k30_dn_63",
+        "US Equity Momentum",
+        "12-1 cross-sectional momentum, dollar-neutral long/short, "
+        "split-adjusted, survivorship-free",
+        0.91,
+    ),
+    (
+        "crypto_carry_wk",
+        "Crypto Funding Carry",
+        "Funding-rate carry, Binance USDT-M perpetuals, market-neutral",
+        0.68,
+    ),
 ]
 
 
@@ -48,7 +61,10 @@ def main():
         "go_live_date": GO_LIVE,
         "book": {
             "name": "AlphaForge Cross-Asset Book",
-            "style": "Market-neutral multi-strategy (equity + managed-futures + crypto trend)",
+            "style": (
+                "Market-neutral, two decorrelated sleeves "
+                "(US equity momentum + crypto funding carry)"
+            ),
             "sleeves": [
                 {
                     "key": s[0],
@@ -62,16 +78,25 @@ def main():
         },
         "metrics": {
             "in_sample_sharpe": round(float(book.sharpe), 2),
-            "honest_forward_sharpe": "0.5 to 0.7",
+            "honest_forward_sharpe": "0.7 to 1.0",
             "in_sample_cagr_pct": round(float(book.cagr) * 100, 1),
-            "honest_forward_return_pct": "10 to 14 (vol-targeted)",
+            "honest_forward_return_pct": "7 to 14 (vol-targeted)",
             "max_drawdown_pct": round(float(book.maxdd) * 100, 1),
             "realistic_worst_dd_pct": "-10 to -15",
-            "correlation": "sleeves decorrelated (<0.15 pairwise)",
-            "capacity": "$1B+",
+            "correlation": (
+                "the two sleeves are near-uncorrelated "
+                "(equity momentum vs crypto carry ~ -0.02)"
+            ),
+            "capacity": (
+                "equity sleeve $1B+; crypto carry finite "
+                "(~$100k to $1M proven, capacity-capped)"
+            ),
             "gauntlet_grade": "C+",
-            "gauntlet_pass": "3 of 10 clean, 6 marginal, 1 fail",
-            "live_days": 0,
+            "gauntlet_pass": (
+                "real but modest; fails multiple-testing deflation in-sample, "
+                "so deployment waits on the live track record"
+            ),
+            "live_days": len(live) - 1,
         },
         "transparency": [
             "The research curve is a simulation, not realised trading. "
@@ -79,9 +104,11 @@ def main():
             "The live paper track record begins "
             + GO_LIVE
             + " and is shown as it accrues. We publish no return until it is earned in the open.",
-            "In-sample Sharpe is 1.18; the honest forward expectation after "
-            "multiple-testing deflation is ~0.5 to 0.7.",
-            "The edge is genuine (market-neutral, crisis-positive, statistically "
+            "The book is two decorrelated sleeves: US equity momentum "
+            "(standalone Sharpe ~0.9) and crypto funding carry (~0.7). The honest "
+            "combined forward expectation after multiple-testing deflation is "
+            "~0.7 to 1.0, not the higher in-sample figure.",
+            "The edge is genuine (market-neutral, decorrelated, statistically "
             "real) but modest and not yet proven live.",
         ],
         "research_curve": research,
