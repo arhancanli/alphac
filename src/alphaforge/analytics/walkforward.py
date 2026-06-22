@@ -252,6 +252,23 @@ class ValidationReport:
       predicate (``dsr >= 0.95 AND dsr > baseline.dsr AND sr_ann > baseline.sr_ann``).
       ``False`` when there is no baseline (a blend-only run is not itself live-eligible
       under this gate; that gate is meaningful only for a gated variant).
+
+    Provenance (audit trail — what ledger/N this DSR was actually deflated against):
+
+    - ``ledger_path``: the :class:`~alphaforge.validation.experiments.ExperimentLog`
+      file this trial was recorded on.
+    - ``n_trials_at_verdict_time``: ``log.n_trials()`` read AFTER recording this trial
+      — the honest ``N`` the DSR was deflated against at verdict time (== ``n_trials``;
+      surfaced separately so the artifact states it is the verdict-time value, not a
+      stale runtime guess).
+    - ``trial_config_hash_this_run``: the
+      :func:`~alphaforge.validation.experiments.config_hash` of THIS run's trial config.
+
+    These default to ``None`` and the ``_provenance`` block is emitted by
+    :meth:`to_json_obj` ONLY when ``ledger_path`` is set, so a report built without
+    provenance (e.g. the pure-predicate test fixtures, the nested blend-only baseline)
+    keeps the exact pre-provenance key set — the OFF-path ``walkforward.json`` stays
+    byte-identical to today's HEAD (D7).
     """
 
     psr: float
@@ -267,6 +284,9 @@ class ValidationReport:
     gate_inactive_frac: float = 0.0
     baseline: ValidationReport | None = None
     clears_baseline_gate: bool = False
+    ledger_path: str | None = None
+    n_trials_at_verdict_time: int | None = None
+    trial_config_hash_this_run: str | None = None
 
     def to_json_obj(self) -> dict[str, object]:
         """JSON-safe dict (non-finite floats -> ``None``) for the ``validation`` block.
@@ -295,6 +315,23 @@ class ValidationReport:
             obj["gate_inactive_frac"] = _json_float(self.gate_inactive_frac)
             obj["baseline"] = None if self.baseline is None else self.baseline.to_json_obj()
             obj["clears_baseline_gate"] = bool(self.clears_baseline_gate)
+        # Provenance block: emitted ONLY when a ledger path was threaded in, so a
+        # report built without provenance (test fixtures, the nested blend-only
+        # baseline) keeps the exact pre-provenance key set (D7 byte-identity).
+        if self.ledger_path is not None:
+            obj["_provenance"] = {
+                "ledger_path": str(self.ledger_path),
+                "n_trials_at_verdict_time": (
+                    None
+                    if self.n_trials_at_verdict_time is None
+                    else int(self.n_trials_at_verdict_time)
+                ),
+                "trial_config_hash_this_run": (
+                    None
+                    if self.trial_config_hash_this_run is None
+                    else str(self.trial_config_hash_this_run)
+                ),
+            }
         return obj
 
 
@@ -423,6 +460,7 @@ def compute_validation(
     now_ms: Ms,
     *,
     dsr_fn: Callable[..., DSRReport] | None = None,
+    with_provenance: bool = False,
 ) -> ValidationReport | None:
     """Record this trial on ``log`` and build its :class:`ValidationReport`.
 
@@ -438,14 +476,24 @@ def compute_validation(
        caller-supplied timestamp; the clock is never read here.
     3. Read ``N = log.n_trials()`` and ``V[SR] = log.trial_sharpe_variance()``
        *after* recording (so this trial is counted), and compute the DSR via the
-       blessed :func:`~alphaforge.validation.dsr.dsr_from_returns` API. The
-       expected-max-Sharpe form requires ``N >= 2``; with a single trial we feed
-       ``max(2, N)`` to the maths and report the honest ``N`` in the block.
+       blessed :func:`~alphaforge.validation.dsr.dsr_from_returns` API. The DSR is
+       therefore deflated against the LEDGER ``N`` AS IT STANDS AT VERDICT TIME
+       (post-record), never a stale runtime ``N`` snapshot taken before the trial
+       was counted. The expected-max-Sharpe form requires ``N >= 2``; with a
+       single trial we feed ``max(2, N)`` to the maths and report the honest
+       ``N`` in the block.
 
     ``dsr_fn`` overrides the DSR implementation (tests inject a deterministic
     stub); it defaults to ``dsr_from_returns`` (deferred import -- the DSR module
     pulls scipy). ``config`` should be the trial's defining knobs (alphas /
     rebalance / band / allocator / window); it is hashed verbatim.
+
+    ``with_provenance`` (default ``False``) attaches the audit ``_provenance``
+    block (ledger path, verdict-time ``N``, this run's trial-config hash) to the
+    report. It defaults OFF so that an unflagged call -- and hence the runner's
+    ``walkforward.json`` -- keeps the exact pre-provenance key set (the OFF-path
+    artifact stays byte-identical to today's HEAD, D7); a caller that wants the
+    provenance trail in the artifact opts in explicitly.
     """
     rets = daily_returns(equity)
     if len(rets) < 2:
@@ -476,6 +524,8 @@ def compute_validation(
         now_ms=now_ms,
     )
 
+    # Read N / V[SR] AFTER recording, so the DSR is deflated against the ledger N as
+    # it stands at verdict time (this trial included), not a stale pre-record snapshot.
     n_trials = log.n_trials()
     var_sr = log.trial_sharpe_variance()  # DEFAULT_SR_TRIALS_VARIANCE when < 2 trials
     n_trials_used = max(_MIN_DSR_TRIALS, n_trials)
@@ -487,6 +537,16 @@ def compute_validation(
         fn = dsr_from_returns
     report = fn(rets, n_trials_used, var_sr, DAYS_PER_YEAR)
 
+    ledger_path: str | None = None
+    n_trials_at_verdict_time: int | None = None
+    trial_config_hash_this_run: str | None = None
+    if with_provenance:
+        from alphaforge.validation.experiments import config_hash
+
+        ledger_path = str(log.path)
+        n_trials_at_verdict_time = int(n_trials)
+        trial_config_hash_this_run = config_hash(config)
+
     return ValidationReport(
         psr=report.psr,
         dsr=report.dsr,
@@ -497,6 +557,9 @@ def compute_validation(
         sr_trials_variance=var_sr,
         n_obs=report.n_obs,
         clears_dsr_gate=math.isfinite(report.dsr) and report.dsr >= _DSR_GATE,
+        ledger_path=ledger_path,
+        n_trials_at_verdict_time=n_trials_at_verdict_time,
+        trial_config_hash_this_run=trial_config_hash_this_run,
     )
 
 

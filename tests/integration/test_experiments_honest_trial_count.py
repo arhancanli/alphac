@@ -47,6 +47,7 @@ from alphaforge.analytics.walkforward import (
     ValidationReport,
     WalkForwardRunner,
     compare_to_baseline,
+    compute_validation,
 )
 from alphaforge.config.settings import Settings, SignalsCfg
 from alphaforge.core.instruments import Instrument, InstrumentStore
@@ -87,6 +88,18 @@ _ALPHA = "mom_xs_168_24"
 _ALPHAS = [_ALPHA]
 _INITIAL_CASH = 100_000.0
 _NOW_MS = 1_700_000_000_000
+
+# Ledger-hygiene FORWARD tripwire (the owner's integrity mandate). The real dedicated
+# ledger var/experiments.jsonl holds 77 honest distinct records TODAY; this ceiling is
+# set ABOVE that real count so it catches FUTURE inflation of the trial count N (which
+# would silently flatter the DSR deflation) without ever forcing a retroactive "pass".
+# It is NEVER set below the real count and records are NEVER purged — shrinking N to
+# flatter DSR is exactly the dishonesty this tripwire exists to prevent.
+HONEST_N_BUDGET = 80
+
+# The dedicated experiments ledger, resolved from the repo root (…/tests/integration/… ->
+# repo root is parents[2]). This is the REAL committed ledger, not a tmp_path fixture.
+_REAL_LEDGER = Path(__file__).resolve().parents[2] / "var" / "experiments.jsonl"
 
 
 def _closes(seed: int, n: int, level: float, drift: float) -> np.ndarray:
@@ -496,3 +509,205 @@ def _vr(*, dsr: float, sr_ann: float, clears: bool = True) -> ValidationReport:
         n_obs=30,
         clears_dsr_gate=clears,
     )
+
+
+def _synthetic_equity(seed: int, *, n_days: int = 120, mu: float = 0.0004) -> pd.Series:
+    """A deterministic hourly equity curve spanning ``n_days`` UTC days (for the
+    provenance / re-deflation tests, which need a real >=2-UTC-day OOS curve)."""
+    rng = np.random.default_rng(seed)
+    n = n_days * 24
+    rets = rng.normal(mu, 0.008, n)
+    vals = 100_000.0 * np.exp(np.cumsum(rets))
+    idx = np.array([T0 + k * HOUR for k in range(n)], dtype=np.int64)
+    return pd.Series(vals, index=pd.Index(idx, name="ts"), name="equity")
+
+
+# =========================================================================== PART B
+# Ledger hygiene: the FORWARD trial-count tripwire + re-deflation + provenance.
+
+
+class TestLedgerHygiene:
+    """B6 — the real ledger is idempotent and below the FORWARD budget tripwire."""
+
+    def test_ledger_distinct_hash_vs_budget(self) -> None:
+        """Parse the REAL ``var/experiments.jsonl``: every record is a distinct hash
+        (idempotency) AND the distinct count is within ``HONEST_N_BUDGET`` (forward
+        tripwire). The budget is set ABOVE the real count to catch FUTURE inflation;
+        the assertion must NEVER be made to pass by shrinking N (integrity mandate)."""
+        if not _REAL_LEDGER.exists():
+            pytest.skip(f"real ledger {_REAL_LEDGER} absent in this checkout")
+        log = ExperimentLog(_REAL_LEDGER)
+        records = log.all()
+        n_records = len(records)
+        n_distinct = log.n_trials()  # len of the deduplicated hash set
+        # Idempotency: no duplicate hashes were ever appended (re-runs are no-ops).
+        assert n_distinct == n_records, (
+            f"ledger has {n_records} records but only {n_distinct} distinct hashes — "
+            "a duplicate hash means record() idempotency was bypassed"
+        )
+        # Forward tripwire: catches FUTURE inflation, never shrinks the honest count.
+        assert n_distinct <= HONEST_N_BUDGET, (
+            f"distinct trial count {n_distinct} exceeds the HONEST_N_BUDGET "
+            f"({HONEST_N_BUDGET}) forward tripwire — N inflated; investigate before "
+            "trusting any DSR deflated against it (do NOT raise the budget to silence this)"
+        )
+
+    def test_budget_is_a_forward_tripwire_above_the_real_count(self) -> None:
+        """The budget is documented to sit ABOVE today's real count (never below it),
+        so it is a forward tripwire and cannot retroactively force a pass by shrinking N."""
+        if not _REAL_LEDGER.exists():
+            pytest.skip(f"real ledger {_REAL_LEDGER} absent in this checkout")
+        n_distinct = ExperimentLog(_REAL_LEDGER).n_trials()
+        assert n_distinct <= HONEST_N_BUDGET, (
+            "HONEST_N_BUDGET must be >= the real distinct count (a forward tripwire); "
+            "a budget below the real N would be a dishonest retroactive pass"
+        )
+
+
+class TestReDeflationFromLedgerN:
+    """B7 — compute_validation deflates against the LEDGER N at verdict time, not a
+    stale runtime N snapshot taken before the trial was recorded."""
+
+    def test_deployable_verdicts_use_re_deflated_dsr(self, tmp_path: Path) -> None:
+        """``compute_validation`` reads ``n_trials`` / ``V[SR]`` AFTER recording, so the
+        DSR's ``n_trials`` is the post-record verdict-time N (this trial counted), and
+        it RISES as more distinct configs land on the SAME ledger — proving the
+        deflation tracks the ledger, not a frozen runtime value."""
+        log = ExperimentLog(tmp_path / "ledger.jsonl")
+        seen_n: list[int] = []
+
+        def _capturing_dsr(
+            daily_returns: pd.Series,
+            n_trials: int,
+            sr_trials_variance: float,
+            periods_per_year: float,
+        ) -> DSRReport:
+            from alphaforge.validation.dsr import DSRReport
+
+            seen_n.append(n_trials)
+            return DSRReport(
+                psr=0.8,
+                dsr=0.97,
+                sr_ann=1.23,
+                sr_per_period=0.064,
+                skew=-0.2,
+                kurtosis=4.1,
+                n_obs=len(daily_returns),
+                expected_max_sr=0.11,
+            )
+
+        r1 = compute_validation(
+            _synthetic_equity(1), {"cfg": "a"}, log, now_ms=1, dsr_fn=_capturing_dsr
+        )
+        assert r1 is not None
+        # One distinct trial recorded; the maths is fed max(2, 1) = 2 but the report's
+        # honest n_trials is 1 — and it is the POST-record value (the trial is counted).
+        assert r1.n_trials == 1
+        assert seen_n[-1] == 2
+
+        r2 = compute_validation(
+            _synthetic_equity(2), {"cfg": "b"}, log, now_ms=2, dsr_fn=_capturing_dsr
+        )
+        assert r2 is not None
+        # A second distinct config lands on the SAME ledger -> the deflation N the DSR
+        # sees rises to 2 (verdict-time, post-record), proving it re-reads the ledger.
+        assert r2.n_trials == 2
+        assert seen_n[-1] == 2
+
+        # Re-running config "a" is idempotent: N does NOT inflate (still 2), and the DSR
+        # is re-deflated against the SAME ledger N, never a stale larger runtime value.
+        r1b = compute_validation(
+            _synthetic_equity(1), {"cfg": "a"}, log, now_ms=3, dsr_fn=_capturing_dsr
+        )
+        assert r1b is not None
+        assert r1b.n_trials == 2
+        assert log.n_trials() == 2
+
+
+class TestValidationProvenance:
+    """B8 — the report carries an audit ``_provenance`` block (opt-in, byte-safe OFF)."""
+
+    def test_provenance_block_records_ledger_n_and_hash(self, tmp_path: Path) -> None:
+        from alphaforge.validation.experiments import config_hash
+
+        ledger = tmp_path / "ledger.jsonl"
+        log = ExperimentLog(ledger)
+        cfg = {"cfg": "a", "allocator": "rank"}
+        report = compute_validation(
+            _synthetic_equity(9), cfg, log, now_ms=1, with_provenance=True
+        )
+        assert report is not None
+        obj = report.to_json_obj()
+        prov = obj["_provenance"]
+        assert isinstance(prov, dict)
+        assert prov["ledger_path"] == str(ledger)
+        assert prov["n_trials_at_verdict_time"] == log.n_trials() == 1
+        assert prov["trial_config_hash_this_run"] == config_hash(cfg)
+        # Survives a JSON round-trip unchanged.
+        assert json.loads(json.dumps(obj, sort_keys=True)) == obj
+
+    def test_provenance_omitted_by_default_preserves_byte_identity(self, tmp_path: Path) -> None:
+        """Without ``with_provenance`` the report emits NO ``_provenance`` key, so the
+        OFF-path walkforward.json stays byte-identical to today's HEAD (D7)."""
+        log = ExperimentLog(tmp_path / "ledger.jsonl")
+        report = compute_validation(_synthetic_equity(9), {"cfg": "a"}, log, now_ms=1)
+        assert report is not None
+        assert "_provenance" not in report.to_json_obj()
+
+
+class TestPreSealHashedHoldoutFreshSlice:
+    """B9 — pre-seal a hashed holdout on a FRESH synthetic slice (never retro-seal a
+    window already fit). The seal is the config-hash of the held-out trial config; it
+    must be reproducible from the same config and must NOT collide with the in-sample
+    config's hash."""
+
+    def test_pre_seal_hashed_holdout_fresh_slice(self, tmp_path: Path) -> None:
+        from alphaforge.validation.experiments import config_hash
+
+        # A FRESH synthetic out-of-time slice that has never been fit (NOT the real
+        # 2023-2026 history). Pre-sealing here is honest: we hash the holdout's defining
+        # config BEFORE looking at any result on it.
+        holdout_window = {"start": T0 + 999 * HOUR, "end": T0 + 1999 * HOUR}
+        holdout_config = {
+            "allocator": "rank",
+            "alpha_names": [_ALPHA],
+            "rebalance_bars": 72,
+            "no_trade_band": 0.0030,
+            **holdout_window,
+        }
+        seal = config_hash(holdout_config)
+
+        # The seal is deterministic and reproducible from the same config (key order
+        # does not matter — config_hash canonicalizes).
+        reordered = {k: holdout_config[k] for k in sorted(holdout_config)}
+        assert config_hash(reordered) == seal
+
+        # The holdout is a DISTINCT trial from the in-sample window (no accidental reuse).
+        in_sample_config = {**holdout_config, "start": T0, "end": T0 + 998 * HOUR}
+        assert config_hash(in_sample_config) != seal
+
+        # Record the holdout AS its own pre-sealed trial on a fresh ledger and confirm the
+        # ledger's stored hash equals the pre-computed seal (the seal is what gets counted).
+        log = ExperimentLog(tmp_path / "holdout_ledger.jsonl")
+        rec = log.record(
+            holdout_config,
+            sharpe_ann=1.1,
+            sharpe_per_period=0.058,
+            n_obs=40,
+            skew=-0.1,
+            kurtosis=3.5,
+            now_ms=_NOW_MS,
+        )
+        assert rec.config_hash == seal
+        assert log.n_trials() == 1
+        # Re-recording the SAME pre-sealed holdout is idempotent (no N inflation).
+        log.record(
+            holdout_config,
+            sharpe_ann=2.2,
+            sharpe_per_period=0.099,
+            n_obs=40,
+            skew=0.0,
+            kurtosis=3.0,
+            now_ms=_NOW_MS + 1,
+        )
+        assert log.n_trials() == 1, "re-sealing the identical holdout must not inflate N"

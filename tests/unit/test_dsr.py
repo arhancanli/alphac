@@ -444,3 +444,88 @@ class TestPSRDSRProperties:
         )
         with pytest.raises(ValueError, match="n_obs must be >= 2"):
             probabilistic_sharpe_ratio(sr, 1, skew=skew, kurtosis=kurtosis)
+
+
+class TestWithinPathDeflationIsMoreConservative:
+    """CPCV per-path V[SR] is the HONESTER deflation: it can only push DSR DOWN.
+
+    The upgrade replaces the between-config Sharpe variance (the spread of ONE mean
+    estimate per config) with the within-CPCV-path variance (the spread of a config's
+    own resampled OOS backtest paths, pooled). The mechanism is the LAW OF TOTAL
+    VARIANCE: the *population* variance of the pooled per-path Sharpes decomposes as
+
+        Var_pop(pooled) = mean_g Var_pop(paths in group g)  +  Var_pop(group means),
+
+    so the pooled (within-path) population variance is ALWAYS >= the population variance
+    of the per-config means — strictly so whenever any group has a non-zero internal
+    spread. A larger ``V[SR]`` raises the expected-max benchmark ``SR*``, which lowers
+    DSR for a fixed observed Sharpe (the ``test_deflates_monotonically`` mechanism). So
+    on the same data the within-path DSR is never ABOVE the between-config DSR — exactly
+    the conservative direction the design intends (alphaDesign.md §7.4).
+
+    NOTE on ddof: the production ``trial_sharpe_variance`` uses sample (ddof=1) variance.
+    The clean inequality ``var_within >= var_between`` is a POPULATION identity; with
+    ddof=1 over tiny group counts the Bessel correction can locally reverse it, so the
+    property here is stated on the *population* (ddof=0) variances that the law of total
+    variance governs, then the production ddof=1 path is pinned separately by
+    ``tests/unit/test_cpcv_path_sharpes.py``.
+    """
+
+    @staticmethod
+    def _between_config_var_pop(groups: list[list[float]]) -> float:
+        """Population variance of the per-group MEAN Sharpes (between-config V[SR])."""
+        means = np.asarray([float(np.mean(g)) for g in groups], dtype=float)
+        return float(np.var(means, ddof=0))
+
+    @staticmethod
+    def _within_path_var_pop(groups: list[list[float]]) -> float:
+        """Population variance over the FLATTENED per-path Sharpes (within-path V[SR])."""
+        flat = np.asarray([s for g in groups for s in g], dtype=float)
+        return float(np.var(flat, ddof=0))
+
+    @given(
+        base=st.lists(
+            st.floats(min_value=-0.4, max_value=0.4, allow_nan=False, allow_infinity=False),
+            min_size=2,
+            max_size=6,
+        ),
+        spread=st.floats(min_value=0.0, max_value=0.3, allow_nan=False, allow_infinity=False),
+        sr=st.floats(min_value=0.0, max_value=1.2, allow_nan=False, allow_infinity=False),
+        n_obs=st.integers(min_value=30, max_value=5000),
+        n_trials=st.integers(min_value=2, max_value=2000),
+        kurtosis=st.floats(min_value=3.0, max_value=12.0, allow_nan=False, allow_infinity=False),
+    )
+    @settings(max_examples=200, deadline=None)
+    def test_within_path_dsr_not_above_between_config_dsr(
+        self,
+        base: list[float],
+        spread: float,
+        sr: float,
+        n_obs: int,
+        n_trials: int,
+        kurtosis: float,
+    ) -> None:
+        # Equal-size CPCV path groups (3 paths each), centred on each config's own mean
+        # +/- a shared spread. The law of total variance then governs the two variances.
+        groups = [[m - spread, m, m + spread] for m in base]
+        var_between = self._between_config_var_pop(groups)
+        var_within = self._within_path_var_pop(groups)
+        # The mechanism (law of total variance): the within-path pool is at least as
+        # dispersed as the collapsed per-config means.
+        assert var_within >= var_between - 1e-12
+
+        dsr_between = deflated_sharpe_ratio(sr, n_obs, 0.0, kurtosis, n_trials, var_between)
+        dsr_within = deflated_sharpe_ratio(sr, n_obs, 0.0, kurtosis, n_trials, var_within)
+        # Wider V[SR] -> higher SR* -> DSR can only fall (<=, tolerating the fp plateau).
+        assert dsr_within <= dsr_between + 1e-12
+
+    def test_worked_example_within_path_strictly_more_conservative(self) -> None:
+        # A concrete pair where the within-path population variance is strictly larger
+        # (every group has internal spread), so the within-path DSR is strictly lower.
+        groups = [[0.02, 0.05, -0.01], [0.10, 0.13, 0.07], [-0.05, 0.00, -0.10]]
+        var_between = self._between_config_var_pop(groups)
+        var_within = self._within_path_var_pop(groups)
+        assert var_within > var_between
+        dsr_between = deflated_sharpe_ratio(0.15, 500, 0.0, 4.0, 50, var_between)
+        dsr_within = deflated_sharpe_ratio(0.15, 500, 0.0, 4.0, 50, var_within)
+        assert dsr_within < dsr_between

@@ -34,6 +34,23 @@ JSON record schema (one object per line, sorted keys, ASCII)::
     n_obs               int    number of (daily) return observations behind the Sharpe
     skew                float  sample skewness of the daily returns (gamma_3, DSR moment)
     kurtosis            float  sample kurtosis of the daily returns (gamma_4, non-excess)
+    sharpe_per_path     list   OPTIONAL per-CPCV-path Sharpes (CombinatorialPurgedCV
+                               ``n_backtest_paths`` of them) -- the HONESTER V[SR] source
+
+CPCV per-path V[SR] (alphaDesign.md section 7.4, the de Prado research protocol)
+--------------------------------------------------------------------------------
+The legacy ``V[SR]`` is the between-CONFIG variance of the single ``sharpe_per_period``
+per trial (the spread of the configs you searched). The design's stated intent is the
+WITHIN-PATH variance: CPCV resamples one config's own history into
+``phi = k*C(N,k)/N`` complete OOS backtest paths (cpcv.py ``n_backtest_paths``), and
+``V[SR]`` is the dispersion of those per-path Sharpes. That spread is genuinely larger
+than the between-config spread of mean estimates, so feeding it to the deflation
+benchmark ``SR*`` makes DSR strictly MORE conservative -- the honester deflation.
+
+``sharpe_per_path`` is the optional carrier for those per-path Sharpes. It is
+``None`` (absent from the JSON) on every legacy record, so the ledger stays
+backwards-compatible and :meth:`ExperimentLog.trial_sharpe_variance` falls back to the
+between-config variance until path Sharpes are present (see that method).
 
 Determinism: pure functions of inputs + the JSONL file; no clock, no RNG. The
 file is created (with parents) on first :meth:`record`; reads of a missing file
@@ -50,7 +67,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, Final
 
 if TYPE_CHECKING:
-    from collections.abc import Mapping
+    from collections.abc import Mapping, Sequence
 
     from alphaforge.core.time import Ms
 
@@ -116,10 +133,18 @@ class ExperimentRecord:
     n_obs: int
     skew: float
     kurtosis: float
+    sharpe_per_path: list[float] | None = None
 
     def to_json_obj(self) -> dict[str, Any]:
-        """JSON-safe dict (non-finite floats -> ``None``); keys sorted on dump."""
-        return {
+        """JSON-safe dict (non-finite floats -> ``None``); keys sorted on dump.
+
+        ``sharpe_per_path`` is emitted ONLY when present, so a legacy record
+        (path Sharpes never supplied) serializes byte-identically to the
+        pre-CPCV schema -- the ledger stays backwards-compatible (D7-style:
+        the new key appears only when it carries data). Non-finite per-path
+        Sharpes map to ``null`` element-wise, mirroring the scalar fields.
+        """
+        obj: dict[str, Any] = {
             "config_hash": self.config_hash,
             "config": self.config,
             "now_ms": int(self.now_ms),
@@ -129,10 +154,21 @@ class ExperimentRecord:
             "skew": _json_float(self.skew),
             "kurtosis": _json_float(self.kurtosis),
         }
+        if self.sharpe_per_path is not None:
+            obj["sharpe_per_path"] = [_json_float(s) for s in self.sharpe_per_path]
+        return obj
 
     @classmethod
     def from_json_obj(cls, obj: Mapping[str, Any]) -> ExperimentRecord:
-        """Inverse of :meth:`to_json_obj` (``None`` -> ``nan``)."""
+        """Inverse of :meth:`to_json_obj` (``None`` -> ``nan``).
+
+        A record missing ``sharpe_per_path`` (every legacy line) reads back with
+        ``sharpe_per_path=None``; element ``null`` maps to ``nan``.
+        """
+        raw_paths = obj.get("sharpe_per_path")
+        sharpe_per_path = (
+            None if raw_paths is None else [_from_json_float(s) for s in raw_paths]
+        )
         return cls(
             config_hash=str(obj["config_hash"]),
             config=dict(obj["config"]),
@@ -142,6 +178,7 @@ class ExperimentRecord:
             n_obs=int(obj["n_obs"]),
             skew=_from_json_float(obj["skew"]),
             kurtosis=_from_json_float(obj["kurtosis"]),
+            sharpe_per_path=sharpe_per_path,
         )
 
 
@@ -216,6 +253,7 @@ class ExperimentLog:
         skew: float,
         kurtosis: float,
         now_ms: Ms,
+        path_sharpes: Sequence[float] | None = None,
     ) -> ExperimentRecord:
         """Append one trial; idempotent on the config hash.
 
@@ -224,6 +262,13 @@ class ExperimentLog:
         returned unchanged, so re-running an identical configuration never
         inflates ``N`` (module docstring). Otherwise a new line is appended and
         the freshly-built record returned.
+
+        ``path_sharpes`` is the OPTIONAL list of per-CPCV-path Sharpes for this
+        trial (cpcv.py ``n_backtest_paths`` of them). When supplied it is stored
+        on the record's ``sharpe_per_path`` field and feeds the within-path
+        ``V[SR]`` in :meth:`trial_sharpe_variance`; when omitted (the legacy /
+        single-walk-forward path) the record is byte-identical to today's schema
+        and the variance falls back to the between-config form.
 
         ``now_ms`` is the caller's wall-clock timestamp; the clock is never read
         here (determinism). All float arguments may be non-finite.
@@ -241,6 +286,7 @@ class ExperimentLog:
             n_obs=int(n_obs),
             skew=float(skew),
             kurtosis=float(kurtosis),
+            sharpe_per_path=None if path_sharpes is None else [float(s) for s in path_sharpes],
         )
         self._path.parent.mkdir(parents=True, exist_ok=True)
         line = json.dumps(record.to_json_obj(), sort_keys=True, ensure_ascii=True)
@@ -260,16 +306,41 @@ class ExperimentLog:
     def trial_sharpe_variance(self) -> float:
         """Sample variance (ddof=1) of recorded per-period Sharpes -- DSR ``V[SR]``.
 
-        Uses only **finite** per-period Sharpes (a degenerate trial logged with
-        a ``nan`` Sharpe cannot define a spread). With fewer than 2 finite
-        values the sample variance is undefined and this returns
-        :data:`DEFAULT_SR_TRIALS_VARIANCE` (a documented conservative
-        placeholder, see its docstring). The variance is over *per-period*
-        Sharpes because DSR's ``SR*`` and ``SR`` are both per-period (section 7.4).
+        Two regimes (the CPCV per-path V[SR] honester-deflation upgrade):
+
+        * **Within-path (preferred).** If ANY record carries ``sharpe_per_path``
+          (CPCV was run for at least one trial), the variance is taken over the
+          FLATTENED pool of every record's per-path Sharpes -- the dispersion of
+          a config's own resampled OOS backtest paths, which is the spread the
+          design's ``SR*`` is meant to deflate against (module docstring). This
+          pool is genuinely wider than the between-config spread, so DSR comes
+          out strictly more conservative.
+        * **Between-config (legacy fallback).** If NO record has path Sharpes,
+          the variance is the existing ddof=1 spread of the scalar
+          ``sharpe_per_period`` across distinct trials -- byte-identical to the
+          pre-CPCV behaviour, so a legacy ledger (like today's 77 records) is
+          unaffected.
+
+        In BOTH regimes only **finite** Sharpes contribute (a degenerate trial /
+        path logged ``nan`` cannot define a spread), and fewer than 2 finite
+        values returns the documented conservative
+        :data:`DEFAULT_SR_TRIALS_VARIANCE` placeholder. The variance is over
+        *per-period* Sharpes because DSR's ``SR*`` and ``SR`` are both per-period
+        (section 7.4).
         """
-        sharpes = [
-            rec.sharpe_per_period for rec in self.all() if math.isfinite(rec.sharpe_per_period)
-        ]
+        records = self.all()
+        if any(rec.sharpe_per_path is not None for rec in records):
+            sharpes = [
+                s
+                for rec in records
+                if rec.sharpe_per_path is not None
+                for s in rec.sharpe_per_path
+                if math.isfinite(s)
+            ]
+        else:
+            sharpes = [
+                rec.sharpe_per_period for rec in records if math.isfinite(rec.sharpe_per_period)
+            ]
         n = len(sharpes)
         if n < 2:
             return DEFAULT_SR_TRIALS_VARIANCE

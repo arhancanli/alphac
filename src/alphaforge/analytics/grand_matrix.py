@@ -63,6 +63,7 @@ __all__ = [
     "PBOSummary",
     "build_matrix_rows",
     "capacity_curve",
+    "cpcv_path_sharpes",
     "cross_config_dsr",
     "matrix_pbo",
     "oos_returns_matrix",
@@ -210,6 +211,36 @@ class CrossConfigDSR:
         return max(2, self.n_trials)
 
 
+def cpcv_path_sharpes(result: WalkForwardResult) -> list[float] | None:
+    """The per-CPCV-path Sharpes for a walk-forward result, or ``None`` if absent.
+
+    This is the bridge between a runner result and the ledger's honester
+    within-path ``V[SR]`` (experiments.py ``ExperimentLog.record(path_sharpes=...)``
+    / ``trial_sharpe_variance``). A :class:`CombinatorialPurgedCV` run resamples one
+    config's own history into ``phi = k*C(N, k)/N`` complete OOS backtest paths
+    (cpcv.py ``n_backtest_paths``); the per-path Sharpes are the spread the design's
+    deflation benchmark ``SR*`` is meant to be built on (alphaDesign.md section 7.4).
+
+    REMAINING-WIRING NOTE (honest): the deployment-faithful
+    :class:`~alphaforge.analytics.walkforward.WalkForwardResult` is produced by the
+    forward-chaining :class:`~alphaforge.validation.splits.PurgedWalkForward`, which
+    yields ONE OOS path, not the CPCV path distribution. ``WalkForwardResult`` does
+    not yet carry a per-CPCV-path Sharpe vector, so this helper returns ``None``
+    today and the ledger correctly FALLS BACK to the between-config ``V[SR]``. The
+    field + fallback + variance maths are in place end-to-end; the single remaining
+    step is for the grand-backtest runner to additionally evaluate each distinct
+    config under :class:`CombinatorialPurgedCV`, collect the
+    ``n_backtest_paths`` per-path Sharpes, and pass them to
+    ``ExperimentLog.record(path_sharpes=...)``. This is intentionally NOT faked:
+    until that wiring lands, ``V[SR]`` stays the legacy between-config spread rather
+    than a fabricated within-path number.
+    """
+    paths = getattr(result, "cpcv_path_sharpes", None)
+    if paths is None:
+        return None
+    return [float(s) for s in paths]
+
+
 def cross_config_dsr(log: ExperimentLog) -> CrossConfigDSR:
     """Read the final deflation context off the shared ledger.
 
@@ -217,6 +248,13 @@ def cross_config_dsr(log: ExperimentLog) -> CrossConfigDSR:
     ExperimentLog API) and ``expected_max_sharpe(max(2, N), V[SR])`` from
     validation.dsr. This is the SHARED ``SR*`` every config's deflated verdict is
     judged against -- the matrix-level honest deflation. Pure read; never records.
+
+    ``V[SR]`` here is whatever ``trial_sharpe_variance`` resolves to: the honester
+    WITHIN-CPCV-PATH variance once any trial on the ledger carries ``sharpe_per_path``
+    (a wider spread -> a higher ``SR*`` -> a strictly MORE conservative DSR), or the
+    legacy between-config variance otherwise. No branch is needed here -- the upgrade
+    is transparent through the ExperimentLog API (experiments.py
+    ``trial_sharpe_variance``).
     """
     from alphaforge.validation.dsr import expected_max_sharpe
 
