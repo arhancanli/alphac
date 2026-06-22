@@ -477,7 +477,16 @@ class PaperBroker(Broker):
             self._state.acks[order.client_order_id] = ack
             return ack
 
-        self._book_fill(order, inst, book, walked)
+        # C10a: record the idempotency ACK BEFORE booking the fill. The ack is the
+        # dedup key: a re-submit of a known coid returns this ack and books no
+        # second fill. If the ack were written AFTER _book_fill, a crash in the
+        # window between booking the fill and recording the ack would, on replay,
+        # find the coid absent from acks, re-walk the book, and DOUBLE-FILL. The
+        # ack carries no fill-dependent data beyond walked.is_partial (already
+        # known here), so it is safe to mint first. The fill, the audit row, and
+        # the cash/position update then follow; replaying after a crash in THAT
+        # window is healed by _replay_recorded_fills (durable store fill) +
+        # apply_recorded_fill, never by re-walking.
         broker_order_id = f"paper-{order.client_order_id}"
         ack = BrokerAck(
             accepted=True,
@@ -486,6 +495,7 @@ class PaperBroker(Broker):
             reason="partial: book exhausted" if walked.is_partial else "",
         )
         self._state.acks[order.client_order_id] = ack
+        self._book_fill(order, inst, book, walked)
         return ack
 
     def cancel(self, client_order_id: str) -> bool:
@@ -497,6 +507,21 @@ class PaperBroker(Broker):
         """
         del client_order_id
         return False
+
+    def fetch_order(self, client_order_id: str) -> Fill | None:
+        """Always ``None``: a paper fill is never lost behind the broker (C5).
+
+        The crash-recovery ``fetch_order`` call (execDesign.md §8.1, gate C5)
+        exists to re-discover a fill the VENUE executed during the submit→persist
+        crash window. ``PaperBroker`` has no such window: every fill it books is
+        already in its serialized :class:`PaperState` blob and is replayed by
+        :meth:`apply_recorded_fill` on restore, so there is never an execution
+        the store does not already know about. Returning ``None`` makes the
+        recovery call a safe, idempotent no-op for paper while keeping the
+        :class:`Broker` surface uniform with the live broker.
+        """
+        del client_order_id
+        return None
 
     def open_orders(self) -> list[OpenOrder]:
         """Empty: every paper market order reaches a terminal state inside :meth:`submit`."""

@@ -88,6 +88,7 @@ from alphaforge.core.types import (
     AccountState,
     Fill,
     Liquidity,
+    OrderStatus,
     Side,
 )
 from alphaforge.execution.broker import BrokerAck
@@ -97,7 +98,7 @@ from alphaforge.execution.paper import (
     PaperPosition,
     PaperState,
 )
-from alphaforge.execution.reconcile import Reconciler
+from alphaforge.execution.reconcile import EquityStatus, Reconciler
 from alphaforge.live.alerts import AlertLevel
 from alphaforge.live.store import CycleStatus, TradingStore
 from alphaforge.portfolio.discretize import weights_to_orders
@@ -110,6 +111,7 @@ if TYPE_CHECKING:
     from alphaforge.config.settings import Settings
     from alphaforge.core.instruments import Instrument
     from alphaforge.execution.order_manager import OrderManager, PlacementReport
+    from alphaforge.execution.reconcile import InstrumentRecon
     from alphaforge.live.alerts import Alerter
     from alphaforge.risk import DrawdownLadder, KillSwitch, PreTradeChecker, StalenessBreaker
 
@@ -746,6 +748,7 @@ class LiveLoop:
         now = self._clock()
         restored, blob_cycle_ts = self._restore_paper_state()
         replayed = self._replay_recorded_fills(blob_cycle_ts)
+        fetched = self._recover_submitted_via_fetch_order(now=now)
         failed = self._fail_running_cycles(now=now)
         # A TRULY fresh boot (no persisted state of any kind, broker untouched at
         # initial_cash) has nothing to recover or reconcile: there is no prior book
@@ -756,10 +759,10 @@ class LiveLoop:
         # bars), polluting the per-cycle N/M accounting. In production the seed and
         # the first cycle coincide and the upsert overwrites it; this guard makes
         # the invariant hold unconditionally instead of by coincidence.
-        if self._is_fresh_boot(restored=restored, replayed=replayed):
+        if self._is_fresh_boot(restored=restored, replayed=replayed, fetched=fetched):
             _log.info("boot.fresh", equity_broker=self._broker.account().equity_quote)
             return
-        self._sync_book_snapshot_after_recovery(replayed=replayed, now=now)
+        self._sync_book_snapshot_after_recovery(replayed=replayed, fetched=fetched, now=now)
         try:
             report = self._reconciler.reconcile(as_of=now)
         except ReconciliationError as exc:
@@ -770,17 +773,26 @@ class LiveLoop:
             "boot.recovered",
             paper_state_restored=restored,
             replayed_fills=replayed,
+            fetched_fills=fetched,
             failed_cycles=len(failed),
             n_inflight=len(report.inflight),
             n_adoptions=len(report.adoptions),
             equity_broker=report.equity_broker,
         )
-        if replayed or failed or report.inflight or report.adoptions:
+        if replayed or fetched or failed or report.inflight or report.adoptions:
             self._alerter.alert(
                 AlertLevel.WARN,
                 f"boot recovery: restored={restored} replayed_fills={replayed} "
-                f"failed_cycles={len(failed)} inflight={len(report.inflight)} "
-                f"adoptions={len(report.adoptions)}",
+                f"fetched_fills={fetched} failed_cycles={len(failed)} "
+                f"inflight={len(report.inflight)} adoptions={len(report.adoptions)}",
+            )
+        # C10c: a WARN-tier equity drift (0.5%-2%) did NOT halt the reconcile, but
+        # the operator must see it building before it escalates to the 2% HALT.
+        if report.equity_status is EquityStatus.WARN:
+            self._alerter.alert(
+                AlertLevel.WARN,
+                f"reconcile equity WARN: book={report.equity_book:.2f} "
+                f"broker={report.equity_broker:.2f} (>0.5%, <2%) -- trading continues",
             )
 
     def _replay_recorded_fills(self, blob_cycle_ts: Ms | None) -> int:
@@ -804,38 +816,148 @@ class LiveLoop:
                 applied += 1
         return applied
 
-    def _sync_book_snapshot_after_recovery(self, *, replayed: int, now: Ms) -> None:
-        """Make the persisted book snapshot equal the recovered broker, pre-reconcile.
+    def _recover_submitted_via_fetch_order(self, *, now: Ms) -> int:
+        """Re-discover venue fills lost in the submit->persist crash window (gate C5).
 
-        Two recoverable cases where the persisted equity/positions snapshot lags
-        the (now-correct) broker book and would otherwise trip a SPURIOUS
-        reconcile halt:
+        :meth:`_replay_recorded_fills` recovers fills the STORE durably recorded
+        but the broker blob missed. The opposite gap is a crash AFTER the order
+        was sent to the venue but BEFORE the loop persisted the fill: the store
+        holds a SUBMITTED intent with ``filled_qty == 0`` and has NO fill row, yet
+        the order may actually have executed. The reconciler cannot heal this
+        alone -- with no store fill it would mark the intent REJECTED, an audit lie
+        about a real position. So for every such intent we ASK the broker by
+        ``client_order_id`` (execDesign.md s8.3 idempotency backbone): if
+        :meth:`~alphaforge.execution.broker.Broker.fetch_order` returns a
+        :class:`Fill`, the venue executed it -- ingest it idempotently (book it
+        into the broker, then persist it to the store only if not already on
+        file) so the reconcile that follows sees agreement.
 
-        1. **Fresh boot** (no equity history): the broker holds ``initial_cash``
-           while the book reads 0.0 -- a phantom divergence on a healthy first
-           boot. We record the opening account under a sentinel cycle keyed at
-           ``floor_bar(now)``.
-        2. **Mid-batch crash** (``replayed > 0``): :meth:`_replay_recorded_fills`
-           just re-booked durable store fills onto the broker, but the cycle that
-           recorded them died before its end-of-cycle snapshot, so the book's last
-           positions/equity snapshot predates them. We re-snapshot the broker (the
-           book authority -- those fills ARE ours) so reconcile sees agreement
-           rather than an ORPHAN it cannot explain.
-
-        This NEVER masks a genuine divergence: it only writes the book to match a
-        broker state we ourselves reconstructed from the store's own durable fills.
-        A broker position with NO backing store fill (impossible for PaperBroker,
-        the real-money posture later) still has no snapshot written for it and so
-        still halts reconcile. A no-op when neither case applies (a clean restart
-        with an up-to-date snapshot).
+        Idempotent and safe to re-run: ``apply_recorded_fill`` is a no-op for an
+        already-acked id, and the store is only written when ``fills_for`` shows
+        the fill is genuinely missing. For :class:`PaperBroker` ``fetch_order``
+        always returns ``None`` (paper fills are never lost behind the broker), so
+        this is a quiet no-op in v1; it is the recovery path the live broker needs.
+        Returns the count of fills newly recovered.
         """
-        fresh = not self._store.equity_curve()
-        if not fresh and replayed == 0:
+        recovered = 0
+        for intent in self._store.open_intents():
+            if intent.status != OrderStatus.SUBMITTED.value or intent.filled_qty > 0.0:
+                continue
+            coid = intent.client_order_id
+            if self._store.fills_for(coid):
+                continue  # already has a fill row -> not a lost-fill case
+            fill = self._broker.fetch_order(coid)
+            if fill is None:
+                continue  # venue never executed it -> reconcile marks it REJECTED
+            # Book the recovered fill into the broker (idempotent on coid), then
+            # persist it to the store so the order advances to FILLED/PARTIAL.
+            self._broker.apply_recorded_fill(fill)
+            self._store.mark_filled(fill, now=now)
+            recovered += 1
+            _log.warning(
+                "boot.fetch_order_recovered",
+                client_order_id=coid,
+                instrument_id=intent.instrument_id,
+                qty=fill.qty,
+                price=fill.price,
+            )
+        return recovered
+
+    def _sync_book_snapshot_after_recovery(
+        self, *, replayed: int, fetched: int, now: Ms
+    ) -> None:
+        """Adopt recovered broker truth into the book ONLY when reconcile says to (C7).
+
+        After :meth:`_replay_recorded_fills` / :meth:`_recover_submitted_via_fetch_order`
+        the broker book is correct (rebuilt from the store's own durable fills),
+        but the persisted equity/positions snapshot can lag it -- a mid-batch
+        crash records fills but dies before its end-of-cycle snapshot, and a fresh
+        boot has the broker at ``initial_cash`` while the book is empty. Left
+        as-is the following reconcile would SPURIOUSLY halt on that lag.
+
+        The OLD fix wrote the broker book into the store UNCONDITIONALLY and then
+        let reconcile read it back -- a tautological write-then-compare that
+        defeated reconcile (it could never see a real divergence, because we had
+        already overwritten the book with broker truth). The C7 fix reverses the
+        order: RECONCILE FIRST (a read-only
+        :meth:`~alphaforge.execution.reconcile.Reconciler.classify` probe against
+        broker truth), and adopt -- snapshot the broker account into the book --
+        ONLY when that probe is not already ``ok`` (positions AND equity agree).
+        On a clean restart the probe is ``ok``, so NOTHING is
+        written and the gate reconcile that follows is a genuine, not
+        rubber-stamped, comparison. A pure-equity lag with no position drift (the
+        fresh-boot opening seed: a flat broker at ``initial_cash`` vs an empty
+        book) has no position adoptions but still fails ``ok`` on equity, so it is
+        seeded here -- preserving the old opening-seed behavior.
+
+        Before adopting, every position adoption is checked to be BACKED BY DURABLE
+        STORE FILLS: the broker book was rebuilt from the store's own fills (the
+        restored blob plus :meth:`_replay_recorded_fills` /
+        :meth:`_recover_submitted_via_fetch_order`), so each broker position must
+        be reproduced by summing the store's recorded signed fill quantities for
+        that instrument. A broker position the store CANNOT explain (no backing
+        fill -- impossible for PaperBroker, the real-money hazard later) is NOT
+        adopted, so it survives to the real :meth:`reconcile` gate and halts as it
+        must. This keeps the 'never masks a genuine divergence' guarantee true by
+        construction rather than by assuming the paper broker can never diverge.
+
+        The adopted snapshot is keyed at ``as_of`` (``now``, the reconcile
+        instant) -- not ``floor_bar(now)`` -- so its key matches the timestamp its
+        equity is marked at (``account_at(now)``) and it becomes the latest book
+        row the gate reconcile reads, marked at the same instant as the broker
+        equity it is compared against (C3 alignment).
+        """
+        probe = self._reconciler.classify(as_of=now)
+        if probe.ok:
+            return  # book already agrees with broker (positions + equity) -> no-op
+        if not self._adoptions_backed_by_store_fills(probe.adoptions):
+            # A broker position the store's durable fills cannot explain: do NOT
+            # silently adopt it. Leave the lagging book so the gate reconcile that
+            # follows halts on the unexplained divergence.
+            _log.warning(
+                "boot.sync_skipped_unbacked_divergence",
+                n_adoptions=len(probe.adoptions),
+                n_divergent=probe.n_divergent,
+            )
             return
-        snap_ts = floor_bar(now, self._tf)
-        account = self._broker.account_at(snap_ts)
-        self._store.snapshot_equity(snap_ts, account)
-        self._store.snapshot_positions(snap_ts, account.positions)
+        account = self._broker.account_at(now)
+        self._store.snapshot_equity(now, account)
+        self._store.snapshot_positions(now, account.positions)
+        _log.info(
+            "boot.sync_adopted",
+            as_of=now,
+            replayed=replayed,
+            fetched=fetched,
+            n_adoptions=len(probe.adoptions),
+        )
+
+    def _adoptions_backed_by_store_fills(
+        self, adoptions: Sequence[InstrumentRecon]
+    ) -> bool:
+        """True iff every adoption's broker qty is reproduced by the store's fills.
+
+        The broker book is rebuilt from the store's durable fills on recovery, so a
+        legitimate adoption (broker position the persisted snapshot just lagged) is
+        exactly the net of the store's recorded signed fill quantities for that
+        instrument. We recompute that net per instrument and require it to match
+        the broker qty within the reconciler's quantity tolerance. Any adoption the
+        store's fills cannot account for is an UNBACKED divergence -- we refuse to
+        adopt it (the gate reconcile then halts on it). Defensive against the
+        future live broker; for PaperBroker every position is backed, so this
+        passes whenever a real lag is being recovered.
+        """
+        store_qty: dict[str, float] = {}
+        for record in self._store.fills_since(0):
+            fill = record.fill
+            store_qty[fill.instrument_id] = (
+                store_qty.get(fill.instrument_id, 0.0) + fill.side.sign * fill.qty
+            )
+        tol = self._reconciler.tolerance
+        for adoption in adoptions:
+            implied = store_qty.get(adoption.instrument_id, 0.0)
+            if not tol.qty_within(implied, adoption.broker_qty):
+                return False
+        return True
 
     def _restore_paper_state(self) -> tuple[bool, Ms | None]:
         """Load the latest persisted paper_state blob into a fresh broker book.
@@ -875,24 +997,25 @@ class LiveLoop:
             failed.append(cycle.cycle_ts)
         return failed
 
-    def _is_fresh_boot(self, *, restored: bool, replayed: int) -> bool:
+    def _is_fresh_boot(self, *, restored: bool, replayed: int, fetched: int) -> bool:
         """True iff this boot has NO prior state to recover or reconcile.
 
         Fresh means: no ``paper_state`` blob was restored, no store fills were
-        replayed onto the broker, the store holds no equity history and no orders
-        of any status, and the broker book is untouched (flat, cash ==
-        ``initial_cash``). Under those conditions there is nothing a reconcile
-        could compare -- the (empty) book trivially equals the (initial) broker --
-        so the loop skips both the synthetic opening-equity seed and the
-        reconcile. ANY trace of prior activity (a blob, a replayed fill, a recorded
-        order, an equity row, or a non-flat / non-initial broker) makes this False
-        and the full recover+reconcile path runs.
+        replayed onto the broker, no fill was re-discovered via ``fetch_order``,
+        the store holds no equity history and no orders of any status, and the
+        broker book is untouched (flat, cash == ``initial_cash``). Under those
+        conditions there is nothing a reconcile could compare -- the (empty) book
+        trivially equals the (initial) broker -- so the loop skips both the
+        synthetic opening-equity seed and the reconcile. ANY trace of prior
+        activity (a blob, a replayed fill, a fetched fill, a recorded order, an
+        equity row, or a non-flat / non-initial broker) makes this False and the
+        full recover+reconcile path runs.
 
         Deliberately conservative: it must never short-circuit a boot that has real
         state to reconcile, because that would let the loop trade on an
         un-reconciled book. Every clause is necessary; a False from any one is safe.
         """
-        if restored or replayed > 0:
+        if restored or replayed > 0 or fetched > 0:
             return False
         if self._store.equity_curve() or self._store.open_intents():
             return False

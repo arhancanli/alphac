@@ -42,7 +42,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 
 from alphaforge.core.time import Ms
-from alphaforge.core.types import AccountState, OrderRequest, OrderStatus, Position, Side
+from alphaforge.core.types import AccountState, Fill, OrderRequest, OrderStatus, Position, Side
 
 __all__ = [
     "Broker",
@@ -194,6 +194,23 @@ class Broker(ABC):
         Returns True if a working order was found and canceled, False if there
         was nothing to cancel (unknown id, or already terminal — both are
         no-ops, never errors, so cancel is safe to call defensively).
+        """
+
+    @abstractmethod
+    def fetch_order(self, client_order_id: str) -> Fill | None:
+        """Query the broker for the fill of ``client_order_id`` — the idempotency backbone.
+
+        MUST be queryable by ``client_order_id`` (execDesign.md §8.1): the
+        crash-recovery path (Phase-8 gate C5) calls this for every intent that
+        the store recorded as SUBMITTED but never confirmed FILLED. If the venue
+        actually executed the order during the submit→persist crash window, this
+        returns the realized :class:`Fill` so recovery can ingest it
+        idempotently; ``None`` means the broker has no execution for that id (the
+        submit never landed, or the order is still working). For
+        :class:`~alphaforge.execution.paper.PaperBroker` every fill is already in
+        its serialized state, so this returns ``None`` (nothing to re-discover);
+        :class:`~alphaforge.execution.ccxt_broker.CCXTBroker` raises
+        ``NotArmedError`` until a venue adapter lands.
         """
 
     @abstractmethod

@@ -303,7 +303,15 @@ class TradingStore:
         self._conn.row_factory = sqlite3.Row
         self._conn.execute("PRAGMA busy_timeout=5000")
         _enable_wal(self._conn)
-        self._conn.execute("PRAGMA synchronous=NORMAL")
+        # C10b: trading.sqlite is the IRREPLACEABLE order/fill ledger -- it cannot
+        # be re-derived from the exchange (unlike the Parquet lake, which stays at
+        # NORMAL). synchronous=FULL fsyncs the WAL on every commit so a fill or
+        # order transition that returned committed is durable across an OS crash /
+        # power loss, not just a process crash (NORMAL can lose the last commit(s)
+        # on a kernel panic in WAL mode). The mid-frequency loop commits at most a
+        # handful of times per hour, so the extra fsync cost is negligible against
+        # the value of never losing a recorded fill.
+        self._conn.execute("PRAGMA synchronous=FULL")
         self._conn.execute("PRAGMA foreign_keys=ON")
         with self._conn:
             self._conn.executescript(_CREATE_SQL)

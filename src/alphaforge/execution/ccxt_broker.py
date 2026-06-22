@@ -38,7 +38,7 @@ import os
 from typing import Final
 
 from alphaforge.core.errors import NotArmedError
-from alphaforge.core.types import AccountState, OrderRequest, Position
+from alphaforge.core.types import AccountState, Fill, OrderRequest, Position
 from alphaforge.execution.broker import Broker, BrokerAck, OpenOrder, OrderBook
 
 __all__ = ["ARM_ENV_VAR", "CCXTBroker"]
@@ -108,6 +108,19 @@ class CCXTBroker(Broker):
         """Always raises :class:`NotArmedError` in v1 (real-money cancel is disabled)."""
         del client_order_id
         raise NotArmedError(_arm_message("cancel"))
+
+    def fetch_order(self, client_order_id: str) -> Fill | None:
+        """Raise NotArmedError: v1 has no ccxt fetch_order adapter wired here (Phase 8+).
+
+        Querying an order by ``client_order_id`` is not a real-money MUTATION,
+        but in v1 no ccxt adapter is wired, so the safe default is to treat the
+        venue as unavailable and raise the explicit arm message rather than
+        fabricate a missing-order ``None`` (which the crash-recovery path C5 would
+        misread as 'the submit never landed'). The Phase-8+ adapter will map
+        ccxt's ``fetch_order`` payload to a :class:`Fill`.
+        """
+        del client_order_id
+        raise NotArmedError(_arm_message("fetch_order"))
 
     # ------------------------------------------------------------------ read-only
 

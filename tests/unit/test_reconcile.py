@@ -139,11 +139,16 @@ class FakeBroker:
         return list(self._positions)
 
     def account(self) -> AccountState:
+        return self.account_at(T0)
+
+    def account_at(self, ts: int) -> AccountState:
+        # C3: the reconciler marks equity via account_at(as_of). The fake holds a
+        # fixed equity, so the mark is time-invariant -- it just echoes ``ts``.
         return AccountState(
             equity_quote=self._equity,
             cash_quote=self._equity,
             positions=tuple(self._positions),
-            ts=T0,
+            ts=ts,
         )
 
     def open_orders(self) -> list[OpenOrder]:
