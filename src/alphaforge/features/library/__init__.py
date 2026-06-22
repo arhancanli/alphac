@@ -51,6 +51,17 @@ from alphaforge.features.library.carry_dynamics import (
     carry_mom_21_63,
     carry_z_252,
 )
+from alphaforge.features.library.equity_fundamental import (
+    eq_asset_growth,
+    eq_book_to_price,
+    eq_earnings_yield,
+    eq_gross_profitability,
+    eq_operating_margin,
+    eq_quality_composite,
+    eq_roe,
+    eq_sales_to_price,
+    eq_value_composite,
+)
 from alphaforge.features.library.equity_liquidity_alpha import (
     ILREV_WINDOW,
     eq_ilrev,
@@ -67,17 +78,6 @@ from alphaforge.features.library.equity_price import (
     eq_vol_252,
     realized_vol,
     reversal,
-)
-from alphaforge.features.library.equity_fundamental import (
-    eq_asset_growth,
-    eq_book_to_price,
-    eq_earnings_yield,
-    eq_gross_profitability,
-    eq_operating_margin,
-    eq_quality_composite,
-    eq_roe,
-    eq_sales_to_price,
-    eq_value_composite,
 )
 from alphaforge.features.library.equity_residual import (
     EQ_BETA_WINDOW,

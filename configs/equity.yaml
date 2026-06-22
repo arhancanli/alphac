@@ -15,8 +15,11 @@ data:
   # rebuild, research ic/walkforward all read the lake); it only labels the crypto-only
   # ccxt ingest/clock/live paths, so the value is a placeholder for the equity profile.
   exchange: polygon
-  # Survivorship-free history floor; matches the detached flat-files ingest window.
-  backfill_start: "2015-01-01T00:00:00Z"
+  # Survivorship-free history floor; the full Sharadar lake reaches back to 1997. This
+  # is a one-time floor for the deep-history measure-once IC protocol (NOT a new trial:
+  # same pre-registered configs, longer T) — see docs/design/PRE_REGISTRATION.md. The
+  # `af research ic` default start derives from this key.
+  backfill_start: "1997-01-01T00:00:00Z"
 
 universe:
   # Equities trade for BREADTH (the sqrt(N) decorrelation edge), so the liquid cross
@@ -24,16 +27,16 @@ universe:
   # volume, with entry/exit hysteresis. This is a credible cross-section for the first
   # Rank-IC read while staying tractable for the (not-yet-columnar) backtester; widen
   # toward ~500-1000 once the scale arc (P6/P7) lands — the scale-guard tripwire gates it.
-  size: 200
-  entry_rank: 160     # hysteresis: enter at top-160 (top-200 is the best honest config;
-  exit_rank: 260      # wider top-500 DILUTED momentum net Sharpe 0.24 -> 0.07, 2026-06-19)
+  size: 2000          # WIDE: small/mid-cap where value/quality/momentum premia actually live
+  entry_rank: 1800    # (the 25yr Sharadar lake has the breadth; top-200 was a Polygon-era cap)
+  exit_rank: 2300
 
 portfolio:
   # Breadth: hold the top-50 / bottom-50 by signal (not the v1 default 10/10). On a 200-name
   # universe, 10/10 throws away ~95% of the cross-section; 50/50 harvests the breadth the
   # universe exists for (fundamental law of active management: IR ≈ IC·√breadth). The single
   # highest-impact, non-data-mining Sharpe lever (deep-audit DESK 3).
-  rank_top_k: 30
+  rank_top_k: 100     # K=100/side on a top-2000 universe (~10% selection; breadth = IR·√N)
   dollar_neutral: true
 
 signals:

@@ -276,7 +276,8 @@ class TestTruncationAndParitySweep:
         # (NOT in any crypto active set), so the sweep covers them at atol = 0 too.
         # PLUS the 6 F2 FUNDAMENTAL factors (eq_earnings_yield / eq_book_to_price /
         # eq_sales_to_price value; eq_gross_profitability / eq_roe / eq_operating_margin
-        # quality + 3 composites) = 50. On the crypto lake their fundamentals read is empty -> all-NaN, so
+        # quality + 3 composites) = 50. On the crypto lake their fundamentals
+        # read is empty -> all-NaN, so
         # the sweep covers them at atol = 0 (NaN == NaN) and they never touch a crypto set.
         assert len(ALL_SPECS) == 50
         assert len(set(ALL_NAMES)) == 50

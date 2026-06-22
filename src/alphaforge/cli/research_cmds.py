@@ -153,6 +153,13 @@ def ic(
     cross-sectional factors under the PIT universe mask, correlates against
     execution-aware forward returns per horizon on the non-overlapping h-grid,
     and prints/persists the Newey-West-summarized evidence table.
+
+    When ``--start`` is omitted the span begins at ``data.backfill_start`` from the
+    resolved profile. For the equity profile that floor is 1997-01-01, the start of
+    the full Sharadar lake: a deep-history measure-ONCE re-read of the SAME
+    pre-registered factor configs over a longer T (NOT a decade-by-decade trial
+    search), per docs/design/PRE_REGISTRATION.md. Measuring the identical configs on
+    more history spends no new trial budget.
     """
     # Argument parsing FIRST — bad input must exit before any filesystem touch.
     horizon_bars = _parse_horizons(horizons)

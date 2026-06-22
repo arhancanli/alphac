@@ -16,7 +16,7 @@ wires it (e.g. ``research_app.add_typer(walkforward_app)`` or
 from __future__ import annotations
 
 from pathlib import Path
-from typing import TYPE_CHECKING, Annotated, Final
+from typing import TYPE_CHECKING, Annotated, Final, Literal, cast
 
 import typer
 
@@ -229,7 +229,7 @@ def walkforward(
         raise typer.BadParameter(
             f"--allocator: must be 'rank', 'rank_long', or 'mvo', got {allocator!r}"
         )
-    alloc: str = allocator
+    alloc = cast(Literal["rank", "rank_long", "mvo"], allocator)
     instrument_ids: list[str] | None = None
     if ids is not None:
         instrument_ids = [tok.strip() for tok in ids.split(",") if tok.strip()]

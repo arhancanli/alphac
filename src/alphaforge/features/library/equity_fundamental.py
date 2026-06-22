@@ -307,8 +307,9 @@ def _equal_weight_composite(
     zs = [_cs_zscore(c).reindex(idx) for c in components]
     mat = pd.concat(zs, axis=1)
     valid = mat.notna().sum(axis=1).to_numpy()
-    comp = mat.mean(axis=1, skipna=True).to_numpy(dtype="float64")
-    comp[valid < min_valid] = np.nan
+    mean = mat.mean(axis=1, skipna=True).to_numpy(dtype="float64")
+    # np.where returns a fresh writable array (.to_numpy() is read-only under CoW pandas 2.x).
+    comp = np.where(valid >= min_valid, mean, np.nan)
     return pd.Series(comp, index=idx, dtype="float64", name=name)
 
 

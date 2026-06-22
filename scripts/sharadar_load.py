@@ -104,15 +104,30 @@ def load_sep(writer: LakeWriter, candidates: set[str], now: int, *, min_dollar: 
     with z.open(inner) as fh:
         for ch in pd.read_csv(fh, usecols=cols, chunksize=chunk):  # type: ignore[arg-type]
             ch = ch[ch["ticker"].astype(str).str.upper().isin(candidates)]
-            ch = ch[(ch["close"] > 0) & (ch["closeunadj"] > 0)]
+            # Prices must be finite + positive (the backtest's BarView rejects non-finite OHLC);
+            # wide survivorship-free names have halted/gappy bars the top-200 large-caps did not.
+            for c in ("open", "high", "low", "close", "closeunadj"):
+                ch = ch[np.isfinite(ch[c]) & (ch[c] > 0)]
             if len(ch):
                 parts.append(ch)
     df = pd.concat(parts, ignore_index=True)
     del parts
+    # Volume on a halted day can be NaN/negative; the lake requires finite >= 0 -> floor to 0
+    # (keeps the price bar; the universe ranker medians dollar-volume so a 0 day is harmless).
+    df["volume"] = df["volume"].where(np.isfinite(df["volume"]) & (df["volume"] >= 0.0), 0.0)
     df["ratio"] = df["closeunadj"] / df["close"]  # adjusted -> raw
     df["dollar"] = df["close"] * df["volume"]  # split-invariant dollar volume
     med = df.groupby("ticker")["dollar"].median()
-    keep = set(med[med >= min_dollar].index.astype(str).str.upper())
+    liquid = med[med >= min_dollar]
+    # Dedup by CANONICAL id: BRK.B/BRKB-style canonicalization can map two raw tickers to one
+    # id; keep the single highest-$volume raw ticker per canonical id (collision-free downstream).
+    best: dict[str, tuple[str, float]] = {}
+    for raw, mv in liquid.items():
+        ru = str(raw).upper()
+        cid = _eid(ru)
+        if cid not in best or mv > best[cid][1]:
+            best[cid] = (ru, float(mv))
+    keep = {v[0] for v in best.values()}
     if limit_tickers:
         keep = set(sorted(keep)[:limit_tickers])
     df = df[df["ticker"].astype(str).str.upper().isin(keep)]
@@ -147,8 +162,13 @@ def load_sep(writer: LakeWriter, candidates: set[str], now: int, *, min_dollar: 
 
 def load_instruments(store: InstrumentStore, cand: pd.DataFrame, keep: set[str], now: int) -> None:
     n = 0
+    seen: set[str] = set()
     for _, r in cand[cand["ticker"].astype(str).str.upper().isin(keep)].iterrows():
         t = str(r["ticker"]).upper()
+        iid = _eid(t)
+        if iid in seen:  # defensive: never upsert the same id twice in one run
+            continue
+        seen.add(iid)
         listed = _to_ms(r["firstpricedate"])
         if listed is None:
             continue

@@ -31,6 +31,7 @@ import pyarrow as pa
 import pytest
 
 from alphaforge.core.instruments import Instrument, InstrumentStore
+from alphaforge.core.time import parse_utc
 from alphaforge.core.types import AssetClass, MarketType
 from alphaforge.data.schemas import Dataset
 from alphaforge.data.store.lake import LakePaths
@@ -552,3 +553,24 @@ class TestCli:
         )
         assert result.exit_code != 0
         assert "horizons" in result.output
+
+
+class TestDeepHistoryFloor:
+    """The equity profile pins its IC default span to the full Sharadar window.
+
+    `af research ic --profile equity` defaults its --start to data.backfill_start.
+    Under the deep-history measure-ONCE protocol that floor must be 1997-01-01 (the
+    start of the survivorship-free Sharadar lake), so re-reading the SAME
+    pre-registered configs over the longest T spends no new trial budget. This guard
+    catches an accidental reset back to a shorter (e.g. 2015) Polygon-era floor.
+    """
+
+    def test_equity_backfill_start_is_sharadar_floor(self) -> None:
+        from alphaforge.config.settings import load_settings
+
+        settings = load_settings(profile="equity")
+        # Compare on the raw ISO string (the exact value written in the config) and
+        # on the parsed epoch-ms (the value the CLI actually consumes) so a sneaky
+        # timezone/format edit that preserves one but not the other still trips.
+        assert settings.data.backfill_start == "1997-01-01T00:00:00Z"
+        assert settings.data.backfill_start_ms == parse_utc("1997-01-01T00:00:00Z")
