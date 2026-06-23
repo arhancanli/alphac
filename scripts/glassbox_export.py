@@ -374,7 +374,7 @@ def build_pre_registration() -> dict[str, Any]:
                 "(|beta_SPY|, |beta_BTC| t < 2)"
             ),
         },
-        "expected_outcome": "B+ to A-, honest combined Sharpe ~0.75-0.85 net (NOT 1.51)",
+        "expected_outcome": "B+ to A-, honest combined Sharpe ~0.75-0.85 net (NOT 1.46)",
         "actual_outcome": (
             "C+ honest null. The free-breadth path is exhausted: value and quality do not "
             "replicate on the narrow universe; crypto-perp alone fails honest deflation. "
