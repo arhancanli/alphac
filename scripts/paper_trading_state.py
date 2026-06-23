@@ -89,12 +89,15 @@ def read_fwd_curve(path: Path) -> list[dict] | None:
     try:
         t = pq.read_table(path).to_pydict()
         days, eq = t["ts"], t["equity"]
-        out = [
-            {"date": _epoch_to_date(d), "equity": round(float(e) * 100000.0, 2)}
+        pts = [
+            (_epoch_to_date(d), float(e))
             for d, e in zip(days, eq, strict=True)
             if _epoch_to_date(d) >= GO_LIVE  # forward = on/after go-live only
         ]
-        return out or None
+        if not pts:
+            return None
+        base = pts[0][1] or 1.0  # rebase the realized forward to the $100k go-live seed
+        return [{"date": dte, "equity": round(100000.0 * v / base, 2)} for dte, v in pts]
     except Exception:
         return None
 
@@ -154,11 +157,12 @@ def main():
     equity_wf = load_wf(EQUITY_WF)
     book = combine_book([equity_wf, crypto_wf], scheme="equal_risk", trading_days=365)
 
-    # research (simulation) curves, ~weekly sampled
+    # research (simulation) curves, downsampled. Sleeve WF curves are already dollar-based
+    # (100k-start), so scale=1.0; the combined book curve is normalised (~1.0), so scale=100k.
     research = {
-        "alphaforge": sample_curve(crypto_wf.ts_ms, crypto_wf.equity),
-        "alphamax": sample_curve(equity_wf.ts_ms, equity_wf.equity),
-        "alphac": sample_curve(book.days, book.equity_curve),
+        "alphaforge": sample_curve(crypto_wf.ts_ms, crypto_wf.equity, scale=1.0),
+        "alphamax": sample_curve(equity_wf.ts_ms, equity_wf.equity, scale=1.0),
+        "alphac": sample_curve(book.days, book.equity_curve, scale=100000.0),
     }
     # live (realized) curves - honest, no fabricated history
     crypto_live = read_live_db(CRYPTO_LIVE_DB)
