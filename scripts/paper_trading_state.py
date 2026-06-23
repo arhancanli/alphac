@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import datetime as dt
 import json
+import sqlite3
 from pathlib import Path
 
 import pyarrow.parquet as pq
@@ -40,9 +41,35 @@ SLEEVES = [
 ]
 
 
+TRADING_DB = Path("var/trading.sqlite")
+
+
 def load(n):
     t = pq.read_table(f"artifacts/walkforward/{n}/equity.parquet").to_pydict()
     return SleeveCurve(n, list(t["ts"]), list(t["equity"]))
+
+
+def read_live_curve():
+    """Realized live paper marks from trading.sqlite (equity_curve), or the honest
+    go-live $100k seed until the running loop has written its first cycle. No fake history."""
+    seed = [{"date": GO_LIVE, "equity": 100000.0}]
+    if not TRADING_DB.exists():
+        return seed
+    try:
+        con = sqlite3.connect(f"file:{TRADING_DB}?mode=ro", uri=True)
+        rows = con.execute(
+            "SELECT ts, equity_quote FROM equity_curve WHERE ts IS NOT NULL ORDER BY ts ASC"
+        ).fetchall()
+        con.close()
+    except sqlite3.Error:
+        return seed
+    if not rows:
+        return seed
+    out = []
+    for ts_ms, equity in rows:
+        d = dt.datetime(1970, 1, 1, tzinfo=dt.UTC) + dt.timedelta(milliseconds=int(ts_ms))
+        out.append({"date": d.strftime("%Y-%m-%d"), "equity": round(float(equity), 2)})
+    return out
 
 
 def main():
@@ -54,8 +81,9 @@ def main():
     for i in range(0, len(days), 5):  # ~weekly points
         d = dt.datetime(1970, 1, 1, tzinfo=dt.UTC) + dt.timedelta(days=int(days[i]))
         research.append({"date": d.strftime("%Y-%m-%d"), "equity": round(float(eq[i]) * 100000, 2)})
-    # live paper curve: starts at go-live, $100k, empty until the daily job appends marks
-    live = [{"date": GO_LIVE, "equity": 100000.0}]
+    # live paper curve: realized marks from trading.sqlite (the running paper loop),
+    # or the honest go-live $100k seed until the loop writes its first cycle.
+    live = read_live_curve()
     state = {
         "generated_at": dt.datetime.now(dt.UTC).isoformat(),
         "go_live_date": GO_LIVE,

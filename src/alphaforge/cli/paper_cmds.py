@@ -83,16 +83,19 @@ def _fmt_ts(ms: Ms | None) -> str:
 
 
 class _UpdaterAdapter:
-    """Drives :meth:`BackfillJob.update` for the loop (the single ingest clock)."""
+    """Drives :meth:`BackfillJob.update` for the loop (the single ingest clock),
+    scoped to this profile's asset-class instruments so a single-asset loop never
+    tries to fetch another class's instruments from the wrong source."""
 
-    __slots__ = ("_job",)
+    __slots__ = ("_ids", "_job")
 
-    def __init__(self, job: object) -> None:
+    def __init__(self, job: object, instrument_ids: Sequence[str] | None = None) -> None:
         self._job = job
+        self._ids = instrument_ids
 
     def update(self, *, as_of: Ms) -> object:
-        """Fetch bars up to ``as_of`` (the loop ignores the report)."""
-        return self._job.update(as_of=as_of)  # type: ignore[attr-defined]
+        """Fetch bars up to ``as_of`` for the scoped ids (the loop ignores the report)."""
+        return self._job.update(as_of=as_of, instrument_ids=self._ids)  # type: ignore[attr-defined]
 
 
 class _WatermarkAdapter:
@@ -124,21 +127,28 @@ class _WatermarkAdapter:
 
 
 class _InstrumentsAdapter:
-    """Resolves the tradable ``{id: Instrument}`` at a cycle: PIT universe x record."""
+    """Resolves the tradable ``{id: Instrument}`` at a cycle: PIT universe x record,
+    scoped to this profile's asset class. The shared universe store + SCD2 record hold
+    every class (crypto perps + the equities universe); a single-asset live loop must
+    only ever trade its own, or it would size/freshness-check over another class's names
+    that this loop's data source never ingests."""
 
-    __slots__ = ("_instruments", "_universe")
+    __slots__ = ("_asset_class", "_instruments", "_universe")
 
-    def __init__(self, universe: object, instruments: InstrumentStore) -> None:
+    def __init__(
+        self, universe: object, instruments: InstrumentStore, asset_class: object
+    ) -> None:
         self._universe = universe
         self._instruments = instruments
+        self._asset_class = asset_class
 
     def __call__(self, cycle_ts: Ms) -> Mapping[str, Instrument]:
-        """PIT members at ``cycle_ts`` that have a valid instrument record then."""
+        """PIT members at ``cycle_ts`` with a valid record AND in this asset class."""
         members = self._universe.membership_asof(cycle_ts)  # type: ignore[attr-defined]
         out: dict[str, Instrument] = {}
         for iid in sorted(members):
             inst = self._instruments.get(iid, cycle_ts)
-            if inst is not None:
+            if inst is not None and inst.asset_class == self._asset_class:
                 out[iid] = inst
         return out
 
@@ -556,14 +566,20 @@ def _build_loop(settings: Settings, *, cash: float) -> _LoopBundle:
     kill = KillSwitch(settings.paths.var_dir / _KILL_FILE)
     alerter = build_alerter(os.environ.get(_TELEGRAM_TOKEN_ENV), os.environ.get(_TELEGRAM_CHAT_ENV))
 
-    # The PaperBroker's tradable universe is fixed at construction, so it must
-    # cover EVERY instrument the monthly-growing universe can select -- use the
-    # full instrument record as of now. The live ccxt order-book client is built
-    # the same way CCXTDataSource builds its client (never imported at module load).
+    # Scope to THIS profile's asset class. The shared instrument record holds every
+    # asset class (crypto perps + the equities universe); a single-asset live loop must
+    # only ever ingest/trade its own class, or it would try to fetch a different class's
+    # instruments (e.g. equity tickers) from the crypto source -- 404s that never
+    # converge. The PaperBroker still covers every member the monthly universe can
+    # select, WITHIN the class. The live ccxt order-book client is built the same way
+    # CCXTDataSource builds its client (never imported at module load).
     book_source = CCXTOrderBookSource(_build_ccxt_client(settings.data.exchange))
-    broker_instruments = {
-        inst.instrument_id: inst for inst in instruments.all_known(as_of=now_ms())
-    }
+    asset_class = settings.data.asset_class
+    sleeve_instruments = [
+        inst for inst in instruments.all_known(as_of=now_ms()) if inst.asset_class == asset_class
+    ]
+    sleeve_instrument_ids = [inst.instrument_id for inst in sleeve_instruments]
+    broker_instruments = {inst.instrument_id: inst for inst in sleeve_instruments}
     broker = PaperBroker(
         broker_instruments,
         cost_model,
@@ -597,11 +613,11 @@ def _build_loop(settings: Settings, *, cash: float) -> _LoopBundle:
         staleness=staleness,
         kill=kill,
         alerter=alerter,
-        updater=_UpdaterAdapter(job),
+        updater=_UpdaterAdapter(job, sleeve_instrument_ids),
         watermark=_WatermarkAdapter(reader, settings.data.timeframe),
         cost_inputs_factory=_CostInputsFactory(reader, LakeCostInputs.WARMUP_MS),
         ctx_factory=_ContextFactory(reader, settings.data.timeframe),
-        instruments_factory=_InstrumentsAdapter(universe, instruments),
+        instruments_factory=_InstrumentsAdapter(universe, instruments, asset_class),
         initial_cash=cash,
     )
     return _LoopBundle(loop, (store, checkpoints, instruments))

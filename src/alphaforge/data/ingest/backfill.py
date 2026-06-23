@@ -453,7 +453,9 @@ class BackfillJob:
         _log.info("backfill.run_finished", run_id=run_id, summary=report.summary())
         return report
 
-    def update(self, *, as_of: Ms) -> BackfillReport:
+    def update(
+        self, *, as_of: Ms, instrument_ids: Sequence[str] | None = None
+    ) -> BackfillReport:
         """Incremental ingestion: ``run()`` with ``start_default`` derived from watermarks.
 
         The hourly follow path — same code, no special cases. ``start_default`` is
@@ -467,6 +469,10 @@ class BackfillJob:
         Args:
             as_of: The wall clock of this cycle (epoch ms UTC) — used as ``now``,
                 as the exclusive ``until``, and as the instrument-store read time.
+            instrument_ids: optional scope (default ``None`` = every known instrument,
+                so ``af data update`` is unchanged). The live loop passes its
+                asset-class-scoped ids so a single-asset loop (e.g. crypto) never tries
+                to fetch a different asset class's instruments from the wrong source.
         """
         datasets = (Dataset.OHLCV, Dataset.FUNDING)
         marks: list[Ms] = []
@@ -475,6 +481,7 @@ class BackfillJob:
         start_default: Ms = min(marks) + 1 if marks else as_of
         return self.run(
             datasets=datasets,
+            instrument_ids=instrument_ids,
             start_default=start_default,
             until=as_of,
             now=as_of,
