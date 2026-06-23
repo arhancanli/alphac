@@ -55,7 +55,7 @@ paper_app = typer.Typer(
 )
 
 _OPS_DB: Final[str] = "ops.sqlite"
-_TRADING_DB: Final[str] = "trading.sqlite"
+_TRADING_DB_STEM: Final[str] = "trading"  # per-sleeve -> trading_{asset_class}.sqlite
 _KILL_FILE: Final[str] = "KILL"
 _VISION_DELAY_S: Final[float] = 0.2
 _TELEGRAM_TOKEN_ENV: Final[str] = "TELEGRAM_BOT_TOKEN"
@@ -71,6 +71,13 @@ def _load_settings(profile: str | None) -> Settings:
     from alphaforge.config.settings import load_settings
 
     return load_settings(profile)
+
+
+def _trading_db_path(settings: Settings) -> Path:
+    """Per-sleeve trading DB. Each live algorithm owns its own NAV/positions/orders
+    SQLite so two loops never write the same book (AlphaForge=crypto_perp,
+    AlphaMax=equity); the cross-asset ALPHAC curve is combined downstream from both."""
+    return settings.paths.var_dir / f"{_TRADING_DB_STEM}_{settings.data.asset_class.value}.sqlite"
 
 
 def _fmt_ts(ms: Ms | None) -> str:
@@ -386,7 +393,7 @@ def status(
     from alphaforge.live.store import TradingStore
 
     tf = settings.data.timeframe
-    db = settings.paths.var_dir / _TRADING_DB
+    db = _trading_db_path(settings)
     if not db.exists():
         typer.echo(f"no trading store yet at {db} (run `af paper run` first)")
         return
@@ -588,7 +595,7 @@ def _build_loop(settings: Settings, *, cash: float) -> _LoopBundle:
     ops_db = settings.paths.var_dir / _OPS_DB
     instruments = InstrumentStore(ops_db)
     checkpoints = CheckpointStore(ops_db)
-    store = TradingStore(settings.paths.var_dir / _TRADING_DB)
+    store = TradingStore(_trading_db_path(settings))
 
     # The Phase-4 signal seam -> the live mu_provider for the strategy.
     service = SignalService(

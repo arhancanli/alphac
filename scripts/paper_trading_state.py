@@ -1,12 +1,15 @@
-"""Generate the paper-trading state JSON the Meridian web app renders.
+"""Generate the paper-trading state JSON the Meridian web app + landing render.
 
-The HONEST data backbone: the canonical paper-trading track record of the live algorithm
-(the 3-sleeve book) plus the research/simulation curve for context, with honest metrics and
-the radical-transparency caveats. A daily job re-runs this to append the live mark.
+THREE algorithms, presented honestly:
+  1. AlphaForge - crypto funding carry (LIVE hourly broker-loop paper).
+  2. AlphaMax   - US-equity 12-1 momentum (daily forward paper, realized next-open fills).
+  3. ALPHAC     - the cross-asset book = AlphaForge (+) AlphaMax, equal-risk (the flagship).
 
-Radical transparency rules baked in: the RESEARCH curve is always labelled simulation; the
-LIVE curve starts at go-live (no fabricated history); metrics are the honest forward numbers
-(grade C+, forward Sharpe ~0.5-0.7), never the in-sample headline as if it were earned.
+Radical-transparency rules baked in: every RESEARCH curve is labelled simulation; every LIVE
+curve starts at go-live (no fabricated history); metrics are the honest forward numbers (grade
+C+, deflated forward Sharpe 0.7 to 1.0), never the in-sample 1.46 as if it were earned. A daily
+job re-runs this to append the live marks. A back-compat top-level block (= ALPHAC) keeps the
+current dashboard rendering until it migrates to the algorithms[] array.
 """
 
 from __future__ import annotations
@@ -21,42 +24,53 @@ import pyarrow.parquet as pq
 from alphaforge.portfolio.book import SleeveCurve, combine_book
 
 GO_LIVE = "2026-06-21"  # the day the live paper track record begins
-# The REAL deployed book: two decorrelated, walk-forward-validated, net-of-cost sleeves.
-# (We do NOT have managed-futures data; there is no futures sleeve. Equity factors other
-#  than momentum were tested deep-history and do not survive net of cost.)
-SLEEVES = [
-    (
-        "k30_dn_63",
-        "US Equity Momentum",
-        "12-1 cross-sectional momentum, dollar-neutral long/short, "
-        "split-adjusted, survivorship-free",
-        0.91,
-    ),
-    (
-        "crypto_carry_wk",
-        "Crypto Funding Carry",
-        "Funding-rate carry, Binance USDT-M perpetuals, market-neutral",
-        0.68,
-    ),
-]
+
+# The two validated, walk-forward, net-of-cost sleeves (the artifact dirs under
+# artifacts/walkforward/) + their per-sleeve LIVE trading DB (None = derived, not a loop).
+EQUITY_WF = "k30_dn_63"
+CRYPTO_WF = "crypto_carry_wk"
+CRYPTO_LIVE_DB = Path("var/trading_crypto_perp.sqlite")
+EQUITY_LIVE_DB = Path("var/trading_equity.sqlite")  # populated by the daily equity forward job
+# AlphaMax forward curve (realized, post-go-live) if the daily forward engine has written one.
+EQUITY_FWD_CURVE = Path("artifacts/walkforward/equity_live_fwd/equity.parquet")
 
 
-TRADING_DB = Path("var/trading.sqlite")
+def _epoch_to_date(x: float) -> str:
+    v = int(x)
+    base = dt.datetime(1970, 1, 1, tzinfo=dt.UTC)
+    d = base + (dt.timedelta(milliseconds=v) if v > 10**11 else dt.timedelta(days=v))
+    return d.strftime("%Y-%m-%d")
 
 
-def load(n):
-    t = pq.read_table(f"artifacts/walkforward/{n}/equity.parquet").to_pydict()
-    return SleeveCurve(n, list(t["ts"]), list(t["equity"]))
+def load_wf(name: str) -> SleeveCurve:
+    """A validated walk-forward (simulation) curve."""
+    t = pq.read_table(f"artifacts/walkforward/{name}/equity.parquet").to_pydict()
+    return SleeveCurve(name, list(t["ts"]), list(t["equity"]))
 
 
-def read_live_curve():
-    """Realized live paper marks from trading.sqlite (equity_curve), or the honest
-    go-live $100k seed until the running loop has written its first cycle. No fake history."""
+def sample_curve(days, eq, *, target: int = 180, scale: float = 100000.0) -> list[dict]:
+    """Downsample any curve (hourly crypto, daily equity, daily book) to ~`target`
+    points so the JSON payload stays light and every curve renders consistently."""
+    n = len(days)
+    if n == 0:
+        return []
+    every = max(1, n // target)
+    out = []
+    for i in range(0, n, every):
+        out.append({"date": _epoch_to_date(days[i]), "equity": round(float(eq[i]) * scale, 2)})
+    if (n - 1) % every != 0:  # always include the last point
+        out.append({"date": _epoch_to_date(days[-1]), "equity": round(float(eq[-1]) * scale, 2)})
+    return out
+
+
+def read_live_db(db: Path) -> list[dict]:
+    """Realized live paper marks from a per-sleeve trading DB (equity_curve), or the honest
+    go-live $100k seed until the loop has written its first cycle. No fabricated history."""
     seed = [{"date": GO_LIVE, "equity": 100000.0}]
-    if not TRADING_DB.exists():
+    if not db.exists():
         return seed
     try:
-        con = sqlite3.connect(f"file:{TRADING_DB}?mode=ro", uri=True)
+        con = sqlite3.connect(f"file:{db}?mode=ro", uri=True)
         rows = con.execute(
             "SELECT ts, equity_quote FROM equity_curve WHERE ts IS NOT NULL ORDER BY ts ASC"
         ).fetchall()
@@ -65,94 +79,172 @@ def read_live_curve():
         return seed
     if not rows:
         return seed
-    out = []
-    for ts_ms, equity in rows:
-        d = dt.datetime(1970, 1, 1, tzinfo=dt.UTC) + dt.timedelta(milliseconds=int(ts_ms))
-        out.append({"date": d.strftime("%Y-%m-%d"), "equity": round(float(equity), 2)})
-    return out
+    return [{"date": _epoch_to_date(ts), "equity": round(float(eq), 2)} for ts, eq in rows]
+
+
+def read_fwd_curve(path: Path) -> list[dict] | None:
+    """AlphaMax's realized forward curve (post-go-live) if the daily forward engine wrote one."""
+    if not path.exists():
+        return None
+    try:
+        t = pq.read_table(path).to_pydict()
+        days, eq = t["ts"], t["equity"]
+        out = [
+            {"date": _epoch_to_date(d), "equity": round(float(e) * 100000.0, 2)}
+            for d, e in zip(days, eq, strict=True)
+            if _epoch_to_date(d) >= GO_LIVE  # forward = on/after go-live only
+        ]
+        return out or None
+    except Exception:
+        return None
+
+
+def combined_live(crypto: list[dict], equity: list[dict]) -> list[dict]:
+    """ALPHAC live = equal-risk combine of the two LIVE sleeve curves, IF both have accrued
+    real marks; else the honest seed (the cross-asset record begins when both sleeves do)."""
+    if len(crypto) < 2 or len(equity) < 2:
+        return [{"date": GO_LIVE, "equity": 100000.0}]
+    try:
+        def to_sleeve(name, c):
+            base = dt.datetime(1970, 1, 1, tzinfo=dt.UTC)
+            ts_ms = [int((dt.datetime.strptime(p["date"], "%Y-%m-%d").replace(tzinfo=dt.UTC)
+                          - base).total_seconds() * 1000) for p in c]
+            eq = [p["equity"] / 100000.0 for p in c]
+            return SleeveCurve(name, ts_ms, eq)
+        book = combine_book([to_sleeve("crypto", crypto), to_sleeve("equity", equity)],
+                            scheme="equal_risk", trading_days=365)
+        return sample_curve(book.days, book.equity_curve)
+    except Exception:
+        return [{"date": GO_LIVE, "equity": 100000.0}]
+
+
+# Per-algorithm honest descriptors + metrics (canonical numbers; in-sample always struck).
+ALGOS = [
+    {
+        "key": "alphaforge", "name": "AlphaForge", "rank": 1,
+        "asset": "Crypto funding carry",
+        "desc": "Funding-rate carry on Binance USDT-M perpetuals, market-neutral.",
+        "standalone_sharpe": 0.68,
+        "live_kind": "Live broker-loop paper, hourly.",
+        "wf": CRYPTO_WF, "live_db": CRYPTO_LIVE_DB,
+    },
+    {
+        "key": "alphamax", "name": "AlphaMax", "rank": 2,
+        "asset": "US-equity 12-1 momentum",
+        "desc": "12-1 cross-sectional momentum, dollar-neutral long/short, "
+                "split-adjusted, survivorship-free.",
+        "standalone_sharpe": 0.91,
+        "live_kind": "Daily forward paper, realized next-open fills.",
+        "wf": EQUITY_WF, "live_db": EQUITY_LIVE_DB,
+    },
+    {
+        "key": "alphac", "name": "ALPHAC", "rank": 3, "flagship": True,
+        "asset": "Cross-asset book",
+        "desc": "AlphaForge and AlphaMax combined equal-risk. The two sleeves are "
+                "near-uncorrelated (~ -0.02); that decorrelation is the edge.",
+        "standalone_sharpe": None,
+        "live_kind": "Derived: the equal-risk combination of the two live sleeves.",
+        "wf": None, "live_db": None,
+    },
+]
 
 
 def main():
-    sl = [load(s[0]) for s in SLEEVES]
-    book = combine_book(sl, scheme="equal_risk", trading_days=365)
-    # research (simulation) curve: monthly-sampled to keep payload light
-    days, eq = book.days, book.equity_curve
-    research = []
-    for i in range(0, len(days), 5):  # ~weekly points
-        d = dt.datetime(1970, 1, 1, tzinfo=dt.UTC) + dt.timedelta(days=int(days[i]))
-        research.append({"date": d.strftime("%Y-%m-%d"), "equity": round(float(eq[i]) * 100000, 2)})
-    # live paper curve: realized marks from trading.sqlite (the running paper loop),
-    # or the honest go-live $100k seed until the loop writes its first cycle.
-    live = read_live_curve()
+    crypto_wf = load_wf(CRYPTO_WF)
+    equity_wf = load_wf(EQUITY_WF)
+    book = combine_book([equity_wf, crypto_wf], scheme="equal_risk", trading_days=365)
+
+    # research (simulation) curves, ~weekly sampled
+    research = {
+        "alphaforge": sample_curve(crypto_wf.ts_ms, crypto_wf.equity),
+        "alphamax": sample_curve(equity_wf.ts_ms, equity_wf.equity),
+        "alphac": sample_curve(book.days, book.equity_curve),
+    }
+    # live (realized) curves - honest, no fabricated history
+    crypto_live = read_live_db(CRYPTO_LIVE_DB)
+    equity_live = read_fwd_curve(EQUITY_FWD_CURVE) or read_live_db(EQUITY_LIVE_DB)
+    live = {
+        "alphaforge": crypto_live,
+        "alphamax": equity_live,
+        "alphac": combined_live(crypto_live, equity_live),
+    }
+
+    algorithms = []
+    for a in ALGOS:
+        sleeve_weight = (
+            round(float(book.weights[a["wf"]].mean()), 3) if a["wf"] in book.weights else None
+        )
+        algorithms.append({
+            "key": a["key"], "name": a["name"], "rank": a["rank"],
+            "flagship": a.get("flagship", False),
+            "asset": a["asset"], "desc": a["desc"],
+            "standalone_sharpe": a["standalone_sharpe"],
+            "book_weight": sleeve_weight,
+            "live_kind": a["live_kind"],
+            "live_days": max(len(live[a["key"]]) - 1, 0),
+            "research_curve": research[a["key"]],
+            "live_curve": live[a["key"]],
+        })
+
+    metrics = {
+        "in_sample_sharpe": round(float(book.sharpe), 2),
+        "honest_forward_sharpe": "0.7 to 1.0",
+        "in_sample_cagr_pct": round(float(book.cagr) * 100, 1),
+        "honest_forward_return_pct": "7 to 16 (vol-targeted)",
+        "max_drawdown_pct": round(float(book.maxdd) * 100, 1),
+        "realistic_worst_dd_pct": "-10 to -15",
+        "correlation": "the two sleeves are near-uncorrelated "
+        "(equity momentum vs crypto carry ~ -0.02)",
+        "gauntlet_grade": "C+",
+        "gauntlet_pass": ("real but modest; fails multiple-testing deflation in-sample, "
+                          "so deployment waits on the live track record"),
+        "live_days": max(len(crypto_live) - 1, 0),
+    }
+    transparency = [
+        "Research curves are simulations, not realised trading. No real capital has been deployed.",
+        "The live paper track record begins " + GO_LIVE
+        + " and is shown as it accrues. We publish no return until it is earned in the open.",
+        "The book is two decorrelated sleeves: US equity momentum (standalone Sharpe ~0.9) "
+        "and crypto funding carry (~0.7). The honest combined forward expectation after "
+        "multiple-testing "
+        "deflation is 0.7 to 1.0, not the higher in-sample figure (1.46).",
+        "The edge is genuine (market-neutral, decorrelated, statistically real) but modest and "
+        "not yet proven live.",
+    ]
+
     state = {
         "generated_at": dt.datetime.now(dt.UTC).isoformat(),
         "go_live_date": GO_LIVE,
+        "algorithms": algorithms,
+        "metrics": metrics,
+        "transparency": transparency,
+        # ---- back-compat top-level (= ALPHAC, the flagship book) so the current dashboard
+        # keeps rendering until it migrates to algorithms[] ----
         "book": {
-            "name": "AlphaForge Cross-Asset Book",
-            "style": (
-                "Market-neutral, two decorrelated sleeves "
-                "(US equity momentum + crypto funding carry)"
-            ),
+            "name": "ALPHAC Cross-Asset Book",
+            "style": "Market-neutral, two decorrelated sleeves "
+            "(US equity momentum + crypto funding carry)",
             "sleeves": [
-                {
-                    "key": s[0],
-                    "name": s[1],
-                    "desc": s[2],
-                    "standalone_sharpe": s[3],
-                    "weight": round(float(book.weights[s[0]].mean()), 3),
-                }
-                for s in SLEEVES
+                {"key": "alphaforge", "name": "AlphaForge", "desc": ALGOS[0]["desc"],
+                 "standalone_sharpe": 0.68,
+                 "weight": round(float(book.weights[CRYPTO_WF].mean()), 3)},
+                {"key": "alphamax", "name": "AlphaMax", "desc": ALGOS[1]["desc"],
+                 "standalone_sharpe": 0.91,
+                 "weight": round(float(book.weights[EQUITY_WF].mean()), 3)},
             ],
         },
-        "metrics": {
-            "in_sample_sharpe": round(float(book.sharpe), 2),
-            "honest_forward_sharpe": "0.7 to 1.0",
-            "in_sample_cagr_pct": round(float(book.cagr) * 100, 1),
-            "honest_forward_return_pct": "7 to 14 (vol-targeted)",
-            "max_drawdown_pct": round(float(book.maxdd) * 100, 1),
-            "realistic_worst_dd_pct": "-10 to -15",
-            "correlation": (
-                "the two sleeves are near-uncorrelated "
-                "(equity momentum vs crypto carry ~ -0.02)"
-            ),
-            "capacity": (
-                "equity sleeve $1B+; crypto carry finite "
-                "(~$100k to $1M proven, capacity-capped)"
-            ),
-            "gauntlet_grade": "C+",
-            "gauntlet_pass": (
-                "real but modest; fails multiple-testing deflation in-sample, "
-                "so deployment waits on the live track record"
-            ),
-            "live_days": len(live) - 1,
-        },
-        "transparency": [
-            "The research curve is a simulation, not realised trading. "
-            "No real capital has been deployed.",
-            "The live paper track record begins "
-            + GO_LIVE
-            + " and is shown as it accrues. We publish no return until it is earned in the open.",
-            "The book is two decorrelated sleeves: US equity momentum "
-            "(standalone Sharpe ~0.9) and crypto funding carry (~0.7). The honest "
-            "combined forward expectation after multiple-testing deflation is "
-            "~0.7 to 1.0, not the higher in-sample figure.",
-            "The edge is genuine (market-neutral, decorrelated, statistically "
-            "real) but modest and not yet proven live.",
-        ],
-        "research_curve": research,
-        "live_curve": live,
+        "research_curve": research["alphac"],
+        "live_curve": live["alphac"],
     }
     out = Path("data/paper/state.json")
+    out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(state, indent=2))
-    print(
-        f"wrote {out}  ({len(research)} research pts, live starts {GO_LIVE}, "
-        f"in-sample SR {book.sharpe:.2f})"
-    )
-    # also copy to the web app if it exists
-    app = Path.home() / "meridian-app" / "public"
-    if app.is_dir():
-        (app / "paper-state.json").write_text(json.dumps(state, indent=2))
-        print(f"copied to {app / 'paper-state.json'}")
+    print(f"wrote {out}  (3 algorithms; in-sample SR {book.sharpe:.2f}; "
+          f"crypto live pts {len(crypto_live)}, equity live pts {len(equity_live)})")
+    for app in (Path.home() / "meridian-app" / "public", Path.home() / "meridian" / "public"):
+        if app.is_dir():
+            (app / "paper-state.json").write_text(json.dumps(state, indent=2))
+            print(f"copied to {app / 'paper-state.json'}")
 
 
 if __name__ == "__main__":
