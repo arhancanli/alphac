@@ -36,7 +36,8 @@ import typer
 from alphaforge.core.time import Ms, from_ms, now_ms
 
 if TYPE_CHECKING:
-    from collections.abc import Mapping, Sequence
+    from collections.abc import Callable, Mapping, Sequence
+    from pathlib import Path
 
     from alphaforge.backtest.engine import StrategyContext
     from alphaforge.config.settings import Settings
@@ -84,18 +85,21 @@ def _fmt_ts(ms: Ms | None) -> str:
 
 class _UpdaterAdapter:
     """Drives :meth:`BackfillJob.update` for the loop (the single ingest clock),
-    scoped to this profile's asset-class instruments so a single-asset loop never
-    tries to fetch another class's instruments from the wrong source."""
+    scoped to the CURRENT trading universe (resolved per cycle) so each cycle ingests
+    only the handful of names it will actually trade - fast and robust, never a slow
+    full-universe sweep that one hung fetch could stall. The wider candidate set is
+    kept fresh for the monthly rebuild by the daily broad ``af data update``."""
 
-    __slots__ = ("_ids", "_job")
+    __slots__ = ("_job", "_members")
 
-    def __init__(self, job: object, instrument_ids: Sequence[str] | None = None) -> None:
+    def __init__(self, job: object, members: Callable[[Ms], list[str]]) -> None:
         self._job = job
-        self._ids = instrument_ids
+        self._members = members
 
     def update(self, *, as_of: Ms) -> object:
-        """Fetch bars up to ``as_of`` for the scoped ids (the loop ignores the report)."""
-        return self._job.update(as_of=as_of, instrument_ids=self._ids)  # type: ignore[attr-defined]
+        """Ingest only the current universe members up to ``as_of`` (report ignored)."""
+        ids = self._members(as_of)
+        return self._job.update(as_of=as_of, instrument_ids=ids or None)  # type: ignore[attr-defined]
 
 
 class _WatermarkAdapter:
@@ -153,28 +157,64 @@ class _InstrumentsAdapter:
         return out
 
 
+#: Blend-weight cache TTL. The Rank-IC blend weights are EWMA-smoothed (halflife
+#: ~60d), so they move negligibly hour-to-hour; recomputing the multi-minute
+#: estimate_weights every hourly cycle is pure waste. Cache them on disk and
+#: refresh at most once per this interval -> the per-cycle cost collapses to the
+#: ~1-2s on_bar_close. 25h means a daily refresh that tolerates a missed cycle.
+_WEIGHTS_CACHE_TTL_S: Final[float] = 25 * 3600.0
+
+
 class _MuProviderAdapter:
     """``(decision_ts) -> {id: mu_ann}`` over ``SignalService.on_bar_close``.
 
-    Re-estimates the blend weights on a cadence (default: at most once per cycle,
-    re-using the cached object between) so the live row reproduces the research
-    row at the same decision bar. An empty/failed signal yields ``{}`` (HOLD).
+    The blend weights (slow-moving, EWMA-smoothed Rank-IC) are estimated at most
+    once per ``_WEIGHTS_CACHE_TTL_S`` and persisted to ``cache_path`` (pickle, an
+    atomic tmp+replace). A fresh cycle loads the cached weights instantly and does
+    only the cheap per-bar ``on_bar_close``; a stale/absent cache triggers one
+    (multi-minute) re-estimate that the next 24h of cycles then reuse. The cached
+    weights' grid ends a few hours back, but ``asof`` returns its last row -- a
+    <2% drift at a 60d halflife, far inside the live/research EWMA tolerance. An
+    empty/failed signal yields ``{}`` (HOLD).
     """
 
-    __slots__ = ("_service", "_weights", "_window_start")
+    __slots__ = ("_cache_path", "_service", "_weights", "_window_start")
 
-    def __init__(self, service: object, window_start_ms: Ms) -> None:
+    def __init__(self, service: object, window_start_ms: Ms, cache_path: Path) -> None:
         self._service = service
         self._window_start = window_start_ms
         self._weights: object | None = None
+        self._cache_path = cache_path
+
+    def _load_or_estimate(self, decision_ts: Ms) -> object:
+        import pickle
+        import time
+
+        p = self._cache_path
+        try:
+            if p.is_file() and (time.time() - p.stat().st_mtime) < _WEIGHTS_CACHE_TTL_S:
+                with p.open("rb") as fh:
+                    return pickle.load(fh)
+        except Exception:
+            pass
+        weights = self._service.estimate_weights(  # type: ignore[attr-defined]
+            self._window_start, decision_ts
+        )
+        try:
+            p.parent.mkdir(parents=True, exist_ok=True)
+            tmp = p.with_suffix(".tmp")
+            with tmp.open("wb") as fh:
+                pickle.dump(weights, fh)
+            tmp.replace(p)  # atomic publish
+        except Exception:
+            pass
+        return weights
 
     def __call__(self, decision_ts: Ms) -> Mapping[str, float]:
         from alphaforge.signals.sizing import MU_ANN_COLUMN
 
         if self._weights is None:
-            self._weights = self._service.estimate_weights(  # type: ignore[attr-defined]
-                self._window_start, decision_ts
-            )
+            self._weights = self._load_or_estimate(decision_ts)
         try:
             frame = self._service.on_bar_close(  # type: ignore[attr-defined]
                 decision_ts, weights=self._weights
@@ -261,7 +301,11 @@ def _build_ccxt_client(exchange_id: str) -> object:
     exchange_cls = getattr(ccxt, exchange_id, None)
     if exchange_cls is None:
         raise ConfigError(f"unknown ccxt exchange id {exchange_id!r}: no such class on ccxt")
-    return exchange_cls({"enableRateLimit": True})
+    # HARD per-request timeout (15s): a live order-book fetch with no timeout can
+    # stall the whole cycle indefinitely (the fill has no other clock). With it, a
+    # stalled fetch raises RequestTimeout fast and the snapshot retry / the loop's
+    # own exception backstop take over instead of hanging.
+    return exchange_cls({"enableRateLimit": True, "timeout": 15000})
 
 
 # --------------------------------------------------------------------------- run
@@ -550,8 +594,18 @@ def _build_loop(settings: Settings, *, cash: float) -> _LoopBundle:
     service = SignalService(
         FeatureEngine(reader, instruments, universe), universe, default_registry(), settings.signals
     )
-    window_start = settings.data.backfill_start_ms
-    mu_provider = _MuProviderAdapter(service, window_start)
+    # Bound the live IC-estimation lookback to a trailing window. estimate_weights
+    # EWMA-weights the Rank-IC (halflife ~60d), so 180 days = 3 halflives carries
+    # >87% of the cumulative weight -- a numerically-equal estimate to the full
+    # history, at a fraction of the compute. 180d keeps a fresh-boot --once cycle
+    # to ~12-14 min (well inside the 30-min watchdog); the prior 400d ran ~27 min,
+    # right at the watchdog edge. Older IC data (>180d) carries <13% EWMA weight.
+    _LIVE_IC_LOOKBACK_MS = 180 * 86_400_000
+    window_start = max(settings.data.backfill_start_ms, now_ms() - _LIVE_IC_LOOKBACK_MS)
+    # Per-sleeve weight cache (crypto and equity blend weights differ); refreshed
+    # at most daily so the hourly cycle is the cheap on_bar_close, not a re-estimate.
+    weights_cache = settings.paths.var_dir / f"signal_weights_{settings.data.asset_class.value}.pkl"
+    mu_provider = _MuProviderAdapter(service, window_start, weights_cache)
 
     # The SAME drawdown ladder instance the strategy uses (the loop never updates
     # it separately -- the strategy owns the equity marks).
@@ -578,7 +632,6 @@ def _build_loop(settings: Settings, *, cash: float) -> _LoopBundle:
     sleeve_instruments = [
         inst for inst in instruments.all_known(as_of=now_ms()) if inst.asset_class == asset_class
     ]
-    sleeve_instrument_ids = [inst.instrument_id for inst in sleeve_instruments]
     broker_instruments = {inst.instrument_id: inst for inst in sleeve_instruments}
     broker = PaperBroker(
         broker_instruments,
@@ -601,6 +654,9 @@ def _build_loop(settings: Settings, *, cash: float) -> _LoopBundle:
         lock_path=settings.paths.var_dir / "ingest.lock",
     )
 
+    # One instruments factory, shared by the loop (what to trade) and the updater
+    # (what to ingest) so the per-cycle ingest is exactly the current universe.
+    instr_factory = _InstrumentsAdapter(universe, instruments, asset_class)
     loop = LiveLoop(
         settings,
         store=store,
@@ -613,11 +669,11 @@ def _build_loop(settings: Settings, *, cash: float) -> _LoopBundle:
         staleness=staleness,
         kill=kill,
         alerter=alerter,
-        updater=_UpdaterAdapter(job, sleeve_instrument_ids),
+        updater=_UpdaterAdapter(job, lambda ts: sorted(instr_factory(ts))),
         watermark=_WatermarkAdapter(reader, settings.data.timeframe),
         cost_inputs_factory=_CostInputsFactory(reader, LakeCostInputs.WARMUP_MS),
         ctx_factory=_ContextFactory(reader, settings.data.timeframe),
-        instruments_factory=_InstrumentsAdapter(universe, instruments, asset_class),
+        instruments_factory=instr_factory,
         initial_cash=cash,
     )
     return _LoopBundle(loop, (store, checkpoints, instruments))

@@ -336,8 +336,17 @@ class SignalService:
         ids, froms, tos = self._intervals()
         ts = index.get_level_values("ts_open").to_numpy(dtype=np.int64)
         inst = index.get_level_values("instrument_id").to_numpy()
+        # The intervals span the WHOLE cross-asset universe (2000+ members); the
+        # panel holds only this sleeve's ~20-40 instruments. An interval for an
+        # instrument absent from the panel contributes an all-False term to the OR
+        # (``inst == iid`` is never true), so skipping it is byte-identical -- but it
+        # turns an O(intervals x N) full-numpy-scan-per-interval blowup (the dominant
+        # live-cycle cost: 2000+ scans of the panel) into O(panel-instruments x N).
+        panel_ids = set(inst.tolist())
         member = np.zeros(len(index), dtype=bool)
         for iid, eff_from, eff_to in zip(ids, froms, tos, strict=True):
+            if iid not in panel_ids:
+                continue
             in_span = ts >= eff_from if eff_to is None else (ts >= eff_from) & (ts < eff_to)
             member |= in_span & (inst == iid)
         return pd.Series(member, index=index)

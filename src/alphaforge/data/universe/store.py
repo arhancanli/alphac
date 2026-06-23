@@ -59,6 +59,15 @@ class UniverseStore:
     def __init__(self, paths: LakePaths) -> None:
         self._paths = paths
         self._writer = LakeWriter(paths)
+        # Membership intervals are immutable within a process (only the universe
+        # builder writes them; readers — backtest, live loop — only read). Reading
+        # globs+parses thousands of parquet leaves, and market/breadth features call
+        # membership_asof once PER BAR (hundreds of times per cycle), so an uncached
+        # read turned the residual-reversal factors into a multi-minute stall. Cache
+        # the parsed full table + the (ids, froms, tos) arrays once; invalidate on
+        # write. Pure memoization of a deterministic read — results are byte-identical.
+        self._intervals_cache: pa.Table | None = None
+        self._parsed_cache: tuple[list[str], list[int], list[int | None]] | None = None
 
     def write_intervals(
         self,
@@ -94,6 +103,9 @@ class UniverseStore:
           open interval rewrites it with ``effective_to`` set).
         """
         validate_table(tbl, Dataset.UNIVERSE_MEMBERSHIP)
+        # any write changes membership -> invalidate the read caches
+        self._intervals_cache = None
+        self._parsed_cache = None
         if replace:
             dataset_dir = self._paths.root / Dataset.UNIVERSE_MEMBERSHIP.value
             if dataset_dir.is_dir():
@@ -123,6 +135,21 @@ class UniverseStore:
         Result conforms exactly to ``UNIVERSE_SCHEMA``; an empty/missing dataset
         yields a schema-stable empty table, not an error.
         """
+        tbl = self._intervals_cache
+        if tbl is None:
+            tbl = self._read_intervals_full()
+            self._intervals_cache = tbl
+        if as_of is not None:
+            from_ms_vals: list[int] = tbl.column("effective_from").cast(pa.int64()).to_pylist()
+            mask = pa.array([v <= as_of for v in from_ms_vals], type=pa.bool_())
+            tbl = tbl.filter(mask)
+        return tbl.cast(schema_for(Dataset.UNIVERSE_MEMBERSHIP))
+
+    def _read_intervals_full(self) -> pa.Table:
+        """Glob+parse every membership leaf into the full sorted table (no as_of).
+
+        Cached by :meth:`read_intervals`; this is the only path that touches disk.
+        """
         dataset_dir = self._paths.root / Dataset.UNIVERSE_MEMBERSHIP.value
         files: list[Path] = sorted(dataset_dir.glob(_LEAF_GLOB)) if dataset_dir.is_dir() else []
         if not files:
@@ -135,14 +162,9 @@ class UniverseStore:
             # in-file instrument_id column (same rationale as LakeWriter._merge_leaf).
             with pq.ParquetFile(path) as leaf:  # type: ignore[no-untyped-call]
                 parts.append(leaf.read().cast(schema))
-        tbl = pa.concat_tables(parts).sort_by(
+        return pa.concat_tables(parts).sort_by(
             [("instrument_id", "ascending"), ("effective_from", "ascending")]
         )
-        if as_of is not None:
-            from_ms_vals: list[int] = tbl.column("effective_from").cast(pa.int64()).to_pylist()
-            mask = pa.array([v <= as_of for v in from_ms_vals], type=pa.bool_())
-            tbl = tbl.filter(mask)
-        return tbl.cast(schema)
 
     def membership_asof(self, ts: Ms) -> frozenset[str]:
         """The tradable universe at decision instant ``ts`` (epoch ms UTC).
@@ -154,10 +176,16 @@ class UniverseStore:
         interval closes (delisting/exit). Delisted symbols appear for every ``ts``
         inside their historical spans — the survivorship-bias-free read.
         """
-        tbl = self.read_intervals()
-        ids: list[str] = tbl.column("instrument_id").to_pylist()
-        froms: list[int] = tbl.column("effective_from").cast(pa.int64()).to_pylist()
-        tos: list[int | None] = tbl.column("effective_to").cast(pa.int64()).to_pylist()
+        parsed = self._parsed_cache
+        if parsed is None:
+            tbl = self.read_intervals()
+            parsed = (
+                tbl.column("instrument_id").to_pylist(),
+                tbl.column("effective_from").cast(pa.int64()).to_pylist(),
+                tbl.column("effective_to").cast(pa.int64()).to_pylist(),
+            )
+            self._parsed_cache = parsed
+        ids, froms, tos = parsed
         return frozenset(
             iid
             for iid, eff_from, eff_to in zip(ids, froms, tos, strict=True)

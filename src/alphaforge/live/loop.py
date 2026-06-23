@@ -1335,7 +1335,12 @@ class LiveLoop:
             latest = (
                 self._watermark.latest_bar_open(instruments, as_of=now) if instruments else None
             )
-            if latest is not None and latest >= cycle_ts:
+            # Fresh once the JUST-CLOSED bar (cycle_ts - one bar) has landed: its
+            # close IS the cycle_ts-instant mark, and it is the data the decision for
+            # cycle_ts consumes (signal at the prior close -> act at the cycle_ts open).
+            # Requiring the cycle_ts bar ITSELF is impossible (it is still forming) and
+            # would spuriously flag EVERY live cycle "degraded".
+            if latest is not None and latest >= cycle_ts - self._bar_ms:
                 return _FreshnessResult(tradeable=True, degraded=False)
             if now >= deadline:
                 # Out of grace: let the staleness breaker make the final call so

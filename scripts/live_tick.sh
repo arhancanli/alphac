@@ -13,7 +13,9 @@
 export PATH="$HOME/.local/bin:$HOME/.nvm/versions/node/v20.20.2/bin:/usr/bin:/bin:/usr/sbin:/sbin"
 cd "$HOME/alphaforge" || exit 1
 mkdir -p var/log
-WATCHDOG_S=1800   # 30 min hard cap (a healthy cycle is ~15-20 min)
+WATCHDOG_S=2400   # 40 min cap: hourly cache-hit cycles are ~3 min; the once-daily
+                  # blend-weight refresh (cache miss) is ~25 min -- 40 min bounds a
+                  # hang while clearing the daily refresh with comfortable margin.
 
 {
   echo "=== live_tick $(date -u '+%Y-%m-%dT%H:%M:%SZ') ==="

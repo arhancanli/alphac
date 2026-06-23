@@ -142,16 +142,17 @@ class StaleWatermark:
 
 
 class DegradedWatermark:
-    """Reports a lake that is ONE bar behind ``cycle_ts`` -- stale but tradeable.
+    """Reports a GENUINELY stale lake (default two bars behind ``cycle_ts``).
 
-    The freshest bar open it returns is fixed at ``latest`` (default ``T0 -
-    HOUR``, i.e. one bar before the ``T0`` cycle). The just-closed bar therefore
-    never lands within grace, but the StalenessBreaker (``max_bars=2``) still
-    allows trading -- the C9 'degraded' path: trade on a partially-stale lake and
-    WARN-alert + count it.
+    One bar behind is the freshest a LIVE cycle can ever be (the cycle_ts bar is
+    still forming; its just-closed predecessor's close IS the cycle_ts mark), so
+    that case is FRESH, not degraded. Degraded is reserved for a lake that is even
+    further behind (e.g. an exchange/data outage): default ``T0 - 2*HOUR``. The
+    StalenessBreaker (``max_bars=2``) still allows trading on it -- the C9
+    'degraded' path: trade on a partially-stale lake and WARN-alert + count it.
     """
 
-    def __init__(self, *, latest: Ms = T0 - HOUR) -> None:
+    def __init__(self, *, latest: Ms = T0 - 2 * HOUR) -> None:
         self._latest = latest
 
     def latest_bar_open(self, instrument_ids: Sequence[str], *, as_of: Ms) -> Ms | None:
@@ -936,6 +937,25 @@ class TestDegradedAndDropped:
         assert report.degraded is True
         assert loop.degraded_cycles == 1
         assert any(level is AlertLevel.WARN for level, _ in alerter.records)
+
+    def test_one_bar_behind_is_fresh_not_degraded(self, tmp_path: Path) -> None:
+        # One bar behind cycle_ts is the freshest a LIVE cycle can be: the cycle_ts
+        # bar is still forming, and the just-closed bar's close IS the cycle_ts mark.
+        # So this is FRESH, not a degraded/WARN cycle. Guards the live freshness fix
+        # (latest >= cycle_ts - bar_ms), which removed a spurious every-cycle WARN.
+        alerter = RecordingAlerter()
+        loop, store, _broker, _ = build_loop(
+            tmp_path, watermark=DegradedWatermark(latest=T0 - HOUR), alerter=alerter
+        )
+        loop._sleeper = lambda _s: None
+        try:
+            report = loop.run_cycle(T0)
+        finally:
+            store.close()
+        assert report.status == "ok"
+        assert report.degraded is False
+        assert loop.degraded_cycles == 0
+        assert not any(level is AlertLevel.WARN for level, _ in alerter.records)
 
     def test_dropped_book_instrument_is_counted(self, tmp_path: Path) -> None:
         # ETH is in the universe + broker map but has NO registered book; it cannot

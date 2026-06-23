@@ -44,6 +44,7 @@ and offline: inject a :class:`FakeOrderBookSource` in tests.
 from __future__ import annotations
 
 import math
+import time
 from collections.abc import Mapping
 from dataclasses import dataclass, field, replace
 from typing import TYPE_CHECKING, Protocol, runtime_checkable
@@ -77,6 +78,11 @@ __all__ = [
 
 _BPS_PER_UNIT: float = 1e4
 _DEFAULT_BOOK_DEPTH: int = 50
+#: live order-book fetch resilience: a transient timeout/blip on the fill's book
+#: snapshot is retried this many times (the client also carries a hard per-request
+#: timeout) before the error propagates, so one slow venue read never stalls a cycle.
+_BOOK_FETCH_ATTEMPTS: int = 3
+_BOOK_FETCH_BACKOFF_S: float = 0.5
 
 
 def _require_positive_finite(name: str, value: float) -> None:
@@ -155,13 +161,24 @@ class CCXTOrderBookSource:
         self._symbol_for: dict[str, str] = dict(symbol_for or {})
 
     def snapshot(self, instrument_id: str, *, ts: Ms) -> OrderBook:
-        """Fetch and adapt a live order book (``AttributeError`` if the client lacks the method)."""
+        """Fetch and adapt a live order book, with a bounded retry. A transient
+        timeout/network blip on the fill's book fetch is retried (the client also
+        carries a hard per-request timeout) rather than stalling or failing the
+        cycle; after the attempts the error propagates to the loop's backstop."""
         symbol = self._symbol_for.get(instrument_id, instrument_id.split(":")[-1])
         fetch = self._client.fetch_order_book  # type: ignore[attr-defined]
-        raw = fetch(symbol, _DEFAULT_BOOK_DEPTH)
-        bids = tuple((float(p), float(s)) for p, s in raw["bids"][:_DEFAULT_BOOK_DEPTH])
-        asks = tuple((float(p), float(s)) for p, s in raw["asks"][:_DEFAULT_BOOK_DEPTH])
-        return OrderBook(instrument_id=instrument_id, bids=bids, asks=asks, ts=ts)
+        last: Exception | None = None
+        for attempt in range(_BOOK_FETCH_ATTEMPTS):
+            try:
+                raw = fetch(symbol, _DEFAULT_BOOK_DEPTH)
+                bids = tuple((float(p), float(s)) for p, s in raw["bids"][:_DEFAULT_BOOK_DEPTH])
+                asks = tuple((float(p), float(s)) for p, s in raw["asks"][:_DEFAULT_BOOK_DEPTH])
+                return OrderBook(instrument_id=instrument_id, bids=bids, asks=asks, ts=ts)
+            except Exception as exc:
+                last = exc
+                if attempt + 1 < _BOOK_FETCH_ATTEMPTS:
+                    time.sleep(_BOOK_FETCH_BACKOFF_S * (attempt + 1))
+        raise last if last is not None else RuntimeError("order-book fetch failed after retries")
 
 
 # --------------------------------------------------------------------------- fills
