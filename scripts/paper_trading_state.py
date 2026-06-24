@@ -46,6 +46,17 @@ def _epoch_to_date(x: float) -> str:
     return d.strftime("%Y-%m-%d")
 
 
+def live_days_elapsed(curve: list[dict]) -> int:
+    """Calendar DAYS since go-live, from the curve's latest date (NOT point count:
+    the crypto loop writes many hourly marks per day, so len-1 would badly overcount
+    the 'DAY N' counter)."""
+    if not curve:
+        return 0
+    gl = dt.date.fromisoformat(GO_LIVE)
+    last = dt.date.fromisoformat(curve[-1]["date"])
+    return max((last - gl).days, 0)
+
+
 def load_wf(name: str) -> SleeveCurve:
     """A validated walk-forward (simulation) curve."""
     t = pq.read_table(f"artifacts/walkforward/{name}/equity.parquet").to_pydict()
@@ -259,7 +270,7 @@ def main():
             "standalone_sharpe": a["standalone_sharpe"],
             "book_weight": sleeve_weight,
             "live_kind": a["live_kind"],
-            "live_days": max(len(live[a["key"]]) - 1, 0),
+            "live_days": live_days_elapsed(live[a["key"]]),
             "research_curve": research[a["key"]],
             "live_curve": live[a["key"]],
             "holdings": holdings[a["key"]],
@@ -277,7 +288,7 @@ def main():
         "gauntlet_grade": "C+",
         "gauntlet_pass": ("real but modest; fails multiple-testing deflation in-sample, "
                           "so deployment waits on the live track record"),
-        "live_days": max(len(crypto_live) - 1, 0),
+        "live_days": live_days_elapsed(crypto_live),
     }
     transparency = [
         "Research curves are simulations, not realised trading. No real capital has been deployed.",
