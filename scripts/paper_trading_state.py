@@ -15,6 +15,7 @@ current dashboard rendering until it migrates to the algorithms[] array.
 from __future__ import annotations
 
 import datetime as dt
+import glob
 import json
 import sqlite3
 from pathlib import Path
@@ -22,6 +23,9 @@ from pathlib import Path
 import pyarrow.parquet as pq
 
 from alphaforge.portfolio.book import SleeveCurve, combine_book
+
+EQUITY_FWD_DIR = "artifacts/walkforward/equity_live_fwd"
+_TOP_N = 15  # holdings shown per side (the book is ~100/side; show the largest weights)
 
 GO_LIVE = "2026-06-21"  # the day the live paper track record begins
 
@@ -102,6 +106,72 @@ def read_fwd_curve(path: Path) -> list[dict] | None:
         return None
 
 
+def _ticker(iid: str) -> str:
+    """XUSE:CASH:MUUSD -> MU ; BINANCE:PERP:BTCUSDT -> BTC."""
+    tail = iid.split(":")[-1]
+    return tail.removesuffix("USDT").removesuffix("USD") if ":" in iid else iid
+
+
+def read_equity_holdings() -> dict | None:
+    """AlphaMax's current long/short book: the latest position snapshot from the equity
+    forward walk-forward (the real names the strategy holds), top-weighted per side.
+    Honest: these are the validated momentum strategy's positions on realized data."""
+    legs = sorted(glob.glob(f"{EQUITY_FWD_DIR}/legs/leg_*/positions.parquet"))
+    if not legs:
+        return None
+    try:
+        t = pq.read_table(legs[-1]).to_pydict()
+        rows = list(zip(t["ts"], t["instrument_id"], t["qty"], t["weight"], strict=True))
+        if not rows:
+            return None
+        last_ts = max(r[0] for r in rows)
+        hold = [(_ticker(iid), float(q), float(w)) for ts, iid, q, w in rows
+                if ts == last_ts and abs(float(q)) > 1e-9]
+        longs = sorted([h for h in hold if h[1] > 0], key=lambda x: -abs(x[2]))
+        shorts = sorted([h for h in hold if h[1] < 0], key=lambda x: -abs(x[2]))
+        gross = sum(abs(w) for _, _, w in hold)
+        net = sum(w for _, _, w in hold)
+        return {
+            "as_of": _epoch_to_date(last_ts),
+            "long_count": len(longs),
+            "short_count": len(shorts),
+            "gross_pct": round(gross * 100, 1),
+            "net_pct": round(net * 100, 2),
+            "long": [{"ticker": tk, "weight_pct": round(abs(w) * 100, 2)}
+                     for tk, _, w in longs[:_TOP_N]],
+            "short": [{"ticker": tk, "weight_pct": round(abs(w) * 100, 2)}
+                      for tk, _, w in shorts[:_TOP_N]],
+        }
+    except Exception:
+        return None
+
+
+def read_crypto_holdings() -> dict | None:
+    """AlphaForge's current crypto perp positions from the live trading DB, or flat (it has
+    been deciding HOLD; an honest empty book, never invented)."""
+    if not CRYPTO_LIVE_DB.exists():
+        return {"as_of": None, "long_count": 0, "short_count": 0,
+                "long": [], "short": [], "flat": True}
+    try:
+        con = sqlite3.connect(f"file:{CRYPTO_LIVE_DB}?mode=ro", uri=True)
+        last = con.execute("SELECT max(cycle_ts) FROM positions_snapshots").fetchone()[0]
+        rows = (con.execute(
+            "SELECT instrument_id, qty FROM positions_snapshots WHERE cycle_ts=? AND qty != 0",
+            (last,)).fetchall() if last is not None else [])
+        con.close()
+    except sqlite3.Error:
+        return None
+    longs = sorted([(_ticker(i), q) for i, q in rows if q > 0])
+    shorts = sorted([(_ticker(i), q) for i, q in rows if q < 0])
+    return {
+        "as_of": _epoch_to_date(last) if last else None,
+        "long_count": len(longs), "short_count": len(shorts),
+        "long": [{"ticker": tk} for tk, _ in longs[:_TOP_N]],
+        "short": [{"ticker": tk} for tk, _ in shorts[:_TOP_N]],
+        "flat": not rows,
+    }
+
+
 def combined_live(crypto: list[dict], equity: list[dict]) -> list[dict]:
     """ALPHAC live = equal-risk combine of the two LIVE sleeve curves, IF both have accrued
     real marks; else the honest seed (the cross-asset record begins when both sleeves do)."""
@@ -172,6 +242,10 @@ def main():
         "alphamax": equity_live,
         "alphac": combined_live(crypto_live, equity_live),
     }
+    # current holdings (the real names each algorithm is buying/holding)
+    eq_hold = read_equity_holdings()
+    cr_hold = read_crypto_holdings()
+    holdings = {"alphaforge": cr_hold, "alphamax": eq_hold, "alphac": eq_hold}
 
     algorithms = []
     for a in ALGOS:
@@ -188,6 +262,7 @@ def main():
             "live_days": max(len(live[a["key"]]) - 1, 0),
             "research_curve": research[a["key"]],
             "live_curve": live[a["key"]],
+            "holdings": holdings[a["key"]],
         })
 
     metrics = {
@@ -222,6 +297,8 @@ def main():
         "algorithms": algorithms,
         "metrics": metrics,
         "transparency": transparency,
+        # the real names the algorithms are buying/holding right now (top-weighted per side)
+        "holdings": {"alphamax": eq_hold, "alphaforge": cr_hold},
         # ---- back-compat top-level (= ALPHAC, the flagship book) so the current dashboard
         # keeps rendering until it migrates to algorithms[] ----
         "book": {
