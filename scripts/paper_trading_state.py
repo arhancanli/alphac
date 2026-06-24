@@ -183,23 +183,45 @@ def read_crypto_holdings() -> dict | None:
     }
 
 
-def combined_live(crypto: list[dict], equity: list[dict]) -> list[dict]:
-    """ALPHAC live = equal-risk combine of the two LIVE sleeve curves, IF both have accrued
-    real marks; else the honest seed (the cross-asset record begins when both sleeves do)."""
-    if len(crypto) < 2 or len(equity) < 2:
+def _daily_returns(curve: list[dict]) -> dict[str, float]:
+    """Map date -> that sleeve's realized daily return. Dedup to the last mark per
+    calendar day (the crypto loop writes many hourly marks), then diff. A sleeve's
+    first mark has return 0 (it is the baseline, not a gain)."""
+    byday: dict[str, float] = {}
+    for p in curve:
+        byday[p["date"]] = float(p["equity"])  # last write per day wins
+    days = sorted(byday)
+    rets: dict[str, float] = {}
+    prev: str | None = None
+    for d in days:
+        rets[d] = (byday[d] / byday[prev] - 1.0) if (prev and byday[prev]) else 0.0
+        prev = d
+    return rets
+
+
+def combined_live(
+    crypto: list[dict], equity: list[dict], w_crypto: float, w_equity: float
+) -> list[dict]:
+    """ALPHAC live = the two REALIZED live sleeve curves combined at their committed
+    equal-risk weights (the research weights, NOT re-estimated from a few days of live
+    data), compounded daily from the $100k seed. Honest: real per-sleeve returns,
+    pre-committed dollar weights, no fabricated history. A sleeve with no mark on a day
+    simply contributes nothing that day, so the flagship record accrues from go-live
+    even when the two sleeves came online on different days."""
+    if len(crypto) < 2 and len(equity) < 2:
         return [{"date": GO_LIVE, "equity": 100000.0}]
-    try:
-        def to_sleeve(name, c):
-            base = dt.datetime(1970, 1, 1, tzinfo=dt.UTC)
-            ts_ms = [int((dt.datetime.strptime(p["date"], "%Y-%m-%d").replace(tzinfo=dt.UTC)
-                          - base).total_seconds() * 1000) for p in c]
-            eq = [p["equity"] / 100000.0 for p in c]
-            return SleeveCurve(name, ts_ms, eq)
-        book = combine_book([to_sleeve("crypto", crypto), to_sleeve("equity", equity)],
-                            scheme="equal_risk", trading_days=365)
-        return sample_curve(book.days, book.equity_curve)
-    except Exception:
-        return [{"date": GO_LIVE, "equity": 100000.0}]
+    cr = _daily_returns(crypto)
+    eq = _daily_returns(equity)
+    s = (w_crypto or 0.0) + (w_equity or 0.0)
+    wc, we = (w_crypto / s, w_equity / s) if s else (0.5, 0.5)
+    dates = sorted({GO_LIVE} | set(cr) | set(eq))
+    out: list[dict] = []
+    val = 100000.0
+    for i, d in enumerate(dates):
+        if i:
+            val *= 1.0 + wc * cr.get(d, 0.0) + we * eq.get(d, 0.0)
+        out.append({"date": d, "equity": round(val, 2)})
+    return out
 
 
 # Per-algorithm honest descriptors + metrics (canonical numbers; in-sample always struck).
@@ -248,10 +270,13 @@ def main():
     # live (realized) curves - honest, no fabricated history
     crypto_live = read_live_db(CRYPTO_LIVE_DB)
     equity_live = read_fwd_curve(EQUITY_FWD_CURVE) or read_live_db(EQUITY_LIVE_DB)
+    # committed equal-risk dollar weights from the research book (NOT re-estimated live)
+    w_cr = float(book.weights[CRYPTO_WF].mean()) if CRYPTO_WF in book.weights else 0.5
+    w_eq = float(book.weights[EQUITY_WF].mean()) if EQUITY_WF in book.weights else 0.5
     live = {
         "alphaforge": crypto_live,
         "alphamax": equity_live,
-        "alphac": combined_live(crypto_live, equity_live),
+        "alphac": combined_live(crypto_live, equity_live, w_cr, w_eq),
     }
     # current holdings (the real names each algorithm is buying/holding)
     eq_hold = read_equity_holdings()
