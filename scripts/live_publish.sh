@@ -1,5 +1,5 @@
 #!/bin/zsh
-# AC Capital - daily PUBLISH of the live track record to the public sites.
+# Canli Capital - daily PUBLISH of the live track record to the public sites.
 #
 # Regenerates the glass-box + paper-state JSONs from the realized NAV, then redeploys
 # both Vercel sites so the public "Proven in the Open" track record + the app dashboard

@@ -1,5 +1,5 @@
 #!/bin/zsh
-# AC Capital - hourly live PAPER cycle (the running track record).
+# Canli Capital - hourly live PAPER cycle (the running track record).
 #
 # Runs one idempotent paper cycle for the just-closed bar (scheduled a few minutes
 # past the hour by launchd so the bar has closed), then regenerates the published-state

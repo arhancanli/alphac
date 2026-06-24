@@ -1,5 +1,5 @@
 #!/bin/zsh
-# AC Capital - daily AlphaMax (equity) refresh.
+# Canli Capital - daily AlphaMax (equity) refresh.
 #
 # AlphaMax is the US-equity 12-1 momentum sleeve. Equity bars are daily (Polygon S3 flat
 # files), so this runs once per day (after the prior US session's flat file publishes) to:

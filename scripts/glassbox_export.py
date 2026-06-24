@@ -1,4 +1,4 @@
-"""Glass-box data export: emit the AC Capital landing page's JSON from REAL artifacts.
+"""Glass-box data export: emit the Canli Capital landing page's JSON from REAL artifacts.
 
 This is the honesty backbone of the public site (ac-capital.vercel.app). Every number
 it emits is read from a real AlphaForge artifact on disk; nothing is fabricated. Where a
