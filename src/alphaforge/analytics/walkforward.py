@@ -102,7 +102,7 @@ if TYPE_CHECKING:
     from collections.abc import Callable, Mapping
     from pathlib import Path
 
-    from alphaforge.backtest import BacktestResult, CostInputProvider
+    from alphaforge.backtest import BacktestResult, CostInputProvider, FillModel
     from alphaforge.config.settings import Settings
     from alphaforge.core.instruments import Instrument, InstrumentStore
     from alphaforge.core.time import Ms
@@ -716,6 +716,7 @@ class WalkForwardRunner:
         daily_btc_reader: DailyBtcReader | None = None,
         regime_n_states: int = _REGIME_N_STATES,
         regime_lag_days: int = _REGIME_LAG_DAYS,
+        fill_model_factory: Callable[[TransactionCostModel], FillModel] | None = None,
     ) -> None:
         self._reader = reader
         self._instruments = instruments
@@ -736,6 +737,10 @@ class WalkForwardRunner:
         # gate-weight tuple is GATE_WEIGHTS[n_states] (the regime module's pinned vector).
         self._regime_n_states = regime_n_states
         self._regime_lag_days = regime_lag_days
+        # OPT-IN execution model. None -> the engine builds NextOpenFill (the deployed +
+        # golden path; byte-identical). A factory (e.g. MakerFill) is research-only injection
+        # for the maker-execution screen — it never alters a default run.
+        self._fill_model_factory = fill_model_factory
 
     def run(
         self,
@@ -1116,6 +1121,11 @@ class WalkForwardRunner:
                 asset_class=self._sleeve.asset_class,
                 cost_inputs=self._cost_inputs,
                 no_trade_band_frac=band,
+                fill_model=(
+                    self._fill_model_factory(self._cost_model)
+                    if self._fill_model_factory is not None
+                    else None
+                ),
                 config_echo={
                     "walkforward_leg": k,
                     "train_start": train_start,

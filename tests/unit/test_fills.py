@@ -13,7 +13,7 @@ import math
 
 import pytest
 
-from alphaforge.backtest.fills import BarView, FillModel, NextOpenFill
+from alphaforge.backtest.fills import BarView, FillModel, MakerFill, NextOpenFill
 from alphaforge.core.errors import LookaheadError
 from alphaforge.core.instruments import Instrument
 from alphaforge.core.types import (
@@ -251,3 +251,105 @@ class TestNextOpenFill:
         cost_model = TransactionCostModel()
         model = NextOpenFill(cost_model)
         assert model.cost_model is cost_model
+
+
+# -------------------------------------------------------------------- MakerFill
+
+MAKER_PERP = 2e-4  # perp maker 2 bps (the maker-vs-taker delta is the whole edge)
+
+
+def up_close_bar(ts_open: int = T0 + HOUR, *, open_: float = 100.0) -> BarView:
+    """close > open -> a resting SELL ask fills passively; a resting BUY bid misses + chases."""
+    return BarView(
+        ts_open=ts_open, open=open_, high=open_ * 1.02, low=open_ * 0.995,
+        close=open_ * 1.015, volume=10.0, quote_volume=1_000.0,
+    )
+
+
+def down_close_bar(ts_open: int = T0 + HOUR, *, open_: float = 100.0) -> BarView:
+    """close < open -> a resting BUY bid fills passively; a resting SELL ask misses + chases."""
+    return BarView(
+        ts_open=ts_open, open=open_, high=open_ * 1.005, low=open_ * 0.98,
+        close=open_ * 0.985, volume=10.0, quote_volume=1_000.0,
+    )
+
+
+class TestMakerFill:
+    def test_satisfies_fill_model_protocol(self) -> None:
+        model: FillModel = MakerFill(TransactionCostModel())
+        assert isinstance(model, MakerFill)
+
+    def test_passive_buy_fills_at_open_with_maker_fee(self) -> None:
+        # down-close bar -> the resting BUY bid fills passively at the open
+        model = MakerFill(TransactionCostModel())
+        order = make_order(side=Side.BUY, qty=100.0)
+        fill = model.fill(order, perp(), down_close_bar(), adv_quote=ADV, sigma_daily=SIGMA)
+        assert fill.liquidity is Liquidity.MAKER
+        assert fill.price == 100.0  # filled AT the open, no half-spread crossed
+        assert fill.fee_quote == pytest.approx(MAKER_PERP * 100.0 * 100.0)
+        assert fill.ts == T0 + HOUR
+
+    def test_passive_sell_fills_at_open_with_maker_fee(self) -> None:
+        # up-close bar -> the resting SELL ask fills passively at the open
+        model = MakerFill(TransactionCostModel())
+        order = make_order(side=Side.SELL, qty=100.0)
+        fill = model.fill(order, perp(), up_close_bar(), adv_quote=ADV, sigma_daily=SIGMA)
+        assert fill.liquidity is Liquidity.MAKER
+        assert fill.price == 100.0
+        assert fill.fee_quote == pytest.approx(MAKER_PERP * 100.0 * 100.0)
+
+    def test_buy_nonfill_chases_taker_with_adverse_selection(self) -> None:
+        cost_model = TransactionCostModel()
+        adv_bps = 5.0
+        model = MakerFill(cost_model, adverse_selection_bps=adv_bps)
+        order = make_order(side=Side.BUY, qty=100.0)
+        bar = up_close_bar()  # bar rallied away from the resting bid -> miss + chase
+        fill = model.fill(order, perp(), bar, adv_quote=ADV, sigma_daily=SIGMA)
+        # chased: TAKER, and strictly worse than both the open and the pure-taker price
+        base = cost_model.fill_price(perp(), Side.BUY, bar.open, 100.0 * bar.open, ADV, SIGMA)
+        expected = base + bar.open * adv_bps * 1e-4  # buy -> penalty pushes price UP
+        assert fill.liquidity is Liquidity.TAKER
+        assert fill.price == pytest.approx(expected)
+        assert fill.price > base > bar.open
+        assert fill.fee_quote == pytest.approx(TAKER_PERP * 100.0 * fill.price)
+
+    def test_sell_nonfill_chases_taker_with_adverse_selection(self) -> None:
+        cost_model = TransactionCostModel()
+        adv_bps = 5.0
+        model = MakerFill(cost_model, adverse_selection_bps=adv_bps)
+        order = make_order(side=Side.SELL, qty=100.0)
+        bar = down_close_bar()  # bar fell away from the resting ask -> miss + chase
+        fill = model.fill(order, perp(), bar, adv_quote=ADV, sigma_daily=SIGMA)
+        base = cost_model.fill_price(perp(), Side.SELL, bar.open, 100.0 * bar.open, ADV, SIGMA)
+        expected = base + (-1) * bar.open * adv_bps * 1e-4  # sell -> penalty pushes price DOWN
+        assert fill.liquidity is Liquidity.TAKER
+        assert fill.price == pytest.approx(expected)
+        assert fill.price < base < bar.open
+        assert fill.fee_quote == pytest.approx(TAKER_PERP * 100.0 * fill.price)
+
+    def test_zero_adverse_selection_chase_equals_pure_taker_price(self) -> None:
+        # with no adverse-selection penalty, a chased fill prices exactly like NextOpenFill
+        cost_model = TransactionCostModel()
+        order = make_order(side=Side.BUY, qty=100.0)
+        bar = up_close_bar()  # BUY misses on an up-close bar -> chase
+        maker = MakerFill(cost_model, adverse_selection_bps=0.0).fill(
+            order, perp(), bar, adv_quote=ADV, sigma_daily=SIGMA
+        )
+        taker = NextOpenFill(cost_model).fill(order, perp(), bar, adv_quote=ADV, sigma_daily=SIGMA)
+        assert maker.liquidity is Liquidity.TAKER
+        assert maker.price == pytest.approx(taker.price)
+
+    def test_lookahead_guard(self) -> None:
+        model = MakerFill(TransactionCostModel())
+        order = make_order(decision_ts=T0 + 2 * HOUR)
+        with pytest.raises(LookaheadError):
+            model.fill(order, perp(), make_bar(ts_open=T0 + HOUR), adv_quote=ADV, sigma_daily=SIGMA)
+
+    @pytest.mark.parametrize("bad", [-1.0, float("nan"), float("inf")])
+    def test_rejects_bad_adverse_selection(self, bad: float) -> None:
+        with pytest.raises(ValueError, match="adverse_selection_bps"):
+            MakerFill(TransactionCostModel(), adverse_selection_bps=bad)
+
+    def test_cost_model_property_is_shared_instance(self) -> None:
+        cost_model = TransactionCostModel()
+        assert MakerFill(cost_model).cost_model is cost_model
