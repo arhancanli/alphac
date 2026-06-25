@@ -76,11 +76,31 @@ action required: download SHARADAR/SFP.
 
 ---
 
-## Front C — Maker / post-only execution recovery — **PLANNED**
+## Front C — Maker / post-only execution recovery — **SCREENED → GREENLIT (conditional)**
 
-The single highest-EV *free* lever for the live crypto carry sleeve (est. +0.02–0.05 Sharpe):
-model passive maker fills instead of taker. Requires `MakerFill` in `backtest/fills.py` + a
-`fill_model_factory` param on `WalkForwardRunner` + execution-config gating, AND a **conscious,
-logged golden-master re-bless** — the crypto golden master (`tests/integration/test_golden_master.py`)
-must never break silently; any cost-model change is a deliberate, recorded re-baseline with
-conservative non-fill modeling. Higher-risk engine surgery; sequenced after Front A.
+**Screen:** `scripts/exp3_maker_exec_screen.py` · **Artifact:** `artifacts/exp3/20260625T095522Z/exp3_metrics.json`
+**Non-invasive** — touches nothing in the engine, fill model, or golden master. Reads the live
+carry sleeve's real WF (`L7_carry_cap_1M`: turnover_ann **33.2×**, vol_ann **11.9%**, Sharpe
+**0.522**) and the **committed** fee schedule (maker 2 / taker 5 bps) + deployed half-spread
+(2.5 bps). Edge **if a post-only order fills** = (5−2) fee delta + 2.5 spread avoided = **5.5
+bps/side**. Models non-fill honestly: unfilled orders chase at taker + an adverse-selection
+penalty `a`; `E[saving] = p·5.5 − (1−p)·a` per side, × 33.2 turnover ÷ 11.9% vol = Sharpe uplift.
+
+| scenario | Sharpe uplift | carry Sharpe → |
+|---|---:|---:|
+| central (60% fill, 5bps adverse sel) | **+0.036** | 0.522 → 0.558 |
+| good fills (80% fill, 4bps) | +0.10 | → 0.62 |
+| optimistic ceiling (100% fill, 0 chase) | +0.153 | → 0.675 |
+
+**Break-even fill rate:** 27% @2bps adverse sel · 42% @4bps · 52% @6bps · 59% @8bps.
+
+**Verdict — worth building, conditionally.** EV is solidly positive across the realistic
+fill range and the break-even is modest. Carry is a *patient* signal (rebalances aren't urgent
+→ passive fills on liquid BTC/ETH perps should clear break-even comfortably). BUT the lever is
+large (ceiling +0.15), so it MUST ship with **live maker-fill-rate logging** and conservative
+non-fill modeling — never an assumed-fill advantage baked into a backtest (that manufactures
+fake alpha). **Engine work (needs owner go-ahead — it re-blesses the golden master):**
+`MakerFill` in `backtest/fills.py` + a `fill_model_factory` param on `WalkForwardRunner` +
+execution-config gating; the crypto golden master (`tests/integration/test_golden_master.py`)
+re-blessed in a single deliberate, logged commit. Ship the maker path live **iff** the paper
+post-only fill rate beats the break-even at the measured adverse selection.
