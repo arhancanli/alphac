@@ -48,6 +48,7 @@ if TYPE_CHECKING:
     from alphaforge.features.context import FeatureContext
 
 __all__ = [
+    "eq_accruals",
     "eq_asset_growth",
     "eq_book_to_price",
     "eq_earnings_yield",
@@ -77,6 +78,7 @@ _LOOKBACK_BARS: Final[int] = (_TTM_QUARTERS + 1) * _SESSIONS_PER_QUARTER + _RECE
 _FLOW_TTM: Final[tuple[str, ...]] = (
     "revenues",
     "net_income",
+    "op_cash_flow",
     "gross_profit",
     "operating_income",
     "cost_of_revenue",
@@ -362,6 +364,29 @@ def _eq_asset_growth_fn(ctx: FeatureContext, spec: FeatureSpec) -> pd.Series:
     return pd.Series(out, index=idx, dtype="float64", name=spec.name)
 
 
+def _eq_accruals_fn(ctx: FeatureContext, spec: FeatureSpec) -> pd.Series:
+    """Accruals = (TTM net income - TTM op cash flow) / latest assets (Sloan 1996).
+
+    HIGH accruals = earnings backed by paper, not cash; they mean-revert and the market
+    over-extrapolates them, so high-accruals firms underperform. direction = -1 (LOW accruals
+    = long). PIT/TTM identical to the ratio factors; NaN where the asset base is non-positive.
+    """
+    frame = _fundamental_frame(ctx)
+    idx = _grid_index(ctx)
+    if frame.empty:
+        return pd.Series(np.nan, index=idx, dtype="float64", name=spec.name)
+    ni = ctx.fundamentals_asof_join(idx, column=_ttm("net_income"), frame=frame).to_numpy(
+        dtype="float64"
+    )
+    ocf = ctx.fundamentals_asof_join(idx, column=_ttm("op_cash_flow"), frame=frame).to_numpy(
+        dtype="float64"
+    )
+    assets = ctx.fundamentals_asof_join(idx, column="assets", frame=frame).to_numpy(dtype="float64")
+    out = (ni - ocf) / assets
+    out[~(assets > 0.0)] = np.nan
+    return pd.Series(out, index=idx, dtype="float64", name=spec.name)
+
+
 # --------------------------------------------------------------- registered factories
 
 
@@ -448,4 +473,25 @@ def eq_asset_growth() -> FeatureSpec:
             "recency_sessions": _RECENCY_SESSIONS,
         },
         fn=_eq_asset_growth_fn,
+    )
+
+
+@feature
+def eq_accruals() -> FeatureSpec:
+    """Accruals-quality factor (Sloan): (TTM net income - TTM op cash flow) / assets. -1, CS.
+
+    Low accruals (earnings backed by real cash) predict higher returns. A TTM ratio with no
+    YoY lag, so it shares the ratio-factor lookback (4 trailing quarters + filing recency)."""
+    return FeatureSpec(
+        name="eq_accruals",
+        family=Family.QUALITY,
+        direction=-1,  # LOW accruals = high expected return (earnings-quality premium)
+        cross_sectional=True,
+        lookback_bars=_LOOKBACK_BARS,
+        params={
+            "ttm_quarters": _TTM_QUARTERS,
+            "sessions_per_quarter": _SESSIONS_PER_QUARTER,
+            "recency_sessions": _RECENCY_SESSIONS,
+        },
+        fn=_eq_accruals_fn,
     )

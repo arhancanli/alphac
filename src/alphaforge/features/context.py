@@ -108,6 +108,7 @@ _FUND_COLUMNS: tuple[str, ...] = (
     "gross_profit",
     "operating_income",
     "net_income",
+    "op_cash_flow",
     "equity",
     "assets",
     "diluted_shares",

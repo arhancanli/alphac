@@ -110,6 +110,7 @@ _NEEDS_FUNDAMENTALS: frozenset[str] = frozenset(
         "eq_value_composite",
         "eq_quality_composite",
         "eq_asset_growth",
+        "eq_accruals",
     }
 )
 WARMUP_NAMES = [n for n in ALL_NAMES if n not in _NEEDS_FUNDAMENTALS]
@@ -279,8 +280,8 @@ class TestTruncationAndParitySweep:
         # quality + 3 composites) = 50. On the crypto lake their fundamentals
         # read is empty -> all-NaN, so
         # the sweep covers them at atol = 0 (NaN == NaN) and they never touch a crypto set.
-        assert len(ALL_SPECS) == 50
-        assert len(set(ALL_NAMES)) == 50
+        assert len(ALL_SPECS) == 51
+        assert len(set(ALL_NAMES)) == 51
 
     @pytest.mark.parametrize("name", ALL_NAMES)
     def test_truncation_invariance_and_live_parity(self, env: Env, name: str) -> None:

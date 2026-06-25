@@ -245,11 +245,14 @@ class PITDataReader:
         files = self._files(dataset, instrument_ids, start=start, end=end)
         if not files:
             return empty_table(dataset)
+        # SELECT * with union_by_name so heterogeneous fundamentals partitions read together:
+        # OLD 14-column files (written before the cash-flow/share fields were added) and NEW
+        # 22-column ones. Schema evolution then pads any schema column an old partition lacked
+        # as null before the cast — old data missing a new nullable field reads as null, never
+        # an error. New columns must therefore NOT be hard-coded in the SELECT (the bug this
+        # replaced: a fixed column list silently lags the schema).
         sql = f"""
-            SELECT instrument_id, period_end, available_at, fiscal_period, fiscal_year,
-                   revenues, cost_of_revenue, gross_profit, operating_income, net_income,
-                   equity, assets, diluted_shares, ingested_at
-            FROM read_parquet({_sql_file_list(files)})
+            SELECT * FROM read_parquet({_sql_file_list(files)}, union_by_name=true)
             WHERE list_contains(?::VARCHAR[], instrument_id)
               AND epoch_ms(period_end) >= ?
               AND epoch_ms(period_end) < ?
@@ -258,7 +261,11 @@ class PITDataReader:
         """
         params = [list(instrument_ids), start, end, as_of]
         result: pa.Table = self._con.execute(sql, params).to_arrow_table()
-        return result.cast(schema_for(dataset))
+        target = schema_for(dataset)
+        for field in target:
+            if field.name not in result.column_names:
+                result = result.append_column(field.name, pa.nulls(result.num_rows, field.type))
+        return result.select(target.names).cast(target)
 
     def latest_bar_open(
         self,
