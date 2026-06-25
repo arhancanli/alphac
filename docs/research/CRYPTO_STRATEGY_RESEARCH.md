@@ -99,8 +99,26 @@ fill range and the break-even is modest. Carry is a *patient* signal (rebalances
 → passive fills on liquid BTC/ETH perps should clear break-even comfortably). BUT the lever is
 large (ceiling +0.15), so it MUST ship with **live maker-fill-rate logging** and conservative
 non-fill modeling — never an assumed-fill advantage baked into a backtest (that manufactures
-fake alpha). **Engine work (needs owner go-ahead — it re-blesses the golden master):**
-`MakerFill` in `backtest/fills.py` + a `fill_model_factory` param on `WalkForwardRunner` +
-execution-config gating; the crypto golden master (`tests/integration/test_golden_master.py`)
-re-blessed in a single deliberate, logged commit. Ship the maker path live **iff** the paper
-post-only fill rate beats the break-even at the measured adverse selection.
+fake alpha).
+
+### Engine built — `MakerFill` (opt-in; golden master byte-identical) — commit `63c3b56`
+
+Per the owner's call (build it without re-blessing the golden master): `MakerFill` is a **new,
+opt-in** fill model in `backtest/fills.py`. The engine still defaults to `NextOpenFill`, so the
+deployed path and the crypto golden master are **provably unchanged** —
+`tests/integration/test_golden_master.py` passes byte-identical (3/3). `WalkForwardRunner` gains
+an opt-in `fill_model_factory` kwarg (`None` → taker, byte-identical); research injects MakerFill.
+
+- **Passive fill** at the open (MAKER fee, no half-spread) using the **conservative
+  close-direction rule** — BUY fills iff `close < open`, SELL iff `close > open` (~50% fill
+  rate, a deliberate *lower bound*; NOT `low < open`, which is ~95% and would manufacture fake
+  alpha). **Non-fill → chase** as TAKER at the full cost-model price + an explicit
+  `adverse_selection_bps` penalty (default 5). Net per side reduces to the screen's formula
+  `p·(fee+spread) − (1−p)·adverse_selection`, with `p` now empirical.
+- 11 unit tests (passive fill both sides, taker chase + adverse selection, zero-adv == pure
+  taker, lookahead guard, input validation); mypy --strict clean.
+
+**`exp4_maker_exec_backtest.py`** (running) reports the engine-measured net-Sharpe uplift +
+the **realized** maker fill rate (off the fills log) for the carry sleeve, taker vs MakerFill.
+Next: ship the maker path **live iff** paper post-only fill logs beat break-even at the measured
+adverse selection; the deployed-path flip remains a later, separate decision.
