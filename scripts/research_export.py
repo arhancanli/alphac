@@ -207,12 +207,11 @@ def build_executive_summary(state: dict[str, Any]) -> dict[str, Any]:
     m = state["metrics"]
     return {
         "description": (
-            "AlphaForge tested a tight, pre-registered suite of factors across crypto "
-            "perpetuals and US equities. Two sleeves survived honest net-of-cost "
-            "walk-forward: equity 12-1 momentum and crypto funding carry. They are "
-            "near-uncorrelated, so the combined book is real, but modest: it fails "
-            "multiple-testing deflation in-sample, so the only honest path to deployment "
-            "is a forward live track record."
+            "We tested a pre-registered suite of factors across crypto and US "
+            "equities. Two survived net of costs: equity 12-1 momentum and crypto "
+            "funding carry. They barely correlate, so the combined book is real but "
+            "modest. It fails multiple-testing deflation in-sample, so deployment "
+            "waits on the live record."
         ),
         "deployed_sleeves_count": 2,
         "tested_factor_families_count": 7,
@@ -661,9 +660,9 @@ def build_research_export() -> dict[str, Any]:
     rows888 = load_ic_rows(IC_REPORT_888)
     return {
         "schema": "glassbox.research/1",
-        "title": "AlphaForge Research Export: The Full Honest Gauntlet",
+        "title": "Canli Capital research: the full gauntlet",
         "honesty_note": (
-            "Every published number is read from a real AlphaForge artifact. Where a value "
+            "Every published number is read from a real engine artifact. Where a value "
             "does not exist in an artifact it is omitted, never invented. The forward "
             "Sharpe is the deflated 0.7-1.0 expectation, never the 1.46 in-sample headline; "
             "killed factors carry their real negative net Sharpes."

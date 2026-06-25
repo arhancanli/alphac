@@ -316,15 +316,14 @@ def main():
         "live_days": live_days_elapsed(crypto_live),
     }
     transparency = [
-        "Research curves are simulations, not realised trading. No real capital has been deployed.",
-        "The live paper track record begins " + GO_LIVE
-        + " and is shown as it accrues. We publish no return until it is earned in the open.",
-        "The book is two decorrelated sleeves: US equity momentum (standalone Sharpe ~0.9) "
-        "and crypto funding carry (~0.7). The honest combined forward expectation after "
-        "multiple-testing "
-        "deflation is 0.7 to 1.0, not the higher in-sample figure (1.46).",
-        "The edge is genuine (market-neutral, decorrelated, statistically real) but modest and "
-        "not yet proven live.",
+        "Research curves are simulations. No real capital has been deployed.",
+        "The live paper record begins " + GO_LIVE
+        + " and is shown as it accrues. We claim no return until the record earns one.",
+        "The book is two near-uncorrelated sleeves: US equity momentum (standalone Sharpe "
+        "~0.9) and crypto funding carry (~0.7). After multiple-testing deflation the combined "
+        "forward expectation is 0.7 to 1.0, not the 1.46 in-sample figure.",
+        "The edge is real (market-neutral, statistically significant) but modest, and not "
+        "yet proven live.",
     ]
 
     state = {
