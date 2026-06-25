@@ -535,6 +535,12 @@ def test_runner_without_now_ms_skips_validation(tmp_path: Path) -> None:
     from alphaforge.analytics.walkforward import WalkForwardRunner
 
     world = _build_world(tmp_path)
+    # Hermetic: the default ledger lives under settings.paths.var_dir (the real, relative
+    # `var/`), which on a live operator's machine already holds the running ledger. So we
+    # snapshot its size and assert the runner did NOT write/append to it, rather than
+    # assuming the file is absent (which only holds on a clean checkout / CI).
+    ledger = world["settings"].paths.var_dir / "experiments.jsonl"  # type: ignore[index]
+    size_before = ledger.stat().st_size if ledger.exists() else None
     runner = WalkForwardRunner(
         world["reader"],  # type: ignore[index]
         world["store"],  # type: ignore[index]
@@ -554,8 +560,9 @@ def test_runner_without_now_ms_skips_validation(tmp_path: Path) -> None:
     )
     world["store"].close()  # type: ignore[index]
     assert result.validation is None
-    # The default ledger under settings.paths.var_dir was never touched.
-    assert not (world["settings"].paths.var_dir / "experiments.jsonl").exists()  # type: ignore[index]
+    # The default ledger under settings.paths.var_dir was never written (size unchanged).
+    size_after = ledger.stat().st_size if ledger.exists() else None
+    assert size_before == size_after
 
 
 # ---------------------------------------------------------------------------
