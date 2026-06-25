@@ -40,10 +40,15 @@ def capture() -> int:
         return float(v) if v not in (None, "") else None
     for cur in ("BTC", "ETH"):
         try:
-            dv = d.fetch_volatility_history(cur)[-1]
-            with (DVOL / f"{cur}.jsonl").open("a", encoding="utf-8") as f:
-                f.write(json.dumps({"ts": now, "currency": cur,
-                                    "dvol": dv["volatility"], "dvol_ts": dv["timestamp"]}) + "\n")
+            # the IMPLIED-vol DVOL index (get_volatility_index_data), NOT the realized-vol cone
+            r = d.publicGetGetVolatilityIndexData({"currency": cur, "start_timestamp": now - 6 * 3_600_000,
+                                                   "end_timestamp": now, "resolution": "3600"})
+            data = r.get("result", {}).get("data", [])
+            if data:
+                row = data[-1]  # [ts, o, h, l, close]
+                with (DVOL / f"{cur}.jsonl").open("a", encoding="utf-8") as f:
+                    f.write(json.dumps({"ts": now, "currency": cur,
+                                        "dvol": float(row[4]), "dvol_ts": int(float(row[0]))}) + "\n")
         except Exception as e:
             print(f"DVOL {cur} err: {e}")
         try:
