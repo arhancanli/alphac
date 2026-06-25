@@ -816,6 +816,17 @@ class PolygonEquitiesSource(DataSource):
                 "equity": [r["equity"] for r in rows],
                 "assets": [r["assets"] for r in rows],
                 "diluted_shares": [r["diluted_shares"] for r in rows],
+                # Cash-flow + share fields are not extracted from the Polygon feed (the
+                # accruals/issuance/investment research runs on the Sharadar lake, which
+                # populates them); emit nulls so the shared schema stays satisfied.
+                "op_cash_flow": [None] * len(rows),
+                "invest_cash_flow": [None] * len(rows),
+                "capex": [None] * len(rows),
+                "free_cash_flow": [None] * len(rows),
+                "net_common_issued": [None] * len(rows),
+                "shares_basic": [None] * len(rows),
+                "share_factor": [None] * len(rows),
+                "assets_avg": [None] * len(rows),
                 "ingested_at": [ingested_at] * len(rows),
             },
             schema=FUNDAMENTALS_SCHEMA,

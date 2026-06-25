@@ -205,6 +205,10 @@ def load_sf1(writer: LakeWriter, keep: set[str], now: int) -> None:
         "revenues": col("revenue"), "cost_of_revenue": col("cor"), "gross_profit": col("gp"),
         "operating_income": col("opinc"), "net_income": col("netinc"), "equity": col("equity"),
         "assets": col("assets"), "diluted_shares": col("shareswadil"),
+        "op_cash_flow": col("ncfo"), "invest_cash_flow": col("ncfi"), "capex": col("capex"),
+        "free_cash_flow": col("fcf"), "net_common_issued": col("ncfcommon"),
+        "shares_basic": col("sharesbas"), "share_factor": col("sharefactor"),
+        "assets_avg": col("assetsavg"),
         "ingested_at": pa.array([now] * len(df), _TS),
     })
     writer.write(Dataset.FUNDAMENTALS, tbl, now=now)

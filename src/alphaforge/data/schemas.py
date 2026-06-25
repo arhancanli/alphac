@@ -451,6 +451,49 @@ FUNDAMENTALS_SCHEMA: Final[pa.Schema] = pa.schema(
             nullable=True,
             metadata={"doc": "diluted share count (per-share, market cap)"},
         ),
+        # --- cash-flow + share fields for accruals / issuance / investment sleeves --------
+        pa.field(
+            "op_cash_flow",
+            pa.float64(),
+            nullable=True,
+            metadata={"doc": "ncfo; accruals = (net_income - op_cash_flow) / assets"},
+        ),
+        pa.field(
+            "invest_cash_flow",
+            pa.float64(),
+            nullable=True,
+            metadata={"doc": "ncfi; investment / asset-growth signals"},
+        ),
+        pa.field(
+            "capex", pa.float64(), nullable=True, metadata={"doc": "capex; investment intensity"}
+        ),
+        pa.field(
+            "free_cash_flow", pa.float64(), nullable=True, metadata={"doc": "fcf"}
+        ),
+        pa.field(
+            "net_common_issued",
+            pa.float64(),
+            nullable=True,
+            metadata={"doc": "ncfcommon; net-issuance cross-check"},
+        ),
+        pa.field(
+            "shares_basic",
+            pa.float64(),
+            nullable=True,
+            metadata={"doc": "sharesbas; net-issuance signal (x share_factor)"},
+        ),
+        pa.field(
+            "share_factor",
+            pa.float64(),
+            nullable=True,
+            metadata={"doc": "sharefactor; split-adjust to compare share counts"},
+        ),
+        pa.field(
+            "assets_avg",
+            pa.float64(),
+            nullable=True,
+            metadata={"doc": "assetsavg; accruals / ROA denominator (annual rows only)"},
+        ),
         pa.field(
             "ingested_at",
             pa.timestamp("ms", tz="UTC"),
