@@ -68,33 +68,26 @@ def main(argv=None) -> int:
             paths=paths,
             asset_class=settings.data.asset_class,
         )
-        report = runner.run(start=start, end=end, horizons=horizons, out_dir=out_dir)
+        runner.run(start=start, end=end, horizons=horizons, out_dir=out_dir)
 
     # rank the screened factors by |NW t-stat| at the first horizon and print the top survivors
     import json as _json
     rep = _json.loads((out_dir / "ic_report.json").read_text())
-    rows = rep.get("rows", [])
     h0 = horizons[0]
+    rows = [r for r in rep.get("rows", []) if int(r.get("horizon", h0)) == h0]
 
-    def _tstat(r):
-        # rows carry per-horizon rank-IC + NW t; be tolerant of the exact key layout
-        for key in (f"nw_t_{h0}", "nw_t", "t_stat", "ic_t"):
-            if key in r and r[key] is not None:
-                return abs(float(r[key]))
-        per = r.get("by_horizon") or r.get("horizons") or {}
-        cell = per.get(str(h0)) or per.get(h0) or {}
-        for key in ("nw_t", "t_stat", "ic_t"):
-            if key in cell and cell[key] is not None:
-                return abs(float(cell[key]))
-        return 0.0
+    def _t(r):
+        return abs(float(r.get("t_nw") or 0.0))
 
-    ranked = sorted(rows, key=_tstat, reverse=True)
-    print(f"\n=== TOP {a.top} ZOO FACTORS by |Rank-IC NW t-stat| @ h={h0} (the IC first cut) ===")
-    print(f"{'factor':<22}{'|NW t|':>9}")
+    ranked = sorted(rows, key=_t, reverse=True)
+    print(f"\n=== TOP {a.top} of {len(rows)} screened factors by |Rank-IC NW t| @ h={h0} (the IC first cut) ===")
+    print(f"{'factor':<24}{'|NW t|':>9}{'mean_IC':>10}{'IC_IR':>9}{'hit':>7}")
     for r in ranked[: a.top]:
-        name = r.get("factor") or r.get("name") or r.get("alpha") or "?"
-        print(f"{name:<22}{_tstat(r):>9.2f}")
-    print(f"\nfull report: {out_dir / 'ic_report.json'}  (screened {total} factors; this N feeds the gauntlet's DSR deflation)")
+        print(f"{r.get('factor', '?'):<24}{_t(r):>9.2f}{float(r.get('mean_ic', 0)):>10.4f}"
+              f"{float(r.get('ic_ir', 0)):>9.3f}{float(r.get('hit_rate', 0)):>7.2f}")
+    survivors = [r["factor"] for r in ranked if _t(r) >= 2.0]
+    print(f"\n|NW t| >= 2.0 survivors ({len(survivors)}): {', '.join(survivors) if survivors else '(none clear the cut)'}")
+    print(f"full report: {out_dir / 'ic_report.json'}  (screened {total} factors; this N feeds the gauntlet's DSR deflation)")
     return 0
 
 
