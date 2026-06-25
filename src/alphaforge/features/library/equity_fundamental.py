@@ -53,6 +53,7 @@ __all__ = [
     "eq_book_to_price",
     "eq_earnings_yield",
     "eq_gross_profitability",
+    "eq_net_issuance",
     "eq_operating_margin",
     "eq_quality_composite",
     "eq_roe",
@@ -382,8 +383,36 @@ def _eq_accruals_fn(ctx: FeatureContext, spec: FeatureSpec) -> pd.Series:
         dtype="float64"
     )
     assets = ctx.fundamentals_asof_join(idx, column="assets", frame=frame).to_numpy(dtype="float64")
-    out = (ni - ocf) / assets
+    with np.errstate(divide="ignore", invalid="ignore"):
+        out = (ni - ocf) / assets
     out[~(assets > 0.0)] = np.nan
+    return pd.Series(out, index=idx, dtype="float64", name=spec.name)
+
+
+def _eq_net_issuance_fn(ctx: FeatureContext, spec: FeatureSpec) -> pd.Series:
+    """Net share issuance = log(split-adj shares_t / split-adj shares_{t-4q}) (Pontiff-Woodgate).
+
+    Firms that net-ISSUE shares underperform; net-repurchasers outperform (managers issue when
+    overvalued). direction = -1 (LOW/negative issuance = long). Split-adjusted via Sharadar's
+    share_factor so the YoY ratio is not a split artifact; NaN where either share base is
+    non-positive or unavailable.
+    """
+    f = ctx.fundamentals()
+    idx = _grid_index(ctx)
+    if f.empty:
+        return pd.Series(np.nan, index=idx, dtype="float64", name=spec.name)
+    f = f.sort_values(["instrument_id", "period_end"], kind="stable").reset_index(drop=True)
+    f["adj_shares"] = f["shares_basic"].to_numpy(dtype="float64") * f["share_factor"].to_numpy(
+        dtype="float64"
+    )
+    f["adj_shares_lag4"] = _lag_by_instrument(f, "adj_shares", _TTM_QUARTERS)
+    s = ctx.fundamentals_asof_join(idx, column="adj_shares", frame=f).to_numpy(dtype="float64")
+    s4 = ctx.fundamentals_asof_join(idx, column="adj_shares_lag4", frame=f).to_numpy(
+        dtype="float64"
+    )
+    with np.errstate(divide="ignore", invalid="ignore"):
+        out = np.log(s / s4)
+    out[~((s > 0.0) & (s4 > 0.0))] = np.nan
     return pd.Series(out, index=idx, dtype="float64", name=spec.name)
 
 
@@ -494,4 +523,25 @@ def eq_accruals() -> FeatureSpec:
             "recency_sessions": _RECENCY_SESSIONS,
         },
         fn=_eq_accruals_fn,
+    )
+
+
+@feature
+def eq_net_issuance() -> FeatureSpec:
+    """Net-share-issuance factor (Pontiff-Woodgate): YoY change in split-adj shares. -1, CS.
+
+    Net issuers underperform; repurchasers outperform. Like asset_growth it carries a YoY lag,
+    so it needs 5 reported quarters in the minimal window plus the filing-recency reach."""
+    return FeatureSpec(
+        name="eq_net_issuance",
+        family=Family.QUALITY,
+        direction=-1,  # LOW/negative issuance = high expected return
+        cross_sectional=True,
+        lookback_bars=(_TTM_QUARTERS + 2) * _SESSIONS_PER_QUARTER + _RECENCY_SESSIONS + 1,
+        params={
+            "ttm_quarters": _TTM_QUARTERS,
+            "sessions_per_quarter": _SESSIONS_PER_QUARTER,
+            "recency_sessions": _RECENCY_SESSIONS,
+        },
+        fn=_eq_net_issuance_fn,
     )
