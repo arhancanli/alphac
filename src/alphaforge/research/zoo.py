@@ -24,6 +24,8 @@ import pandas as pd
 from alphaforge.features.context import FeatureContext
 from alphaforge.features.library import equity_fundamental as _eqf
 from alphaforge.features.library import equity_price as _eqp
+from alphaforge.features.library.carry import _carry_spec
+from alphaforge.features.library.mean_reversion import _mr_spec
 from alphaforge.features.library.momentum import _ts_spec, _xs_spec
 from alphaforge.features.registry import FeatureRegistry, default_registry
 from alphaforge.features.spec import Family, FeatureSpec
@@ -39,6 +41,8 @@ _EQ_BAB_WINDOWS = (126, 252, 504, 756)
 _XS_LOOKBACKS = (10, 21, 42, 63, 126, 168, 252, 336, 504, 720, 1008, 1512, 2160)
 _XS_SKIPS = (0, 5, 10, 21, 42, 63, 168)
 _TS_LOOKBACKS = (21, 63, 126, 252, 504, 720, 1080, 2160)
+_CARRY_SETTLEMENTS = (7, 14, 28, 42, 63, 126, 180)  # canonical 21/90 excluded
+_MR_WINDOWS = (12, 48, 168)  # canonical 24/72 excluded
 
 
 def _variant(base: FeatureSpec, name: str, *, lookback_bars: int, params: dict) -> FeatureSpec:
@@ -174,6 +178,27 @@ def register_crypto_momentum_grid(reg: FeatureRegistry) -> int:
     return n
 
 
+def register_crypto_carry_reversal_grid(reg: FeatureRegistry) -> int:
+    """Register the crypto funding-carry (n-settlement) + residual-reversal (window) grids."""
+    have = {s.name for s in reg.all_specs()}
+    n = 0
+    for k in _CARRY_SETTLEMENTS:
+        name = f"carry_fund_{k}"
+        if name in have:
+            continue
+        reg.register(lambda k=k, name=name: _carry_spec(name, k))
+        have.add(name)
+        n += 1
+    for w in _MR_WINDOWS:
+        name = f"mr_res_{w}"
+        if name in have:
+            continue
+        reg.register(lambda w=w: _mr_spec(w))
+        have.add(name)
+        n += 1
+    return n
+
+
 def register_all(reg: FeatureRegistry | None = None) -> int:
     """Register every zoo grid into ``reg`` (default: the global registry). Returns the count.
 
@@ -186,4 +211,5 @@ def register_all(reg: FeatureRegistry | None = None) -> int:
     total += register_equity_grid(reg)
     total += register_equity_fundamental_grid(reg)
     total += register_crypto_momentum_grid(reg)
+    total += register_crypto_carry_reversal_grid(reg)
     return total
