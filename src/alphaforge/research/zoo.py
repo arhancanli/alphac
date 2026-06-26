@@ -21,7 +21,7 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 
-from alphaforge.features.context import FeatureContext
+from alphaforge.features.context import FeatureContext, long_series
 from alphaforge.features.library import equity_fundamental as _eqf
 from alphaforge.features.library import equity_price as _eqp
 from alphaforge.features.library.carry import _carry_spec
@@ -178,6 +178,66 @@ def register_crypto_momentum_grid(reg: FeatureRegistry) -> int:
     return n
 
 
+# ----- EQUITY NOVEL signals (not parameter variants of a canonical factor) ------------------
+def _eq_52whigh_fn(ctx: FeatureContext, spec: FeatureSpec) -> pd.Series:
+    """52-week-high proximity = close / rolling-max(close, W). Near 1 = near its high (George-Hwang
+    anchoring momentum). direction +1. Pure function of adjusted closes through t."""
+    px = _eqp._adjusted_close_panel(ctx)
+    w = int(spec.params["window"])
+    with np.errstate(divide="ignore", invalid="ignore"):
+        prox = px / px.rolling(w, min_periods=w).max()
+    return long_series(prox, name=spec.name)
+
+
+def _eq_maxret_fn(ctx: FeatureContext, spec: FeatureSpec) -> pd.Series:
+    """MAX / lottery effect = the single largest daily return over the last W sessions (Bali-Cakici-
+    Whitelaw). Lottery-like stocks are overpriced and underperform. direction -1."""
+    px = _eqp._adjusted_close_panel(ctx)
+    w = int(spec.params["window"])
+    maxr = px.pct_change().rolling(w, min_periods=w).max()
+    return long_series(maxr, name=spec.name)
+
+
+def _eq_fundmom_fn(ctx: FeatureContext, spec: FeatureSpec) -> pd.Series:
+    """Fundamental momentum = YoY growth in TTM net income (improving earnings -> outperformance).
+    direction +1. NaN where the year-ago TTM earnings base is non-positive."""
+    frame = _eqf._fundamental_frame(ctx)
+    idx = _eqf._grid_index(ctx)
+    if frame.empty:
+        return pd.Series(np.nan, index=idx, dtype="float64", name=spec.name)
+    f = frame.copy()
+    f["ttm_ni_lag4"] = _eqf._lag_by_instrument(f, "ttm_net_income", _eqf._TTM_QUARTERS)
+    ni = ctx.fundamentals_asof_join(idx, column="ttm_net_income", frame=f).to_numpy("float64")
+    ni4 = ctx.fundamentals_asof_join(idx, column="ttm_ni_lag4", frame=f).to_numpy("float64")
+    with np.errstate(divide="ignore", invalid="ignore"):
+        out = ni / ni4 - 1.0
+    out[~(ni4 > 0.0)] = np.nan
+    return pd.Series(out, index=idx, dtype="float64", name=spec.name)
+
+
+def register_equity_novel_grid(reg: FeatureRegistry) -> int:
+    """Register the equity novel signals: 52-week-high, lottery/MAX, fundamental momentum."""
+    have = {s.name for s in reg.all_specs()}
+    fund_lb = (_eqf._TTM_QUARTERS * 2 + 1) * _eqf._SESSIONS_PER_QUARTER + _eqf._RECENCY_SESSIONS + 1
+    specs = [
+        *(FeatureSpec(name=f"eq_52whigh_{w}", family=Family.MOMENTUM, direction=1,
+                      cross_sectional=True, lookback_bars=w + 1, params={"window": w},
+                      fn=_eq_52whigh_fn) for w in (126, 252)),
+        *(FeatureSpec(name=f"eq_maxret_{w}", family=Family.REVERSAL, direction=-1,
+                      cross_sectional=True, lookback_bars=w + 2, params={"window": w},
+                      fn=_eq_maxret_fn) for w in (21, 63)),
+        FeatureSpec(name="eq_fundmom", family=Family.QUALITY, direction=1, cross_sectional=True,
+                    lookback_bars=fund_lb, params={}, fn=_eq_fundmom_fn),
+    ]
+    n = 0
+    for s in specs:
+        if s.name not in have:
+            reg.register(lambda s=s: s)
+            have.add(s.name)
+            n += 1
+    return n
+
+
 def register_crypto_carry_reversal_grid(reg: FeatureRegistry) -> int:
     """Register the crypto funding-carry (n-settlement) + residual-reversal (window) grids."""
     have = {s.name for s in reg.all_specs()}
@@ -210,6 +270,7 @@ def register_all(reg: FeatureRegistry | None = None) -> int:
     total = 0
     total += register_equity_grid(reg)
     total += register_equity_fundamental_grid(reg)
+    total += register_equity_novel_grid(reg)
     total += register_crypto_momentum_grid(reg)
     total += register_crypto_carry_reversal_grid(reg)
     return total
