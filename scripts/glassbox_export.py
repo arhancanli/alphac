@@ -658,6 +658,32 @@ SCREEN_KILLS: Final[list[ScreenKill]] = [
         "Reproduce: scripts/probe_alphamax_shorttail.py.",
         "screen_prototype",
     ),
+    (
+        "equity_short_interest_dtc",
+        "Short Interest / Days-to-Cover Deciles (probe)",
+        0.002,
+        "The first genuinely NEW INPUT in months rather than another transformation of price and "
+        "volume: bi-monthly FINRA short interest for the whole US tape, 2017-12-29..2026-07-15 "
+        "(3,804,024 rows, 23,314 tickers), unlocked by the Polygon Starter upgrade and ingested "
+        "in full. ONE pre-registered config, no sweep: long the bottom days-to-cover decile, "
+        "short the top, dollar-neutral, PIT top-2000 by ADV, price >= $5, positions formed on "
+        "settlement + 10 BUSINESS DAYS (FINRA disseminates ~8; the extra margin makes lookahead "
+        "un-arguable) and held to the next availability date. It fails, and it fails on GROSS "
+        "terms, which is the cleanest kind of kill: BEFORE any cost or borrow assumption the "
+        "Sharpe is -0.220 (NW t -0.68) on the full universe and +0.002 (NW t +0.01) restricted "
+        "to Alpaca easy-to-borrow names — indistinguishable from zero. There is no edge for "
+        "frictions to eat, so nobody can argue we killed it with pessimistic borrow costs. Net "
+        "of 6bp one-way and a borrow ladder it only gets worse: -0.23 / -0.43 / -0.99 at 50 / "
+        "300 / 1000 bp per year on short gross, at 20x annual turnover. Leg decomposition on the "
+        "easy-to-borrow arm: long leg -1.10%/yr, short leg +1.11%/yr — they cancel. The "
+        "documented anomaly does not survive in this window at this horizon. Correlation to the "
+        "live book is -0.019, so the diversification arithmetic was favourable and it still did "
+        "not matter, for the same reason mechflow_tom did not: a near-zero bar lowers what a "
+        "candidate must BEAT, never what it must PROVE. The sign is NOT flipped and re-tested — "
+        "that is precisely the search the pre-registration exists to forbid. KILLED. "
+        "Reproduce: scripts/ingest_short_interest.py then scripts/probe_short_interest.py.",
+        "screen_prototype",
+    ),
 ]
 
 
