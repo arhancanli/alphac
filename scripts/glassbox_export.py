@@ -200,6 +200,16 @@ KILLED: Final[list[tuple[str, str, str, str]]] = [
         "Pre-registered BAB on 21 years. Net Sharpe ~ -0.07, failed the DSR >= 0.95 gate. "
         "Low-risk anomaly does not survive net of cost here. KILLED.",
     ),
+    (
+        "crypto_lowvol_720",
+        "Crypto Low-Volatility",
+        "crypto_low_risk",
+        "The STRONGEST in-sample signal the 200+-factor campaign found anywhere (Rank-IC "
+        "t = 6.66). Full purged walk-forward: net Sharpe 0.69 — respectable. But the Deflated "
+        "Sharpe Ratio is 0.04: after honestly penalising for every config we tried, it is "
+        "indistinguishable from luck. A high raw Sharpe is NOT enough. This is the clearest proof "
+        "of why we deflate — the prettiest backtest of the campaign, KILLED on deflation.",
+    ),
 ]
 
 SURVIVORS: Final[list[tuple[str, str, str, float, str]]] = [
@@ -219,6 +229,434 @@ SURVIVORS: Final[list[tuple[str, str, str, float, str]]] = [
         0.456,
         "KEEP, with honest caveats. Net Sharpe 0.68, near-uncorrelated to equity (corr ~ -0.02). "
         "Capacity is FINITE (~$100k to $1M proven); weight decays to zero above ~$100M AUM.",
+    ),
+    (
+        "managed_futures",
+        "AlphaTrend (Managed-Futures Trend)",
+        "Time-series momentum across a 17-market ETF basket (equity-index, rates, commodities, "
+        "FX), long/short on each market's own trend, inverse-vol weighted. Biweekly rebalance.",
+        0.0,
+        "KEEP — the FIRST new sleeve to clear deflation. Net Sharpe is a modest 0.33, but DSR 0.83 "
+        "(statistically real after multiple-testing — the only new candidate to pass), positive "
+        "skew, two-decade stable, ~0 equity correlation. Live as the 4th algorithm since 2026-06-27, "
+        "accruing its own forward record before it is weighted into the flagship book (0% today). "
+        "The free-ETF screen suggested 0.73; the honest engine says 0.33 — we published both.",
+    ),
+]
+
+
+# Screen-stage kills: free-data PROTOTYPES (Yahoo spot + FRED rates, standalone numpy scripts under
+# scripts/fx_*_screen.py) killed at the cheap screen BEFORE any engine integration. Their numbers do
+# NOT come from a walk-forward summary.txt — they are screen prototypes, labelled as such. The
+# screen->gauntlet funnel is the point: kill weak ideas cheaply, build only what shows an edge.
+# Entry shape: (name, readable_name, screen_net_sharpe, reason) or the same plus a trailing
+# `stage` string. Stage defaults to 'screen_prototype' when omitted.
+ScreenKill = tuple[str, str, float, str] | tuple[str, str, float, str, str]
+
+SCREEN_KILLS: Final[list[ScreenKill]] = [
+    (
+        "fx_trend_cs",
+        "FX Trend (cross-sectional 12-1)",
+        -0.035,
+        "Cross-sectional currency trend, net of cost, 2016-2026. Flat (net Sharpe -0.035) — a "
+        "weak-trend decade for FX. Below the 0.30 screen bar. KILLED at screen.",
+    ),
+    (
+        "fx_carry_ratediff",
+        "FX Carry (rate differential)",
+        0.18,
+        "Long high-rate / short low-rate currencies. Net Sharpe 0.18 but skew -2.74: the carry "
+        "premium does not pay for its crash risk (carry 'picks up pennies in front of a "
+        "steamroller'). Below the screen bar on both Sharpe and skew. KILLED at screen.",
+    ),
+    (
+        "fx_carry_trend_overlay",
+        "FX Carry + Trend Overlay (the real construction)",
+        0.32,
+        "The professional FX book: trend hedges carry's crashes. It screened at 0.32 — but the "
+        "robustness stress-test killed it. The Sharpe SPIKED only at the exact threshold we picked "
+        "by hand (a knob artifact, ~0.15 on either side); it died at realistic cost (25x turnover, "
+        "0.05 at 5bp); ALL the performance came from one post-2021 regime; and dropping JPY "
+        "collapsed it to -0.07 — the entire 'edge' was the single short-JPY trade. Not a "
+        "diversified premium. KILLED on robustness, before we built a thing.",
+    ),
+    # ---- 2026-06-27 sleeve-discovery campaign: 17-agent adversarial search for a new sleeve toward
+    # grade A. 10 theory-grounded candidates screened (free data + the Sharadar/Deribit lakes), each
+    # through the four-test gauntlet + 3-lens adversarial refutation. ALL 10 killed — a clean null.
+    # See artifacts/campaigns/sleeve_discovery_2026-06-27.md. The whole graveyard, published.
+    (
+        "crypto_vrp",
+        "Crypto Variance-Risk-Premium (campaign)",
+        -0.07,
+        "Pitched at 2.15 Sharpe — the headline was a 252-vs-365 vol-annualization error inventing a "
+        "phantom 15-vol-point premium. Honest measurement: net Sharpe -0.07, skew -2.19, fails all "
+        "four stress-tests, shares carry's crash dependence. A seductive false positive, KILLED.",
+    ),
+    (
+        "crypto_short_tsmom",
+        "Crypto Short-Horizon Trend (campaign)",
+        0.30,
+        "The strong 0.60 screen lives entirely in the untradeable 2016-18 illiquid era; modern "
+        "crypto is flat-to-dead with a catastrophic -4.88 skew (crash-day reversals). KILLED.",
+    ),
+    (
+        "mf_realfutures_fasttrend",
+        "Managed-Futures fast-trend / real-futures breadth (campaign)",
+        0.20,
+        "Splits into robust-but-not-new (the slow book IS our existing AlphaTrend) and new-but-dead "
+        "(the fast-trend leg is net-negative at every verifiable cost). Not a new sleeve. KILLED.",
+    ),
+    (
+        "equity_pead",
+        "Post-Earnings-Announcement Drift (campaign)",
+        -0.65,
+        "Clean null on a tradable top-1000 universe: the drift is the WRONG sign net of cost; the "
+        "published PEAD edge lives only in untradeable micro-caps. Corr 0.47 to momentum. KILLED.",
+    ),
+    (
+        "cot_positioning",
+        "COT Positioning Overlay (campaign)",
+        0.083,
+        "Indistinguishable from zero (t~0.42 over 25 years); dies at 2x cost; the entire 'edge' is "
+        "two equity-index legs. Genuine decorrelation, no edge to attach it to. KILLED.",
+    ),
+    (
+        "onchain_carry_filter",
+        "On-Chain Carry-Quality Filter (campaign)",
+        0.08,
+        "Placebo-indistinguishable: a random risk-off coin-flip of equal intensity matches it, and "
+        "it does NOT repair carry's 2022 tail (skew got worse). No paid-data upgrade justified. KILLED.",
+    ),
+    (
+        "funding_termstructure",
+        "Funding Term-Structure / Slope (campaign)",
+        0.159,
+        "The decorrelated residual is noise (worked pre-2023, inverted after: +1.11 then -1.43); the "
+        "only version that makes money is leaked carry-LEVEL — a duplication of what we own. KILLED.",
+    ),
+    (
+        "residual_momentum",
+        "Residual (beta-neutral) Momentum (campaign)",
+        -0.098,
+        "Corr 0.87 to raw 12-1 momentum on the broad survivorship-free universe — it is the SAME bet "
+        "as AlphaMax, net-negative. The claimed 'separation' is false here. KILLED.",
+    ),
+    (
+        "rates_curve_carry",
+        "Rates-Curve Carry (campaign)",
+        -0.33,
+        "Robustly NEGATIVE, not fragile-positive: the signal points the wrong way — steepest curves "
+        "preceded the worst duration drawdowns (2022). Real decorrelation, negative edge. KILLED.",
+    ),
+    (
+        "tail_overlay",
+        "Long-Vol Tail Overlay (campaign)",
+        -0.56,
+        "An honest positive-skew (+2.06) anti-equity hedge — but its ONLY thesis, improving the "
+        "combined book, fails at every hedge weight. AlphaTrend already provides crisis convexity "
+        "WITH a positive standalone Sharpe. KILLED.",
+    ),
+    # ---- 2026-06-27 brutal multi-construction campaign (the documented premia + a book red-team).
+    # Each tested across 3-5 constructions + crisis/cost/capacity gauntlet. All 4 killed; verdict:
+    # do NOT buy the $270 futures data. See artifacts/campaigns/sleeve_discovery_2026-06-27.md.
+    (
+        "xasset_carry",
+        "Cross-Asset Carry (campaign)",
+        0.37,
+        "5 constructions. The COMBINED cross-asset book is net-NEGATIVE (3 of 4 legs lose); the one "
+        "positive leg (oil backwardation, +0.37) is a single-instrument bet that leave-one-out "
+        "zeroes; rates-carry fails the Covid crisis gate. Real futures data cannot flip it. KILLED.",
+    ),
+    (
+        "xasset_value",
+        "Cross-Asset Value (campaign)",
+        -0.24,
+        "6 constructions, ALL net-negative. The decisive tell: flipping the value sign is positive "
+        "in every asset class — the only premium present is anti-value = momentum/trend, which we "
+        "already own. Cross-asset value on liquid proxies is just short-momentum, and it loses. KILLED.",
+    ),
+    (
+        "equity_vrp",
+        "Equity-Index VRP / short-vol (campaign)",
+        0.42,
+        "The premium is REAL (VIX minus realized = +4 vol pts, t=57) but UNHARVESTABLE: negative in "
+        "every crisis, skew -1.8 to -2.2, corr +0.45 to +0.66 to SPY — short-vol is leveraged "
+        "long-beta in disguise, not an orthogonal sleeve. KILLED.",
+    ),
+    (
+        "crypto_dated_basis",
+        "Crypto Dated-Futures Basis (campaign)",
+        0.0,
+        "Screened at an apparent 1.47 but refuted 3x and reproduced from scratch: the 8.2%/yr "
+        "'carry' is a roll-accounting fiction — the kept days (+0.55) and the dropped roll days "
+        "(-0.55) cancel; honest all-days P&L telescopes to ~0%/yr, skew -6.84. A construction-"
+        "fitting artifact (the 'edge' is earned by deleting the days it loses money). KILLED.",
+    ),
+    # ---- 2026-07-09 modern-sleeve probes: three leads from an 8-family sweep of the 2026 frontier,
+    # each built and run PIT + net of the committed cost model. All three killed at screen.
+    # Artifacts under artifacts/sweep/{carry_probe,mechflow_probe,pmsignal_scope}.
+    (
+        "futcarry_xs",
+        "Commodity / Cross-Asset Futures Carry (probe)",
+        -0.24,
+        "Cross-sectional carry on 38 real futures (long backwardation / short contango, front-vs-"
+        "next slope), 2010-2016 — the only window the term-structure marks support. GROSS Sharpe "
+        "is already -0.17, so there is no edge for costs to erode; net -0.24, DSR 0.00, all six "
+        "construction variants negative. The feed itself dies mid-2016 (one root keeps a next-"
+        "contract mark), so it could not run live even if it worked. KILLED twice over.",
+    ),
+    (
+        "mechflow_tom",
+        "Turn-of-Month / Rebalancing Flow (probe)",
+        0.27,
+        "The calendar flow is real — SPY earns 5.65bp/day in the last-1-plus-first-3 window vs "
+        "3.96bp outside, and the footprint replicates on QQQ — but monetized standalone it sits in "
+        "cash 76% of days: net Sharpe 0.27, below buy-and-hold SPY (0.58) and the screen bar, DSR "
+        "0.035 across 43 configs. The 60/40 month-end rebalance-fade variant decayed negative "
+        "after 2018. A real effect that is an execution tilt, not a sleeve. KILLED as standalone. "
+        "RE-EXAMINED 2026-08-03 because that first reason was BAD ARITHMETIC: a candidate need not "
+        "beat the book to improve it, only clear own_SR > rho x S_b. Re-tested as a diversifier on "
+        "ONE pre-registered config (no sweep, so no search penalty). The reframe was right about "
+        "correlation — rho to the live book is +0.010, dropping the bar to +0.006 — and it still "
+        "fails: own Sharpe -0.56 over the book's own window, and over 25 years / 6,309 sessions the "
+        "full-history Sharpe of +0.278 carries a Newey-West t of only +1.42, with no decade "
+        "reaching t=2 (best +1.32). A near-zero bar lowers what you must BEAT, never what you must "
+        "PROVE. Adding it hurt the book at every weight (-0.03 to -0.15), and 87-96% of that harm "
+        "came from the mean, not from variance. KILLED on the correct bar — this one is final.",
+    ),
+    (
+        "pm_odds_signal",
+        "Prediction-Market Odds as Macro Signal (probe)",
+        0.0,
+        "Do Polymarket-implied probabilities lead tradable markets? No — they lag them. The "
+        "forward lead is null across 5 macro markets x 5 ETFs; the reverse is strong: bonds "
+        "reprice a Fed move first and the odds catch up the NEXT day (corr +0.40 to TLT). Only "
+        "~2 years of usable history, all one easing cycle. The free odds are a slower, noisier "
+        "copy of prices we already see. KILLED at feasibility.",
+    ),
+    # ---- 2026-07-11 AlphaMax improvement campaign: six documented momentum enhancements built
+    # and tested against the live construction. All null or worse; the frozen 12-1 build stays.
+    # IC-screen kills (12-7 t 0.92, sector-neutral t 1.28, residual t 2.11 — all below plain
+    # momentum's own screen) are disclosed in the transparency notes; only the variant with real
+    # net-of-cost portfolio numbers earns a kill-log row. 52-week-high gauntlet pending.
+    # ---- 2026-08-03: two findings from taking the sleeves to their honest ceiling.
+    (
+        "mf_realfutures_breadth",
+        "Real-Futures Breadth for the Trend Sleeve (probe)",
+        -0.148,
+        "We had been treating 'buy real futures data for genuine breadth' as the roadmap for the "
+        "trend sleeve, on the theory that Sharpe scales with the square root of effective breadth "
+        "and 17 ETFs cannot supply it. Half of that is right: measured effective breadth is 9.1 for "
+        "38 real futures versus 5.3 for the live 17-ETF basket (and only 3.5 for a 33-ETF expansion "
+        "we already killed — more names, LESS breadth, which is why it failed). The other half is "
+        "wrong. On an identical construction, identical costs and the identical 2010-2026 common "
+        "window, the 38-market futures book returns net Sharpe -0.148 against the ETF sleeve's "
+        "+0.498, independently reproducing an earlier -0.24 result we had discounted as a possible "
+        "one-off. It is not a data fault: across all 38 back-adjusted series there is exactly one "
+        "single-day move above 25%. Breadth MULTIPLIES the average per-market edge; where that edge "
+        "is absent, more breadth buys more of nothing and 7.3x turnover instead of 4.3x. The "
+        "capital-gated futures path is therefore NOT validated and we have stopped citing it. "
+        "Reproduce: the probe is in the session record; data is data/lake_fut_real (38 markets).",
+        "screen_prototype",
+    ),
+    (
+        "alphamax_short_margin_floor",
+        "AlphaMax Short-Leg Margin Floor (disclosure, not a strategy)",
+        -0.112,
+        "A disclosure against our own published number rather than a tested idea. The equity "
+        "sleeve's backtest has never modelled the broker's $5.00-per-share short maintenance "
+        "requirement, which is charged per share regardless of account size — so shorting an $8 "
+        "stock ties up roughly 62% of its market value in margin at ANY capital level. Applying an "
+        "honest $17 short-leg price floor costs -0.112 net Sharpe (2015-2026, point-in-time prices "
+        "from our own lake, so no snapshot bias). Part of the published edge lives in cheap shorts "
+        "that are permanently margin-inefficient. We are publishing the haircut rather than the "
+        "flattering number. Separately: a borrow-availability filter appeared to cost a further "
+        "-0.225, but that estimate is CONFOUNDED — it applies a current broker snapshot to eleven "
+        "years of history, which silently excludes every delisted name, and delisted names are "
+        "exactly where short alpha concentrates. Measuring it honestly needs point-in-time borrow "
+        "data we do not have, so we report it as UNKNOWN rather than publish a number we cannot "
+        "defend. The current live short book is 92 of 94 names borrowable.",
+        "screen_prototype",
+    ),
+    (
+        "alphamax_volscale",
+        "Vol-Scaled / Crash-Protected Momentum overlay (campaign)",
+        0.87,
+        "Barroso-Santa-Clara constant-vol and Daniel-Moskowitz variance/dynamic scaling applied "
+        "to the live AlphaMax sleeve. On the canonical window it HURTS (net Sharpe 0.87 vs the "
+        "sleeve's own 0.91, maxDD worse by 1.3-3.1pts); incremental alpha over the book-level "
+        "vol target the engine already runs is statistically zero in all 5 configs (t -1.64 to "
+        "+0.81, overlay-scale correlation 0.54-0.66 to the engine's own rule). The insurance is "
+        "already owned; buying it twice costs money. KILLED.",
+    ),
+    (
+        "eq_52whigh",
+        "52-Week-High Momentum (campaign)",
+        -0.289,
+        "The one AlphaMax construction variant whose cheap screen cleared the bar (t 2.01 vs plain "
+        "momentum's 1.73), so we honored the pre-registration and ran the FULL deployed-path "
+        "walk-forward. It KILLED: net Sharpe -0.289 (WORSE than plain 12-1's own -0.049 on the "
+        "same harness), DSR 0.00, and OOS correlation +0.42 to plain momentum — neither better "
+        "nor genuinely different. The frozen 12-1 build stays. KILLED at the gauntlet.",
+        "deployed_gauntlet",
+    ),
+    # ---- 2026-07-12 intraday-flow research (Track B of the modern-sleeve build): two studies on
+    # free minute data (Alpaca IEX), each pre-registered, ledger-free research screens (no WF trial).
+    (
+        "letf_eod_flow",
+        "Leveraged-ETF End-of-Day Forced-Rebalance Flow (probe)",
+        -1.41,
+        "Leveraged ETFs MUST trade into the close (~$277B QQQ-family rebalance multiplier, ~$4B/day "
+        "estimated flow) — a real, large, mechanical flow. But it is NOT tradeable on 2021-2026 "
+        "data: no continuation into the close (+0.58 bps per 1-sigma flow, t=0.93), no overnight "
+        "reversal, and all six strategy cells lose net of costs (best cell Sharpe -1.41). The "
+        "~0.6bp effect is ~6x below the 12bp round-trip cost floor — no cost assumption rescues "
+        "it. The pre-2019 literature edge appears arbitraged away at the granularity free data "
+        "sees. KILLED at screen.",
+        "screen_prototype",
+    ),
+    (
+        "intraday_mom",
+        "Intraday Flow-Momentum, first-30m predicts last-30m (probe)",
+        0.0,
+        "The twice-JFE-documented effect (Gao-Han-Li-Zhou) is fully DECAYED post-publication on "
+        "SPY/QQQ/IWM: dead-zero in 2023-2026, and significantly INVERTED in 2020-2022 (a textbook "
+        "publish-then-arbitrage overshoot). The only statistically-alive cell (TLT overnight, "
+        "t=2.9) makes +1.2 bps/day gross against a >=2bp round-trip — a mirage economically. "
+        "KILLED at screen.",
+        "screen_prototype",
+    ),
+    # ---- 2026-07-12 economic-trend sleeve (Track A): AQR-style trend on macro FUNDAMENTALS (not
+    # prices), on the 17-ETF basket. Point-in-time first-release vintages, a 3-auditor leakage panel
+    # signed off zero blocking issues, then ONE pre-registered deployed-path walk-forward fired.
+    (
+        "econtrend",
+        "Economic-Trend Sleeve, macro-fundamental trend (campaign)",
+        0.211,
+        "Trend on first-release macro vintages (payrolls, CPI, IP, credit spreads, yields, dollar) "
+        "driving the 17-ETF basket by a pre-committed economic sign matrix. It has a REAL "
+        "crisis-alpha personality — +60.7% through the 2008 GFC (SPY -46%), +17.5% in the 2022 "
+        "bear (SPY -18%), essentially uncorrelated with the live AlphaTrend book (+0.009) and "
+        "mildly SPY-negative (-0.20). But it fails the adopt bar 2 of 3: net Sharpe 0.211 (bar "
+        "0.40), DSR 0.00 at N=103, and it gets caught in fast gap-down crashes (COVID -25.9%, "
+        "breaching the -22.5% floor). Genuine decorrelation, not enough edge. A hostile 3-auditor "
+        "leakage panel cleared the vintage plumbing before the one-shot ran. KILLED at the gauntlet. "
+        "Also tested as a combined-book DIVERSIFIER (not just standalone), since near-zero "
+        "correlation can lift a book even below the solo bar: it fails there too. At equal total "
+        "vol its naive Sharpe ticks up ~0.02-0.04 but within noise, it DEEPENS the GFC and 2022 "
+        "drawdowns, and decisively — strip its DSR-0.00 mean and the optimal weight goes to exactly "
+        "0.00 (the whole 'benefit' was return-stacking a mean statistically indistinguishable from "
+        "zero, not real diversification). Not added, in any construction. "
+        "Reproduce: scripts/probe_econtrend_book.py.",
+        "deployed_gauntlet",
+    ),
+    # ---- 2026-07-19/20: the last three ranked backlog candidates, all built and run.
+    (
+        "xs_seasonality",
+        "Cross-Sectional Same-Calendar-Month Seasonality (probe)",
+        -0.334,
+        "The one equity-side signal genuinely DECORRELATED from our momentum sleeve — and that "
+        "is exactly why it is worth publishing. Same-calendar-month ranking across a 33-ETF macro "
+        "basket, 10y trailing PIT history, monthly, net of 6bp + borrow: net Sharpe -0.334, and "
+        "NEGATIVE GROSS too (-0.176), so there is no edge for costs to erode. Correlation to plain "
+        "12-1 momentum is just +0.07 (it passes the costume test that killed residual momentum and "
+        "52-week-high) — but a 12-1 control on the SAME universe prints +0.175, so the harness can "
+        "find a real signal; this one simply is not there. Decorrelation without edge is worthless. "
+        "Screen gate failed, no walk-forward trial spent. Reproduce: scripts/probe_seasonality.py.",
+        "screen_prototype",
+    ),
+    (
+        "cef_discount",
+        "Closed-End-Fund Deep-Discount + Activist Catalyst (probe)",
+        -0.088,
+        "The five-decade anomaly is REAL in free data and we could see it: entry-cohort funds "
+        "genuinely narrow their discount versus the universe (+1.17pts at 4w t=5.4, +1.26 at 13w "
+        "t=7.2, +1.39 at 26w). It still fails on economics — the convergence is too slow for its "
+        "toll. Hedged net Sharpe -0.088 (-0.82 price-only) against a 0.5 gate: ~12.8%/wk turnover "
+        "at 41bp one-way (6bp + half the 0.7% median CEF spread) hands back the ~1.3pt/quarter "
+        "the discount closes. Two further honest notes: today's entry watchlist is EMPTY (0 of 328 "
+        "funds qualify — the 2024-26 activist wave already closed sector discounts to multi-year "
+        "tights), and the discount screen and the activist catalyst are nearly disjoint books "
+        "(4.9% overlap), so the documented live-capital story is the CATALYST trade, not the one "
+        "we screened. A pre-registered, hash-locked FORWARD experiment is now accruing point-in-"
+        "time data toward a single-look evaluation in 2027. Reproduce: scripts/probe_cef_discount.py.",
+        "screen_prototype",
+    ),
+    (
+        "multivenue_funding",
+        "Crypto Multi-Venue Funding Aggregation (probe)",
+        0.0,
+        "Would aggregating funding across exchanges beat our Binance-only carry signal? No — null "
+        "by its own pre-registered rule (promote required +0.10 Sharpe at 90% bootstrap "
+        "confidence). The reason is structural: Binance and Bybit annualized funding are 0.94 "
+        "correlated across 12,425 instrument-weeks, so there is almost no independent information "
+        "to aggregate. The adjacent 'harvest on the best-paying venue' idea dies on arithmetic too "
+        "— a median cross-venue gap of ~2.4%/yr against a four-legged ~30bp round trip implies a "
+        "22-day breakeven hold, marginal before you even price second-tier venue custody risk. The "
+        "live sleeve stays Binance-only on its blessed config. Byproduct kept: a multi-exchange "
+        "funding lake (Bybit deep history via mirror; OKX public history is depth-capped at ~90 "
+        "days, a data finding worth recording). Reproduce: scripts/probe_multivenue_funding.py.",
+        "screen_prototype",
+    ),
+    # ---- 2026-08-02 AlphaMax construction-axis campaign: after the July 2026 momentum squeeze,
+    # three ways to change how the equity book is BUILT, each leaving the 12-1 signal untouched.
+    # All read-only screens: no WalkForwardRunner call, no experiments-ledger append, 0 trial slots
+    # burned, DSR read at the standing ledger N. All three null; nothing adopted.
+    # Artifacts under artifacts/probe/alphamax_{betaneutral,weighting,shorttail}/report.json.
+    (
+        "alphamax_betaneutral",
+        "Beta-Neutral Momentum Construction (campaign)",
+        0.570,
+        "The premise was that a dollar-neutral momentum book carries hidden NEGATIVE market beta, "
+        "so a junk rally hurts both legs at once. Measuring the premise first killed it. On the "
+        "research panel (2005-2026) the book's mean rolling 63-day beta is -0.014 — essentially "
+        "zero. On the LIVE book it is +0.319, and the LONG leg is the high-beta side (leg beta "
+        "1.932 long vs 1.238 short) — the opposite of the premise. The treatment is then "
+        "regime-dependent with opposite signs: research net Sharpe 0.160 to 0.361 (bootstrap "
+        "P(dSharpe<=0)=0.0225), LIVE 0.921 to 0.570 (P=0.938). It also barely touches the episode "
+        "it was designed for — 0.2 points of a 9.5-point loss on research, 0.7 of 10.5 live — and "
+        "it buys beta-neutrality by selling dollar-neutrality: net exposure runs to +/-34% of "
+        "gross, which breaks the market-neutral mandate. Not adopted. 0 trial slots burned. "
+        "Reproduce: scripts/probe_alphamax_betaneutral.py.",
+        "screen_prototype",
+    ),
+    (
+        "alphamax_weightgrid",
+        "Weighting x Breadth Construction Grid (campaign)",
+        0.066,
+        "Four weightings (inverse-vol, equal, signal-proportional, vol-capped) crossed with four "
+        "breadths (K=30/50/100/200), 2005-2026, live cell inverse-vol K=100. Net Sharpes span "
+        "-0.293 to +0.066 against the live cell's -0.062 on the same harness (this is the "
+        "deep-history panel, where the deployed 2023+ sleeve's 0.91 does not apply). Four of the "
+        "15 challenger cells individually cleared the 90% paired bootstrap — but the bootstrap's "
+        "own dSharpe intervals imply those cells are 0.97 to 1.00 correlated with the live cell, "
+        "so four passes is about the chance expectation for a family of near-copies, not evidence. "
+        "The family-wise White Reality Check over the whole grid returns p=0.315: the best cell "
+        "(signal-proportional K=50, dSharpe +0.128) is indistinguishable from luck. That "
+        "family-wise gate was pre-registered precisely so the best cell could not be harvested. "
+        "Zero cells adoptable; keep inverse-vol K=100. 0 trial slots burned. "
+        "Reproduce: scripts/probe_alphamax_weighting.py.",
+        "screen_prototype",
+    ),
+    (
+        "alphamax_shorttail",
+        "Short-Leg Tail Controls (campaign)",
+        0.121,
+        "Nine construction-side short-leg controls (per-name stop-outs at 30/50/100%, gross caps "
+        "at 1.25x/1.5x/2.0x, short-leg vol targeting, with and without dollar-neutral restore). "
+        "Killed by attribution rather than by Sharpe. In the July 2026 episode the baseline lost "
+        "4.98%, of which the LONG leg contributed 3.61 and the SHORT leg 1.34 — the short leg is "
+        "27% of the damage. The squeeze narrative is real (ALIT +88% split-adjusted, RPD +61%) "
+        "but it is the minority of the loss; the larger driver was the momentum long complex "
+        "selling off. A control that drove short-leg P&L to exactly zero still could not have "
+        "fixed the episode. The actual controls recovered 0.02 to 0.77 points of the 4.98 (two of "
+        "the nine made it worse) with within-episode drawdown unchanged: 5.49% baseline vs 5.33% "
+        "to 5.57% across the nine. Four controls cleared the pre-registered gate on full-sample "
+        "numbers and all four fail the beta filter — the best (short-leg vol target, net Sharpe "
+        "0.121 vs the baseline's -0.102 on the 2005-2026 panel) buys its gain with market beta, "
+        "not alpha: beta t=16.4, alpha t=-0.14. Nothing adopted. 0 trial slots burned. "
+        "Reproduce: scripts/probe_alphamax_shorttail.py.",
+        "screen_prototype",
     ),
 ]
 
@@ -244,21 +682,69 @@ def build_kill_log() -> dict[str, Any]:
         rec["reason"] = reason
         survivors.append(rec)
 
+    # Entries are (name, readable, net_sharpe, reason) or (..., reason, stage). Stage defaults to
+    # 'screen_prototype'; 'deployed_gauntlet' marks probes that went through the FULL deployed-path
+    # walk-forward (their numbers ARE the real engine's) but whose artifacts live in probe dirs
+    # rather than the canonical walkforward tree, so they are listed here rather than in KILLED.
+    screen_kills = [
+        {
+            "name": e[0],
+            "readable_name": e[1],
+            "screen_net_sharpe": round(e[2], 3),
+            "stage": e[4] if len(e) > 4 else "screen_prototype",
+            "verdict": "KILLED",
+            "reason": e[3],
+        }
+        for e in SCREEN_KILLS
+    ]
+    n_gauntlet_probe = sum(1 for k in screen_kills if k["stage"] == "deployed_gauntlet")
+    n_screen = len(screen_kills) - n_gauntlet_probe
+
     return {
-        "schema": "glassbox.kill_log/1",
+        "schema": "glassbox.kill_log/2",
         "title": "The Kill Log",
         "summary": (
             "Most ideas die. We publish ours with their real net-of-cost numbers. "
-            f"{len(killed)} killed, {len(survivors)} survived the gauntlet."
+            f"{len(killed) + n_gauntlet_probe} killed at the deployed-path gauntlet, "
+            f"{n_screen} more at the cheap prototype screen, {len(survivors)} survived."
         ),
         "honesty_note": (
-            "Every Sharpe below is read from the walk-forward summary.txt of a real backtest, "
-            "net of the conservative cost model. Killed sleeves are excluded, never re-tuned."
+            "Gauntlet numbers are read from the walk-forward summary.txt of a real engine "
+            "backtest, net of the conservative cost model. The screen-stage kills (labelled "
+            "'screen_prototype') are standalone screens — free-data prototypes AND screens on our "
+            "Sharadar/Deribit research lakes — each run through a four-test robustness gauntlet but "
+            "BEFORE full deployed-path engine integration; their numbers come from those screens, "
+            "NOT the deployed engine, and we say so. The 2026-06-27 batch is a 17-agent adversarial "
+            "sleeve-discovery campaign that killed all 10 candidates it tested. The 2026-07-09 batch "
+            "is three probes from a sweep of the modern-sleeve frontier (futures carry, mechanical "
+            "rebalancing flows, prediction-market odds as a signal) — all three killed at screen. "
+            "The 2026-07-11 batch is the AlphaMax improvement campaign: six documented momentum "
+            "enhancements tested against the live construction, all null or worse — the frozen "
+            "12-1 build stays. The 2026-07-12 batch closes that campaign (the 52-week-high variant, "
+            "run to a full walk-forward to honor a fired pre-registration) and adds three "
+            "modern-frontier probes: two free intraday-flow studies (leveraged-ETF end-of-day "
+            "rebalance flow, intraday flow-momentum — both killed at screen) and the economic-trend "
+            "sleeve (macro-fundamental trend, one pre-registered walk-forward after a 3-auditor "
+            "leakage panel signed off — a real crisis-alpha personality but too little edge, DSR "
+            "0.00). The 2026-08-02 batch is the AlphaMax construction-axis campaign, opened after "
+            "the July 2026 momentum junk-squeeze: three ways to change how the equity book is "
+            "BUILT, each leaving the 12-1 signal byte-identical (beta-neutral construction, a 4x4 "
+            "weighting-by-breadth grid, nine short-leg tail controls). All three null, nothing "
+            "adopted, zero trial slots burned — each was a read-only screen with its gate written "
+            "down first, and in the grid's case that pre-registered family-wise gate is what "
+            "stopped the best-looking cell from being harvested (White Reality Check p=0.315). The "
+            "beta-neutral candidate was killed by measuring its own premise: the hidden negative "
+            "market beta it was built to remove does not exist (research -0.014, live +0.319). "
+            "A few entries are labelled 'deployed_gauntlet': those went through the FULL "
+            "deployed-path walk-forward, so their numbers ARE the real engine's; they sit in this "
+            "list only because their artifacts live in probe directories. Nothing is re-tuned."
         ),
         "gate_minimum_sharpe": 0.40,
         "killed_count": len(killed),
+        "screen_killed_count": len(screen_kills),
         "survived_count": len(survivors),
         "killed_strategies": killed,
+        "screen_stage_kills": screen_kills,
         "survivor_sleeves": survivors,
         "source_paths": [
             str((WALKFORWARD / name / "summary.txt").relative_to(REPO))
@@ -406,7 +892,17 @@ def build_deflation() -> dict[str, Any]:
             "end_date": "2026-06-01",
             "note": "Clean crypto-perp window, UTC, exclusive end. No look-ahead.",
         },
-        "honest_trial_count": 8,
+        # Honesty fix (2026-06-27 red-team): N=8 is the trial count for THIS crypto-perp grid only,
+        # NOT the cumulative research effort. Across the whole program we have searched 35+ distinct
+        # strategy FAMILIES (FX, the factor zoo, managed-futures, two adversarial sleeve campaigns,
+        # VRP/PEAD/COT/basis/...), and screen-stage kills bypassed the experiments ledger. We rename
+        # the field for exactly what it measures and expose the cumulative figure so the deflation
+        # bar is never understated. (It happens to be conservative here only because the verdict is
+        # NO-DEPLOY; we will not let the same framing flatter a future deployed survivor.)
+        "crypto_perp_grid_trials": 8,
+        "cumulative_strategy_families_searched": "35+ (FX, factor-zoo, managed-futures, VRP, PEAD, "
+        "COT, on-chain, residual-momentum, cross-asset carry/value, crypto-basis, two 2026-06 "
+        "adversarial campaigns) — most published as nulls in the kill log; deflate against the FULL N",
         "gates": {
             "dsr_shared_min": DSR_GATE,
             "pbo_max": PBO_GATE,
@@ -619,6 +1115,62 @@ def build_reproducibility() -> dict[str, Any]:
 
 
 # ---------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
+# Feature 6 — red_team.json: WE PUBLISH OUR OWN BUGS. The 2026-06-27 adversarial red-team
+# attacked our own published record and found it was flattering us; we publish every finding
+# with its severity and fix status. A fund that publishes the defects it found in itself is the
+# one you can actually trust. Curated from the workflow's structured findings (verifiable in the
+# artifacts: the future-date clamp in paper_trading_state.py, the corrected metrics, the seq-1
+# transparency entry, artifacts/campaigns/).
+def build_red_team() -> dict[str, Any]:
+    findings = [
+        {"severity": "critical", "status": "FIXED",
+         "weakness": "A future-dated (2026-06-29) paper loss leaked into the public record and was sealed into seq 0 of the signed transparency chain (read_fwd_curve had no <= today guard).",
+         "fix": "clamp_live() drops any mark dated after today (UTC) before publish + anchor; a fail-closed guard was added; the corrected state was anchored as seq 1. The append-only chain shows BOTH seq 0 and seq 1 — we don't delete mistakes."},
+        {"severity": "critical", "status": "FIXED",
+         "weakness": "The headline -4.7% max drawdown excluded every crisis (the book curve starts 2023-07, no 2020/2022). It understated risk badly.",
+         "fix": "Crisis-inclusive worst case (-15 to -18%) is now the headline; -4.7% is labeled 'live-overlap only, not a risk estimate'."},
+        {"severity": "high", "status": "FIXED",
+         "weakness": "Sleeves were mislabeled: crypto carry (46% weight) has been FLAT since go-live but was billed 'live broker-loop'; equity & MF were billed 'realized next-open fills' but are walk-forward SIMULATIONS, not broker-executed.",
+         "fix": "Relabeled honestly (crypto = live loop currently flat / holding cash; equity & MF = walk-forward simulation, not broker-executed). Making them genuinely live is the next build."},
+        {"severity": "high", "status": "FIXED",
+         "weakness": "Standalone Sharpes were recent-window-flattered: crypto 0.68 hides a -19.6% 2022 (FTX) drawdown; equity 0.91 is the TOP of a 0.07-1.17 band whose deep-history forward is ~0.08 (DSR 0.17 at the current N=102 ledger; 0.34 when first published at N=27 — fails deflation either way, and deflation tightens as our own experiment count grows).",
+         "fix": "Per-sleeve caveats attached; the book forward expectation lowered from 0.7-1.0 to 0.3-0.9 with a stated real chance of ~0 in year one."},
+        {"severity": "high", "status": "FIXED",
+         "weakness": "Deflation N was framed as 'honest trial count = 8' when 35+ strategy families have been searched across the program (screen-stage kills bypassed the ledger).",
+         "fix": "Renamed to crypto_perp_grid_trials; exposed cumulative_strategy_families_searched (35+). Wiring every screen into the shared ledger is the remaining engineering step."},
+        {"severity": "high", "status": "DISCLOSED",
+         "weakness": "Sleeve correlations spike from ~0 (calm) to +0.6 to +0.9 in risk-off — the diversification benefit shrinks exactly in the left tail.",
+         "fix": "Disclosed in the published metrics + transparency; sizing the equal-risk combiner on the stressed matrix is the remaining engineering step."},
+        {"severity": "medium", "status": "OPEN",
+         "weakness": "The cost model uses a flat half-spread regardless of regime (it never widens in stress); the two deployed sleeves lack a published 2-3x cost-survival rerun.",
+         "fix": "Vol/regime-scaled half-spread + a published 2x/3x cost rerun of the live sleeves. Tracked."},
+        {"severity": "low", "status": "OPEN",
+         "weakness": "go-live date overstated 1-2 days vs first real activity; the verifier checks the published JSON, not the raw jsonl source-of-truth.",
+         "fix": "Per-sleeve effective go-live = first real activity; verifier to accept the raw jsonl. Tracked."},
+    ]
+    held_up = [
+        "Point-in-time / leakage discipline is genuinely sound (decide-at-close, fill-next-open, available_at lags, PIT universe membership, realized historical funding).",
+        "The directional TrendVolTarget allocator, the vol-target overlay, and the reduce-only de-risk path were adversarially exercised and held.",
+        "AlphaTrend genuinely survives 2008/2020/2022 (DSR 0.83) on the 17 real ETFs.",
+        "The public state honestly labels the 1.46 figure as in-sample and deflates it.",
+    ]
+    return {
+        "schema": "glassbox.red_team/1",
+        "title": "We Red-Team Ourselves",
+        "summary": (
+            "On 2026-06-27 an adversarial red-team attacked our own published record harder than "
+            "any allocator would, and found it was flattering us in several ways. We publish every "
+            "finding, its severity, and its fix. A fund that publishes the defects it found in "
+            f"itself is the one you can verify. {sum(1 for f in findings if f['status']=='FIXED')} "
+            f"of {len(findings)} findings already fixed."
+        ),
+        "findings": findings,
+        "what_held_up": held_up,
+        "report": "artifacts/campaigns/red_team_self_audit_2026-06-27.md",
+    }
+
+
 # Driver
 # ---------------------------------------------------------------------------
 BUILDERS: Final[dict[str, Any]] = {
@@ -627,6 +1179,7 @@ BUILDERS: Final[dict[str, Any]] = {
     "deflation.json": build_deflation,
     "track_record.json": build_track_record,
     "reproducibility.json": build_reproducibility,
+    "red_team.json": build_red_team,
 }
 
 
