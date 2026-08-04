@@ -38,6 +38,7 @@ import argparse
 import json
 import time
 from pathlib import Path
+from typing import Final
 
 import httpx
 import pandas as pd
@@ -45,8 +46,27 @@ import pandas as pd
 OUT = Path("data/lake_sec/assets")
 ALLOWLIST = Path("data/research/universe_allowlist_20260619.json")
 TICKER_MAP_URL = "https://www.sec.gov/files/company_tickers.json"
-CONCEPT_URL = "https://data.sec.gov/api/xbrl/companyconcept/CIK{cik:010d}/us-gaap/{tag}.json"
-TAG = "Assets"
+# companyFACTS, not companyCONCEPT. The concept endpoint silently returns 200 with ZERO facts
+# for many large filers -- Visa, Coca-Cola, Wells Fargo, Abbott and Berkshire all came back empty
+# from it while companyfacts shows 136+ Assets facts for the same CIK. That gap cost 13% of the
+# tradable universe before it was caught. companyfacts also serves EVERY tag in one call, which
+# makes the rest of the fundamental zoo (accruals, issuance, profitability) buildable from the
+# same pass instead of one request per tag per company.
+FACTS_URL = "https://data.sec.gov/api/xbrl/companyfacts/CIK{cik:010d}.json"
+
+#: us-gaap tags backing the implemented factors in features/library/equity_fundamental.py.
+TAGS: Final[tuple[str, ...]] = (
+    "Assets",                                          # asset growth (sleeve #4)
+    "StockholdersEquity",                              # book-to-price, ROE
+    "Revenues",                                        # sales-to-price, margins
+    "RevenueFromContractWithCustomerExcludingAssessedTax",  # post-ASC606 revenue tag
+    "NetIncomeLoss",                                   # earnings yield, ROE
+    "GrossProfit",                                     # gross profitability
+    "OperatingIncomeLoss",                             # operating margin
+    "NetCashProvidedByUsedInOperatingActivities",      # accruals (Sloan)
+    "CommonStockSharesOutstanding",                    # net issuance
+    "LiabilitiesAndStockholdersEquity",                # total-assets cross-check
+)
 # SEC requires a real contact. This is the fund's own address; do not make one up.
 UA = "Canli Capital quantitative research arhancanli@icloud.com"
 MIN_INTERVAL = 0.11          # ~9 req/s, under SEC's 10/s ceiling
@@ -78,8 +98,20 @@ def _get(client: httpx.Client, url: str) -> dict | None:
 
 
 def ticker_to_cik(client: httpx.Client) -> dict[str, int]:
+    """SEC ticker -> CIK, indexed under BOTH the SEC spelling and our lake's spelling.
+
+    SEC writes share classes with a hyphen (BRK-B, BF-B); the lake writes them closed up
+    (BRKB, BFB). Without the de-punctuated alias every multi-class name silently misses.
+    """
     d = _get(client, TICKER_MAP_URL) or {}
-    return {v["ticker"].upper(): int(v["cik_str"]) for v in d.values()}
+    out: dict[str, int] = {}
+    for v in d.values():
+        t = v["ticker"].upper()
+        cik = int(v["cik_str"])
+        out[t] = cik
+        alias = t.replace("-", "").replace(".", "")
+        out.setdefault(alias, cik)
+    return out
 
 
 def wanted_tickers() -> list[str]:
@@ -91,18 +123,24 @@ def wanted_tickers() -> list[str]:
 
 
 def facts_to_rows(ticker: str, cik: int, payload: dict) -> list[dict]:
+    """Flatten the companyfacts blob to one row per (tag, period_end) first disclosure."""
+    gaap = ((payload.get("facts") or {}).get("us-gaap") or {})
     rows: list[dict] = []
-    for unit, facts in (payload.get("units") or {}).items():
-        if unit != "USD":
+    for tag in TAGS:
+        node = gaap.get(tag)
+        if not node:
             continue
-        for f in facts:
-            if not f.get("filed") or not f.get("end") or f.get("val") is None:
+        for unit, facts in (node.get("units") or {}).items():
+            if unit not in ("USD", "shares"):
                 continue
-            rows.append({
-                "ticker": ticker, "cik": cik, "period_end": f["end"], "filed": f["filed"],
-                "form": f.get("form"), "fy": f.get("fy"), "fp": f.get("fp"),
-                "assets": float(f["val"]),
-            })
+            for f in facts:
+                if not f.get("filed") or not f.get("end") or f.get("val") is None:
+                    continue
+                rows.append({
+                    "ticker": ticker, "cik": cik, "tag": tag, "unit": unit,
+                    "period_end": f["end"], "filed": f["filed"], "form": f.get("form"),
+                    "fy": f.get("fy"), "fp": f.get("fp"), "val": float(f["val"]),
+                })
     return rows
 
 
@@ -133,7 +171,7 @@ def main() -> int:
             if wait > 0:
                 time.sleep(wait)
             last = time.monotonic()
-            payload = _get(client, CONCEPT_URL.format(cik=c, tag=TAG))
+            payload = _get(client, FACTS_URL.format(cik=c))
             if not payload:
                 miss += 1
                 continue
@@ -143,8 +181,8 @@ def main() -> int:
                 continue
             df = pd.DataFrame(rows)
             # THE POINT-IN-TIME COLLAPSE: value AS FIRST DISCLOSED, never the restatement.
-            df = (df.sort_values(["period_end", "filed"])
-                    .drop_duplicates(["period_end"], keep="first")
+            df = (df.sort_values(["tag", "period_end", "filed"])
+                    .drop_duplicates(["tag", "period_end"], keep="first")
                     .reset_index(drop=True))
             df.to_parquet(OUT / f"{t}.parquet", index=False)
             hit += 1
@@ -155,6 +193,7 @@ def main() -> int:
     print(f"\ndone. {len(files):,} tickers on disk")
     if files:
         s = pd.concat([pd.read_parquet(f) for f in files[:400]])
+        s = s[s["tag"] == "Assets"]
         lag = (pd.to_datetime(s["filed"]) - pd.to_datetime(s["period_end"])).dt.days
         print(f"  sample: {len(s):,} facts over {s['ticker'].nunique()} tickers")
         print(f"  period range: {s['period_end'].min()} .. {s['period_end'].max()}")
