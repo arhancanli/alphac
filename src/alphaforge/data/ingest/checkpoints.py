@@ -195,6 +195,22 @@ class CheckpointStore:
         row = cur.fetchone()
         return None if row is None else int(row["watermark_ms"])
 
+    def last_updated(self, dataset: Dataset, instrument_id: str) -> Ms | None:
+        """Wall-clock ms when this key's watermark was last confirmed, or ``None``.
+
+        Distinct from :meth:`get` (which returns the data watermark): this is the
+        ``updated_at_ms`` bookkeeping stamp, used by callers that poll a per-ticker
+        reference endpoint to throttle how often an *already-current* key is re-checked
+        (a watermark can be current yet ``until`` still advances daily, which would
+        otherwise re-hit the endpoint every run).
+        """
+        cur = self._conn.execute(
+            "SELECT updated_at_ms FROM watermarks WHERE dataset = ? AND instrument_id = ?",
+            (dataset.value, instrument_id),
+        )
+        row = cur.fetchone()
+        return None if row is None else int(row["updated_at_ms"])
+
     def set(self, dataset: Dataset, instrument_id: str, watermark: Ms) -> None:
         """Advance the watermark to ``watermark`` (epoch ms UTC).
 

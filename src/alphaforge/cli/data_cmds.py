@@ -478,6 +478,17 @@ def _print_equities_report(report: EquitiesIngestReport) -> None:
         typer.echo(f"+ {report.skipped_count} session(s) skipped (already ingested)")
 
 
+#: Skip re-polling a per-ticker corporate-actions key confirmed within this window. Splits and
+#: dividends are announced days-to-weeks before their ex-date, so a ~5-day recheck cannot miss one
+#: before it becomes tradable-relevant, while it keeps a ~2500-name universe off a free-tier
+#: reference API's rate-limit wall (the daily-``until`` re-fetch that stalled the equity tick).
+_CORP_ACTIONS_RECHECK_MS: Final[Ms] = 5 * 24 * 60 * 60 * 1000
+#: Fetch corporate actions this far past ``until`` so announced-but-future ex-dates are captured
+#: BEFORE their ex-date. Must exceed _CORP_ACTIONS_RECHECK_MS so the cooldown cannot skip a key
+#: past a split's ex-date (that pairing is what makes the cooldown safe against the ALIT bug class).
+_CORP_ACTIONS_LOOKAHEAD_MS: Final[Ms] = 45 * 24 * 60 * 60 * 1000
+
+
 def _ingest_corporate_actions(
     settings: Settings, checkpoints: CheckpointStore, *, until: Ms, now: Ms
 ) -> tuple[int, int]:
@@ -503,13 +514,30 @@ def _ingest_corporate_actions(
     source = _build_equities_reference()
     writer = LakeWriter(paths)
     actions_total = 0
+    # The reference endpoints are PER-TICKER and ``until`` advances daily, so a naive loop re-fetches
+    # every one of a ~2500-name universe each run (``until > watermark+1`` is ~always true), which
+    # rate-limit-walls a free-tier API and stalled the equity tick (2026-07-20). Two coupled guards:
+    #  (1) a wall-clock RECHECK COOLDOWN: skip a key confirmed within CORP_ACTIONS_RECHECK_MS.
+    #  (2) a FORWARD-LOOKING fetch window (now + CORP_ACTIONS_LOOKAHEAD_MS): each poll captures
+    #      actions ANNOUNCED for future ex-dates. Because the lookahead (weeks) exceeds the cooldown
+    #      (days), a key skipped by the cooldown already holds every action ex-ing before its next
+    #      poll — so the cooldown can NEVER let a split reach its ex-date un-ingested (the ALIT bug
+    #      class). The data watermark is advanced only to ``now`` (never to a future ex-date), so the
+    #      near window keeps being rescanned for newly-announced actions; future rows are stored and
+    #      gated by their own ``available_at`` at the adjustment join. First-seen keys are never
+    #      skipped, so a fresh universe still backfills in full.
+    recheck_floor = now - _CORP_ACTIONS_RECHECK_MS
+    fetch_until = until + _CORP_ACTIONS_LOOKAHEAD_MS
+    skipped_fresh = 0
     for instrument_id in ids:
+        last = checkpoints.last_updated(Dataset.CORPORATE_ACTIONS, instrument_id)
+        if last is not None and last >= recheck_floor:
+            skipped_fresh += 1
+            continue
         watermark = checkpoints.get(Dataset.CORPORATE_ACTIONS, instrument_id)
         since = 0 if watermark is None else watermark + 1
-        if until <= since:
-            continue
         try:
-            tbl = source.fetch_corporate_actions(instrument_id, since=since, until=until)
+            tbl = source.fetch_corporate_actions(instrument_id, since=since, until=fetch_until)
         except Exception as exc:  # isolate: one bad ticker never aborts the pass
             log.error(
                 "equities_ingest.corp_actions_failed",
@@ -517,12 +545,19 @@ def _ingest_corporate_actions(
                 error=repr(exc),
             )
             continue
-        if tbl.num_rows == 0:
-            continue
-        writer.write(Dataset.CORPORATE_ACTIONS, tbl, now=now)
-        max_ex = int(_max_epoch_ms(tbl, "ex_date"))
-        checkpoints.set(Dataset.CORPORATE_ACTIONS, instrument_id, max_ex)
-        actions_total += tbl.num_rows
+        if tbl.num_rows:
+            writer.write(Dataset.CORPORATE_ACTIONS, tbl, now=now)
+            actions_total += tbl.num_rows
+        # Advance/refresh to ``now`` whether or not rows were found: confirms this key is scanned
+        # through now (its recheck stamp enters the cooldown), and never past now so the near window
+        # keeps being rescanned. Monotonic — max() guards against a stored future/equal watermark.
+        checkpoints.set(Dataset.CORPORATE_ACTIONS, instrument_id, max(watermark or 0, now))
+    if skipped_fresh:
+        log.info(
+            "equities_ingest.corp_actions_cooldown_skipped",
+            n_skipped=skipped_fresh,
+            n_total=len(ids),
+        )
     return len(ids), actions_total
 
 
