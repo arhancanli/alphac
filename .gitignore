@@ -22,3 +22,16 @@ dist/
 .coverage.*
 coverage.xml
 htmlcov/
+
+# per-sleeve operational state (same rule as /var/ — these are runtime DBs, logs and
+# experiment ledgers, not source. They were untracked-but-not-ignored, which meant a
+# `git add -A` would have committed live sqlite files.)
+/var_mf/
+/var_mf_exp/
+/var_sharadar/
+/var_fut_real/
+
+# throwaway working files
+/scratch/
+/scratchpad/
+*.bak

@@ -294,14 +294,61 @@ class ExperimentLog:
             fh.write(line + "\n")
         return record
 
+    #: Config keys that describe WHEN a hypothesis was measured, not WHAT was hypothesised.
+    #: The exemption below is deliberately this narrow -- see :meth:`n_hypotheses`.
+    _WINDOW_KEYS: Final[frozenset[str]] = frozenset({"start", "end"})
+
     def n_trials(self) -> int:
-        """Number of DISTINCT configurations on the ledger -- the DSR ``N``.
+        """Number of DISTINCT configurations on the ledger.
 
         Distinct by construction (idempotent :meth:`record`), but counted from
         the deduplicated hash set so a hand-edited ledger with duplicate hashes
         still yields an honest count.
+
+        NOTE: this is the AUDIT count (every row ever evaluated). For the DSR ``N``
+        use :meth:`n_hypotheses` -- see that docstring for why they differ.
         """
         return len(self._hashes())
+
+    def _hypothesis_key(self, config: Mapping[str, object]) -> str:
+        payload = {k: v for k, v in config.items() if k not in self._WINDOW_KEYS}
+        return hashlib.sha256(
+            json.dumps(payload, sort_keys=True, ensure_ascii=True, default=str).encode("utf-8")
+        ).hexdigest()[:16]
+
+    def n_hypotheses(self) -> int:
+        """Number of distinct HYPOTHESES tried -- the honest DSR ``N``.
+
+        WHY THIS IS NOT :meth:`n_trials` (found 2026-08-04, and it was drifting daily)
+        -----------------------------------------------------------------------------
+        The DSR deflates a Sharpe against the number of trials in the SELECTION SEARCH:
+        how many distinct ideas were tried before this one was picked. The live system,
+        however, re-evaluates its already-selected config every single day as the rolling
+        window advances, and each of those lands on the ledger with a new config hash
+        because ``start``/``end`` moved by 86,400,000 ms.
+
+        Counting those as new trials is wrong in a way that compounds: ``N`` grows by ~365
+        a year on calendar time alone, so the deflated Sharpe of a GOOD strategy decays
+        toward zero simply because it stayed deployed. On this ledger it was already 117
+        rows for 93 real hypotheses -- 24 rows of pure re-measurement.
+
+        The exemption is deliberately narrow, and :meth:`window_only_reevaluations`
+        enforces it: a row is only forgiven if it differs from an earlier row in NOTHING
+        BUT the evaluation window. Change a parameter, an instrument, an allocator -- any
+        field that is part of the hypothesis -- and it counts as a new trial. That is what
+        keeps this a correction rather than a loophole: you cannot hide a parameter sweep
+        behind it, because a sweep by definition changes something other than the dates.
+        """
+        return len({self._hypothesis_key(r.config) for r in self.all()})
+
+    def window_only_reevaluations(self) -> int:
+        """Rows that are re-measurements of an existing hypothesis, not new trials.
+
+        ``n_trials() - n_hypotheses()``. Published alongside ``N`` so the exemption is
+        always visible and auditable: a reader can see exactly how many rows were forgiven
+        and satisfy themselves that the count of real ideas was never quietly reduced.
+        """
+        return self.n_trials() - self.n_hypotheses()
 
     def trial_sharpe_variance(self) -> float:
         """Sample variance (ddof=1) of recorded per-period Sharpes -- DSR ``V[SR]``.

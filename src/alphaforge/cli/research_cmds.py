@@ -280,14 +280,25 @@ def evaluate(
     ledger = ExperimentLog(Path(log) if log is not None else None)
     if log is None:
         ledger = ExperimentLog(settings.paths.var_dir / "experiments.jsonl")
-    n_trials = ledger.n_trials()
+    # DSR deflates against the SELECTION SEARCH: how many distinct hypotheses were tried.
+    # The live system re-evaluates its already-chosen config every day as the rolling window
+    # advances, which lands a new config hash on the ledger each time. Counting those inflates
+    # N by ~365/yr on calendar time alone and decays the deflated Sharpe of a GOOD strategy
+    # toward zero just for staying deployed. Deflate against hypotheses; PRINT BOTH so the
+    # exemption is never invisible (see ExperimentLog.n_hypotheses for why it cannot be abused).
+    n_rows = ledger.n_trials()
+    n_trials = ledger.n_hypotheses()
+    n_reeval = ledger.window_only_reevaluations()
     var_sr = ledger.trial_sharpe_variance()
     n_trials_used = max(2, n_trials)
     report = dsr_from_returns(rets, n_trials_used, var_sr)
     dsr_ok = report.dsr >= 0.95
 
     typer.echo(f"run: {run_dir}")
-    typer.echo(f"ledger: {ledger.path}  (N_trials={n_trials}, used={n_trials_used})")
+    typer.echo(
+        f"ledger: {ledger.path}  (N_hypotheses={n_trials}, used={n_trials_used}; "
+        f"{n_rows} rows total, {n_reeval} window-only re-evaluations excluded)"
+    )
     typer.echo("")
     typer.echo(f"  SR (annualized) : {report.sr_ann: .4f}")
     typer.echo(f"  PSR(0)          : {report.psr: .4f}")

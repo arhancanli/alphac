@@ -407,23 +407,36 @@ class TestCovarianceProperties:
             idio = samp_rng.normal(0.0, 0.01, size=(t_obs, n))
             return factor @ loadings + idio
 
-        def mean_delta(t_obs: int) -> float:
+        def deltas_for(t_obs: int) -> np.ndarray:
             deltas = []
             for k in range(reps):
                 x = fixed_pop_panel(t_obs, samp_seed=pop_seed * 7919 + k)
                 s = (x.T @ x) / float(t_obs)
                 _, d = ledoit_wolf_cc(x, s)
                 deltas.append(d)
-            return float(np.mean(deltas))
+            return np.asarray(deltas, dtype=float)
 
-        short_delta = mean_delta(short_t)
-        long_delta = mean_delta(long_t)
+        short_all, long_all = deltas_for(short_t), deltas_for(long_t)
+        short_delta, long_delta = float(short_all.mean()), float(long_all.mean())
         assert 0.0 <= short_delta <= 1.0
         assert 0.0 <= long_delta <= 1.0
-        # More sampling noise (short window) => at least as much shrinkage as the
-        # long window. Tiny tolerance guards the already-saturated (both ~1.0)
-        # corner so a clipped delta* never makes the property spuriously flaky.
-        assert short_delta >= long_delta - 1e-9
+        # More sampling noise (short window) => at least as much shrinkage as the long
+        # window -- but only IN EXPECTATION, and both sides here are Monte Carlo means over
+        # `reps` draws. Asserting that with a 1e-9 tolerance is the wrong statistical
+        # statement: it demands two noisy estimates be ordered exactly. Hypothesis duly found
+        # a counterexample (n=5, pop_seed=1608: 0.9097 vs 0.9134, a 0.4% inversion) in a
+        # population where the constant-correlation target fits so well that delta* saturates
+        # near 0.91 at BOTH windows, leaving the ordering noise-dominated -- the same
+        # "saturated corner" this guard always meant to cover, just at 0.91 rather than 1.0.
+        # So the tolerance is now the Monte Carlo standard error of the difference, at 4
+        # sigma. The property is still tested wherever it is genuinely detectable; it is no
+        # longer asserted to hold beyond the precision the experiment can actually resolve.
+        se_diff = float(np.sqrt(short_all.var(ddof=1) / reps + long_all.var(ddof=1) / reps))
+        assert short_delta >= long_delta - max(4.0 * se_diff, 1e-9), (
+            f"delta* inverted beyond Monte Carlo error: short(T={short_t}) {short_delta:.6f} "
+            f"vs long(T={long_t}) {long_delta:.6f}, gap {long_delta - short_delta:.6f} "
+            f"> 4 SE ({4 * se_diff:.6f}) — shrinkage is not falling with sample size"
+        )
 
     # --------------------------------------------------------------- annualization
     @given(
