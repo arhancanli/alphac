@@ -7,6 +7,33 @@ self-heals, writes an atomic status.json + human log + history snapshot, and
 alerts via Resend (osascript + log fallback). Stdlib only, so it never depends
 on the uv env to RUN (it shells out to `uv run pytest` for the test checks).
 
+ALERTING IS TRANSITION-AWARE (2026-08-01). The monitor used to email an
+identical red digest on EVERY run with no memory, so a board that had been red
+for weeks looked exactly like a board that broke five minutes ago — which is
+how a 14-day AlphaMax outage went unnoticed despite the check FAILing correctly
+the whole time. Each run now diffs against the previous run's per-check status
+(var/health/alert_state.json) and the subject LEADS with what is NEW. A
+standing red is still reported on every run (never suppressed, never
+downgraded) — just visibly de-emphasized below the new breakage. FAIL->PASS
+transitions are reported too, so self-heals are visible.
+
+THE MEMORY ADVANCES ON DELIVERY, NOT ON ATTEMPT (2026-08-02). alert_state.json
+records what the owner HAS BEEN TOLD, so it may only advance when the mail was
+actually accepted. Advancing it on a failed send (Resend 4xx/5xx, curl timeout,
+no channel configured) would demote a NEW failure nobody ever read into
+tomorrow's quieter "standing red" digest — exactly the silent-outage class this
+feature exists to prevent. So when send_alert() reports undelivered, every check
+whose status CHANGED keeps its previous entry and the next run re-reports it as
+NEW (see next_alert_state(delivered=False)).
+
+Bounded, not infinite: a permanently dead channel would otherwise pin the board
+as NEW forever. The same undelivered news is held for at most
+MAX_UNDELIVERED_HOLDS consecutive runs (3 delivery attempts); on the last one
+the state advances anyway, stamps `undelivered_forced_advance_at`, and writes an
+explicit CHANNEL PRESUMED DEAD record to var/health/alerts_undelivered.log next
+to the alert bodies — the red is escalated, never swallowed. A run with nothing
+withheld (or a successful send) resets the counter.
+
 HARD RULES (enforced in code, not just intent):
   - golden master runs FIRST and in isolation; a red there hard-gates the run
     (no self-heal, no publish, no deploy).
@@ -35,15 +62,56 @@ HEALTH = os.path.join(AF, "var", "health")
 HIST = os.path.join(HEALTH, "history")
 STATE_JSON = os.path.join(AF, "data", "paper", "state.json")
 CRYPTO_DB = os.path.join(AF, "var", "trading_crypto_perp.sqlite")  # the ONLY live crypto DB
+MF_DB = os.path.join(AF, "var", "trading_managed_futures.sqlite")  # AlphaTrend realized curve
+EQUITY_DB = os.path.join(AF, "var", "trading_equity.sqlite")       # AlphaMax realized curve
 KILL = os.path.join(AF, "var", "KILL")
 RESEND_ENV = os.path.join(HOME, ".config", "alphaforge", "resend.env")
+
+# --- alert memory ------------------------------------------------------------
+# Previous run's per-check status. Small, atomic, and the ONLY thing that lets
+# the alert say "this is new" instead of shouting the same red every day.
+ALERT_STATE = os.path.join(HEALTH, "alert_state.json")
+ALERT_STATE_SCHEMA = 1
+# A check id that stops appearing (e.g. --lite skips the pytest checks, and the
+# per-route site rows are only emitted when they fail) is NOT evidence of
+# recovery, so it is carried forward unchanged rather than claimed as fixed.
+# After this many consecutive unobserved runs the stale entry is dropped.
+MAX_MISSED_RUNS = 3
+# --selftest-fail injects a fake red to prove the alert path; it must never be
+# remembered, or the next real run would report a phantom "red not re-checked".
+SYNTHETIC_IDS = ("SELFTEST",)
+# Undeliverable reds land here (plus the osascript banner) so a red is never
+# silently lost when Resend is down or unconfigured.
+UNDELIVERED_LOG = os.path.join(HEALTH, "alerts_undelivered.log")
+# How many consecutive runs may withhold the SAME undelivered news before the
+# state advances anyway. Bounds the re-alert loop for a permanently dead
+# channel: the news gets MAX_UNDELIVERED_HOLDS delivery attempts, then the run
+# force-advances and records CHANNEL PRESUMED DEAD in UNDELIVERED_LOG.
+MAX_UNDELIVERED_HOLDS = 3
+
+# Resend sender. OWNER ACTION: `onboarding@resend.dev` is Resend's shared
+# sandbox sender — Gmail routinely spam-files or drops it, which is a second
+# way an alert can "fire" and still never reach a human. Point RESEND_FROM in
+# ~/.config/alphaforge/resend.env at an address on a domain YOU have verified
+# in the Resend dashboard (e.g. alerts@<a-domain-you-verified>) and alerts will
+# authenticate (SPF/DKIM) and land in the inbox. Until that is done, alerts may
+# land in spam. No domain is hardcoded here on purpose: sending "from" a domain
+# that is not verified in Resend fails outright, so the default stays the
+# sandbox sender and the A-sender check WARNs until the owner changes it.
+DEFAULT_RESEND_FROM = "onboarding@resend.dev"
+SANDBOX_SENDER_DOMAINS = ("resend.dev",)
 
 LANDING = "https://canlicapital.com"
 APP = "https://app.canlicapital.com"
 
 # honesty keystones — these MUST hold; the monitor never edits them, only verifies
 EXPECT_INSAMPLE = 1.46
-EXPECT_FORWARD = "0.7 to 1.0"
+# The honest DEFLATED forward band. Updated 2026-07-29 from the superseded "0.7 to 1.0" to the
+# corrected "0.3 to 0.9" band that was deployed weeks earlier as a deliberate honesty fix — the
+# keystone had gone stale and was FALSE-ALARMING on the CORRECT public value, which is how a
+# perpetually-red monitor buried the genuine 13-day AlphaMax outage (alert fatigue). Matched by
+# PREFIX so the honest qualifier text after the band ("...real chance of ~0 yr1") does not break it.
+EXPECT_FORWARD = "0.3 to 0.9"
 EXPECT_GRADE = "C+"
 
 UV_ENV = dict(os.environ, PATH=f"{HOME}/.local/bin:" + os.environ.get("PATH", ""))
@@ -186,10 +254,13 @@ def _freshness(url, idc, title, warn_h, fail_h):
 
 
 def check_data():
+    # Hourly web-deploy promise (2026-07-05, live_deploy_hourly.sh): the tick regenerates +
+    # redeploys the served state every hour, so it should never be more than ~1-2h old. The 6h
+    # warn absorbs laptop sleep / transient Vercel failures; >12h means the deploy is broken.
     _, ga_land = _freshness(f"{LANDING}/paper-state.json", "C1-landing-fresh",
-                            "landing paper-state fresh", 30, 50)
+                            "landing paper-state fresh", 6, 12)
     _, ga_app = _freshness(f"{APP}/paper-state.json", "C1-app-fresh",
-                           "app paper-state fresh", 30, 50)
+                           "app paper-state fresh", 6, 12)
     if ga_land and ga_app:
         add("C1-hosts-match", "data", "both hosts same generated_at",
             "PASS" if ga_land == ga_app else "FAIL", "high",
@@ -255,6 +326,32 @@ def check_loops():
     stt = out.strip().splitlines()[-1] if out.strip() else "?"
     add("C6b-cryptodb-status", "loops", "latest crypto cycle status ok",
         "PASS" if stt == "ok" else "WARN", "high", observed=stt, expected="ok")
+    # AlphaTrend (managed-futures) tick — previously a blind spot (no marker check at all)
+    a, ts = _log_marker_age(f"{AF}/var/log/mf_tick.log", "mf_tick done")
+    st = "PASS" if a is not None and a <= 26 else ("WARN" if a is not None and a <= 50 else "FAIL")
+    add("C5d-alphatrend", "loops", "alphatrend (mf) daily fired", st, "high",
+        observed=f"{a:.1f}h" if a else "no marker", expected="<=26h", evidence=ts)
+    # Per-sleeve realized-DB accrual: the equity/MF curves can silently go to ZERO rows (e.g. after
+    # a reset) and nothing detected it. WARN on empty (fresh restart -> next tick accrues); FAIL on a
+    # DB with rows that has gone stale (a dead tick) — the source the public record is built on.
+    sleeve_dbs = (("C6c-mfdb", "AlphaTrend", MF_DB), ("C6d-equitydb", "AlphaMax", EQUITY_DB))
+    for idc, name, db in sleeve_dbs:
+        _, out = sh(f"sqlite3 'file:{db}?mode=ro' 'SELECT count(*),max(ts) FROM equity_curve;'")
+        row = out.strip().splitlines()[-1] if out.strip() else ""
+        try:
+            cnt_s, max_s = row.split("|")
+            cnt = int(cnt_s)
+            if cnt == 0:
+                add(idc, "loops", f"{name} DB accruing", "WARN", "warn",
+                    observed="0 rows", expected=">=1 (next daily tick should accrue)")
+            else:
+                ah = (NOW.timestamp() * 1000 - int(max_s)) / 3600000.0
+                st = "PASS" if ah <= 30 else ("WARN" if ah <= 54 else "FAIL")
+                add(idc, "loops", f"{name} DB accruing marks", st, "high",
+                    observed=f"{cnt} rows, latest {ah:.1f}h", expected="<=30h")
+        except Exception:  # noqa: BLE001
+            add(idc, "loops", f"{name} DB accruing", "FAIL", "high",
+                observed="unreadable", expected="recent row", evidence=(out or "")[:120])
 
 
 def check_honesty():
@@ -273,12 +370,14 @@ def check_honesty():
     add("C4a-insample", "honesty", "in_sample_sharpe keystone",
         "PASS" if li == EXPECT_INSAMPLE and not drift else "FAIL", "critical",
         observed=f"local={li} drift_hosts={drift}", expected=EXPECT_INSAMPLE)
-    # forward must be deflated band on both hosts
-    bad = [h for h, d in served.items() if d and d.get("metrics", {}).get("honest_forward_sharpe") != EXPECT_FORWARD]
+    # forward must be the deflated band on both hosts (prefix match tolerates the honest qualifier)
+    def _fwd_ok(v):
+        return isinstance(v, str) and v.startswith(EXPECT_FORWARD)
+    bad = [h for h, d in served.items() if d and not _fwd_ok(d.get("metrics", {}).get("honest_forward_sharpe"))]
     add("C4b-forward", "honesty", "forward Sharpe deflated band",
-        "PASS" if m.get("honest_forward_sharpe") == EXPECT_FORWARD and not bad else "FAIL",
+        "PASS" if _fwd_ok(m.get("honest_forward_sharpe")) and not bad else "FAIL",
         "critical", observed=f"local={m.get('honest_forward_sharpe')} bad={bad}",
-        expected=EXPECT_FORWARD)
+        expected=f"starts with '{EXPECT_FORWARD}'")
     # grade
     gp = "deflation" in (m.get("gauntlet_pass") or "")
     add("C4d-grade", "honesty", "gauntlet grade unchanged",
@@ -300,7 +399,7 @@ def check_honesty():
         ac = len(algos["alphac"]["live_curve"])
         add("C9b-alphac-seed", "loops", "ALPHAC live_curve not DAY-0 seed",
             "PASS" if ac > 1 else "FAIL", "high", observed=f"{ac} points", expected=">1")
-        for k in ("alphaforge", "alphamax"):
+        for k in ("alphaforge", "alphamax", "managed_futures"):
             n = len(algos[k]["live_curve"])
             if n <= 1:
                 add(f"C9c-{k}-seed", "loops", f"{k} live_curve not seed", "WARN",
@@ -322,14 +421,41 @@ def check_publisher():
     st = "PASS" if a is not None and a <= 26 else ("WARN" if a is not None and a <= 50 else "FAIL")
     add("P2-publish-window", "publisher", "publish ran in daily window", st, "high",
         observed=f"{a:.1f}h" if a else "no marker", expected="<=26h", evidence=ts)
-    rc, out = sh("launchctl list | grep -oE 'com.accapital.(livetick|alphamax|publish|health|aimonitor)'")
+    _jobs = "livetick|alphamax|alphatrend|publish|health|aimonitor"
+    rc, out = sh(f"launchctl list | grep -oE 'com.accapital.({_jobs})'")
     loaded = set(out.split())
-    need = {"com.accapital.livetick", "com.accapital.alphamax", "com.accapital.publish"}
+    need = {"com.accapital.livetick", "com.accapital.alphamax", "com.accapital.alphatrend", "com.accapital.publish"}
     missing = need - loaded
     add("P3-launchd", "publisher", "scheduled jobs loaded",
         "PASS" if not missing else "FAIL", "high",
         observed=f"missing={sorted(missing)}" if missing else "all core loaded",
         expected="livetick+alphamax+publish loaded")
+
+
+def read_env_file(path: str) -> dict:
+    """Parse a KEY=VALUE env file (blank lines and #comments ignored)."""
+    env: dict = {}
+    try:
+        with open(path) as f:
+            for ln in f:
+                ln = ln.strip()
+                if not ln or ln.startswith("#") or "=" not in ln:
+                    continue
+                k, v = ln.split("=", 1)
+                env[k.strip()] = v.strip().strip('"').strip("'")
+    except Exception:  # noqa: BLE001
+        return {}
+    return env
+
+
+def sender_address(env: dict) -> str:
+    """From-address for alerts, configurable via RESEND_FROM in resend.env."""
+    return (env.get("RESEND_FROM") or "").strip() or DEFAULT_RESEND_FROM
+
+
+def is_sandbox_sender(addr: str) -> bool:
+    dom = addr.rsplit("@", 1)[-1].lower()
+    return any(dom == d or dom.endswith("." + d) for d in SANDBOX_SENDER_DOMAINS)
 
 
 def check_alert_channel():
@@ -338,6 +464,16 @@ def check_alert_channel():
         "PASS" if has_resend else "WARN", "high",
         observed="resend key present" if has_resend else "no resend -> osascript+log",
         expected="resend or telegram")
+    # A key that sends is not the same as mail that ARRIVES: the shared Resend
+    # sandbox sender is unauthenticated for our domain and gets spam-filed.
+    frm = sender_address(read_env_file(RESEND_ENV))
+    sandbox = is_sandbox_sender(frm)
+    add("A-sender", "self", "alert from-address is a verified domain",
+        "WARN" if sandbox else "PASS", "high", observed=frm,
+        expected="RESEND_FROM on a domain verified in Resend",
+        evidence=("shared sandbox sender — Gmail may spam-file these; set "
+                  "RESEND_FROM in ~/.config/alphaforge/resend.env to an address "
+                  "on a domain you have verified in Resend") if sandbox else "")
     return has_resend
 
 
@@ -407,7 +543,7 @@ def self_heal():
     # 3) a core launchd job not loaded -> bootstrap/kickstart once
     p3 = by_id("P3-launchd")
     if p3 and p3["status"] == "FAIL":
-        for job in ("livetick", "alphamax", "publish"):
+        for job in ("livetick", "alphamax", "alphatrend", "publish"):
             if job in p3["observed"]:
                 sh(f"launchctl bootstrap gui/$(id -u) {HOME}/Library/LaunchAgents/com.accapital.{job}.plist 2>/dev/null; "
                    f"launchctl kickstart -k gui/$(id -u)/com.accapital.{job} 2>/dev/null")
@@ -430,7 +566,7 @@ def self_heal():
 
 # === STATUS ARTIFACT + ALERT ================================================
 
-def write_status() -> dict:
+def write_status(transitions: dict | None = None) -> dict:
     os.makedirs(HIST, exist_ok=True)
     rc, sha = sh(f"cd {AF} && git rev-parse --short HEAD 2>/dev/null")
     counts = dict(
@@ -441,6 +577,11 @@ def write_status() -> dict:
                   git_sha=sha.strip(), overall=overall_status(), counts=counts,
                   checks=RESULTS, remediation=REMEDIATION,
                   next_run="daily 13:11Z (com.accapital.health)")
+    if transitions is not None:
+        status["transitions"] = {k: [e["id"] for e in transitions.get(k, [])]
+                                 for k in ("new_fails", "standing_fails", "recovered",
+                                           "new_warns", "unobserved_fails")}
+        status["transitions"]["prev_run_at"] = transitions.get("prev_run_at")
     os.makedirs(HEALTH, exist_ok=True)
     tmp = os.path.join(HEALTH, "status.json.tmp")
     with open(tmp, "w") as f:
@@ -464,58 +605,307 @@ def write_status() -> dict:
     return status
 
 
-def alert(status: dict, enabled: bool):
+# --- transition engine (PASS->FAIL is the signal; FAIL->FAIL is background) ---
+SEV_RANK = {"critical": 0, "high": 1, "warn": 2, "info": 3}
+
+
+def _sev(e: dict) -> int:
+    return SEV_RANK.get(str(e.get("severity", "")).lower(), 9)
+
+
+def load_alert_state(path: str = ALERT_STATE) -> dict:
+    """Previous run's per-check status. A missing/corrupt file is treated as
+    'no memory' — every current red then reads as NEW, which is the safe
+    direction (louder), never quieter."""
+    try:
+        with open(path) as f:
+            d = json.load(f)
+        if isinstance(d, dict) and isinstance(d.get("checks"), dict):
+            return d
+    except Exception:  # noqa: BLE001
+        pass
+    return dict(schema=ALERT_STATE_SCHEMA, updated_at=None, run_count=0, checks={})
+
+
+def classify_transitions(prev_state: dict | None, results: list) -> dict:
+    """Diff this run's board against the previous run.
+
+    new_fails       PASS/WARN/unknown -> FAIL   (leads the subject)
+    standing_fails  FAIL -> FAIL               (reported, de-emphasized)
+    recovered       FAIL -> PASS/WARN          (the self-heal signal)
+    new_warns       -> WARN from anything else
+    unobserved_fails  was FAIL, not checked this run (e.g. --lite): NOT a recovery
+    """
+    prev_checks = dict((prev_state or {}).get("checks") or {})
+    new_fails: list = []
+    standing_fails: list = []
+    recovered: list = []
+    new_warns: list = []
+    for r in results:
+        p = prev_checks.get(r["id"]) or {}
+        pstat = p.get("status")
+        e = dict(r, prev_status=pstat, since=p.get("since"),
+                 runs=int(p.get("runs") or 0), prev_observed=p.get("observed"))
+        if r["status"] == "FAIL":
+            (standing_fails if pstat == "FAIL" else new_fails).append(e)
+        elif pstat == "FAIL":
+            recovered.append(e)
+        elif r["status"] == "WARN" and pstat != "WARN":
+            new_warns.append(e)
+    seen = set(r["id"] for r in results)
+    unobserved_fails = [dict(id=cid, title=p.get("title", ""),
+                             severity=p.get("severity", "high"),
+                             status="FAIL", observed=p.get("observed", ""),
+                             expected="", prev_status="FAIL", since=p.get("since"),
+                             runs=int(p.get("runs") or 0))
+                        for cid, p in prev_checks.items()
+                        if cid not in seen and p.get("status") == "FAIL"]
+    for lst in (new_fails, standing_fails, recovered, new_warns, unobserved_fails):
+        lst.sort(key=lambda e: (_sev(e), e["id"]))
+    return dict(new_fails=new_fails, standing_fails=standing_fails,
+                recovered=recovered, new_warns=new_warns,
+                unobserved_fails=unobserved_fails,
+                prev_run_at=(prev_state or {}).get("updated_at"))
+
+
+def undelivered_ids(prev_state: dict | None, results: list) -> list:
+    """Checks whose CURRENT status differs from what the persisted memory says
+    the owner was last told. These are exactly the rows an alert had news about,
+    so if that alert never arrived they must not be recorded as 'told'."""
+    prev_checks = dict((prev_state or {}).get("checks") or {})
+    return [r["id"] for r in results
+            if r["id"] not in SYNTHETIC_IDS
+            and (prev_checks.get(r["id"]) or {}).get("status") != r["status"]]
+
+
+def next_alert_state(prev_state: dict | None, results: list, now: dt.datetime,
+                     delivered: bool = True) -> dict:
+    """State to persist for the NEXT run's diff.
+
+    delivered=False means the alert never reached the owner (Resend rejected it,
+    curl timed out, no channel configured). The memory is a record of what the
+    owner HAS BEEN TOLD, so an undelivered run records no status TRANSITION:
+    every changed check keeps its previous entry, and the next run classifies it
+    as NEW (or RECOVERED) again and re-alerts. Unchanged checks still advance
+    their bookkeeping (last_seen/runs), so the stale-entry pruning keeps working.
+
+    Bounded: holding the same news forever would make a permanently dead channel
+    shout NEW on every run. After MAX_UNDELIVERED_HOLDS consecutive undelivered
+    runs that had something to hold, the state advances anyway and stamps
+    `undelivered_forced_advance_at` (main() then writes CHANNEL PRESUMED DEAD to
+    UNDELIVERED_LOG). A delivered run — or an undelivered run with nothing
+    withheld — resets the counter.
+    """
+    prev_checks = dict((prev_state or {}).get("checks") or {})
+    now_iso = iso(now)
+    checks: dict = {}
+    for r in results:
+        if r["id"] in SYNTHETIC_IDS:
+            continue
+        p = prev_checks.get(r["id"]) or {}
+        same = p.get("status") == r["status"]
+        checks[r["id"]] = dict(
+            status=r["status"], title=r["title"], severity=r["severity"],
+            observed=str(r["observed"])[:160],
+            since=(p.get("since") or now_iso) if same else now_iso,
+            runs=(int(p.get("runs") or 0) + 1) if same else 1,
+            last_seen=now_iso, missed=0)
+    for cid, p in prev_checks.items():
+        if cid in checks:
+            continue
+        missed = int(p.get("missed") or 0) + 1
+        if missed >= MAX_MISSED_RUNS:
+            # Stale entry: stop carrying a check we no longer emit. If it is in
+            # fact still broken, the next run that DOES emit it reports it as
+            # NEW — louder than the truth, never quieter.
+            continue
+        carried = dict(p)
+        carried["missed"] = missed
+        checks[cid] = carried
+    # --- delivery gate -------------------------------------------------------
+    holds = int((prev_state or {}).get("undelivered_runs") or 0)
+    forced_at = (prev_state or {}).get("undelivered_forced_advance_at")
+    if delivered:
+        holds = 0
+    else:
+        pending = undelivered_ids(prev_state, results)
+        if not pending:
+            holds = 0                       # nothing withheld -> streak broken
+        elif holds + 1 >= MAX_UNDELIVERED_HOLDS:
+            holds = 0                       # bounded: stop holding, advance
+            forced_at = now_iso
+        else:
+            holds += 1
+            for cid in pending:
+                p = prev_checks.get(cid)
+                if p is None:
+                    # never recorded => leave it unrecorded, so the next run
+                    # still sees a first-seen red and reports it as NEW
+                    checks.pop(cid, None)
+                else:
+                    carried = dict(p)       # pin at the last TOLD status
+                    carried["last_seen"] = now_iso
+                    carried["missed"] = 0
+                    checks[cid] = carried
+    state = dict(schema=ALERT_STATE_SCHEMA, updated_at=now_iso,
+                 prev_run_at=(prev_state or {}).get("updated_at"),
+                 run_count=int((prev_state or {}).get("run_count") or 0) + 1,
+                 undelivered_runs=holds, checks=checks)
+    if forced_at:
+        state["undelivered_forced_advance_at"] = forced_at
+    return state
+
+
+def save_alert_state(state: dict, path: str = ALERT_STATE) -> None:
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    tmp = path + ".tmp"
+    with open(tmp, "w") as f:
+        json.dump(state, f, indent=2, sort_keys=True)
+    os.replace(tmp, path)
+
+
+def _age_note(e: dict) -> str:
+    if not e.get("since"):
+        return ""
+    runs = e.get("runs") or 0
+    return f" [red since {e['since']}, {runs} run{'s' if runs != 1 else ''}]"
+
+
+def _fail_line(e: dict, note: str = "") -> str:
+    want = f" (want {e['expected']})" if e.get("expected") else ""
+    return f"  FAIL [{e.get('severity', '?')}] {e['id']} {e.get('title', '')}: {e.get('observed', '')}{want}{note}"
+
+
+def build_alert(status: dict, tr: dict) -> tuple:
+    """(subject, body). NEW breakage always leads; standing red always still
+    reported, just below it. Never returns an empty/suppressed alert on a red."""
     overall = status["overall"]
-    reds = [r for r in RESULTS if r["status"] == "FAIL"]
-    warns = [r for r in RESULTS if r["status"] == "WARN"]
     c = status["counts"]
-    subj = (f"AlphaForge OK — {c['pass_']} green {NOW.date()}" if overall == "PASS"
-            else f"AlphaForge {overall} {len(reds)}x — " + ",".join(r["id"] for r in reds[:5]))
-    lines = [f"OVERALL={overall}  pass={c['pass_']} warn={c['warn']} fail={c['fail']}", ""]
-    for r in reds:
-        lines.append(f"FAIL [{r['severity']}] {r['id']} {r['title']}: {r['observed']} (want {r['expected']})")
-    for r in warns:
-        lines.append(f"WARN {r['id']} {r['title']}: {r['observed']}")
-    if status["remediation"]:
-        lines += ["", "self-heal:"] + [f"  {m['check_id']}: {m['action']} -> {m['post_state']}"
-                                        for m in status["remediation"]]
-    body = "\n".join(lines)
+    nf, sf = tr["new_fails"], tr["standing_fails"]
+    rec, nw, uf = tr["recovered"], tr["new_warns"], tr["unobserved_fails"]
+    prev_run = tr.get("prev_run_at")
+
+    # --- subject -------------------------------------------------------------
+    if nf:
+        head = f"{nf[0]['id']} ({nf[0].get('title', '')})"
+        subj = (f"AlphaForge NEW FAIL: {head}" if len(nf) == 1
+                else f"AlphaForge {len(nf)} NEW FAILS: {head} +"
+                     + ",".join(e["id"] for e in nf[1:4]))
+        tail = []
+        if sf:
+            tail.append(f"{len(sf)} standing")
+        if rec:
+            tail.append(f"{len(rec)} recovered")
+        if tail:
+            subj += " | " + ", ".join(tail)
+    elif rec:
+        head = f"{rec[0]['id']} ({rec[0].get('title', '')})"
+        subj = (f"AlphaForge RECOVERED: {head}" if len(rec) == 1
+                else f"AlphaForge {len(rec)} RECOVERED: {head} +"
+                     + ",".join(e["id"] for e in rec[1:4]))
+        subj += (f" | {len(sf)} standing red, no new breakage" if sf
+                 else (" — all green" if overall == "PASS" else f" | {c['warn']} warn"))
+    elif sf:
+        # quieter digest: still red, still emailed, but visibly "nothing changed"
+        subj = (f"AlphaForge standing red x{len(sf)} (no change since {prev_run or 'first run'}) — "
+                + ",".join(e["id"] for e in sf[:5]))
+    elif nw:
+        subj = f"AlphaForge new WARN: {nw[0]['id']} ({nw[0].get('title', '')})"
+    elif overall == "WARN":
+        subj = f"AlphaForge WARN x{c['warn']} (no change) {NOW.date()}"
+    else:
+        subj = f"AlphaForge OK — {c['pass_']} green {NOW.date()}"
+    if uf:
+        subj += f" | {len(uf)} red not re-checked"
+
+    # --- body ----------------------------------------------------------------
+    lines = [f"OVERALL={overall}  pass={c['pass_']} warn={c['warn']} fail={c['fail']}",
+             f"since last run ({prev_run or 'none — no prior state'}): "
+             f"{len(nf)} new fail, {len(sf)} standing, {len(rec)} recovered", ""]
+    if nf:
+        lines.append("NEW FAILURES (was not failing at the last run) <<< ACT ON THESE")
+        for e in nf:
+            was = e.get("prev_status") or "not previously recorded"
+            lines.append(_fail_line(e, f" [was {was}]"))
+        lines.append("")
+    if rec:
+        lines.append("RECOVERED since last run:")
+        for e in rec:
+            lines.append(f"  OK   {e['id']} {e.get('title', '')}: now {e['status']} "
+                         f"({e.get('observed', '')}) — had been red since "
+                         f"{e.get('since') or '?'} ({e.get('runs') or 0} runs)")
+        lines.append("")
+    if sf:
+        lines.append(f"STANDING red ({len(sf)}) — already failing at the last run, unchanged:")
+        for e in sf:
+            lines.append(_fail_line(e, _age_note(e)))
+        lines.append("")
+    if uf:
+        lines.append("RED BUT NOT RE-CHECKED THIS RUN (no recovery claimed):")
+        for e in uf:
+            lines.append(f"  ????  {e['id']} {e.get('title', '')}{_age_note(e)}")
+        lines.append("")
+    warns = [r for r in (status.get("checks") or []) if r["status"] == "WARN"]
+    if warns:
+        new_warn_ids = set(e["id"] for e in nw)
+        lines.append("warnings:")
+        for r in warns:
+            flag = "NEW " if r["id"] in new_warn_ids else ""
+            lines.append(f"  {flag}WARN {r['id']} {r['title']}: {r['observed']}")
+        lines.append("")
+    if status.get("remediation"):
+        lines += ["self-heal:"] + [f"  {m['check_id']}: {m['action']} -> {m['post_state']}"
+                                   for m in status["remediation"]] + [""]
+    lines.append("state: var/health/alert_state.json (per-check memory used for the diff above)")
+    return subj, "\n".join(lines)
+
+
+def log_undelivered(subj: str, body: str) -> None:
+    """Durable local record of something the owner was NOT told (best effort).
+
+    Read from the module globals at call time on purpose so a test can redirect
+    HEALTH/UNDELIVERED_LOG to a tmp dir.
+    """
+    try:
+        os.makedirs(HEALTH, exist_ok=True)
+        with open(UNDELIVERED_LOG, "a") as f:
+            f.write(f"=== {iso(NOW)} UNDELIVERED {subj}\n{body}\n\n")
+    except Exception:  # noqa: BLE001
+        pass
+
+
+def send_alert(subj: str, body: str, status: dict, enabled: bool) -> bool:
+    """Deliver; on failure escalate loudly. Returns True iff Resend accepted."""
+    overall = status["overall"]
+    reds = [r for r in (status.get("checks") or []) if r["status"] == "FAIL"]
     if not enabled:
         print(subj + "\n" + body)
-        return
+        return False
     sent = False
-    if os.path.exists(RESEND_ENV):
-        env = {}
-        for ln in open(RESEND_ENV):
-            if "=" in ln and not ln.strip().startswith("#"):
-                k, v = ln.strip().split("=", 1)
-                env[k] = v
-        key = env.get("RESEND_API_KEY", "")
+    env = read_env_file(RESEND_ENV)
+    key = env.get("RESEND_API_KEY", "")
+    if key:
         to = env.get("RESEND_TO", "arhancanli8@gmail.com")
-        frm = env.get("RESEND_FROM", "onboarding@resend.dev")
-        if key:
-            payload = json.dumps(dict(**{"from": f"AlphaForge Health <{frm}>"},
-                                      to=[to], subject=subj,
-                                      text=body))
-            rc, out = sh(f"/usr/bin/curl -s -o /dev/null -w '%{{http_code}}' "
-                         f"https://api.resend.com/emails -H 'Authorization: Bearer {key}' "
-                         f"-H 'Content-Type: application/json' -d @-",
-                         timeout=30, env=dict(os.environ)) if False else (0, "")
-            # send via stdin to avoid arg-escaping the JSON
-            try:
-                p = subprocess.run(["/usr/bin/curl", "-s", "-o", "/dev/null", "-w", "%{http_code}",
-                                    "https://api.resend.com/emails",
-                                    "-H", f"Authorization: Bearer {key}",
-                                    "-H", "Content-Type: application/json",
-                                    "-d", payload], capture_output=True, text=True, timeout=30)
-                sent = p.stdout.strip().startswith("2")
-            except Exception:  # noqa: BLE001
-                sent = False
+        frm = sender_address(env)
+        payload = json.dumps({"from": f"AlphaForge Health <{frm}>", "to": [to],
+                              "subject": subj, "text": body})
+        try:
+            # -d with the JSON as an argv element: no shell, so no arg-escaping risk
+            p = subprocess.run(["/usr/bin/curl", "-s", "-o", "/dev/null", "-w", "%{http_code}",
+                                "https://api.resend.com/emails",
+                                "-H", f"Authorization: Bearer {key}",
+                                "-H", "Content-Type: application/json",
+                                "-d", payload], capture_output=True, text=True, timeout=30)
+            sent = p.stdout.strip().startswith("2")
+        except Exception:  # noqa: BLE001
+            sent = False
     if not sent and overall != "PASS":
-        # never silent on a red: loud macOS fallback
+        # never silent on a red: loud macOS banner + a durable local record
         sh(f"osascript -e 'display notification \"AlphaForge {overall} {len(reds)} red\" "
            f"with title \"health\"' 2>/dev/null")
+        log_undelivered(subj, body)
     print(f"[alert] sent={sent} subject={subj!r}")
+    return sent
 
 
 def main():
@@ -551,9 +941,38 @@ def main():
             REMEDIATION.append(dict(check_id="C7a-golden", action="ALL self-heal disabled: golden RED",
                                     auto_healed=False, exit=None, post_state="hard-gate"))
 
-    status = write_status()
-    alert(status, enabled=not (a.dry_run or a.no_alert))
-    print(f"OVERALL={status['overall']} {status['counts']}")
+    prev_state = load_alert_state()
+    transitions = classify_transitions(prev_state, RESULTS)
+    status = write_status(transitions)
+    subj, body = build_alert(status, transitions)
+    alerting = not (a.dry_run or a.no_alert)
+    delivered = send_alert(subj, body, status, enabled=alerting)
+    # Only advance the memory when the owner was actually told. A --dry-run /
+    # --no-alert run must not turn an unreported red into tomorrow's "standing"
+    # — and neither may a run whose mail was rejected/timed out: send_alert()'s
+    # return value gates the advance, so undelivered news stays NEW next run.
+    held: list = []
+    if alerting:
+        state = next_alert_state(prev_state, RESULTS, NOW, delivered=delivered)
+        if not delivered:
+            if state.get("undelivered_forced_advance_at") == iso(NOW):
+                log_undelivered(
+                    f"CHANNEL PRESUMED DEAD after {MAX_UNDELIVERED_HOLDS} undelivered runs "
+                    f"— alert state force-advanced",
+                    "The same undelivered news was re-alerted on "
+                    f"{MAX_UNDELIVERED_HOLDS} consecutive runs and never reached the "
+                    "owner. To bound the re-alert loop, alert_state.json now advances; "
+                    "these checks will read as STANDING from the next run on. FIX THE "
+                    "CHANNEL (~/.config/alphaforge/resend.env) — the full alert bodies "
+                    f"are logged above.\nundelivered ids: "
+                    f"{','.join(undelivered_ids(prev_state, RESULTS)) or 'none'}")
+            else:
+                held = undelivered_ids(prev_state, RESULTS)
+        save_alert_state(state)
+    print(f"OVERALL={status['overall']} {status['counts']} "
+          f"new={len(transitions['new_fails'])} standing={len(transitions['standing_fails'])} "
+          f"recovered={len(transitions['recovered'])}"
+          + (f" delivered={delivered} held_as_new={len(held)}" if alerting and not delivered else ""))
     sys.exit(0 if status["overall"] != "FAIL" else 2)
 
 
