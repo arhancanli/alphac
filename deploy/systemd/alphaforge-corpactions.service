@@ -1,0 +1,22 @@
+[Unit]
+Description=AlphaForge corporate actions (weekly)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=%h/alphaforge
+# %h = the af user home. The tick scripts are self-contained (they set PATH, take a lock,
+# caffeinate is macOS-only and simply absent here — harmless). Failure is logged to journald,
+# never fatal to the timer, matching the laptop's non-fatal tick posture.
+ExecStart=/usr/bin/env bash -lc 'scripts/corp_actions_weekly.sh'
+# 7 h: a full per-instrument splits/dividends pass measured ~1.9 h (2026-08-02, paid tier), and the
+# script's own watchdog kills the pass at 6 h. This must stay ABOVE that watchdog so systemd never
+# pre-empts the script's own bounded shutdown. The trading ticks keep their 1800 s — none of them
+# is sequenced behind this unit, which is the entire point of splitting corp actions out.
+TimeoutStartSec=25200
+# Nice=10 (the trading ticks run at 5): this is a bulk vendor crawl and must always yield to a tick.
+Nice=10
+
+[Install]
+WantedBy=default.target

@@ -1,0 +1,17 @@
+[Unit]
+Description=AlphaForge crypto live tick (hourly)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=%h/alphaforge
+# %h = the af user home. The tick scripts are self-contained (they set PATH, take a lock,
+# caffeinate is macOS-only and simply absent here — harmless). Failure is logged to journald,
+# never fatal to the timer, matching the laptop's non-fatal tick posture.
+ExecStart=/usr/bin/env bash -lc 'scripts/live_tick.sh'
+TimeoutStartSec=1800
+Nice=5
+
+[Install]
+WantedBy=default.target

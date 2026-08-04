@@ -1,0 +1,11 @@
+[Unit]
+Description=AlphaForge deribit capture (daily) (schedule)
+
+[Timer]
+OnCalendar=*-*-* 13:00:00
+Persistent=true
+# Persistent=true => if the box was down at the scheduled time, the job runs at next boot
+# (the laptop's launchd silently skipped missed cycles — this is strictly better).
+
+[Install]
+WantedBy=timers.target

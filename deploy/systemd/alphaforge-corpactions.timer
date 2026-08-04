@@ -1,0 +1,16 @@
+[Unit]
+Description=AlphaForge corporate actions (weekly) (schedule)
+
+[Timer]
+OnCalendar=Sun *-*-* 04:00:00
+Persistent=true
+# Persistent=true => if the box was down at the scheduled time, the job runs at next boot
+# (the laptop's launchd silently skipped missed cycles — this is strictly better). It matters more
+# here than anywhere else: a skipped week is a week of un-ingested splits, i.e. the phantom-mark
+# exposure this job exists to close.
+# Sunday 04:00 UTC is chosen to clear every other unit's window — publish 02:10, health 03:10,
+# alphamax 09:00, alphatrend 09:30, deribit 13:00 — so even a full ~2 h pass finishes long before
+# the daily equity tick starts and the two never contend for the ingest lock.
+
+[Install]
+WantedBy=timers.target
