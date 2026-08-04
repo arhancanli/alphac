@@ -39,10 +39,13 @@ from __future__ import annotations
 
 import logging
 import os
+import re
 import sys
 import time
+from collections.abc import MutableMapping
 from logging.handlers import TimedRotatingFileHandler
 from pathlib import Path
+from typing import Any, Final
 
 import structlog
 from structlog.typing import Processor
@@ -67,6 +70,35 @@ MAX_BYTES_DEFAULT = 64 * 1024 * 1024
 # Shared by the structlog-native pipeline and the foreign_pre_chain so stdlib
 # records get the same ts/level/logger keys. format_exc_info renders
 # exceptions to a string "exception" key (identical in console and JSONL).
+#: Query-string parameters whose VALUES are secrets and must never reach a log file or the
+#: console. httpx logs every request at INFO including its full URL, so an ingest that pages a
+#: keyed REST endpoint writes the credential once per call — a full corporate-actions pass over
+#: ~18k instruments wrote the live Polygon key to disk ~1.5M times before this was added
+#: (2026-08-02; logs are gitignored so it never left the machine, but the key was rotated).
+#: Redaction happens in the SHARED chain so it covers BOTH native structlog events and foreign
+#: stdlib records (httpx/boto/urllib3) via ``foreign_pre_chain`` — i.e. the secret is scrubbed
+#: before any handler formats it, rather than relying on each call site to be careful.
+_SECRET_QUERY_PARAMS: Final[tuple[str, ...]] = (
+    "apiKey", "api_key", "apikey", "token", "access_token", "key", "signature", "secret",
+)
+_SECRET_RE: Final[re.Pattern[str]] = re.compile(
+    r"(?i)\b(" + "|".join(_SECRET_QUERY_PARAMS) + r")=[^&\s\"']{6,}"
+)
+
+
+def _redact_secrets(_logger: object, _name: str, event_dict: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
+    """Scrub secret-bearing query params from every string value in the event.
+
+    Fail-open by design: logging must never raise. A value that is not a string is left alone.
+    """
+    for k, v in event_dict.items():
+        if isinstance(v, str) and "=" in v:
+            redacted = _SECRET_RE.sub(r"\1=<REDACTED>", v)
+            if redacted != v:
+                event_dict[k] = redacted
+    return event_dict
+
+
 _SHARED_PROCESSORS: tuple[Processor, ...] = (
     structlog.contextvars.merge_contextvars,
     structlog.stdlib.add_logger_name,
@@ -75,6 +107,7 @@ _SHARED_PROCESSORS: tuple[Processor, ...] = (
     structlog.processors.StackInfoRenderer(),
     structlog.processors.format_exc_info,
     structlog.processors.UnicodeDecoder(),
+    _redact_secrets,  # LAST: scrub after every other processor has populated the event
 )
 
 
