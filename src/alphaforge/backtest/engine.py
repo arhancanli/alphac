@@ -79,6 +79,7 @@ report rendering); all timestamps are epoch-ms UTC (:data:`Ms`).
 
 from __future__ import annotations
 
+import logging
 import math
 from collections.abc import Mapping, Sequence
 from dataclasses import replace
@@ -125,7 +126,19 @@ __all__ = [
     "StrategyContext",
 ]
 
+_LOG = logging.getLogger(__name__)
+
 _DAY_MS: Final[int] = 86_400_000
+
+# Corporate-action split sanity guard (2026-07-18 marking-fix campaign): a stored split
+# record is applied at its ex boundary ONLY if the actual price move agrees with the
+# stored ratio — |log((open_ex / close_pre) * ratio)| must not exceed this bound
+# (post-split price ≈ pre-split price / ratio, so the product is ≈ 1 for a genuine
+# record). 0.30 tolerates a ±~35% genuine same-day move stacked on the split while
+# still rejecting a bogus 2:1 / 1:2 record whose price did not move (|log 2| ≈ 0.69 —
+# the HON ratio-0.5 ghost row). A record that fails is LOGGED + SKIPPED, never applied
+# and never edited in the lake.
+_SPLIT_SANITY_MAX_ABS_LOG: Final[float] = 0.30
 
 #: Engine bookkeeping counter names (all always present in the result, 0 if unused).
 COUNTER_NAMES: Final[tuple[str, ...]] = (
@@ -136,6 +149,7 @@ COUNTER_NAMES: Final[tuple[str, ...]] = (
     "skipped_below_min",
     "flatten_residual_forced",
     "orders_adv_clamped",
+    "orders_reduce_adv_clamped",
     "dropped_no_decision_bar",
     "dropped_missing_next_bar",
     "dropped_no_cost_inputs",
@@ -575,6 +589,7 @@ class EventDrivenBacktester:
     __slots__ = (
         "_asset_class",
         "_calendar",
+        "_clamp_reduce_only_adv",
         "_config_echo",
         "_cost_inputs",
         "_cost_model",
@@ -599,6 +614,7 @@ class EventDrivenBacktester:
         cost_inputs: CostInputProvider | None = None,
         no_trade_band_frac: float = 0.001,
         max_order_adv_frac: float = 0.01,
+        clamp_reduce_only_adv: bool = False,
         config_echo: Mapping[str, object] | None = None,
     ) -> None:
         if not math.isfinite(no_trade_band_frac) or no_trade_band_frac < 0.0:
@@ -629,6 +645,11 @@ class EventDrivenBacktester:
         self._cost_inputs = cost_inputs
         self._no_trade_band_frac = no_trade_band_frac
         self._max_order_adv_frac = max_order_adv_frac
+        # Opt-in (default OFF = byte-identical, reduce-only bypasses the cap as the golden master
+        # locks). ON for thin-universe profiles (equity/managed-futures), where a large flatten on
+        # a low-ADV instrument would otherwise crash the sqrt-impact model: it clamps the de-risk
+        # at the 5%-ADV validity edge and closes the remainder over the next bars.
+        self._clamp_reduce_only_adv = clamp_reduce_only_adv
         self._config_echo: dict[str, object] = dict(config_echo or {})
 
     # ------------------------------------------------------------------- run
@@ -706,6 +727,17 @@ class EventDrivenBacktester:
         }
         funding_events = self._load_funding(insts, start=start, end=end)
         funding_ptr: dict[str, int] = dict.fromkeys(funding_events, 0)
+        # Corporate-action splits (EQUITY sleeve only; 2026-07-18 marking-fix campaign):
+        # a position held across a split ex-date must convert (qty·ratio, avg/ratio) or
+        # the raw-close mark fabricates a 1/ratio-sized phantom P&L jump (the ALIT
+        # 1-for-20 defect). Crypto/MF paths are untouched: the load is gated on the
+        # asset class AND their lakes carry no corporate_actions partitions.
+        splits = (
+            self._load_splits(ids, start=start, end=end)
+            if self._asset_class is AssetClass.EQUITY
+            else {}
+        )
+        split_ptr: dict[str, int] = dict.fromkeys(splits, 0)
         provider: CostInputProvider = (
             LakeCostInputs(
                 self._reader,
@@ -757,6 +789,26 @@ class EventDrivenBacktester:
                             ledger.apply_borrow(iid, t, borrow_rate, days, mark)
                             counters["borrow_charges_applied"] += 1
             prev_bar_ts = t
+
+            # (0b) corporate-action split conversion at the ex boundary (EQUITY sleeve
+            #      only — `splits` is empty otherwise). Runs AFTER the borrow accrual
+            #      (which correctly used the pre-split qty x pre-split mark) and BEFORE
+            #      today's fills (which price at the ex bar's post-split open). Each
+            #      record is sanity-checked against the actual price move; a record
+            #      whose price did not move (the bogus HON ratio-0.5 row) is logged
+            #      and skipped, never applied.
+            if splits:
+                pending = self._apply_due_splits(
+                    splits,
+                    split_ptr,
+                    bars,
+                    ledger,
+                    last_close,
+                    pending,
+                    record_by_order,
+                    prev_open,
+                    t,
+                )
 
             # (0) fill orders queued at the previous close against the bar
             #     opening at that close (ts_open == decision_ts).
@@ -886,12 +938,13 @@ class EventDrivenBacktester:
         DROPPED and counted — never filled at a synthetic price. Missing
         ADV/sigma: dropped and counted — never a guessed cost.
 
-        ADV participation cap (execDesign.md §3.2/§7.1): a non-reduce-only order
-        whose fill notional (``qty * open_{t+1}``) exceeds
-        ``max_order_adv_frac * adv_quote`` is CLAMPED down to the cap (lot-
-        floored) so the sqrt-impact law is only ever evaluated inside its valid
-        band, then counted ``orders_adv_clamped``. Reduce-only orders bypass the
-        cap (de-risking is never blocked).
+        ADV participation cap (execDesign.md §3.2/§7.1): an order whose fill notional
+        (``qty * open_{t+1}``) exceeds its ADV cap is CLAMPED down (lot-floored) so the
+        sqrt-impact law is only ever evaluated inside its valid band. Build (non-reduce) orders
+        cap at ``max_order_adv_frac * adv_quote`` (1%, counted ``orders_adv_clamped``); reduce-only
+        de-risking orders get a wider cap at the impact-law edge (5% of ADV, counted
+        ``orders_reduce_adv_clamped``) so a flatten exits fast but a thin-instrument flatten closes
+        over a few bars instead of crashing the cost model.
         """
         record = record_by_order[order.client_order_id]
         next_bar = bars[order.instrument_id].get(order.decision_ts)
@@ -940,20 +993,33 @@ class EventDrivenBacktester:
         clamped notional ``qty_cap * ref_price <= max_order_adv_frac * adv_quote``
         by construction and the impact term is always evaluated in-band.
 
-        Reduce-only orders bypass the cap entirely (execDesign.md §7.1 check 7:
-        de-risking is never blocked). A clamp that floors below one ``lot_size``
-        is left UNCLAMPED so the cost model's 5%-of-ADV ``CostModelMisuse``
-        tripwire fires loudly (an ADV too small to host even one lot at 1% is a
-        broken-guard condition, never silently under-traded to nothing).
+        Reduce-only (de-risking) orders are never BLOCKED, but they get a wider cap, not an
+        exemption: they clamp at the sqrt-impact law's validity edge (``MAX_ADV_PARTICIPATION`` =
+        5% of ADV, ~5x the 1% build cap) so a flatten exits fast but the cost model still only
+        ever prices in-band. A flatten larger than 5% of ADV closes over the next bars (realistic:
+        you exit fast, not instantly) instead of raising ``CostModelMisuse``. This is byte-
+        identical for any run whose reduce-only orders are already <=5% of ADV (e.g. the crypto
+        golden master on its liquid universe); only oversized flattens on a thin instrument — the
+        case that used to crash the run — are changed.
 
-        Note: an exempt reduce-only flatten still larger than 5% of ADV cannot
-        be priced by the sqrt-law fill model and will raise ``CostModelMisuse``
-        (the run halts loudly rather than print a fabricated price) — in v1 the
-        backtest universe is sized so a flatten never reaches that regime; the
-        live loop, which submits to a real book, has no such pricing limit.
+        Either cap that floors below one ``lot_size`` is left UNCLAMPED so the cost model's
+        5%-of-ADV ``CostModelMisuse`` tripwire fires loudly (an ADV too small to host even one lot
+        is a broken-guard condition, never silently under-traded to nothing).
         """
         if order.reduce_only:
-            return order
+            if not self._clamp_reduce_only_adv:
+                return order  # default: de-risking bypasses the cap (golden-master contract)
+            # De-risk priority: clamp at the 5%-ADV impact-law edge, not the 1% build cap.
+            reduce_cap = MAX_ADV_PARTICIPATION * adv_quote
+            if order.qty * ref_price <= reduce_cap:
+                return order
+            steps = math.floor(reduce_cap / (ref_price * inst.lot_size))  # no +eps: stay strictly in-band
+            qty_cap = steps * inst.lot_size
+            if qty_cap <= 0.0 or qty_cap >= order.qty:
+                return order  # sub-lot at 5%: let the tripwire halt loudly (broken-guard)
+            counters["orders_reduce_adv_clamped"] += 1
+            record["qty"] = qty_cap
+            return replace(order, qty=qty_cap)
         cap_notional = self._max_order_adv_frac * adv_quote
         if order.qty * ref_price <= cap_notional:
             return order
@@ -1198,6 +1264,151 @@ class EventDrivenBacktester:
         for i, iid in enumerate(iid_col):
             out[str(iid)].append((int(ts_col[i]), float(rate_col[i])))
         return out  # reader returns sorted (instrument_id, ts_funding)
+
+    def _load_splits(
+        self, ids: Sequence[str], *, start: Ms, end: Ms
+    ) -> dict[str, list[tuple[Ms, float]]]:
+        """Stored SPLIT corporate actions per instrument, ``start <= ex_date < end``.
+
+        The marking path's split source (2026-07-18 marking-fix campaign): read once up
+        front through the sanctioned :meth:`PITDataReader.corporate_actions` (PIT
+        predicate ``available_at <= as_of=end`` — a split not yet knowable by the run
+        end stays invisible to this run and is picked up by the next regeneration whose
+        ``end`` has advanced past its ``available_at``). Dividend rows are excluded:
+        only ``action_type == 'split'`` moves the share count. ``ratio`` is the stored
+        ``split_to/split_from`` convention. Returned lists are sorted by ``ex_date``
+        (the reader's sort order); instruments with no split rows map to empty lists
+        pruned out entirely. Crypto/MF lakes carry no corporate_actions partitions, so
+        this is structurally empty (and never even called: the run() call site gates on
+        ``asset_class is EQUITY``).
+        """
+        tbl = self._reader.corporate_actions(list(ids), start=start, end=end, as_of=end)
+        out: dict[str, list[tuple[Ms, float]]] = {}
+        if tbl.num_rows == 0:
+            return out
+        iid_col = tbl.column("instrument_id").to_pylist()
+        type_col = tbl.column("action_type").to_pylist()
+        ex_col = tbl.column("ex_date").cast(pa.int64()).to_pylist()
+        ratio_col = tbl.column("ratio").to_pylist()
+        for i, iid in enumerate(iid_col):
+            if str(type_col[i]) != "split":
+                continue
+            out.setdefault(str(iid), []).append((int(ex_col[i]), float(ratio_col[i])))
+        return out
+
+    def _apply_due_splits(
+        self,
+        splits: Mapping[str, list[tuple[Ms, float]]],
+        split_ptr: dict[str, int],
+        bars: Mapping[str, dict[Ms, BarView]],
+        ledger: Ledger,
+        last_close: dict[str, float],
+        pending: list[OrderRequest],
+        record_by_order: dict[str, dict[str, object]],
+        prev_open: Ms,
+        t: Ms,
+    ) -> list[OrderRequest]:
+        """Apply every due split at the ex boundary; return the (possibly rescaled) queue.
+
+        A split is DUE once the loop reaches the first bar the instrument actually has
+        at-or-after its ``ex_date`` (``ex_date <= prev_open`` and a bar exists at
+        ``prev_open`` — a halt/gap on the ex session defers resolution to the
+        instrument's next present bar, where the carried pre-split ``last_close`` still
+        anchors the sanity check). Multiple due records (only across such a gap)
+        compound into one product ratio, verified together.
+
+        Resolution per instrument:
+
+        * FLAT at the boundary → the records are consumed with nothing to convert
+          (a position opened by a fill at or after the ex open is already post-split).
+        * Sanity check: ``|log((open_ex / close_pre) * ratio)|`` must be within
+          :data:`_SPLIT_SANITY_MAX_ABS_LOG` (post-split price ≈ pre-split price /
+          ratio). A record that disagrees with the actual price move — the bogus HON
+          ratio-0.5 row whose price never moved — is WARN-logged and skipped: the
+          position stays unconverted exactly as before this fix, and the lake record
+          is never edited. An unverifiable boundary (no carried pre-split close) is
+          also skipped, loudly — this path never fabricates an adjustment it cannot
+          check.
+        * Applied: :meth:`Ledger.apply_split` converts qty·ratio / avg÷ratio (value
+          preserved, equity continuous); the carried ``last_close`` is rescaled to the
+          post-split basis; and this instrument's still-queued orders (decided at the
+          pre-split close in pre-split share counts) are rescaled by ``ratio`` so
+          their notional intent survives the boundary instead of filling 1/ratio-times
+          oversized at the post-split open.
+        """
+        for iid, events in splits.items():
+            ptr = split_ptr[iid]
+            if ptr >= len(events) or events[ptr][0] > prev_open:
+                continue  # nothing due for this instrument yet
+            bar = bars[iid].get(prev_open)
+            if bar is None:
+                continue  # ex-session bar missing: defer to the next present bar
+            ratio = 1.0
+            n_due = 0
+            while ptr < len(events) and events[ptr][0] <= prev_open:
+                ratio *= events[ptr][1]
+                n_due += 1
+                ptr += 1
+            split_ptr[iid] = ptr  # records consumed regardless of the outcome below
+            pos = ledger.positions().get(iid)
+            if pos is None:
+                continue  # flat across the boundary: nothing to convert
+            pre_close = last_close.get(iid)
+            if (
+                not _finite_positive(ratio)
+                or pre_close is None
+                or not _finite_positive(pre_close)
+                or not _finite_positive(bar.open)
+            ):
+                _LOG.warning(
+                    "split for %s at ex<=%d NOT applied: unverifiable boundary "
+                    "(ratio=%r pre_close=%r open_ex=%r) — position left unconverted",
+                    iid,
+                    prev_open,
+                    ratio,
+                    pre_close,
+                    bar.open,
+                )
+                continue
+            log_err = abs(math.log((bar.open / pre_close) * ratio))
+            if log_err > _SPLIT_SANITY_MAX_ABS_LOG:
+                _LOG.warning(
+                    "split record(s) for %s at ex<=%d SKIPPED by sanity guard: stored "
+                    "ratio %.6g disagrees with the actual price move %.6g -> %.6g "
+                    "(|log err| %.3f > %.2f) — bogus/duplicate corporate-action row? "
+                    "Position left unconverted; the lake is not modified.",
+                    iid,
+                    prev_open,
+                    ratio,
+                    pre_close,
+                    bar.open,
+                    log_err,
+                    _SPLIT_SANITY_MAX_ABS_LOG,
+                )
+                continue
+            old_qty = pos.qty
+            ledger.apply_split(iid, t, ratio)
+            last_close[iid] = pre_close / ratio  # carried mark onto the post-split basis
+            rescaled: list[OrderRequest] = []
+            for order in pending:
+                if order.instrument_id == iid:
+                    order = replace(order, qty=order.qty * ratio)
+                    record = record_by_order.get(order.client_order_id)
+                    if record is not None:
+                        record["qty"] = order.qty  # artifact reflects the converted size
+                rescaled.append(order)
+            pending = rescaled
+            _LOG.info(
+                "applied split ratio %.6g (%d record(s)) to %s at %d: qty %.6g -> %.6g, "
+                "value preserved",
+                ratio,
+                n_due,
+                iid,
+                t,
+                old_qty,
+                old_qty * ratio,
+            )
+        return pending
 
     def _build_result(
         self,

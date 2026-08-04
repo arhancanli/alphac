@@ -86,8 +86,11 @@ class BookResult:
     weights: dict[str, np.ndarray]  # applied capital weight per sleeve per day
     leverage: np.ndarray  # applied book leverage per day (vol-target; 1.0 if off)
     sleeve_gross_exposure: dict[str, np.ndarray]  # realized gross per sleeve (lev*w*sleeve_gross)
-    book_returns: np.ndarray  # final book daily returns (post weights + leverage)
+    alpha_returns: np.ndarray  # NEUTRAL book daily returns (pre strategic-tilt overlay)
+    overlay_returns: np.ndarray  # the disclosed strategic-tilt (beta) line per day (0 if no tilt)
+    book_returns: np.ndarray  # final book daily returns (alpha + overlay, post weights + leverage)
     equity_curve: np.ndarray  # cumprod(1 + book_returns), starts at 1.0
+    strategic_tilt_pct: float  # the net-long beta overlay size (0.0 = pure neutral)
 
     sharpe: float
     cagr: float
@@ -159,6 +162,8 @@ def combine_book(
     sleeve_gross: Mapping[str, float] | None = None,
     venue_gross_cap: Mapping[str, float] | None = None,
     trading_days: int = 365,
+    strategic_tilt_pct: float = 0.0,
+    strategic_tilt_market: Mapping[int, float] | None = None,
 ) -> BookResult:
     """Combine independent sleeve equity curves into one PIT cross-asset book.
 
@@ -176,6 +181,13 @@ def combine_book(
     (``leverage * weight * sleeve_gross``) exceeds its venue cap. Without this, a book-level
     vol-target silently demands equity gross that breaches Reg-T (the audit finding). Both
     default to no constraint — byte-identical to the unconstrained book.
+
+    ``strategic_tilt_pct`` (e.g. 0.20) adds a DISCLOSED net-long market-beta overlay ON TOP of the
+    neutral alpha book: ``book_returns += strategic_tilt_pct * market[d]`` where ``market`` is the
+    caller-supplied ``strategic_tilt_market`` (epoch-day -> market-factor return). The overlay sits
+    OUTSIDE the sleeve weights/corr/Sharpe math AND outside the vol-target leverage — it is a fixed
+    strategic exposure, not a vol-scaled alpha, and the neutral sleeves stay measurably neutral
+    (``alpha_returns`` is the pre-overlay book). Default 0.0 is byte-identical to the neutral book.
 
     The book runs over the COMMON live window = [max(sleeve start), min(sleeve end)] so every
     sleeve is live throughout — the honest apples-to-apples diversification measurement.
@@ -258,7 +270,19 @@ def combine_book(
                 cur_lev = float(min(cur_lev, feasible.min()))
             leverage[i] = cur_lev
 
-    book_returns = weighted * leverage
+    alpha_returns = weighted * leverage  # the NEUTRAL book (pre strategic-tilt overlay)
+
+    # ---- strategic net-long overlay (DISCLOSED beta, NOT laundered into the neutral sleeves) ----
+    # A labelled market-beta line added on top of the neutral alpha book. Deliberately OUTSIDE the
+    # vol-target leverage (a strategic tilt is a fixed exposure, not a vol-scaled alpha) and OUTSIDE
+    # the sleeve weights/corr/Sharpe math above, so the neutral sleeves remain measurably neutral.
+    overlay_returns = np.zeros(n, dtype=float)
+    if strategic_tilt_pct != 0.0:
+        if strategic_tilt_market is None:
+            raise ValueError("strategic_tilt_pct != 0 needs strategic_tilt_market (epoch-day->ret)")
+        mkt = np.array([float(strategic_tilt_market.get(int(d), 0.0)) for d in days], dtype=float)
+        overlay_returns = float(strategic_tilt_pct) * mkt
+    book_returns = alpha_returns + overlay_returns
     equity_curve = np.cumprod(1.0 + book_returns)
 
     # realized per-sleeve gross exposure (transparency: the audit's "equity gross 2.75x" series)
@@ -316,8 +340,11 @@ def combine_book(
         weights={name: weights_ts[:, j] for j, name in enumerate(names)},
         leverage=leverage,
         sleeve_gross_exposure=sleeve_gross_exposure,
+        alpha_returns=alpha_returns,
+        overlay_returns=overlay_returns,
         book_returns=book_returns,
         equity_curve=equity_curve,
+        strategic_tilt_pct=float(strategic_tilt_pct),
         sharpe=sharpe,
         cagr=cagr,
         vol=vol,

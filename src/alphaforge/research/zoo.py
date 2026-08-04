@@ -26,7 +26,8 @@ from alphaforge.features.library import equity_fundamental as _eqf
 from alphaforge.features.library import equity_price as _eqp
 from alphaforge.features.library.carry import _carry_spec
 from alphaforge.features.library.mean_reversion import _mr_spec
-from alphaforge.features.library.momentum import _ts_spec, _xs_spec
+from alphaforge.features.library.momentum import _mom_ts_fn, _ts_spec, _xs_spec
+from alphaforge.features.library.vol import EWMA_HEADROOM_SPANS
 from alphaforge.features.registry import FeatureRegistry, default_registry
 from alphaforge.features.spec import Family, FeatureSpec
 
@@ -36,6 +37,12 @@ _EQ_MOM_SKIPS = (0, 5, 10, 21, 42, 63)
 _EQ_REV_WINDOWS = (5, 10, 21, 42, 63, 126)
 _EQ_VOL_WINDOWS = (21, 63, 126, 252, 504)
 _EQ_BAB_WINDOWS = (126, 252, 504, 756)
+
+# ----- MANAGED-FUTURES trend (D1 ETF basket): vol-scaled time-series momentum, the directional
+# `trend` allocator's signal. Daily vol span (~monthly) — NOT the crypto 168-hour EWMA_VOL_SPAN
+# (which on daily bars would force a ~10y warmup). Classic 3/6/12-month managed-futures horizons.
+_MF_TREND_LOOKBACKS = (63, 126, 252)
+_MF_TREND_VOL_SPAN = 33  # ~1 trading month; daily-bar analogue of the crypto vol EWMA
 
 # ----- CRYPTO grids (H1 bars) ---------------------------------------------------------------
 _XS_LOOKBACKS = (10, 21, 42, 63, 126, 168, 252, 336, 504, 720, 1008, 1512, 2160)
@@ -259,6 +266,37 @@ def register_crypto_carry_reversal_grid(reg: FeatureRegistry) -> int:
     return n
 
 
+def _mf_trend_spec(lookback: int) -> FeatureSpec:
+    """``mf_trend_{L}`` — vol-scaled time-series momentum on the daily managed-futures ETF basket.
+
+    Same body as ``mom_ts_*`` (``ln(C_t/C_{t-L}) / (sigma_hat·sqrt(L))``, ``direction=+1``) but a
+    daily ``span`` so the warmup is ~2y not ~10y. ``cross_sectional=False``: it is already
+    vol-normalized and DIRECTIONAL (its sign is the trend direction the ``trend`` allocator reads).
+    """
+    span = _MF_TREND_VOL_SPAN
+    return FeatureSpec(
+        name=f"mf_trend_{lookback}",
+        family=Family.MOMENTUM,
+        direction=1,
+        cross_sectional=False,
+        lookback_bars=max(lookback + 1, EWMA_HEADROOM_SPANS * span),
+        params={"lookback": lookback, "span": span, "ewma_family": True},
+        fn=_mom_ts_fn,
+    )
+
+
+def register_mf_trend_grid(reg: FeatureRegistry) -> int:
+    """Register the managed-futures trend horizons (mf_trend_63/126/252)."""
+    have = {s.name for s in reg.all_specs()}
+    n = 0
+    for lookback in _MF_TREND_LOOKBACKS:
+        if f"mf_trend_{lookback}" in have:
+            continue
+        reg.register(lambda lookback=lookback: _mf_trend_spec(lookback))
+        n += 1
+    return n
+
+
 def register_all(reg: FeatureRegistry | None = None) -> int:
     """Register every zoo grid into ``reg`` (default: the global registry). Returns the count.
 
@@ -273,4 +311,5 @@ def register_all(reg: FeatureRegistry | None = None) -> int:
     total += register_equity_novel_grid(reg)
     total += register_crypto_momentum_grid(reg)
     total += register_crypto_carry_reversal_grid(reg)
+    total += register_mf_trend_grid(reg)
     return total

@@ -84,6 +84,7 @@ from alphaforge.analytics import PerfSummary, build_tearsheet, daily_returns, re
 from alphaforge.backtest import EventDrivenBacktester
 from alphaforge.config.sleeve import sleeve_for
 from alphaforge.core.time import Timeframe
+from alphaforge.core.types import AssetClass
 from alphaforge.ml.model import HistGBMMetaModel, IdentityMeta, MetaModel
 from alphaforge.ml.retrain import build_fit_windows
 from alphaforge.portfolio.strategy import BlendStrategy
@@ -167,6 +168,16 @@ _MIN_LEG_EVENTS: Final[int] = 50
 # trial_config when the regime gate is on, so a tuned variant is a DISTINCT DSR trial).
 _REGIME_N_STATES: Final[int] = 3
 _REGIME_LAG_DAYS: Final[int] = 1
+
+# EQUITY-sleeve universe scope (2026-07-18 marking-fix campaign, defect 2): the equity
+# profile shares the default lake with crypto, whose universe_membership carries BOTH
+# XUSE:CASH:* equities AND BINANCE:PERP:* perps — so an unscoped equity walk-forward
+# traded crypto perps inside the equity book (dormant since Jun 11, re-fires if crypto
+# D1 bars resume). Every US-equity canonical id is XUSE:*; the equity (and MF-ETF)
+# sleeve universe is scoped to this prefix, with dropped ids logged LOUDLY. The MF
+# profile's 17 ETFs are all XUSE:CASH:* (nothing dropped — byte-identical) and the
+# crypto sleeve is not AssetClass.EQUITY (guard never applied).
+_EQUITY_ID_PREFIX: Final[str] = "XUSE:"
 
 
 class SignalSource(Protocol):
@@ -749,7 +760,7 @@ class WalkForwardRunner:
         *,
         train_bars: int,
         test_bars: int,
-        allocator: Literal["rank", "rank_long", "mvo"] = "rank",
+        allocator: Literal["rank", "rank_long", "mvo", "trend"] = "rank",
         embargo_bars: int = 168,
         initial_cash: float = 100_000.0,
         instrument_ids: list[str] | None = None,
@@ -805,6 +816,27 @@ class WalkForwardRunner:
         )
         if not ids:
             raise ValueError(f"no instruments overlap the window [{start}, {end})")
+        # EQUITY-sleeve asset-class scope (see _EQUITY_ID_PREFIX): drop non-XUSE ids
+        # LOUDLY before any leg runs, whether the ids came from the shared-lake
+        # membership or an explicit --ids list. Applies to explicit ids too — a
+        # BINANCE:PERP id inside the equity book is always a wiring defect, never a
+        # legitimate request.
+        if self._sleeve.asset_class is AssetClass.EQUITY:
+            dropped = [iid for iid in ids if not iid.startswith(_EQUITY_ID_PREFIX)]
+            if dropped:
+                _LOG.warning(
+                    "EQUITY WALK-FORWARD UNIVERSE SCOPE: dropping %d non-%s instrument(s) "
+                    "from the equity book (shared-lake membership leak, 2026-07-18 fix): %s",
+                    len(dropped),
+                    _EQUITY_ID_PREFIX,
+                    ", ".join(dropped),
+                )
+                ids = [iid for iid in ids if iid.startswith(_EQUITY_ID_PREFIX)]
+                if not ids:
+                    raise ValueError(
+                        f"equity walk-forward universe is empty after {_EQUITY_ID_PREFIX} "
+                        f"scoping (all {len(dropped)} candidate ids were non-equity)"
+                    )
 
         # Turnover knob: the no-trade band suppresses |Delta| < band*equity orders.
         # Default reads settings.portfolio.no_trade_band; an explicit override lets
@@ -1023,7 +1055,7 @@ class WalkForwardRunner:
         full_ts: npt.NDArray[np.int64],
         *,
         train_bars: int,
-        allocator: Literal["rank", "rank_long", "mvo"],
+        allocator: Literal["rank", "rank_long", "mvo", "trend"],
         band: float,
         rebalance_bars: int,
         cov_window_bars: int,
@@ -1121,6 +1153,7 @@ class WalkForwardRunner:
                 asset_class=self._sleeve.asset_class,
                 cost_inputs=self._cost_inputs,
                 no_trade_band_frac=band,
+                clamp_reduce_only_adv=self._settings.risk.clamp_reduce_only_adv,
                 fill_model=(
                     self._fill_model_factory(self._cost_model)
                     if self._fill_model_factory is not None

@@ -69,6 +69,7 @@ from __future__ import annotations
 import json
 import math
 import time as _time
+from collections.abc import Mapping
 from dataclasses import dataclass, replace
 from typing import TYPE_CHECKING, Protocol, runtime_checkable
 
@@ -1214,6 +1215,16 @@ class LiveLoop:
         before -- the count makes that exclusion visible rather than silent.
         """
         if not targets:
+            # Persist WHY the strategy held (its per-cycle hold counters), so a dead signal can
+            # never masquerade as a quiet hold again — 173 signal-dead cycles once read as
+            # "hold: no target change" and were misdiagnosed as compressed carry (2026-07-05
+            # correction). Under --once the counters are this-cycle-only, exactly what we want.
+            detail = "hold: no target change"
+            counters = getattr(self._strategy, "counters", None)
+            if isinstance(counters, Mapping):
+                active = {k: v for k, v in counters.items() if v and k.startswith("hold_")}
+                if active:
+                    detail += " (" + ", ".join(f"{k}={v}" for k, v in sorted(active.items())) + ")"
             return CycleReport(
                 cycle_ts=cycle_ts,
                 status="ok",
@@ -1222,7 +1233,7 @@ class LiveLoop:
                 n_filled=0,
                 n_rejected=0,
                 equity=account.equity_quote,
-                detail="hold: no target change",
+                detail=detail,
                 degraded=degraded,
                 dropped_book_instruments=0,
             )
@@ -1232,6 +1243,25 @@ class LiveLoop:
             # C9: instruments silently dropped from sizing for want of a book mid.
             self._dropped_book_instruments += dropped
             _log.warning("cycle.dropped_book", cycle_ts=cycle_ts, n_dropped=dropped)
+        # Per-instrument tradability: a TARGET with no valid close at the decision bar is
+        # untradeable THIS bar (a mid-month member whose data went stale/delisted, e.g. TONUSDT
+        # 2026-07-05: funding stopped 06-23 so it still carries a mu, but there is no price).
+        # Drop it from the target book — conservative: its weight simply is not deployed, gross
+        # runs slightly under target — instead of failing the whole cycle. weights_to_orders
+        # keeps its hard raise as the backstop for anything that slips past this filter, and
+        # HELD positions are unaffected (marking those is the systemic-breach guard's domain).
+        stale = [
+            iid for iid in targets
+            if not isinstance((c := closes.get(iid)), int | float)
+            or not math.isfinite(c) or c <= 0.0
+        ]
+        if stale:
+            self._dropped_book_instruments += len(stale)
+            _log.warning(
+                "cycle.stale_targets_dropped", cycle_ts=cycle_ts,
+                n=len(stale), instruments=sorted(stale)[:8],
+            )
+            targets = {iid: w for iid, w in targets.items() if iid not in set(stale)}
         ledger = self._ledger_factory(self._initial_cash, instruments, account, closes)
         orders = weights_to_orders(
             targets,

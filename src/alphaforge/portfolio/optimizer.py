@@ -439,6 +439,90 @@ class RankEqualVolFallback:
         )
 
 
+class TrendVolTarget:
+    """Directional time-series-momentum allocator — the managed-futures sleeve's book.
+
+    Unlike :class:`RankEqualVolFallback` (cross-sectional, market-neutral: long the top names,
+    short the bottom, ``Σw ≈ 0``), this is DIRECTIONAL: each asset is held long or short on the
+    sign of its OWN ``mu_ann`` (its own trend), inverse-vol weighted for equal risk, with NET
+    exposure allowed. That net directionality — net long when the basket trends up, net short when
+    it trends down — is exactly where managed-futures trend earns its positive skew and its crash
+    protection (it can be net short the whole book in a bear market), so it is structurally
+    impossible to express through a market-neutral allocator. The cross-sectional rank book and
+    this trend book are the two canonical systematic constructions; the engine now has both.
+
+    Algorithm (canonical Moskowitz-Ooi-Pedersen TSMOM, risk-balanced):
+
+    1. ``sign_i = sign(mu_ann_i)`` — long positive-trend assets, short negative-trend ones. A
+       non-shortable asset with ``sign_i < 0`` is dropped to 0 (respects ``shortable``, exactly
+       as the rank allocator drops non-shortable shorts).
+    2. ``w_i ∝ sign_i / sigma_ann,i`` (inverse-vol from ``diag(cov_ann)``) — equal risk per leg.
+    3. Normalize so ``Σ|w_i| = gross_max`` (FULL gross — a directional book has no opposing leg
+       to balance), clip at ``±w_max``, then renormalize toward full gross (capped so no weight
+       re-exceeds ``w_max``). The downstream vol-target overlay scales the whole book to the
+       configured vol target; the natural NET exposure is preserved, NOT clipped here — the trend
+       sleeve's config relaxes ``net_max`` to ``gross_max`` so the directional bet survives.
+
+    Deterministic; no solver. ``w_prev`` / ``cost_frac_oneway`` are validated but do not influence
+    the book (this allocator does not trade off turnover — the slow multi-horizon trend signal
+    keeps turnover low on its own). ``status="fallback_used"`` marks it as a no-solver inverse-vol
+    book (same family as the rank allocator), normal mode when it is the configured primary.
+    """
+
+    def __init__(self, constraints: PortfolioConstraints | None = None) -> None:
+        self.constraints = constraints if constraints is not None else PortfolioConstraints()
+
+    def solve(
+        self,
+        mu_ann: np.ndarray,
+        cov_ann: np.ndarray,
+        w_prev: np.ndarray,
+        cost_frac_oneway: np.ndarray,
+        shortable: np.ndarray,
+    ) -> OptResult:
+        """Build the directional inverse-vol trend book. Always succeeds (no solver).
+
+        Returns:
+            :class:`OptResult` with ``status="fallback_used"`` and
+            ``objective = mu_ann @ w`` (expected annualized book return).
+        """
+        mu, cov, _prev, _cost, short = _validate_inputs(
+            mu_ann, cov_ann, w_prev, cost_frac_oneway, shortable
+        )
+        n = mu.shape[0]
+        c = self.constraints
+        weights = np.zeros(n, dtype=np.float64)
+        sign = np.sign(mu)
+        # A non-shortable asset cannot take the short leg -> hold flat (matches the rank
+        # allocator's `np.where(short == 1.0, -1.0, 0.0)` short-leg gate).
+        sign = np.where((sign < 0.0) & (short != 1.0), 0.0, sign)
+        active = sign != 0.0
+        if np.any(active):
+            sigma = np.sqrt(np.clip(np.diag(cov), 0.0, None))
+            if np.any(active & ~(sigma > 0.0)):
+                raise ValueError(
+                    "cov_ann has a non-positive variance for a selected asset; "
+                    "inverse-vol weights are undefined"
+                )
+            weights[active] = sign[active] / sigma[active]
+            target_gross = c.gross_max  # FULL gross (directional book, no opposing leg)
+            gross = float(np.abs(weights).sum())
+            if gross > 0.0:
+                weights *= target_gross / gross
+                weights = np.clip(weights, -c.w_max, c.w_max)
+                gross_clipped = float(np.abs(weights).sum())
+                max_abs = float(np.abs(weights).max())
+                if gross_clipped > 0.0 and max_abs > 0.0:
+                    weights *= min(target_gross / gross_clipped, c.w_max / max_abs)
+        ex_ante = float(np.sqrt(max(weights @ cov @ weights, 0.0)))
+        return OptResult(
+            weights=weights,
+            status="fallback_used",
+            ex_ante_vol_ann=ex_ante,
+            objective=float(mu @ weights),
+        )
+
+
 class MeanVarianceOptimizer:
     """Mean-variance optimizer with turnover costs (execDesign §6.2 — the exact problem).
 

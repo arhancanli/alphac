@@ -25,6 +25,7 @@ from alphaforge.portfolio.optimizer import (
     OptResult,
     PortfolioConstraints,
     RankEqualVolFallback,
+    TrendVolTarget,
     check_mu_ann_contract,
 )
 from alphaforge.portfolio.overlay import vol_target
@@ -37,6 +38,7 @@ __all__ = [
     "OptResult",
     "PortfolioConstraints",
     "RankEqualVolFallback",
+    "TrendVolTarget",
     "annualize_cov",
     "check_mu_ann_contract",
     "ewma_cov",

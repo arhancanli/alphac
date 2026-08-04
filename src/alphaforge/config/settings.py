@@ -282,6 +282,11 @@ class RiskCfg(BaseModel):
     max_gross: float = Field(default=1.0, gt=0.0)
     max_net: float = Field(default=0.5, ge=0.0)
     max_order_adv_frac: float = Field(default=0.01, gt=0.0, le=0.05)
+    #: Clamp reduce-only (de-risking) orders at the 5%-ADV impact-law edge instead of letting them
+    #: bypass the cap. OFF by default (the crypto golden master locks the bypass). ON for thin-
+    #: universe profiles (equity / managed-futures) where a large flatten on a low-ADV instrument
+    #: would otherwise crash the sqrt-impact model — it de-risks fast but stays priceable.
+    clamp_reduce_only_adv: bool = Field(default=False)
     price_collar_frac: float = Field(default=0.05, gt=0.0, lt=1.0)
     dd_halve_gross: float = Field(default=-0.10, lt=0.0, gt=-1.0)
     dd_flat_halt: float = Field(default=-0.15, lt=0.0, gt=-1.0)

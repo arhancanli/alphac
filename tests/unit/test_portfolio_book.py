@@ -247,3 +247,51 @@ class TestCorrelationOnActiveDays:
         book = combine_book([crypto, equity], scheme="equal_weight")
         # genuinely independent draws → |corr| small even though equity is padded with zeros
         assert abs(book.corr[("crypto", "equity")]) < 0.15
+
+
+class TestStrategicTilt:
+    """The disclosed +20% net-long overlay: opt-in, byte-identical off, additive & separable on."""
+
+    def _two(self) -> list[SleeveCurve]:
+        rng = _rng(7)
+        n = 1500
+        a = 0.0006 + 0.01 * rng.standard_normal(n)
+        b = 0.0006 + 0.01 * rng.standard_normal(n)
+        return [_curve("a", a), _curve("b", b)]
+
+    def test_tilt_off_is_byte_identical(self) -> None:
+        """Default strategic_tilt_pct=0.0 reproduces the neutral book exactly (house pattern)."""
+        sleeves = self._two()
+        base = combine_book(sleeves, scheme="equal_risk", trading_days=365)
+        off = combine_book(sleeves, scheme="equal_risk", trading_days=365, strategic_tilt_pct=0.0)
+        np.testing.assert_array_equal(base.book_returns, off.book_returns)
+        np.testing.assert_array_equal(base.equity_curve, off.equity_curve)
+        assert base.sharpe == off.sharpe and base.maxdd == off.maxdd
+        np.testing.assert_array_equal(off.overlay_returns, np.zeros_like(off.book_returns))
+        np.testing.assert_array_equal(off.alpha_returns, off.book_returns)
+
+    def test_tilt_adds_exactly_pct_times_market(self) -> None:
+        """book_returns == alpha_returns + pct*market, and alpha_returns == the neutral book."""
+        sleeves = self._two()
+        neutral = combine_book(sleeves, scheme="equal_risk", trading_days=365)
+        market = {int(d): 0.001 * ((i % 7) - 3) for i, d in enumerate(neutral.days)}  # arbitrary
+        tilted = combine_book(
+            sleeves, scheme="equal_risk", trading_days=365,
+            strategic_tilt_pct=0.20, strategic_tilt_market=market,
+        )
+        # the neutral core is preserved exactly inside the tilted book
+        np.testing.assert_allclose(tilted.alpha_returns, neutral.book_returns, atol=1e-15)
+        # the overlay is exactly pct * market aligned to days
+        expect_overlay = 0.20 * np.array([market[int(d)] for d in tilted.days])
+        np.testing.assert_allclose(tilted.overlay_returns, expect_overlay, atol=1e-15)
+        np.testing.assert_allclose(
+            tilted.book_returns, neutral.book_returns + expect_overlay, atol=1e-15
+        )
+        # the neutral-sleeve diagnostics (corr, theoretical ceiling) are untouched by the overlay
+        assert tilted.corr == neutral.corr
+        assert tilted.sharpe_theory_uncorr == neutral.sharpe_theory_uncorr
+        assert tilted.strategic_tilt_pct == 0.20
+
+    def test_tilt_requires_market(self) -> None:
+        with pytest.raises(ValueError, match="strategic_tilt_market"):
+            combine_book(self._two(), scheme="equal_risk", strategic_tilt_pct=0.20)

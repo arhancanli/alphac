@@ -90,6 +90,7 @@ from alphaforge.portfolio.optimizer import (
     OptResult,
     PortfolioConstraints,
     RankEqualVolFallback,
+    TrendVolTarget,
 )
 from alphaforge.portfolio.overlay import vol_target
 from alphaforge.risk import DDState, DrawdownLadder
@@ -151,8 +152,9 @@ class BlendStrategy:
         *,
         signal_frame: pd.DataFrame | None = None,
         mu_provider: Callable[[Ms], Mapping[str, float]] | None = None,
-        allocator: Literal["rank", "rank_long", "mvo"] = "rank",
+        allocator: Literal["rank", "rank_long", "mvo", "trend"] = "rank",
         rebalance_bars: int = 24,
+        rebalance_anchor: Literal["run", "epoch"] = "run",
         cov_window_bars: int = 720,
         cov_halflife_bars: int = 720,
         cov_min_periods: int = 240,
@@ -179,21 +181,29 @@ class BlendStrategy:
         p = settings.portfolio
         r = settings.risk
         constraints = PortfolioConstraints.from_settings(settings)
-        self._allocator_name: Literal["rank", "rank_long", "mvo"] = allocator
+        self._allocator_name: Literal["rank", "rank_long", "mvo", "trend"] = allocator
         if allocator == "rank":
-            self._allocator: RankEqualVolFallback | MeanVarianceOptimizer = RankEqualVolFallback(
-                constraints
-            )
+            self._allocator: (
+                RankEqualVolFallback | MeanVarianceOptimizer | TrendVolTarget
+            ) = RankEqualVolFallback(constraints)
         elif allocator == "rank_long":
             # Long-only factor-tilt book (no short leg): top-K longs at full gross. Earns
             # market beta + the factor tilt, not market-neutral alpha (evaluate vs a
             # buy-and-hold benchmark). Byte-identical to 'rank' on crypto since it is an
             # explicit equity opt-in (the crypto path never selects it).
             self._allocator = RankEqualVolFallback(replace(constraints, long_only=True))
+        elif allocator == "trend":
+            # Directional time-series-momentum book (managed-futures sleeve): each asset long or
+            # short on its OWN trend, inverse-vol weighted, NET exposure allowed. The net
+            # directionality is the source of the positive skew + crash protection. Byte-identical
+            # to 'rank' on crypto/equity — only the managed-futures profile selects it.
+            self._allocator = TrendVolTarget(constraints)
         elif allocator == "mvo":
             self._allocator = MeanVarianceOptimizer.from_settings(settings)
         else:  # pragma: no cover - Literal narrows, guard for untyped callers
-            raise ValueError(f"allocator must be 'rank', 'rank_long', or 'mvo', got {allocator!r}")
+            raise ValueError(
+                f"allocator must be 'rank', 'rank_long', 'mvo', or 'trend', got {allocator!r}"
+            )
 
         self._vol_target_ann = p.vol_target_ann
         self._vol_scale_max = p.vol_scale_max
@@ -208,6 +218,13 @@ class BlendStrategy:
         )
         self._staleness_max_bars = r.staleness_max_bars
         self._rebalance_bars = rebalance_bars
+        # "run" (default): the cadence anchor is in-memory (_next_rebalance_ts), set after each
+        # completed rebalance — correct for a long-lived backtest/loop process, byte-identical to
+        # the pre-anchor behavior. "epoch": STATELESS cadence for the fresh-process-per-cycle
+        # (`af paper run --once`) deployment, where an in-memory anchor is None every cycle and
+        # the run-mode gate can never hold: a rebalance is due iff the bar is epoch-aligned
+        # (ts % (rebalance_bars * tf.ms) == 0) OR the book is flat (the boot entry).
+        self._rebalance_anchor = rebalance_anchor
         self._cov_window_bars = cov_window_bars
         self._cov_halflife_bars = cov_halflife_bars
         self._cov_min_periods = cov_min_periods
@@ -365,10 +382,21 @@ class BlendStrategy:
             self._n_bars_halted_flat += 1
             return dict.fromkeys(ctx.instruments, 0.0)
 
-        if self._next_rebalance_ts is not None and ctx.ts < self._next_rebalance_ts:
+        if self._rebalance_anchor == "epoch":
+            # Stateless cadence (fresh-process --once deployment): due on epoch-aligned
+            # boundaries, or immediately when the book is flat (the boot entry).
+            boundary = ctx.ts % (self._rebalance_bars * ctx.tf.ms) == 0
+            flat_book = not any(abs(q) > 1e-12 for q in ctx.positions.values())
+            between = not (boundary or flat_book)
+        else:
+            between = self._next_rebalance_ts is not None and ctx.ts < self._next_rebalance_ts
+        if between:
             # Between rebalances: hold in NORMAL, but the ladder de-gross is
             # enforced every bar (F-B). In HALF_GROSS re-emit the last book
             # rescaled to the current multiplier (0.5); in NORMAL hold ({}).
+            # (epoch mode note: under --once _last_targets is process-local and
+            # None, so a HALF_GROSS de-gross waits for the next boundary; the
+            # critical FLAT_HALTED all-zeros brake above still acts every bar.)
             if state is DDState.HALF_GROSS and self._last_targets is not None:
                 self._n_bars_half_gross += 1
                 mult = self._ladder.gross_multiplier()

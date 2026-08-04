@@ -229,7 +229,7 @@ def walkforward(
         raise typer.BadParameter(
             f"--allocator: must be 'rank', 'rank_long', or 'mvo', got {allocator!r}"
         )
-    alloc = cast(Literal["rank", "rank_long", "mvo"], allocator)
+    alloc = cast(Literal["rank", "rank_long", "mvo", "trend"], allocator)
     instrument_ids: list[str] | None = None
     if ids is not None:
         instrument_ids = [tok.strip() for tok in ids.split(",") if tok.strip()]

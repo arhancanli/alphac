@@ -409,6 +409,10 @@ def test_golden_master_full(tmp_path: Path) -> None:
         # StaticCostInputs ADV, so both new risk-guard counters stay 0 here.
         "flatten_residual_forced": 0,
         "orders_adv_clamped": 0,
+        # New observability counter (de-risk ADV clamp, opt-in via risk.clamp_reduce_only_adv;
+        # OFF here so reduce-only bypasses the cap exactly as before — every fill/fee/PnL above is
+        # byte-identical, this key is inert 0). Not a re-bless of any computed value.
+        "orders_reduce_adv_clamped": 0,
         "dropped_no_decision_bar": 0,
         "dropped_missing_next_bar": 1,  # the SOL gap at bar 15
         "dropped_no_cost_inputs": 0,

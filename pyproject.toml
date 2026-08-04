@@ -25,6 +25,8 @@ dependencies = [
     "osqp>=1.1.2",
     "exchange-calendars>=4.5",
     "boto3>=1.43.31",
+    "opentimestamps-client>=0.7.2",
+    "databento>=0.80.0",
 ]
 
 [project.scripts]

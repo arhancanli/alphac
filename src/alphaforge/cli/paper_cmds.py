@@ -226,10 +226,17 @@ class _MuProviderAdapter:
             frame = self._service.on_bar_close(  # type: ignore[attr-defined]
                 decision_ts, weights=self._weights
             )
-        except ValueError:
+        except ValueError as e:
+            # Fail-safe hold — but NEVER silently: a swallowed error here is indistinguishable
+            # from a genuine no-signal hold, which is exactly how the 2026-06/07 signal-dead
+            # sleeve read as "carry compressed" for 173 cycles. Log the cause, then hold.
+            print(f"mu_provider: on_bar_close ValueError (holding this bar): {e}", flush=True)
             return {}
         col = frame[MU_ANN_COLUMN]
-        return {str(iid): float(v) for iid, v in col.items() if _is_finite(v)}
+        out = {str(iid): float(v) for iid, v in col.items() if _is_finite(v)}
+        # Per-cycle signal-health line (goes to the tick log): all-NaN mu must be VISIBLE.
+        print(f"mu_provider: {len(out)}/{len(col)} instruments with finite mu_ann", flush=True)
+        return out
 
 
 class _CostInputsFactory:
@@ -598,8 +605,23 @@ def _build_loop(settings: Settings, *, cash: float) -> _LoopBundle:
     store = TradingStore(_trading_db_path(settings))
 
     # The Phase-4 signal seam -> the live mu_provider for the strategy.
+    #
+    # THE LIVE SIGNAL PATH MUST RUN THE SLEEVE'S VALIDATED CONFIGURATION — the exact alpha set
+    # and cadence of its blessed walk-forward artifact. Building the service with the unscoped
+    # default registry (the pre-2026-07-05 wiring) blended 11 equity-FUNDAMENTAL alphas that are
+    # structurally all-NaN on crypto perps; blend()'s strict-NaN contract then NaN'd every
+    # instrument every bar, so the sleeve held ("hold: no target change") for its entire live
+    # life, 2026-06-23..07-05 — published as a dated correction. Any new live asset class MUST
+    # add its blessed set here (matching artifacts/walkforward/<sleeve>/walkforward.json).
+    _live_blessed: dict[str, dict] = {
+        # artifacts/walkforward/crypto_carry_wk/walkforward.json (the deployed sleeve of record)
+        "crypto_perp": {"alpha_names": ["carry_fund_21"], "rebalance_bars": 168},
+    }
+    blessed = _live_blessed.get(settings.data.asset_class.value)
     service = SignalService(
-        FeatureEngine(reader, instruments, universe), universe, default_registry(), settings.signals
+        FeatureEngine(reader, instruments, universe), universe, default_registry(),
+        settings.signals,
+        alpha_names=blessed["alpha_names"] if blessed else None,
     )
     # Bound the live IC-estimation lookback to a trailing window. estimate_weights
     # EWMA-weights the Rank-IC (halflife ~60d), so 180 days = 3 halflives carries
@@ -618,7 +640,15 @@ def _build_loop(settings: Settings, *, cash: float) -> _LoopBundle:
     # it separately -- the strategy owns the equity marks).
     r = settings.risk
     ladder = DrawdownLadder(dd_half_frac=abs(r.dd_halve_gross), dd_flat_frac=abs(r.dd_flat_halt))
-    strategy = BlendStrategy(settings, mu_provider=mu_provider)
+    # The blessed cadence (weekly=168 H1 bars for crypto carry), epoch-anchored: the --once
+    # deployment is a fresh process per cycle, so the in-memory "run" anchor can never hold
+    # between rebalances — epoch alignment makes the cadence deterministic across processes
+    # (due on ts % (rebalance_bars*tf.ms) == 0, or immediately when the book is flat).
+    strategy = BlendStrategy(
+        settings, mu_provider=mu_provider,
+        rebalance_bars=blessed["rebalance_bars"] if blessed else 24,
+        rebalance_anchor="epoch",
+    )
     # Bind the loop's ladder to the strategy's so status/risk are consistent.
     ladder = strategy.ladder
 

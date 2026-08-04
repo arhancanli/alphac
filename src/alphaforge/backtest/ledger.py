@@ -368,6 +368,51 @@ class Ledger:
         )
         return payment
 
+    def apply_split(self, instrument_id: str, ts: Ms, ratio: float) -> None:
+        """Convert an open position across a stock-split ex-date (2026-07-18 marking fix).
+
+        ``ratio`` is the stored corporate-actions convention ``split_to / split_from``
+        (2-for-1 forward split → 2.0; 1-for-20 reverse split → 0.05). At the ex boundary
+        the share count converts by ``ratio`` and the per-share prices by ``1/ratio``::
+
+            qty'        = qty * ratio
+            avg_entry'  = avg_entry / ratio
+
+        so position VALUE (``qty·price``) and unrealized PnL are EXACTLY preserved —
+        no cash moves, no PnL is realized, the marked equity is continuous across the
+        boundary. Without this conversion the engine marks a pre-split share count at a
+        post-split raw close and fabricates a ``1/ratio``-sized phantom P&L jump (the
+        ALIT 1-for-20 defect: a -495bp phantom day). Fractional post-split share counts
+        are kept (cash-in-lieu for fractionals is not modelled — a documented,
+        value-preserving approximation).
+
+        A flat/absent position is a silent no-op (nothing held across the boundary).
+        The caller (engine) decides WHEN the boundary is crossed and sanity-checks the
+        record against the actual price move first; this method only does the
+        arithmetic. Raises on an unknown instrument or a non-finite/non-positive ratio.
+        """
+        if self._instruments.get(instrument_id) is None:
+            raise KeyError(
+                f"split references unknown instrument {instrument_id!r}; "
+                "the ledger universe is fixed at construction"
+            )
+        _require_finite("split ratio", ratio)
+        if ratio <= 0.0:
+            raise ValueError(f"split ratio must be > 0, got {ratio!r}")
+        pos = self._positions.get(instrument_id)
+        if pos is None:
+            return
+        new_qty = pos.qty * ratio
+        new_avg = pos.avg_entry_price / ratio
+        _require_finite("split-adjusted qty", new_qty)
+        _require_finite("split-adjusted avg_entry_price", new_avg)
+        self._positions[instrument_id] = Position(
+            instrument_id=instrument_id,
+            qty=new_qty,
+            avg_entry_price=new_avg,
+            opened_ts=pos.opened_ts,
+        )
+
     def mark(self, closes: Mapping[str, float], ts: Ms) -> AccountState:
         """Mark the book to market and record an equity-curve point.
 

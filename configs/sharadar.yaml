@@ -33,3 +33,8 @@ costs:
   equity_borrow_bps_annual: 50.0
   impact_coef: 1.0
   latency_addon_bps: 2.0
+
+risk:
+  # Thin survivorship-free small-caps: a large flatten on a low-ADV name would crash the
+  # sqrt-impact model. Clamp de-risking at the 5%-ADV edge instead (closes over the next bars).
+  clamp_reduce_only_adv: true

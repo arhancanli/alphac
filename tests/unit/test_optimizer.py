@@ -23,6 +23,7 @@ from alphaforge.portfolio import (
     OptResult,
     PortfolioConstraints,
     RankEqualVolFallback,
+    TrendVolTarget,
     check_mu_ann_contract,
 )
 from alphaforge.portfolio.optimizer import (
@@ -538,3 +539,45 @@ class TestOptimizerConstraintFeasibilityProperty:
         # decision to hold flat at mu~0 is NOT a bug, so this is fallback-only.)
         if res.status == "fallback_used":
             assert float(np.abs(res.weights).sum()) > 0.0, "fallback went silently flat"
+
+
+# --- TrendVolTarget (directional TSMOM allocator, managed-futures sleeve) -------------------
+
+def test_trend_directional_signs_and_net_exposure() -> None:
+    """Long on up-trend, short on down-trend, and NET exposure tracks the trend balance
+    (the property a market-neutral rank book structurally cannot have)."""
+    a = TrendVolTarget(PortfolioConstraints(gross_max=1.0, w_max=0.5))
+    mu = np.array([0.5, -0.5, 0.3])  # up, down, up
+    cov = np.diag([0.04, 0.04, 0.04])
+    r = a.solve(mu, cov, np.zeros(3), np.full(3, 1e-3), np.ones(3))
+    assert np.array_equal(np.sign(r.weights), np.array([1.0, -1.0, 1.0]))
+    assert float(np.abs(r.weights).sum()) == pytest.approx(1.0, abs=1e-9)  # full gross
+    assert r.weights.sum() > 0.0  # 2 longs vs 1 short -> net long
+    assert r.status == "fallback_used"
+
+
+def test_trend_inverse_vol_weights() -> None:
+    """Lower-vol assets get larger weight at equal trend (risk-balanced)."""
+    a = TrendVolTarget(PortfolioConstraints(gross_max=1.0, w_max=0.9))
+    r = a.solve(np.array([0.5, 0.5]), np.diag([0.09, 0.01]), np.zeros(2), np.full(2, 1e-3), np.ones(2))
+    assert r.weights[1] > r.weights[0] > 0.0  # sigma 0.1 beats sigma 0.3
+
+
+def test_trend_respects_shortability_and_w_max() -> None:
+    """A non-shortable down-trend asset goes flat; no weight exceeds w_max."""
+    a = TrendVolTarget(PortfolioConstraints(gross_max=1.0, w_max=0.4))
+    r = a.solve(
+        np.array([-0.5, 0.5]), np.diag([0.04, 0.04]),
+        np.zeros(2), np.full(2, 1e-3), np.array([0.0, 1.0]),  # asset 0 not shortable
+    )
+    assert r.weights[0] == 0.0
+    assert float(np.abs(r.weights).max()) <= 0.4 + 1e-9
+
+
+def test_trend_all_down_is_net_short() -> None:
+    """A basket all trending down -> net SHORT book (the crash-protection direction)."""
+    a = TrendVolTarget(PortfolioConstraints(gross_max=1.0, w_max=0.6))
+    r = a.solve(np.array([-0.4, -0.6, -0.2]), np.diag([0.04, 0.04, 0.04]),
+                np.zeros(3), np.full(3, 1e-3), np.ones(3))
+    assert (r.weights <= 0.0).all()
+    assert r.weights.sum() < 0.0

@@ -28,8 +28,8 @@ import pytest
 from alphaforge.backtest.engine import COUNTER_NAMES, EventDrivenBacktester, ScriptedStrategy
 from alphaforge.core.instruments import Instrument, InstrumentStore
 from alphaforge.core.time import Ms
-from alphaforge.core.types import AssetClass, MarketType
-from alphaforge.costs import TransactionCostModel
+from alphaforge.core.types import AssetClass, MarketType, OrderRequest, OrderType, Side
+from alphaforge.costs import MAX_ADV_PARTICIPATION, TransactionCostModel
 from alphaforge.data.schemas import Dataset
 from alphaforge.data.store.lake import LakePaths
 from alphaforge.data.store.reader import PITDataReader
@@ -146,6 +146,7 @@ def build_engine(
     adv_quote: float,
     no_trade_band_frac: float = 0.001,
     max_order_adv_frac: float = 0.01,
+    clamp_reduce_only_adv: bool = False,
 ) -> EventDrivenBacktester:
     paths = LakePaths(tmp_path / "lake")
     LakeWriter(paths).write(Dataset.OHLCV, ohlcv_table(bars))
@@ -158,6 +159,7 @@ def build_engine(
         cost_inputs=_StaticCostInputs(adv_quote=adv_quote),
         no_trade_band_frac=no_trade_band_frac,
         max_order_adv_frac=max_order_adv_frac,
+        clamp_reduce_only_adv=clamp_reduce_only_adv,
     )
 
 
@@ -389,3 +391,69 @@ def test_max_order_adv_frac_validation(tmp_path: Path) -> None:
                 TransactionCostModel(),
                 max_order_adv_frac=bad,
             )
+
+
+# ------------------------------------------------- F-C-ADV: reduce-only de-risk clamp (opt-in)
+
+
+def test_reduce_only_clamp_opt_in(tmp_path: Path) -> None:
+    """A reduce-only (de-risking) flatten larger than 5% of ADV bypasses the cap by default
+    (the golden-master contract: de-risking is never blocked), but with
+    ``clamp_reduce_only_adv`` ON it clamps at the 5%-ADV impact-law edge — de-risking fast
+    while staying priceable — instead of crashing the sqrt-impact model. The remainder closes
+    on the next bar(s)."""
+    adv = 200_000.0  # 5% = 10_000 notional = 100 qty @ ref 100; 1% build cap = 2_000
+    inst = make_instrument()
+    big_reduce = OrderRequest(
+        client_order_id="t-reduce",
+        instrument_id=BTC,
+        side=Side.SELL,
+        qty=200.0,  # 200 @ ref 100 = 20_000 notional = 10% of ADV (> the 5% law edge)
+        order_type=OrderType.MARKET,
+        reduce_only=True,
+        decision_ts=T0 + HOUR,
+        decision_price=100.0,
+        reason="flatten",
+    )
+
+    # default OFF -> bypass entirely, full de-risk in one bar (unchanged behaviour)
+    eng_off = build_engine(tmp_path / "off", flat_bars(2), inst, adv_quote=adv)
+    counters_off = dict.fromkeys(COUNTER_NAMES, 0)
+    out_off = eng_off._clamp_to_adv(big_reduce, inst, 100.0, adv, counters_off, {})
+    assert out_off.qty == pytest.approx(200.0)
+    assert counters_off["orders_reduce_adv_clamped"] == 0
+
+    # ON -> clamp to 5% of ADV (floor(10_000 / 100) = 100 lots), counted, strictly in-band
+    eng_on = build_engine(
+        tmp_path / "on", flat_bars(2), inst, adv_quote=adv, clamp_reduce_only_adv=True
+    )
+    counters_on = dict.fromkeys(COUNTER_NAMES, 0)
+    out_on = eng_on._clamp_to_adv(big_reduce, inst, 100.0, adv, counters_on, {})
+    assert out_on.qty == pytest.approx(100.0)
+    assert out_on.qty * 100.0 <= MAX_ADV_PARTICIPATION * adv  # priceable: never > 5% of ADV
+    assert counters_on["orders_reduce_adv_clamped"] == 1
+
+
+def test_reduce_only_within_band_untouched_either_way(tmp_path: Path) -> None:
+    """A small reduce-only order (<= 5% of ADV) is never clamped, ON or OFF — the opt-in only
+    bites the oversized-flatten case, so normal de-risking is byte-identical."""
+    adv = 200_000.0  # 5% = 10_000 notional; a 50-qty reduce = 5_000 notional is in-band
+    inst = make_instrument()
+    small_reduce = OrderRequest(
+        client_order_id="t-small",
+        instrument_id=BTC,
+        side=Side.SELL,
+        qty=50.0,
+        order_type=OrderType.MARKET,
+        reduce_only=True,
+        decision_ts=T0 + HOUR,
+        decision_price=100.0,
+        reason="reduce",
+    )
+    eng_on = build_engine(
+        tmp_path, flat_bars(2), inst, adv_quote=adv, clamp_reduce_only_adv=True
+    )
+    counters = dict.fromkeys(COUNTER_NAMES, 0)
+    out = eng_on._clamp_to_adv(small_reduce, inst, 100.0, adv, counters, {})
+    assert out.qty == pytest.approx(50.0)
+    assert counters["orders_reduce_adv_clamped"] == 0

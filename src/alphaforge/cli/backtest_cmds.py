@@ -161,6 +161,7 @@ def run(
             store,
             cost_model,
             no_trade_band_frac=settings.portfolio.no_trade_band,
+            clamp_reduce_only_adv=settings.risk.clamp_reduce_only_adv,
             config_echo={
                 "strategy": f"rank(top={top})",
                 "costs": settings.costs.model_dump(),
