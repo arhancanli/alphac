@@ -38,9 +38,14 @@ PY
     exit 0
   fi
 
-  # change gate: hash the actually-served data artifacts
-  NEW_HASH=$(cat "$HOME/meridian/public/paper-state.json" \
-                 "$HOME/meridian/public/glassbox/transparency_log.json" 2>/dev/null | shasum -a 256 | cut -d' ' -f1)
+  # change gate: hash EVERY served data artifact, not just two of them.
+  # FIXED 2026-08-05: the gate previously hashed only paper-state.json and transparency_log.json.
+  # That meant a change to kill_log.json alone — i.e. a CORRECTION to the public research record —
+  # did not count as "data changed", so the deploy skipped and the correction sat on disk
+  # indefinitely while the wrong number stayed live. A fund whose product is the honesty of its
+  # record must never have a publication path that can silently swallow a correction.
+  NEW_HASH=$( { cat "$HOME/meridian/public/paper-state.json" 2>/dev/null; \
+                cat "$HOME/meridian/public/glassbox/"*.json 2>/dev/null; } | shasum -a 256 | cut -d' ' -f1)
   OLD_HASH=$(cat "$HASH_FILE" 2>/dev/null)
   if [ -n "$NEW_HASH" ] && [ "$NEW_HASH" = "$OLD_HASH" ]; then
     echo "no data change since last deploy — skipping"
