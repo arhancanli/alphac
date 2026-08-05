@@ -661,7 +661,10 @@ SCREEN_KILLS: Final[list[ScreenKill]] = [
     (
         "equity_short_interest_dtc",
         "Short Interest / Days-to-Cover Deciles (probe)",
-        0.002,
+        # CORRECTED 2026-08-05: was 0.002, the split-corrupted gross figure. The corrected
+        # easy-to-borrow gross is +0.204. A machine-readable field must never contradict the
+        # correction written beside it.
+        0.204,
         "The first genuinely NEW INPUT in months rather than another transformation of price and "
         "volume: bi-monthly FINRA short interest for the whole US tape, 2017-12-29..2026-07-15 "
         "(3,804,024 rows, 23,314 tickers), unlocked by the Polygon Starter upgrade and ingested "
