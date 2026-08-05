@@ -65,6 +65,10 @@ import pandas as pd
 _SRC = Path(__file__).resolve().parent.parent / "src"
 if str(_SRC) not in sys.path:
     sys.path.insert(0, str(_SRC))
+_LIB = Path(__file__).resolve().parent
+if str(_LIB) not in sys.path:
+    sys.path.insert(0, str(_LIB))
+from lib.px_adjust import adjusted_log_returns
 
 LAKE = "data/lake/ohlcv_1d"
 ASSETS = "data/research/alpaca_assets.parquet"
@@ -104,7 +108,9 @@ def load_panel() -> tuple[pd.DataFrame, pd.DataFrame]:
 def run_arm(px, dv, adv, mom, borrowable, k: int, filt: bool):
     m_ends = [g.index[-1] for _, g in px.groupby([px.index.year, px.index.month])]
     w = pd.DataFrame(0.0, index=px.index, columns=px.columns)
-    vol = np.log(px).diff().rolling(63, min_periods=40).std()
+    # ADJUSTED (2026-08-05): raw closes made every split a fake -75% day, which inflated
+    # the 63d vol estimate of exactly the mega-caps that dominate the inverse-vol weights.
+    vol = adjusted_log_returns(px).rolling(63, min_periods=40).std()
     for i, t in enumerate(m_ends[:-1]):
         sig = mom.loc[t].dropna()
         liq = adv.loc[t].reindex(sig.index)
@@ -130,7 +136,7 @@ def run_arm(px, dv, adv, mom, borrowable, k: int, filt: bool):
             if iv.sum() <= 0:
                 continue
             w.loc[seg, list(names)] = sgn * 0.5 * (iv / iv.sum()).values
-    rets = np.log(px).diff()
+    rets = adjusted_log_returns(px)
     held = w.shift(1).fillna(0.0)
     gross_r = (held * rets).sum(axis=1)
     turn = (w - w.shift(1)).abs().sum(axis=1).fillna(0.0)

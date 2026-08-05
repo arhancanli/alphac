@@ -63,6 +63,10 @@ import pandas as pd
 _SRC = Path(__file__).resolve().parent.parent / "src"
 if str(_SRC) not in sys.path:
     sys.path.insert(0, str(_SRC))
+_LIB = Path(__file__).resolve().parent
+if str(_LIB) not in sys.path:
+    sys.path.insert(0, str(_LIB))
+from lib.px_adjust import adjusted_log_returns
 
 LAKE = "data/lake/ohlcv_1d"
 SI_DIR = Path("data/lake_shortint")
@@ -164,7 +168,14 @@ def run(px, adv, si, borrow_ann: float, restrict: set[str] | None) -> tuple[pd.S
         w.loc[seg, longs] = 0.5 / len(longs)
         w.loc[seg, shorts] = -0.5 / len(shorts)
 
-    rets = np.log(px).diff()
+    # CORPORATE-ACTION ADJUSTED (fixed 2026-08-05). The lake stores RAW as-traded closes, so
+    # np.log(px).diff() booked every forward split as a catastrophic loss -- AAPL 2020-08-31 as
+    # -135%, NVDA 2024-06-10 as -229%. And the bias was DIRECTIONAL: splits happen in high-priced
+    # mega-caps, mega-caps have huge ADV, and days_to_cover = SI/ADV is therefore tiny for them,
+    # so every fake collapse sorted straight into the LONG (bottom-DTC) leg. The price floor and
+    # ADV rank below deliberately keep using RAW px -- see lib/px_adjust for why adjusting levels
+    # would introduce a look-ahead the raw panel does not have.
+    rets = adjusted_log_returns(px)
     held = w.shift(1).fillna(0.0)
     gross = (held * rets).sum(axis=1)
     turn = (w - w.shift(1)).abs().sum(axis=1).fillna(0.0)
