@@ -918,18 +918,13 @@ def main(argv=None) -> int:
     a = ap.parse_args(argv)
 
     from alphaforge.validation.dsr import dsr_from_returns
-    from alphaforge.validation.experiments import ExperimentLog
+    from alphaforge.validation.probe_ledger import selection_context
 
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     payload: dict = {"probe": "alphamax_betaneutral", "trials_burned": 0,
                      "note": "SCREEN ONLY — no experiments-ledger append; DSR read-only.",
                      "panels": {}}
-    leds = {}
-    for name, rel in (("var", "var/experiments.jsonl"), ("var_sharadar", "var_sharadar/experiments.jsonl")):
-        fp = _REPO / rel
-        if fp.exists():
-            led = ExperimentLog(fp)
-            leds[name] = (led.n_trials(), led.trial_sharpe_variance())
+    leds = {"selection_union": selection_context(root=_REPO)}
     payload["ledgers"] = {k: {"N": v[0], "var_sr": v[1]} for k, v in leds.items()}
     print(f"ledgers (read-only, NO trial appended): {payload['ledgers']}")
 

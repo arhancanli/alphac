@@ -25,9 +25,16 @@ deploy_prod() {
   local dir="$1" label="$2"; shift 2
   local url="" attempt
   cd "$dir" || { echo "  [$label] cd failed: $dir"; FAIL=1; return 1; }
+  # WHY THE OUTPUT IS TEE'd (2026-08-10). This previously piped the deploy straight into
+  # `grep -oE 'https://...'`, which matches ONLY a success URL and therefore DISCARDED the reason
+  # for every failure. The publish job failed 10 times between 2026-07-10 and 2026-08-09 and the
+  # log recorded nothing but "attempt N failed" — a failure that cannot be read is a failure that
+  # cannot be fixed, which is the same defect class as a check that cannot fail. The transcript now
+  # survives in var/log/deploy_<label>.out and its tail is echoed inline on the final failure.
+  local out="$HOME/alphaforge/var/log/deploy_${label}.out"
   for attempt in 1 2 3; do
     # BOUNDED (see scripts/lib/bounded.sh): unbounded, this is a 28h-outage-class hang.
-    url=$(run_bounded 600 vercel deploy --prod --yes 2>&1 | grep -oE "https://[a-z0-9-]+\.vercel\.app" | tail -1)
+    url=$(run_bounded 600 vercel deploy --prod --yes 2>&1 | tee "$out" | grep -oE "https://[a-z0-9-]+\.vercel\.app" | tail -1)
     if [ -n "$url" ]; then
       echo "  [$label] prod: $url (attempt $attempt)"
       break
@@ -36,7 +43,8 @@ deploy_prod() {
     sleep $((attempt * 8))
   done
   if [ -z "$url" ]; then
-    echo "  [$label] DEPLOY FAILED after 3 attempts"
+    echo "  [$label] DEPLOY FAILED after 3 attempts — vercel said:"
+    sed 's/^/      | /' "$out" 2>/dev/null | tail -25 || echo "      | (no output captured)"
     FAIL=1
     return 1
   fi
@@ -61,6 +69,11 @@ deploy_prod() {
   # signed founder skin-in-the-game disclosure. Soft-fail: it is near-static.
   uv run python scripts/founder_commitment.py || echo "founder_commitment soft-failed — non-fatal"
   uv run python scripts/paper_trading_state.py || { echo "paper_trading_state FAILED"; FAIL=1; }
+  # research.json is a separate comprehensive contract. It once stayed frozen for nine days while
+  # paper-state moved from two to four sleeves because this pipeline never invoked its exporter.
+  # Generate it after paper-state so composition, weights, tilt and evidence timestamps are from
+  # the same canonical state that the public dashboard will serve.
+  uv run python scripts/research_export.py || { echo "research_export FAILED"; FAIL=1; }
   # sign the day's record into the tamper-evident transparency chain before deploying it
   uv run python scripts/transparency_log.py || { echo "transparency_log FAILED"; FAIL=1; }
   # externally anchor the signed chain head into Bitcoin via OpenTimestamps (un-forgeable timestamp).

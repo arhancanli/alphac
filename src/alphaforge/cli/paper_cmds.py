@@ -29,8 +29,9 @@ into command bodies so ``af --help`` stays fast.
 from __future__ import annotations
 
 import os
-from typing import TYPE_CHECKING, Annotated, Final
+from typing import TYPE_CHECKING, Annotated, Any, Final
 
+import pyarrow as pa
 import typer
 
 from alphaforge.core.time import Ms, from_ms, now_ms
@@ -613,7 +614,7 @@ def _build_loop(settings: Settings, *, cash: float) -> _LoopBundle:
     # instrument every bar, so the sleeve held ("hold: no target change") for its entire live
     # life, 2026-06-23..07-05 — published as a dated correction. Any new live asset class MUST
     # add its blessed set here (matching artifacts/walkforward/<sleeve>/walkforward.json).
-    _live_blessed: dict[str, dict] = {
+    _live_blessed: dict[str, dict[str, Any]] = {
         # artifacts/walkforward/crypto_carry_wk/walkforward.json (the deployed sleeve of record)
         "crypto_perp": {"alpha_names": ["carry_fund_21"], "rebalance_bars": 168},
     }
@@ -694,6 +695,68 @@ def _build_loop(settings: Settings, *, cash: float) -> _LoopBundle:
     # One instruments factory, shared by the loop (what to trade) and the updater
     # (what to ingest) so the per-cycle ingest is exactly the current universe.
     instr_factory = _InstrumentsAdapter(universe, instruments, asset_class)
+    # FUNDING (2026-08-06). The live account never booked funding: `Ledger.apply_funding` was
+    # reachable only from the backtest engine, so a funding-CARRY sleeve ran without the one
+    # cashflow that IS its edge (~51% of its lifetime backtest PnL). PIT by construction --
+    # `reader.funding` filters on the stored `available_at` (settlement + publication lag),
+    # never on ts_funding, so a settlement not yet knowable at `as_of` stays invisible.
+    def _funding_source(
+        instrument_ids: list[str], *, start: int, end: int
+    ) -> list[tuple[str, int, float]]:
+        perps = [
+            i for i in instrument_ids
+            if i in broker_instruments
+            and getattr(broker_instruments[i].market_type, "name", "") == "PERP"
+        ]
+        if not perps:
+            return []
+        # SELECT BY WHEN WE COULD FIRST SEE IT, NOT BY WHEN IT SETTLED.
+        #
+        # The obvious window -- ts_funding in (prev_cycle, cycle] -- loses every 8h settlement,
+        # and it does so silently. A settlement stamped 16:00:00 carries available_at 16:05:00
+        # (FUNDING_PUBLICATION_LAG_MS). At the 16:00 cycle the row IS in the ts window but the PIT
+        # filter rejects it, because at 16:00 we genuinely could not yet see it. At the 17:00 cycle
+        # the PIT filter passes, but 16:00 now sits outside the half-open (16:00, 17:00]. Too new
+        # for its own bar, too old for the next: the 00:00/08:00/16:00 settlements -- the main
+        # schedule on this venue -- fell through the crack on EVERY cycle. Measured on the live
+        # lake 2026-08-12: windows ending 16:00 and 08:00 both returned 0 events while the book
+        # held 9 perp legs.
+        #
+        # So read a wide ts_funding range and select on AVAILABLE_AT instead. Each event becomes
+        # available exactly once, so `prev < available_at <= cycle` books it exactly once, in the
+        # first cycle where it was honestly knowable -- which is also what a real desk could have
+        # acted on. This is exactly-once BY CONSTRUCTION rather than by the caller remembering
+        # what it already settled (execution/paper.py:763 puts that burden on us), and it picks up
+        # a late-published row instead of dropping it.
+        #
+        # LOOKBACK bounds how late a publication can arrive and still be booked. 24h is far beyond
+        # the 5-minute nominal lag, and costs nothing: the available_at filter below is what
+        # decides, so widening the read cannot double-book.
+        lookback_ms = 24 * 60 * 60 * 1000
+        tbl = reader.funding(perps, start=end - lookback_ms, end=end + 1, as_of=end)
+        # `ts_funding` is timestamp[ms, tz=UTC] in FUNDING_SCHEMA, so `.to_pylist()` yields
+        # datetime objects and the obvious `int(x)` raises TypeError on EVERY non-empty read.
+        # That is not hypothetical: it is what made the 2026-08-06 fix above a no-op for its
+        # entire life. The loop catches bare Exception around this call, so the raise became a
+        # WARN line and the sleeve went on reporting a funding-carry track record containing no
+        # funding — 3 distinct cash levels in 44 days, all of them rebalances. Cast through Arrow,
+        # which is what walkforward.py:1468 and the backtest engine have always done.
+        iids = [str(x) for x in tbl.column("instrument_id").to_pylist()]
+        tss = [int(x) for x in tbl.column("ts_funding").cast(pa.int64()).to_pylist()]
+        rates = [float(x) for x in tbl.column("rate").to_pylist()]
+        avail = [int(x) for x in tbl.column("available_at").cast(pa.int64()).to_pylist()]
+        seen: set[tuple[str, int]] = set()
+        out: list[tuple[str, int, float]] = []
+        for iid, ts, rate, av in zip(iids, tss, rates, avail, strict=True):
+            if not (start < av <= end):
+                continue
+            key = (iid, ts)
+            if key in seen:  # the lake can hold a row twice; never bill the book twice for it
+                continue
+            seen.add(key)
+            out.append((iid, ts, rate))
+        return out
+
     loop = LiveLoop(
         settings,
         store=store,
@@ -712,5 +775,6 @@ def _build_loop(settings: Settings, *, cash: float) -> _LoopBundle:
         ctx_factory=_ContextFactory(reader, settings.data.timeframe),
         instruments_factory=instr_factory,
         initial_cash=cash,
+        funding_source=_funding_source,
     )
     return _LoopBundle(loop, (store, checkpoints, instruments))

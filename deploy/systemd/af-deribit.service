@@ -1,0 +1,16 @@
+[Unit]
+Description=AlphaForge Deribit options-surface research collector
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/alphaforge
+ExecStart=/opt/alphaforge/.venv/bin/python /opt/alphaforge/scripts/deribit_capture.py
+# Research-only and deliberately independent of af-trade.  Bound a hung venue without making a
+# transient research-source failure fatal to any execution, risk, or state-persistence service.
+TimeoutStartSec=900
+Nice=5
+StandardOutput=append:/var/log/af-deribit.log
+StandardError=append:/var/log/af-deribit.log
+

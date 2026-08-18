@@ -11,16 +11,18 @@ pre-registration, deflation, track record, reproducibility), this emits ONE navi
   (2) the validation methodology in plain language — point-in-time data, purged
       walk-forward, Deflated Sharpe (DSR), Probability of Backtest Overfitting (PBO),
       pre-registration, and byte-identity reproducibility;
-  (3) the honest verdicts + ceilings — combined ~0.7-1.0 forward (NOT the 1.46
+  (3) the honest verdicts + ceilings — combined ~0.3-0.9 forward (NOT the in-sample
       in-sample headline), the C+ grade, the crypto capacity cliff + BTC-correlation
       cap, and the equity-momentum-only survivor;
-  (4) the roadmap — the honest path: a live track record first, then a data-investment
+  (4) the roadmap — the honest path: forward evidence, registered discovery, then data investment
       sleeve to lengthen the sample so the verdict can clear deflation.
 
 Honesty rules (the owner's non-negotiable, the soul of the firm):
   - Every published number is read from a real AlphaForge artifact on disk. If a number
     is not in an artifact, it is OMITTED — never fabricated, never rounded into existence.
-  - The forward Sharpe is the deflated 0.7-1.0 expectation, NEVER the 1.46 in-sample.
+  - The forward Sharpe is the deflated 0.3-0.9 expectation, NEVER the in-sample headline.
+    (Band lowered 0.7-1.0 -> 0.3-0.9 on 2026-07-29; these exporters were not updated
+    with it and kept publishing the superseded, flattering band until 2026-08-06.)
   - Killed factors are published with their real NEGATIVE net Sharpes.
   - The crypto-perp deflation FAILURE (DSR 0.21, PBO 0.88, NO-DEPLOY) is shown as a
     feature, not buried.
@@ -42,6 +44,8 @@ import json
 from pathlib import Path
 from typing import Any, Final
 
+from alphaforge.validation.experiments import ExperimentLog, ExperimentUnion
+
 # ---------------------------------------------------------------------------
 # Paths. All resolved absolute so the export is reproducible from any cwd.
 # ---------------------------------------------------------------------------
@@ -53,6 +57,237 @@ STATE_JSON: Final[Path] = REPO / "data" / "paper" / "state.json"
 GOLDEN_MASTER: Final[Path] = REPO / "tests" / "integration" / "test_golden_master.py"
 PRE_REGISTRATION_MD: Final[Path] = REPO / "docs" / "design" / "PRE_REGISTRATION.md"
 CROSS_ASSET_BOOK_MD: Final[Path] = REPO / "docs" / "design" / "CROSS_ASSET_BOOK.md"
+SLEEVE_DISCOVERY_JSON: Final[Path] = REPO / "config" / "sleeve_discovery.json"
+SLEEVE_ATLAS_JSON: Final[Path] = REPO / "artifacts" / "discovery" / "sleeve_atlas.json"
+SLEEVE_ATLAS_AUDIT_JSON: Final[Path] = (
+    REPO / "artifacts" / "discovery" / "sleeve_atlas_audit.json"
+)
+SLEEVE_LINEAGE_AUDIT_JSON: Final[Path] = (
+    REPO / "artifacts" / "discovery" / "sleeve_family_lineage_audit.json"
+)
+SLEEVE_ADMISSION_CONTRACT_JSON: Final[Path] = (
+    REPO / "config" / "sleeve_admission_contract.json"
+)
+TRIAL_ACCOUNTING_POLICY_JSON: Final[Path] = REPO / "config" / "trial_accounting.json"
+LEGACY_DSR_EXCEPTIONS_JSON: Final[Path] = REPO / "config" / "legacy_dsr_exceptions.json"
+LEGACY_DSR_RESTATEMENT_JSON: Final[Path] = (
+    REPO / "artifacts" / "audit" / "legacy_dsr_restatement.json"
+)
+LEGACY_DSR_RESTATEMENT_MD: Final[Path] = (
+    REPO / "docs" / "research" / "LEGACY_DSR_RESTATEMENT.md"
+)
+EXECUTION_REALISM_MD: Final[Path] = REPO / "docs" / "research" / "EXECUTION_REALISM.md"
+EXECUTION_BENCHMARK_JSON: Final[Path] = (
+    REPO / "artifacts" / "benchmarks" / "execution_models.json"
+)
+FUTURES_EXECUTION_CONTRACT_JSON: Final[Path] = (
+    REPO / "artifacts" / "engineering" / "futures_execution_contract.json"
+)
+FUTURES_EXECUTION_FOUNDATION_MD: Final[Path] = (
+    REPO / "docs" / "research" / "FUTURES_EXECUTION_FOUNDATION.md"
+)
+OPTIONS_EXECUTION_CONTRACT_JSON: Final[Path] = (
+    REPO / "artifacts" / "engineering" / "options_execution_contract.json"
+)
+OPTIONS_EXECUTION_FOUNDATION_MD: Final[Path] = (
+    REPO / "docs" / "research" / "OPTIONS_EXECUTION_FOUNDATION.md"
+)
+BORROW_EXECUTION_CONTRACT_JSON: Final[Path] = (
+    REPO / "artifacts" / "engineering" / "borrow_execution_contract.json"
+)
+BORROW_EXECUTION_FOUNDATION_MD: Final[Path] = (
+    REPO / "docs" / "research" / "BORROW_EXECUTION_FOUNDATION.md"
+)
+MARKET_STATUS_CONTRACT_JSON: Final[Path] = (
+    REPO / "artifacts" / "engineering" / "market_status_contract.json"
+)
+MARKET_STATUS_REPLAY_MD: Final[Path] = REPO / "docs" / "research" / "MARKET_STATUS_REPLAY.md"
+CROWDING_RISK_CONTRACT_JSON: Final[Path] = (
+    REPO / "artifacts" / "engineering" / "crowding_risk_contract.json"
+)
+CROWDING_RISK_FOUNDATION_MD: Final[Path] = (
+    REPO / "docs" / "research" / "CROWDING_RISK_FOUNDATION.md"
+)
+CORPORATE_ACTION_CONTRACT_JSON: Final[Path] = (
+    REPO / "artifacts" / "engineering" / "corporate_action_contract.json"
+)
+CORPORATE_ACTION_LIFECYCLE_MD: Final[Path] = (
+    REPO / "docs" / "research" / "CORPORATE_ACTION_LIFECYCLE.md"
+)
+FINANCING_CONTRACT_JSON: Final[Path] = (
+    REPO / "artifacts" / "engineering" / "financing_contract.json"
+)
+FINANCING_REPLAY_MD: Final[Path] = REPO / "docs" / "research" / "FINANCING_REPLAY.md"
+LINT_DEBT_CONTRACT_JSON: Final[Path] = (
+    REPO / "artifacts" / "engineering" / "lint_debt_contract.json"
+)
+ENGINEERING_QUALITY_MD: Final[Path] = (
+    REPO / "docs" / "research" / "ENGINEERING_QUALITY.md"
+)
+TRIAL_DEBT_RECONCILIATION_JSON: Final[Path] = (
+    REPO / "artifacts" / "audit" / "trial_debt_reconciliation.json"
+)
+LITERATURE_FRONTIER_MD: Final[Path] = (
+    REPO / "docs" / "design" / "LITERATURE_FRONTIER_2026_08_16.md"
+)
+REPURCHASE_LITERATURE_MD: Final[Path] = (
+    REPO / "docs" / "design" / "LITERATURE_REPURCHASE_ISSUANCE_FLOW.md"
+)
+REPURCHASE_FEASIBILITY_MD: Final[Path] = (
+    REPO / "docs" / "design" / "FEASIBILITY_REPURCHASE_ISSUANCE_FLOW.md"
+)
+OPTIONS_DISPERSION_LITERATURE_MD: Final[Path] = (
+    REPO / "docs" / "design" / "LITERATURE_OPTIONS_DISPERSION.md"
+)
+OPTIONS_DISPERSION_FEASIBILITY_MD: Final[Path] = (
+    REPO / "docs" / "design" / "FEASIBILITY_OPTIONS_DISPERSION.md"
+)
+STABLECOIN_LITERATURE_MD: Final[Path] = (
+    REPO / "docs" / "design" / "LITERATURE_STABLECOIN_DISLOCATION.md"
+)
+STABLECOIN_FEASIBILITY_MD: Final[Path] = (
+    REPO / "docs" / "design" / "FEASIBILITY_STABLECOIN_DISLOCATION.md"
+)
+SPIN_OFF_LITERATURE_MD: Final[Path] = (
+    REPO / "docs" / "design" / "LITERATURE_SPIN_OFF_DISLOCATION.md"
+)
+SPIN_OFF_LINEAGE_MD: Final[Path] = (
+    REPO / "docs" / "design" / "FEASIBILITY_SPIN_OFF_DISLOCATION.md"
+)
+SPIN_OFF_DOCUMENT_MD: Final[Path] = (
+    REPO / "docs" / "design" / "FEASIBILITY_SPIN_OFF_DOCUMENT_SCHEMA.md"
+)
+SPIN_OFF_LINEAGE_RESULT: Final[Path] = (
+    REPO / "artifacts" / "feasibility" / "spin_off_dislocation" / "result.json"
+)
+SPIN_OFF_DOCUMENT_RESULT: Final[Path] = (
+    REPO
+    / "artifacts"
+    / "feasibility"
+    / "spin_off_dislocation"
+    / "document_schema_result.json"
+)
+ELECTRICITY_LITERATURE_MD: Final[Path] = (
+    REPO / "docs" / "design" / "LITERATURE_ELECTRICITY_LOAD_WEATHER.md"
+)
+ELECTRICITY_FEASIBILITY_MD: Final[Path] = (
+    REPO / "docs" / "design" / "FEASIBILITY_ELECTRICITY_LOAD_WEATHER.md"
+)
+ELECTRICITY_FEASIBILITY_RESULT: Final[Path] = (
+    REPO / "artifacts" / "feasibility" / "electricity_load_weather" / "result.json"
+)
+NATURAL_GAS_LITERATURE_MD: Final[Path] = (
+    REPO / "docs" / "design" / "LITERATURE_NATURAL_GAS_STORAGE_WEATHER.md"
+)
+NATURAL_GAS_FEASIBILITY_MD: Final[Path] = (
+    REPO / "docs" / "design" / "FEASIBILITY_NATURAL_GAS_STORAGE_WEATHER.md"
+)
+NATURAL_GAS_FEASIBILITY_RESULT: Final[Path] = (
+    REPO / "artifacts" / "feasibility" / "natural_gas_storage_weather" / "result.json"
+)
+CUSTOMER_SUPPLIER_LITERATURE_MD: Final[Path] = (
+    REPO / "docs" / "design" / "LITERATURE_CUSTOMER_SUPPLIER_PROPAGATION.md"
+)
+CUSTOMER_SUPPLIER_FEASIBILITY_MD: Final[Path] = (
+    REPO / "docs" / "design" / "FEASIBILITY_CUSTOMER_SUPPLIER_PROPAGATION.md"
+)
+CUSTOMER_SUPPLIER_FEASIBILITY_RESULT: Final[Path] = (
+    REPO
+    / "artifacts"
+    / "feasibility"
+    / "customer_supplier_propagation"
+    / "result.json"
+)
+BOND_ETF_NAV_LITERATURE_MD: Final[Path] = (
+    REPO / "docs" / "design" / "LITERATURE_BOND_ETF_NAV_DISLOCATION.md"
+)
+BOND_ETF_NAV_FEASIBILITY_MD: Final[Path] = (
+    REPO / "docs" / "design" / "FEASIBILITY_BOND_ETF_NAV_DISLOCATION.md"
+)
+BOND_ETF_NAV_FEASIBILITY_RESULT: Final[Path] = (
+    REPO / "artifacts" / "feasibility" / "bond_etf_nav_dislocation" / "result.json"
+)
+TREASURY_FEASIBILITY_MD: Final[Path] = (
+    REPO / "docs" / "design" / "FEASIBILITY_TREASURY_AUCTION_CONCESSION.md"
+)
+TREASURY_FEASIBILITY_RESULT: Final[Path] = (
+    REPO / "artifacts" / "feasibility" / "treasury_auction_concession" / "result.json"
+)
+TREASURY_TIMING_MD: Final[Path] = (
+    REPO / "docs" / "design" / "FEASIBILITY_TREASURY_AUCTION_IDENTITY_TIMING.md"
+)
+TREASURY_TIMING_RESULT: Final[Path] = (
+    REPO
+    / "artifacts"
+    / "feasibility"
+    / "treasury_auction_concession"
+    / "identity_timing.json"
+)
+TREASURY_TENTATIVE_SCHEDULE_RESULT: Final[Path] = (
+    REPO
+    / "artifacts"
+    / "feasibility"
+    / "treasury_auction_concession"
+    / "tentative_schedule_audit.json"
+)
+TREASURY_WAYBACK_SCHEDULE_RESULT: Final[Path] = (
+    REPO
+    / "artifacts"
+    / "feasibility"
+    / "treasury_auction_concession"
+    / "wayback_schedule_audit.json"
+)
+TREASURY_WAYBACK_PDF_SCHEDULE_RESULT: Final[Path] = (
+    REPO
+    / "artifacts"
+    / "feasibility"
+    / "treasury_auction_concession"
+    / "wayback_pdf_schedule_audit.json"
+)
+TREASURY_CALENDAR_REVISION_RESULT: Final[Path] = (
+    REPO
+    / "artifacts"
+    / "feasibility"
+    / "treasury_auction_concession"
+    / "calendar_revision_audit.json"
+)
+CFTC_FEASIBILITY_MD: Final[Path] = (
+    REPO / "docs" / "design" / "FEASIBILITY_CFTC_HEDGING_PRESSURE.md"
+)
+CFTC_FEASIBILITY_RESULT: Final[Path] = (
+    REPO / "artifacts" / "feasibility" / "cftc_hedging_pressure" / "result.json"
+)
+ALPHAVINTAGE_CORRECTION_MD: Final[Path] = (
+    REPO / "docs" / "design" / "CORRECTION_ALPHAVINTAGE_MISSING_RELEASE.md"
+)
+PRE_FOMC_FEASIBILITY_MD: Final[Path] = (
+    REPO / "docs" / "design" / "FEASIBILITY_PRE_FOMC_ANNOUNCEMENT_DRIFT.md"
+)
+PRE_FOMC_FEASIBILITY_RESULT: Final[Path] = (
+    REPO / "artifacts" / "feasibility" / "pre_fomc_announcement_drift" / "result.json"
+)
+PRE_FOMC_SCHEDULE_LINEAGE_RESULT: Final[Path] = (
+    REPO
+    / "artifacts"
+    / "feasibility"
+    / "pre_fomc_announcement_drift"
+    / "annual_schedule_lineage.json"
+)
+PRE_FOMC_PREREG_MD: Final[Path] = (
+    REPO / "docs" / "design" / "PREREG_PRE_FOMC_ANNOUNCEMENT_DRIFT.md"
+)
+PRE_FOMC_MARKET_DATA_READINESS_RESULT: Final[Path] = (
+    REPO
+    / "artifacts"
+    / "feasibility"
+    / "pre_fomc_announcement_drift"
+    / "market_data_readiness.json"
+)
+NARRATIVE_PREREG_MD: Final[Path] = (
+    REPO / "docs" / "design" / "PREREG_EARNINGS_NARRATIVE_CHANGE.md"
+)
+NARRATIVE_PROBE_DIR: Final[Path] = REPO / "artifacts" / "probe" / "earnings_narrative_change"
+NARRATIVE_PROBE_RESULT: Final[Path] = NARRATIVE_PROBE_DIR / "result.json"
 VERDICT_MD: Final[Path] = GRAND_BACKTEST_DIR / "verdict.md"
 
 # Two IC report sources, both PIT survivorship-free (UniverseStore membership intervals):
@@ -199,22 +434,185 @@ def rel(path: Path) -> str:
     return str(path.relative_to(REPO))
 
 
+def _trial_label(config: dict[str, Any]) -> str:
+    """Return a compact public label without exporting a giant universe/config payload."""
+    probe = config.get("probe")
+    if isinstance(probe, str) and probe:
+        aggregation = config.get("return_aggregation")
+        return f"{probe} / {aggregation}" if isinstance(aggregation, str) else probe
+    alphas = config.get("alpha_names")
+    if isinstance(alphas, list) and alphas:
+        return " + ".join(str(alpha) for alpha in alphas)
+    for key in ("mechanism", "overlay", "variant"):
+        value = config.get(key)
+        if isinstance(value, str) and value:
+            return value
+    return "unlabelled registered identity"
+
+
+def build_trial_accounting() -> dict[str, Any]:
+    """Build the public union ledger, separating measurements from search identities."""
+    policy = json.loads(TRIAL_ACCOUNTING_POLICY_JSON.read_text())
+    legacy_dsr = json.loads(LEGACY_DSR_EXCEPTIONS_JSON.read_text())
+    legacy_restatement = (
+        json.loads(LEGACY_DSR_RESTATEMENT_JSON.read_text())
+        if LEGACY_DSR_RESTATEMENT_JSON.exists()
+        else None
+    )
+    selection_union = ExperimentUnion.discover(REPO / "var" / "experiments.jsonl", REPO)
+    ledger_paths = [path for path in selection_union.paths if path.exists()]
+    profiles: list[dict[str, Any]] = []
+    union_config_hashes: set[str] = set()
+    union_hypotheses: dict[str, tuple[Any, Path]] = {}
+    total_records = 0
+
+    for path in ledger_paths:
+        ledger = ExperimentLog(path)
+        records = ledger.all()
+        total_records += len(records)
+        union_config_hashes.update(record.config_hash for record in records)
+        for record in records:
+            key = ledger._hypothesis_key(record.config)
+            current = union_hypotheses.get(key)
+            if current is None or record.now_ms < current[0].now_ms:
+                union_hypotheses[key] = (record, path)
+        profiles.append(
+            {
+                "profile": path.parent.name,
+                "source_path": rel(path),
+                "immutable_execution_records": len(records),
+                "distinct_config_hashes": ledger.n_trials(),
+                "hypothesis_identities": ledger.n_hypotheses(),
+                "window_only_remeasurements": ledger.window_only_reevaluations(),
+                "latest_recorded_at": (
+                    dt.datetime.fromtimestamp(
+                        max(record.now_ms for record in records) / 1000, tz=dt.UTC
+                    ).isoformat()
+                    if records
+                    else None
+                ),
+            }
+        )
+
+    hypothesis_count = len(union_hypotheses)
+    profile_hypothesis_count = sum(profile["hypothesis_identities"] for profile in profiles)
+    window_only_count = sum(profile["window_only_remeasurements"] for profile in profiles)
+    cross_profile_duplicates = profile_hypothesis_count - hypothesis_count
+    budget = int(policy["hypothesis_identity_budget"])
+    recent = []
+    for key, (record, path) in sorted(
+        union_hypotheses.items(), key=lambda item: item[1][0].now_ms, reverse=True
+    )[:10]:
+        recent.append(
+            {
+                "hypothesis_key": key,
+                "config_hash": record.config_hash,
+                "label": _trial_label(record.config),
+                "ledger_profile": path.parent.name,
+                "first_recorded_at": dt.datetime.fromtimestamp(
+                    record.now_ms / 1000, tz=dt.UTC
+                ).isoformat(),
+                "observations": record.n_obs,
+                "annualized_sharpe_observed": round(record.sharpe_ann, 6),
+            }
+        )
+
+    return stamp(
+        {
+            "schema": "glassbox.trial-ledger/2",
+            "claim_boundary": (
+                "This ledger proves what was measured and how selection N is counted. It does "
+                "not prove that any identity is profitable, independent, or admissible."
+            ),
+            "accounting_equation": (
+                "immutable execution records - window-only remeasurements - cross-profile "
+                "duplicate identities = distinct union hypothesis identities"
+            ),
+            "immutable_execution_records": total_records,
+            "distinct_config_hashes": len(union_config_hashes),
+            "window_only_remeasurements": window_only_count,
+            "cross_profile_duplicate_identities": cross_profile_duplicates,
+            "distinct_hypothesis_identities": hypothesis_count,
+            "selection_statistics": {
+                "unit": "first_immutable_record_per_hypothesis",
+                "n_hypotheses": selection_union.n_hypotheses(),
+                "sharpe_variance": selection_union.hypothesis_sharpe_variance(),
+                "audit_raw_record_sharpe_variance": selection_union.trial_sharpe_variance(),
+                "interpretation": (
+                    "Operational window remeasurements remain public but cannot alter selection "
+                    "N or selection V[SR]."
+                ),
+            },
+            "ledger_profiles": len(profiles),
+            "hypothesis_identity_budget": budget,
+            "budget_remaining": budget - hypothesis_count,
+            "budget_status": "PASS" if hypothesis_count <= budget else "PAUSE_RESEARCH",
+            "research_status": policy.get("research_status", "ACTIVE"),
+            "definitions": policy["definitions"],
+            "budget_review": policy["budget_review"],
+            "profiles": profiles,
+            "recent_hypothesis_identities": recent,
+            "policy_source_path": rel(TRIAL_ACCOUNTING_POLICY_JSON),
+            "trial_debt_reconciliation": (
+                {
+                    "source_path": rel(TRIAL_DEBT_RECONCILIATION_JSON),
+                    "source_sha256": hashlib.sha256(
+                        TRIAL_DEBT_RECONCILIATION_JSON.read_bytes()
+                    ).hexdigest(),
+                }
+                if TRIAL_DEBT_RECONCILIATION_JSON.exists()
+                else None
+            ),
+            "legacy_dsr_debt": {
+                "status": legacy_dsr["status"],
+                "historical_exception_paths": (
+                    len(legacy_dsr["exceptions"]) + len(legacy_dsr.get("resolved_paths", {}))
+                ),
+                "executable_debt_paths": len(legacy_dsr["exceptions"]),
+                "resolved_code_paths": len(legacy_dsr.get("resolved_paths", {})),
+                "union_registration_paths": len(legacy_dsr.get("union_registration_paths", [])),
+                "claim_boundary": legacy_dsr["claim_boundary"],
+                "source_path": rel(LEGACY_DSR_EXCEPTIONS_JSON),
+                "source_sha256": hashlib.sha256(
+                    LEGACY_DSR_EXCEPTIONS_JSON.read_bytes()
+                ).hexdigest(),
+                "restatement": (
+                    {
+                        "source_path": rel(LEGACY_DSR_RESTATEMENT_JSON),
+                        "source_sha256": hashlib.sha256(
+                            LEGACY_DSR_RESTATEMENT_JSON.read_bytes()
+                        ).hexdigest(),
+                        "summary": legacy_restatement["summary"],
+                    }
+                    if legacy_restatement is not None
+                    else None
+                ),
+            },
+        }
+    )
+
+
 # ---------------------------------------------------------------------------
 # Section 1 — executive summary
 # ---------------------------------------------------------------------------
 def build_executive_summary(state: dict[str, Any]) -> dict[str, Any]:
     """The one-screen honest summary, anchored to the paper-state metrics."""
     m = state["metrics"]
+    sleeves = state["book"]["sleeves"]
+    sleeve_names = ", ".join(str(s["name"]) for s in sleeves)
     return {
         "description": (
-            "We tested a pre-registered suite of factors across crypto and US "
-            "equities. Two survived net of costs: equity 12-1 momentum and crypto "
-            "funding carry. They barely correlate, so the combined book is real but "
-            "modest. It fails multiple-testing deflation in-sample, so deployment "
-            "waits on the live record."
+            f"The current ALPHAC flagship combines {len(sleeves)} live sleeves: {sleeve_names}. "
+            "Their economic inputs differ, but diversification is not treated as proof of alpha. "
+            "No sleeve clears the multiple-testing gate in-sample. AlphaVintage remains visible "
+            "as a paper-trading history but its calendar-correct research verdict is KILLED; it "
+            "is not an admitted sleeve. The live record, including a genuine risk-off episode, "
+            "is the evidence that matters next."
         ),
-        "deployed_sleeves_count": 2,
-        "tested_factor_families_count": 7,
+        "deployed_sleeves_count": len(sleeves),
+        "technically_admitted_sleeves_count": 0,
+        "research_reclassified_killed": ["AlphaVintage"],
+        "tested_factor_families_count": "35+",
         "honest_forward_sharpe_range": m["honest_forward_sharpe"],
         "in_sample_sharpe": m["in_sample_sharpe"],
         "in_sample_grade": m["gauntlet_grade"],
@@ -499,7 +897,7 @@ def build_deflation_gauntlet() -> dict[str, Any]:
 # Section 5 — the combined book (honest verdicts + ceilings)
 # ---------------------------------------------------------------------------
 def build_combined_book(state: dict[str, Any]) -> dict[str, Any]:
-    """Section 5: the two-sleeve book, its honest forward expectation, and its ceilings."""
+    """Section 5: the current book, its honest forward expectation, and its ceilings."""
     m = state["metrics"]
     sleeves = [
         {
@@ -515,12 +913,9 @@ def build_combined_book(state: dict[str, Any]) -> dict[str, Any]:
         "name": state["book"]["name"],
         "style": state["book"]["style"],
         "sleeves": sleeves,
-        "correlation": -0.016,
-        "correlation_stress": {"down_days": -0.44, "stress_union": -0.64},
-        "correlation_note": (
-            "The two sleeves are near-uncorrelated and the correlation strengthens "
-            "negative in stress; they never both hit their worst-2.5% on the same day."
-        ),
+        "correlation": m.get("correlation_value"),
+        "correlation_note": m["correlation"],
+        "strategic_tilt": state["book"].get("strategic_tilt"),
         "in_sample": {
             "window": "2023-07 to 2026-06 (2.9yr research window)",
             "sharpe": m["in_sample_sharpe"],
@@ -533,24 +928,15 @@ def build_combined_book(state: dict[str, Any]) -> dict[str, Any]:
             "return_pct_range": m["honest_forward_return_pct"],
             "realistic_worst_drawdown_pct": m["realistic_worst_dd_pct"],
             "reason": (
-                "The 1.46 in-sample Sharpe sits at the ~71st percentile of its own rolling "
-                "windows; 2025 was nearly flat (Sharpe 0.40) and the 2026 spike inflates "
-                "the headline. The crypto-carry edge is assumed to decay. Forward "
-                "expectation after deflation is ~0.7-1.0, NOT 1.46."
+                "The research window is short, multiple strategies were searched, and every "
+                "standalone sleeve remains below the stated deflation gate. The published "
+                "forward band is therefore deliberately below the in-sample headline."
             ),
         },
         "deflation": {
-            "combined_dsr_at_n69": 0.44,
-            "combined_dsr_at_n518": 0.19,
             "dsr_gate": DSR_GATE,
             "dsr_pass": False,
-            "standalone_equity_dsr": 0.341,
-            "standalone_crypto_dsr": 0.039,
-            "note": (
-                "Structure survives (PIT-clean, decorrelated) but the in-sample magnitude "
-                "fails multiple-testing deflation: the expected-max Sharpe of pure noise "
-                "overtakes this book at only N=50. The sample (~2.9yr, 2 bets) is too short."
-            ),
+            "note": m["gauntlet_pass"],
         },
         "ceilings": {
             "equity_capacity_usd": "1B+ at Reg-T 2x gross",
@@ -614,32 +1000,42 @@ def build_track_record(state: dict[str, Any]) -> dict[str, Any]:
 # Section 7 — roadmap (the honest path forward)
 # ---------------------------------------------------------------------------
 def build_roadmap() -> dict[str, Any]:
-    """Section 7: the honest path — a live record first, then a data-investment sleeve."""
+    """Section 7: the honest path — forward evidence, discovery, then data investment."""
     return {
         "summary": (
-            "The binding constraint is sample length, not idea count. The free-breadth "
-            "path is exhausted: value and quality do not replicate on the narrow "
-            "universe. The honest path is two-step."
+            "The binding constraint is trustworthy evidence, not idea count. The current "
+            "four-sleeve core must earn its record forward while new candidates move through "
+            "one-shot, pre-registered gates. The honest path is three-step."
         ),
         "steps": [
             {
                 "order": 1,
-                "title": "Earn the grade forward — a live paper track record",
+                "title": "Earn the current book forward",
                 "detail": (
-                    "Run the frozen two-sleeve book for 6-12 months of genuinely "
-                    "out-of-sample paper/live evidence before any real capital, confirming "
-                    "the carry edge persists. No re-combine, no config rescue."
+                    "Accrue genuinely out-of-sample paper evidence on the four equal-quarter "
+                    "neutral sleeves, with the +10% strategic beta overlay reported separately. "
+                    "Do not relabel simulations as realized performance or rescue a weak result "
+                    "with an unregistered configuration change."
                 ),
             },
             {
                 "order": 2,
-                "title": "Invest in data — a deeper, wider survivorship-free universe",
+                "title": "Execute the registered discovery queue",
                 "detail": (
-                    "Add a ~20-year / ~3000-name Sharadar fundamentals universe to "
-                    "(a) lengthen the sample so the verdict can clear honest "
-                    "multiple-testing deflation, and (b) unlock genuinely decorrelated "
-                    "value / quality / small-cap sleeves that add real breadth — the "
-                    "premia that need small/mid caps and a value cycle to appear."
+                    "Test differentiated candidates across narrative, event, options, lending, "
+                    "power, credit, and ownership data under point-in-time, cost, capacity, "
+                    "deflation, and correlation gates. Publish ADD, KILL, or DATA-ESCALATE; "
+                    "never tune a failed one-shot identity after seeing returns."
+                ),
+            },
+            {
+                "order": 3,
+                "title": "Buy data and infrastructure only after evidence",
+                "detail": (
+                    "Escalate to historical borrow/locate, options, broker, execution, or other "
+                    "paid credentials only when a named candidate has cleared every key-free "
+                    "screen. Credentials such as Alpaca belong to approved shadow execution, "
+                    "not to exploratory backtest rescue."
                 ),
             },
         ],
@@ -648,6 +1044,26 @@ def build_roadmap() -> dict[str, Any]:
         ),
         "source_paths": [rel(CROSS_ASSET_BOOK_MD), rel(PRE_REGISTRATION_MD)],
     }
+
+
+def build_active_probe_results() -> list[dict[str, Any]]:
+    """Expose completed one-shot outcomes; never synthesize a pending result."""
+    if not NARRATIVE_PROBE_RESULT.exists():
+        return []
+    result = json.loads(NARRATIVE_PROBE_RESULT.read_text())
+    return [
+        {
+            "id": "earnings_narrative_change",
+            "verdict": result["verdict"],
+            "hypotheses_spent": result["hypotheses_spent"],
+            "metrics": result["metrics"],
+            "gates": result["gates"],
+            "admission_review": result["admission_review"],
+            "lineage": result["lineage"],
+            "public_result": "/glassbox/earnings_narrative_change_result.json",
+            "source_path": rel(NARRATIVE_PROBE_RESULT),
+        }
+    ]
 
 
 # ---------------------------------------------------------------------------
@@ -664,25 +1080,554 @@ def build_research_export() -> dict[str, Any]:
         "honesty_note": (
             "Every published number is read from a real engine artifact. Where a value "
             "does not exist in an artifact it is omitted, never invented. The forward "
-            "Sharpe is the deflated 0.7-1.0 expectation, never the 1.46 in-sample headline; "
+            "Sharpe is the deflated 0.3-0.9 expectation, never the in-sample headline; "
             "killed factors carry their real negative net Sharpes."
         ),
         "executive_summary": build_executive_summary(state),
         "methodology": build_methodology(),
+        "trial_accounting": build_trial_accounting(),
         "factor_research": build_factor_research(rows407, rows888),
         "deflation_gauntlet": build_deflation_gauntlet(),
         "combined_book": build_combined_book(state),
         "track_record": build_track_record(state),
+        "corrections": [
+            {
+                "title": "AlphaVintage missing-release correction protocol",
+                "declared": "2026-08-16",
+                "status": "REVISED RETURNS SEALED / VERDICT KILLED",
+                "hypotheses_added": 0,
+                "calendar_correct_net_sharpe": 0.2298358829229609,
+                "newey_west_t": 1.2673190577321936,
+                "verdict": "KILLED",
+                "curve_sha256": "d277c63ddf2bed6e9314aa863dbbf6adf3f4adb55bd89e8166aee4a19aab415f",
+                "public_path": "/research/alphavintage-missing-release-correction.md",
+                "source_path": rel(ALPHAVINTAGE_CORRECTION_MD),
+            }
+        ],
         "roadmap": build_roadmap(),
+        "active_probe_results": build_active_probe_results(),
+        "sleeve_discovery": {
+            **json.loads(SLEEVE_DISCOVERY_JSON.read_text()),
+            "source_path": rel(SLEEVE_DISCOVERY_JSON),
+        },
+        "sleeve_atlas": {
+            "atlas": json.loads(SLEEVE_ATLAS_JSON.read_text()),
+            "audit": json.loads(SLEEVE_ATLAS_AUDIT_JSON.read_text()),
+            "lineage_audit": json.loads(SLEEVE_LINEAGE_AUDIT_JSON.read_text()),
+            "atlas_public_path": "/glassbox/sleeve_atlas.json",
+            "audit_public_path": "/glassbox/sleeve_atlas_audit.json",
+            "lineage_audit_public_path": "/glassbox/sleeve_family_lineage_audit.json",
+            "atlas_source_path": rel(SLEEVE_ATLAS_JSON),
+            "audit_source_path": rel(SLEEVE_ATLAS_AUDIT_JSON),
+            "lineage_audit_source_path": rel(SLEEVE_LINEAGE_AUDIT_JSON),
+        },
+        "sleeve_admission_contract": {
+            "contract": json.loads(SLEEVE_ADMISSION_CONTRACT_JSON.read_text()),
+            "source_sha256": hashlib.sha256(
+                SLEEVE_ADMISSION_CONTRACT_JSON.read_bytes()
+            ).hexdigest(),
+            "public_path": "/glassbox/sleeve_admission_contract.json",
+            "source_path": rel(SLEEVE_ADMISSION_CONTRACT_JSON),
+        },
+        "engineering_benchmarks": {
+            "execution_fill_models": {
+                "benchmark": json.loads(EXECUTION_BENCHMARK_JSON.read_text()),
+                "source_sha256": hashlib.sha256(
+                    EXECUTION_BENCHMARK_JSON.read_bytes()
+                ).hexdigest(),
+                "public_path": "/glassbox/execution_models_benchmark.json",
+                "source_path": rel(EXECUTION_BENCHMARK_JSON),
+            }
+        },
+        "engineering_quality": {
+            "lint_debt": {
+                "contract": json.loads(LINT_DEBT_CONTRACT_JSON.read_text()),
+                "source_sha256": hashlib.sha256(
+                    LINT_DEBT_CONTRACT_JSON.read_bytes()
+                ).hexdigest(),
+                "public_path": "/glassbox/lint_debt_contract.json",
+                "book_path": "/research/engineering-quality.md",
+                "source_path": rel(LINT_DEBT_CONTRACT_JSON),
+            }
+        },
+        "engineering_capabilities": {
+            "financing": {
+                "contract": json.loads(FINANCING_CONTRACT_JSON.read_text()),
+                "source_sha256": hashlib.sha256(
+                    FINANCING_CONTRACT_JSON.read_bytes()
+                ).hexdigest(),
+                "public_path": "/glassbox/financing_contract.json",
+                "book_path": "/research/financing-replay.md",
+                "source_path": rel(FINANCING_CONTRACT_JSON),
+            },
+            "corporate_action_lifecycle": {
+                "contract": json.loads(CORPORATE_ACTION_CONTRACT_JSON.read_text()),
+                "source_sha256": hashlib.sha256(
+                    CORPORATE_ACTION_CONTRACT_JSON.read_bytes()
+                ).hexdigest(),
+                "public_path": "/glassbox/corporate_action_contract.json",
+                "book_path": "/research/corporate-action-lifecycle.md",
+                "source_path": rel(CORPORATE_ACTION_CONTRACT_JSON),
+            },
+            "borrow_execution": {
+                "contract": json.loads(BORROW_EXECUTION_CONTRACT_JSON.read_text()),
+                "source_sha256": hashlib.sha256(
+                    BORROW_EXECUTION_CONTRACT_JSON.read_bytes()
+                ).hexdigest(),
+                "public_path": "/glassbox/borrow_execution_contract.json",
+                "book_path": "/research/borrow-execution-foundation.md",
+                "source_path": rel(BORROW_EXECUTION_CONTRACT_JSON),
+            },
+            "crowding_risk": {
+                "contract": json.loads(CROWDING_RISK_CONTRACT_JSON.read_text()),
+                "source_sha256": hashlib.sha256(
+                    CROWDING_RISK_CONTRACT_JSON.read_bytes()
+                ).hexdigest(),
+                "public_path": "/glassbox/crowding_risk_contract.json",
+                "book_path": "/research/crowding-risk-foundation.md",
+                "source_path": rel(CROWDING_RISK_CONTRACT_JSON),
+            },
+            "futures_execution": {
+                "contract": json.loads(FUTURES_EXECUTION_CONTRACT_JSON.read_text()),
+                "source_sha256": hashlib.sha256(
+                    FUTURES_EXECUTION_CONTRACT_JSON.read_bytes()
+                ).hexdigest(),
+                "public_path": "/glassbox/futures_execution_contract.json",
+                "book_path": "/research/futures-execution-foundation.md",
+                "source_path": rel(FUTURES_EXECUTION_CONTRACT_JSON),
+            },
+            "market_status_replay": {
+                "contract": json.loads(MARKET_STATUS_CONTRACT_JSON.read_text()),
+                "source_sha256": hashlib.sha256(
+                    MARKET_STATUS_CONTRACT_JSON.read_bytes()
+                ).hexdigest(),
+                "public_path": "/glassbox/market_status_contract.json",
+                "book_path": "/research/market-status-replay.md",
+                "source_path": rel(MARKET_STATUS_CONTRACT_JSON),
+            },
+            "options_execution": {
+                "contract": json.loads(OPTIONS_EXECUTION_CONTRACT_JSON.read_text()),
+                "source_sha256": hashlib.sha256(
+                    OPTIONS_EXECUTION_CONTRACT_JSON.read_bytes()
+                ).hexdigest(),
+                "public_path": "/glassbox/options_execution_contract.json",
+                "book_path": "/research/options-execution-foundation.md",
+                "source_path": rel(OPTIONS_EXECUTION_CONTRACT_JSON),
+            }
+        },
     }
 
 
 def main(out_dir: Path = OUT_DIR) -> Path:
     """Build research.json and write it to ``out_dir``; return the written path."""
+    # Mirrored to the dashboard too (2026-08-06). Writing only to the landing dir left
+    # app.canlicapital.com serving six-week-old glass-box artifacts, including a track
+    # record showing 0.00% over "3 days" while the landing showed -2.54% over 38.
     payload = stamp(build_research_export())
+    stamped = json.dumps(payload, indent=2) + "\n"
+    trial_ledger = json.dumps(payload["trial_accounting"], indent=2) + "\n"
     out_dir.mkdir(parents=True, exist_ok=True)
     path = out_dir / OUT_FILE
-    path.write_text(json.dumps(payload, indent=2) + "\n")
+    path.write_text(stamped)
+    (out_dir / "trial_ledger.json").write_text(trial_ledger)
+    if LEGACY_DSR_RESTATEMENT_JSON.exists():
+        (out_dir / "legacy_dsr_restatement.json").write_text(
+            LEGACY_DSR_RESTATEMENT_JSON.read_text()
+        )
+    discovery = json.dumps(json.loads(SLEEVE_DISCOVERY_JSON.read_text()), indent=2) + "\n"
+    (out_dir / "sleeve_discovery.json").write_text(discovery)
+    (out_dir / "sleeve_atlas.json").write_text(SLEEVE_ATLAS_JSON.read_text())
+    (out_dir / "sleeve_atlas_audit.json").write_text(SLEEVE_ATLAS_AUDIT_JSON.read_text())
+    (out_dir / "sleeve_family_lineage_audit.json").write_text(
+        SLEEVE_LINEAGE_AUDIT_JSON.read_text()
+    )
+    (out_dir / "sleeve_admission_contract.json").write_text(
+        SLEEVE_ADMISSION_CONTRACT_JSON.read_text()
+    )
+    (out_dir / "execution_models_benchmark.json").write_text(
+        EXECUTION_BENCHMARK_JSON.read_text()
+    )
+    (out_dir / "futures_execution_contract.json").write_text(
+        FUTURES_EXECUTION_CONTRACT_JSON.read_text()
+    )
+    (out_dir / "options_execution_contract.json").write_text(
+        OPTIONS_EXECUTION_CONTRACT_JSON.read_text()
+    )
+    (out_dir / "borrow_execution_contract.json").write_text(
+        BORROW_EXECUTION_CONTRACT_JSON.read_text()
+    )
+    (out_dir / "market_status_contract.json").write_text(
+        MARKET_STATUS_CONTRACT_JSON.read_text()
+    )
+    (out_dir / "crowding_risk_contract.json").write_text(
+        CROWDING_RISK_CONTRACT_JSON.read_text()
+    )
+    (out_dir / "corporate_action_contract.json").write_text(
+        CORPORATE_ACTION_CONTRACT_JSON.read_text()
+    )
+    (out_dir / "financing_contract.json").write_text(FINANCING_CONTRACT_JSON.read_text())
+    (out_dir / "lint_debt_contract.json").write_text(LINT_DEBT_CONTRACT_JSON.read_text())
+    literature_dir = out_dir.parent / "research"
+    literature_dir.mkdir(parents=True, exist_ok=True)
+    (literature_dir / "execution-realism.md").write_text(EXECUTION_REALISM_MD.read_text())
+    (literature_dir / "futures-execution-foundation.md").write_text(
+        FUTURES_EXECUTION_FOUNDATION_MD.read_text()
+    )
+    (literature_dir / "options-execution-foundation.md").write_text(
+        OPTIONS_EXECUTION_FOUNDATION_MD.read_text()
+    )
+    (literature_dir / "borrow-execution-foundation.md").write_text(
+        BORROW_EXECUTION_FOUNDATION_MD.read_text()
+    )
+    (literature_dir / "market-status-replay.md").write_text(MARKET_STATUS_REPLAY_MD.read_text())
+    (literature_dir / "crowding-risk-foundation.md").write_text(
+        CROWDING_RISK_FOUNDATION_MD.read_text()
+    )
+    (literature_dir / "corporate-action-lifecycle.md").write_text(
+        CORPORATE_ACTION_LIFECYCLE_MD.read_text()
+    )
+    (literature_dir / "financing-replay.md").write_text(FINANCING_REPLAY_MD.read_text())
+    (literature_dir / "engineering-quality.md").write_text(ENGINEERING_QUALITY_MD.read_text())
+    (literature_dir / "literature-frontier-2026-08-16.md").write_text(
+        LITERATURE_FRONTIER_MD.read_text()
+    )
+    (literature_dir / "literature-repurchase-issuance-flow.md").write_text(
+        REPURCHASE_LITERATURE_MD.read_text()
+    )
+    (literature_dir / "repurchase-issuance-flow-feasibility.md").write_text(
+        REPURCHASE_FEASIBILITY_MD.read_text()
+    )
+    (literature_dir / "literature-options-dispersion.md").write_text(
+        OPTIONS_DISPERSION_LITERATURE_MD.read_text()
+    )
+    (literature_dir / "options-dispersion-feasibility.md").write_text(
+        OPTIONS_DISPERSION_FEASIBILITY_MD.read_text()
+    )
+    (literature_dir / "literature-stablecoin-dislocation.md").write_text(
+        STABLECOIN_LITERATURE_MD.read_text()
+    )
+    (literature_dir / "stablecoin-dislocation-feasibility.md").write_text(
+        STABLECOIN_FEASIBILITY_MD.read_text()
+    )
+    (literature_dir / "literature-spin-off-dislocation.md").write_text(
+        SPIN_OFF_LITERATURE_MD.read_text()
+    )
+    (literature_dir / "spin-off-dislocation-lineage.md").write_text(
+        SPIN_OFF_LINEAGE_MD.read_text()
+    )
+    (literature_dir / "spin-off-document-schema.md").write_text(
+        SPIN_OFF_DOCUMENT_MD.read_text()
+    )
+    (out_dir / "spin_off_lineage.json").write_text(SPIN_OFF_LINEAGE_RESULT.read_text())
+    (out_dir / "spin_off_document_schema.json").write_text(
+        SPIN_OFF_DOCUMENT_RESULT.read_text()
+    )
+    (literature_dir / "literature-electricity-load-weather.md").write_text(
+        ELECTRICITY_LITERATURE_MD.read_text()
+    )
+    (literature_dir / "electricity-load-weather-feasibility.md").write_text(
+        ELECTRICITY_FEASIBILITY_MD.read_text()
+    )
+    (out_dir / "electricity_load_weather_feasibility.json").write_text(
+        ELECTRICITY_FEASIBILITY_RESULT.read_text()
+    )
+    (literature_dir / "literature-natural-gas-storage-weather.md").write_text(
+        NATURAL_GAS_LITERATURE_MD.read_text()
+    )
+    (literature_dir / "natural-gas-storage-weather-feasibility.md").write_text(
+        NATURAL_GAS_FEASIBILITY_MD.read_text()
+    )
+    (out_dir / "natural_gas_storage_weather_feasibility.json").write_text(
+        NATURAL_GAS_FEASIBILITY_RESULT.read_text()
+    )
+    (literature_dir / "literature-customer-supplier-propagation.md").write_text(
+        CUSTOMER_SUPPLIER_LITERATURE_MD.read_text()
+    )
+    (literature_dir / "customer-supplier-propagation-feasibility.md").write_text(
+        CUSTOMER_SUPPLIER_FEASIBILITY_MD.read_text()
+    )
+    (out_dir / "customer_supplier_propagation_feasibility.json").write_text(
+        CUSTOMER_SUPPLIER_FEASIBILITY_RESULT.read_text()
+    )
+    (literature_dir / "literature-bond-etf-nav-dislocation.md").write_text(
+        BOND_ETF_NAV_LITERATURE_MD.read_text()
+    )
+    (literature_dir / "bond-etf-nav-dislocation-feasibility.md").write_text(
+        BOND_ETF_NAV_FEASIBILITY_MD.read_text()
+    )
+    (out_dir / "bond_etf_nav_dislocation_feasibility.json").write_text(
+        BOND_ETF_NAV_FEASIBILITY_RESULT.read_text()
+    )
+    (literature_dir / "treasury-auction-concession-feasibility.md").write_text(
+        TREASURY_FEASIBILITY_MD.read_text()
+    )
+    (out_dir / "treasury_auction_concession_feasibility.json").write_text(
+        TREASURY_FEASIBILITY_RESULT.read_text()
+    )
+    (literature_dir / "treasury-auction-identity-timing.md").write_text(
+        TREASURY_TIMING_MD.read_text()
+    )
+    (out_dir / "treasury_auction_identity_timing.json").write_text(
+        TREASURY_TIMING_RESULT.read_text()
+    )
+    (out_dir / "treasury_tentative_schedule_audit.json").write_text(
+        TREASURY_TENTATIVE_SCHEDULE_RESULT.read_text()
+    )
+    (out_dir / "treasury_wayback_schedule_audit.json").write_text(
+        TREASURY_WAYBACK_SCHEDULE_RESULT.read_text()
+    )
+    (out_dir / "treasury_wayback_pdf_schedule_audit.json").write_text(
+        TREASURY_WAYBACK_PDF_SCHEDULE_RESULT.read_text()
+    )
+    (out_dir / "treasury_calendar_revision_audit.json").write_text(
+        TREASURY_CALENDAR_REVISION_RESULT.read_text()
+    )
+    (literature_dir / "cftc-hedging-pressure-feasibility.md").write_text(
+        CFTC_FEASIBILITY_MD.read_text()
+    )
+    (out_dir / "cftc_hedging_pressure_feasibility.json").write_text(
+        CFTC_FEASIBILITY_RESULT.read_text()
+    )
+    (literature_dir / "alphavintage-missing-release-correction.md").write_text(
+        ALPHAVINTAGE_CORRECTION_MD.read_text()
+    )
+    (literature_dir / "pre-fomc-announcement-drift-feasibility.md").write_text(
+        PRE_FOMC_FEASIBILITY_MD.read_text()
+    )
+    (out_dir / "pre_fomc_announcement_drift_feasibility.json").write_text(
+        PRE_FOMC_FEASIBILITY_RESULT.read_text()
+    )
+    (out_dir / "pre_fomc_schedule_lineage.json").write_text(
+        PRE_FOMC_SCHEDULE_LINEAGE_RESULT.read_text()
+    )
+    (literature_dir / "prereg-pre-fomc-announcement-drift.md").write_text(
+        PRE_FOMC_PREREG_MD.read_text()
+    )
+    (out_dir / "pre_fomc_market_data_readiness.json").write_text(
+        PRE_FOMC_MARKET_DATA_READINESS_RESULT.read_text()
+    )
+    (literature_dir / "prereg-earnings-narrative-change.md").write_text(
+        NARRATIVE_PREREG_MD.read_text()
+    )
+    for source_name, public_name in (
+        ("result.json", "earnings_narrative_change_result.json"),
+        ("input_data_manifest.json", "earnings_narrative_change_input_data_manifest.json"),
+        ("diversification.json", "earnings_narrative_change_diversification.json"),
+    ):
+        source = NARRATIVE_PROBE_DIR / source_name
+        if source.exists():
+            (out_dir / public_name).write_text(source.read_text())
+    if out_dir.resolve() == OUT_DIR.resolve():
+        app_dir = REPO.parent / "meridian-app" / "public" / "glassbox"
+        app_dir.mkdir(parents=True, exist_ok=True)
+        (app_dir / OUT_FILE).write_text(stamped)
+        (app_dir / "trial_ledger.json").write_text(trial_ledger)
+        if LEGACY_DSR_RESTATEMENT_JSON.exists():
+            (app_dir / "legacy_dsr_restatement.json").write_text(
+                LEGACY_DSR_RESTATEMENT_JSON.read_text()
+            )
+        (app_dir / "sleeve_discovery.json").write_text(discovery)
+        (app_dir / "sleeve_atlas.json").write_text(SLEEVE_ATLAS_JSON.read_text())
+        (app_dir / "sleeve_atlas_audit.json").write_text(
+            SLEEVE_ATLAS_AUDIT_JSON.read_text()
+        )
+        (app_dir / "sleeve_family_lineage_audit.json").write_text(
+            SLEEVE_LINEAGE_AUDIT_JSON.read_text()
+        )
+        (app_dir / "sleeve_admission_contract.json").write_text(
+            SLEEVE_ADMISSION_CONTRACT_JSON.read_text()
+        )
+        (app_dir / "execution_models_benchmark.json").write_text(
+            EXECUTION_BENCHMARK_JSON.read_text()
+        )
+        (app_dir / "futures_execution_contract.json").write_text(
+            FUTURES_EXECUTION_CONTRACT_JSON.read_text()
+        )
+        (app_dir / "options_execution_contract.json").write_text(
+            OPTIONS_EXECUTION_CONTRACT_JSON.read_text()
+        )
+        (app_dir / "borrow_execution_contract.json").write_text(
+            BORROW_EXECUTION_CONTRACT_JSON.read_text()
+        )
+        (app_dir / "market_status_contract.json").write_text(
+            MARKET_STATUS_CONTRACT_JSON.read_text()
+        )
+        (app_dir / "crowding_risk_contract.json").write_text(
+            CROWDING_RISK_CONTRACT_JSON.read_text()
+        )
+        (app_dir / "corporate_action_contract.json").write_text(
+            CORPORATE_ACTION_CONTRACT_JSON.read_text()
+        )
+        (app_dir / "financing_contract.json").write_text(
+            FINANCING_CONTRACT_JSON.read_text()
+        )
+        (app_dir / "lint_debt_contract.json").write_text(
+            LINT_DEBT_CONTRACT_JSON.read_text()
+        )
+        app_literature_dir = app_dir.parent / "research"
+        app_literature_dir.mkdir(parents=True, exist_ok=True)
+        (app_literature_dir / "execution-realism.md").write_text(
+            EXECUTION_REALISM_MD.read_text()
+        )
+        (app_literature_dir / "futures-execution-foundation.md").write_text(
+            FUTURES_EXECUTION_FOUNDATION_MD.read_text()
+        )
+        (app_literature_dir / "options-execution-foundation.md").write_text(
+            OPTIONS_EXECUTION_FOUNDATION_MD.read_text()
+        )
+        (app_literature_dir / "borrow-execution-foundation.md").write_text(
+            BORROW_EXECUTION_FOUNDATION_MD.read_text()
+        )
+        (app_literature_dir / "market-status-replay.md").write_text(
+            MARKET_STATUS_REPLAY_MD.read_text()
+        )
+        (app_literature_dir / "crowding-risk-foundation.md").write_text(
+            CROWDING_RISK_FOUNDATION_MD.read_text()
+        )
+        (app_literature_dir / "corporate-action-lifecycle.md").write_text(
+            CORPORATE_ACTION_LIFECYCLE_MD.read_text()
+        )
+        (app_literature_dir / "financing-replay.md").write_text(
+            FINANCING_REPLAY_MD.read_text()
+        )
+        (app_literature_dir / "engineering-quality.md").write_text(
+            ENGINEERING_QUALITY_MD.read_text()
+        )
+        if LEGACY_DSR_RESTATEMENT_MD.exists():
+            (app_literature_dir / "legacy-dsr-restatement.md").write_text(
+                LEGACY_DSR_RESTATEMENT_MD.read_text()
+            )
+        (app_literature_dir / "literature-frontier-2026-08-16.md").write_text(
+            LITERATURE_FRONTIER_MD.read_text()
+        )
+        (app_literature_dir / "literature-repurchase-issuance-flow.md").write_text(
+            REPURCHASE_LITERATURE_MD.read_text()
+        )
+        (app_literature_dir / "repurchase-issuance-flow-feasibility.md").write_text(
+            REPURCHASE_FEASIBILITY_MD.read_text()
+        )
+        (app_literature_dir / "literature-options-dispersion.md").write_text(
+            OPTIONS_DISPERSION_LITERATURE_MD.read_text()
+        )
+        (app_literature_dir / "options-dispersion-feasibility.md").write_text(
+            OPTIONS_DISPERSION_FEASIBILITY_MD.read_text()
+        )
+        (app_literature_dir / "literature-stablecoin-dislocation.md").write_text(
+            STABLECOIN_LITERATURE_MD.read_text()
+        )
+        (app_literature_dir / "stablecoin-dislocation-feasibility.md").write_text(
+            STABLECOIN_FEASIBILITY_MD.read_text()
+        )
+        (app_literature_dir / "literature-spin-off-dislocation.md").write_text(
+            SPIN_OFF_LITERATURE_MD.read_text()
+        )
+        (app_literature_dir / "spin-off-dislocation-lineage.md").write_text(
+            SPIN_OFF_LINEAGE_MD.read_text()
+        )
+        (app_literature_dir / "spin-off-document-schema.md").write_text(
+            SPIN_OFF_DOCUMENT_MD.read_text()
+        )
+        (app_dir / "spin_off_lineage.json").write_text(
+            SPIN_OFF_LINEAGE_RESULT.read_text()
+        )
+        (app_dir / "spin_off_document_schema.json").write_text(
+            SPIN_OFF_DOCUMENT_RESULT.read_text()
+        )
+        (app_literature_dir / "literature-electricity-load-weather.md").write_text(
+            ELECTRICITY_LITERATURE_MD.read_text()
+        )
+        (app_literature_dir / "electricity-load-weather-feasibility.md").write_text(
+            ELECTRICITY_FEASIBILITY_MD.read_text()
+        )
+        (app_dir / "electricity_load_weather_feasibility.json").write_text(
+            ELECTRICITY_FEASIBILITY_RESULT.read_text()
+        )
+        (app_literature_dir / "literature-natural-gas-storage-weather.md").write_text(
+            NATURAL_GAS_LITERATURE_MD.read_text()
+        )
+        (app_literature_dir / "natural-gas-storage-weather-feasibility.md").write_text(
+            NATURAL_GAS_FEASIBILITY_MD.read_text()
+        )
+        (app_dir / "natural_gas_storage_weather_feasibility.json").write_text(
+            NATURAL_GAS_FEASIBILITY_RESULT.read_text()
+        )
+        (
+            app_literature_dir / "literature-customer-supplier-propagation.md"
+        ).write_text(CUSTOMER_SUPPLIER_LITERATURE_MD.read_text())
+        (
+            app_literature_dir / "customer-supplier-propagation-feasibility.md"
+        ).write_text(CUSTOMER_SUPPLIER_FEASIBILITY_MD.read_text())
+        (app_dir / "customer_supplier_propagation_feasibility.json").write_text(
+            CUSTOMER_SUPPLIER_FEASIBILITY_RESULT.read_text()
+        )
+        (app_literature_dir / "literature-bond-etf-nav-dislocation.md").write_text(
+            BOND_ETF_NAV_LITERATURE_MD.read_text()
+        )
+        (
+            app_literature_dir / "bond-etf-nav-dislocation-feasibility.md"
+        ).write_text(BOND_ETF_NAV_FEASIBILITY_MD.read_text())
+        (app_dir / "bond_etf_nav_dislocation_feasibility.json").write_text(
+            BOND_ETF_NAV_FEASIBILITY_RESULT.read_text()
+        )
+        (app_literature_dir / "treasury-auction-concession-feasibility.md").write_text(
+            TREASURY_FEASIBILITY_MD.read_text()
+        )
+        (app_dir / "treasury_auction_concession_feasibility.json").write_text(
+            TREASURY_FEASIBILITY_RESULT.read_text()
+        )
+        (app_literature_dir / "treasury-auction-identity-timing.md").write_text(
+            TREASURY_TIMING_MD.read_text()
+        )
+        (app_dir / "treasury_auction_identity_timing.json").write_text(
+            TREASURY_TIMING_RESULT.read_text()
+        )
+        (app_dir / "treasury_tentative_schedule_audit.json").write_text(
+            TREASURY_TENTATIVE_SCHEDULE_RESULT.read_text()
+        )
+        (app_dir / "treasury_wayback_schedule_audit.json").write_text(
+            TREASURY_WAYBACK_SCHEDULE_RESULT.read_text()
+        )
+        (app_dir / "treasury_wayback_pdf_schedule_audit.json").write_text(
+            TREASURY_WAYBACK_PDF_SCHEDULE_RESULT.read_text()
+        )
+        (app_dir / "treasury_calendar_revision_audit.json").write_text(
+            TREASURY_CALENDAR_REVISION_RESULT.read_text()
+        )
+        (app_literature_dir / "cftc-hedging-pressure-feasibility.md").write_text(
+            CFTC_FEASIBILITY_MD.read_text()
+        )
+        (app_dir / "cftc_hedging_pressure_feasibility.json").write_text(
+            CFTC_FEASIBILITY_RESULT.read_text()
+        )
+        (app_literature_dir / "alphavintage-missing-release-correction.md").write_text(
+            ALPHAVINTAGE_CORRECTION_MD.read_text()
+        )
+        (app_literature_dir / "pre-fomc-announcement-drift-feasibility.md").write_text(
+            PRE_FOMC_FEASIBILITY_MD.read_text()
+        )
+        (app_dir / "pre_fomc_announcement_drift_feasibility.json").write_text(
+            PRE_FOMC_FEASIBILITY_RESULT.read_text()
+        )
+        (app_dir / "pre_fomc_schedule_lineage.json").write_text(
+            PRE_FOMC_SCHEDULE_LINEAGE_RESULT.read_text()
+        )
+        (app_literature_dir / "prereg-pre-fomc-announcement-drift.md").write_text(
+            PRE_FOMC_PREREG_MD.read_text()
+        )
+        (app_dir / "pre_fomc_market_data_readiness.json").write_text(
+            PRE_FOMC_MARKET_DATA_READINESS_RESULT.read_text()
+        )
+        (app_literature_dir / "prereg-earnings-narrative-change.md").write_text(
+            NARRATIVE_PREREG_MD.read_text()
+        )
+        for source_name, public_name in (
+            ("result.json", "earnings_narrative_change_result.json"),
+            ("input_data_manifest.json", "earnings_narrative_change_input_data_manifest.json"),
+            ("diversification.json", "earnings_narrative_change_diversification.json"),
+        ):
+            source = NARRATIVE_PROBE_DIR / source_name
+            if source.exists():
+                (app_dir / public_name).write_text(source.read_text())
     print(f"wrote {path}  ({path.stat().st_size} bytes)")
     print(f"content_hash: {payload['content_hash']}")
     return path

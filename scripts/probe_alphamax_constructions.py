@@ -112,7 +112,7 @@ def _sector_of(instrument_id: str) -> str:
 
 
 # --------------------------------------------------------------------- probe factors
-def _eq_mom_sn_fn(ctx, spec):  # noqa: ANN001, ANN202 — FeatureSpec body signature
+def _eq_mom_sn_fn(ctx, spec):
     """Sector-neutral 12-1 momentum: xs_momentum(252, 21) demeaned per session within sector.
 
     The demeaning group is the compute batch's columns (finite values only, so
@@ -135,7 +135,7 @@ def _eq_mom_sn_fn(ctx, spec):  # noqa: ANN001, ANN202 — FeatureSpec body signa
     return long_series(out, name=spec.name)
 
 
-def _register_probe_specs(reg) -> list[str]:  # noqa: ANN001
+def _register_probe_specs(reg) -> list[str]:
     """Register the two NEW constructions into ``reg`` (idempotent). Returns names added."""
     from alphaforge.features.library import equity_price as _eqp
     from alphaforge.features.spec import Family, FeatureSpec
@@ -367,7 +367,7 @@ def _gauntlet(a: argparse.Namespace) -> int:
     from alphaforge.research import zoo
     from alphaforge.signals.service import SignalService
     from alphaforge.validation.dsr import dsr_from_returns
-    from alphaforge.validation.experiments import ExperimentLog
+    from alphaforge.validation.probe_ledger import selection_context
 
     _SECTOR_BY_ID.update(_load_sector_map())
     zoo.register_all()
@@ -452,17 +452,12 @@ def _gauntlet(a: argparse.Namespace) -> int:
 
     # honest-deflation sensitivity + decorrelation to the baseline curve
     rets = daily_returns(result.equity)
-    led = ExperimentLog(settings.paths.var_dir / "experiments.jsonl")
-    n_ledger, var_sr = led.n_trials(), led.trial_sharpe_variance()
+    n_ledger, var_sr = selection_context(root=_REPO)
     print(
-        f"\nledger: {led.path} N={n_ledger} (this trial recorded) V[SR]={var_sr:.5f}"
+        f"\nselection union: N={n_ledger} (this trial recorded) V[SR]={var_sr:.5f}"
     )
-    print("DSR sensitivity (same OOS daily returns, larger honest N):")
-    n_probe = n_ledger + 2  # + this probe's two NEW screened constructions
-    n_funnel = n_ledger + 2 + 223  # + the whole zoo screen the funnel already ran
-    for label, n in (("ledger", n_ledger), ("+probe screens", n_probe), ("+zoo funnel", n_funnel)):
-        rep = dsr_from_returns(rets, max(2, n), var_sr)
-        print(f"  N={n:>4} ({label:<15}) DSR={float(rep.dsr):.3f} PSR={float(rep.psr):.3f}")
+    rep = dsr_from_returns(rets, max(2, n_ledger), var_sr)
+    print(f"current-union DSR={float(rep.dsr):.3f} PSR={float(rep.psr):.3f}")
 
     if PREREG_EQUITY.exists():
         raw_eq = pd.read_parquet(PREREG_EQUITY)  # columns: ts (epoch ms), equity

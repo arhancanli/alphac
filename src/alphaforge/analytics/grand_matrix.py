@@ -16,7 +16,7 @@ Honest-deflation discipline (the whole point)
 ---------------------------------------------
 The blocking finding of both ``GB_CRITIQUE_*.md`` (B1 / GB1): the runner's own
 ``validation.dsr`` is deflated against ``N`` AS IT STOOD WHEN THAT CONFIG RAN
-(``compute_validation`` records the trial, *then* reads ``log.n_trials()``), so a
+(``compute_validation`` records the trial, *then* reads the union-wide hypothesis count), so a
 config that ran early on the shared ledger is judged against a SMALLER, flattering
 ``SR*`` than one that ran late. That is run-order-dependent and tilts toward
 passing a non-edge. This module therefore NEVER uses the per-config
@@ -50,7 +50,7 @@ if TYPE_CHECKING:
 
     from alphaforge.analytics.walkforward import ValidationReport, WalkForwardResult
     from alphaforge.core.time import Ms
-    from alphaforge.validation.experiments import ExperimentLog
+    from alphaforge.validation.experiments import ExperimentLog, ExperimentUnion
 
 __all__ = [
     "DSR_GATE",
@@ -201,8 +201,8 @@ class CrossConfigDSR:
     """The matrix-level deflation context read off the shared ledger AFTER all
     distinct trials are recorded (so every config sees the SAME final N / V[SR])."""
 
-    n_trials: int  # log.n_trials() -- HONEST distinct-trial count
-    sr_trials_variance: float  # log.trial_sharpe_variance() -- V[SR] (per-period)
+    n_trials: int  # log.n_hypotheses() -- HONEST selection-identity count
+    sr_trials_variance: float  # log.hypothesis_sharpe_variance() -- aligned V[SR]
     expected_max_sr: float  # expected_max_sharpe(max(2, N), V[SR]) -- SR* (per period)
 
     @property
@@ -241,25 +241,38 @@ def cpcv_path_sharpes(result: WalkForwardResult) -> list[float] | None:
     return [float(s) for s in paths]
 
 
-def cross_config_dsr(log: ExperimentLog) -> CrossConfigDSR:
+def cross_config_dsr(log: ExperimentLog | ExperimentUnion) -> CrossConfigDSR:
     """Read the final deflation context off the shared ledger.
 
-    Calls ``log.n_trials()`` and ``log.trial_sharpe_variance()`` (the blessed
-    ExperimentLog API) and ``expected_max_sharpe(max(2, N), V[SR])`` from
+    Calls ``log.n_hypotheses()`` and ``log.hypothesis_sharpe_variance()`` (the
+    identity-aligned ledger API) and ``expected_max_sharpe(max(2, N), V[SR])`` from
     validation.dsr. This is the SHARED ``SR*`` every config's deflated verdict is
     judged against -- the matrix-level honest deflation. Pure read; never records.
 
-    ``V[SR]`` here is whatever ``trial_sharpe_variance`` resolves to: the honester
+    ``V[SR]`` here is whatever ``hypothesis_sharpe_variance`` resolves to: the honester
     WITHIN-CPCV-PATH variance once any trial on the ledger carries ``sharpe_per_path``
     (a wider spread -> a higher ``SR*`` -> a strictly MORE conservative DSR), or the
     legacy between-config variance otherwise. No branch is needed here -- the upgrade
     is transparent through the ExperimentLog API (experiments.py
-    ``trial_sharpe_variance``).
+    ``hypothesis_sharpe_variance``).
     """
     from alphaforge.validation.dsr import expected_max_sharpe
 
-    n_trials = log.n_trials()
-    var_sr = log.trial_sharpe_variance()
+    # n_hypotheses(), NOT n_trials(). Corrected 2026-08-08.
+    #
+    # n_trials() is the ROW count. The live tick re-runs the SAME hypothesis every day on one more
+    # day of data, so the window keys shift, the config hash changes, and a new row is appended:
+    # 50 of var/experiments.jsonl's 135 rows are `eq_mom_252_21` re-measuring AlphaMax. Across the
+    # union that is 185 rows for 133 distinct hypotheses.
+    #
+    # Deflation penalises SEARCHING — how many distinct ideas were tried before one was picked.
+    # Re-measuring today's book on today's data is operations, not search. Counting it inflated
+    # SR* from 1.1776 to 1.2272 (+0.0495 annualised), i.e. this script was holding every candidate
+    # to a bar ~4% too high for no research reason. n_hypotheses() already excludes window-only
+    # variation via _WINDOW_KEYS; it simply was not the function being called here, while the
+    # comment below called the result "HONEST distinct-trial count".
+    n_trials = log.n_hypotheses()
+    var_sr = log.hypothesis_sharpe_variance()
     sr_star = expected_max_sharpe(max(2, n_trials), var_sr)
     return CrossConfigDSR(n_trials=n_trials, sr_trials_variance=var_sr, expected_max_sr=sr_star)
 

@@ -15,6 +15,9 @@ never by convention:
   table** per instrument (leakageCritique.md finding 6): each event carries
   its own ``ts_funding``, so 8h/4h/1h funding intervals are honoured
   automatically — there is no funding clock anywhere in this engine.
+* Equity splits and cash dividends are replayed from the point-in-time
+  corporate-actions table before ex-date fills. Splits transform held and queued
+  quantities; dividends accrue against the signed position entering the ex date.
 * All pricing/fee arithmetic is delegated to the ONE shared
   :class:`~alphaforge.costs.TransactionCostModel` (buildabilityCritique.md
   §3.7) via the fill model — the engine itself never computes a cost.
@@ -29,9 +32,9 @@ closes (execDesign.md §4.1)::
        price proxied by the instrument's close at t_k (documented
        approximation, execDesign.md §4.3)
     2. mark the ledger at close[t_k]; record the equity point
-    3. force-flat delisted instruments (last lake bar closes at t_k while a
-       position is open): closed at the last available close with taker fee —
-       conservative and loud (counted + logged), never a silent hold
+    3. force-flat lifecycle-confirmed delisted instruments at their last lake
+       close with taker fee; a terminal history with no delisting metadata halts
+       instead of being converted into a fabricated exit
     4. strategy.on_bar_close(ctx at t_k) -> target weights (fraction of
        equity, signed; ids absent from the mapping are LEFT UNTOUCHED — return
        an explicit 0.0 to flatten)
@@ -90,7 +93,7 @@ import pandas as pd
 import pyarrow as pa
 
 from alphaforge.analytics import summarize
-from alphaforge.backtest.fills import BarView, FillModel, NextOpenFill
+from alphaforge.backtest.fills import BarView, FillModel, NextOpenFill, ParticipationCappedFill
 from alphaforge.backtest.ledger import Ledger
 from alphaforge.backtest.result import (
     FILLS_COLUMNS,
@@ -99,7 +102,7 @@ from alphaforge.backtest.result import (
     BacktestResult,
 )
 from alphaforge.core.calendar import TradingCalendar, calendar_for
-from alphaforge.core.errors import LookaheadError
+from alphaforge.core.errors import FillUnavailableError, LookaheadError
 from alphaforge.core.instruments import Instrument, InstrumentStore
 from alphaforge.core.time import Ms, Timeframe
 from alphaforge.core.types import (
@@ -113,6 +116,16 @@ from alphaforge.core.types import (
 )
 from alphaforge.costs import MAX_ADV_PARTICIPATION, TransactionCostModel
 from alphaforge.data.store.reader import PITDataReader
+from alphaforge.execution.borrow import (
+    BorrowDataProvider,
+    RecallNotice,
+    accrue_borrow_charge,
+    evaluate_locate,
+    incremental_short_qty,
+)
+from alphaforge.execution.corporate_actions import CorporateAction, CorporateActionType
+from alphaforge.execution.financing import FinancingDataProvider, accrue_financing
+from alphaforge.execution.market_status import MarketStatusProvider, execution_block_reason
 from alphaforge.features.library.vol import ewma_vol_halflife, log_returns
 
 __all__ = [
@@ -157,6 +170,9 @@ COUNTER_NAMES: Final[tuple[str, ...]] = (
     "forced_flat",
     "funding_events_applied",
     "borrow_charges_applied",
+    "corporate_actions_applied",
+    "cash_dividends_applied",
+    "financing_intervals_applied",
 )
 
 
@@ -566,6 +582,19 @@ class EventDrivenBacktester:
         fill_model: Defaults to :class:`NextOpenFill` over ``cost_model``.
         cost_inputs: ADV/sigma provider; defaults to a per-run
             :class:`LakeCostInputs` (1h-only — other timeframes must inject).
+        borrow_data: Optional point-in-time security-lending provider. When present,
+            incremental short orders require quantity-bounded locates and open shorts
+            accrue the security-level fee covering each interval. Known recalls create
+            retryable cover orders and escalate at their deadline. When absent, the existing
+            general-collateral path is unchanged.
+        market_status: Optional coverage-complete point-in-time venue/instrument status
+            provider. Halts, outages and auction-only states block fills; close-only
+            permits only reduce-only orders.
+        financing_data: Optional PIT cash-financing schedule. When enabled, every
+            holding interval requires one quote that covers the full interval. Positive
+            unrestricted cash earns the credit rate, negative cash pays the debit rate,
+            and cash collateralized by short market value receives the explicit
+            short-proceeds rate. Missing coverage halts the run.
         no_trade_band_frac: Suppress orders with ``|Δnotional| <
             band * equity`` (default 0.001 = 10 bps of equity; mirrors
             ``portfolio.no_trade_band``). Risk-REDUCING orders bypass this band
@@ -588,13 +617,16 @@ class EventDrivenBacktester:
 
     __slots__ = (
         "_asset_class",
+        "_borrow_data",
         "_calendar",
         "_clamp_reduce_only_adv",
         "_config_echo",
         "_cost_inputs",
         "_cost_model",
         "_fill_model",
+        "_financing_data",
         "_instruments",
+        "_market_status",
         "_max_order_adv_frac",
         "_no_trade_band_frac",
         "_reader",
@@ -612,6 +644,9 @@ class EventDrivenBacktester:
         calendar: TradingCalendar | None = None,
         fill_model: FillModel | None = None,
         cost_inputs: CostInputProvider | None = None,
+        borrow_data: BorrowDataProvider | None = None,
+        market_status: MarketStatusProvider | None = None,
+        financing_data: FinancingDataProvider | None = None,
         no_trade_band_frac: float = 0.001,
         max_order_adv_frac: float = 0.01,
         clamp_reduce_only_adv: bool = False,
@@ -643,6 +678,9 @@ class EventDrivenBacktester:
         )
         self._fill_model: FillModel = NextOpenFill(cost_model) if fill_model is None else fill_model
         self._cost_inputs = cost_inputs
+        self._borrow_data = borrow_data
+        self._market_status = market_status
+        self._financing_data = financing_data
         self._no_trade_band_frac = no_trade_band_frac
         self._max_order_adv_frac = max_order_adv_frac
         # Opt-in (default OFF = byte-identical, reduce-only bypasses the cap as the golden master
@@ -700,6 +738,15 @@ class EventDrivenBacktester:
                     raise ValueError(f"unknown instrument {iid!r} (no SCD2 record)")
                 inst = history[0][2]
             insts[iid] = inst
+        financing_currency: str | None = None
+        if self._financing_data is not None:
+            currencies = {inst.quote for inst in insts.values()}
+            if len(currencies) != 1:
+                raise ValueError(
+                    "financing replay requires one ledger currency; got "
+                    f"{sorted(currencies)!r}"
+                )
+            financing_currency = next(iter(currencies))
 
         bars = self._load_bars(ids, start=start, end=end)
         # The decision grid is the set of bar *closes*, each modelled as the open
@@ -732,12 +779,12 @@ class EventDrivenBacktester:
         # the raw-close mark fabricates a 1/ratio-sized phantom P&L jump (the ALIT
         # 1-for-20 defect). Crypto/MF paths are untouched: the load is gated on the
         # asset class AND their lakes carry no corporate_actions partitions.
-        splits = (
-            self._load_splits(ids, start=start, end=end)
+        corporate_actions = (
+            self._load_corporate_actions(ids, start=start, end=end)
             if self._asset_class is AssetClass.EQUITY
             else {}
         )
-        split_ptr: dict[str, int] = dict.fromkeys(splits, 0)
+        corporate_action_ptr: dict[str, int] = dict.fromkeys(corporate_actions, 0)
         provider: CostInputProvider = (
             LakeCostInputs(
                 self._reader,
@@ -753,12 +800,41 @@ class EventDrivenBacktester:
 
         ledger = Ledger(initial_cash, insts)
         counters: dict[str, int] = dict.fromkeys(COUNTER_NAMES, 0)
+        if isinstance(self._fill_model, ParticipationCappedFill):
+            counters.update(
+                {
+                    "dropped_no_bar_liquidity": 0,
+                    "partial_fill_orders": 0,
+                    "partial_fill_residual_canceled": 0,
+                }
+            )
+        if self._borrow_data is not None:
+            counters.update(
+                {
+                    "borrow_locates_denied": 0,
+                    "borrow_locates_partial": 0,
+                    "borrow_quotes_missing": 0,
+                    "borrow_recall_fills_applied": 0,
+                    "borrow_recalls_queued": 0,
+                    "dynamic_borrow_charges_applied": 0,
+                    "forced_buy_ins_queued": 0,
+                }
+            )
+        if self._market_status is not None:
+            counters.update(
+                {
+                    "market_status_blocks": 0,
+                    "market_status_close_only_blocks": 0,
+                }
+            )
         order_records: list[dict[str, object]] = []
         position_records: list[dict[str, object]] = []
         reason_by_order: dict[str, str] = {}
         record_by_order: dict[str, dict[str, object]] = {}
         last_close: dict[str, float] = {}
         pending: list[OrderRequest] = []
+        recall_remaining: dict[tuple[str, Ms, Ms, Ms], float] = {}
+        recall_keys_by_order: dict[str, tuple[tuple[str, Ms, Ms, Ms], ...]] = {}
         final_close = grid[-1]
         # Short-borrow carry: a single general-collateral per-day rate (0 for a crypto
         # perp book -> the accrual below is skipped, byte-identical). Accrued on the SHORT
@@ -775,12 +851,69 @@ class EventDrivenBacktester:
             # (never a phantom weekend slot at ``t - tf.ms``).
             prev_open = self._calendar.floor_bar(t - 1, self._tf)
 
+            # (0a-0) cash financing for the interval held into this bar. The
+            # quote selected at the interval start must cover the complete span;
+            # no overnight/weekend rate is forward-filled across an invalidity edge.
+            if (
+                self._financing_data is not None
+                and financing_currency is not None
+                and prev_bar_ts is not None
+            ):
+                financing_quote = self._financing_data.quote(
+                    financing_currency, as_of=prev_bar_ts
+                )
+                if financing_quote is None:
+                    raise ValueError(
+                        f"missing PIT financing quote for {financing_currency!r} "
+                        f"at {prev_bar_ts}"
+                    )
+                short_market_value = sum(
+                    abs(pos.qty) * last_close[pos.instrument_id]
+                    for pos in ledger.positions().values()
+                    if pos.qty < 0.0 and pos.instrument_id in last_close
+                )
+                accrual = accrue_financing(
+                    financing_quote,
+                    cash_balance=ledger.cash,
+                    short_market_value=short_market_value,
+                    start_ts=prev_bar_ts,
+                    end_ts=t,
+                    decision_ts=prev_bar_ts,
+                )
+                ledger.apply_financing(accrual)
+                counters["financing_intervals_applied"] += 1
+
             # (0a) short-borrow carry for the interval [prev_bar_ts, t] on the position
             #      held INTO this bar (BEFORE today's fills change it), marked at the prior
             #      close. days is the CALENDAR gap (1 over a weekday, 3 across a weekend),
             #      so borrow accrues over wall-clock time. Skipped entirely when borrow_rate
             #      is 0 (every crypto book) -> byte-identical.
-            if borrow_rate > 0.0 and prev_bar_ts is not None:
+            if self._borrow_data is not None and prev_bar_ts is not None:
+                for iid, pos in ledger.positions().items():
+                    if pos.qty >= 0.0:
+                        continue
+                    mark = last_close.get(iid)
+                    if mark is None:
+                        continue
+                    quote = self._borrow_data.quote(iid, as_of=prev_bar_ts)
+                    if quote is None:
+                        raise ValueError(
+                            f"missing PIT borrow quote for open short {iid!r} at {prev_bar_ts}"
+                        )
+                    accrue_borrow_charge(
+                        quote,
+                        short_qty=abs(pos.qty),
+                        mark_price=mark,
+                        start_ts=prev_bar_ts,
+                        end_ts=t,
+                        decision_ts=prev_bar_ts,
+                    )
+                    days = (t - prev_bar_ts) / _DAY_MS
+                    rate_per_day = quote.annual_fee_bps * 1e-4 / 365.0
+                    ledger.apply_borrow(iid, t, rate_per_day, days, mark)
+                    counters["borrow_charges_applied"] += 1
+                    counters["dynamic_borrow_charges_applied"] += 1
+            elif borrow_rate > 0.0 and prev_bar_ts is not None:
                 days = (t - prev_bar_ts) / _DAY_MS
                 for iid, pos in ledger.positions().items():
                     if pos.qty < 0.0:
@@ -797,15 +930,16 @@ class EventDrivenBacktester:
             #      record is sanity-checked against the actual price move; a record
             #      whose price did not move (the bogus HON ratio-0.5 row) is logged
             #      and skipped, never applied.
-            if splits:
-                pending = self._apply_due_splits(
-                    splits,
-                    split_ptr,
+            if corporate_actions:
+                pending = self._apply_due_corporate_actions(
+                    corporate_actions,
+                    corporate_action_ptr,
                     bars,
                     ledger,
                     last_close,
                     pending,
                     record_by_order,
+                    counters,
                     prev_open,
                     t,
                 )
@@ -813,7 +947,19 @@ class EventDrivenBacktester:
             # (0) fill orders queued at the previous close against the bar
             #     opening at that close (ts_open == decision_ts).
             for order in pending:
-                self._execute(order, insts, bars, provider, ledger, counters, record_by_order)
+                filled_qty = self._execute(
+                    order, insts, bars, provider, ledger, counters, record_by_order
+                )
+                recall_keys = recall_keys_by_order.pop(order.client_order_id, ())
+                qty_to_allocate = filled_qty
+                for key in recall_keys:
+                    allocated = min(recall_remaining[key], qty_to_allocate)
+                    recall_remaining[key] -= allocated
+                    qty_to_allocate -= allocated
+                    if allocated > 0.0:
+                        counters["borrow_recall_fills_applied"] += 1
+                    if qty_to_allocate <= 0.0:
+                        break
             pending = []
 
             # (1) stored funding events with ts_funding in (prev_close, t];
@@ -840,14 +986,23 @@ class EventDrivenBacktester:
                 t,
             )
 
-            # (3) force-flat delisted instruments (bars end before the run does).
+            # (3) administratively close only lifecycle-confirmed delistings. A terminal
+            #     history for an instrument whose metadata still says active is a stale/
+            #     missing-price defect, not permission to fabricate a same-bar exit.
             if t < final_close:
                 for pos in list(ledger.positions().values()):
                     if last_close_of.get(pos.instrument_id) != t:
                         continue
+                    inst = insts[pos.instrument_id]
+                    if inst.delisted_ts is None or inst.delisted_ts > final_close:
+                        raise ValueError(
+                            f"terminal price history for active instrument "
+                            f"{pos.instrument_id!r} ends at {t}; refusing to infer a "
+                            "delisting or fabricate an exit without lifecycle metadata"
+                        )
                     self._force_flat(
                         pos.instrument_id,
-                        insts[pos.instrument_id],
+                        inst,
                         ledger,
                         last_close[pos.instrument_id],
                         t,
@@ -901,6 +1056,20 @@ class EventDrivenBacktester:
                 reason_by_order,
                 record_by_order,
             )
+            if self._borrow_data is not None:
+                pending = self._queue_borrow_recalls(
+                    pending,
+                    ledger,
+                    insts,
+                    t,
+                    last_close,
+                    recall_remaining,
+                    recall_keys_by_order,
+                    counters,
+                    order_records,
+                    reason_by_order,
+                    record_by_order,
+                )
 
         # Orders decided on the final bar have no t+1: zero fills, loud counter.
         for order in pending:
@@ -931,7 +1100,7 @@ class EventDrivenBacktester:
         ledger: Ledger,
         counters: dict[str, int],
         record_by_order: dict[str, dict[str, object]],
-    ) -> None:
+    ) -> float:
         """Fill one queued order against the bar opening at its decision close.
 
         Missing next bar (per-instrument gap or delisting): the order is
@@ -947,25 +1116,46 @@ class EventDrivenBacktester:
         over a few bars instead of crashing the cost model.
         """
         record = record_by_order[order.client_order_id]
+        if self._market_status is not None:
+            status = self._market_status.status(order.instrument_id, as_of=order.decision_ts)
+            if status is None:
+                raise ValueError(
+                    f"missing PIT market-status coverage for {order.instrument_id!r} "
+                    f"at {order.decision_ts}"
+                )
+            block_reason = execution_block_reason(status, order)
+            if block_reason is not None:
+                counters["market_status_blocks"] += 1
+                if block_reason == "close_only_blocks_risk_increase":
+                    counters["market_status_close_only_blocks"] += 1
+                record["status"] = f"blocked_{block_reason}"
+                return 0.0
         next_bar = bars[order.instrument_id].get(order.decision_ts)
         if next_bar is None:
             counters["dropped_missing_next_bar"] += 1
             record["status"] = "dropped_missing_next_bar"
-            return
+            return 0.0
         adv_quote, sigma_daily = provider.cost_inputs(order.instrument_id, order.decision_ts)
         if not _finite_positive(adv_quote) or not _finite_positive(sigma_daily):
             counters["dropped_no_cost_inputs"] += 1
             record["status"] = "dropped_no_cost_inputs"
-            return
+            return 0.0
         inst = insts[order.instrument_id]
         order = self._clamp_to_adv(order, inst, next_bar.open, adv_quote, counters, record)
-        fill = self._fill_model.fill(
-            order,
-            inst,
-            next_bar,
-            adv_quote=adv_quote,
-            sigma_daily=sigma_daily,
-        )
+        try:
+            fill = self._fill_model.fill(
+                order,
+                inst,
+                next_bar,
+                adv_quote=adv_quote,
+                sigma_daily=sigma_daily,
+            )
+        except FillUnavailableError:
+            counters["dropped_no_bar_liquidity"] = (
+                counters.get("dropped_no_bar_liquidity", 0) + 1
+            )
+            record["status"] = "dropped_no_bar_liquidity"
+            return 0.0
         if fill.ts < order.decision_ts:  # defense in depth against custom fill models
             raise LookaheadError(
                 f"fill model returned ts {fill.ts} before decision {order.decision_ts} "
@@ -973,7 +1163,104 @@ class EventDrivenBacktester:
             )
         ledger.apply_fill(fill)
         counters["fills_applied"] += 1
-        record["status"] = "filled"
+        if fill.qty < order.qty:
+            counters["partial_fill_orders"] = counters.get("partial_fill_orders", 0) + 1
+            counters["partial_fill_residual_canceled"] = (
+                counters.get("partial_fill_residual_canceled", 0) + 1
+            )
+            record["qty"] = fill.qty
+            record["status"] = "partial_fill_residual_canceled"
+        else:
+            record["status"] = "filled"
+        return fill.qty
+
+    def _queue_borrow_recalls(
+        self,
+        pending: list[OrderRequest],
+        ledger: Ledger,
+        insts: Mapping[str, Instrument],
+        t: Ms,
+        last_close: Mapping[str, float],
+        recall_remaining: dict[tuple[str, Ms, Ms, Ms], float],
+        recall_keys_by_order: dict[str, tuple[tuple[str, Ms, Ms, Ms], ...]],
+        counters: dict[str, int],
+        order_records: list[dict[str, object]],
+        reason_by_order: dict[str, str],
+        record_by_order: dict[str, dict[str, object]],
+    ) -> list[OrderRequest]:
+        """Replace conflicting targets with retryable recall-cover orders."""
+        assert self._borrow_data is not None
+        notices_by_instrument: dict[
+            str, list[tuple[tuple[str, Ms, Ms, Ms], RecallNotice]]
+        ] = {}
+        for notice in self._borrow_data.recalls_known(as_of=t):
+            key = (
+                notice.instrument_id,
+                notice.event_ts,
+                notice.available_at,
+                notice.cover_deadline,
+            )
+            recall_remaining.setdefault(key, notice.recalled_qty)
+            if recall_remaining[key] > 0.0:
+                notices_by_instrument.setdefault(notice.instrument_id, []).append((key, notice))
+
+        positions = ledger.positions()
+        out = list(pending)
+        for iid, keyed_notices in sorted(notices_by_instrument.items()):
+            pos = positions.get(iid)
+            current_short = 0.0 if pos is None else max(-pos.qty, 0.0)
+            if current_short == 0.0:
+                for key, _ in keyed_notices:
+                    recall_remaining[key] = 0.0
+                continue
+            if iid not in insts or iid not in last_close:
+                raise ValueError(f"borrow recall references unmarkable instrument {iid!r}")
+            keys = tuple(key for key, _ in keyed_notices)
+            recalled_qty = min(sum(recall_remaining[key] for key in keys), current_short)
+            existing = next((order for order in out if order.instrument_id == iid), None)
+            existing_buy_qty = (
+                existing.qty if existing is not None and existing.side is Side.BUY else 0.0
+            )
+            qty = max(recalled_qty, existing_buy_qty)
+            steps = math.floor(qty / insts[iid].lot_size + 1e-9)
+            qty = steps * insts[iid].lot_size
+            if qty <= 0.0:
+                continue
+            if existing is not None:
+                out.remove(existing)
+                record_by_order[existing.client_order_id]["status"] = "superseded_by_borrow_recall"
+            forced = any(notice.cover_deadline <= t for _, notice in keyed_notices)
+            reason = "forced_buy_in" if forced else "borrow_recall"
+            client_order_id = f"bt-{t}-{iid}-{reason}"
+            order = OrderRequest(
+                client_order_id=client_order_id,
+                instrument_id=iid,
+                side=Side.BUY,
+                qty=qty,
+                order_type=OrderType.MARKET,
+                reduce_only=True,
+                decision_ts=t,
+                decision_price=last_close[iid],
+                reason=reason,
+            )
+            record: dict[str, object] = {
+                "decision_ts": t,
+                "instrument_id": iid,
+                "side": Side.BUY.value,
+                "qty": qty,
+                "decision_price": last_close[iid],
+                "status": "queued",
+                "client_order_id": client_order_id,
+            }
+            out.append(order)
+            order_records.append(record)
+            record_by_order[client_order_id] = record
+            reason_by_order[client_order_id] = reason
+            recall_keys_by_order[client_order_id] = keys
+            counters["borrow_recalls_queued"] += 1
+            if forced:
+                counters["forced_buy_ins_queued"] += 1
+        return out
 
     def _clamp_to_adv(
         self,
@@ -1013,7 +1300,8 @@ class EventDrivenBacktester:
             reduce_cap = MAX_ADV_PARTICIPATION * adv_quote
             if order.qty * ref_price <= reduce_cap:
                 return order
-            steps = math.floor(reduce_cap / (ref_price * inst.lot_size))  # no +eps: stay strictly in-band
+            # No epsilon: remain strictly inside the impact-law validity band.
+            steps = math.floor(reduce_cap / (ref_price * inst.lot_size))
             qty_cap = steps * inst.lot_size
             if qty_cap <= 0.0 or qty_cap >= order.qty:
                 return order  # sub-lot at 5%: let the tripwire halt loudly (broken-guard)
@@ -1175,6 +1463,35 @@ class EventDrivenBacktester:
                 counters["skipped_below_min"] += 1
                 _skip("skipped_below_min", price=price, side=side.value, qty=qty)
                 continue
+            if self._borrow_data is not None and side is Side.SELL:
+                locate_required = incremental_short_qty(
+                    current_signed_qty=held_qty, sell_qty=qty
+                )
+                if locate_required > 0.0:
+                    quote = self._borrow_data.quote(iid, as_of=t)
+                    granted = 0.0
+                    if quote is None:
+                        counters["borrow_quotes_missing"] += 1
+                    elif inst.can_short:
+                        locate = evaluate_locate(
+                            quote, requested_qty=locate_required, decision_ts=t
+                        )
+                        granted = locate.granted_qty
+                    allowed_qty = qty - locate_required + granted
+                    allowed_steps = math.floor(allowed_qty / inst.lot_size + 1e-9)
+                    allowed_qty = allowed_steps * inst.lot_size
+                    if allowed_qty < qty:
+                        if allowed_qty <= 0.0:
+                            counters["borrow_locates_denied"] += 1
+                            _skip(
+                                "dropped_borrow_unavailable",
+                                price=price,
+                                side=side.value,
+                                qty=qty,
+                            )
+                            continue
+                        counters["borrow_locates_partial"] += 1
+                        qty = allowed_qty
             below_min = qty < inst.min_qty or qty * price < inst.min_notional
             if below_min and not reducing:
                 counters["skipped_below_min"] += 1
@@ -1265,149 +1582,134 @@ class EventDrivenBacktester:
             out[str(iid)].append((int(ts_col[i]), float(rate_col[i])))
         return out  # reader returns sorted (instrument_id, ts_funding)
 
-    def _load_splits(
+    def _load_corporate_actions(
         self, ids: Sequence[str], *, start: Ms, end: Ms
-    ) -> dict[str, list[tuple[Ms, float]]]:
-        """Stored SPLIT corporate actions per instrument, ``start <= ex_date < end``.
+    ) -> dict[str, list[CorporateAction]]:
+        """Load validated PIT split/dividend events for ``[start, end)``.
 
-        The marking path's split source (2026-07-18 marking-fix campaign): read once up
-        front through the sanctioned :meth:`PITDataReader.corporate_actions` (PIT
-        predicate ``available_at <= as_of=end`` — a split not yet knowable by the run
-        end stays invisible to this run and is picked up by the next regeneration whose
-        ``end`` has advanced past its ``available_at``). Dividend rows are excluded:
-        only ``action_type == 'split'`` moves the share count. ``ratio`` is the stored
-        ``split_to/split_from`` convention. Returned lists are sorted by ``ex_date``
-        (the reader's sort order); instruments with no split rows map to empty lists
-        pruned out entirely. Crypto/MF lakes carry no corporate_actions partitions, so
-        this is structurally empty (and never even called: the run() call site gates on
-        ``asset_class is EQUITY``).
+        The read is bounded by ``as_of=end`` but every returned event must also have
+        ``available_at <= ex_date``. A late record cannot be replayed at its economic
+        boundary without future data, so the run fails closed rather than retroactively
+        rewriting holdings. Crypto paths never call this method.
         """
         tbl = self._reader.corporate_actions(list(ids), start=start, end=end, as_of=end)
-        out: dict[str, list[tuple[Ms, float]]] = {}
+        out: dict[str, list[CorporateAction]] = {}
         if tbl.num_rows == 0:
             return out
         iid_col = tbl.column("instrument_id").to_pylist()
         type_col = tbl.column("action_type").to_pylist()
         ex_col = tbl.column("ex_date").cast(pa.int64()).to_pylist()
+        available_col = tbl.column("available_at").cast(pa.int64()).to_pylist()
         ratio_col = tbl.column("ratio").to_pylist()
+        cash_col = tbl.column("cash_amount").to_pylist()
         for i, iid in enumerate(iid_col):
-            if str(type_col[i]) != "split":
-                continue
-            out.setdefault(str(iid), []).append((int(ex_col[i]), float(ratio_col[i])))
+            action = CorporateAction(
+                instrument_id=str(iid),
+                action_type=CorporateActionType(str(type_col[i])),
+                ex_date=int(ex_col[i]),
+                available_at=int(available_col[i]),
+                ratio=float(ratio_col[i]),
+                cash_amount=None if cash_col[i] is None else float(cash_col[i]),
+            )
+            action.require_known_before_boundary()
+            out.setdefault(action.instrument_id, []).append(action)
+        for events in out.values():
+            events.sort(key=lambda event: (event.ex_date, event.action_type.value))
         return out
 
-    def _apply_due_splits(
+    def _apply_due_corporate_actions(
         self,
-        splits: Mapping[str, list[tuple[Ms, float]]],
-        split_ptr: dict[str, int],
+        actions: Mapping[str, list[CorporateAction]],
+        action_ptr: dict[str, int],
         bars: Mapping[str, dict[Ms, BarView]],
         ledger: Ledger,
         last_close: dict[str, float],
         pending: list[OrderRequest],
         record_by_order: dict[str, dict[str, object]],
+        counters: dict[str, int],
         prev_open: Ms,
         t: Ms,
     ) -> list[OrderRequest]:
-        """Apply every due split at the ex boundary; return the (possibly rescaled) queue.
+        """Apply due ex-date groups before fills and return the converted order queue.
 
-        A split is DUE once the loop reaches the first bar the instrument actually has
-        at-or-after its ``ex_date`` (``ex_date <= prev_open`` and a bar exists at
-        ``prev_open`` — a halt/gap on the ex session defers resolution to the
-        instrument's next present bar, where the carried pre-split ``last_close`` still
-        anchors the sanity check). Multiple due records (only across such a gap)
-        compound into one product ratio, verified together.
-
-        Resolution per instrument:
-
-        * FLAT at the boundary → the records are consumed with nothing to convert
-          (a position opened by a fill at or after the ex open is already post-split).
-        * Sanity check: ``|log((open_ex / close_pre) * ratio)|`` must be within
-          :data:`_SPLIT_SANITY_MAX_ABS_LOG` (post-split price ≈ pre-split price /
-          ratio). A record that disagrees with the actual price move — the bogus HON
-          ratio-0.5 row whose price never moved — is WARN-logged and skipped: the
-          position stays unconverted exactly as before this fix, and the lake record
-          is never edited. An unverifiable boundary (no carried pre-split close) is
-          also skipped, loudly — this path never fabricates an adjustment it cannot
-          check.
-        * Applied: :meth:`Ledger.apply_split` converts qty·ratio / avg÷ratio (value
-          preserved, equity continuous); the carried ``last_close`` is rescaled to the
-          post-split basis; and this instrument's still-queued orders (decided at the
-          pre-split close in pre-split share counts) are rescaled by ``ratio`` so
-          their notional intent survives the boundary instead of filling 1/ratio-times
-          oversized at the post-split open.
+        Cash dividends accrue against the position held before the ex-date fill, so an
+        order buying at the ex open receives no prior entitlement. Splits convert both
+        open positions and pre-ex queued quantities. Mixed split/dividend events on the
+        same boundary fail closed while exposed because the lake lacks deliverable-basis
+        metadata needed to order them safely.
         """
-        for iid, events in splits.items():
-            ptr = split_ptr[iid]
-            if ptr >= len(events) or events[ptr][0] > prev_open:
-                continue  # nothing due for this instrument yet
-            bar = bars[iid].get(prev_open)
-            if bar is None:
-                continue  # ex-session bar missing: defer to the next present bar
-            ratio = 1.0
-            n_due = 0
-            while ptr < len(events) and events[ptr][0] <= prev_open:
-                ratio *= events[ptr][1]
-                n_due += 1
-                ptr += 1
-            split_ptr[iid] = ptr  # records consumed regardless of the outcome below
-            pos = ledger.positions().get(iid)
-            if pos is None:
-                continue  # flat across the boundary: nothing to convert
-            pre_close = last_close.get(iid)
-            if (
-                not _finite_positive(ratio)
-                or pre_close is None
-                or not _finite_positive(pre_close)
-                or not _finite_positive(bar.open)
-            ):
-                _LOG.warning(
-                    "split for %s at ex<=%d NOT applied: unverifiable boundary "
-                    "(ratio=%r pre_close=%r open_ex=%r) — position left unconverted",
-                    iid,
-                    prev_open,
-                    ratio,
-                    pre_close,
-                    bar.open,
-                )
-                continue
-            log_err = abs(math.log((bar.open / pre_close) * ratio))
-            if log_err > _SPLIT_SANITY_MAX_ABS_LOG:
-                _LOG.warning(
-                    "split record(s) for %s at ex<=%d SKIPPED by sanity guard: stored "
-                    "ratio %.6g disagrees with the actual price move %.6g -> %.6g "
-                    "(|log err| %.3f > %.2f) — bogus/duplicate corporate-action row? "
-                    "Position left unconverted; the lake is not modified.",
-                    iid,
-                    prev_open,
-                    ratio,
-                    pre_close,
-                    bar.open,
-                    log_err,
-                    _SPLIT_SANITY_MAX_ABS_LOG,
-                )
-                continue
-            old_qty = pos.qty
-            ledger.apply_split(iid, t, ratio)
-            last_close[iid] = pre_close / ratio  # carried mark onto the post-split basis
-            rescaled: list[OrderRequest] = []
-            for order in pending:
-                if order.instrument_id == iid:
-                    order = replace(order, qty=order.qty * ratio)
-                    record = record_by_order.get(order.client_order_id)
-                    if record is not None:
-                        record["qty"] = order.qty  # artifact reflects the converted size
-                rescaled.append(order)
-            pending = rescaled
-            _LOG.info(
-                "applied split ratio %.6g (%d record(s)) to %s at %d: qty %.6g -> %.6g, "
-                "value preserved",
-                ratio,
-                n_due,
-                iid,
-                t,
-                old_qty,
-                old_qty * ratio,
-            )
+        for iid, events in actions.items():
+            ptr = action_ptr[iid]
+            while ptr < len(events) and events[ptr].ex_date <= prev_open:
+                ex_date = events[ptr].ex_date
+                end_ptr = ptr
+                while end_ptr < len(events) and events[end_ptr].ex_date == ex_date:
+                    events[end_ptr].require_known_by(t)
+                    end_ptr += 1
+                group = events[ptr:end_ptr]
+                split_events = [
+                    event for event in group if event.action_type is CorporateActionType.SPLIT
+                ]
+                dividends = [
+                    event
+                    for event in group
+                    if event.action_type is CorporateActionType.CASH_DIVIDEND
+                ]
+                pos = ledger.positions().get(iid)
+                has_pending = any(order.instrument_id == iid for order in pending)
+                if split_events and dividends and (pos is not None or has_pending):
+                    raise ValueError(
+                        f"mixed split/dividend boundary for exposed instrument {iid!r} "
+                        f"at {ex_date} lacks deliverable-basis ordering"
+                    )
+                if split_events and (pos is not None or has_pending):
+                    bar = bars[iid].get(prev_open)
+                    if bar is None:
+                        break  # defer conversion until a post-boundary bar is observable
+                    ratio = math.prod(event.ratio for event in split_events)
+                    pre_close = last_close.get(iid)
+                    if (
+                        pre_close is None
+                        or not _finite_positive(pre_close)
+                        or not _finite_positive(bar.open)
+                    ):
+                        raise ValueError(
+                            f"split for {iid!r} at {ex_date} has no verifiable price boundary"
+                        )
+                    log_err = abs(math.log((bar.open / pre_close) * ratio))
+                    if log_err > _SPLIT_SANITY_MAX_ABS_LOG:
+                        _LOG.warning(
+                            "split record(s) for %s at ex=%d SKIPPED by sanity guard: stored "
+                            "ratio %.6g disagrees with the actual price move %.6g -> %.6g "
+                            "(|log err| %.3f > %.2f); position and orders remain unconverted",
+                            iid,
+                            ex_date,
+                            ratio,
+                            pre_close,
+                            bar.open,
+                            log_err,
+                            _SPLIT_SANITY_MAX_ABS_LOG,
+                        )
+                    else:
+                        if pos is not None:
+                            ledger.apply_split(iid, t, ratio)
+                        last_close[iid] = pre_close / ratio
+                        converted: list[OrderRequest] = []
+                        for order in pending:
+                            if order.instrument_id == iid:
+                                order = replace(order, qty=order.qty * ratio)
+                                record = record_by_order.get(order.client_order_id)
+                                if record is not None:
+                                    record["qty"] = order.qty
+                            converted.append(order)
+                        pending = converted
+                        counters["corporate_actions_applied"] += len(split_events)
+                for dividend in dividends:
+                    if ledger.apply_cash_dividend(iid, t, dividend.cash_amount or 0.0) != 0.0:
+                        counters["corporate_actions_applied"] += 1
+                        counters["cash_dividends_applied"] += 1
+                ptr = end_ptr
+                action_ptr[iid] = ptr
         return pending
 
     def _build_result(
@@ -1446,6 +1748,8 @@ class EventDrivenBacktester:
             columns=list(FILLS_COLUMNS),
         )
         funding_frame = ledger.funding_log()
+        corporate_action_frame = ledger.corporate_actions_log()
+        financing_frame = ledger.financing_log()
         counters["funding_events_applied"] = len(funding_frame)
         orders = pd.DataFrame(order_records, columns=list(ORDERS_COLUMNS))
         positions = pd.DataFrame(position_records, columns=list(POSITIONS_COLUMNS))
@@ -1463,6 +1767,8 @@ class EventDrivenBacktester:
             "instrument_ids": list(ids),
             "initial_cash": initial_cash,
             "borrow_total": ledger.total_borrow,
+            "corporate_action_cashflow_total": ledger.total_corporate_actions,
+            "financing_cashflow_total": ledger.total_financing,
             "no_trade_band_frac": self._no_trade_band_frac,
             "max_order_adv_frac": self._max_order_adv_frac,
             "fill_model": type(self._fill_model).__name__,
@@ -1478,6 +1784,8 @@ class EventDrivenBacktester:
             orders=orders,
             positions=positions,
             summary=summary,
+            corporate_actions=corporate_action_frame,
+            financing_events=financing_frame,
             config=config,
             counters=counters,
         )

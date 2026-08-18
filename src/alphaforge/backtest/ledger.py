@@ -20,6 +20,7 @@ With this scheme the fundamental identity holds at every instant and is asserted
 continuously by the test suite::
 
     equity == initial_cash + realized_pnl + unrealized_pnl - fees + funding
+              + borrow + cash_dividends + cash_financing
 
 where ``unrealized_i = qty_i * (close_i - avg_entry_i)`` (perp linear PnL).
 
@@ -72,6 +73,7 @@ import pandas as pd
 from alphaforge.core.instruments import Instrument
 from alphaforge.core.time import Ms
 from alphaforge.core.types import AccountState, Fill, MarketType, Position
+from alphaforge.execution.financing import FinancingAccrual
 
 __all__ = ["Ledger"]
 
@@ -94,6 +96,32 @@ _FUNDING_LOG_COLUMNS: Final[tuple[str, ...]] = (
     "mark_price",
     "position_qty",
     "payment_quote",
+)
+
+_CORPORATE_ACTION_LOG_COLUMNS: Final[tuple[str, ...]] = (
+    "action_ts",
+    "instrument_id",
+    "action_type",
+    "position_qty_before",
+    "ratio",
+    "cash_amount",
+    "cashflow_quote",
+)
+
+_FINANCING_LOG_COLUMNS: Final[tuple[str, ...]] = (
+    "start_ts",
+    "end_ts",
+    "currency",
+    "cash_balance",
+    "unrestricted_credit_base",
+    "short_proceeds_base",
+    "debit_base",
+    "credit_rate_bps",
+    "debit_rate_bps",
+    "short_proceeds_rate_bps",
+    "day_count",
+    "payment_quote",
+    "source",
 )
 
 
@@ -121,9 +149,13 @@ class Ledger:
         "_borrow_records",
         "_borrow_total",
         "_cash",
+        "_corporate_action_records",
+        "_corporate_action_total",
         "_equity_ts",
         "_equity_values",
         "_fill_records",
+        "_financing_records",
+        "_financing_total",
         "_funding_records",
         "_funding_total",
         "_initial_cash",
@@ -145,9 +177,13 @@ class Ledger:
         self._total_fees: float = 0.0
         self._funding_total: float = 0.0
         self._borrow_total: float = 0.0
+        self._corporate_action_total: float = 0.0
+        self._financing_total: float = 0.0
         self._fill_records: list[dict[str, object]] = []
         self._funding_records: list[dict[str, object]] = []
         self._borrow_records: list[dict[str, object]] = []
+        self._corporate_action_records: list[dict[str, object]] = []
+        self._financing_records: list[dict[str, object]] = []
         self._equity_ts: list[Ms] = []
         self._equity_values: list[float] = []
 
@@ -402,6 +438,7 @@ class Ledger:
         pos = self._positions.get(instrument_id)
         if pos is None:
             return
+        position_qty_before = pos.qty
         new_qty = pos.qty * ratio
         new_avg = pos.avg_entry_price / ratio
         _require_finite("split-adjusted qty", new_qty)
@@ -412,6 +449,84 @@ class Ledger:
             avg_entry_price=new_avg,
             opened_ts=pos.opened_ts,
         )
+        self._corporate_action_records.append(
+            {
+                "action_ts": ts,
+                "instrument_id": instrument_id,
+                "action_type": "split",
+                "position_qty_before": position_qty_before,
+                "ratio": ratio,
+                "cash_amount": math.nan,
+                "cashflow_quote": 0.0,
+            }
+        )
+
+    def apply_cash_dividend(self, instrument_id: str, ts: Ms, cash_amount: float) -> float:
+        """Accrue a cash-dividend entitlement against the signed ex-date position.
+
+        Long shares receive and short shares pay ``qty * cash_amount``.  The cash
+        is booked at the ex boundary as a dividend receivable/payable because the
+        current lake schema has no payable date.  This is explicit total-return
+        accounting, not a claim that broker cash settled on the ex date.
+        """
+        if self._instruments.get(instrument_id) is None:
+            raise KeyError(
+                f"dividend references unknown instrument {instrument_id!r}; "
+                "the ledger universe is fixed at construction"
+            )
+        _require_finite("dividend cash_amount", cash_amount)
+        if cash_amount <= 0.0:
+            raise ValueError(f"dividend cash_amount must be > 0, got {cash_amount!r}")
+        pos = self._positions.get(instrument_id)
+        if pos is None:
+            return 0.0
+        payment = pos.qty * cash_amount
+        new_cash = self._cash + payment
+        _require_finite(f"cash after dividend for {instrument_id!r}", new_cash)
+        self._cash = new_cash
+        self._corporate_action_total += payment
+        self._corporate_action_records.append(
+            {
+                "action_ts": ts,
+                "instrument_id": instrument_id,
+                "action_type": "dividend",
+                "position_qty_before": pos.qty,
+                "ratio": 1.0,
+                "cash_amount": cash_amount,
+                "cashflow_quote": payment,
+            }
+        )
+        return payment
+
+    def apply_financing(self, accrual: FinancingAccrual) -> float:
+        """Book a precomputed PIT financing accrual against the unchanged cash base."""
+        if accrual.cash_balance != self._cash:
+            raise ValueError(
+                "financing accrual cash base does not match the ledger balance: "
+                f"{accrual.cash_balance!r} != {self._cash!r}"
+            )
+        new_cash = self._cash + accrual.payment_quote
+        _require_finite("cash after financing", new_cash)
+        self._cash = new_cash
+        self._financing_total += accrual.payment_quote
+        self._financing_records.append(
+            {
+                "start_ts": accrual.start_ts,
+                "end_ts": accrual.end_ts,
+                "currency": accrual.currency,
+                "cash_balance": accrual.cash_balance,
+                "unrestricted_credit_base": accrual.unrestricted_credit_base,
+                "short_proceeds_base": accrual.short_proceeds_base,
+                "debit_base": accrual.debit_base,
+                "credit_rate_bps": accrual.credit_rate_bps,
+                "debit_rate_bps": accrual.debit_rate_bps,
+                "short_proceeds_rate_bps": accrual.short_proceeds_rate_bps,
+                "day_count": accrual.day_count.value,
+                "payment_quote": accrual.payment_quote,
+                "source": accrual.source,
+            }
+        )
+        return accrual.payment_quote
 
     def mark(self, closes: Mapping[str, float], ts: Ms) -> AccountState:
         """Mark the book to market and record an equity-curve point.
@@ -486,6 +601,16 @@ class Ledger:
         """Cumulative short-borrow carry paid in quote units (<= 0; 0 for a crypto book)."""
         return self._borrow_total
 
+    @property
+    def total_corporate_actions(self) -> float:
+        """Net split/dividend cashflow (splits contribute zero)."""
+        return self._corporate_action_total
+
+    @property
+    def total_financing(self) -> float:
+        """Cumulative net cash financing received (signed)."""
+        return self._financing_total
+
     def positions(self) -> dict[str, Position]:
         """Open positions keyed by instrument id (frozen values, fresh dict)."""
         return dict(self._positions)
@@ -518,3 +643,14 @@ class Ledger:
         payment_quote``.
         """
         return pd.DataFrame(self._funding_records, columns=list(_FUNDING_LOG_COLUMNS))
+
+    def corporate_actions_log(self) -> pd.DataFrame:
+        """Applied split conversions and dividend cashflows in event order."""
+        return pd.DataFrame(
+            self._corporate_action_records,
+            columns=list(_CORPORATE_ACTION_LOG_COLUMNS),
+        )
+
+    def financing_log(self) -> pd.DataFrame:
+        """Every cash, margin-debit, and short-collateral accrual interval."""
+        return pd.DataFrame(self._financing_records, columns=list(_FINANCING_LOG_COLUMNS))

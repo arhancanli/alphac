@@ -3,7 +3,8 @@
 All functions are pure: they take an equity ``pd.Series`` indexed by :data:`Ms`
 (UTC epoch milliseconds, strictly increasing) with float64 values in quote units
 (USDT in v1), and return plain floats / Series. Risk-free rate is 0 by crypto
-convention (idle USDT earns nothing in v1; documented per execDesign.md §10.1).
+convention. When an optional financing provider is enabled, realized cash financing is already
+embedded in the equity curve; it is not subtracted again as a Sharpe benchmark.
 
 Headline basis — DAILY aggregation (leakageCritique.md finding 29)
 -------------------------------------------------------------------
@@ -179,7 +180,8 @@ def daily_returns(equity: pd.Series) -> pd.Series:
 def sharpe(returns: pd.Series | npt.NDArray[np.float64], periods_per_year: float) -> float:
     """Annualized Sharpe ratio ``mean(r) / std(r, ddof=1) * sqrt(A)`` (rf = 0).
 
-    Risk-free = 0 by crypto convention (idle USDT earns nothing in v1).
+    Risk-free = 0 by convention. Any configured realized financing cashflows are already
+    reflected in the input equity curve.
     Returns ``nan`` for < 2 observations or zero sample std.
     """
     r = _as_array(returns)

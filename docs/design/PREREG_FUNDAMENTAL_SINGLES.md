@@ -91,3 +91,19 @@ Stated now so it cannot be adjusted afterwards: seven sweeps have returned seven
 composites containing several of these factors already failed. The honest expectation is that
 **most or all of these eight will be nulls**. One survivor would be a good outcome. Zero survivors
 is a perfectly plausible and publishable result.
+
+
+## Machine-checkable declaration
+
+The block below is the ENFORCED contract. `alphaforge.validation.prereg.assert_matches`
+reads it and kills any run whose resolved settings disagree, before compute is spent.
+Added 2026-08-07 after three runs used the wrong lake: two burned a trial and returned a
+silent null, one crashed after four hours. Every declaration was correct; nothing read it.
+
+```prereg
+profile: sharadar
+lake_dir: data/lake_sharadar
+allocator: rank
+universe_allowlist: data/research/universe_allowlist_20260619.json
+universe_sha256: 2fd82d305a777a92591e5e97ff47c036a665f70e86baf4bb5cfec1c16bb76cee
+```

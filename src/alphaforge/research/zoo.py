@@ -52,7 +52,13 @@ _CARRY_SETTLEMENTS = (7, 14, 28, 42, 63, 126, 180)  # canonical 21/90 excluded
 _MR_WINDOWS = (12, 48, 168)  # canonical 24/72 excluded
 
 
-def _variant(base: FeatureSpec, name: str, *, lookback_bars: int, params: dict) -> FeatureSpec:
+def _variant(
+    base: FeatureSpec,
+    name: str,
+    *,
+    lookback_bars: int,
+    params: dict[str, object],
+) -> FeatureSpec:
     """A grid variant of a canonical factor: same family/direction/CS-flag/body, new params."""
     return FeatureSpec(
         name=name,

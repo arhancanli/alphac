@@ -22,7 +22,6 @@ import pytest
 from alphaforge.cli import data_cmds
 from alphaforge.core.time import to_ms
 from alphaforge.data.ingest.checkpoints import CheckpointStore
-from alphaforge.data.schemas import Dataset
 from alphaforge.data.store.lake import LakePaths
 
 _IDS = [f"XUSE:CASH:T{i:03d}USD" for i in range(20)]
@@ -35,7 +34,7 @@ class _CountingSource:
     def __init__(self) -> None:
         self.calls: list[str] = []
 
-    def fetch_corporate_actions(self, instrument_id: str, *, since, until):  # noqa: ANN001
+    def fetch_corporate_actions(self, instrument_id: str, *, since, until):
         self.calls.append(instrument_id)
         return _EMPTY  # no new actions — the common per-run case
 
@@ -51,7 +50,7 @@ def wired(tmp_path: Path, monkeypatch):
     monkeypatch.setattr(data_cmds, "_build_equities_reference", lambda: src)
 
     class _S:  # minimal settings stub — only .paths.lake_dir is read
-        class paths:  # noqa: N801
+        class paths:
             lake_dir = tmp_path / "lake"
 
     return _S, src, tmp_path

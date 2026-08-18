@@ -514,18 +514,20 @@ def _ingest_corporate_actions(
     source = _build_equities_reference()
     writer = LakeWriter(paths)
     actions_total = 0
-    # The reference endpoints are PER-TICKER and ``until`` advances daily, so a naive loop re-fetches
-    # every one of a ~2500-name universe each run (``until > watermark+1`` is ~always true), which
-    # rate-limit-walls a free-tier API and stalled the equity tick (2026-07-20). Two coupled guards:
+    # The reference endpoints are PER-TICKER and ``until`` advances daily, so a naive loop
+    # re-fetches every one of a ~2500-name universe each run (``until > watermark+1`` is
+    # ~always true), which rate-limit-walls a free-tier API and stalled the equity tick
+    # (2026-07-20). Two coupled guards:
     #  (1) a wall-clock RECHECK COOLDOWN: skip a key confirmed within CORP_ACTIONS_RECHECK_MS.
     #  (2) a FORWARD-LOOKING fetch window (now + CORP_ACTIONS_LOOKAHEAD_MS): each poll captures
-    #      actions ANNOUNCED for future ex-dates. Because the lookahead (weeks) exceeds the cooldown
-    #      (days), a key skipped by the cooldown already holds every action ex-ing before its next
-    #      poll — so the cooldown can NEVER let a split reach its ex-date un-ingested (the ALIT bug
-    #      class). The data watermark is advanced only to ``now`` (never to a future ex-date), so the
-    #      near window keeps being rescanned for newly-announced actions; future rows are stored and
-    #      gated by their own ``available_at`` at the adjustment join. First-seen keys are never
-    #      skipped, so a fresh universe still backfills in full.
+    #      actions ANNOUNCED for future ex-dates. Because the lookahead (weeks) exceeds the
+    #      cooldown (days), a key skipped by the cooldown already holds every action ex-ing
+    #      before its next poll — so the cooldown can NEVER let a split reach its ex-date
+    #      un-ingested (the ALIT bug class). The data watermark is advanced only to ``now``
+    #      (never to a future ex-date), so the near window keeps being rescanned for
+    #      newly-announced actions; future rows are stored and gated by their own
+    #      ``available_at`` at the adjustment join. First-seen keys are never skipped, so a
+    #      fresh universe still backfills in full.
     recheck_floor = now - _CORP_ACTIONS_RECHECK_MS
     fetch_until = until + _CORP_ACTIONS_LOOKAHEAD_MS
     skipped_fresh = 0

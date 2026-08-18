@@ -13,8 +13,14 @@ import math
 
 import pytest
 
-from alphaforge.backtest.fills import BarView, FillModel, MakerFill, NextOpenFill
-from alphaforge.core.errors import LookaheadError
+from alphaforge.backtest.fills import (
+    BarView,
+    FillModel,
+    MakerFill,
+    NextOpenFill,
+    ParticipationCappedFill,
+)
+from alphaforge.core.errors import FillUnavailableError, LookaheadError
 from alphaforge.core.instruments import Instrument
 from alphaforge.core.types import (
     AssetClass,
@@ -251,6 +257,71 @@ class TestNextOpenFill:
         cost_model = TransactionCostModel()
         model = NextOpenFill(cost_model)
         assert model.cost_model is cost_model
+
+
+# ------------------------------------------------------ ParticipationCappedFill
+
+
+class TestParticipationCappedFill:
+    def test_satisfies_fill_model_protocol(self) -> None:
+        model: FillModel = ParticipationCappedFill(TransactionCostModel())
+        assert isinstance(model, ParticipationCappedFill)
+
+    def test_partial_fill_is_lot_floored_from_observed_quote_volume(self) -> None:
+        model = ParticipationCappedFill(TransactionCostModel(), max_bar_participation=0.10)
+        order = make_order(qty=100.0)
+        # 10% * $1,000 / $100 = 1 base unit, exactly one lot.
+        fill = model.fill(order, perp(), make_bar(), adv_quote=ADV, sigma_daily=SIGMA)
+
+        assert fill.qty == 1.0
+        assert fill.client_order_id == order.client_order_id
+        assert fill.liquidity is Liquidity.TAKER
+        expected = NextOpenFill(model.cost_model).fill(
+            make_order(qty=1.0), perp(), make_bar(), adv_quote=ADV, sigma_daily=SIGMA
+        )
+        assert fill.price == expected.price
+        assert fill.fee_quote == expected.fee_quote
+
+    def test_order_below_cap_fills_in_full(self) -> None:
+        model = ParticipationCappedFill(TransactionCostModel(), max_bar_participation=0.50)
+        fill = model.fill(
+            make_order(qty=2.0), perp(), make_bar(), adv_quote=ADV, sigma_daily=SIGMA
+        )
+        assert fill.qty == 2.0
+
+    @pytest.mark.parametrize("quote_volume", [0.0, math.nan])
+    def test_missing_or_zero_quote_volume_fails_closed(self, quote_volume: float) -> None:
+        model = ParticipationCappedFill(TransactionCostModel())
+        bar = BarView(
+            ts_open=T0 + HOUR,
+            open=100.0,
+            high=101.0,
+            low=99.0,
+            close=100.0,
+            volume=1.0,
+            quote_volume=quote_volume,
+        )
+        with pytest.raises(FillUnavailableError, match="quote volume"):
+            model.fill(make_order(), perp(), bar, adv_quote=ADV, sigma_daily=SIGMA)
+
+    def test_sub_lot_liquidity_fails_closed(self) -> None:
+        model = ParticipationCappedFill(TransactionCostModel(), max_bar_participation=0.10)
+        bar = BarView(
+            ts_open=T0 + HOUR,
+            open=100.0,
+            high=101.0,
+            low=99.0,
+            close=100.0,
+            volume=0.5,
+            quote_volume=50.0,
+        )
+        with pytest.raises(FillUnavailableError, match="below min_qty/min_notional"):
+            model.fill(make_order(), perp(), bar, adv_quote=ADV, sigma_daily=SIGMA)
+
+    @pytest.mark.parametrize("bad", [0.0, -0.1, 1.1, math.nan, math.inf])
+    def test_rejects_invalid_participation(self, bad: float) -> None:
+        with pytest.raises(ValueError, match="max_bar_participation"):
+            ParticipationCappedFill(TransactionCostModel(), max_bar_participation=bad)
 
 
 # -------------------------------------------------------------------- MakerFill

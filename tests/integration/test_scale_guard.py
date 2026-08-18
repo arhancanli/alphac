@@ -157,6 +157,7 @@ def _build_lake(root: Path) -> tuple[PITDataReader, InstrumentStore, list[str]]:
     return PITDataReader(paths), store, ids
 
 
+@pytest.mark.no_cover
 def test_engine_scale_memory_and_time_guard(tmp_path: Path) -> None:
     """One full run over >100 names stays under explicit peak/wall budgets.
 
@@ -164,6 +165,10 @@ def test_engine_scale_memory_and_time_guard(tmp_path: Path) -> None:
     engine's per-bar ``BarView`` materialization (``_load_bars``) — or anything
     downstream that scales with ``names * bars`` — has regressed at universe
     scale and must be investigated before it reaches a real universe.
+
+    Coverage tracing is disabled for this timing assertion: branch instrumentation
+    multiplies the measured wall time while leaving the workload unchanged. Memory
+    measurement remains active through ``tracemalloc``.
     """
     reader, store, ids = _build_lake(tmp_path)
     # Smallest meaningful slice: one decision early (open a tiny equal-weight

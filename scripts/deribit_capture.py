@@ -22,16 +22,42 @@ from pathlib import Path
 
 import ccxt
 
-ROOT = Path(os.path.expanduser("~/alphaforge/data/deribit"))
+# Resolve from the deployed script, not $HOME.  The VPS runs this service as root from
+# /opt/alphaforge; the old HOME-derived path reported success while writing into
+# /root/alphaforge, outside the lake that sync/monitoring consume.
+_DEFAULT_ROOT = Path(__file__).resolve().parents[1] / "data" / "deribit"
+ROOT = Path(os.environ.get("ALPHAFORGE_DERIBIT_ROOT", str(_DEFAULT_ROOT))).expanduser()
 SNAP = ROOT / "snapshots"
 DVOL = ROOT / "dvol"
+LOAD_ATTEMPTS = 3
+LOAD_BACKOFF_SECONDS = (2.0, 5.0)
+
+
+def _load_markets_with_retry(exchange, *, sleep=time.sleep) -> bool:
+    """Bound retries for the non-critical public metadata call; never raise into cron.
+
+    Deribit's public endpoint has intermittently timed out before any snapshot work starts.  A
+    research collector should retry transiently, then fail loudly and quickly; it must never sit
+    on an execution/risk critical path or leave a traceback as its only machine-readable result.
+    """
+    for attempt in range(1, LOAD_ATTEMPTS + 1):
+        try:
+            exchange.load_markets()
+            return True
+        except Exception as exc:  # venue/network exceptions vary by ccxt version
+            print(f"deribit load_markets attempt {attempt}/{LOAD_ATTEMPTS} failed: {exc}")
+            if attempt < LOAD_ATTEMPTS:
+                sleep(LOAD_BACKOFF_SECONDS[attempt - 1])
+    return False
 
 
 def capture() -> int:
     SNAP.mkdir(parents=True, exist_ok=True)
     DVOL.mkdir(parents=True, exist_ok=True)
-    d = ccxt.deribit({"enableRateLimit": True})
-    d.load_markets()
+    d = ccxt.deribit({"enableRateLimit": True, "timeout": 10_000})
+    if not _load_markets_with_retry(d):
+        print("deribit_capture: FAILED before snapshot; no file written")
+        return 1
     now = int(time.time() * 1000)
     day = datetime.fromtimestamp(now / 1000, UTC).strftime("%Y-%m-%d")
     rows: list[dict] = []

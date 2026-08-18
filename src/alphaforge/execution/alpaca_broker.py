@@ -23,7 +23,7 @@ from __future__ import annotations
 import datetime as dt
 import os
 from pathlib import Path
-from typing import Any, Final
+from typing import Any, Final, cast
 
 import httpx
 
@@ -156,8 +156,17 @@ class AlpacaBroker(Broker):
 
     # ------------------------------------------------------------------ fetch_order
     def fetch_order(self, client_order_id: str) -> Fill | None:
+        """Return any executed quantity for an order, including a terminal partial.
+
+        Alpaca may report a nonzero ``filled_qty`` while status is still
+        ``partially_filled`` or after the residual becomes ``canceled``. Crash
+        recovery must ingest that real position rather than requiring the order
+        to reach the exact ``filled`` status. ``filled_avg_price`` is Alpaca's
+        aggregate execution price, so one aggregate :class:`Fill` faithfully
+        restores the executed quantity known at query time.
+        """
         raw = self._raw_by_client_id(client_order_id)
-        if raw is None or raw.get("status") != "filled":
+        if raw is None:
             return None
         filled_qty = float(raw.get("filled_qty") or 0.0)
         price = float(raw.get("filled_avg_price") or 0.0)
@@ -171,15 +180,83 @@ class AlpacaBroker(Broker):
             price=price,
             fee_quote=0.0,  # Alpaca commission-free
             liquidity=Liquidity.TAKER,
-            ts=_ts(raw.get("filled_at")),
+            ts=_ts(raw.get("filled_at") or raw.get("updated_at")),
         )
 
     def _raw_by_client_id(self, client_order_id: str) -> dict[str, Any] | None:
         r = self._get(f"{self._base}/v2/orders:by_client_order_id",
                       params={"client_order_id": client_order_id})
         if r.status_code == 200:
-            return r.json()
+            return cast(dict[str, Any], r.json())
         return None
+
+    # ------------------------------------------------------------------ trading calendar
+    def is_trading_day(self, when: dt.date | None = None) -> bool | None:
+        """Is ``when`` (default today, US/Eastern) a US equity session? None if unknowable.
+
+        Added 2026-08-06 after measuring the cost of not asking. The equity sleeve submitted
+        180 orders totalling $216,388 in a single Saturday 00:00 UTC cycle and **every one of
+        them died unfilled**, because the market does not open on a Saturday. Across the live
+        record, weekend-submitted orders were 36.1% of ALL missed notional at a 100% miss
+        rate. Those orders are not a strategy decision that went wrong; they are a decision
+        the calendar had already made.
+
+        Returns None rather than a guess when the calendar cannot be fetched, so the caller
+        chooses the failure mode explicitly instead of inheriting a silent default. The date
+        is resolved in US/Eastern because that is the market's day, not the operator's: a
+        cycle firing at 00:30 UTC Saturday is still Friday evening in New York.
+        """
+        day = when or dt.datetime.now(dt.timezone(dt.timedelta(hours=-5))).date()
+        iso = day.isoformat()
+        try:
+            r = self._get(f"{self._base}/v2/calendar", params={"start": iso, "end": iso})
+            if r.status_code != 200:
+                return None
+            return any(row.get("date") == iso for row in r.json())
+        except Exception:  # unknowable, not false
+            return None
+
+    # ------------------------------------------------------------------ closed orders
+    def closed_orders(self, *, after_ms: int, limit_per_page: int = 500,
+                      max_pages: int = 40) -> list[dict[str, Any]]:
+        """Every CLOSED order submitted after ``after_ms``, oldest first, raw broker JSON.
+
+        Added 2026-08-06. The equity and managed-futures sleeves (60% of the book by weight)
+        recorded SUBMISSIONS but never OUTCOMES, so nothing on disk could answer "did the order
+        actually fill?". A 20.9% non-fill rate on adversely-selected names therefore went
+        unnoticed for 37 live days. This is the read side of that fix.
+
+        Returns closed orders of EVERY terminal status, not just ``filled`` -- a canceled or
+        expired order is precisely the event we were blind to, so filtering to fills here would
+        reintroduce the bug. Paging is by ``after`` on ``submitted_at``; Alpaca caps ``limit`` at
+        500, and ``max_pages`` bounds a pathological backfill rather than looping forever.
+        """
+        out: list[dict[str, Any]] = []
+        cursor = dt.datetime.fromtimestamp(after_ms / 1000, tz=dt.UTC)
+        seen: set[str] = set()
+        for _ in range(max_pages):
+            r = self._get(
+                f"{self._base}/v2/orders",
+                params={"status": "closed", "limit": limit_per_page,
+                        "after": cursor.isoformat().replace("+00:00", "Z"), "direction": "asc"},
+            )
+            if r.status_code != 200:
+                break
+            page = r.json()
+            if not page:
+                break
+            fresh = [o for o in page if str(o.get("id")) not in seen]
+            if not fresh:
+                break
+            for o in fresh:
+                seen.add(str(o.get("id")))
+            out.extend(fresh)
+            last = fresh[-1].get("submitted_at")
+            if not last or len(page) < limit_per_page:
+                break
+            # advance strictly past the last row so the next page cannot repeat it
+            cursor = dt.datetime.fromtimestamp((_ts(last) + 1) / 1000, tz=dt.UTC)
+        return out
 
     # ------------------------------------------------------------------ open_orders
     def open_orders(self) -> list[OpenOrder]:

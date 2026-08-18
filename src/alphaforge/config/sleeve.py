@@ -15,6 +15,9 @@ refactor on the crypto path: ``sleeve_for(AssetClass.CRYPTO_PERP)`` resolves H1 
 whose ``expected_bar_opens``/``periods_per_year`` delegate to the same ``core.time``
 kernel / ``tf.bars_per_year`` the spine calls today. The EQUITY sleeve anchors
 :data:`~alphaforge.core.time.Timeframe.D1` on the XNYS session calendar (252-day basis).
+DATED FUTURES and OPTIONS are intentionally absent: taxonomy and execution-domain support
+do not imply a research sleeve, and each must name a product-specific exchange calendar
+rather than inherit a generic default.
 """
 
 from __future__ import annotations
@@ -87,7 +90,8 @@ def sleeve_for(asset_class: AssetClass) -> Sleeve:
 
     The single resolution helper every spine entry point calls to get its
     ``(anchor_tf, calendar)``. CRYPTO_PERP/CRYPTO_SPOT resolve to the H1 + 24/7 sleeve
-    (byte-identical to today); EQUITY resolves to the D1 + XNYS sleeve.
+    (byte-identical to today); EQUITY resolves to the D1 + XNYS sleeve. Dated futures
+    remain unregistered until a product-specific calendar and research path exist.
 
     Raises:
         ConfigError: if ``asset_class`` has no registered sleeve.

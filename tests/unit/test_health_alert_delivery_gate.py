@@ -39,30 +39,30 @@ def hc():
     return mod
 
 
-T0 = dt.datetime(2026, 8, 2, 3, 10, tzinfo=dt.timezone.utc)
+T0 = dt.datetime(2026, 8, 2, 3, 10, tzinfo=dt.UTC)
 
 
 def _check(cid, status, title="check", severity="high", observed="obs", expected="exp"):
-    return dict(id=cid, group="loops", title=title, status=status, severity=severity,
-                observed=observed, expected=expected, evidence="")
+    return {"id": cid, "group": "loops", "title": title, "status": status, "severity": severity,
+                "observed": observed, "expected": expected, "evidence": ""}
 
 
 def _prior(hc, updated_at="2026-08-01T03:10:00Z", **id_to_status):
-    return dict(schema=1, updated_at=updated_at, run_count=9, undelivered_runs=0,
-                checks={cid: dict(status=st, title=f"{cid} title", severity="high",
-                                  observed="prior obs", since="2026-07-25T03:10:00Z",
-                                  runs=7, last_seen=updated_at, missed=0)
-                        for cid, st in id_to_status.items()})
+    return {"schema": 1, "updated_at": updated_at, "run_count": 9, "undelivered_runs": 0,
+                "checks": {cid: {"status": st, "title": f"{cid} title", "severity": "high",
+                                  "observed": "prior obs", "since": "2026-07-25T03:10:00Z",
+                                  "runs": 7, "last_seen": updated_at, "missed": 0}
+                        for cid, st in id_to_status.items()}}
 
 
 def _subject(hc, prev, checks):
     tr = hc.classify_transitions(prev, checks)
-    counts = dict(pass_=sum(1 for c in checks if c["status"] == "PASS"),
-                  warn=sum(1 for c in checks if c["status"] == "WARN"),
-                  fail=sum(1 for c in checks if c["status"] == "FAIL"))
+    counts = {"pass_": sum(1 for c in checks if c["status"] == "PASS"),
+                  "warn": sum(1 for c in checks if c["status"] == "WARN"),
+                  "fail": sum(1 for c in checks if c["status"] == "FAIL")}
     overall = "FAIL" if counts["fail"] else ("WARN" if counts["warn"] else "PASS")
-    status = dict(schema=1, generated_at=hc.iso(T0), overall=overall, counts=counts,
-                  checks=checks, remediation=[])
+    status = {"schema": 1, "generated_at": hc.iso(T0), "overall": overall, "counts": counts,
+                  "checks": checks, "remediation": []}
     subj, body = hc.build_alert(status, tr)
     return tr, subj, body
 
@@ -260,8 +260,8 @@ def test_undeliverable_red_escalates_to_banner_and_log(hc, tmp_path, monkeypatch
     monkeypatch.setattr(hc, "UNDELIVERED_LOG", str(tmp_path / "alerts_undelivered.log"))
     monkeypatch.setattr(hc, "sh",
                         lambda cmd, timeout=120, env=None: (calls.append(cmd), (0, ""))[1])
-    status = dict(schema=1, overall="FAIL", counts=dict(pass_=0, warn=0, fail=1),
-                  checks=[_check("C6d-equitydb", "FAIL")], remediation=[])
+    status = {"schema": 1, "overall": "FAIL", "counts": {"pass_": 0, "warn": 0, "fail": 1},
+                  "checks": [_check("C6d-equitydb", "FAIL")], "remediation": []}
 
     sent = hc.send_alert("AlphaForge NEW FAIL: C6d-equitydb (x)", "body text", status,
                          enabled=True)
@@ -286,8 +286,8 @@ def test_resend_rejection_is_not_counted_as_delivered(hc, tmp_path, monkeypatch)
         stdout = "422"
 
     monkeypatch.setattr(hc.subprocess, "run", lambda *a, **k: _P())
-    status = dict(schema=1, overall="FAIL", counts=dict(pass_=0, warn=0, fail=1),
-                  checks=[_check("C6d-equitydb", "FAIL")], remediation=[])
+    status = {"schema": 1, "overall": "FAIL", "counts": {"pass_": 0, "warn": 0, "fail": 1},
+                  "checks": [_check("C6d-equitydb", "FAIL")], "remediation": []}
     assert hc.send_alert("subj", "body", status, enabled=True) is False
     assert "UNDELIVERED" in (tmp_path / "alerts_undelivered.log").read_text()
 

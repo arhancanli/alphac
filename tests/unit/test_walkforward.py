@@ -230,6 +230,20 @@ def test_save_writes_artifact_layout(world: World, tmp_path: Path) -> None:
     assert (out / "walkforward.json").exists()
     assert (out / "summary.txt").exists()
     assert (out / "tearsheet.png").exists()
+
+    # EVERY summary must state WHERE THE MONEY CAME FROM, unasked.
+    # `eq_ilrev` cleared every aggregate this summary already renders — Sharpe, Sortino, Calmar,
+    # max_dd, win rate, profit factor, NW t +2.46 — while being five unapplied reverse splits whose
+    # top 10 days carried the whole result. Aggregates cannot distinguish a diffuse edge from four
+    # prints; only the distribution can. A screen that has to be remembered gets forgotten exactly
+    # when it matters, so this asserts the block is rendered automatically and not on request.
+    summary_text = (out / "summary.txt").read_text(encoding="utf-8")
+    assert "P&L concentration" in summary_text, (
+        "summary.txt no longer reports P&L concentration — the one screen that catches an edge "
+        "made of a handful of bad prints has been silently dropped"
+    )
+    assert "UNAVAILABLE" not in summary_text, f"concentration screen errored:\n{summary_text}"
+    assert ("[PASS]" in summary_text) or ("[FAIL]" in summary_text)
     for leg in result.legs:
         assert (out / "legs" / f"leg_{leg.leg:02d}").is_dir()
     saved = pd.read_parquet(out / "equity.parquet")

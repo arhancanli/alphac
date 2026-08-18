@@ -12,6 +12,7 @@ __all__ = [
     "ConfigError",
     "CostModelMisuse",
     "DataGapError",
+    "FillUnavailableError",
     "LockHeldError",
     "LookaheadError",
     "NaiveDatetimeError",
@@ -58,6 +59,10 @@ class CostModelMisuse(AlphaForgeError):
 
 class DataGapError(AlphaForgeError):
     """Raised when expected bars are absent from the lake and the caller declared no fill policy."""
+
+
+class FillUnavailableError(AlphaForgeError):
+    """Raised when a fill model cannot execute any valid quantity without guessing liquidity."""
 
 
 class LockHeldError(AlphaForgeError):

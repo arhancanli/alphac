@@ -47,7 +47,7 @@ table; (d) I_B firing history.
 
 Usage:
   uv run python scripts/probe_alphamax_volscale.py            # run + log trials
-  uv run python scripts/probe_alphamax_volscale.py --no-log   # dry run (no ledger writes)
+  uv run python scripts/probe_alphamax_volscale.py --no-log   # booked-config reproduction only
 
 Outputs: artifacts/probe_volscale/report.txt + report.json
 """
@@ -66,7 +66,7 @@ import pandas as pd
 
 from alphaforge.analytics.metrics import daily_returns, sharpe
 from alphaforge.validation.dsr import dsr_from_returns
-from alphaforge.validation.experiments import ExperimentLog
+from alphaforge.validation.experiments import ExperimentUnion
 
 REPO = Path(__file__).resolve().parent.parent
 OUT_DIR = REPO / "artifacts" / "probe_volscale"
@@ -111,6 +111,30 @@ EPISODES = {
 }
 
 
+def _trial_config(spec: dict, vname: str) -> dict:
+    return {
+        "probe": "alphamax_volscale",
+        "baseline_artifact": spec["artifact"],
+        "overlay": vname,
+        "params": {
+            "vol_window": VOL_WINDOW,
+            "sigma_target": SIGMA_TARGET,
+            "w_clip": list(W_CLIP),
+            "check_every": CHECK_EVERY,
+            "band": BAND,
+            **(
+                {
+                    "dyn_warmup_months": DYN_WARMUP_MONTHS,
+                    "dyn_clip": list(DYN_CLIP),
+                    "bear_lookback": BEAR_LOOKBACK,
+                }
+                if vname == "dm_dyn"
+                else {}
+            ),
+        },
+    }
+
+
 # --------------------------------------------------------------------------- helpers
 def load_equity_returns(artifact_dir: Path) -> pd.Series:
     """Daily net returns of a frozen walk-forward artifact (repo headline basis)."""
@@ -122,7 +146,9 @@ def load_equity_returns(artifact_dir: Path) -> pd.Series:
 def load_spy() -> pd.DataFrame:
     """SPY dividend-back-adjusted closes from the managed-futures ETF lake (read-only)."""
     files = sorted(
-        glob.glob(str(REPO / "data/lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:SPYUSD/year=*/*.parquet"))
+        glob.glob(
+            str(REPO / "data/lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:SPYUSD/year=*/*.parquet")
+        )
     )
     df = pd.concat([pd.read_parquet(f) for f in files]).sort_values("ts_open")
     out = pd.DataFrame(
@@ -164,7 +190,6 @@ def skew_kurt(rets: np.ndarray) -> tuple[float, float]:
 
 def nw_tstat(y: np.ndarray, X: np.ndarray, lags: int = 5) -> tuple[np.ndarray, np.ndarray]:
     """OLS betas + Newey-West t-stats (Bartlett kernel). X includes the constant."""
-    n, k = X.shape
     xtx_inv = np.linalg.inv(X.T @ X)
     beta = xtx_inv @ (X.T @ y)
     u = y - X @ beta
@@ -185,7 +210,7 @@ def metrics_block(rets: pd.Series) -> dict:
     yrs = len(v) / TRADING_DAYS
     total = float(np.prod(1.0 + v))
     return {
-        "n_obs": int(len(v)),
+        "n_obs": len(v),
         "sharpe_ann365": float(sharpe(rets, ANN)),
         "sharpe_ann252": float(sharpe(rets, TRADING_DAYS)),
         "vol_ann365": float(np.std(v, ddof=1) * math.sqrt(ANN)),
@@ -309,7 +334,12 @@ def overlay_dyn(rets: pd.Series, spy: pd.DataFrame) -> tuple[np.ndarray, dict]:
             ib_fire_dates.append(str(dt[me].date()))
         # decide next month's weight
         w_new = w_cur
-        if len(ys) >= DYN_WARMUP_MONTHS and np.isfinite(x_now) and np.isfinite(sig2[me]) and sig2[me] > 0:
+        if (
+            len(ys) >= DYN_WARMUP_MONTHS
+            and np.isfinite(x_now)
+            and np.isfinite(sig2[me])
+            and sig2[me] > 0
+        ):
             X = np.column_stack([np.ones(len(ys)), np.asarray(xs)])
             yv = np.asarray(ys)
             try:
@@ -334,7 +364,7 @@ def overlay_dyn(rets: pd.Series, spy: pd.DataFrame) -> tuple[np.ndarray, dict]:
         prev_end = me
         prev_x = x_now
     diag = {
-        "n_months": int(len(month_ends)),
+        "n_months": len(month_ends),
         "n_dynamic_months": used_dynamic,
         "ib_fire_month_ends": ib_fire_dates,
     }
@@ -356,7 +386,9 @@ def book_style_scale(rets: pd.Series) -> np.ndarray:
     return s_eff
 
 
-def redundancy_tests(rets: pd.Series, scaled: pd.Series, w_eff: np.ndarray, spy: pd.DataFrame) -> dict:
+def redundancy_tests(
+    rets: pd.Series, scaled: pd.Series, w_eff: np.ndarray, spy: pd.DataFrame
+) -> dict:
     r = rets.to_numpy(dtype=np.float64)
     rs = scaled.to_numpy(dtype=np.float64)
     s_book = book_style_scale(rets)
@@ -381,7 +413,11 @@ def redundancy_tests(rets: pd.Series, scaled: pd.Series, w_eff: np.ndarray, spy:
         spy_ret.rolling(VOL_WINDOW, min_periods=VOL_WINDOW).std() * math.sqrt(ANN)
     ).reindex(dt, method="ffill").to_numpy()
     m2 = np.isfinite(sig_sleeve) & np.isfinite(sig_mkt)
-    corr_vols = float(np.corrcoef(sig_sleeve[m2], sig_mkt[m2])[0, 1]) if m2.sum() > 10 else float("nan")
+    corr_vols = (
+        float(np.corrcoef(sig_sleeve[m2], sig_mkt[m2])[0, 1])
+        if m2.sum() > 10
+        else float("nan")
+    )
 
     return {
         "alpha_on_unscaled_ann_bps": float(b1[0] * TRADING_DAYS * 1e4),
@@ -411,8 +447,21 @@ def episode_table(rets: pd.Series, variants: dict[str, pd.Series]) -> dict:
 # --------------------------------------------------------------------------- main
 def main() -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--no-log", action="store_true", help="do not append trials to the ledgers")
+    ap.add_argument(
+        "--no-log",
+        action="store_true",
+        help="reproduce only after union preflight confirms every hypothesis is already booked",
+    )
     args = ap.parse_args()
+
+    unions = {
+        bname: ExperimentUnion.discover(REPO / spec["ledger"], REPO)
+        for bname, spec in BASELINES.items()
+    }
+    for bname, spec in BASELINES.items():
+        unions[bname].preflight_hypotheses(
+            [_trial_config(spec, vname) for vname in spec["variants"]]
+        )
 
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     spy = load_spy()
@@ -433,7 +482,7 @@ def main() -> None:
     for bname, spec in BASELINES.items():
         art = REPO / spec["artifact"]
         rets = load_equity_returns(art)
-        ledger = ExperimentLog(REPO / spec["ledger"])
+        ledger = unions[bname]
         base_m = metrics_block(rets)
         say(f"\n=== BASELINE {bname} ({spec['artifact']}) ===")
         say(json.dumps(base_m, indent=1))
@@ -458,17 +507,7 @@ def main() -> None:
             variants_rets[vname] = scaled
 
             # ---- ledger (the trial) + DSR at post-record N ----
-            cfg = {
-                "probe": "alphamax_volscale",
-                "baseline_artifact": spec["artifact"],
-                "overlay": vname,
-                "params": {
-                    "vol_window": VOL_WINDOW, "sigma_target": SIGMA_TARGET,
-                    "w_clip": list(W_CLIP), "check_every": CHECK_EVERY, "band": BAND,
-                    **({"dyn_warmup_months": DYN_WARMUP_MONTHS, "dyn_clip": list(DYN_CLIP),
-                        "bear_lookback": BEAR_LOOKBACK} if vname == "dm_dyn" else {}),
-                },
-            }
+            cfg = _trial_config(spec, vname)
             v = scaled.to_numpy(dtype=np.float64)
             sk, ku = skew_kurt(v)
             sr_pp = float(sharpe(scaled, 1.0))
@@ -483,8 +522,8 @@ def main() -> None:
                     now_ms=now_ms,
                 )
                 trials_logged += 1
-            n_trials = ledger.n_trials()
-            var_sr = ledger.trial_sharpe_variance()
+            n_trials = ledger.n_hypotheses()
+            var_sr = ledger.hypothesis_sharpe_variance()
             dsr_v = dsr_from_returns(scaled, max(2, n_trials), var_sr, ANN)
             dsr_b = dsr_from_returns(rets, max(2, n_trials), var_sr, ANN)
 

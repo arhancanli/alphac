@@ -198,13 +198,13 @@ class Broker(ABC):
 
     @abstractmethod
     def fetch_order(self, client_order_id: str) -> Fill | None:
-        """Query the broker for the fill of ``client_order_id`` — the idempotency backbone.
+        """Query the broker for executed quantity of ``client_order_id``.
 
         MUST be queryable by ``client_order_id`` (execDesign.md §8.1): the
         crash-recovery path (Phase-8 gate C5) calls this for every intent that
         the store recorded as SUBMITTED but never confirmed FILLED. If the venue
-        actually executed the order during the submit→persist crash window, this
-        returns the realized :class:`Fill` so recovery can ingest it
+        actually executed all or part of the order during the submit→persist
+        crash window, this returns the realized aggregate :class:`Fill` so recovery can ingest it
         idempotently; ``None`` means the broker has no execution for that id (the
         submit never landed, or the order is still working). For
         :class:`~alphaforge.execution.paper.PaperBroker` every fill is already in

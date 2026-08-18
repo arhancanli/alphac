@@ -38,6 +38,7 @@ Using ``ex_date`` is contemporaneous, not look-ahead: on the ex-date the market 
 repriced, so a trader holding that day knows. ``available_at`` governs FORWARD knowledge of an
 upcoming action, which is a different question and not what this function answers.
 """
+
 from __future__ import annotations
 
 import glob
@@ -50,19 +51,27 @@ import pandas as pd
 CA_DIR = "data/lake/corporate_actions"
 
 
-def load_actions(symbols: set[str] | None = None) -> pd.DataFrame:
+def load_actions(
+    symbols: set[str] | None = None,
+    ca_dir: str | Path = CA_DIR,
+    *,
+    strict: bool = False,
+) -> pd.DataFrame:
     """Splits and cash dividends keyed by (symbol, ex_date)."""
     frames = []
-    for d in os.listdir(CA_DIR):
+    action_root = str(ca_dir)
+    for d in os.listdir(action_root):
         if not d.startswith("instrument_id=XUSE"):
             continue
         sym = d.split(":")[-1].removesuffix("USD")
         if symbols is not None and sym not in symbols:
             continue
-        for f in glob.glob(glob.escape(os.path.join(CA_DIR, d)) + "/*/*.parquet"):
+        for f in glob.glob(glob.escape(os.path.join(action_root, d)) + "/*/*.parquet"):
             try:
                 t = pd.read_parquet(f, columns=["action_type", "ex_date", "ratio", "cash_amount"])
-            except Exception:  # noqa: BLE001 — a bad shard must not poison the whole adjustment
+            except Exception as error:
+                if strict:
+                    raise RuntimeError(f"unreadable corporate-action partition: {f}") from error
                 continue
             if t.empty:
                 continue
@@ -75,27 +84,41 @@ def load_actions(symbols: set[str] | None = None) -> pd.DataFrame:
     return a
 
 
-def adjusted_log_returns(px: pd.DataFrame) -> pd.DataFrame:
+def adjusted_log_returns(
+    px: pd.DataFrame,
+    ca_dir: str | Path = CA_DIR,
+    *,
+    strict_actions: bool = False,
+    carry_missing: bool = False,
+) -> pd.DataFrame:
     """Corporate-action-adjusted log returns for a wide close panel (index=dates, cols=symbols).
 
     ``px`` MUST be the raw as-traded close panel. The returned frame is returns only -- the caller
     keeps using ``px`` itself for any level-based screen (price floors, ADV ranks). See module
     docstring for why that separation is not optional.
     """
-    a = load_actions(set(px.columns))
+    a = load_actions(set(px.columns), ca_dir=ca_dir, strict=strict_actions)
+    working = px.ffill() if carry_missing else px
     ratio = pd.DataFrame(1.0, index=px.index, columns=px.columns)
     divs = pd.DataFrame(0.0, index=px.index, columns=px.columns)
     if not a.empty:
         sp = a[a["action_type"] == "split"].dropna(subset=["ratio"])
         for sym, ex, r in zip(sp["symbol"], sp["ex_date"], sp["ratio"], strict=False):
-            if sym in ratio.columns and ex in ratio.index and r and r > 0:
-                ratio.at[ex, sym] = float(r)
+            if sym not in ratio.columns or ex not in ratio.index or not r or r <= 0:
+                continue
+            effective = ex
+            if carry_missing and not np.isfinite(px.at[ex, sym]):
+                observed = px.index[(px.index >= ex) & px[sym].notna()]
+                if observed.empty:
+                    continue
+                effective = observed[0]
+            ratio.at[effective, sym] *= float(r)
         dv = a[a["action_type"] == "dividend"].dropna(subset=["cash_amount"])
         for sym, ex, c in zip(dv["symbol"], dv["ex_date"], dv["cash_amount"], strict=False):
             if sym in divs.columns and ex in divs.index and c and c > 0:
-                divs.at[ex, sym] = float(c)
-    num = (px + divs) * ratio
-    return np.log(num) - np.log(px.shift(1))
+                divs.at[ex, sym] += float(c)
+    num = (working + divs) * ratio
+    return np.log(num) - np.log(working.shift(1))
 
 
 def adjustment_report(px: pd.DataFrame) -> dict:

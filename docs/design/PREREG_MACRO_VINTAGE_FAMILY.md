@@ -105,3 +105,17 @@ A null here is also informative in its own right: it would say the CPI result is
 an *inflation* effect rather than a generic "macro surprises move the size spread" effect,
 which materially raises confidence that the CPI finding is real rather than a fluke of the
 size spread being predictable by anything.
+
+
+## Machine-checkable declaration
+
+The block below is the ENFORCED contract. `alphaforge.validation.prereg.assert_matches`
+reads it and kills any run whose resolved settings disagree, before compute is spent.
+Added 2026-08-07 after three runs used the wrong lake: two burned a trial and returned a
+silent null, one crashed after four hours. Every declaration was correct; nothing read it.
+
+```prereg
+profile: equity
+lake_dir: data/lake_macro_vintage
+allocator: none
+```

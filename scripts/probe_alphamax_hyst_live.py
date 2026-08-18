@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 """PROBE — ALPHAMAX HYSTERESIS on the LIVE k30_dn_63 construction (turnover reduction).
 
-2026-07-12. MEASURE-ONLY. NEW file; reads src/** + the k30_dn_63 artifact as templates,
-mutates nothing, appends NO experiments-ledger trial (this is a cheap construction SCREEN, not
-a production walk-forward). TRIALS BURNED = 0. DSR at the current ledger N is read-only via
-dsr_from_returns (pure function) for the deflated view.
+2026-07-12. MEASURE-ONLY. Reads src/** + the k30_dn_63 artifact as templates and mutates no
+production state. Every measured arm must pass union-ledger preflight and is recorded before
+identity-aligned DSR. Under a paused campaign, unregistered arms fail before data loading.
 
 WHY (vs scripts/probe_alphamax_turnover.py, the prior probe this session): that probe measured
 hysteresis on the DEEP-HISTORY 2000-name Sharadar NULL sleeve (net Sharpe -0.05). The
@@ -98,7 +97,7 @@ ARMS: list[tuple[str, float | None, int]] = [
 
 
 # --------------------------------------------------------------- daily-return probe spec
-def _probe_dret_fn(ctx, spec):  # noqa: ANN001, ANN202
+def _probe_dret_fn(ctx, spec):
     from alphaforge.features.context import long_series
     from alphaforge.features.library.equity_price import _adjusted_close_panel
 
@@ -106,7 +105,7 @@ def _probe_dret_fn(ctx, spec):  # noqa: ANN001, ANN202
     return long_series(px.pct_change(), name=spec.name)
 
 
-def _register_dret(reg) -> None:  # noqa: ANN001
+def _register_dret(reg) -> None:
     from alphaforge.features.spec import Family, FeatureSpec
 
     if "probe_dret" in {s.name for s in reg.all_specs()}:
@@ -301,7 +300,7 @@ def main(argv=None) -> int:
     from alphaforge.config.settings import load_settings
     from alphaforge.config.sleeve import sleeve_for
     from alphaforge.core.instruments import InstrumentStore
-    from alphaforge.core.time import parse_utc
+    from alphaforge.core.time import now_ms, parse_utc
     from alphaforge.data.schemas import ohlcv_dataset
     from alphaforge.data.store.lake import LakePaths
     from alphaforge.data.store.reader import PITDataReader
@@ -310,9 +309,35 @@ def main(argv=None) -> int:
     from alphaforge.features.registry import default_registry
     from alphaforge.research.ic_report import _membership_mask
     from alphaforge.validation.dsr import dsr_from_returns
-    from alphaforge.validation.experiments import ExperimentLog
+    from alphaforge.validation.experiments import ExperimentUnion
+    from alphaforge.validation.probe_ledger import record_probe_trial
 
     settings = load_settings(a.profile)
+    union = ExperimentUnion.discover(settings.paths.var_dir / "experiments.jsonl", _REPO)
+
+    def trial_config(arm: str, exit_frac: float | None, min_hold_bars: int) -> dict:
+        return {
+            "profile": a.profile,
+            "sleeve": "k30_dn_63",
+            "arm": arm,
+            "signal": "eq_mom_252_21",
+            "rank_top_k": K_PER_SIDE,
+            "reform_bars": REFORM_BARS,
+            "exit_frac": exit_frac,
+            "min_hold_bars": min_hold_bars,
+            "vol_window": VOL_WINDOW,
+            "gross_leg": GROSS_LEG,
+            "cost_oneway": COST_ONEWAY,
+            "borrow_ann": BORROW_ANN,
+            "warmup": a.warmup,
+            "start": a.start,
+            "end": a.end,
+        }
+
+    configs = [trial_config(*arm) for arm in ARMS]
+    union.preflight_hypotheses(
+        [{"probe": "alphamax_hyst_live", **config} for config in configs]
+    )
     sleeve = sleeve_for(settings.data.asset_class)
     tf = sleeve.anchor_tf
     start = parse_utc(f"{a.warmup}T00:00:00Z")
@@ -356,30 +381,39 @@ def main(argv=None) -> int:
     print(f"panels: T={mom.shape[0]} sessions x N={mom.shape[1]} names | book t0 idx={t0} (>= {a.start}) -> {n_after} OOS sessions | "
           f"finite momentum: {np.isfinite(mom).mean():.1%} | member cells: {member.mean():.1%}")
 
-    # read-only ledger context for DSR (NO trial recorded)
-    leds = {}
-    for name, rel in (("var", "var/experiments.jsonl"), ("var_sharadar", "var_sharadar/experiments.jsonl")):
-        fp = _REPO / rel
-        if fp.exists():
-            led = ExperimentLog(fp)
-            leds[name] = (led.n_trials(), led.trial_sharpe_variance())
-
     results: dict = {}
+    audit_before = union.n_trials()
     OUT_DIR.mkdir(parents=True, exist_ok=True)
-    for arm, exit_frac, mh in ARMS:
+    for (arm, exit_frac, mh), config in zip(ARMS, configs, strict=True):
         sim = simulate(mom, ret, member, vol, dates, t0, REFORM_BARS, exit_frac, mh)
         met = _metrics(sim["net"], sim["gross"])
-        dsr = {}
-        for lname, (n_led, var_sr) in leds.items():
-            rep = dsr_from_returns(sim["net"], max(2, n_led), var_sr, ANN)
-            dsr[lname] = {"N": n_led, "dsr": float(np.real(rep.dsr)), "psr": float(np.real(rep.psr))}
+        record_probe_trial(
+            "alphamax_hyst_live",
+            config,
+            sim["net"],
+            now_ms=now_ms(),
+            periods_per_year=int(ANN),
+            experiment_log=union,
+        )
         results[arm] = {
             "exit_frac": exit_frac, "min_hold_bars": mh, **met,
             "turnover_ann": sim["turnover_ann"], "cost_drag_ann_bps": sim["cost_drag_ann_bps"],
             "borrow_drag_ann_bps": sim["borrow_drag_ann_bps"], "avg_turnover_per_reform": sim["avg_turnover_per_reform"],
             "avg_long_names": sim["avg_long_names"], "avg_short_names": sim["avg_short_names"],
-            "n_reforms": sim["n_reforms"], "n_days": sim["n_days"], "dsr": dsr, "_net": sim["net"],
+            "n_reforms": sim["n_reforms"], "n_days": sim["n_days"], "_net": sim["net"],
         }
+
+    n_led, var_sr = union.n_hypotheses(), union.hypothesis_sharpe_variance()
+    for result in results.values():
+        rep = dsr_from_returns(result["_net"], max(2, n_led), var_sr, ANN)
+        result["dsr"] = {
+            "selection_union": {
+                "N": n_led,
+                "dsr": float(np.real(rep.dsr)),
+                "psr": float(np.real(rep.psr)),
+            }
+        }
+    trials_logged = union.n_trials() - audit_before
 
     def pct(x: float) -> str:
         return f"{x:+.1%}" if math.isfinite(x) else "  n/a"
@@ -387,7 +421,7 @@ def main(argv=None) -> int:
     base = results["baseline"]
     print("\n" + "=" * 118)
     print("ALPHAMAX HYSTERESIS on the LIVE k30_dn_63 construction  (K=30/side dollar-neutral 12-1; quarterly; 6bp one-way + 50bp borrow; PIT no same-bar)")
-    print(f"STORED LIVE ANCHOR (artifacts/walkforward/k30_dn_63): net Sharpe 0.907 @ turnover_ann 4.11, maxDD 0.087, 728 sessions, 12 reforms")
+    print("STORED LIVE ANCHOR (artifacts/walkforward/k30_dn_63): net Sharpe 0.907 @ turnover_ann 4.11, maxDD 0.087, 728 sessions, 12 reforms")
     print("=" * 118)
     hdr = f"{'arm':<11}{'netSR365':>9}{'netSR252':>9}{'grossSR':>8}{'turn_ann':>9}{'Δturn':>8}{'ΔnetSR':>8}{'maxDD':>7}{'ΔmaxDD':>8}{'cost_bps':>9}{'borrow':>8}{'L/S':>8}{'reforms':>8}{'DSR':>7}"
     print(hdr)
@@ -431,14 +465,14 @@ def main(argv=None) -> int:
             "no_trade_band": NO_TRADE_BAND, "ann_basis": ANN,
         },
         "stored_live_anchor": {"net_sharpe": 0.907, "turnover_ann": 4.11, "max_dd": 0.0868, "n_sessions": 728, "n_reforms": 12},
-        "ledgers": {k: {"N": v[0], "var_sr": v[1]} for k, v in leds.items()},
+        "selection_union": {"N": n_led, "var_sr": var_sr},
         "results": {arm: {k: v for k, v in r.items() if k != "_net"} for arm, r in results.items()},
-        "gate": verdict, "trials_burned": 0,
-        "note": "SCREEN ONLY — no experiments-ledger append; DSR read-only. Promotion into src is a separate human step.",
+        "gate": verdict, "trials_logged_this_run": trials_logged,
+        "note": "Every measured arm is union-registered before DSR; promotion remains a separate decision.",
     }
     (OUT_DIR / "report.json").write_text(json.dumps(payload, indent=2, default=float) + "\n", encoding="utf-8")
     print(f"\npersisted: {OUT_DIR / 'report.json'}")
-    print("TRIALS BURNED THIS RUN: 0 (cheap construction screen; no ledger append).")
+    print(f"TRIAL RECORDS APPENDED THIS RUN: {trials_logged}")
     return 0
 
 

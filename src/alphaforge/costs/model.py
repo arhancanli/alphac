@@ -156,15 +156,21 @@ class TransactionCostModel:
     def fee_frac(self, inst: Instrument, liquidity: Liquidity) -> float:
         """Commission as a fraction of quote notional.
 
-        Schedule routed by ``inst.market_type``: PERP → perp schedule, CASH → equity
-        schedule, anything else → spot schedule. ``fee_frac = fee_bps * 1e-4``.
+        Schedule routed by ``inst.market_type``: PERP → perp schedule, CASH → equity,
+        SPOT → spot. Dated futures and options fail closed until product/venue-specific
+        commission models exist; borrowing a crypto schedule would fabricate implementation cost.
         """
         if inst.market_type is MarketType.PERP:
             schedule = self._perp_fees
         elif inst.market_type is MarketType.CASH:
             schedule = self._equity_fees
-        else:
+        elif inst.market_type is MarketType.SPOT:
             schedule = self._spot_fees
+        else:
+            raise CostModelMisuse(
+                f"no transaction-fee schedule registered for market type "
+                f"{inst.market_type.value!r} ({inst.instrument_id!r})"
+            )
         return schedule.fee_frac(liquidity)
 
     def borrow_frac_per_day(self) -> float:

@@ -55,6 +55,7 @@ import os
 import shutil
 import subprocess
 import sys
+from pathlib import Path
 
 HOME = os.path.expanduser("~")
 AF = os.path.join(HOME, "alphaforge")
@@ -64,6 +65,7 @@ STATE_JSON = os.path.join(AF, "data", "paper", "state.json")
 CRYPTO_DB = os.path.join(AF, "var", "trading_crypto_perp.sqlite")  # the ONLY live crypto DB
 MF_DB = os.path.join(AF, "var", "trading_managed_futures.sqlite")  # AlphaTrend realized curve
 EQUITY_DB = os.path.join(AF, "var", "trading_equity.sqlite")       # AlphaMax realized curve
+DERIBIT_SNAPSHOTS = os.path.join(AF, "data", "deribit", "snapshots")
 KILL = os.path.join(AF, "var", "KILL")
 RESEND_ENV = os.path.join(HOME, ".config", "alphaforge", "resend.env")
 
@@ -105,7 +107,42 @@ LANDING = "https://canlicapital.com"
 APP = "https://app.canlicapital.com"
 
 # honesty keystones — these MUST hold; the monitor never edits them, only verifies
-EXPECT_INSAMPLE = 1.46
+#
+# EXPECT_INSAMPLE split into TWO keystones 2026-08-06. Same stale-keystone failure as
+# EXPECT_FORWARD below, and it had been standing red as `C4a-insample` (severity: critical).
+# WHAT HAPPENED: at the 2026-06-29 v1->v2 re-baseline the book gained the disclosed +20%
+# net-long overlay, so `metrics.in_sample_sharpe` correctly became the core+overlay figure
+# (1.85) and the pre-overlay number moved into its own field,
+# `metrics.neutral_core_in_sample_sharpe` (1.46). This constant was never split, so it
+# compared the NEW field against the OLD field's value and failed forever on a correct,
+# honestly-published pair. Both numbers are rendered truthfully on the app today: 1.85 is
+# shown struck through with "before deflation, not carried forward", and the 1.46 core is
+# named beside it.
+# WHY THIS IS NOT SILENCING A TRIPWIRE: the check now pins BOTH published numbers instead
+# of one, so it is strictly stronger than before. Neither figure can drift unnoticed.
+# The bar rises whether or not the result flatters us; if the overlay is ever removed or
+# re-weighted, BOTH constants must be re-derived from the published state and re-dated here.
+#
+# RE-DERIVED 2026-08-12 (owner-approved), doing exactly what the paragraph above instructs.
+# Both keystones had been standing red at severity CRITICAL since 2026-08-07 -- six days of
+# daily alerts that nobody actioned, which is its own finding: a check permanently red stops
+# carrying information long before anyone admits it is dead.
+#
+# WHY THEY MOVED, and why this is a re-derivation rather than a loosening:
+#   * 2026-08-10 AlphaVintage became the FOURTH sleeve; the book went from three at fixed
+#     40/40/20 to four at equal quarters.
+#   * 2026-08-11 the strategic tilt was cut +20% -> +10%, on measurement rather than taste.
+# The book genuinely changed, so the book's in-window Sharpe genuinely changed with it. Both
+# figures are DERIVED in paper_trading_state.py (`round(float(book.sharpe), 2)` and the same
+# for book_neutral) and never typed, so re-pinning them tracks the engine, it does not excuse
+# it. The observed pair fell (1.85 -> 1.82, 1.46 -> 1.42): these constants moved AGAINST our
+# flattery, which is the direction that tells you a keystone is honest.
+#
+# THE STANDING RULE, unchanged: never move these to make something pass. Move them only when
+# the BOOK moved, name the change and its date here, and check the direction -- a keystone
+# that only ever drifts upward is not measuring anything.
+EXPECT_INSAMPLE = 1.82        # was 1.85 until 2026-08-07 (3 sleeves 40/40/20, +20% tilt)
+EXPECT_NEUTRAL_CORE = 1.42    # was 1.46 until 2026-08-07 (same cause, pre-overlay core)
 # The honest DEFLATED forward band. Updated 2026-07-29 from the superseded "0.7 to 1.0" to the
 # corrected "0.3 to 0.9" band that was deployed weeks earlier as a deliberate honesty fix — the
 # keystone had gone stale and was FALSE-ALARMING on the CORRECT public value, which is how a
@@ -266,6 +303,31 @@ def check_data():
             "PASS" if ga_land == ga_app else "FAIL", "high",
             observed=f"{ga_land == ga_app}", expected="equal",
             evidence=f"land={ga_land} app={ga_app}")
+
+    # C1b (2026-08-06): the check above compares ONLY paper-state.json, and that blind spot cost
+    # six weeks. The three glass-box exporters wrote to the landing dir alone, so the dashboard
+    # served artifacts frozen at 2026-06-24 -- a track record reading 0.00% over "3 days" beside
+    # a landing page reading -2.54% over 38 days, for the same book, on the same day. The monitor
+    # built to catch exactly that divergence could not see it, because it only ever looked at one
+    # file. Compare the CONTENT HASH of every glass-box artifact across both hosts: the exporters
+    # now write one stamped string to both dirs, so any inequality means a publish path broke.
+    _GLASSBOX = ("track_record.json", "kill_log.json", "research.json", "capacity.json",
+                 "deflation.json", "reproducibility.json", "red_team.json",
+                 "pre_registration.json", "transparency_log.json")
+    drift, unreachable = [], []
+    for fn in _GLASSBOX:
+        dl = get_json(f"{LANDING}/glassbox/{fn}")
+        da = get_json(f"{APP}/glassbox/{fn}")
+        if not dl or not da:
+            unreachable.append(fn)
+            continue
+        if dl.get("content_hash") != da.get("content_hash"):
+            drift.append(fn)
+    add("C1b-glassbox-match", "data", "glass-box identical on both hosts",
+        "FAIL" if drift else ("WARN" if unreachable else "PASS"), "high",
+        observed=(f"drift={drift}" if drift else f"unreachable={unreachable}" if unreachable
+                  else f"{len(_GLASSBOX)} artifacts match"),
+        expected="identical content_hash on both hosts")
     # local
     try:
         local = json.load(open(STATE_JSON))
@@ -284,6 +346,16 @@ def _log_marker_age(logpath, marker):
                  f"grep -oE '[0-9]{{4}}-[0-9-]+T[0-9:]+Z'")
     ts = out.strip().splitlines()[-1] if out.strip() else ""
     return age_hours(ts) if ts else None, ts
+
+
+def _latest_file_age_hours(directory: str, pattern: str = "*") -> tuple[float | None, str]:
+    """Age and path of the newest matching regular file, using the monitor's UTC clock."""
+    files = [p for p in Path(directory).glob(pattern) if p.is_file()]
+    if not files:
+        return None, ""
+    latest = max(files, key=lambda p: p.stat().st_mtime)
+    age = (NOW.timestamp() - latest.stat().st_mtime) / 3600.0
+    return age, str(latest)
 
 
 def check_loops():
@@ -353,6 +425,15 @@ def check_loops():
             add(idc, "loops", f"{name} DB accruing", "FAIL", "high",
                 observed="unreadable", expected="recent row", evidence=(out or "")[:120])
 
+    # Research-only collector, deliberately outside every trading path.  It silently stopped on
+    # 2026-06-29 while launchd kept invoking it, so process scheduling alone is not evidence that
+    # the options-surface lake is accruing.  Monitor the artifact that research actually consumes.
+    a, latest = _latest_file_age_hours(DERIBIT_SNAPSHOTS, "snap_*.jsonl")
+    st = "PASS" if a is not None and a <= 30 else ("WARN" if a is not None and a <= 54 else "FAIL")
+    add("C6e-deribit", "loops", "Deribit research snapshots accruing", st, "high",
+        observed=f"{a:.1f}h" if a is not None else "no snapshots",
+        expected="<=30h", evidence=latest)
+
 
 def check_honesty():
     try:
@@ -370,6 +451,16 @@ def check_honesty():
     add("C4a-insample", "honesty", "in_sample_sharpe keystone",
         "PASS" if li == EXPECT_INSAMPLE and not drift else "FAIL", "critical",
         observed=f"local={li} drift_hosts={drift}", expected=EXPECT_INSAMPLE)
+    # The market-neutral core is the institutional franchise; the +20% overlay is commoditized
+    # beta the fund's own disclosure says DILUTES risk-adjusted quality. So the core figure is
+    # a keystone in its own right: if it ever silently tracked the headline upward, the site
+    # would be flattering itself by exactly the amount of beta it tells visitors to discount.
+    lc = m.get("neutral_core_in_sample_sharpe")
+    drift_c = [h for h, d in served.items()
+               if d and d.get("metrics", {}).get("neutral_core_in_sample_sharpe") != lc]
+    add("C4a2-neutralcore", "honesty", "neutral-core Sharpe keystone",
+        "PASS" if lc == EXPECT_NEUTRAL_CORE and not drift_c else "FAIL", "critical",
+        observed=f"local={lc} drift_hosts={drift_c}", expected=EXPECT_NEUTRAL_CORE)
     # forward must be the deflated band on both hosts (prefix match tolerates the honest qualifier)
     def _fwd_ok(v):
         return isinstance(v, str) and v.startswith(EXPECT_FORWARD)

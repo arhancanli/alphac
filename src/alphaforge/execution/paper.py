@@ -733,6 +733,50 @@ class PaperBroker(Broker):
                 )
         self._state.cash = new_cash
 
+    # ------------------------------------------------------------------ funding
+    def apply_funding(
+        self, instrument_id: str, ts_funding: Ms, rate: float, mark_price: float
+    ) -> float:
+        """Settle one funding event against the live position; return the cashflow.
+
+        Added 2026-08-06, and it closes the largest correctness gap this system had.
+        ``Ledger.apply_funding`` existed and was called from exactly ONE place: the BACKTEST
+        engine. Nothing on the live path ever booked funding, so cash moved only on fills.
+        For a *funding-carry* sleeve that is not a rounding error, it is the entire mechanism:
+        ``artifacts/walkforward/crypto_carry_wk/summary.txt`` reports funding_net $19,500 of a
+        $38,236 total return, so roughly HALF of everything the strategy ever earned was the
+        one cashflow the live account could not receive. Its live Sharpe was capped near half
+        its validated value (0.653 -> ~0.30 ex-funding).
+
+        Sign convention is the ledger's, verbatim, because two conventions would be worse than
+        none::
+
+            payment = -position_qty * mark_price * rate
+
+        ``qty > 0, rate > 0`` => payment < 0, longs pay shorts (Binance USDT-M).
+
+        No position, no event: returns 0.0 and moves nothing, which is what makes this safe to
+        call for every settlement in a window without first checking what is held.
+
+        FORWARD-ONLY. This does not and must not restate history: the published curve stays as
+        it was observed, the shortfall stays visible in the signed chain, and the correction
+        applies from the day it ships. Callers own idempotency (settle each ts_funding once).
+        """
+        pos = self._state.positions.get(instrument_id)
+        if pos is None or pos.qty == 0.0:
+            return 0.0
+        if not math.isfinite(rate):
+            raise ValueError(f"funding rate must be finite for {instrument_id!r}, got {rate!r}")
+        if not (math.isfinite(mark_price) and mark_price > 0.0):
+            raise ValueError(
+                f"funding mark must be finite and > 0 for {instrument_id!r}, got {mark_price!r}"
+            )
+        payment = -pos.qty * mark_price * rate
+        new_cash = self._state.cash + payment
+        _require_finite(f"paper cash after funding {instrument_id!r}@{ts_funding}", new_cash)
+        self._state.cash = new_cash
+        return payment
+
 
 def _book_mid(book: OrderBook, *, fallback: float) -> float:
     """Mid of the best bid/ask; ``fallback`` when one side is empty (one-sided book)."""

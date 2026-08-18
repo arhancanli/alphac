@@ -36,27 +36,27 @@ def hc():
 # --- helpers ----------------------------------------------------------------
 
 def _check(cid, status, title="check", severity="high", observed="obs", expected="exp"):
-    return dict(id=cid, group="loops", title=title, status=status, severity=severity,
-                observed=observed, expected=expected, evidence="")
+    return {"id": cid, "group": "loops", "title": title, "status": status, "severity": severity,
+                "observed": observed, "expected": expected, "evidence": ""}
 
 
 def _prior(updated_at="2026-07-31T03:10:00Z", **id_to_status):
     """Synthetic previous-run state file contents."""
-    return dict(
-        schema=1, updated_at=updated_at, run_count=9,
-        checks={cid: dict(status=st, title=f"{cid} title", severity="high",
-                          observed="prior obs", since="2026-07-18T03:10:00Z",
-                          runs=13, last_seen=updated_at, missed=0)
-                for cid, st in id_to_status.items()})
+    return {
+        "schema": 1, "updated_at": updated_at, "run_count": 9,
+        "checks": {cid: {"status": st, "title": f"{cid} title", "severity": "high",
+                          "observed": "prior obs", "since": "2026-07-18T03:10:00Z",
+                          "runs": 13, "last_seen": updated_at, "missed": 0}
+                for cid, st in id_to_status.items()}}
 
 
 def _status(hc, checks):
-    counts = dict(pass_=sum(1 for c in checks if c["status"] == "PASS"),
-                  warn=sum(1 for c in checks if c["status"] == "WARN"),
-                  fail=sum(1 for c in checks if c["status"] == "FAIL"))
+    counts = {"pass_": sum(1 for c in checks if c["status"] == "PASS"),
+                  "warn": sum(1 for c in checks if c["status"] == "WARN"),
+                  "fail": sum(1 for c in checks if c["status"] == "FAIL")}
     overall = "FAIL" if counts["fail"] else ("WARN" if counts["warn"] else "PASS")
-    return dict(schema=1, generated_at="2026-08-01T03:10:00Z", overall=overall,
-                counts=counts, checks=checks, remediation=[])
+    return {"schema": 1, "generated_at": "2026-08-01T03:10:00Z", "overall": overall,
+                "counts": counts, "checks": checks, "remediation": []}
 
 
 def _alert(hc, prev, checks):
@@ -158,7 +158,7 @@ def test_recovery_alongside_standing_red_still_reports_the_red(hc):
 
 def test_state_roundtrip_tracks_since_and_streak(hc, tmp_path):
     p = tmp_path / "alert_state.json"
-    t0 = dt.datetime(2026, 8, 1, 3, 10, tzinfo=dt.timezone.utc)
+    t0 = dt.datetime(2026, 8, 1, 3, 10, tzinfo=dt.UTC)
     checks = [_check("C6d-equitydb", "FAIL")]
 
     s1 = hc.next_alert_state(hc.load_alert_state(str(p)), checks, t0)
@@ -208,7 +208,7 @@ def test_unobserved_red_is_not_claimed_as_recovered(hc):
 
 def test_unobserved_entry_is_dropped_after_max_missed_runs(hc):
     prev = _prior(**{"C3-route-performance": "FAIL"})
-    t = dt.datetime(2026, 8, 1, tzinfo=dt.timezone.utc)
+    t = dt.datetime(2026, 8, 1, tzinfo=dt.UTC)
     state = prev
     for i in range(hc.MAX_MISSED_RUNS):
         state = hc.next_alert_state(state, [_check("C3-landing-apex", "PASS")],
@@ -219,7 +219,7 @@ def test_unobserved_entry_is_dropped_after_max_missed_runs(hc):
 def test_selftest_injection_is_not_remembered(hc):
     """--selftest-fail proves the alert path; it must not leave a phantom red
     that the next real run reports as 'not re-checked'."""
-    t = dt.datetime(2026, 8, 1, tzinfo=dt.timezone.utc)
+    t = dt.datetime(2026, 8, 1, tzinfo=dt.UTC)
     state = hc.next_alert_state(None, [_check("SELFTEST", "FAIL"),
                                        _check("C7b-suite", "PASS")], t)
     assert "SELFTEST" not in state["checks"]
@@ -228,7 +228,7 @@ def test_selftest_injection_is_not_remembered(hc):
 
 def test_all_green_stays_quiet(hc):
     prev = _prior(**{"C7b-suite": "PASS"})
-    tr, subj, body = _alert(hc, prev, [_check("C7b-suite", "PASS")])
+    _tr, subj, body = _alert(hc, prev, [_check("C7b-suite", "PASS")])
     assert subj.startswith("AlphaForge OK —")
     assert "NEW FAIL" not in subj and "STANDING" not in body
 
@@ -259,7 +259,11 @@ def test_undeliverable_red_escalates_to_notification_and_log(hc, tmp_path, monke
     monkeypatch.setattr(hc, "RESEND_ENV", str(tmp_path / "missing.env"))
     monkeypatch.setattr(hc, "HEALTH", str(tmp_path))
     monkeypatch.setattr(hc, "UNDELIVERED_LOG", str(tmp_path / "alerts_undelivered.log"))
-    monkeypatch.setattr(hc, "sh", lambda cmd, timeout=120, env=None: (calls.append(cmd), (0, ""))[1])
+    monkeypatch.setattr(
+        hc,
+        "sh",
+        lambda cmd, timeout=120, env=None: (calls.append(cmd), (0, ""))[1],
+    )
 
     status = _status(hc, [_check("C6d-equitydb", "FAIL")])
     sent = hc.send_alert("AlphaForge NEW FAIL: C6d-equitydb (x)", "body text", status, enabled=True)

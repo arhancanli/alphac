@@ -38,7 +38,9 @@ deliberate manual steps (2 and 3) so nothing trades before the box is verified.
 channel (scp over the SSH key, or paste into `install -m600`), never through the repo:
 
     # on the laptop:
-    tar czf - -C ~/.config alphaforge | ssh af@<box> 'mkdir -p ~/.config && tar xzf - -C ~/.config && chmod -R 600 ~/.config/alphaforge/*.env'
+    # note the chmod covers *.env AND the Ed25519 signing key — an earlier version chmod'd only
+    # *.env, which left the key's mode dependent on what tar happened to preserve.
+    tar czf - -C ~/.config alphaforge | ssh af@<box> 'mkdir -p ~/.config && tar xzf - -C ~/.config && chmod 600 ~/.config/alphaforge/*.env ~/.config/alphaforge/*.key'
 
 Required for the live sleeves: `alpaca.env` (MF broker), `alpaca_equity.env` (equity
 broker), `sharadar.env` (equity DATA — see §4), `resend.env` (alerts). The crypto sleeve
@@ -48,15 +50,27 @@ script still calls it.
 
 ## 3. Data (the record moves; the lakes re-download)
 
-- **MUST transfer (this is the live record):** `var/trading_crypto_perp.sqlite` (1.1M — the
-  accruing crypto equity curve + cycles), `var/trading_equity.sqlite`,
+- **MUST transfer (this is the live record):** `var/trading_crypto_perp.sqlite` (the accruing
+  crypto equity curve + cycles), `var/trading_equity.sqlite`,
   `var/trading_managed_futures.sqlite`, `var/experiments.jsonl` (the trial ledger),
-  `var/transparency_log.jsonl` + the Ed25519 key under `var/` (the SIGNED CHAIN — losing
-  this breaks the tamper-evident record; move it, chmod 600, verify the chain head matches).
+  `var/transparency_log.jsonl` (the SIGNED CHAIN).
 
-      # on the laptop — the small, irreplaceable state:
+  > **The signing key is NOT under `var/`.** It lives at
+  > `~/.config/alphaforge/transparency_ed25519.key` (see `scripts/transparency_log.py:46`), so
+  > it travels with the §2 config tarball, **not** with the command below. An earlier version of
+  > this runbook listed `var/*.key` here; that glob matches nothing, and because the command
+  > ends in `2>/dev/null` it failed **silently** — following §3 alone would leave you believing
+  > the key had moved when it had not. Losing this key breaks the tamper-evident record
+  > permanently: the chain can no longer be extended under the same identity. **Do §2 first,
+  > and verify the key landed with mode 600 before running any tick.**
+
+      # on the laptop — the small, irreplaceable state (~7 MB):
       tar czf - var/trading_*.sqlite var/experiments.jsonl var/*sharadar*/experiments.jsonl \
-        var/transparency_log.jsonl var/*.key 2>/dev/null | ssh af@<box> 'cd ~/alphaforge && tar xzf -'
+        var/transparency_log.jsonl | ssh af@<box> 'cd ~/alphaforge && tar xzf -'
+
+      # then CONFIRM the key arrived (it comes from §2, not the line above):
+      ssh af@<box> 'test -s ~/.config/alphaforge/transparency_ed25519.key && \
+        stat -c "%a %n" ~/.config/alphaforge/transparency_ed25519.key'   # expect: 600
 
 - **RE-DOWNLOAD on the box (do not scp 6 GB):** the Sharadar lake (~2.8G) and any Polygon
   lake are rebuildable from their vendor bundles:

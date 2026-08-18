@@ -71,7 +71,7 @@ import math
 import time as _time
 from collections.abc import Mapping
 from dataclasses import dataclass, replace
-from typing import TYPE_CHECKING, Protocol, runtime_checkable
+from typing import TYPE_CHECKING, Final, Protocol, runtime_checkable
 
 from alphaforge.core.errors import (
     ReconciliationError,
@@ -180,6 +180,17 @@ class UniverseRefresher(Protocol):
 
     def refresh(self, *, cycle_ts: Ms) -> None:
         """Rebuild membership so it is current as of ``cycle_ts``."""
+        ...
+
+    def newest_rebalance_ms(self) -> Ms | None:
+        """Epoch-ms of the newest rebalance ON RECORD, or None if it cannot be determined.
+
+        OPTIONAL — the loop duck-types this and treats its absence as "cannot tell, do nothing",
+        so an adapter that does not implement it keeps exactly the old boundary-only behaviour.
+        It exists so the loop can notice that a monthly rebalance was MISSED and repair it on the
+        next healthy cycle, instead of silently waiting for the next 1st. Returning None must mean
+        "unknown", never "stale": guessing stale would trigger a rebuild on every cycle.
+        """
         ...
 
 
@@ -529,6 +540,11 @@ class LiveLoop:
         ctx_factory: _ContextFactory,
         instruments_factory: _InstrumentsFactory,
         universe_refresher: UniverseRefresher | None = None,
+        # Funding settlements for the window just closed. Optional and defaulted so every
+        # existing caller and test is unaffected: a loop without one books no funding, which
+        # is exactly what shipped before 2026-08-06. Wired for the crypto profile in
+        # cli/paper_cmds.py, where the PIT reader already exists.
+        funding_source: _FundingSource | None = None,
         ledger_factory: _LedgerFactory | None = None,
         clock: _Clock | None = None,
         sleeper: _Sleeper | None = None,
@@ -552,6 +568,7 @@ class LiveLoop:
         self._ctx_factory = ctx_factory
         self._instruments_factory = instruments_factory
         self._universe_refresher = universe_refresher
+        self._funding_source = funding_source
         self._ledger_factory = ledger_factory if ledger_factory is not None else _default_ledger
         self._clock: _Clock = now_ms if clock is None else clock
         self._sleeper: _Sleeper = _time.sleep if sleeper is None else sleeper
@@ -572,6 +589,14 @@ class LiveLoop:
         self._clock_skew_alerts = 0
         #: Last bar open observed by run_forever, to count bars slept through (C8).
         self._last_seen_bar: Ms | None = None
+        #: Consecutive cycles that held PERP legs and yet booked NO funding. A perpetuals
+        #: book settles at worst every 8h, so on an hourly loop this can legitimately reach
+        #: ~8; it can never legitimately reach a full day. Escalates to CRITICAL at
+        #: _FUNDING_DRY_LIMIT because the alternative is what actually happened: the read
+        #: raised TypeError on every single call for 44 days, each one a lone WARN that read
+        #: exactly like a transient venue hiccup, while a funding-CARRY sleeve published a
+        #: track record containing no funding at all.
+        self._funding_dry_cycles = 0
 
     # ------------------------------------------------------------------ scheduling
 
@@ -1134,8 +1159,38 @@ class LiveLoop:
         if not instruments:
             return self._finish_skip(cycle_ts, "empty universe at cycle", now=now)
 
+        # (1b) SETTLE FUNDING for the window just closed, BEFORE the book is marked or
+        # re-decided. Added 2026-08-06. `Ledger.apply_funding` existed and was reachable from
+        # exactly one place, the BACKTEST engine, so the live account moved cash only on fills
+        # and a funding-CARRY sleeve never received the cashflow that is its entire mechanism
+        # (~51% of its lifetime backtest PnL). Ordering matters: funding settles against the
+        # position that was actually held through the settlement, so it must land before the
+        # strategy re-decides and changes that position.
+        self._settle_funding(cycle_ts, instruments)
+
         # (2) monthly boundary: refresh the universe BEFORE signals (finding 21).
-        if self._universe_refresher is not None and _is_month_boundary(cycle_ts):
+        #
+        # SELF-HEALING, added 2026-08-11 after the rebalance was silently lost TWICE.
+        # `_is_month_boundary` is true for exactly ONE bar a month — 00:00 UTC on the 1st — so the
+        # old condition gave the rebalance a single attempt with no retry. Miss that one cycle for
+        # any reason and the universe does not move for a month. That is not hypothetical: the
+        # crypto sleeve was dark across both 2026-07-01 and 2026-08-01, so it spent ten weeks
+        # trading a cross-section chosen on 2026-06-01, and nobody noticed until it was looked for.
+        #
+        # A once-a-month trigger with no catch-up is the defect, not the venue outage. So the loop
+        # now ALSO refreshes when the stored membership is older than the current month — the same
+        # monthly cadence, but it repairs itself on the next healthy cycle instead of waiting for
+        # the next 1st. `refresh` is idempotent (the builder is deterministic and rerun-safe), so a
+        # boundary cycle and a catch-up cycle produce the same membership.
+        #
+        # NOTE this refreshes FORWARD only. It does not reconstruct rebalances that were missed in
+        # the past: those decisions were never made, and a PIT rebuild of them would use data that
+        # did not exist at the time (verified — a PIT rebuild at 2026-07-01 sees only the ~20 names
+        # the lake actually held then, not the 627 since backfilled). Inventing a decision the book
+        # never took would be fabricating history, which is worse than a stale universe.
+        if self._universe_refresher is not None and (
+            _is_month_boundary(cycle_ts) or self._universe_is_stale(cycle_ts)
+        ):
             self._universe_refresher.refresh(cycle_ts=cycle_ts)
             instruments = dict(self._instruments_factory(cycle_ts))
 
@@ -1399,6 +1454,88 @@ class LiveLoop:
 
     # ------------------------------------------------------------------ step 7 helper
 
+    def _settle_funding(self, cycle_ts: Ms, instruments: Mapping[str, object]) -> None:
+        """Book every funding settlement in (prev_cycle, cycle_ts] against the live position.
+
+        The stored events ARE the schedule, so applying them one by one is automatically
+        interval-aware (8h / 4h / 1h per instrument) and never assumes a clock -- the same
+        property the backtest engine relies on (leakageCritique.md finding 6).
+
+        Deliberately forgiving: no funding source, no perps, or a source that raises all mean
+        "book nothing this cycle" rather than "halt the sleeve". A funding read is an accounting
+        improvement, and it must never be able to stop the book from trading -- a missed cycle
+        is a permanent hole in the forward record, which is the most valuable asset here.
+
+        FORGIVING PER CYCLE, NOT FORGIVING FOREVER. Being forgiving is right; being forgiving
+        without ever counting is how this sleeve ran 44 days on a funding read that raised on
+        every call. Each failure was a single WARN indistinguishable from a venue blip, so a
+        PERMANENT breakage wore the costume of a TRANSIENT one. `_funding_dry_cycles` is what
+        makes the difference observable, and it must be allowed to reach CRITICAL.
+        """
+        if self._funding_source is None:
+            return
+        prev = cycle_ts - self._bar_ms
+        try:
+            events = self._funding_source(sorted(instruments), start=prev, end=cycle_ts)
+        except Exception as exc:
+            self._alerter.alert(
+                AlertLevel.WARN, f"cycle {cycle_ts}: funding read failed, booked none ({exc})"
+            )
+            self._note_funding_dry(cycle_ts, instruments, reason=f"read failed ({exc})")
+            return
+        total, applied = 0.0, 0
+        for iid, ts_funding, rate in events:
+            mark = self._book_mid(iid, cycle_ts)
+            if mark is None or not (mark > 0.0):
+                continue  # no observed mark -> we do not invent one (see paper_trading_state)
+            try:
+                paid = self._broker.apply_funding(iid, ts_funding, rate, mark)
+            except ValueError as exc:  # a single bad rate must not poison the cycle
+                self._alerter.alert(
+                    AlertLevel.WARN, f"cycle {cycle_ts}: funding skipped for {iid}: {exc}"
+                )
+                continue
+            if paid != 0.0:
+                total += paid
+                applied += 1
+        if applied:
+            _log.info("funding_settled", cycle_ts=cycle_ts, events=applied, quote=round(total, 6))
+            self._funding_dry_cycles = 0
+        else:
+            self._note_funding_dry(cycle_ts, instruments, reason="no events booked")
+
+    #: Consecutive perp-holding cycles with zero funding booked before this stops being
+    #: treated as normal. 8h is the longest funding interval any venue we trade uses, so on
+    #: an hourly loop ~8 dry cycles is ordinary and 24 is not physically possible.
+    _FUNDING_DRY_LIMIT: Final[int] = 24
+
+    def _note_funding_dry(
+        self, cycle_ts: Ms, instruments: Mapping[str, object], *, reason: str
+    ) -> None:
+        """Count a cycle that booked no funding, and escalate once it stops being plausible.
+
+        Only counts while PERP legs are actually held: a book holding no perps owes and earns
+        no funding, so counting those cycles would build a warning that fires for a healthy
+        system -- and a check that cries wolf gets muted, which is how you end up with no
+        check at all.
+        """
+        holds_perp = any(
+            getattr(getattr(i, "market_type", None), "name", "") == "PERP"
+            for i in instruments.values()
+        )
+        if not holds_perp:
+            self._funding_dry_cycles = 0
+            return
+        self._funding_dry_cycles += 1
+        if self._funding_dry_cycles == self._FUNDING_DRY_LIMIT:
+            self._alerter.alert(
+                AlertLevel.CRITICAL,
+                f"cycle {cycle_ts}: {self._funding_dry_cycles} consecutive cycles holding PERP "
+                f"legs have booked ZERO funding ({reason}). A perpetuals book settles at worst "
+                f"every 8h, so this is not a venue hiccup -- the funding path is broken and the "
+                f"sleeve is accruing a track record that omits its own carry.",
+            )
+
     def _persist_book(self, cycle_ts: Ms, account: AccountState, *, now: Ms) -> None:
         """Snapshot positions + equity + the paper_state blob for ``cycle_ts``."""
         self._store.snapshot_positions(cycle_ts, account.positions)
@@ -1452,6 +1589,36 @@ class LiveLoop:
         return None
 
     # ------------------------------------------------------------------ finishers
+
+    def _universe_is_stale(self, cycle_ts: Ms) -> bool:
+        """True when the newest rebalance on record predates ``cycle_ts``'s calendar month.
+
+        THE FAILURE THIS REPAIRS. The universe rebalances on the first bar of each UTC month, and
+        that was its ONLY trigger — one cycle per month, no retry. The crypto sleeve was dark
+        across both 2026-07-01 and 2026-08-01, so it traded a 2026-06-01 cross-section for ten
+        weeks. The outage was the occasion; the single-attempt trigger was the defect.
+
+        Deliberately conservative in three ways, because a rebuild that fires when it should not is
+        worse than one that fires late:
+          * an adapter that cannot answer (no method, or None) yields False — unknown is not stale;
+          * any error yields False, so a broken read can never spin the loop into rebuilding every
+            cycle;
+          * it compares CALENDAR MONTHS, not elapsed days, so it matches the declared monthly
+            cadence exactly and cannot drift into rebalancing more often than the policy says.
+        """
+        getter = getattr(self._universe_refresher, "newest_rebalance_ms", None)
+        if getter is None:
+            return False
+        try:
+            newest = getter()
+        except Exception:
+            return False
+        if newest is None:
+            return False
+        from alphaforge.core.time import from_ms
+
+        a, b = from_ms(int(newest)), from_ms(cycle_ts)
+        return (a.year, a.month) < (b.year, b.month)
 
     def _finish_skip(self, cycle_ts: Ms, detail: str, *, now: Ms) -> CycleReport:
         """Persist a ``'skipped'`` terminal status and count the miss."""
@@ -1580,3 +1747,6 @@ if TYPE_CHECKING:
     type _LedgerFactory = Callable[
         [float, Mapping[str, Instrument], AccountState, Mapping[str, float]], Ledger
     ]
+    # (instrument_ids, start, end) -> [(instrument_id, ts_funding, rate), ...] for the window.
+    # The events ARE the schedule, so per-instrument 8h/4h/1h intervals need no clock here.
+    type _FundingSource = Callable[..., Sequence[tuple[str, Ms, float]]]

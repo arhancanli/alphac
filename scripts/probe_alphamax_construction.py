@@ -194,16 +194,14 @@ def _narrow_ids() -> list[str]:
 
 
 def _ledger_deflation() -> tuple[int, float]:
-    """READ-ONLY ledger N and trial-Sharpe variance (never written)."""
-    from alphaforge.validation.experiments import ExperimentLog
+    """READ-ONLY identity-aligned union selection context."""
+    from alphaforge.validation.probe_ledger import selection_context
 
-    log = ExperimentLog(_REPO / "var" / "experiments.jsonl")
-    return int(log.n_trials()), float(log.trial_sharpe_variance())
+    return selection_context(root=_REPO)
 
 
 def _run_arm(arm: Arm, narrow_ids: list[str], n_trials: int, sr_var: float) -> ArmResult:
     import alphaforge.features.library  # noqa: F401  register canonical factors
-
     from alphaforge.analytics.metrics import daily_returns
     from alphaforge.analytics.walkforward import WalkForwardRunner
     from alphaforge.config.settings import load_settings

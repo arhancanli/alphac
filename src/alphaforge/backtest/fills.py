@@ -23,12 +23,10 @@ v1 scope notes (documented, deliberate):
 
 * All fills are TAKER (market orders at next open — matches live execution
   timing; maker/limit fills are an execution-layer concern, Phase 8+).
-* The §4.2 volume-participation guard (partial fill above 10% of the next
-  bar's quote volume) is deferred to the ``VWAPParticipationFill`` model of a
-  later phase; meanwhile the cost model's hard 5%-of-ADV tripwire
-  (:class:`~alphaforge.core.errors.CostModelMisuse`) bounds order size to the
-  sqrt-impact law's valid regime, so a silent under-costed mega-fill is
-  structurally impossible.
+* :class:`ParticipationCappedFill` is the opt-in institutional path for partial
+  fills. It caps execution to a configurable share of the next bar's observed
+  quote volume and fails closed when that liquidity is missing or below one lot.
+  :class:`NextOpenFill` remains the compatibility default.
 
 All money is float64 in quote units, full precision internally — rounding is a
 report-rendering concern only. Timestamps are epoch-ms UTC (:data:`Ms`).
@@ -37,16 +35,16 @@ report-rendering concern only. Timestamps are epoch-ms UTC (:data:`Ms`).
 from __future__ import annotations
 
 import math
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from typing import Protocol
 
-from alphaforge.core.errors import LookaheadError
+from alphaforge.core.errors import FillUnavailableError, LookaheadError
 from alphaforge.core.instruments import Instrument
 from alphaforge.core.time import Ms
 from alphaforge.core.types import Fill, Liquidity, OrderRequest, Side
 from alphaforge.costs import TransactionCostModel
 
-__all__ = ["BarView", "FillModel", "MakerFill", "NextOpenFill"]
+__all__ = ["BarView", "FillModel", "MakerFill", "NextOpenFill", "ParticipationCappedFill"]
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
@@ -185,6 +183,83 @@ class NextOpenFill:
             fee_quote=fee,
             liquidity=Liquidity.TAKER,
             ts=next_bar.ts_open,
+        )
+
+
+class ParticipationCappedFill:
+    """Next-open taker fill capped by observed bar liquidity.
+
+    Executable quantity is at most ``max_bar_participation`` of the next bar's
+    ``quote_volume``, converted at the open and floored to the instrument lot. Any residual is
+    left unfilled; the event-driven engine records it as a partial fill with residual canceled.
+    Missing/non-positive quote volume or a cap below one valid lot raises
+    :class:`FillUnavailableError`, so no volume is invented.
+
+    Price formation and fees remain delegated to :class:`NextOpenFill`, preserving the shared
+    spread, square-root impact, latency and commission authority.
+    """
+
+    __slots__ = ("_max_bar_participation", "_next_open")
+
+    def __init__(
+        self,
+        cost_model: TransactionCostModel,
+        *,
+        max_bar_participation: float = 0.10,
+    ) -> None:
+        if (
+            not math.isfinite(max_bar_participation)
+            or max_bar_participation <= 0.0
+            or max_bar_participation > 1.0
+        ):
+            raise ValueError(
+                "max_bar_participation must be finite and in (0, 1], got "
+                f"{max_bar_participation!r}"
+            )
+        self._next_open = NextOpenFill(cost_model)
+        self._max_bar_participation = max_bar_participation
+
+    @property
+    def cost_model(self) -> TransactionCostModel:
+        """The shared cost authority used after quantity capping."""
+        return self._next_open.cost_model
+
+    @property
+    def max_bar_participation(self) -> float:
+        """Maximum observed next-bar quote-volume share consumed by one order."""
+        return self._max_bar_participation
+
+    def fill(
+        self,
+        order: OrderRequest,
+        inst: Instrument,
+        next_bar: BarView,
+        *,
+        adv_quote: float,
+        sigma_daily: float,
+    ) -> Fill:
+        """Execute the lot-floored participation-capped quantity at the next open."""
+        quote_volume = next_bar.quote_volume
+        if not math.isfinite(quote_volume) or quote_volume <= 0.0:
+            raise FillUnavailableError(
+                f"missing/non-positive quote volume for {order.instrument_id!r} at "
+                f"{next_bar.ts_open}: {quote_volume!r}"
+            )
+        cap_quote = self._max_bar_participation * quote_volume
+        cap_steps = math.floor(cap_quote / next_bar.open / inst.lot_size + 1e-12)
+        cap_qty = cap_steps * inst.lot_size
+        executable_qty = min(order.qty, cap_qty)
+        if executable_qty < inst.min_qty or executable_qty * next_bar.open < inst.min_notional:
+            raise FillUnavailableError(
+                f"bar-liquidity cap for {order.instrument_id!r} at {next_bar.ts_open} "
+                f"permits {executable_qty!r}, below min_qty/min_notional"
+            )
+        return self._next_open.fill(
+            replace(order, qty=executable_qty),
+            inst,
+            next_bar,
+            adv_quote=adv_quote,
+            sigma_daily=sigma_daily,
         )
 
 

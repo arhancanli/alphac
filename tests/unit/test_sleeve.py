@@ -47,10 +47,10 @@ class TestRegistry:
         for sleeve in (CRYPTO_PERP_SLEEVE, CRYPTO_SPOT_SLEEVE, EQUITY_SLEEVE):
             assert sleeve_for(sleeve.asset_class) is sleeve
 
-    def test_calendar_is_the_shared_singleton(self) -> None:
+    def test_registered_calendars_are_shared_singletons(self) -> None:
         # The sleeve does not own a calendar — it delegates to calendar_for so there is
         # one source of truth (and the singleton identity is preserved).
-        for ac in AssetClass:
+        for ac in (AssetClass.CRYPTO_PERP, AssetClass.CRYPTO_SPOT, AssetClass.EQUITY):
             assert sleeve_for(ac).calendar is calendar_for(ac)
 
 
@@ -80,10 +80,19 @@ class TestSleeveDataclass:
 
 
 class TestUnregistered:
-    def test_every_asset_class_is_registered(self) -> None:
-        # The contract for the live path: no real AssetClass member ever raises.
-        for ac in AssetClass:
-            assert isinstance(sleeve_for(ac), Sleeve)
+    @pytest.mark.parametrize("asset_class", [AssetClass.FUTURE, AssetClass.OPTION])
+    def test_derivatives_require_product_specific_sleeves_and_calendars(
+        self, asset_class: AssetClass
+    ) -> None:
+        # Dated derivatives cannot safely inherit a generic exchange calendar. The
+        # taxonomy may identify them before a product-specific research sleeve exists,
+        # but both resolution paths must then fail closed.
+        with pytest.raises(
+            ConfigError, match=f"no sleeve registered for '{asset_class.value}'"
+        ):
+            sleeve_for(asset_class)
+        with pytest.raises(NotImplementedError, match="no TradingCalendar registered"):
+            calendar_for(asset_class)
 
     def test_raises_config_error_not_keyerror(self, monkeypatch: pytest.MonkeyPatch) -> None:
         # A future, unregistered member must surface a domain ConfigError (named), not a

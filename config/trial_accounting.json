@@ -1,0 +1,34 @@
+{
+  "schema": "alphac.trial-accounting-policy.v1",
+  "hypothesis_identity_budget": 160,
+  "primary_ledger_record_audit_ceiling": 180,
+  "research_status": "PAUSED_BUDGET_REVIEW",
+  "observed_hypothesis_identities": 162,
+  "window_only_keys": [
+    "start",
+    "end"
+  ],
+  "budget_last_reviewed": "2026-08-17",
+  "budget_review": {
+    "hypothesis_identities_at_review": 162,
+    "immutable_execution_records_at_review": 229,
+    "ledger_profiles_at_review": 4,
+    "new_identities_since_prior_135_ceiling": [
+      "insider_purchase_clusters_preliminary",
+      "insider_purchase_clusters_corrected_simple_return_contract",
+      "eia_petroleum_inventory",
+      "earnings_narrative_change"
+    ],
+    "forensic_debt_charged_at_review": [
+      "8 complete alphamax_construction walk-forward arms",
+      "16 persisted alphamax_weighting parameter-grid cells"
+    ],
+    "decision": "All prior identities remain charged and 24 proven historical screen identities were appended from immutable local artifacts. Legacy raw-row DSR code has been eliminated and all twelve historical paths are union-aligned or fail closed. The fixed 160-identity campaign budget was not raised. New return-hypothesis registration remains paused pending a formal budget decision.",
+    "next_tripwire": "No new return identity may be recorded until a formal review either closes the campaign at 162 identities or authorizes a prospective budget with documented rationale. Engineering, data-lineage, execution, publication, and exact reproduction work may continue."
+  },
+  "definitions": {
+    "immutable_execution_record": "One append-only, config-hash-unique measurement row. Rolling-window remeasurements remain records.",
+    "hypothesis_identity": "A distinct economic or parameter identity after removing only start and end measurement-window keys.",
+    "window_only_remeasurement": "A later record whose config differs from an existing identity only in start or end. It remains public but does not inflate DSR selection N."
+  }
+}

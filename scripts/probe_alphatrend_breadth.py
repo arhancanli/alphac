@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """PROBE — ALPHATREND BREADTH EXPANSION A/B: 17-ETF baseline vs ~33-ETF expanded universe.
 
-2026-07-12. MEASURE-ONLY (new file; read-only imports from src, modifies nothing in src/**,
-configs, or the production lake; logs ZERO ledger trials). AlphaTrend = the managed-futures TREND
+2026-07-12. MEASURE-ONLY (read-only imports from src; modifies no source, config, or production-lake
+state). Each measured basket is union-registered before DSR. AlphaTrend = managed-futures TREND
 sleeve: TS price-trend across a fixed ETF basket, built by TrendVolTarget = sign(blended
 mf_trend_63/126/252)/sigma, gross-normalized/clipped, book vol-targeted. Its honest Sharpe ceiling
 ~ sqrt(N_eff), N_eff = N/(1+(N-1)*rhobar^2). The 17-ETF basket is already only ~0.13 pairwise
@@ -32,9 +32,9 @@ PIT + committed costs: weights decided through close t are effective t+1 (never 
 6bp/side rebalance turnover (1bp comm + 3bp half-spread + 2bp latency, managed_futures.yaml) +
 50bp/yr borrow on the short leg, accrued daily. Piecewise-constant monthly target weights.
 
-Screen only. NO ledger trials logged (a full engine deflated WF on the promoted universe is the
-SEPARATE, deliberate next step -- justified only if expanded beats baseline here). DSR reported at
-the CURRENT ledger N for context (deflating against the standing burden) without adding to it.
+Screen only. A full engine deflated WF on a promoted universe is a separate next step, justified
+only if expanded beats baseline here. Under a paused campaign, unregistered baskets fail union
+preflight before market data is loaded.
 
     uv run python scripts/probe_alphatrend_breadth.py
 """
@@ -53,9 +53,11 @@ _SRC = REPO / "src"
 if str(_SRC) not in sys.path:
     sys.path.insert(0, str(_SRC))
 
+from alphaforge.core.time import now_ms  # noqa: E402
 from alphaforge.portfolio.covariance import ledoit_wolf_cc  # read-only import  # noqa: E402
 from alphaforge.validation.dsr import dsr_from_returns  # read-only import  # noqa: E402
-from alphaforge.validation.experiments import ExperimentLog  # read-only import  # noqa: E402
+from alphaforge.validation.experiments import ExperimentUnion  # noqa: E402
+from alphaforge.validation.probe_ledger import record_probe_trial  # noqa: E402
 
 LAKE = REPO / "data" / "lake_mf_exp" / "ohlcv_1d"   # research lake (prod data/lake_mf untouched)
 OUT = REPO / "artifacts" / "sweep" / "alphatrend_breadth"
@@ -123,8 +125,10 @@ def mf_trend(logclose: pd.DataFrame, sigma: pd.DataFrame, lb: int) -> pd.DataFra
     return mom / (sigma.where(sigma > 0.0) * np.sqrt(lb))
 
 
-# ------------------------------------------------------------------- construction (verbatim replica)
-def target_weights(signal_row: np.ndarray, sigma_ann: np.ndarray, cov_ann: np.ndarray) -> np.ndarray:
+# ---------------------------------------------------------- construction (verbatim replica)
+def target_weights(
+    signal_row: np.ndarray, sigma_ann: np.ndarray, cov_ann: np.ndarray
+) -> np.ndarray:
     """sign inverse-vol -> gross-norm/clip -> book vol-target overlay (gross-capped). Live path."""
     sign = np.sign(signal_row)
     g = np.zeros_like(sign)
@@ -184,7 +188,7 @@ def build_book(panel: pd.DataFrame) -> tuple[pd.Series, dict, pd.Series]:
         S = 0.5 * (S + S.T)
         try:
             S_shr, _ = ledoit_wolf_cc(sub, S)
-        except Exception:  # noqa: BLE001
+        except Exception:
             S_shr = S
         cov_ann = S_shr * ANN
         sigma_ann = np.sqrt(np.clip(np.diag(cov_ann), 1e-12, None))
@@ -262,6 +266,33 @@ def breadth(ret_panel: pd.DataFrame) -> tuple[float, float, int]:
 
 
 def main() -> int:
+    configs = {
+        "BASE_17": {
+            "basket": "BASE_17",
+            "tickers": list(BASE17),
+            "signal": "blend_63_126_252",
+            "vol_span": VOL_SPAN,
+            "rebalance_bars": REBALANCE,
+            "gross_max": GROSS_MAX,
+            "cost_per_side": COST_PER_SIDE,
+            "borrow_ann": BORROW_ANN,
+        },
+        "EXPANDED_33": {
+            "basket": "EXPANDED_33",
+            "tickers": list(EXPANDED),
+            "signal": "blend_63_126_252",
+            "vol_span": VOL_SPAN,
+            "rebalance_bars": REBALANCE,
+            "gross_max": GROSS_MAX,
+            "cost_per_side": COST_PER_SIDE,
+            "borrow_ann": BORROW_ANN,
+        },
+    }
+    union = ExperimentUnion.discover(LEDGER, REPO)
+    union.preflight_hypotheses(
+        [{"probe": "alphatrend_breadth", **config} for config in configs.values()]
+    )
+
     OUT.mkdir(parents=True, exist_ok=True)
     panel_base = load_panel(BASE17)
     panel_exp = load_panel(EXPANDED)
@@ -279,10 +310,19 @@ def main() -> int:
     # SPY return stream for corr-to-SPY
     spy_ret = panel_exp["SPY"].pct_change()
 
-    # ledger context (read-only): N + trial-Sharpe variance for DSR deflation. NO writes.
-    log = ExperimentLog(LEDGER)
-    n_trials = log.n_trials()
-    sr_var = log.trial_sharpe_variance()
+    audit_before = union.n_trials()
+    for name, returns in (("BASE_17", rb), ("EXPANDED_33", re_)):
+        record_probe_trial(
+            "alphatrend_breadth",
+            configs[name],
+            returns,
+            now_ms=now_ms(),
+            periods_per_year=int(ANN),
+            experiment_log=union,
+        )
+    trials_logged = union.n_trials() - audit_before
+    n_trials = union.n_hypotheses()
+    sr_var = union.hypothesis_sharpe_variance()
 
     # breadth of each basket over the common window (raw ETF returns, pairwise-complete corr)
     rhobar_b, neff_b, N_b = breadth(panel_base.pct_change().reindex(common))
@@ -311,18 +351,23 @@ def main() -> int:
 
     # ---- per-candidate decorrelation screen + greedy N_eff-maximizing pruned basket ----
     # The step-2 mandate: DROP additions that duplicate an existing exposure. Measure each
-    # candidate's correlation to the 17 core (over the common window, pairwise-complete) and greedily
-    # keep only additions that RAISE the combined N_eff (genuinely decorrelated).
+    # candidate's correlation to the 17 core (over the common window, pairwise-complete)
+    # and greedily keep only additions that RAISE combined N_eff (genuinely decorrelated).
     ret_all = panel_exp.pct_change().reindex(common)
     cand_rows = []
     for c in ADD16:
         if c not in ret_all.columns:
             continue
-        cc = ret_all[[c] + BASE17].corr()[c].drop(c)
-        cand_rows.append({"add": c, "corr_SPY": round(float(ret_all[[c, "SPY"]].corr().iloc[0, 1]), 3),
-                          "avg_corr_17": round(float(cc.mean()), 3),
-                          "max_corr_17": round(float(cc.abs().max()), 3),
-                          "closest": cc.abs().idxmax()})
+        cc = ret_all[[c, *BASE17]].corr()[c].drop(c)
+        cand_rows.append(
+            {
+                "add": c,
+                "corr_SPY": round(float(ret_all[[c, "SPY"]].corr().iloc[0, 1]), 3),
+                "avg_corr_17": round(float(cc.mean()), 3),
+                "max_corr_17": round(float(cc.abs().max()), 3),
+                "closest": cc.abs().idxmax(),
+            }
+        )
     cand_tab = pd.DataFrame(cand_rows).set_index("add").sort_values("avg_corr_17")
 
     def neff_of(tickers: list[str]) -> float:
@@ -334,7 +379,7 @@ def main() -> int:
     kept_adds: list[str] = []
     while remaining:
         base_ne = neff_of(selected)
-        gains = [(neff_of(selected + [c]) - base_ne, c) for c in remaining]
+        gains = [(neff_of([*selected, c]) - base_ne, c) for c in remaining]
         gains.sort(reverse=True)
         best_gain, best_c = gains[0]
         if best_gain <= 0:   # no remaining candidate raises N_eff -> stop
@@ -392,7 +437,10 @@ def main() -> int:
         f"-> ceiling lift ~ x{np.sqrt(neff_e / neff_b):.3f}")
     say()
     say("EXPANDED vs BASELINE (net of the added cost):")
-    say(f"  dSharpe  = {e.net_sharpe - b.net_sharpe:+.3f}   ({b.net_sharpe:.3f} -> {e.net_sharpe:.3f})")
+    say(
+        f"  dSharpe  = {e.net_sharpe - b.net_sharpe:+.3f}   "
+        f"({b.net_sharpe:.3f} -> {e.net_sharpe:.3f})"
+    )
     say(f"  dDSR@N   = {e['DSR@N'] - b['DSR@N']:+.3f}   ({b['DSR@N']:.3f} -> {e['DSR@N']:.3f})")
     say(f"  dMaxDD   = {e.maxDD_vm - b.maxDD_vm:+.4f}  (vol-matched; +=shallower="
         f"{'better' if e.maxDD_vm > b.maxDD_vm else 'worse'})")
@@ -413,7 +461,8 @@ def main() -> int:
     say()
     p = tab.loc[f"PRUNED_{N_p}"]
     say(f"GREEDY N_eff-MAXIMIZING PRUNED BASKET (best-case decorrelated expansion, {N_p} names):")
-    say(f"  kept additions ({len(kept_adds)}): {' '.join(kept_adds) if kept_adds else '(none raised N_eff)'}")
+    kept_text = " ".join(kept_adds) if kept_adds else "(none raised N_eff)"
+    say(f"  kept additions ({len(kept_adds)}): {kept_text}")
     say(f"  PRUNED rhobar={rhobar_p:+.3f}  N_eff={neff_p:.2f} of {N_p}  "
         f"(vs base N_eff={neff_b:.2f})   Sharpe {p.net_sharpe:.3f} vs baseline {b.net_sharpe:.3f} "
         f"(d={p.net_sharpe - b.net_sharpe:+.3f})")
@@ -434,7 +483,8 @@ def main() -> int:
     report = {
         "probe": "alphatrend_breadth",
         "window": [str(common.min().date()), str(common.max().date())],
-        "n_sessions": int(len(common)), "ledger_N": int(n_trials), "trials_logged": 0,
+        "n_sessions": len(common), "ledger_N": int(n_trials),
+        "trials_logged_this_run": trials_logged,
         "added": ADD16, "dropped": dropped,
         "breadth": {"base": {"rhobar": rhobar_b, "N_eff": neff_b, "N": N_b},
                     "expanded": {"rhobar": rhobar_e, "N_eff": neff_e, "N": N_e}},
@@ -448,7 +498,7 @@ def main() -> int:
     (OUT / "report.json").write_text(json.dumps(report, indent=1))
     (OUT / "report.txt").write_text("\n".join(lines))
     say()
-    say(f"artifacts -> {OUT}  (report.txt / report.json)  | trials burned: 0")
+    say(f"artifacts -> {OUT}  (report.txt / report.json)  | records appended: {trials_logged}")
     return 0
 
 

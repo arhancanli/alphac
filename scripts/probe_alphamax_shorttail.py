@@ -240,7 +240,7 @@ CHUNKS: list[tuple[str, str, str]] = [
 
 
 # --------------------------------------------------------------- daily-return probe spec
-def _probe_dret_fn(ctx, spec):  # noqa: ANN001, ANN202 — FeatureSpec body signature
+def _probe_dret_fn(ctx, spec):
     """Daily SIMPLE return panel from the sanctioned PIT split-adjusted close.
 
     Reuses equity_price._adjusted_close_panel (the ONE place equity adjustment happens),
@@ -255,7 +255,7 @@ def _probe_dret_fn(ctx, spec):  # noqa: ANN001, ANN202 — FeatureSpec body sign
     return long_series(px.pct_change(), name=spec.name)
 
 
-def _register_dret(reg) -> None:  # noqa: ANN001
+def _register_dret(reg) -> None:
     from alphaforge.features.spec import Family, FeatureSpec
 
     if "probe_dret" in {s.name for s in reg.all_specs()}:
@@ -708,10 +708,10 @@ def main(argv=None) -> int:
     a = ap.parse_args(argv)
 
     from alphaforge.validation.dsr import dsr_from_returns
-    from alphaforge.validation.experiments import ExperimentLog
+    from alphaforge.validation.probe_ledger import selection_context
 
     print("building PIT panels from the survivorship-free lake (chunked)...", flush=True)
-    mom_w, ret_w, vol_w, mem_w, n_ids_seen = _build_panels(a)
+    mom_w, ret_w, vol_w, mem_w, _n_ids_seen = _build_panels(a)
     dates = mom_w.index.to_numpy(dtype=np.int64)
     mom = np.ascontiguousarray(mom_w.to_numpy(dtype=np.float64))
     ret = np.ascontiguousarray(ret_w.to_numpy(dtype=np.float64))
@@ -730,12 +730,9 @@ def main(argv=None) -> int:
           f"finite momentum {np.isfinite(mom).mean():.1%} | member cells {member.mean():.1%} | "
           f"median eligible/day {np.median(n_elig_row[t0:]):.0f}", flush=True)
 
-    leds: dict[str, tuple[int, float]] = {}
-    for name, rel in (("var", "var/experiments.jsonl"), ("var_sharadar", "var_sharadar/experiments.jsonl")):
-        fp = _REPO / rel
-        if fp.exists():
-            led = ExperimentLog(fp)
-            leds[name] = (led.n_trials(), led.trial_sharpe_variance())
+    leds: dict[str, tuple[int, float]] = {
+        "selection_union": selection_context(root=_REPO)
+    }
 
     want = set(a.arms.split(",")) if a.arms else None
     results: dict[str, dict] = {}
@@ -752,7 +749,7 @@ def main(argv=None) -> int:
             try:
                 rep = dsr_from_returns(net_s, max(2, n_led), var_sr, ANN)
                 dsr[lname] = {"N": n_led, "dsr": float(np.real(rep.dsr)), "psr": float(np.real(rep.psr))}
-            except Exception as exc:  # noqa: BLE001
+            except Exception as exc:
                 dsr[lname] = {"N": n_led, "error": str(exc)}
         nd = sim["net_dollar"][t0:]
         results[arm] = {
@@ -792,7 +789,7 @@ def main(argv=None) -> int:
           f"({base['n_days']} sessions, {base['n_reforms']} reforms, {base['n_reform_skipped']} skipped)")
     print("BASELINE SANITY ANCHOR — artifacts/walkforward/prereg_momentum (the repo's STORED production")
     print("deep-history walk-forward of this same sleeve, 2005-01-04..2026-06-01, 5385 sessions):")
-    print(f"   stored: netSR -0.049 | maxDD 0.350 | CAGR -0.76% | turnover_ann 3.26 | vol_ann 0.107 | gross_mean 0.450")
+    print("   stored: netSR -0.049 | maxDD 0.350 | CAGR -0.76% | turnover_ann 3.26 | vol_ann 0.107 | gross_mean 0.450")
     print(f"   here:   netSR {base['net_sharpe_ann365']:+.3f} | maxDD {base['max_dd']:.3f} | CAGR {base['cagr']:+.2%} | "
           f"turnover_ann {base['reform_turnover_ann']:.2f} | vol_ann {base['vol_ann365']:.3f} | "
           f"gross_mean {base['mean_long_gross'] + base['mean_short_gross']:.3f}")

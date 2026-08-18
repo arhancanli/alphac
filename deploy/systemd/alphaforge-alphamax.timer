@@ -3,6 +3,11 @@ Description=AlphaForge AlphaMax equity (daily) (schedule)
 
 [Timer]
 OnCalendar=*-*-* 09:00:00
+# Timezone pinned EXPLICITLY. Without this systemd uses the BOX's local time, so the
+# schedule would silently depend on droplet locale -- and the Mac these jobs migrated
+# from runs launchd in local +04, i.e. 4h off these wall-clock times. Pinning UTC makes
+# the cadence deterministic and matches the table in VPS_DEPLOY.md §5.
+Timezone=UTC
 Persistent=true
 # Persistent=true => if the box was down at the scheduled time, the job runs at next boot
 # (the laptop's launchd silently skipped missed cycles — this is strictly better).

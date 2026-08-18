@@ -71,16 +71,18 @@ def test_equity_run_drops_binance_perp_ids_loudly(
     any leg machinery executes (the sentinel fires only after the guard)."""
     signals = _SentinelSignals()
     runner, store = _runner(tmp_path, signals)
-    with caplog.at_level(logging.WARNING, logger="alphaforge.analytics.walkforward"):
-        with pytest.raises(_Sentinel):
-            runner.run(
-                START,
-                END,
-                train_bars=365,
-                test_bars=91,
-                embargo_bars=274,
-                instrument_ids=[XUSE_ID, CRYPTO_ID],
-            )
+    with (
+        caplog.at_level(logging.WARNING, logger="alphaforge.analytics.walkforward"),
+        pytest.raises(_Sentinel),
+    ):
+        runner.run(
+            START,
+            END,
+            train_bars=365,
+            test_bars=91,
+            embargo_bars=274,
+            instrument_ids=[XUSE_ID, CRYPTO_ID],
+        )
     store.close()
     assert signals.called  # the guard let the XUSE book proceed into the run
     scope_warnings = [

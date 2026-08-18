@@ -1,0 +1,17 @@
+[Unit]
+Description=AlphaForge cross-venue funding + positioning collector (Bybit/OKX/Gate/Kraken)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/alphaforge
+ExecStart=/opt/alphaforge/.venv/bin/python /opt/alphaforge/collect_venues.py
+# Measured wall time on the first full run was 145s. This ceiling is ~6x that, leaving room for
+# the lake to grow and for a slow venue to retry, while still killing a genuinely hung run.
+# No lock file: systemd will not start a second run of a oneshot service while one is active,
+# so the mutual exclusion is structural. An orphaned lock file once cost this system 15h of
+# silent collection downtime; the fix is to not have one.
+TimeoutStartSec=900
+StandardOutput=append:/var/log/af-venues.log
+StandardError=append:/var/log/af-venues.log

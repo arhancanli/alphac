@@ -8,6 +8,13 @@ code path); :mod:`~alphaforge.risk.monitors` watches the book between trades
 :class:`KillSwitch` is the file-based human brake under all of it.
 """
 
+from alphaforge.risk.crowding import (
+    CrowdingAssessment,
+    CrowdingObservation,
+    CrowdingPolicy,
+    CrowdingStatus,
+    assess_crowding,
+)
 from alphaforge.risk.killswitch import KillSwitch
 from alphaforge.risk.limits import RiskLimits
 from alphaforge.risk.monitors import (
@@ -21,6 +28,10 @@ from alphaforge.risk.pretrade import CheckReport, OrderVerdict, PreTradeChecker
 
 __all__ = [
     "CheckReport",
+    "CrowdingAssessment",
+    "CrowdingObservation",
+    "CrowdingPolicy",
+    "CrowdingStatus",
     "DDState",
     "DrawdownLadder",
     "KillSwitch",
@@ -29,5 +40,6 @@ __all__ = [
     "RiskLimits",
     "StalenessBreaker",
     "VarReport",
+    "assess_crowding",
     "historical_var_cvar",
 ]

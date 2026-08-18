@@ -54,6 +54,12 @@ from alphaforge.core.errors import RiskLimitError
 from alphaforge.core.instruments import Instrument
 from alphaforge.core.types import OrderRequest
 from alphaforge.costs import TransactionCostModel
+from alphaforge.risk.crowding import (
+    CrowdingObservation,
+    CrowdingPolicy,
+    CrowdingStatus,
+    assess_crowding,
+)
 from alphaforge.risk.limits import RiskLimits
 
 __all__ = ["CheckReport", "OrderVerdict", "PreTradeChecker"]
@@ -120,11 +126,17 @@ class PreTradeChecker:
     model, gating authority stays here).
     """
 
-    __slots__ = ("_cost_model", "_limits")
+    __slots__ = ("_cost_model", "_crowding_policy", "_limits")
 
-    def __init__(self, limits: RiskLimits, cost_model: TransactionCostModel) -> None:
+    def __init__(
+        self,
+        limits: RiskLimits,
+        cost_model: TransactionCostModel,
+        crowding_policy: CrowdingPolicy | None = None,
+    ) -> None:
         self._limits = limits
         self._cost_model = cost_model
+        self._crowding_policy = crowding_policy
 
     @property
     def limits(self) -> RiskLimits:
@@ -141,6 +153,7 @@ class PreTradeChecker:
         adv_quote: Mapping[str, float],
         sigma_daily: Mapping[str, float],
         instruments: Mapping[str, Instrument],
+        crowding: Mapping[str, CrowdingObservation] | None = None,
     ) -> CheckReport:
         """Judge ``orders`` against the book.
 
@@ -191,6 +204,26 @@ class PreTradeChecker:
             current_qty = working.get(iid, 0.0)
             resulting_qty = current_qty + signed_qty
             order_notional = order.qty * close
+
+            if self._crowding_policy is not None and not order.reduce_only:
+                observation = None if crowding is None else crowding.get(iid)
+                if observation is None:
+                    reasons.append("crowding_unassessable: missing PIT observation")
+                elif observation.instrument_id != iid:
+                    reasons.append("crowding_unassessable: instrument identity mismatch")
+                else:
+                    assessment = assess_crowding(
+                        observation,
+                        self._crowding_policy,
+                        decision_ts=order.decision_ts,
+                        resulting_signed_notional=resulting_qty * close,
+                        adv_quote=adv,
+                    )
+                    if assessment.status is not CrowdingStatus.PASS:
+                        reasons.extend(
+                            f"crowding_{assessment.status.value}: {reason}"
+                            for reason in assessment.reasons
+                        )
 
             # 2. price collar — applies to ALL orders, reduce-only included.
             if abs(order.decision_price - close) > limits.price_collar_frac * close:

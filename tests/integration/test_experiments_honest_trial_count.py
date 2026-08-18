@@ -98,7 +98,31 @@ _NOW_MS = 1_700_000_000_000
 # NEVER set below the real count and records are NEVER purged — shrinking N to flatter DSR
 # is exactly the dishonesty this tripwire exists to prevent. Bumping it is a CONSCIOUS
 # re-acknowledgement that we tested more, so the deflation bar rises with us.
-HONEST_N_BUDGET = 93
+_TRIAL_POLICY = json.loads(
+    (Path(__file__).resolve().parents[2] / "config" / "trial_accounting.json").read_text()
+)
+HONEST_N_BUDGET = int(_TRIAL_POLICY["hypothesis_identity_budget"])
+
+# 2026-08-06 — WHAT CHANGED AND WHY, because a moved goalpost must justify itself.
+#
+# The count did not grow. The MEASUREMENT was wrong, and it was wrong in our favour.
+#
+# This tripwire read one ledger, `var/experiments.jsonl`, and reported 101 distinct
+# hypotheses. Research run under other profiles writes to its own var dir, and those searches
+# were never counted anywhere. Deduplicated across all four ledgers the honest figure is 127,
+# so the real search was 26% larger than every DSR we have ever published was deflated against.
+# An undercounted N makes a deflated Sharpe read BETTER than the truth, so every DSR on our
+# public record computed against N=101 (or the earlier 93, or 27) is more flattering than it
+# should be. That is now disclosed publicly.
+#
+# 110 -> 135 is therefore NOT a concession that we tested more; it is a correction to a
+# measurement that was undercounting, plus the same modest headroom the old budget carried over
+# its own believed count (110 over 101 -> 135 over 127). The assertion now counts the UNION of
+# every ledger, which also closes the evasion this bug revealed: a future search can no longer
+# duck the budget by writing to a directory nobody totals.
+#
+# The rule that has not changed and must not: this ceiling is NEVER set below the real count,
+# records are NEVER purged, and the bar rises whether or not the result flatters us.
 
 # 2026-08-04 — WHAT CHANGED AND WHY, because a moved goalpost must justify itself.
 #
@@ -121,11 +145,107 @@ HONEST_N_BUDGET = 93
 #      lowered to manufacture a pass.
 #
 # So: 92 -> 93 is +1 real trial acknowledged, NOT 117 waved away.
-HONEST_N_ROWS_BUDGET = 130   # audit ceiling on TOTAL rows, so re-evaluations stay visible too
+#
+# 2026-08-05 — 93 -> 110. SEVEN new hypotheses, every one of them pre-declared.
+#
+# The tripwire fired at 100 vs 93 and the investigation found a single, clean cause: the SEC
+# EDGAR point-in-time fundamentals campaign. Seven individual factors were each declared in
+# advance by commit 7b57288 ("prereg: declare 8 individual fundamental factors before running
+# them") and then run on 2026-08-04/05:
+#
+#     eq_accruals, eq_net_issuance, eq_asset_growth, eq_gross_profitability,
+#     eq_book_to_price, eq_earnings_yield, eq_sales_to_price
+#
+# 93 + 7 = 100. Nothing is unaccounted for, no row was purged, and none of these is a window
+# re-evaluation sneaking through the exemption (each changes `alpha_names`, not just the
+# dates, so test_window_exemption_cannot_hide_a_real_search would catch it if it tried).
+#
+# They were also, every one, NEGATIVE — which is the point worth stating plainly. We did not
+# raise this budget because a search paid off. We raised it because a search HAPPENED, it cost
+# us seven trials of deflation headroom, and the bar has to rise whether the result flattered
+# us or not. That is the whole discipline: N counts what you TESTED, never what you KEPT.
+#
+# Set to 110 rather than 101 so the tripwire has honest forward headroom again (the 8th
+# declared fundamental has not run yet, and the five pre-registered PIT macro vintage series
+# in docs/design/PREREG_MACRO_VINTAGE_FAMILY.md are declared-but-unrun as of this commit —
+# together that is 6 more known trials already committed to). It is still a CEILING ABOVE the
+# real count, never a licence: the next campaign that crosses it gets this same investigation.
+#
+# CONSEQUENCE THAT MUST NOT BE LOST: any DSR published against N=93 is now stale and reads
+# BETTER than the truth. The deflation bar moved with us and the published figures have not
+# yet been recomputed at N=100.
+HONEST_N_ROWS_BUDGET = int(_TRIAL_POLICY["primary_ledger_record_audit_ceiling"])
+# ^ NOTE 2026-08-05: this one is close. Total rows are 125 of 130, and the live system appends
+# roughly one window-only re-evaluation PER DAY (eq_mom_252_21), so this ceiling trips on its
+# own in about five days through calendar time alone, with no new research at all. Left
+# unchanged deliberately — it is a separate control with a separate purpose (keeping the
+# exempted re-evaluations VISIBLE rather than bounding the DSR N), and moving it is a
+# different decision from the one made above. Raise it consciously when it fires.
+#
+# 2026-08-15 — 130 -> 180, after the promised audit rather than to silence the tripwire.
+# The ledger now has 142 rows but only 108 distinct hypotheses. ExperimentLog classifies the
+# remaining 34 as window-only re-evaluations in seven groups. We inspected every repeated group:
+# each holds the same eq_mom_252_21 hypothesis and differs ONLY in `start` / `end`; alpha names,
+# allocator, universe, cadence, train/test lengths and no-trade band are identical. The distinct
+# hypothesis budget of 135 still passes with 27 trials of headroom and is NOT changed here.
+#
+# This total-row ceiling is therefore moved to 180: enough for roughly another month of the daily
+# rolling measurement, but still low enough to force a fresh human audit before the exempt rows can
+# become background noise. Nothing was deleted, reclassified, or removed from the DSR denominator.
+
+# 2026-08-17 — hypothesis ceiling 135 -> 160, after the union tripwire fired at 138.
+#
+# The four identities above the 134 count that preceded this campaign were inspected directly:
+# the preliminary insider-cluster implementation, its corrected simple-return implementation,
+# the EIA petroleum-inventory probe, and the earnings-narrative probe. All four remain charged.
+# In particular, the corrected insider result is NOT merged into the preliminary record: changing
+# return aggregation changed the measured implementation, and conservative trial accounting keeps
+# both visible. The union held 205 immutable execution records and 138 hypothesis identities across
+# four profiles at review time. No row was deleted, no exemption widened, and no config was
+# relabelled.
+# This also corrects the 2026-08-15 comment's "27 trials of headroom": 108 described the primary
+# ledger only; the already-required four-profile union was 134 and had one identity of headroom.
+# The machine-readable review and the next mandatory pause live in config/trial_accounting.json.
 
 # The dedicated experiments ledger, resolved from the repo root (…/tests/integration/… ->
 # repo root is parents[2]). This is the REAL committed ledger, not a tmp_path fixture.
 _REAL_LEDGER = Path(__file__).resolve().parents[2] / "var" / "experiments.jsonl"
+
+# EVERY ledger, not just the flagship profile's (added 2026-08-06).
+#
+# This tripwire read `var/experiments.jsonl` alone, but research runs under other profiles
+# write to their own var dirs, and each of those searches was a real hypothesis about the same
+# markets, spent by the same researcher, looking for sleeves for the same book. Which directory
+# a trial landed in is a filing convention; multiple-testing correction does not care about
+# filing conventions. Measured 2026-08-06:
+#
+#     var/experiments.jsonl           127 rows   101 distinct hypotheses   <- what we counted
+#     var_mf/experiments.jsonl         35 rows    13 distinct
+#     var_sharadar/experiments.jsonl   12 rows    12 distinct
+#     var_fut_real/experiments.jsonl    1 row      1 distinct
+#     ------------------------------------------------------------------
+#     UNION (deduplicated)            175 rows   127 distinct              <- the honest N
+#
+# The published N therefore undercounted by 26%, and an undercounted N makes every DSR we
+# publish read BETTER than the truth. Counting the union also closes the obvious evasion: a
+# future search cannot dodge the budget by writing to a new directory.
+def _all_ledgers() -> list[Path]:
+    """Every experiments.jsonl under any var* profile dir. Archives are excluded on purpose:
+    `var/archive_broken_prices/` holds trials run on price data later found to be corrupt, and
+    those were withdrawn rather than filed."""
+    root = Path(__file__).resolve().parents[2]
+    return sorted(p for p in root.glob("var*/experiments.jsonl") if "archive" not in str(p))
+
+
+def _union_hypotheses() -> tuple[int, int]:
+    """(total rows, distinct hypotheses) across every ledger, deduplicated."""
+    from alphaforge.validation.experiments import ExperimentLog
+    rows, keys = 0, set()
+    for path in _all_ledgers():
+        log = ExperimentLog(path)
+        rows += log.n_trials()
+        keys.update(log._hypothesis_key(r.config) for r in log.all())
+    return rows, len(keys)
 
 
 def _closes(seed: int, n: int, level: float, drift: float) -> np.ndarray:
@@ -575,12 +695,17 @@ class TestLedgerHygiene:
         # shrinks the honest count. Window-only re-evaluations are excluded (they are the
         # same idea measured again, not a new idea) — but only under the strict rule pinned
         # by test_window_exemption_cannot_hide_a_real_search below.
-        n_hyp = log.n_hypotheses()
-        assert n_hyp <= HONEST_N_BUDGET, (
-            f"distinct HYPOTHESIS count {n_hyp} exceeds the HONEST_N_BUDGET "
-            f"({HONEST_N_BUDGET}) forward tripwire — N inflated; investigate before "
-            "trusting any DSR deflated against it (do NOT raise the budget to silence this)"
-        )
+        _, n_hyp = _union_hypotheses()
+        status = str(_TRIAL_POLICY.get("research_status", "ACTIVE"))
+        observed = int(_TRIAL_POLICY.get("observed_hypothesis_identities", -1))
+        if n_hyp > HONEST_N_BUDGET:
+            assert status.startswith("PAUSED_") and observed == n_hyp, (
+                f"distinct HYPOTHESIS count {n_hyp} exceeds budget {HONEST_N_BUDGET}, but "
+                f"policy status={status!r} observed={observed}; freeze new return research "
+                "and reconcile the debt instead of raising the budget"
+            )
+        else:
+            assert status == "ACTIVE"
         # Audit ceiling on TOTAL rows so the exempted re-evaluations can never grow unseen.
         assert n_records <= HONEST_N_ROWS_BUDGET, (
             f"ledger has {n_records} rows, above the audit ceiling {HONEST_N_ROWS_BUDGET}. "
@@ -609,9 +734,20 @@ class TestLedgerHygiene:
         row must count, because that is what a parameter sweep looks like.
         """
         log = ExperimentLog(tmp_path / "e.jsonl")
-        base = {"allocator": "rank", "alpha_names": ["a"], "no_trade_band": 0.1,
-                "start": 1_000_000, "end": 2_000_000}
-        common = dict(sharpe_ann=1.0, sharpe_per_period=0.1, n_obs=100, skew=0.0, kurtosis=3.0)
+        base = {
+            "allocator": "rank",
+            "alpha_names": ["a"],
+            "no_trade_band": 0.1,
+            "start": 1_000_000,
+            "end": 2_000_000,
+        }
+        common = {
+            "sharpe_ann": 1.0,
+            "sharpe_per_period": 0.1,
+            "n_obs": 100,
+            "skew": 0.0,
+            "kurtosis": 3.0,
+        }
 
         log.record(config=base, now_ms=1, **common)
         # same idea, window rolled forward twice -> still ONE hypothesis

@@ -87,6 +87,18 @@ class Instrument:
                 f"instrument_id {self.instrument_id!r} encodes market type "
                 f"{id_market_type!r} but market_type field is {self.market_type!r}"
             )
+        expected_market = {
+            AssetClass.CRYPTO_PERP: MarketType.PERP,
+            AssetClass.CRYPTO_SPOT: MarketType.SPOT,
+            AssetClass.EQUITY: MarketType.CASH,
+            AssetClass.FUTURE: MarketType.FUTURE,
+            AssetClass.OPTION: MarketType.OPTION,
+        }[self.asset_class]
+        if self.market_type is not expected_market:
+            raise ValueError(
+                f"asset_class {self.asset_class.value!r} requires market_type "
+                f"{expected_market.value!r}, got {self.market_type.value!r}"
+            )
         if not self.base or not self.quote:
             raise ValueError("Instrument.base and Instrument.quote must be non-empty")
         if f"{self.base}{self.quote}" != id_symbol:

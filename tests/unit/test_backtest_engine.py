@@ -28,6 +28,7 @@ from alphaforge.backtest.engine import (
     StaticCostInputs,
     StrategyContext,
 )
+from alphaforge.backtest.fills import FillModel, ParticipationCappedFill
 from alphaforge.backtest.result import BacktestResult
 from alphaforge.core.instruments import Instrument, InstrumentStore
 from alphaforge.core.time import Ms, Timeframe
@@ -37,6 +38,25 @@ from alphaforge.data.schemas import Dataset
 from alphaforge.data.store.lake import LakePaths
 from alphaforge.data.store.reader import PITDataReader
 from alphaforge.data.store.writer import LakeWriter
+from alphaforge.execution.borrow import (
+    BorrowDataProvider,
+    BorrowQuote,
+    BorrowStatus,
+    RecallNotice,
+    StaticBorrowDataProvider,
+)
+from alphaforge.execution.financing import (
+    DayCountBasis,
+    FinancingDataProvider,
+    FinancingQuote,
+    StaticFinancingDataProvider,
+)
+from alphaforge.execution.market_status import (
+    MarketStatus,
+    MarketStatusEvent,
+    MarketStatusProvider,
+    StaticMarketStatusProvider,
+)
 
 HOUR = 3_600_000
 DAY = 86_400_000
@@ -67,7 +87,9 @@ def slip(notional: float) -> float:
 # ------------------------------------------------------------------- fixtures
 
 
-def make_instrument(instrument_id: str, *, funding_hours: int = 8) -> Instrument:
+def make_instrument(
+    instrument_id: str, *, funding_hours: int = 8, delisted_ts: int | None = None
+) -> Instrument:
     symbol = instrument_id.split(":")[2]
     return Instrument(
         instrument_id=instrument_id,
@@ -85,7 +107,7 @@ def make_instrument(instrument_id: str, *, funding_hours: int = 8) -> Instrument
         taker_fee_bps=5.0,
         funding_interval_hours=funding_hours,
         listed_ts=LISTED,
-        delisted_ts=None,
+        delisted_ts=delisted_ts,
     )
 
 
@@ -160,6 +182,10 @@ def build_engine(
     *,
     use_static_cost_inputs: bool = True,
     no_trade_band_frac: float = 0.001,
+    fill_model: FillModel | None = None,
+    borrow_data: BorrowDataProvider | None = None,
+    market_status: MarketStatusProvider | None = None,
+    financing_data: FinancingDataProvider | None = None,
 ) -> EventDrivenBacktester:
     paths = LakePaths(tmp_path / "lake")
     writer = LakeWriter(paths)
@@ -177,6 +203,10 @@ def build_engine(
             StaticCostInputs(adv_quote=ADV, sigma_daily=SIGMA) if use_static_cost_inputs else None
         ),
         no_trade_band_frac=no_trade_band_frac,
+        fill_model=fill_model,
+        borrow_data=borrow_data,
+        market_status=market_status,
+        financing_data=financing_data,
     )
 
 
@@ -394,7 +424,12 @@ class TestGoldenMaster:
 
 def test_signal_on_final_bar_yields_zero_fills_and_no_exception(tmp_path: Path) -> None:
     bars = two_asset_bars(4)
-    engine = build_engine(tmp_path, bars, [], [make_instrument(BTC), make_instrument(ETH)])
+    engine = build_engine(
+        tmp_path,
+        bars,
+        [],
+        [make_instrument(BTC), make_instrument(ETH)],
+    )
     final_close = T0 + 4 * HOUR
     result = engine.run(
         ScriptedStrategy({final_close: {BTC: 0.5}}),
@@ -416,7 +451,12 @@ def test_gap_at_next_bar_drops_order(tmp_path: Path) -> None:
         for r in two_asset_bars(6)
         if not (r["instrument_id"] == ETH and r["ts_open"] == T0 + HOUR)
     ]
-    engine = build_engine(tmp_path, bars, [], [make_instrument(BTC), make_instrument(ETH)])
+    engine = build_engine(
+        tmp_path,
+        bars,
+        [],
+        [make_instrument(BTC), make_instrument(ETH)],
+    )
     result = engine.run(
         ScriptedStrategy({T0 + HOUR: {BTC: 0.1, ETH: 0.1}}),
         [BTC, ETH],
@@ -431,13 +471,70 @@ def test_gap_at_next_bar_drops_order(tmp_path: Path) -> None:
     assert status[BTC] == "filled"
 
 
+def test_participation_fill_surfaces_partial_and_canceled_residual(tmp_path: Path) -> None:
+    bars = [row for row in two_asset_bars(4) if row["instrument_id"] == BTC]
+    engine = build_engine(
+        tmp_path,
+        bars,
+        [],
+        [make_instrument(BTC)],
+        fill_model=ParticipationCappedFill(
+            TransactionCostModel(), max_bar_participation=0.10
+        ),
+    )
+    result = engine.run(
+        ScriptedStrategy({T0 + HOUR: {BTC: 0.10}}),
+        [BTC],
+        start=T0,
+        end=T0 + 4 * HOUR,
+    )
+
+    assert result.counters["fills_applied"] == 1
+    assert result.counters["partial_fill_orders"] == 1
+    assert result.counters["partial_fill_residual_canceled"] == 1
+    assert result.counters["dropped_no_bar_liquidity"] == 0
+    assert result.fills.iloc[0]["qty"] == 1.0
+    assert result.orders.iloc[0]["qty"] == 1.0
+    assert result.orders.iloc[0]["status"] == "partial_fill_residual_canceled"
+    assert result.config["fill_model"] == "ParticipationCappedFill"
+
+
+def test_participation_fill_drops_order_when_bar_liquidity_is_missing(tmp_path: Path) -> None:
+    bars = [row for row in two_asset_bars(4) if row["instrument_id"] == BTC]
+    for row in bars:
+        if row["ts_open"] == T0 + HOUR:
+            row["quote_volume"] = math.nan
+    engine = build_engine(
+        tmp_path,
+        bars,
+        [],
+        [make_instrument(BTC)],
+        fill_model=ParticipationCappedFill(TransactionCostModel()),
+    )
+    result = engine.run(
+        ScriptedStrategy({T0 + HOUR: {BTC: 0.10}}),
+        [BTC],
+        start=T0,
+        end=T0 + 4 * HOUR,
+    )
+
+    assert result.counters["fills_applied"] == 0
+    assert result.counters["dropped_no_bar_liquidity"] == 1
+    assert result.orders.iloc[0]["status"] == "dropped_no_bar_liquidity"
+
+
 def test_delisting_force_flat_at_last_close(tmp_path: Path) -> None:
     # ETH bars stop after ts_open T0+5h (last close T0+6h) while BTC and the
     # run continue to T0+12h: the open ETH position is force-flatted at its
     # last close (50.0) with taker fee — counted, logged, conservative.
     bars = [r for r in two_asset_bars(12) if r["instrument_id"] == BTC]
     bars += [bar_row(ETH, T0 + k * HOUR, open_=50.0, close=50.0) for k in range(6)]
-    engine = build_engine(tmp_path, bars, [], [make_instrument(BTC), make_instrument(ETH)])
+    engine = build_engine(
+        tmp_path,
+        bars,
+        [],
+        [make_instrument(BTC), make_instrument(ETH, delisted_ts=T0 + 6 * HOUR)],
+    )
     result = engine.run(
         ScriptedStrategy({T0 + HOUR: {ETH: 0.1}}),
         [BTC, ETH],
@@ -460,6 +557,85 @@ def test_delisting_force_flat_at_last_close(tmp_path: Path) -> None:
     late = result.positions[result.positions["ts"] > T0 + 6 * HOUR]
     assert (late["instrument_id"] != ETH).all()
     assert "forced_flat" in set(result.orders["status"])
+
+
+def test_terminal_history_without_delisting_metadata_fails_closed(tmp_path: Path) -> None:
+    bars = [r for r in two_asset_bars(12) if r["instrument_id"] == BTC]
+    bars += [bar_row(ETH, T0 + k * HOUR, open_=50.0, close=50.0) for k in range(6)]
+    engine = build_engine(tmp_path, bars, [], [make_instrument(BTC), make_instrument(ETH)])
+
+    with pytest.raises(ValueError, match="terminal price history for active instrument"):
+        engine.run(
+            ScriptedStrategy({T0 + HOUR: {ETH: 0.1}}),
+            [BTC, ETH],
+            start=T0,
+            end=T0 + 12 * HOUR,
+        )
+
+
+def test_pit_financing_accrues_and_persists_every_covered_interval(tmp_path: Path) -> None:
+    bars = [row for row in two_asset_bars(4) if row["instrument_id"] == BTC]
+    provider = StaticFinancingDataProvider(
+        quotes=(
+            FinancingQuote(
+                currency="USDT",
+                observed_ts=T0,
+                available_at=T0,
+                valid_from=T0,
+                valid_until=T0 + 5 * HOUR,
+                credit_rate_bps=360.0,
+                debit_rate_bps=720.0,
+                short_proceeds_rate_bps=0.0,
+                day_count=DayCountBasis.ACT_360,
+                source="synthetic-locked-test",
+            ),
+        )
+    )
+    financed = build_engine(
+        tmp_path / "financed",
+        bars,
+        [],
+        [make_instrument(BTC)],
+        financing_data=provider,
+    ).run(
+        ScriptedStrategy({T0 + HOUR: {BTC: 0.10}}),
+        [BTC],
+        start=T0,
+        end=T0 + 4 * HOUR,
+    )
+    baseline = build_engine(
+        tmp_path / "baseline", bars, [], [make_instrument(BTC)]
+    ).run(
+        ScriptedStrategy({T0 + HOUR: {BTC: 0.10}}),
+        [BTC],
+        start=T0,
+        end=T0 + 4 * HOUR,
+    )
+
+    assert financed.counters["financing_intervals_applied"] == 3
+    assert len(financed.financing_events) == 3
+    assert (financed.financing_events["payment_quote"] > 0.0).all()
+    total = float(financed.financing_events["payment_quote"].sum())
+    assert financed.config["financing_cashflow_total"] == pytest.approx(total)
+    assert financed.equity.iloc[-1] - baseline.equity.iloc[-1] == pytest.approx(total)
+
+
+def test_enabled_financing_fails_closed_without_rate_coverage(tmp_path: Path) -> None:
+    bars = [row for row in two_asset_bars(4) if row["instrument_id"] == BTC]
+    engine = build_engine(
+        tmp_path,
+        bars,
+        [],
+        [make_instrument(BTC)],
+        financing_data=StaticFinancingDataProvider(quotes=()),
+    )
+    with pytest.raises(ValueError, match="missing PIT financing quote"):
+        engine.run(
+            ScriptedStrategy({}),
+            [BTC],
+            start=T0,
+            end=T0 + 4 * HOUR,
+        )
 
 
 def test_no_trade_band_skips_small_deltas(tmp_path: Path) -> None:
@@ -794,3 +970,237 @@ def test_equity_d1_grid_hops_sessions_not_calendar_days(tmp_path: Path) -> None:
     result = engine.run(ScriptedStrategy({}), [AAPL], start=EQ_THU, end=EQ_WED)
     # grid = {nbo(Thu)=Fri, nbo(Fri)=Mon, nbo(Mon)=Tue, nbo(Tue)=Wed} -> 4 steps.
     assert result.counters["bars_processed"] == 4
+
+
+def _borrow_quote(*, available_qty: float, status: BorrowStatus) -> BorrowQuote:
+    return BorrowQuote(
+        instrument_id=BTC,
+        observed_ts=T0,
+        available_at=T0,
+        valid_from=T0,
+        valid_until=T0 + 20 * HOUR,
+        status=status,
+        available_qty=available_qty,
+        annual_fee_bps=36_500.0,
+        utilization=0.9,
+    )
+
+
+def test_dynamic_borrow_caps_short_entry_and_accrues_security_fee(tmp_path: Path) -> None:
+    provider = StaticBorrowDataProvider(
+        quotes=(_borrow_quote(available_qty=3.0, status=BorrowStatus.HARD),)
+    )
+    engine = build_engine(
+        tmp_path,
+        [bar_row(BTC, T0 + k * HOUR, open_=100.0, close=100.0) for k in range(8)],
+        [],
+        [make_instrument(BTC)],
+        no_trade_band_frac=0.0,
+        borrow_data=provider,
+    )
+    result = engine.run(
+        ScriptedStrategy({T0 + HOUR: {BTC: -0.01}}),
+        [BTC],
+        start=T0,
+        end=T0 + 8 * HOUR,
+        initial_cash=CASH0,
+    )
+    assert list(result.fills["side"]) == ["sell"]
+    assert list(result.fills["qty"]) == [3.0]
+    assert result.counters["borrow_locates_partial"] == 1
+    assert result.counters["dynamic_borrow_charges_applied"] > 0
+    assert result.config["borrow_total"] < 0.0
+
+
+def test_dynamic_borrow_denial_prevents_short_fill(tmp_path: Path) -> None:
+    provider = StaticBorrowDataProvider(
+        quotes=(_borrow_quote(available_qty=0.0, status=BorrowStatus.UNAVAILABLE),)
+    )
+    engine = build_engine(
+        tmp_path,
+        [bar_row(BTC, T0 + k * HOUR, open_=100.0, close=100.0) for k in range(5)],
+        [],
+        [make_instrument(BTC)],
+        no_trade_band_frac=0.0,
+        borrow_data=provider,
+    )
+    result = engine.run(
+        ScriptedStrategy({T0 + HOUR: {BTC: -0.01}}),
+        [BTC],
+        start=T0,
+        end=T0 + 5 * HOUR,
+        initial_cash=CASH0,
+    )
+    assert result.fills.empty
+    assert result.counters["borrow_locates_denied"] == 1
+    assert result.orders.iloc[0]["status"] == "dropped_borrow_unavailable"
+
+
+def test_dynamic_borrow_missing_quote_fails_short_entry_closed(tmp_path: Path) -> None:
+    engine = build_engine(
+        tmp_path,
+        [bar_row(BTC, T0 + k * HOUR, open_=100.0, close=100.0) for k in range(5)],
+        [],
+        [make_instrument(BTC)],
+        no_trade_band_frac=0.0,
+        borrow_data=StaticBorrowDataProvider(quotes=()),
+    )
+    result = engine.run(
+        ScriptedStrategy({T0 + HOUR: {BTC: -0.01}}),
+        [BTC],
+        start=T0,
+        end=T0 + 5 * HOUR,
+        initial_cash=CASH0,
+    )
+    assert result.fills.empty
+    assert result.counters["borrow_quotes_missing"] == 1
+    assert result.counters["borrow_locates_denied"] == 1
+
+
+@pytest.mark.parametrize(
+    ("deadline", "expected_reason", "forced_count"),
+    [
+        (T0 + 6 * HOUR, "borrow_recall", 0),
+        (T0 + 4 * HOUR, "forced_buy_in", 1),
+    ],
+)
+def test_borrow_recall_queues_cover_and_overrides_strategy_hold(
+    tmp_path: Path, deadline: int, expected_reason: str, forced_count: int
+) -> None:
+    recall = RecallNotice(
+        instrument_id=BTC,
+        recalled_qty=4.0,
+        event_ts=T0 + 3 * HOUR,
+        available_at=T0 + 4 * HOUR,
+        cover_deadline=deadline,
+    )
+    provider = StaticBorrowDataProvider(
+        quotes=(_borrow_quote(available_qty=100.0, status=BorrowStatus.EASY),),
+        recalls=(recall,),
+    )
+    engine = build_engine(
+        tmp_path,
+        [bar_row(BTC, T0 + k * HOUR, open_=100.0, close=100.0) for k in range(9)],
+        [],
+        [make_instrument(BTC)],
+        no_trade_band_frac=0.0,
+        borrow_data=provider,
+    )
+    result = engine.run(
+        ScriptedStrategy({T0 + HOUR: {BTC: -0.01}}),
+        [BTC],
+        start=T0,
+        end=T0 + 9 * HOUR,
+        initial_cash=CASH0,
+    )
+    assert list(result.fills["side"]) == ["sell", "buy"]
+    assert list(result.fills["qty"]) == [10.0, 4.0]
+    assert list(result.fills["reason"]) == ["target_weight", expected_reason]
+    assert result.counters["borrow_recalls_queued"] == 1
+    assert result.counters["borrow_recall_fills_applied"] == 1
+    assert result.counters["forced_buy_ins_queued"] == forced_count
+
+
+def _market_event(
+    *,
+    status: MarketStatus,
+    start: int,
+    end: int,
+    instrument_id: str | None = None,
+) -> MarketStatusEvent:
+    return MarketStatusEvent(
+        venue="BINANCE",
+        instrument_id=instrument_id,
+        status=status,
+        effective_from=start,
+        effective_until=end,
+        observed_ts=start,
+        available_at=start,
+        reason="engine fixture",
+    )
+
+
+def test_outage_blocks_fill_even_when_a_bar_exists(tmp_path: Path) -> None:
+    provider = StaticMarketStatusProvider(
+        events=(
+            _market_event(status=MarketStatus.OPEN, start=T0, end=T0 + 10 * HOUR),
+            _market_event(
+                status=MarketStatus.OUTAGE,
+                start=T0 + HOUR,
+                end=T0 + 2 * HOUR,
+                instrument_id=BTC,
+            ),
+        )
+    )
+    engine = build_engine(
+        tmp_path,
+        [bar_row(BTC, T0 + k * HOUR, open_=100.0, close=100.0) for k in range(5)],
+        [],
+        [make_instrument(BTC)],
+        no_trade_band_frac=0.0,
+        market_status=provider,
+    )
+    result = engine.run(
+        ScriptedStrategy({T0 + HOUR: {BTC: 0.01}}),
+        [BTC],
+        start=T0,
+        end=T0 + 5 * HOUR,
+    )
+    assert result.fills.empty
+    assert result.counters["market_status_blocks"] == 1
+    assert result.orders.iloc[0]["status"] == "blocked_venue_outage"
+
+
+def test_close_only_blocks_new_risk_but_permits_reduce_only(tmp_path: Path) -> None:
+    provider = StaticMarketStatusProvider(
+        events=(
+            _market_event(status=MarketStatus.OPEN, start=T0, end=T0 + 10 * HOUR),
+            _market_event(
+                status=MarketStatus.CLOSE_ONLY,
+                start=T0 + 3 * HOUR,
+                end=T0 + 5 * HOUR,
+                instrument_id=BTC,
+            ),
+        )
+    )
+    engine = build_engine(
+        tmp_path,
+        [bar_row(BTC, T0 + k * HOUR, open_=100.0, close=100.0) for k in range(7)],
+        [],
+        [make_instrument(BTC)],
+        no_trade_band_frac=0.0,
+        market_status=provider,
+    )
+    result = engine.run(
+        ScriptedStrategy(
+            {
+                T0 + HOUR: {BTC: 0.01},
+                T0 + 3 * HOUR: {BTC: 0.0},
+                T0 + 4 * HOUR: {BTC: -0.01},
+            }
+        ),
+        [BTC],
+        start=T0,
+        end=T0 + 7 * HOUR,
+    )
+    assert list(result.fills["side"]) == ["buy", "sell"]
+    assert result.counters["market_status_close_only_blocks"] == 1
+    assert "blocked_close_only_blocks_risk_increase" in set(result.orders["status"])
+
+
+def test_market_status_provider_requires_explicit_fill_time_coverage(tmp_path: Path) -> None:
+    engine = build_engine(
+        tmp_path,
+        [bar_row(BTC, T0 + k * HOUR, open_=100.0, close=100.0) for k in range(4)],
+        [],
+        [make_instrument(BTC)],
+        no_trade_band_frac=0.0,
+        market_status=StaticMarketStatusProvider(events=()),
+    )
+    with pytest.raises(ValueError, match="missing PIT market-status coverage"):
+        engine.run(
+            ScriptedStrategy({T0 + HOUR: {BTC: 0.01}}),
+            [BTC],
+            start=T0,
+            end=T0 + 4 * HOUR,
+        )

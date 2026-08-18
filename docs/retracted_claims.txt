@@ -1,0 +1,43 @@
+# RETRACTED CLAIMS — the blocklist that makes a retraction stick.
+#
+# WHY THIS FILE EXISTS. On 2026-08-06 the signed chain formally withdrew AlphaTrend's DSR of 0.83,
+# in entry [24], with the words "was wrong when we wrote it and has been wrong every day since".
+# Six days later the number was still on the homepage, still in the /progress social-unfurl card
+# that people see WITHOUT opening the site, and still asserted as fact in three glass-box JSON
+# artifacts. The retraction had updated the log and nothing else. The site was simultaneously
+# publishing the correction and the thing it corrected, from the same pipeline, in the same run.
+#
+# That is the second time: transparency [21] records the social card advertising a forward Sharpe
+# we had stopped believing weeks earlier. A retraction that only appends to the log is not a
+# retraction, it is a footnote. So: WITHDRAWING A CLAIM MEANS ADDING A LINE HERE IN THE SAME
+# COMMIT. Nothing enforces that but this comment and the fact that the check runs before deploy.
+#
+# FORMAT — three "::"-separated fields (NOT "|": the patterns themselves contain alternation,
+# and splitting on "|" tore this file's own regexes in half the first time):
+#   <transparency-seq> :: <regex that must not be ASSERTED> :: <regex that makes it legitimate>
+#
+# The third field is what keeps this honest rather than merely silencing. A retracted number MUST
+# still be quotable inside its own retraction — deleting the history would be its own dishonesty.
+# So a match is a violation ONLY when the exemption pattern is absent from the surrounding window.
+# That means the check cannot be satisfied by hiding the number; it is satisfied by explaining it.
+#
+# A blank exemption field means the claim may not appear at all, in any context.
+
+24 :: DSR 0\.83 :: withdraw|WITHDRAWN|wrong|WRONG|re-derived|RE-DERIVED|old 0\.83|previously|we published DSR
+24 :: first (new )?sleeve to (CLEAR|clear) (multiple-testing )?deflation :: withdraw|WITHDRAWN|wrong|WRONG|re-derived|RE-DERIVED|called it
+24 :: statistically real,? (rather than|not) a backtest fluke :: withdraw|WITHDRAWN|wrong|WRONG|re-derived|RE-DERIVED|called it
+21 :: forward Sharpe of 1\.46 :: in-sample|deflat|withdraw|WITHDRAWN
+# The book has run FOUR sleeves at equal quarters since 2026-08-10. Any surviving text describing
+# the old fixed 40/40/20 or a two/three-sleeve book overstates neither returns nor risk, but it
+# does describe a book we are not running — which is the same defect class as the rest of this file.
+-- :: fixed 40/40/20 :: not the fixed|no longer|previously|superseded|this block said|this artifact previously said|Corrected 20
+-- :: equal-risk combination of the first two :: until|previously|no longer
+# rho_bar was corrected from about -0.02 to +0.0274 on 2026-08-06; the negative figure and the
+# claim that decorrelation IS the edge were both withdrawn.
+-- :: decorrelation is the edge :: withdraw|WITHDRAWN|wrong|WRONG|previously|we called
+
+# The signed chain holds 239 ENTRIES across 39 DISTINCT DATES. Presenting the entry count
+# as a day count overstates the length of the record ~6x. js/holdings.js already said
+# "entries"; index.html still said "days" -- the number was data-bound, the noun was not.
+-- :: entries">--</span> days hashed :: 
+-- :: entry_count[^,}]*}} days :: 

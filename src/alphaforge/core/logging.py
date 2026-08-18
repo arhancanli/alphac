@@ -86,7 +86,11 @@ _SECRET_RE: Final[re.Pattern[str]] = re.compile(
 )
 
 
-def _redact_secrets(_logger: object, _name: str, event_dict: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
+def _redact_secrets(
+    _logger: object,
+    _name: str,
+    event_dict: MutableMapping[str, Any],
+) -> MutableMapping[str, Any]:
     """Scrub secret-bearing query params from every string value in the event.
 
     Fail-open by design: logging must never raise. A value that is not a string is left alone.

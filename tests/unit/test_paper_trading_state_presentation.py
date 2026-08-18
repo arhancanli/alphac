@@ -34,7 +34,11 @@ PTS_PATH = REPO / "scripts" / "paper_trading_state.py"
 STATE_JSON = REPO / "data" / "paper" / "state.json"
 
 # The sleeves that COMPOSE the flagship, addressed by key (never by list position).
-COMPOSITION_KEYS = ("alphaforge", "alphamax", "managed_futures")
+# The sleeves that COMPOSE the flagship. AlphaVintage joined 2026-08-10 (WEIGHT_SCHEDULE entry
+# at its own go-live, so the days before it existed still compound at thirds). Updating this
+# tuple is how a composition change is meant to be noticed — the test failing on the day the
+# book changed is the guard working, not a nuisance.
+COMPOSITION_KEYS = ("alphaforge", "alphamax", "managed_futures", "alphavintage")
 
 
 @pytest.fixture(scope="module")

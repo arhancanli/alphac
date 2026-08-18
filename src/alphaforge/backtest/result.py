@@ -1,7 +1,8 @@
 """BacktestResult — the persisted truth of one engine run (execDesign.md §4.5).
 
 One immutable container holding everything a run produced: the equity curve,
-the fills / funding / orders / positions frames, the :class:`PerfSummary`
+the fills / funding / corporate-actions / financing / orders / positions frames, the
+:class:`PerfSummary`
 (headline metrics on the UTC-daily basis, leakageCritique.md finding 29), a
 config echo for reproducibility, and the engine's bookkeeping counters
 (dropped / unfilled / forced-flat orders — silence is never an option).
@@ -17,6 +18,8 @@ in ``summary.txt`` / ``tearsheet.txt`` at render time):
 ``funding.parquet``    ``ts_funding, instrument_id, rate, mark_price,
                        position_qty, payment_quote`` (stored-events table rows
                        that actually settled against a position)
+``corporate_actions.parquet`` applied split conversions and dividend cashflows
+``financing.parquet``  cash, margin-debit, and short-collateral accrual intervals
 ``orders.parquet``     ``decision_ts, instrument_id, side, qty,
                        decision_price, status, client_order_id`` — every order
                        decision incl. skipped/dropped ones
@@ -53,6 +56,8 @@ __all__ = ["BacktestResult"]
 _EQUITY_FILE: Final[str] = "equity.parquet"
 _FILLS_FILE: Final[str] = "fills.parquet"
 _FUNDING_FILE: Final[str] = "funding.parquet"
+_CORPORATE_ACTIONS_FILE: Final[str] = "corporate_actions.parquet"
+_FINANCING_FILE: Final[str] = "financing.parquet"
 _ORDERS_FILE: Final[str] = "orders.parquet"
 _POSITIONS_FILE: Final[str] = "positions.parquet"
 _META_FILE: Final[str] = "run_meta.json"
@@ -79,6 +84,32 @@ FUNDING_COLUMNS: Final[tuple[str, ...]] = (
     "mark_price",
     "position_qty",
     "payment_quote",
+)
+
+CORPORATE_ACTION_COLUMNS: Final[tuple[str, ...]] = (
+    "action_ts",
+    "instrument_id",
+    "action_type",
+    "position_qty_before",
+    "ratio",
+    "cash_amount",
+    "cashflow_quote",
+)
+
+FINANCING_COLUMNS: Final[tuple[str, ...]] = (
+    "start_ts",
+    "end_ts",
+    "currency",
+    "cash_balance",
+    "unrestricted_credit_base",
+    "short_proceeds_base",
+    "debit_base",
+    "credit_rate_bps",
+    "debit_rate_bps",
+    "short_proceeds_rate_bps",
+    "day_count",
+    "payment_quote",
+    "source",
 )
 
 ORDERS_COLUMNS: Final[tuple[str, ...]] = (
@@ -137,6 +168,12 @@ class BacktestResult:
     orders: pd.DataFrame
     positions: pd.DataFrame
     summary: PerfSummary
+    corporate_actions: pd.DataFrame = field(
+        default_factory=lambda: pd.DataFrame(columns=list(CORPORATE_ACTION_COLUMNS))
+    )
+    financing_events: pd.DataFrame = field(
+        default_factory=lambda: pd.DataFrame(columns=list(FINANCING_COLUMNS))
+    )
     config: dict[str, object] = field(default_factory=dict)
     counters: dict[str, int] = field(default_factory=dict)
 
@@ -147,7 +184,19 @@ class BacktestResult:
             "funding_events",
             _require_columns("funding", self.funding_events, FUNDING_COLUMNS),
         )
+        object.__setattr__(
+            self,
+            "financing_events",
+            _require_columns("financing", self.financing_events, FINANCING_COLUMNS),
+        )
         object.__setattr__(self, "orders", _require_columns("orders", self.orders, ORDERS_COLUMNS))
+        object.__setattr__(
+            self,
+            "corporate_actions",
+            _require_columns(
+                "corporate_actions", self.corporate_actions, CORPORATE_ACTION_COLUMNS
+            ),
+        )
         object.__setattr__(
             self, "positions", _require_columns("positions", self.positions, POSITIONS_COLUMNS)
         )
@@ -191,6 +240,8 @@ class BacktestResult:
         equity_frame.to_parquet(out_dir / _EQUITY_FILE, index=False)
         self.fills.to_parquet(out_dir / _FILLS_FILE, index=False)
         self.funding_events.to_parquet(out_dir / _FUNDING_FILE, index=False)
+        self.corporate_actions.to_parquet(out_dir / _CORPORATE_ACTIONS_FILE, index=False)
+        self.financing_events.to_parquet(out_dir / _FINANCING_FILE, index=False)
         self.orders.to_parquet(out_dir / _ORDERS_FILE, index=False)
         self.positions.to_parquet(out_dir / _POSITIONS_FILE, index=False)
         meta = {"config": self.config, "counters": self.counters}
@@ -222,6 +273,18 @@ class BacktestResult:
         )
         fills = pd.read_parquet(out_dir / _FILLS_FILE)
         funding_events = pd.read_parquet(out_dir / _FUNDING_FILE)
+        corporate_actions_path = out_dir / _CORPORATE_ACTIONS_FILE
+        corporate_actions = (
+            pd.read_parquet(corporate_actions_path)
+            if corporate_actions_path.exists()
+            else pd.DataFrame(columns=list(CORPORATE_ACTION_COLUMNS))
+        )
+        financing_path = out_dir / _FINANCING_FILE
+        financing_events = (
+            pd.read_parquet(financing_path)
+            if financing_path.exists()
+            else pd.DataFrame(columns=list(FINANCING_COLUMNS))
+        )
         orders = pd.read_parquet(out_dir / _ORDERS_FILE)
         positions = pd.read_parquet(out_dir / _POSITIONS_FILE)
         meta_raw = json.loads((out_dir / _META_FILE).read_text(encoding="utf-8"))
@@ -244,6 +307,8 @@ class BacktestResult:
             orders=orders,
             positions=positions,
             summary=summary,
+            corporate_actions=corporate_actions,
+            financing_events=financing_events,
             config=dict(config_raw),
             counters={str(k): int(v) for k, v in counters_raw.items()},
         )

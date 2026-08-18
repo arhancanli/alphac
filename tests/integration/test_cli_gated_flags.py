@@ -31,6 +31,7 @@ Offline, ``tmp_path`` lake only, deterministic (seeded rng), no network.
 from __future__ import annotations
 
 import json
+import shutil
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -147,6 +148,14 @@ def repo(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Iterator[Path]:
     path roots the commands touch (lake / var / artifacts) via the ``AF_PATHS__*`` env
     layer — which wins over YAML — so nothing reads ./data or ./var.
     """
+    # ExperimentUnion refuses to write under an unverified directory. Mirror the
+    # authoritative base config so this synthetic repository is a genuine isolated
+    # accounting root rather than weakening the production fail-closed guard.
+    source_config = Path(__file__).resolve().parents[2] / "configs" / "base.yaml"
+    config_dir = tmp_path / "configs"
+    config_dir.mkdir(parents=True)
+    shutil.copyfile(source_config, config_dir / "base.yaml")
+
     lake_dir = tmp_path / "lake"
     var_dir = tmp_path / "var"
     artifacts_dir = tmp_path / "artifacts"

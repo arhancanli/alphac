@@ -423,7 +423,7 @@ def indicator_z_table(sources: dict, grid: pd.DatetimeIndex) -> dict[tuple[str, 
     """
     out: dict[tuple[str, str], pd.Series] = {}
     for theme, members in INDICATORS.items():
-        for (name, tier, transform, direction) in members:
+        for (name, _tier, transform, direction) in members:
             if name not in sources:
                 continue
             src = sources[name]
@@ -686,8 +686,6 @@ def selftest() -> int:
     # deterministic non-constant prices (vol > 0 for sizing); macro drives weights only
     px = 100.0 * np.cumprod(1.0 + 0.005 * np.array([1 if i % 2 else -1 for i in range(len(days5))]))
     close5 = pd.DataFrame({"SPY": px}, index=days5)
-    open5 = close5.copy()
-
     global INDICATORS, SIGN, MIN_BREADTH  # temporarily rewire the registry (restored below)
     saved = (INDICATORS, SIGN, MIN_BREADTH)
     try:
@@ -782,7 +780,7 @@ def run_real() -> int:
     """The audited gauntlet run. Appends exactly ONE trial to var/experiments.jsonl."""
     from alphaforge.analytics.metrics import DAYS_PER_YEAR, daily_returns, summarize
     from alphaforge.validation.dsr import dsr_from_returns
-    from alphaforge.validation.experiments import ExperimentLog
+    from alphaforge.validation.experiments import ExperimentUnion
 
     print("ECON-TREND — REAL GAUNTLET (audited step). Spec locked 2026-07-11; publishing either way.")
     OUT.mkdir(parents=True, exist_ok=True)
@@ -812,14 +810,19 @@ def run_real() -> int:
 
     # ---- ledger: exactly ONE trial (idempotent on the SPEC hash), THEN headline DSR ----
     from alphaforge.core.time import now_ms
-    log = ExperimentLog(LEDGER)
+    log = ExperimentUnion.discover(LEDGER, _ROOT)
     sr_pp = float(d_rets.mean() / d_rets.std(ddof=1))
     log.record(SPEC, sharpe_ann=float(summ.sharpe), sharpe_per_period=sr_pp,
-               n_obs=int(len(d_rets)), skew=skew,
+               n_obs=len(d_rets), skew=skew,
                kurtosis=float(((d_rets - d_rets.mean()) ** 4).mean() / d_rets.std(ddof=0) ** 4),
                now_ms=now_ms())
-    n_ledger = log.n_trials()
-    dsr_ledger = dsr_from_returns(d_rets, n_ledger, log.trial_sharpe_variance(), DAYS_PER_YEAR)
+    n_ledger = log.n_hypotheses()
+    dsr_ledger = dsr_from_returns(
+        d_rets,
+        n_ledger,
+        log.hypothesis_sharpe_variance(),
+        DAYS_PER_YEAR,
+    )
     dsr_fresh = dsr_from_returns(d_rets, 2, 1.0, DAYS_PER_YEAR)
 
     # ---- pre-registered correlations (on the UNLEVERED net series) ----
@@ -839,11 +842,11 @@ def run_real() -> int:
         seg = oos_dt.loc[a:bdt]
         spyseg = spy.loc[a:bdt].dropna()
         if len(seg) < 10:
-            crisis[name] = {"n_days": int(len(seg)), "note": "insufficient OOS coverage"}
+            crisis[name] = {"n_days": len(seg), "note": "insufficient OOS coverage"}
             continue
         eqw = (1 + seg).cumprod()
         crisis[name] = {
-            "n_days": int(len(seg)),
+            "n_days": len(seg),
             "sleeve_cum_ret": round(float(eqw.iloc[-1] - 1), 4),
             "sleeve_max_dd": round(float((eqw / eqw.cummax() - 1).min()), 4),
             "spy_cum_ret": round(float((1 + spyseg).prod() - 1), 4),
@@ -859,7 +862,7 @@ def run_real() -> int:
     result = {
         "probe": "econtrend", "spec_version": SPEC["version"],
         "window": f"{net.index.min().date()}..{net.index.max().date()}",
-        "n_oos_days": int(len(d_rets)), "n_rebalances": len(weights),
+        "n_oos_days": len(d_rets), "n_rebalances": len(weights),
         "net_sharpe": round(float(summ.sharpe), 3),
         "net_sharpe_no_voltarget_fullsample": round(float(summ_full.sharpe), 3),
         "dsr_ledger": round(float(dsr_ledger.dsr), 3), "ledger_n": n_ledger,

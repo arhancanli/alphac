@@ -199,7 +199,11 @@ def test_reverse_split_produces_no_phantom_pnl(tmp_path: Path, weight: float) ->
     a long 1000-share book would fabricate ``1000·(200-10) = +$190k`` (and the short
     the mirror-image crash — the ALIT -495bp phantom day, sign-adjusted).
     """
-    reader, store = _build_lake(tmp_path, _split_prices(), [("split", EX_DATE, REVERSE_RATIO, None)])
+    reader, store = _build_lake(
+        tmp_path,
+        _split_prices(),
+        [("split", EX_DATE, REVERSE_RATIO, None)],
+    )
     result = _run(reader, store, weight)
     store.close()
 
@@ -239,7 +243,7 @@ def test_bogus_split_record_skipped_by_sanity_guard(
 ) -> None:
     """A split record whose price did NOT move (the bogus HON ratio-0.5 row) is
     logged + skipped: no conversion, no equity jump, lake untouched."""
-    flat = {t: (PRE_PRICE, PRE_PRICE) for t in SESSIONS}  # no split in the prices
+    flat = dict.fromkeys(SESSIONS, (PRE_PRICE, PRE_PRICE))  # no split in the prices
     reader, store = _build_lake(tmp_path, flat, [("split", EX_DATE, 0.5, None)])
     with caplog.at_level(logging.WARNING, logger="alphaforge.backtest.engine"):
         result = _run(reader, store, 0.1)
@@ -265,8 +269,7 @@ def test_bogus_split_record_skipped_by_sanity_guard(
 
 
 def test_genuine_split_with_dividend_rows_present(tmp_path: Path) -> None:
-    """Dividend rows in corporate_actions never move the share count — only the
-    split row converts, once, at its own ex boundary."""
+    """Splits convert shares while cash dividends accrue on the signed ex-date holding."""
     actions: list[tuple[str, int, float, float | None]] = [
         ("dividend", S[4], 1.0, 0.04),
         ("split", EX_DATE, REVERSE_RATIO, None),
@@ -284,12 +287,62 @@ def test_genuine_split_with_dividend_rows_present(tmp_path: Path) -> None:
         assert qty_by_ts[S[d]] == pytest.approx(pre_qty * REVERSE_RATIO, rel=1e-12)
     for d in (5, 8):
         assert qty_by_ts[S[d]] == pytest.approx(pre_qty, rel=1e-12)
-    # And the curve stays continuous throughout.
-    equity = result.equity
-    post_entry = equity[equity.index >= S[4]]
-    ref = float(post_entry.iloc[0])
-    for val in post_entry:
-        assert val == pytest.approx(ref, rel=1e-9)
+    action_log = result.corporate_actions
+    assert list(action_log["action_type"]) == ["dividend", "split", "dividend"]
+    dividends = action_log[action_log["action_type"] == "dividend"]
+    assert list(dividends["cashflow_quote"]) == pytest.approx(
+        [pre_qty * 0.04, pre_qty * REVERSE_RATIO * 0.04]
+    )
+    assert result.config["corporate_action_cashflow_total"] == pytest.approx(
+        float(dividends["cashflow_quote"].sum())
+    )
+    assert result.counters["cash_dividends_applied"] == 2
+    assert result.counters["corporate_actions_applied"] == 3
+
+
+def test_cash_dividend_charges_a_short_position(tmp_path: Path) -> None:
+    flat = dict.fromkeys(SESSIONS, (PRE_PRICE, PRE_PRICE))
+    reader, store = _build_lake(tmp_path, flat, [("dividend", S[4], 1.0, 0.25)])
+    result = _run(reader, store, -0.1)
+    store.close()
+
+    dividend = result.corporate_actions.iloc[0]
+    assert dividend["action_type"] == "dividend"
+    assert dividend["position_qty_before"] < 0.0
+    assert dividend["cashflow_quote"] < 0.0
+    assert dividend["cashflow_quote"] == pytest.approx(
+        dividend["position_qty_before"] * dividend["cash_amount"]
+    )
+
+
+def test_pre_ex_queued_order_is_rescaled_even_when_book_is_flat(tmp_path: Path) -> None:
+    reader, store = _build_lake(
+        tmp_path,
+        _split_prices(),
+        [("split", EX_DATE, REVERSE_RATIO, None)],
+    )
+    engine = EventDrivenBacktester(
+        reader,
+        store,
+        TransactionCostModel(),
+        tf=Timeframe.D1,
+        asset_class=AssetClass.EQUITY,
+        cost_inputs=StaticCostInputs(adv_quote=ADV, sigma_daily=SIGMA),
+    )
+    result = engine.run(
+        ScriptedStrategy({S[8]: {SPLT: 0.1}}),
+        [SPLT],
+        start=RUN_START,
+        end=RUN_END,
+        initial_cash=CASH0,
+    )
+    store.close()
+
+    fill = result.fills.iloc[0]
+    assert fill["price"] > POST_PRICE  # shared cost model adds buy-side slippage
+    assert fill["qty"] == pytest.approx(50.0)
+    assert fill["qty"] * POST_PRICE == pytest.approx(10_000.0)
+    assert result.orders.iloc[0]["qty"] == pytest.approx(50.0)
 
 
 def test_crypto_engine_never_reads_corporate_actions(tmp_path: Path) -> None:

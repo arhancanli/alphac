@@ -18,6 +18,10 @@ import pytest
 from alphaforge.backtest import Ledger
 from alphaforge.core.instruments import Instrument
 from alphaforge.core.types import AssetClass, Fill, Liquidity, MarketType, Side
+from alphaforge.execution.financing import (
+    DayCountBasis,
+    FinancingAccrual,
+)
 
 PERP_ID = "BINANCE:PERP:BTCUSDT"
 SPOT_ID = "BINANCE:SPOT:BTCUSDT"
@@ -98,6 +102,8 @@ def _assert_identity(ledger: Ledger, closes: dict[str, float], ts: int) -> None:
         - ledger.total_fees
         + ledger.total_funding
         + ledger.total_borrow
+        + ledger.total_corporate_actions
+        + ledger.total_financing
     )
     assert state.equity_quote == pytest.approx(expected, abs=1e-9)
 
@@ -382,8 +388,7 @@ class TestBorrow:
         assert ledger.total_borrow == 0.0
 
     def test_zero_rate_is_noop_byte_identity(self, ledger: Ledger) -> None:
-        """borrow_frac_per_day == 0 (every crypto perp) is a pure no-op — the byte-identity
-        guarantee that the equity-only leg never perturbs a crypto book."""
+        """A zero general-collateral rate is a pure accounting no-op."""
         ledger.apply_fill(_fill(Side.SELL, 5.0, 100.0, 0.0, ts=1_000))
         cash_before = ledger.cash
         assert (
@@ -404,3 +409,49 @@ class TestBorrow:
                 days=1.0,
                 mark_price=1.0,
             )
+
+
+class TestFinancing:
+    def test_signed_financing_moves_cash_and_persists_inputs(self, ledger: Ledger) -> None:
+        cash_before = ledger.cash
+        accrual = FinancingAccrual(
+            currency="USDT",
+            start_ts=1_000,
+            end_ts=2_000,
+            cash_balance=cash_before,
+            unrestricted_credit_base=cash_before,
+            short_proceeds_base=0.0,
+            debit_base=0.0,
+            credit_rate_bps=400.0,
+            debit_rate_bps=700.0,
+            short_proceeds_rate_bps=0.0,
+            day_count=DayCountBasis.ACT_360,
+            payment_quote=1.25,
+            source="synthetic-locked-test",
+        )
+        assert ledger.apply_financing(accrual) == pytest.approx(1.25)
+        assert ledger.cash == pytest.approx(cash_before + 1.25)
+        assert ledger.total_financing == pytest.approx(1.25)
+        row = ledger.financing_log().iloc[0]
+        assert row["credit_rate_bps"] == pytest.approx(400.0)
+        assert row["source"] == "synthetic-locked-test"
+        _assert_identity(ledger, {}, ts=2_000)
+
+    def test_stale_cash_base_is_rejected(self, ledger: Ledger) -> None:
+        accrual = FinancingAccrual(
+            currency="USDT",
+            start_ts=1_000,
+            end_ts=2_000,
+            cash_balance=1.0,
+            unrestricted_credit_base=1.0,
+            short_proceeds_base=0.0,
+            debit_base=0.0,
+            credit_rate_bps=0.0,
+            debit_rate_bps=0.0,
+            short_proceeds_rate_bps=0.0,
+            day_count=DayCountBasis.ACT_365,
+            payment_quote=0.0,
+            source="synthetic-locked-test",
+        )
+        with pytest.raises(ValueError, match="cash base"):
+            ledger.apply_financing(accrual)

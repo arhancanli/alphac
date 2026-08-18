@@ -1,0 +1,10 @@
+[Unit]
+Description=Daily AlphaForge Deribit research collection
+
+[Timer]
+OnCalendar=*-*-* 13:00:00 UTC
+Persistent=true
+RandomizedDelaySec=180
+
+[Install]
+WantedBy=timers.target

@@ -107,3 +107,20 @@ signed transparency chain, so its content cannot be revised after the result is 
 The public description must state, in the sleeve's own entry: *"Surfaced by a retrospective screen
 with its in-sample result already known; the historical Sharpe is a selected number. Only the
 forward record is out-of-sample."*
+
+
+## Machine-checkable declaration
+
+The block below is the ENFORCED contract. `alphaforge.validation.prereg.assert_matches`
+reads it and kills any run whose resolved settings disagree, before compute is spent.
+Added 2026-08-07 after three runs used the wrong lake: two burned a trial and returned a
+silent null, one crashed after four hours. Every declaration was correct; nothing read it.
+
+```prereg
+profile: sharadar
+lake_dir: data/lake_sharadar
+alpha_names: eq_asset_growth
+allocator: rank
+universe_allowlist: data/research/universe_allowlist_20260619.json
+universe_sha256: 2fd82d305a777a92591e5e97ff47c036a665f70e86baf4bb5cfec1c16bb76cee
+```

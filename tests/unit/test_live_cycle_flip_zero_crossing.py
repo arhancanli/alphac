@@ -335,7 +335,16 @@ def _run_cycle(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, broker: _FakeBro
     import alphaforge.execution.alpaca_broker as ab
 
     monkeypatch.setattr(ab, "AlpacaBroker", lambda **kw: broker)
-    monkeypatch.setattr(MOD, "_ACCOUNT_ENV", {})
+    # A REAL mapping, not {}: the account guard must stay exercised here. See the note on
+    # _fake_account_map in test_live_cycle_execution.py — an unmapped profile used to fall through
+    # to AlphaTrend's live account.
+    env = tmp_path / f"alpaca_{profile}.env"
+    env.write_text(
+        "APCA_API_KEY_ID=test-key\nAPCA_API_SECRET_KEY=test-secret\n"
+        "APCA_API_BASE_URL=https://paper-api.alpaca.markets\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(MOD, "_ACCOUNT_ENV", {profile: env})
     return int(MOD.main(["--profile", profile]))
 
 

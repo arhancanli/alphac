@@ -57,7 +57,10 @@ def test_output_and_exit_code_pass_through() -> None:
 
 def test_capture_through_command_substitution() -> None:
     """The live call sites capture stdout — backgrounding must not break that."""
-    r = run_zsh('u=$(run_bounded 30 /bin/echo "https://x-1.vercel.app" 2>&1 | tail -1); echo "got:$u"')
+    r = run_zsh(
+        'u=$(run_bounded 30 /bin/echo "https://x-1.vercel.app" 2>&1 | tail -1); '
+        'echo "got:$u"'
+    )
     assert "got:https://x-1.vercel.app" in r.stdout
 
 
@@ -68,10 +71,16 @@ def test_hang_with_grandchild_is_killed() -> None:
     shape. A PID-only watchdog leaves that grandchild holding the pipe and this test times out.
     """
     t0 = time.monotonic()
-    r = run_zsh('u=$(run_bounded 3 /bin/sh -c "sleep 600; echo never" 2>&1); echo "after:[$u]"', timeout=45)
+    r = run_zsh(
+        'u=$(run_bounded 3 /bin/sh -c "sleep 600; echo never" 2>&1); '
+        'echo "after:[$u]"',
+        timeout=45,
+    )
     elapsed = time.monotonic() - t0
     assert "after:[]" in r.stdout, "capture did not return — a grandchild still holds the pipe"
-    assert elapsed < 25, f"hang outlived its 3s cap ({elapsed:.1f}s) — watchdog did not kill the tree"
+    assert elapsed < 25, (
+        f"hang outlived its 3s cap ({elapsed:.1f}s) — watchdog did not kill the tree"
+    )
 
 
 def test_hang_leaves_no_orphan() -> None:

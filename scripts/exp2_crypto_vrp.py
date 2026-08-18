@@ -29,7 +29,8 @@ import sys
 from datetime import UTC, datetime
 from pathlib import Path
 
-_SRC = Path(__file__).resolve().parent.parent / "src"
+REPO = Path(__file__).resolve().parent.parent
+_SRC = REPO / "src"
 if str(_SRC) not in sys.path:
     sys.path.insert(0, str(_SRC))
 
@@ -103,13 +104,27 @@ def main(argv=None) -> int:
     from alphaforge.data.store.lake import LakePaths
     from alphaforge.data.store.reader import PITDataReader
     from alphaforge.validation.dsr import dsr_from_returns
-    from alphaforge.validation.experiments import ExperimentLog
+    from alphaforge.validation.experiments import ExperimentUnion
+
+    settings = load_settings(None)
+    trial_config = {
+        "probe": "crypto_vrp_proxy",
+        "currencies": sorted(PERP),
+        "signal": "dvol_minus_yang_zhang_168",
+        "k_cost": K_COST,
+        "cost_bps": COST_BPS,
+        "warmup_days": WARMUP_DAYS,
+        "normalizer": "expanding_std_shift_1",
+        "start": a.start,
+        "end": a.end,
+    }
+    ledger = ExperimentUnion.discover(settings.paths.var_dir / "experiments.jsonl", REPO)
+    ledger.preflight_hypotheses([trial_config])
 
     now = now_ms()
     run_ts = datetime.fromtimestamp(now / 1000, UTC).strftime("%Y%m%dT%H%M%SZ")
     out = Path("artifacts/exp2") / run_ts
     out.mkdir(parents=True, exist_ok=True)
-    settings = load_settings(None)
     reader = PITDataReader(LakePaths(settings.paths.lake_dir))
     start, end = parse_utc(f"{a.start}T00:00:00Z"), parse_utc(f"{a.end}T00:00:00Z")
 
@@ -129,9 +144,17 @@ def main(argv=None) -> int:
     sr = float(oos.mean() / oos.std(ddof=1) * np.sqrt(365)) if oos.std(ddof=1) > 0 else float("nan")
     skew = float(((oos - oos.mean()) ** 3).mean() / oos.std(ddof=0) ** 3)
     kurt = float(((oos - oos.mean()) ** 4).mean() / oos.std(ddof=0) ** 4)  # raw (normal=3)
-    led = ExperimentLog(settings.paths.var_dir / "experiments.jsonl")
-    n_trials = led.n_trials() + 1
-    sr_var = led.trial_sharpe_variance()
+    ledger.record(
+        trial_config,
+        sharpe_ann=sr,
+        sharpe_per_period=sr / np.sqrt(365.0),
+        n_obs=len(oos),
+        skew=skew,
+        kurtosis=kurt,
+        now_ms=now,
+    )
+    n_trials = ledger.n_hypotheses()
+    sr_var = ledger.hypothesis_sharpe_variance()
     rep = dsr_from_returns(oos, n_trials=n_trials, sr_trials_variance=sr_var, periods_per_year=365.0)
 
     metrics = {

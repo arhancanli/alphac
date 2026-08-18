@@ -129,11 +129,28 @@ def stamp(payload: dict[str, Any]) -> dict[str, Any]:
     return payload
 
 
+# The dashboard serves its OWN copy of these artifacts. Until 2026-08-06 this exporter wrote
+# only to the landing site's public dir, so app.canlicapital.com served glass-box files last
+# generated 2026-06-24 -- SIX WEEKS stale. The visible consequence was the worst kind: the app
+# published live_return_pct 0.0 over "3 days" with NAV at a clean $100,000, while the landing
+# published the truth for the same book, -2.54% over 38 days. The stale host was showing the
+# FLATTERING number, and a firm whose entire product is that its record cannot be quietly
+# re-picked was serving two different inception dates on two hosts at the same time.
+# paper_trading_state.py already copies to both; this now matches it.
+APP_OUT_DIR: Final[Path] = REPO.parent / "meridian-app" / "public" / "glassbox"
+
+
 def write_json(out_dir: Path, filename: str, payload: dict[str, Any]) -> Path:
-    """Stamp + write a payload as pretty JSON; return the written path."""
+    """Stamp + write a payload as pretty JSON to EVERY public dir; return the primary path."""
+    stamped = json.dumps(stamp(payload), indent=2) + "\n"
     out_dir.mkdir(parents=True, exist_ok=True)
     path = out_dir / filename
-    path.write_text(json.dumps(stamp(payload), indent=2) + "\n")
+    path.write_text(stamped)
+    # Mirror to the app. Byte-identical by construction: one stamped string, written twice, so
+    # the two hosts cannot disagree even about the content hash.
+    if out_dir.resolve() == OUT_DIR.resolve():
+        APP_OUT_DIR.mkdir(parents=True, exist_ok=True)
+        (APP_OUT_DIR / filename).write_text(stamped)
     return path
 
 
@@ -236,11 +253,15 @@ SURVIVORS: Final[list[tuple[str, str, str, float, str]]] = [
         "Time-series momentum across a 17-market ETF basket (equity-index, rates, commodities, "
         "FX), long/short on each market's own trend, inverse-vol weighted. Biweekly rebalance.",
         0.0,
-        "KEEP — the FIRST new sleeve to clear deflation. Net Sharpe is a modest 0.33, but DSR 0.83 "
-        "(statistically real after multiple-testing — the only new candidate to pass), positive "
-        "skew, two-decade stable, ~0 equity correlation. Live as the 4th algorithm since 2026-06-27, "
-        "accruing its own forward record before it is weighted into the flagship book (0% today). "
-        "The free-ETF screen suggested 0.73; the honest engine says 0.33 — we published both.",
+        "KEEP — but NOT for an edge. Net Sharpe is a modest 0.33, positive skew, two-decade "
+        "stable, ~0 equity correlation. We originally kept it as 'the FIRST new sleeve to clear "
+        "deflation, DSR 0.83, statistically real'. Re-derived 2026-08-07 at honest N=133 and "
+        "pooled V[SR]=7.96e-04, its DSR is 0.000 — the LOWEST of the sleeves we have measured, "
+        "not the highest; the old 0.83 rested on a variance input roughly 80x too small and a "
+        "trial count of 5 while its siblings were graded at N=101. That claim is WITHDRAWN "
+        "(transparency [24]). It is carried in the book at an equal quarter for MEASURED "
+        "drawdown reduction, not for a demonstrated edge. The free-ETF screen suggested 0.73; "
+        "the honest engine says 0.33 — we published both.",
     ),
 ]
 
@@ -254,6 +275,67 @@ SURVIVORS: Final[list[tuple[str, str, str, float, str]]] = [
 ScreenKill = tuple[str, str, float, str] | tuple[str, str, float, str, str]
 
 SCREEN_KILLS: Final[list[ScreenKill]] = [
+    (
+        "commodity_inventory_seasonal",
+        "EIA Petroleum Inventory Scarcity",
+        -0.5892034349114502,
+        "One pre-registered configuration on 782 accepted official EIA WPSR first-release "
+        "Table 4 vintages, 2016-2026 OOS: commercial crude excluding SPR mapped to USO and total "
+        "gasoline mapped to UGA, five-year same-week seasonal expectation, trailing 52-release "
+        "surprise scale, next-session-open entry, DBC beta hedge and explicit one-way costs. One "
+        "of 783 discovered releases was quarantined for a published arithmetic contradiction. "
+        "The sleeve was exceptionally orthogonal (average correlation +0.0002, maximum pair "
+        "+0.0321) and controlled DBC beta (-0.014), but there was no return edge: net Sharpe "
+        "-0.589, Newey-West t -1.84, DSR effectively zero, max drawdown -41.1%, and Sharpe at "
+        "2x costs -0.998. USO and UGA standalone Sharpes were both negative. The fixed 10% book "
+        "check improved by 0.058 only on the short common window, but failed after mean-centering "
+        "and failed one of four leave-one-year-out checks. UGA constrained fifth-percentile proxy "
+        "capacity to about $14.9k at 1% ADV. The sign is not inverted and no threshold is retuned. "
+        "Full curve, scores, weights and result are preserved in "
+        "artifacts/probe/eia_petroleum_inventory/. KILLED.",
+        "research_gauntlet",
+    ),
+    (
+        "insider_purchase_clusters",
+        "Clustered Insider Open-Market Purchases",
+        -0.2432300499265856,
+        "One pre-registered configuration on official SEC Form 4 purchases, 2016-2026: at least "
+        "two officers/directors and $100k purchased inside 30 calendar days, filing date plus two "
+        "sessions, next-open entry, full 63-session hold, trailing-ADV eligibility, SPY beta hedge "
+        "and explicit one-way costs. The full PIT probe scheduled 3,508 non-overlapping events. "
+        "It was genuinely orthogonal (average correlation -0.064, maximum pair +0.057), controlled "
+        "beta (+0.048), and just cleared the hard $5M capacity gate ($5.17M fifth-percentile AUM "
+        "at 1% ADV). But there was no return edge: net Sharpe -0.243, Newey-West t -0.79, DSR "
+        "effectively zero, max drawdown -24.8%, and Sharpe at 2x costs -0.297. A fixed 10% sleeve "
+        "reduced combined-book Sharpe by 0.072 and failed three of four leave-one-year-out checks. "
+        "A pre-publication audit corrected weighted log-return aggregation to the canonical simple-"
+        "return contract; preliminary Sharpe was -0.993 and the corrected verdict remained KILL. "
+        "Immutable execution records rose from 200 to 201; distinct hypothesis identities rose "
+        "from 135 to 136 because the correction remains conservatively charged. The sign "
+        "is not inverted and no threshold is retuned. Full curve, event ledger, weights and result "
+        "are preserved in artifacts/probe/insider_purchase_clusters/. KILLED.",
+        "research_gauntlet",
+    ),
+    (
+        "eq_net_issuance",
+        "Corporate Equity Supply (Net Issuance)",
+        -0.3112743437896463,
+        "The broad corporate-equity-supply identity was run through the deployed-path "
+        "walk-forward on a point-in-time Sharadar research lake: long firms shrinking "
+        "split-adjusted basic shares and short firms expanding them, rebalanced every 63 "
+        "sessions. The latest sealed sweep was decisively negative: net Sharpe -0.311, DSR "
+        "0.000102 after six trials, and max drawdown -37.1%. A separate source-correct "
+        "full-window rerun scored +0.148 with -17.5% max drawdown, still below the 0.40 gate; "
+        "the sign and magnitude instability across data paths is itself a failure, not a result "
+        "to select around. Three distinct historical configurations remain charged to the same "
+        "corporate-equity-supply family. A proposed completed-flow measurement may continue "
+        "data-feasibility work only as a same-family refinement and cannot count as independent "
+        "sleeve breadth. No sign flip, window selection, or trial reset is authorized. Evidence: "
+        "artifacts/sweep/gauntlet_eq_net_issuance/walkforward.json, "
+        "artifacts/analysis/null_fundamentals_rerun/result.json, and "
+        "artifacts/feasibility/repurchase_issuance_flow/identity_overlap_audit.json. KILLED.",
+        "deployed_gauntlet",
+    ),
     (
         "fx_trend_cs",
         "FX Trend (cross-sectional 12-1)",
@@ -742,7 +824,8 @@ def build_kill_log() -> dict[str, Any]:
         for e in SCREEN_KILLS
     ]
     n_gauntlet_probe = sum(1 for k in screen_kills if k["stage"] == "deployed_gauntlet")
-    n_screen = len(screen_kills) - n_gauntlet_probe
+    n_research_probe = sum(1 for k in screen_kills if k["stage"] == "research_gauntlet")
+    n_screen = len(screen_kills) - n_gauntlet_probe - n_research_probe
 
     return {
         "schema": "glassbox.kill_log/2",
@@ -750,6 +833,7 @@ def build_kill_log() -> dict[str, Any]:
         "summary": (
             "Most ideas die. We publish ours with their real net-of-cost numbers. "
             f"{len(killed) + n_gauntlet_probe} killed at the deployed-path gauntlet, "
+            f"{n_research_probe} at a pre-registered research gauntlet, "
             f"{n_screen} more at the cheap prototype screen, {len(survivors)} survived."
         ),
         "honesty_note": (
@@ -781,7 +865,9 @@ def build_kill_log() -> dict[str, Any]:
             "market beta it was built to remove does not exist (research -0.014, live +0.319). "
             "A few entries are labelled 'deployed_gauntlet': those went through the FULL "
             "deployed-path walk-forward, so their numbers ARE the real engine's; they sit in this "
-            "list only because their artifacts live in probe directories. Nothing is re-tuned."
+            "list only because their artifacts live in probe directories. A 'research_gauntlet' "
+            "is a locked, costed OOS probe with complete return artifacts but not the production "
+            "engine path. Nothing is re-tuned."
         ),
         "gate_minimum_sharpe": 0.40,
         "killed_count": len(killed),
@@ -793,6 +879,16 @@ def build_kill_log() -> dict[str, Any]:
         "source_paths": [
             str((WALKFORWARD / name / "summary.txt").relative_to(REPO))
             for name, *_ in KILLED + [(s[0],) for s in SURVIVORS]
+        ]
+        + [
+            "docs/design/PREREG_INSIDER_CLUSTERS.md",
+            "artifacts/probe/insider_purchase_clusters/result.json",
+            "artifacts/probe/insider_purchase_clusters/equity.parquet",
+            "artifacts/probe/eia_petroleum_inventory/result.json",
+            "artifacts/probe/eia_petroleum_inventory/equity.parquet",
+            "artifacts/sweep/gauntlet_eq_net_issuance/walkforward.json",
+            "artifacts/analysis/null_fundamentals_rerun/result.json",
+            "artifacts/feasibility/repurchase_issuance_flow/identity_overlap_audit.json",
         ],
     }
 
@@ -1196,7 +1292,9 @@ def build_red_team() -> dict[str, Any]:
     held_up = [
         "Point-in-time / leakage discipline is genuinely sound (decide-at-close, fill-next-open, available_at lags, PIT universe membership, realized historical funding).",
         "The directional TrendVolTarget allocator, the vol-target overlay, and the reduce-only de-risk path were adversarially exercised and held.",
-        "AlphaTrend genuinely survives 2008/2020/2022 (DSR 0.83) on the 17 real ETFs.",
+        "AlphaTrend genuinely survives 2008/2020/2022 on the 17 real ETFs — as a drawdown "
+        "profile. Its DSR was re-derived to 0.000 on 2026-08-07, so 'survives the crises' is a "
+        "statement about its shape, NOT the edge claim the withdrawn 0.83 implied.",
         "The public state honestly labels the 1.46 figure as in-sample and deflates it.",
     ]
     return {

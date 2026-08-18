@@ -250,7 +250,7 @@ def evaluate(
 
     from alphaforge.analytics.metrics import daily_returns
     from alphaforge.core.logging import setup_logging
-    from alphaforge.validation import ExperimentLog, dsr_from_returns
+    from alphaforge.validation import ExperimentLog, ExperimentUnion, dsr_from_returns
 
     settings = _load_settings(profile)
     setup_logging(settings.paths.var_dir / "log")
@@ -277,9 +277,13 @@ def evaluate(
         typer.echo("error: OOS curve spans < 2 UTC days; DSR is undefined", err=True)
         raise typer.Exit(1)
 
-    ledger = ExperimentLog(Path(log) if log is not None else None)
-    if log is None:
-        ledger = ExperimentLog(settings.paths.var_dir / "experiments.jsonl")
+    if log is not None:
+        ledger: ExperimentLog | ExperimentUnion = ExperimentLog(Path(log))
+    else:
+        ledger = ExperimentUnion.discover(
+            settings.paths.var_dir / "experiments.jsonl",
+            settings.paths.artifacts_dir.parent,
+        )
     # DSR deflates against the SELECTION SEARCH: how many distinct hypotheses were tried.
     # The live system re-evaluates its already-chosen config every day as the rolling window
     # advances, which lands a new config hash on the ledger each time. Counting those inflates
@@ -289,7 +293,7 @@ def evaluate(
     n_rows = ledger.n_trials()
     n_trials = ledger.n_hypotheses()
     n_reeval = ledger.window_only_reevaluations()
-    var_sr = ledger.trial_sharpe_variance()
+    var_sr = ledger.hypothesis_sharpe_variance()
     n_trials_used = max(2, n_trials)
     report = dsr_from_returns(rets, n_trials_used, var_sr)
     dsr_ok = report.dsr >= 0.95
@@ -299,6 +303,8 @@ def evaluate(
         f"ledger: {ledger.path}  (N_hypotheses={n_trials}, used={n_trials_used}; "
         f"{n_rows} rows total, {n_reeval} window-only re-evaluations excluded)"
     )
+    if isinstance(ledger, ExperimentUnion):
+        typer.echo(f"selection union: {len(ledger.paths)} profile ledgers")
     typer.echo("")
     typer.echo(f"  SR (annualized) : {report.sr_ann: .4f}")
     typer.echo(f"  PSR(0)          : {report.psr: .4f}")

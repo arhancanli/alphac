@@ -41,6 +41,9 @@ import json
 import math
 import sqlite3
 import sys
+import time
+from dataclasses import dataclass
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 
@@ -51,15 +54,88 @@ if str(_SRC) not in sys.path:
     sys.path.insert(0, str(_SRC))
 
 # profile -> the walk-forward artifact whose latest leg holds the current target book
-_WF = {"managed_futures": ["mf_live_fwd", "managed_futures"], "equity": ["equity_live_fwd", "k30_dn_63"]}
-# profile -> its OWN Alpaca paper account (separate accounts = clean per-sleeve equity history, since
-# Alpaca's portfolio history is account-level). Unmapped profiles fall back to the default alpaca.env.
-_ACCOUNT_ENV = {
-    "managed_futures": Path.home() / ".config" / "alphaforge" / "alpaca.env",
-    "equity": Path.home() / ".config" / "alphaforge" / "alpaca_equity.env",
+_WF = {
+    "managed_futures": ["mf_live_fwd", "managed_futures"],
+    "equity": ["equity_live_fwd", "k30_dn_63"],
+    # AlphaLedger (eq_asset_growth). OPEN QUESTION, deliberately recorded here rather than in a
+    # doc nobody re-reads: docs/design/PREREG_SLEEVE4_INVESTMENT.md pins the universe to
+    # data/research/universe_allowlist_20260619.json (sha256 2fd82d30...) and states that altering
+    # any row voids the pre-registration. The artifact below has NOT been confirmed to match that
+    # pinned cohort. Until it is, this sleeve's 21-year NW t +3.19 rests on a document whose own
+    # conditions may not hold. Wiring is safe (nothing trades until a launchd job calls it); the
+    # evidence question is not settled by wiring.
+    "alphaledger": ["prereg_investment"],
+    # AlphaVintage (CPI-surprise IWM/SPY size spread). Its artifact is NOT produced by a
+    # walk-forward run — the sleeve was validated as a probe — so scripts/alphavintage_target.py
+    # writes the same leg layout from the pre-registered rule. Routing it here rather than giving
+    # it a bespoke runner is deliberate: it inherits the price collar, participation cap,
+    # flip-split and kill switch instead of forking a second, unguarded order path.
+    "alphavintage": ["alphavintage_live"],
 }
+# profile -> its OWN Alpaca paper account (separate accounts = clean per-sleeve equity history, since
+# Alpaca's portfolio history is account-level).
+#
+# *** NO FALLBACK. *** This dict used to be read with .get(), so an UNMAPPED profile returned None
+# and AlpacaBroker silently fell back to _ENV_PATH (alpaca.env) — which is AlphaTrend's LIVE
+# account. Adding a new sleeve and forgetting one line here would have submitted its book into a
+# different sleeve's live account, commingling two track records irreversibly and corrupting the
+# per-sleeve history that separate accounts exist to protect. There is no safe default for "which
+# real account should this trade into", so an unmapped profile is now a hard failure.
+_ACCOUNT_ENV = {
+    "managed_futures": Path.home() / ".config" / "alphaforge" / "alpaca.env",          # PA3IQC5B7BC2
+    "equity": Path.home() / ".config" / "alphaforge" / "alpaca_equity.env",            # PA397834GG9R
+    "alphaledger": Path.home() / ".config" / "alphaforge" / "alpaca_ledger.env",       # PA3DYIG9B4AL
+    "alphavintage": Path.home() / ".config" / "alphaforge" / "alpaca_vintage.env",     # PA39G6N49JRY
+}
+
+
+def _account_env(profile: str) -> Path:
+    """The credentials file for ``profile``, or a hard failure. Never a default."""
+    try:
+        path = _ACCOUNT_ENV[profile]
+    except KeyError:
+        known = ", ".join(sorted(_ACCOUNT_ENV))
+        raise SystemExit(
+            f"REFUSING TO TRADE: profile {profile!r} has no Alpaca account mapped in _ACCOUNT_ENV.\n"
+            f"  Known profiles: {known}\n"
+            f"  Without a mapping this would silently submit into {_ACCOUNT_ENV['managed_futures']} "
+            f"(AlphaTrend's live account) and commingle two sleeves' track records.\n"
+            f"  Add {profile!r} -> its own ~/.config/alphaforge/alpaca_<sleeve>.env and retry."
+        ) from None
+    if not path.exists():
+        raise SystemExit(
+            f"REFUSING TO TRADE: profile {profile!r} maps to {path}, which does not exist.\n"
+            f"  Create it with APCA_API_KEY_ID / APCA_API_SECRET_KEY / APCA_API_BASE_URL."
+        )
+    return path
 _MIN_ORDER_USD = 1.0   # skip dust deltas
-_MAX_PARTICIPATION = 0.05  # never size a single name above this fraction of account equity (sanity)
+# Per-name concentration sanity cap, as a fraction of account equity. PER PROFILE, because the
+# right value depends on how many names the sleeve holds and a single global number is wrong for
+# any book that is legitimately concentrated.
+#
+# A flat 0.05 was applied to every profile. That is correct for a 178-name dollar-neutral equity
+# book, where a 5% single name IS an error. It is badly wrong for a two-instrument spread: an
+# IWM/SPY macro sleeve has a median |weight| of 0.411, so 95.5% of its target weights would be
+# clamped and the sleeve would trade at roughly 12% of its intended size — SILENTLY, because the
+# clamp printed nothing. A sleeve that quietly trades a tenth of its book still reports its full
+# backtest, which is the exact shape of an overstatement this project exists to avoid.
+_MAX_PARTICIPATION_DEFAULT = 0.05
+_MAX_PARTICIPATION_BY_PROFILE = {
+    "managed_futures": 0.20,  # 17-market ETF basket, inverse-vol weighted: 5% is too tight
+    "equity": 0.05,           # ~178 names, dollar-neutral: 5% single name would be an error
+    "alphaledger": 0.05,      # ~179 names, dollar-neutral: same shape as AlphaMax
+    # AlphaVintage holds exactly TWO instruments (IWM/SPY) with a median |weight| of 0.411, so a
+    # 5% cap would clamp 95.5% of its targets and trade the sleeve at roughly a TENTH of its
+    # intended size while its published backtest described the full one. 0.50 is above its
+    # observed maximum, so the cap stays a sanity brake on corrupted weights rather than a
+    # silent position limit. A concentrated book is not a risk error when the strategy IS a
+    # two-legged spread; applying a diversified book's cap to it would be.
+    "alphavintage": 0.50,
+}
+
+
+def _max_participation(profile: str) -> float:
+    return _MAX_PARTICIPATION_BY_PROFILE.get(profile, _MAX_PARTICIPATION_DEFAULT)
 # Marketable-LIMIT buffer: orders are priced through the sizing mid by this fraction (buy at
 # mid*(1+b), sell at mid*(1-b)) instead of raw MARKET. Caps the worst-case fill at a known price —
 # a fat print / gap / flash spike can no longer fill arbitrarily far from the decision price. A
@@ -102,7 +178,7 @@ def _target_weights(profile: str) -> dict[str, float]:
         legs = sorted(glob.glob(f"artifacts/walkforward/{wf}/legs/leg_*/positions.parquet"))
         if not legs:
             continue
-        t = pq.read_table(legs[-1]).to_pydict()
+        t = pq.read_table(legs[-1]).to_pydict()  # type: ignore[no-untyped-call]
         rows = list(zip(t["ts"], t["instrument_id"], t["weight"], strict=True))
         last_ts = max(r[0] for r in rows)
         w = {iid: float(wt) for ts, iid, wt in rows if ts == last_ts and abs(float(wt)) > 1e-9}
@@ -295,6 +371,12 @@ def _skip_kind(message: str) -> str | None:
     return None
 
 
+
+def dt_date_str() -> str:
+    """Today's date in US/Eastern, which is the market's day rather than the operator's."""
+    return datetime.now(tz=__import__("datetime").timezone(
+        __import__("datetime").timedelta(hours=-5))).date().isoformat()
+
 # ----------------------------------------------------------------------------- audit trail
 _ORDERS_DDL = """CREATE TABLE IF NOT EXISTS orders (
     client_order_id TEXT PRIMARY KEY,
@@ -318,14 +400,172 @@ _REJECTS_DDL = """CREATE TABLE IF NOT EXISTS order_rejects (
 )"""
 
 
+_FILLS_DDL = """CREATE TABLE IF NOT EXISTS fills (
+    client_order_id TEXT PRIMARY KEY,
+    broker_order_id TEXT,
+    ts INTEGER NOT NULL,
+    submitted_ts INTEGER,
+    instrument_id TEXT NOT NULL,
+    side TEXT NOT NULL,
+    status TEXT NOT NULL,
+    submitted_qty REAL,
+    filled_qty REAL,
+    limit_price REAL,
+    fill_price REAL,
+    notional REAL
+)"""
+_EXECUTION_HEALTH_DDL = """CREATE TABLE IF NOT EXISTS execution_health (
+    profile TEXT PRIMARY KEY,
+    consecutive_fill_reconcile_failures INTEGER NOT NULL DEFAULT 0,
+    last_success_ts INTEGER,
+    last_failure_ts INTEGER,
+    last_error TEXT
+)"""
+_FILL_RECONCILE_HALT_AFTER = 3
+
+
+@dataclass(frozen=True, slots=True)
+class FillReconcileResult:
+    """One outcome-audit attempt and its persisted consecutive-failure state."""
+
+    rows_written: int
+    unfilled_pct: float
+    succeeded: bool
+    consecutive_failures: int
+    error: str | None = None
+
+
 def _audit_open(db: Path) -> sqlite3.Connection:
-    """The per-profile trading DB with the order/reject audit tables ensured (created if absent)."""
+    """The per-profile trading DB with the order/reject/fill audit tables ensured."""
     db.parent.mkdir(parents=True, exist_ok=True)
     con = sqlite3.connect(db)
     con.execute(_ORDERS_DDL)
     con.execute(_REJECTS_DDL)
+    con.execute(_FILLS_DDL)
+    con.execute(_EXECUTION_HEALTH_DDL)
     con.commit()
     return con
+
+
+def _reconcile_fills(con: sqlite3.Connection, broker: Any, *, profile: str,
+                     lookback_days: int = 45) -> FillReconcileResult:
+    """Record prior order outcomes and persist reconciliation health.
+
+    Added 2026-08-06. Until now the equity and managed-futures sleeves -- 60% of ALPHAC by
+    weight -- wrote only SUBMISSIONS to disk. Nothing recorded whether an order actually
+    filled, so the only realized execution record for two of three sleeves lived on the
+    broker's servers and no local query could measure slippage or non-fills. A 20.9% non-fill
+    rate, concentrated in names that moved against the book, went unseen for 37 live days.
+
+    Runs at the START of a cycle so it captures the PREVIOUS cycle's outcomes, which is the
+    only time they are knowable: orders are submitted pre-open and resolve at the open hours
+    later. Terminal-but-unfilled orders are recorded too (that is the whole point), so
+    ``filled_qty < submitted_qty`` is directly queryable.
+
+    This function never places, cancels or modifies an order. A single failure remains
+    non-fatal, but failures are persisted and counted. The caller halts before new submission
+    after ``_FILL_RECONCILE_HALT_AFTER`` consecutive failures: repeatedly trading while the
+    local record cannot establish prior outcomes is an operational-risk breach, not harmless
+    observability lag.
+    """
+    try:
+        row = con.execute("SELECT MAX(submitted_ts) FROM fills").fetchone()
+        floor_ms = int(time.time() * 1000) - lookback_days * 86_400_000
+        after_ms = max(int(row[0]), floor_ms) if row and row[0] else floor_ms
+        orders = broker.closed_orders(after_ms=after_ms)
+        written = 0
+        sub_notional = 0.0
+        miss_notional = 0.0
+        for o in orders:
+            coid = str(o.get("client_order_id") or "")
+            if not coid.startswith(f"{profile}-"):
+                continue  # each sleeve owns only its own orders on a shared account
+            sub_qty = float(o.get("qty") or 0.0)
+            fil_qty = float(o.get("filled_qty") or 0.0)
+            fill_px = float(o.get("filled_avg_price") or 0.0) or None
+            lim_px = float(o.get("limit_price") or 0.0) or None
+            ref_px = fill_px or lim_px or 0.0
+            sub_notional += sub_qty * ref_px
+            miss_notional += max(sub_qty - fil_qty, 0.0) * ref_px
+            con.execute(
+                "INSERT OR REPLACE INTO fills (client_order_id, broker_order_id, ts, "
+                "submitted_ts, instrument_id, side, status, submitted_qty, filled_qty, "
+                "limit_price, fill_price, notional) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
+                (coid, str(o.get("id") or ""), _rfc3339_ms(o.get("filled_at") or o.get("updated_at")),
+                 _rfc3339_ms(o.get("submitted_at")), str(o.get("symbol") or ""),
+                 str(o.get("side") or ""), str(o.get("status") or ""),
+                 sub_qty, fil_qty, lim_px, fill_px, fil_qty * (fill_px or 0.0)),
+            )
+            written += 1
+        con.commit()
+        pct = 100.0 * miss_notional / sub_notional if sub_notional > 0 else 0.0
+        now = int(time.time() * 1000)
+        con.execute(
+            "INSERT INTO execution_health (profile, consecutive_fill_reconcile_failures, "
+            "last_success_ts, last_failure_ts, last_error) VALUES (?,0,?,NULL,NULL) "
+            "ON CONFLICT(profile) DO UPDATE SET consecutive_fill_reconcile_failures=0, "
+            "last_success_ts=excluded.last_success_ts, last_error=NULL",
+            (profile, now),
+        )
+        con.commit()
+        return FillReconcileResult(written, pct, True, 0)
+    except Exception as e:
+        message = str(e)[:500]
+        now = int(time.time() * 1000)
+        try:
+            con.execute(
+                "INSERT INTO execution_health (profile, consecutive_fill_reconcile_failures, "
+                "last_success_ts, last_failure_ts, last_error) VALUES (?,1,NULL,?,?) "
+                "ON CONFLICT(profile) DO UPDATE SET consecutive_fill_reconcile_failures="
+                "execution_health.consecutive_fill_reconcile_failures+1, "
+                "last_failure_ts=excluded.last_failure_ts, last_error=excluded.last_error",
+                (profile, now, message),
+            )
+            con.commit()
+            row = con.execute(
+                "SELECT consecutive_fill_reconcile_failures FROM execution_health WHERE profile=?",
+                (profile,),
+            ).fetchone()
+            failures = int(row[0]) if row else 1
+        except sqlite3.Error:
+            failures = _FILL_RECONCILE_HALT_AFTER
+        print(f"  (fill reconciliation failed {failures} consecutive cycle(s): {message})")
+        return FillReconcileResult(0, 0.0, False, failures, message)
+
+
+def _fill_reconciliation_requires_halt(result: FillReconcileResult) -> bool:
+    """True once outcome lineage has failed for the configured consecutive threshold."""
+    return not result.succeeded and result.consecutive_failures >= _FILL_RECONCILE_HALT_AFTER
+
+
+def _halt_on_fill_reconciliation_breach(
+    result: FillReconcileResult,
+    *,
+    profile: str,
+    kill: Any,
+    con: sqlite3.Connection,
+    broker: Any,
+) -> bool:
+    """Engage the persistent kill switch and close resources at the failure threshold."""
+    if not _fill_reconciliation_requires_halt(result):
+        return False
+    reason = (f"live_cycle {profile}: fill-outcome reconciliation failed "
+              f"{result.consecutive_failures} consecutive cycles")
+    print(f"!!! EXECUTION LINEAGE BREACH: {reason}. Submitting NOTHING.")
+    kill.engage(reason)
+    con.close()
+    broker.close()
+    return True
+
+
+def _rfc3339_ms(s: Any) -> int:
+    """RFC3339 timestamp -> epoch ms; 0 when absent or unparseable (never raises)."""
+    if not s:
+        return 0
+    try:
+        return int(datetime.fromisoformat(str(s).replace("Z", "+00:00")).timestamp() * 1000)
+    except Exception:
+        return 0
 
 
 def _audit_order(con: sqlite3.Connection, *, order: Any, ts: int, accepted: bool,
@@ -356,10 +596,13 @@ def _audit_reject(con: sqlite3.Connection, *, ts: int, instrument_id: str, code:
         print(f"  (audit write failed: {e})")
 
 
-def main(argv=None) -> int:
+def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(prog="live_cycle")
     ap.add_argument("--profile", default="managed_futures")
     ap.add_argument("--dry-run", action="store_true", help="compute + print the orders, submit nothing")
+    ap.add_argument("--ignore-calendar", action="store_true",
+                    help="submit even when the US equity calendar says the market is closed "
+                         "(the calendar gate exists because weekend orders never fill)")
     ap.add_argument("--no-cancel-stale", action="store_true",
                     help="keep this sleeve's still-open orders (default: cancel them first)")
     ap.add_argument("--i-understand-real-money", action="store_true",
@@ -390,7 +633,7 @@ def main(argv=None) -> int:
         print(f"no target book for {a.profile} (run its walk-forward first)")
         return 1
 
-    broker = AlpacaBroker(env_path=_ACCOUNT_ENV.get(a.profile))
+    broker = AlpacaBroker(env_path=_account_env(a.profile))
     # Real money is a DELIBERATE arming: a non-paper account requires the explicit flag AND this gated
     # executor (the KILL + drawdown + book-cap checks below). Flipping the env to a live URL alone is
     # refused — so a one-line config change can never silently arm real trading through this path.
@@ -399,6 +642,29 @@ def main(argv=None) -> int:
         return 1
     if not broker.is_paper:
         print("!!! LIVE REAL-MONEY MODE armed via --i-understand-real-money — gated by KILL + drawdown + book caps.")
+
+    # TRADING-CALENDAR GATE (2026-08-06). Measured from the fill ledger: a single Saturday
+    # 00:00 UTC cycle submitted 180 orders worth $216,388 and every one died unfilled, and
+    # weekend-submitted orders were 36.1% of ALL missed notional across the live record at a
+    # 100% miss rate. Orders placed into a closed market are not a strategy outcome, they are
+    # a question nobody asked. This is ENGINEERING, not selection: it changes WHEN an unchanged
+    # book is submitted, never what the book is.
+    # Fails OPEN by design. is_trading_day() returns None when the calendar is unreachable, and
+    # a data-source outage must not silently halt a live sleeve -- a missed session is a hole in
+    # the forward record, which is the most valuable asset this project has.
+    # Asked via getattr, never assumed. A broker that cannot answer this question is not
+    # broken: the crypto sleeve trades 24/7 and has no US equity calendar, so gating it on one
+    # would halt a sleeve that should be running. Only a broker that HAS a calendar and says
+    # "closed" stops a cycle.
+    _calendar = getattr(broker, "is_trading_day", None)
+    if not a.dry_run and not a.ignore_calendar and callable(_calendar):
+        trading = _calendar()
+        if trading is False:
+            print(f"SKIP: {dt_date_str()} is not a US equity session. "
+                  "Nothing submitted (orders into a closed market never fill).")
+            return 0
+        if trading is None:
+            print("WARN: could not reach the trading calendar; proceeding (fail-open).")
     # Cancel THIS sleeve's still-open (unfilled) orders before re-pricing. Without this a cycle that
     # runs again before a fill (e.g. repeatedly over a weekend) would STACK a second full book on top
     # of the first. Each run thus converges to the current target rather than accumulating. Filtered
@@ -433,6 +699,10 @@ def main(argv=None) -> int:
     # price each name off the latest quote mid (market may be closed -> last quote)
     universe = sorted(set(target_w) | set(current))
     orders: list[OrderRequest] = []
+    # Names whose target was shrunk by the concentration cap, reported in aggregate after the loop:
+    # one clamped name is a detail, but a book where the cap binds on most names is a sleeve trading
+    # a fraction of its intended size while still publishing its full backtest.
+    _capped_names: list[tuple[str, float, float]] = []
     cycle_ms = now_ms()  # one timestamp for the whole cycle -> unique client_order_ids (see below)
     book_gross = 0.0     # the SIZED TARGET book's gross/net (runaway brake, checked after the loop)
     book_net = 0.0
@@ -466,7 +736,13 @@ def main(argv=None) -> int:
         if ref and ref > 0.0 and abs(mid - ref) / ref > limits.price_collar_frac:
             print(f"  {_symbol(iid):6} skip (quote ${mid:.2f} off last-trade ${ref:.2f} > {limits.price_collar_frac:.0%} collar)")
             continue
-        tw_capped = max(-_MAX_PARTICIPATION, min(_MAX_PARTICIPATION, tw))
+        cap = _max_participation(a.profile)
+        tw_capped = max(-cap, min(cap, tw))
+        if abs(tw_capped) < abs(tw) - 1e-12:
+            # DISCLOSE, never clamp in silence. A quietly-shrunk book reports its full backtest.
+            _capped_names.append((_symbol(iid), tw, tw_capped))
+            print(f"  {_symbol(iid):6} CONCENTRATION CAP: target {tw:+.4f} -> {tw_capped:+.4f} "
+                  f"(profile cap {cap:.0%} of equity)")
         raw = tw_capped * equity / mid
         # Alpaca forbids fractional SHORT positions, so any short target is truncated to a whole
         # share count; longs may stay fractional. (Truncate toward zero -> never oversizes a short.)
@@ -519,6 +795,25 @@ def main(argv=None) -> int:
             print(f"  {_symbol(iid):6} w={tw_capped:+.3f} tgt={tgt_shares:+.2f} cur={cur_shares:+.2f} "
                   f"-> {o.side.name} {o.qty:.2f} @~${mid:.2f}  (${o.qty*mid:,.0f}){tag}")
 
+    # CONCENTRATION-CAP DISCLOSURE. Reported in aggregate because the aggregate is what matters: if
+    # the cap binds on most of the book, this sleeve is trading a fraction of its intended size
+    # while its published backtest describes the full one. That gap must be visible in the log, not
+    # inferred later from a puzzling live-vs-backtest divergence.
+    if _capped_names:
+        n_priced = len(universe)
+        frac = len(_capped_names) / max(n_priced, 1)
+        intended = sum(abs(t) for _, t, _ in _capped_names)
+        allowed = sum(abs(c) for _, _, c in _capped_names)
+        shrink = 1.0 - (allowed / intended) if intended > 0 else 0.0
+        print(f"\n!! CONCENTRATION CAP BOUND on {len(_capped_names)}/{n_priced} names "
+              f"({frac:.0%} of the book), shrinking their combined target by {shrink:.0%} "
+              f"(cap {_max_participation(a.profile):.0%} of equity for profile {a.profile!r}).")
+        if frac > 0.25:
+            print("   THIS SLEEVE IS TRADING SUBSTANTIALLY BELOW ITS INTENDED SIZE. Its published "
+                  "backtest describes the UNCAPPED book. Either raise the profile's cap in "
+                  "_MAX_PARTICIPATION_BY_PROFILE to match the strategy's real concentration, or "
+                  "re-derive its expected return at the capped size. Do not leave them mismatched.")
+
     # RUNAWAY brake: a sized target book grossly above any sleeve's legitimate profile means corrupted
     # weights or a bad equity read — submit NOTHING and engage the KILL switch for human review.
     gross_x, net_x = book_gross / equity, abs(book_net) / equity
@@ -543,39 +838,56 @@ def main(argv=None) -> int:
     # AUDIT TRAIL: the per-profile DB gains an `orders` + `order_rejects` record of THIS cycle, so a
     # future execution outage is diagnosable from the DB instead of by grepping logs.
     con = _audit_open(db)
+
+    # FILL RECONCILIATION (2026-08-06): record what happened to the PREVIOUS cycle's orders
+    # before submitting this one. Outcomes are only knowable now -- orders go in pre-open and
+    # resolve at the open, hours after the cycle that placed them has exited. Read-only against
+    # the broker; it never places or cancels anything.
+    fill_reconcile = _reconcile_fills(con, broker, profile=a.profile)
+    if fill_reconcile.rows_written:
+        print(f"reconciled {fill_reconcile.rows_written} closed orders | unfilled notional "
+              f"{fill_reconcile.unfilled_pct:.1f}%")
+    if _halt_on_fill_reconciliation_breach(
+        fill_reconcile, profile=a.profile, kill=kill, con=con, broker=broker
+    ):
+        return 1
+
     for iid, code, msg in disclosed:  # tradability skips decided before submission
         _audit_reject(con, ts=cycle_ms, instrument_id=iid, code=code, message=msg)
 
     # submit (idempotent on client_order_id) + count acks. NOTHING here may abort the cycle: a
     # per-name rejection (or even a transport error) is recorded and the remaining book proceeds.
     accepted = rejected = skipped = 0
-    for o in orders:
-        intent = o.reason.removeprefix(f"{a.profile}-")
+    for submit_order in orders:
+        intent = submit_order.reason.removeprefix(f"{a.profile}-")
         try:
-            ack = broker.submit(o)
+            ack = broker.submit(submit_order)
         except Exception as e:  # one bad name must never kill the rest of the book
             rejected += 1
-            print(f"  REJECTED {_symbol(o.instrument_id)}: transport error: {str(e)[:120]}")
-            _audit_order(con, order=o, ts=cycle_ms, accepted=False, broker_order_id=None, intent=intent)
-            _audit_reject(con, ts=cycle_ms, instrument_id=o.instrument_id, code="exception",
-                          message=str(e), client_order_id=o.client_order_id)
+            print(f"  REJECTED {_symbol(submit_order.instrument_id)}: transport error: "
+                  f"{str(e)[:120]}")
+            _audit_order(con, order=submit_order, ts=cycle_ms, accepted=False,
+                         broker_order_id=None, intent=intent)
+            _audit_reject(con, ts=cycle_ms, instrument_id=submit_order.instrument_id,
+                          code="exception", message=str(e),
+                          client_order_id=submit_order.client_order_id)
             continue
-        _audit_order(con, order=o, ts=cycle_ms, accepted=ack.accepted,
+        _audit_order(con, order=submit_order, ts=cycle_ms, accepted=ack.accepted,
                      broker_order_id=ack.broker_order_id, intent=intent)
         if ack.accepted:
             accepted += 1
             continue
         rejected += 1
         code, msg = _parse_reject(ack.reason or "")
-        _audit_reject(con, ts=cycle_ms, instrument_id=o.instrument_id, code=code, message=msg,
-                      client_order_id=o.client_order_id)
+        _audit_reject(con, ts=cycle_ms, instrument_id=submit_order.instrument_id, code=code,
+                      message=msg, client_order_id=submit_order.client_order_id)
         kind = _skip_kind(msg)
         if kind is not None:
             skipped += 1
-            print(f"  DISCLOSED SKIP {_symbol(o.instrument_id)} ({kind}): {msg} — name dropped this "
+            print(f"  DISCLOSED SKIP {_symbol(submit_order.instrument_id)} ({kind}): {msg} — name dropped this "
                   f"cycle, rest of the book unaffected")
         else:
-            print(f"  REJECTED {_symbol(o.instrument_id)}: {ack.reason}")
+            print(f"  REJECTED {_symbol(submit_order.instrument_id)}: {ack.reason}")
     print(f"submitted {accepted}/{len(orders)} accepted"
           + (f" | {rejected} rejected ({skipped} untradable-name skips)" if rejected else "")
           + (f" | {len(disclosed)} pre-checked skips" if disclosed else ""))
@@ -591,6 +903,22 @@ def main(argv=None) -> int:
     # plus the current live equity as the freshest mark.
     hist = broker.portfolio_history(period="all", timeframe="1D")
     hist.append((now_ms(), broker.account().equity_quote))
+    # *** REPLACE THE CURVE, DO NOT MERGE INTO IT — the +893% phantom, fixed 2026-08-11. ***
+    # `portfolio_history(period="all")` returns THIS account's COMPLETE history, so it is
+    # authoritative on its own and merging it into whatever is already there is unsound. With
+    # INSERT OR REPLACE, rows written while the profile pointed at a SUPERSEDED account survive at
+    # any timestamp the new account's history does not happen to cover. That is what happened at
+    # the v3 cutover: AlphaTrend's curve ended up holding $1,000,000 marks (v3) interleaved with
+    # $100,681 marks (the old v2 $100k account), and the day-over-day step between them published
+    # as a +893% return — which combined into an ALPHAC curve of 100,000 -> 400,207 in one day,
+    # served publicly. A 300% gain that never happened.
+    #
+    # Deleting first makes the table exactly one account's history and SELF-HEALS any existing
+    # contamination on the next run. Guarded on a non-trivial payload so a degraded broker
+    # response can never wipe a good curve — if the venue returns nothing useful we keep what we
+    # have and merge, which is the old behaviour and strictly better than an empty record.
+    if len(hist) >= 2:
+        con.execute("DELETE FROM equity_curve")
     con.executemany("INSERT OR REPLACE INTO equity_curve (ts, equity_quote) VALUES (?, ?)", hist)
     con.commit()
     con.close()

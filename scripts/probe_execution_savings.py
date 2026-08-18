@@ -207,8 +207,17 @@ def leg2_maker(crypto: dict, csum: dict) -> dict:
                     "ABSOLUTE Sharpe is negative there; only the taker->maker UPLIFT (+0.092) is the relevant "
                     "differential and it is robustly positive at the conservative 49% fill / punitive 5bp adv-sel.",
         },
+        # 2026-08-06 AUDIT — the fill assumption underneath this verdict is UNVALIDATED, and the
+        # instrument built to validate it (scripts/maker_shadow.py) was found broken the same
+        # day: its markout marks against a live book fetched at an arbitrary time rather than at
+        # ts+HORIZON, and its fill rule models no queue position, so it returns ~92% where the
+        # real question is whether a resting order reaches the front of the queue. The FEE-ONLY
+        # floor below is sound arithmetic (taker 5bp vs maker 2bp on measured turnover) but it
+        # holds only CONDITIONAL on actually filling as maker. The 49%-fill A/B figure is an
+        # assumption, not a measurement. Do not ship maker execution on this verdict alone.
         "verdict": (
-            "PROMOTE (after golden-master re-bless). This is the one REAL, book-moving, deflation-proof win. "
+            "CONDITIONAL PROMOTE, pending a valid fill measurement (2026-08-06: the maker-shadow "
+            "instrument is not decision-grade; see scripts/maker_shadow.py report). "
             "The carry sleeve rebalances on a slow 3-day/168h horizon, so entries are NOT urgent -> post-only "
             "limit fills are appropriate and the missed fraction can simply re-post. Fee-only certain floor "
             f"= +{round(fee_only_sharpe,3)} Sharpe / ~${round(fee_only_ann_usd)}/yr per $100k; the engine A/B "

@@ -3,10 +3,9 @@
 
 2026-08-01. MEASURE-ONLY. NEW file. Reads src/** as a library and the lake; mutates NOTHING
 (no src/**, no configs/**, no existing script, no launchd). Writes ONLY
-artifacts/probe/alphamax_weighting/**. TRIALS BURNED = 0 — this is a cheap construction
-SCREEN in the mould of scripts/probe_alphamax_hyst_live.py: no WalkForwardRunner call, no
-append to var/experiments.jsonl. DSR is read READ-ONLY at the ledger's standing N via the
-pure function alphaforge.validation.dsr.dsr_from_returns, exactly as that probe does.
+artifacts/probe/alphamax_weighting/**. All sixteen measured cells are charged in the union ledger.
+Each rerun preflights the immutable forensic configs before computation and computes DSR from the
+identity-aligned union.
 
 ======================================================================================
 WHY THIS PROBE EXISTS
@@ -217,7 +216,7 @@ BOOT_SEED = 20260801
 
 
 # --------------------------------------------------------------- daily-return probe spec
-def _probe_dret_fn(ctx, spec):  # noqa: ANN001, ANN202 — FeatureSpec body signature
+def _probe_dret_fn(ctx, spec):
     from alphaforge.features.context import long_series
     from alphaforge.features.library.equity_price import _adjusted_close_panel
 
@@ -225,7 +224,7 @@ def _probe_dret_fn(ctx, spec):  # noqa: ANN001, ANN202 — FeatureSpec body sign
     return long_series(px.pct_change(), name=spec.name)
 
 
-def _register_dret(reg) -> None:  # noqa: ANN001
+def _register_dret(reg) -> None:
     from alphaforge.features.spec import Family, FeatureSpec
 
     if "probe_dret" in {s.name for s in reg.all_specs()}:
@@ -529,7 +528,7 @@ def _paired_bootstrap(mat: np.ndarray, live_row: int, rng: np.random.Generator) 
 
 
 # ------------------------------------------------------------------------------ main
-def main(argv=None) -> int:  # noqa: PLR0915
+def main(argv=None) -> int:
     ap = argparse.ArgumentParser(prog="probe_alphamax_weighting")
     ap.add_argument("--profile", default="equity")
     ap.add_argument("--warmup", default=WARMUP_START)
@@ -545,7 +544,7 @@ def main(argv=None) -> int:  # noqa: PLR0915
     from alphaforge.config.settings import load_settings
     from alphaforge.config.sleeve import sleeve_for
     from alphaforge.core.instruments import InstrumentStore
-    from alphaforge.core.time import parse_utc
+    from alphaforge.core.time import now_ms, parse_utc
     from alphaforge.data.schemas import ohlcv_dataset
     from alphaforge.data.store.lake import LakePaths
     from alphaforge.data.store.reader import PITDataReader
@@ -554,10 +553,27 @@ def main(argv=None) -> int:  # noqa: PLR0915
     from alphaforge.features.registry import default_registry
     from alphaforge.research.ic_report import _membership_mask
     from alphaforge.validation.dsr import dsr_from_returns
-    from alphaforge.validation.experiments import ExperimentLog
+    from alphaforge.validation.experiments import ExperimentUnion
+    from alphaforge.validation.probe_ledger import record_probe_trial
 
     t_wall = time.time()
     settings = load_settings(a.profile)
+    union = ExperimentUnion.discover(settings.paths.var_dir / "experiments.jsonl", _REPO)
+    expected_variants = {f"{scheme}_K{k}" for scheme in SCHEMES for k in BREADTHS}
+    configs = {
+        str(record.config["variant"]): dict(record.config)
+        for record in union.all()
+        if record.config.get("probe") == "forensic_alphamax_weighting"
+    }
+    if set(configs) != expected_variants:
+        missing = sorted(expected_variants - set(configs))
+        extra = sorted(set(configs) - expected_variants)
+        raise RuntimeError(f"weighting forensic ledger mismatch: missing={missing}, extra={extra}")
+    for config in configs.values():
+        window = dict(config["window"])
+        window.update({"warmup": a.warmup, "book_start": a.start, "end": a.end})
+        config["window"] = window
+    union.preflight_hypotheses(list(configs.values()))
     sleeve = sleeve_for(settings.data.asset_class)
     tf = sleeve.anchor_tf
     start = parse_utc(f"{a.warmup}T00:00:00Z")
@@ -571,16 +587,22 @@ def main(argv=None) -> int:  # noqa: PLR0915
     cache = Path(a.cache).expanduser() if a.cache else None
     if cache is not None and cache.exists():
         z = np.load(cache, allow_pickle=True)
-        dates = z["dates"]; mom = z["mom"].astype(np.float64); ret = z["ret"].astype(np.float64)
-        member = np.array(z["member"], dtype=bool, copy=True); vol = z["vol"].astype(np.float64)
+        dates = z["dates"]
+        mom = z["mom"].astype(np.float64)
+        ret = z["ret"].astype(np.float64)
+        member = np.array(z["member"], dtype=bool, copy=True)
+        vol = z["vol"].astype(np.float64)
         beta = z["beta"].astype(np.float64)
         spy = pd.Series(z["spy"].astype(np.float64), index=dates)
         ew = pd.Series(z["ew"].astype(np.float64), index=dates)
         ids = [str(x) for x in z["ids"]]
-        proxy_src = str(z["proxy_src"]); spy_present = bool(z["spy_present"]); spy_member = bool(z["spy_member"])
+        proxy_src = str(z["proxy_src"])
+        spy_present = bool(z["spy_present"])
+        spy_member = bool(z["spy_member"])
         print(f"panels loaded from cache {cache} ({time.time() - t_wall:.1f}s)")
         return _analyse(a, dates, mom, ret, member, vol, beta, spy, ew, ids, proxy_src,
-                        spy_present, spy_member, t_wall, parse_utc, dsr_from_returns, ExperimentLog)
+                        spy_present, spy_member, t_wall, parse_utc, now_ms, dsr_from_returns,
+                        record_probe_trial, union, configs)
 
     paths = LakePaths(settings.paths.lake_dir)
     with InstrumentStore(settings.paths.var_dir / "ops.sqlite") as store:
@@ -629,7 +651,7 @@ def main(argv=None) -> int:  # noqa: PLR0915
             spy, proxy_src = sr.astype(np.float64), f"{MF_LAKE} SPY ({cover:.0%} session coverage)"
         else:
             print(f"WARNING: {MF_LAKE} SPY covers only {cover:.0%} of sessions -> using EW universe proxy")
-    except Exception as exc:  # noqa: BLE001 — diagnostic only; never fail the probe on it
+    except Exception as exc:
         print(f"WARNING: SPY proxy unavailable ({exc!r}) -> using EW universe proxy")
     if spy.notna().mean() < 0.80:
         spy = ew
@@ -664,12 +686,14 @@ def main(argv=None) -> int:  # noqa: PLR0915
                  spy_present=spy_present, spy_member=spy_member)
         print(f"panels cached -> {cache}")
     return _analyse(a, dates, mom, ret, member, vol, beta, spy, ew, ids, proxy_src,
-                    spy_present, spy_member, t_wall, parse_utc, dsr_from_returns, ExperimentLog)
+                    spy_present, spy_member, t_wall, parse_utc, now_ms, dsr_from_returns,
+                    record_probe_trial, union, configs)
 
 
-def _analyse(  # noqa: PLR0913, PLR0915
+def _analyse(
     a, dates, mom, ret, member, vol, beta, spy, ew, ids, proxy_src,
-    spy_present, spy_member, t_wall, parse_utc, dsr_from_returns, ExperimentLog,  # noqa: ANN001, N803
+    spy_present, spy_member, t_wall, parse_utc, now_ms, dsr_from_returns,
+    record_probe_trial, union, configs,
 ) -> int:
     """Everything downstream of the panels (kept separate so --cache can skip the 16-min build)."""
     start_ms = int(parse_utc(f"{a.start}T00:00:00Z"))
@@ -681,22 +705,24 @@ def _analyse(  # noqa: PLR0913, PLR0915
         f"median {int(np.median(elig_ct[t0:]))} max {int(elig_ct[t0:].max())}"
     )
 
-    # read-only ledger context for the deflated view (NOTHING is appended)
-    leds: dict[str, tuple[int, float]] = {}
-    for lname, rel in (("var", "var/experiments.jsonl"), ("var_sharadar", "var_sharadar/experiments.jsonl")):
-        fp = _REPO / rel
-        if fp.exists():
-            led = ExperimentLog(fp)
-            leds[lname] = (led.n_trials(), led.trial_sharpe_variance())
-
     # ------------------------------------------------------------------- run the grid
     arms: list[tuple[str, int]] = [(s, k) for s in SCHEMES for k in BREADTHS]
     results: dict[str, dict] = {}
+    audit_before = union.n_trials()
     for scheme, k in arms:
         t_arm = time.time()
         sim = simulate(mom, ret, member, vol, beta, dates, t0, k, scheme)
         met = _metrics(sim["net"], sim["gross"], spy, ew)
         key = f"{scheme}_K{k}"
+        full_config = configs[key]
+        record_probe_trial(
+            str(full_config["probe"]),
+            {name: value for name, value in full_config.items() if name != "probe"},
+            sim["net"],
+            now_ms=now_ms(),
+            periods_per_year=int(ANN),
+            experiment_log=union,
+        )
         results[key] = {"scheme": scheme, "K": k, **met,
                         **{kk: vv for kk, vv in sim.items() if kk not in ("net", "gross")},
                         "_net": sim["net"]}
@@ -779,15 +805,16 @@ def _analyse(  # noqa: PLR0913, PLR0915
         anchor_block = {"artifact": PREREG_WF, "stored_net_sharpe": float(p_sr),
                         "stored_max_dd": float(p_dd), "stored_turnover_ann": float(p_to),
                         "probe_live_cell_net_sharpe": float(base["net_sharpe_ann365"])}
-    except Exception as exc:  # noqa: BLE001
+    except Exception as exc:
         print(f"\n(external validity anchor unavailable: {exc!r})")
         anchor_block = {}
 
     print("\nHYPOTHESIS DIAGNOSTIC — is a DOLLAR-neutral momentum book RISK-neutral? "
-          "(ante β = mean ex-ante Σw·β at reform, β winsorized ±5; σ = leg MEDIAN trailing ann. vol;")
+          "(ante beta = mean ex-ante sum(w*beta) at reform, beta winsorized +/-5; "
+          "vol = leg MEDIAN trailing ann. vol;")
     print("junkL/junkS = share of each leg's gross parked in names with trailing ann. vol > 100%; βpost = ex-post OLS beta of the net curve on SPY)")
-    print(f"{'cell':<14}{'β_long':>9}{'β_short':>9}{'β_net':>9}{'βpostSPY':>9}{'βpostEW':>9}{'σ_long':>9}{'σ_short':>9}"
-          f"{'σS-σL':>9}{'junkL':>8}{'junkS':>8}")
+    print(f"{'cell':<14}{'b_long':>9}{'b_short':>9}{'b_net':>9}{'bpostSPY':>9}{'bpostEW':>9}"
+          f"{'vol_long':>9}{'vol_short':>9}{'vS-vL':>9}{'junkL':>8}{'junkS':>8}")
     for kk in keys:
         r = results[kk]
         print(f"{kk:<14}{f(r['ante_beta_long'],9)}{f(r['ante_beta_short'],9)}{f(r['ante_net_beta'],9)}"
@@ -948,15 +975,21 @@ def _analyse(  # noqa: PLR0913, PLR0915
         print(f"VERDICT: candidate cell(s) clear the FULL gate including the family-wise Reality Check: {passers}.")
         print("A full walk-forward gauntlet (1 ledger trial) would be the next step, and is a human decision.")
 
-    # deflated read-only view of the live cell and the best cell
+    # Identity-aligned union view of the live cell and the best cell.
     best_key = keys[int(np.nanargmax([results[kk]["net_sharpe_ann365"] for kk in keys]))]
+    n_led, var_sr = union.n_hypotheses(), union.hypothesis_sharpe_variance()
+    trials_logged = union.n_trials() - audit_before
     dsr_view: dict[str, dict] = {}
     for kk in {live_key, best_key}:
-        dsr_view[kk] = {}
-        for lname, (n_led, var_sr) in leds.items():
-            rep = dsr_from_returns(results[kk]["_net"], max(2, n_led), var_sr, ANN)
-            dsr_view[kk][lname] = {"N": n_led, "dsr": float(np.real(rep.dsr)), "psr": float(np.real(rep.psr))}
-    print("\nREAD-ONLY deflated view (ledger N unchanged; NOTHING appended):")
+        rep = dsr_from_returns(results[kk]["_net"], max(2, n_led), var_sr, ANN)
+        dsr_view[kk] = {
+            "selection_union": {
+                "N": n_led,
+                "dsr": float(np.real(rep.dsr)),
+                "psr": float(np.real(rep.psr)),
+            }
+        }
+    print("\nIdentity-aligned union deflated view:")
     for kk, d in dsr_view.items():
         for lname, vv in d.items():
             print(f"  {kk:<14} ledger {lname:<13} N={vv['N']:<4} DSR={vv['dsr']:.3f} PSR={vv['psr']:.3f}")
@@ -1010,15 +1043,14 @@ def _analyse(  # noqa: PLR0913, PLR0915
         "passers": passers,
         "surface_spread_sharpe": surface,
         "dsr_readonly": dsr_view,
-        "ledgers": {k: {"N": v[0], "var_sr": v[1]} for k, v in leds.items()},
-        "trials_burned": 0,
-        "note": ("SCREEN ONLY — no experiments-ledger append, no WalkForwardRunner call, no src/config "
-                 "mutation. DSR read-only at the standing ledger N. Promotion would require a separate "
-                 "full walk-forward (1 trial) and a human decision."),
+        "selection_union": {"N": n_led, "var_sr": var_sr},
+        "trials_logged_this_run": trials_logged,
+        "note": ("All sixteen measured cells are union-registered before DSR. Promotion would require "
+                 "a separate full walk-forward and a human decision."),
     }
     (OUT_DIR / "report.json").write_text(json.dumps(payload, indent=2, default=float) + "\n", encoding="utf-8")
     print(f"\npersisted: {OUT_DIR / 'report.json'}")
-    print(f"TRIALS BURNED THIS RUN: 0   (total wall {time.time() - t_wall:.0f}s)")
+    print(f"TRIAL RECORDS APPENDED THIS RUN: {trials_logged}   (total wall {time.time() - t_wall:.0f}s)")
     return 0
 
 

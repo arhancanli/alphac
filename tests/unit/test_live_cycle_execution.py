@@ -52,6 +52,117 @@ def _iid(sym: str) -> str:
     return f"XUSE:CASH:{sym}USD"
 
 
+# -------------------------------------------------------- outcome lineage health
+
+
+class _OutcomeBroker:
+    def __init__(self, *, error: Exception | None = None) -> None:
+        self.error = error
+
+    def closed_orders(self, *, after_ms: int) -> list[dict[str, Any]]:
+        assert after_ms > 0
+        if self.error is not None:
+            raise self.error
+        return []
+
+
+class _CloseProbe:
+    def __init__(self) -> None:
+        self.closed = False
+
+    def close(self) -> None:
+        self.closed = True
+
+
+class _KillProbe:
+    def __init__(self) -> None:
+        self.reasons: list[str] = []
+
+    def engage(self, reason: str) -> None:
+        self.reasons.append(reason)
+
+
+def test_fill_reconcile_halts_only_after_three_consecutive_failures(tmp_path: Path) -> None:
+    con = MOD._audit_open(tmp_path / "execution-health.sqlite")
+    broker = _OutcomeBroker(error=RuntimeError("broker outcome endpoint unavailable"))
+
+    first = MOD._reconcile_fills(con, broker, profile="managed_futures")
+    second = MOD._reconcile_fills(con, broker, profile="managed_futures")
+    third = MOD._reconcile_fills(con, broker, profile="managed_futures")
+
+    failures = [
+        first.consecutive_failures,
+        second.consecutive_failures,
+        third.consecutive_failures,
+    ]
+    assert failures == [
+        1,
+        2,
+        3,
+    ]
+    assert MOD._fill_reconciliation_requires_halt(first) is False
+    assert MOD._fill_reconciliation_requires_halt(second) is False
+    assert MOD._fill_reconciliation_requires_halt(third) is True
+    row = con.execute(
+        "SELECT consecutive_fill_reconcile_failures, last_error FROM execution_health "
+        "WHERE profile='managed_futures'"
+    ).fetchone()
+    assert row == (3, "broker outcome endpoint unavailable")
+    con.close()
+
+
+def test_successful_fill_reconcile_resets_failure_streak(tmp_path: Path) -> None:
+    con = MOD._audit_open(tmp_path / "execution-health-reset.sqlite")
+    failure = MOD._reconcile_fills(
+        con,
+        _OutcomeBroker(error=RuntimeError("temporary failure")),
+        profile="equity",
+    )
+    success = MOD._reconcile_fills(con, _OutcomeBroker(), profile="equity")
+
+    assert failure.consecutive_failures == 1
+    assert success.succeeded is True
+    assert success.consecutive_failures == 0
+    row = con.execute(
+        "SELECT consecutive_fill_reconcile_failures, last_success_ts, last_error "
+        "FROM execution_health WHERE profile='equity'"
+    ).fetchone()
+    assert row is not None
+    assert row[0] == 0
+    assert row[1] > 0
+    assert row[2] is None
+    con.close()
+
+
+def test_fill_reconcile_breach_engages_kill_and_closes_resources(tmp_path: Path) -> None:
+    con = MOD._audit_open(tmp_path / "execution-health-kill.sqlite")
+    broker = _CloseProbe()
+    kill = _KillProbe()
+    breach = MOD.FillReconcileResult(
+        rows_written=0,
+        unfilled_pct=0.0,
+        succeeded=False,
+        consecutive_failures=3,
+        error="outcome endpoint unavailable",
+    )
+
+    halted = MOD._halt_on_fill_reconciliation_breach(
+        breach,
+        profile="managed_futures",
+        kill=kill,
+        con=con,
+        broker=broker,
+    )
+
+    assert halted is True
+    assert broker.closed is True
+    assert kill.reasons == [
+        "live_cycle managed_futures: fill-outcome reconciliation failed 3 consecutive cycles"
+    ]
+    with pytest.raises(sqlite3.ProgrammingError, match="closed database"):
+        con.execute("SELECT 1")
+
+
 # --------------------------------------------------------------------------- pure builder
 
 
@@ -246,6 +357,27 @@ def _asset(symbol: str, *, shortable: bool = True, fractionable: bool = True) ->
             "tradable": True, "class": "us_equity"}
 
 
+def _fake_account_map(root: Path, profile: str) -> dict[str, Path]:
+    """A real (temp) credentials file, so the account guard is exercised rather than bypassed.
+
+    These tests used to patch ``_ACCOUNT_ENV`` to ``{}``. That worked because an unmapped
+    profile
+    resolved to ``None`` and the injected fake broker ignored it — which is precisely the unsafe
+    behaviour removed on 2026-08-07: in production the same ``None`` fell through to alpaca.env,
+    AlphaTrend's LIVE account, so a new sleeve missing one line here would have submitted its book
+    into another sleeve's real track record. Mapping to a temp file keeps the guard live in tests
+    instead of asserting that no mapping is needed.
+    """
+    env = root / f"alpaca_{profile}.env"
+    env.write_text(
+        "APCA_API_KEY_ID=test-key\n"
+        "APCA_API_SECRET_KEY=test-secret\n"
+        "APCA_API_BASE_URL=https://paper-api.alpaca.markets\n",
+        encoding="utf-8",
+    )
+    return {profile: env}
+
+
 def _write_leg(root: Path, wf: str, weights: dict[str, float], ts: int = CYCLE) -> None:
     leg = root / "artifacts" / "walkforward" / wf / "legs" / "leg_00"
     leg.mkdir(parents=True, exist_ok=True)
@@ -273,7 +405,7 @@ def _run_cycle(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, broker: _FakeBro
     import alphaforge.execution.alpaca_broker as ab
 
     monkeypatch.setattr(ab, "AlpacaBroker", lambda **kw: broker)
-    monkeypatch.setattr(MOD, "_ACCOUNT_ENV", {})
+    monkeypatch.setattr(MOD, "_ACCOUNT_ENV", _fake_account_map(tmp_path, profile))
     return int(MOD.main(["--profile", profile]))
 
 
@@ -431,7 +563,7 @@ def test_dry_run_submits_nothing_and_writes_no_audit_rows(
     import alphaforge.execution.alpaca_broker as ab
 
     monkeypatch.setattr(ab, "AlpacaBroker", lambda **kw: broker)
-    monkeypatch.setattr(MOD, "_ACCOUNT_ENV", {})
+    monkeypatch.setattr(MOD, "_ACCOUNT_ENV", _fake_account_map(tmp_path, "managed_futures"))
     assert MOD.main(["--profile", "managed_futures", "--dry-run"]) == 0
     assert broker.submitted == []
     assert not (tmp_path / "var" / "trading_managed_futures.sqlite").exists()

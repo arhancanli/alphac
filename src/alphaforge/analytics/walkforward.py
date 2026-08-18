@@ -96,7 +96,8 @@ from alphaforge.regime.hmm import (
     build_observations,
 )
 from alphaforge.signals.gating import gate_signal_frame
-from alphaforge.validation.experiments import ExperimentLog
+from alphaforge.validation.concentration import concentration_report
+from alphaforge.validation.experiments import ExperimentLog, ExperimentUnion
 from alphaforge.validation.splits import PurgedWalkForward
 
 if TYPE_CHECKING:
@@ -238,7 +239,8 @@ class ValidationReport:
     - ``dsr``: Deflated Sharpe Ratio -- PSR against the expected-max-Sharpe of
       ``n_trials`` searched configs. THE deployment gate quantity (>= 0.95).
     - ``sr_ann``: annualized Sharpe of the OOS daily returns (reporting only).
-    - ``n_trials``: HONEST measured number of distinct trials on the ledger.
+    - ``n_trials``: HONEST measured number of distinct hypothesis identities in
+      the union-wide selection search.
     - ``n_trials_used``: ``max(2, n_trials)`` -- what the deflation maths used
       (the expected-max form needs >= 2 trials; equals ``n_trials`` once a
       second config is logged).
@@ -266,9 +268,9 @@ class ValidationReport:
 
     Provenance (audit trail — what ledger/N this DSR was actually deflated against):
 
-    - ``ledger_path``: the :class:`~alphaforge.validation.experiments.ExperimentLog`
-      file this trial was recorded on.
-    - ``n_trials_at_verdict_time``: ``log.n_trials()`` read AFTER recording this trial
+    - ``ledger_path``: the active ledger file this trial was recorded on.
+    - ``selection_ledger_paths``: every profile ledger read for selection accounting.
+    - ``n_trials_at_verdict_time``: ``log.n_hypotheses()`` read AFTER recording this trial
       — the honest ``N`` the DSR was deflated against at verdict time (== ``n_trials``;
       surfaced separately so the artifact states it is the verdict-time value, not a
       stale runtime guess).
@@ -296,6 +298,7 @@ class ValidationReport:
     baseline: ValidationReport | None = None
     clears_baseline_gate: bool = False
     ledger_path: str | None = None
+    selection_ledger_paths: tuple[str, ...] | None = None
     n_trials_at_verdict_time: int | None = None
     trial_config_hash_this_run: str | None = None
 
@@ -332,6 +335,12 @@ class ValidationReport:
         if self.ledger_path is not None:
             obj["_provenance"] = {
                 "ledger_path": str(self.ledger_path),
+                "selection_ledger_paths": (
+                    [str(path) for path in self.selection_ledger_paths]
+                    if self.selection_ledger_paths is not None
+                    else [str(self.ledger_path)]
+                ),
+                "selection_unit": "first_immutable_record_per_hypothesis",
                 "n_trials_at_verdict_time": (
                     None
                     if self.n_trials_at_verdict_time is None
@@ -430,7 +439,33 @@ class WalkForwardResult:
             json.dumps(meta, indent=2, sort_keys=True, default=str) + "\n",
             encoding="utf-8",
         )
-        (out_dir / _SUMMARY_FILE).write_text(render_text(self.summary), encoding="utf-8")
+        # WHERE THE MONEY CAME FROM — appended to every summary, deliberately.
+        #
+        # On 2026-08-10 `eq_ilrev` cleared every statistic this file already renders: Sharpe 0.69,
+        # Sortino, Calmar, max_dd, win rate, profit factor, a Newey-West t of +2.46, turnover of
+        # 3.0x/yr, and correlation under 0.05 to all four live sleeves. It was still five unapplied
+        # reverse splits read off an unadjusted close — the top 10 of its 3,873 days carried the
+        # entire result. Not one number in this summary could have revealed that, because they are
+        # all AGGREGATES, and an aggregate cannot tell you whether an edge is diffuse or is four
+        # prints. Only the distribution can.
+        #
+        # So the concentration screen now renders beside the Sharpe on every run, whether anyone
+        # asks for it or not. A screen that must be remembered is a screen that will be forgotten
+        # the one time it matters — the same reason the split sanity guard logs loudly rather than
+        # silently skipping. This is disclosure, not enforcement: it never blocks a run, it just
+        # makes the shape of the P&L impossible to not see.
+        summary_text = render_text(self.summary)
+        try:
+            rets = np.diff(np.log(self.equity.to_numpy(dtype="float64")))
+            report = concentration_report(rets)
+            summary_text += (
+                "\nP&L concentration (screens edges made of a few prints)\n"
+                "============================================\n"
+                f"{report.summary()}\n"
+            )
+        except Exception as exc:  # never let a diagnostic break the artifact it describes
+            summary_text += f"\nP&L concentration  UNAVAILABLE ({type(exc).__name__}: {exc})\n"
+        (out_dir / _SUMMARY_FILE).write_text(summary_text, encoding="utf-8")
         build_tearsheet(self, out_dir)
         for leg in self.legs:
             leg.result.save(out_dir / _LEGS_DIR / f"leg_{leg.leg:02d}")
@@ -467,7 +502,7 @@ def _json_float(value: float) -> float | None:
 def compute_validation(
     equity: pd.Series,
     config: Mapping[str, object],
-    log: ExperimentLog,
+    log: ExperimentLog | ExperimentUnion,
     now_ms: Ms,
     *,
     dsr_fn: Callable[..., DSRReport] | None = None,
@@ -485,7 +520,8 @@ def compute_validation(
        keyed by ``config`` (idempotent on the config hash -- a re-run of an
        identical configuration does not inflate ``N``). ``now_ms`` is the
        caller-supplied timestamp; the clock is never read here.
-    3. Read ``N = log.n_trials()`` and ``V[SR] = log.trial_sharpe_variance()``
+    3. Read ``N = log.n_hypotheses()`` and
+       ``V[SR] = log.hypothesis_sharpe_variance()``
        *after* recording (so this trial is counted), and compute the DSR via the
        blessed :func:`~alphaforge.validation.dsr.dsr_from_returns` API. The DSR is
        therefore deflated against the LEDGER ``N`` AS IT STANDS AT VERDICT TIME
@@ -537,8 +573,8 @@ def compute_validation(
 
     # Read N / V[SR] AFTER recording, so the DSR is deflated against the ledger N as
     # it stands at verdict time (this trial included), not a stale pre-record snapshot.
-    n_trials = log.n_trials()
-    var_sr = log.trial_sharpe_variance()  # DEFAULT_SR_TRIALS_VARIANCE when < 2 trials
+    n_trials = log.n_hypotheses()
+    var_sr = log.hypothesis_sharpe_variance()
     n_trials_used = max(_MIN_DSR_TRIALS, n_trials)
 
     fn = dsr_fn
@@ -549,12 +585,14 @@ def compute_validation(
     report = fn(rets, n_trials_used, var_sr, DAYS_PER_YEAR)
 
     ledger_path: str | None = None
+    selection_ledger_paths: tuple[str, ...] | None = None
     n_trials_at_verdict_time: int | None = None
     trial_config_hash_this_run: str | None = None
     if with_provenance:
         from alphaforge.validation.experiments import config_hash
 
         ledger_path = str(log.path)
+        selection_ledger_paths = tuple(str(path) for path in getattr(log, "paths", (log.path,)))
         n_trials_at_verdict_time = int(n_trials)
         trial_config_hash_this_run = config_hash(config)
 
@@ -569,6 +607,7 @@ def compute_validation(
         n_obs=report.n_obs,
         clears_dsr_gate=math.isfinite(report.dsr) and report.dsr >= _DSR_GATE,
         ledger_path=ledger_path,
+        selection_ledger_paths=selection_ledger_paths,
         n_trials_at_verdict_time=n_trials_at_verdict_time,
         trial_config_hash_this_run=trial_config_hash_this_run,
     )
@@ -772,7 +811,7 @@ class WalkForwardRunner:
         out_dir: Path | None = None,
         now_ms: Ms | None = None,
         alpha_names: list[str] | None = None,
-        experiment_log: ExperimentLog | None = None,
+        experiment_log: ExperimentLog | ExperimentUnion | None = None,
         dsr_fn: Callable[..., DSRReport] | None = None,
         ml: bool = False,
         regime: bool = False,
@@ -1214,9 +1253,16 @@ class WalkForwardRunner:
             out["regime_lag_days"] = self._regime_lag_days
         return out
 
-    def _default_log(self) -> ExperimentLog:
-        """The default experiment ledger: ``settings.paths.var_dir / experiments.jsonl``."""
-        return ExperimentLog(self._settings.paths.var_dir / "experiments.jsonl")
+    def _default_log(self) -> ExperimentLog | ExperimentUnion:
+        """Append to this profile and read the repo-wide selection union.
+
+        Directly-constructed test settings retain their relative, isolated ledger behavior;
+        settings loaded through ``load_settings`` are absolute and therefore union-capable.
+        """
+        active = self._settings.paths.var_dir / "experiments.jsonl"
+        if not self._settings.paths.artifacts_dir.is_absolute():
+            return ExperimentLog(active)
+        return ExperimentUnion.discover(active, self._settings.paths.artifacts_dir.parent)
 
     def _window_ids(self, start: Ms, end: Ms) -> list[str]:
         """Sorted instruments whose membership interval overlaps ``[start, end)``."""

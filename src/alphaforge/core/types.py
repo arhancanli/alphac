@@ -37,6 +37,8 @@ class AssetClass(StrEnum):
     CRYPTO_PERP = "crypto_perp"
     CRYPTO_SPOT = "crypto_spot"
     EQUITY = "equity"
+    FUTURE = "future"
+    OPTION = "option"
 
 
 class MarketType(StrEnum):
@@ -45,6 +47,8 @@ class MarketType(StrEnum):
     PERP = "perp"
     SPOT = "spot"
     CASH = "cash"
+    FUTURE = "future"
+    OPTION = "option"
 
 
 class Side(StrEnum):

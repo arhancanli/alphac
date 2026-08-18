@@ -73,6 +73,13 @@ import pandas as pd
 _LIB = Path(__file__).resolve().parent
 if str(_LIB) not in sys.path:
     sys.path.insert(0, str(_LIB))
+_SRC = _LIB.parent / "src"
+if str(_SRC) not in sys.path:
+    sys.path.insert(0, str(_SRC))
+
+from alphaforge.analytics.curve_store import write_curve  # noqa: E402
+from alphaforge.core.time import now_ms  # noqa: E402
+from alphaforge.validation.probe_ledger import record_probe_trial  # noqa: E402
 
 VINT = "data/lake_macro_vintage/tier2_vintage"
 OUT = Path("artifacts/probe/cpi_surprise_size")
@@ -90,7 +97,10 @@ def surprise(series: str) -> pd.Series:
     out: dict[pd.Timestamp, float] = {}
     for V, g in d.groupby("vintage_date"):
         g = g.sort_values("obs_period")
-        gr = pd.Series(np.log(g["value"].astype(float).values)).diff().dropna().values
+        values = _complete_latest_monthly_release(g, pd.Timestamp(V))
+        if values is None:
+            continue
+        gr = pd.Series(np.log(values.to_numpy(dtype=float))).diff().dropna().values
         if len(gr) < 45:
             continue
         new, hist = gr[-1], gr[:-1]          # fit STRICTLY before the new observation
@@ -104,6 +114,36 @@ def surprise(series: str) -> pd.Series:
         pred = beta[0] + sum(beta[k + 1] * hist[-(k + 1)] for k in range(AR_LAGS))
         out[V] = float(np.clip((new - pred) / max(sd, 1e-12), -CLIP, CLIP))
     return pd.Series(out).sort_index()
+
+
+def _complete_latest_monthly_release(
+    vintage_rows: pd.DataFrame, vintage_date: pd.Timestamp
+) -> pd.Series | None:
+    """Return values through the release month, or fail closed on a missing latest MoM pair.
+
+    RTDSM stamps each vintage on the 15th and CPI/this macro family are monthly, so vintage ``V``
+    may only call the preceding calendar month its newly released observation.  Both that month
+    and its immediate predecessor must be finite: otherwise ``diff().dropna()`` can quietly leave
+    an older change at the tail and relabel it as the new surprise.  That happened around the
+    missing October 2025 CPI print: the December vintage's newest finite level was November, but
+    October was absent, so the old September change was reused under a new vintage date.
+
+    Interior historical gaps remain missing and are never bridged; only valid adjacent monthly
+    differences enter the AR history.  Returning ``None`` skips the unusable vintage rather than
+    inventing a signal.
+    """
+    expected = (pd.Timestamp(vintage_date).to_period("M") - 1).to_timestamp()
+    previous = (expected.to_period("M") - 1).to_timestamp()
+    g = vintage_rows.copy()
+    g["obs_period"] = pd.to_datetime(g["obs_period"]).dt.to_period("M").dt.to_timestamp()
+    g["value"] = pd.to_numeric(g["value"], errors="coerce")
+    g = g.drop_duplicates("obs_period", keep="last").sort_values("obs_period")
+    by_month = g.set_index("obs_period")["value"]
+    if expected not in by_month.index or previous not in by_month.index:
+        return None
+    if pd.isna(by_month.loc[expected]) or pd.isna(by_month.loc[previous]):
+        return None
+    return by_month.loc[:expected]
 
 
 def px(sym: str) -> pd.Series:
@@ -134,6 +174,15 @@ def nw_t(r: pd.Series, lags: int = 10) -> float:
     return float(x.mean() / np.sqrt(max(var, 1e-18) / n))
 
 
+def portfolio_calendar_returns(net: pd.Series, weights: pd.Series) -> pd.Series:
+    """Retain every session between first and last exposure, including explicit zero days."""
+    active = weights.reindex(net.index).fillna(0.0).abs() > 0
+    if not active.any():
+        raise RuntimeError("CPI sleeve has no active exposure window")
+    active_index = net.index[active]
+    return net.loc[active_index.min() : active_index.max()]
+
+
 def main() -> int:
     OUT.mkdir(parents=True, exist_ok=True)
     SI = ((surprise("PCPI") + surprise("PCPIX")) / 2.0).dropna()
@@ -158,15 +207,20 @@ def main() -> int:
     gross = w * spread
     net = (gross - turn * COST_ONEWAY * 2).dropna()   # two legs
     live = net[w.abs() > 0]
+    portfolio = portfolio_calendar_returns(net, w)
 
-    eq = (1 + live).cumprod()
+    eq = (1 + portfolio).cumprod()
     print(f"\nSTRATEGY (net of {COST_ONEWAY*1e4:.0f}bp one-way per leg)")
-    print(f"  live days {len(live)}  {live.index.min().date()}..{live.index.max().date()}")
-    print(f"  net Sharpe {sharpe(live):+.3f}   NW t {nw_t(live):+.2f}")
-    print(f"  ann ret {live.mean()*ANN:+.2%}   vol {live.std(ddof=0)*np.sqrt(ANN):.2%}"
+    print(
+        f"  portfolio days {len(portfolio)} ({len(live)} active)  "
+        f"{portfolio.index.min().date()}..{portfolio.index.max().date()}"
+    )
+    print(f"  net Sharpe {sharpe(portfolio):+.3f}   NW t {nw_t(portfolio):+.2f}")
+    print(f"  ann ret {portfolio.mean()*ANN:+.2%}   "
+          f"vol {portfolio.std(ddof=0)*np.sqrt(ANN):.2%}"
           f"   maxDD {float((eq/eq.cummax()-1).min()):+.1%}")
     print(f"  gross Sharpe (no costs) {sharpe(gross[w.abs()>0]):+.3f}"
-          f"   turnover {turn.sum()/(len(live)/ANN):.2f}x/yr")
+          f"   turnover {turn.loc[portfolio.index].sum()/(len(portfolio)/ANN):.2f}x/yr")
 
     # ---- placebo: same signal on QQQ-SPY must be dead (size-specific, not beta/duration) ----
     idx2 = QQQ.index.intersection(SPY.index)
@@ -174,7 +228,7 @@ def main() -> int:
     w2 = w.reindex(sp2.index).fillna(0.0)
     pl = (w2 * sp2).dropna()
     pl = pl[w2.abs() > 0]
-    print(f"\nPLACEBO (identical signal on QQQ-SPY — must be INSIGNIFICANT)")
+    print("\nPLACEBO (identical signal on QQQ-SPY — must be INSIGNIFICANT)")
     print(f"  Sharpe {sharpe(pl):+.3f}   NW t {nw_t(pl):+.2f}")
 
     # ---- diversifier arithmetic vs the live book ----
@@ -186,7 +240,8 @@ def main() -> int:
     B = {"eq": curve("artifacts/walkforward/k30_dn_63/equity.parquet"),
          "mf": curve("artifacts/walkforward/mf_live_fwd/equity.parquet"),
          "inv": curve("artifacts/walkforward/prereg_investment/equity.parquet")}
-    j = pd.concat([*B.values(), live.rename("c")], axis=1, keys=[*B.keys(), "c"]).dropna()
+    j = pd.concat([*B.values(), portfolio.rename("c")], axis=1,
+                  keys=[*B.keys(), "c"]).dropna()
     checks, verdict = {}, "KILLED"
     if len(j) > 100:
         bk = j[["eq", "mf", "inv"]].mean(axis=1)
@@ -202,12 +257,16 @@ def main() -> int:
             d = sharpe((1 - wt) * bk + wt * j["c"]) - S_b
             dz = sharpe((1 - wt) * bk + wt * cz) - S_b
             frac = (d - dz) / d * 100 if abs(d) > 1e-12 else 0.0
-            print(f"  {wt*100:>6.0f}%{sharpe((1-wt)*bk+wt*j['c']):>10.3f}{d:>+9.3f}{dz:>+10.3f}{frac:>10.0f}%")
+            candidate_book_sharpe = sharpe((1 - wt) * bk + wt * j["c"])
+            print(
+                f"  {wt * 100:>6.0f}%{candidate_book_sharpe:>10.3f}{d:>+9.3f}"
+                f"{dz:>+10.3f}{frac:>10.0f}%"
+            )
             if d > best[0]:
                 best = (d, dz, frac)
         checks = {
             "a_clears_bar": bool(S_c > bar),
-            "b_nw_t_ge_1p5": bool(abs(nw_t(live)) >= 1.5),
+            "b_nw_t_ge_1p5": bool(abs(nw_t(portfolio)) >= 1.5),
             "c_benefit_is_the_mean": bool(best[2] >= 50.0 and best[0] > 0),
             "d_placebo_dead": bool(abs(nw_t(pl)) < 1.5),
         }
@@ -217,10 +276,32 @@ def main() -> int:
             print(f"  {'PASS' if v else 'FAIL'}  {k}")
         print(f"\n  VERDICT: {verdict}")
 
+    # PERSIST THE CURVE, not just the verdict. This probe returned "ADD" on 2026-08-05 and its
+    # artifact was 476 bytes of scalars, so the one number that decides a sleeve's worth in a
+    # portfolio — its correlation to the book — could not be computed by anyone, including us.
+    curve_path = write_curve(portfolio, OUT)
+    # AND REGISTER THE TRIAL — screen-stage probes never touched a ledger, so this hypothesis
+    # was invisible to the deflation every sleeve is graded against. Idempotent on the config
+    # hash: re-running to regenerate an artifact cannot inflate N.
+    rec = record_probe_trial(
+        "cpi_surprise_size",
+        {"series": ["PCPI", "PCPIX"], "sign": -1, "spread": "IWM-SPY",
+         "ar_lags": AR_LAGS, "clip": CLIP, "cost_oneway_bp": COST_ONEWAY * 1e4},
+        portfolio,
+        now_ms=now_ms(),
+        prereg="docs/design/PREREG_SLEEVE4_INVESTMENT.md / spec locked 2026-08-05",
+    )
+    print(f"\ncurve persisted: {curve_path}  ({len(portfolio)} portfolio days)")
+    print(f"trial registered: config_hash {rec.config_hash}")
+
     (OUT / "result.json").write_text(json.dumps({
         "spec": {"instruments": ["IWM", "SPY"], "ar_lags": AR_LAGS, "clip": CLIP,
                  "cost_oneway_bp": COST_ONEWAY * 1e4, "configs_tried": 1},
-        "net_sharpe": sharpe(live), "nw_t": nw_t(live), "gross_sharpe": sharpe(gross[w.abs() > 0]),
+        "net_sharpe": sharpe(portfolio), "nw_t": nw_t(portfolio),
+        "active_day_net_sharpe_superseded": sharpe(live),
+        "portfolio_days": len(portfolio), "active_days": len(live),
+        "calendar_correction": "zero-exposure sessions retained between first and last activity",
+        "gross_sharpe": sharpe(gross[w.abs() > 0]),
         "placebo_sharpe": sharpe(pl), "placebo_nw_t": nw_t(pl),
         "checks": checks, "verdict": verdict}, indent=1))
     print(f"\nartifacts: {OUT}")

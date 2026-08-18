@@ -559,7 +559,13 @@ def test_trend_directional_signs_and_net_exposure() -> None:
 def test_trend_inverse_vol_weights() -> None:
     """Lower-vol assets get larger weight at equal trend (risk-balanced)."""
     a = TrendVolTarget(PortfolioConstraints(gross_max=1.0, w_max=0.9))
-    r = a.solve(np.array([0.5, 0.5]), np.diag([0.09, 0.01]), np.zeros(2), np.full(2, 1e-3), np.ones(2))
+    r = a.solve(
+        np.array([0.5, 0.5]),
+        np.diag([0.09, 0.01]),
+        np.zeros(2),
+        np.full(2, 1e-3),
+        np.ones(2),
+    )
     assert r.weights[1] > r.weights[0] > 0.0  # sigma 0.1 beats sigma 0.3
 
 

@@ -36,7 +36,7 @@ def _epochday_close_returns(glob_pat: str) -> dict[int, float]:
         raise FileNotFoundError(glob_pat)
     rows: list[tuple[int, float]] = []
     for f in files:
-        d = pq.ParquetFile(f).read().to_pydict()
+        d = pq.ParquetFile(f).read().to_pydict()  # type: ignore[no-untyped-call]
         for ts, close in zip(d["ts_open"], d["close"], strict=True):
             ms = int(ts.timestamp() * 1000) if hasattr(ts, "timestamp") else int(ts)
             rows.append((ms // DAY_MS, float(close)))

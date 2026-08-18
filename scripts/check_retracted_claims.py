@@ -1,0 +1,129 @@
+#!/usr/bin/env python3
+"""Refuse to publish a claim this record has already withdrawn.
+
+Runs after the state/glass-box regeneration and BEFORE the web deploy, so a retracted number
+cannot reach the public site the way AlphaTrend's DSR 0.83 did: withdrawn in the signed chain on
+2026-08-06, still on the homepage, still in the /progress unfurl card, and still asserted in three
+glass-box artifacts on 2026-08-12. Six days, from a pipeline that was publishing the correction
+and the error side by side.
+
+WHAT MAKES THIS DIFFERENT FROM A GREP. The retracted number must remain QUOTABLE inside its own
+retraction — scrubbing history would be its own dishonesty, and a guard that forced deletion would
+push the record toward hiding mistakes rather than explaining them. So each rule carries an
+exemption pattern, and a hit only fails when the surrounding window does NOT explain it. The check
+is therefore satisfied by disclosure, never by silence.
+
+It fails CLOSED: an unreadable blocklist, an unparseable line, or a scan target that does not exist
+is an error, not a pass. A check that cannot fail is worse than no check.
+
+    python scripts/check_retracted_claims.py [--root DIR]...
+"""
+
+from __future__ import annotations
+
+import argparse
+import re
+import sys
+from pathlib import Path
+
+_REPO = Path(__file__).resolve().parent.parent
+BLOCKLIST = _REPO / "docs" / "retracted_claims.txt"
+
+#: Bytes either side of a hit that count as "the surrounding explanation". Wide enough that a
+#: retraction sentence one clause away still exempts, tight enough that an unrelated withdrawal
+#: elsewhere on the page cannot launder an assertion at the top.
+WINDOW = 400
+
+SCAN_SUFFIXES = {".html", ".json", ".js", ".txt", ".md"}
+SKIP_DIRS = {"node_modules", ".git", ".vercel", "assets"}
+
+#: Files that legitimately hold the full history and are exempt wholesale: the signed chain and
+#: any artifact whose PURPOSE is to record what was withdrawn.
+EXEMPT_NAMES = {"paper-state.json", "track_record.json", "transparency.json"}
+
+
+class Rule:
+    __slots__ = ("seq", "pattern", "exempt", "raw")
+
+    def __init__(self, seq: str, pattern: str, exempt: str, raw: str) -> None:
+        self.seq = seq
+        self.pattern = re.compile(pattern, re.IGNORECASE)
+        self.exempt = re.compile(exempt, re.IGNORECASE) if exempt.strip() else None
+        self.raw = raw
+
+
+def load_rules() -> list[Rule]:
+    if not BLOCKLIST.exists():
+        raise SystemExit(f"FAIL: blocklist missing at {BLOCKLIST} — refusing to publish blind")
+    rules: list[Rule] = []
+    for n, line in enumerate(BLOCKLIST.read_text().splitlines(), 1):
+        s = line.strip()
+        if not s or s.startswith("#"):
+            continue
+        # "::", never "|". The patterns contain alternation, so splitting on "|" cut this file's
+        # own regexes mid-group and every one of them failed to compile -- the guard against
+        # unenforced rules was itself unenforceable on its first run.
+        parts = [p.strip() for p in s.split("::")]
+        if len(parts) < 2:
+            raise SystemExit(f"FAIL: {BLOCKLIST}:{n} unparseable: {line!r}")
+        seq, pattern = parts[0], parts[1]
+        exempt = parts[2] if len(parts) > 2 else ""
+        rules.append(Rule(seq, pattern, exempt, s))
+    if not rules:
+        raise SystemExit("FAIL: blocklist parsed to zero rules — that is not a passing state")
+    return rules
+
+
+def scan(root: Path, rules: list[Rule]) -> list[tuple[Path, Rule, str]]:
+    violations: list[tuple[Path, Rule, str]] = []
+    for p in root.rglob("*"):
+        if not p.is_file() or p.suffix.lower() not in SCAN_SUFFIXES:
+            continue
+        if any(part in SKIP_DIRS for part in p.parts) or p.name in EXEMPT_NAMES:
+            continue
+        try:
+            text = p.read_text(errors="ignore")
+        except OSError:
+            continue
+        for rule in rules:
+            for m in rule.pattern.finditer(text):
+                window = text[max(0, m.start() - WINDOW) : m.end() + WINDOW]
+                if rule.exempt is not None and rule.exempt.search(window):
+                    continue  # quoted inside its own retraction — that is the correct usage
+                snippet = " ".join(window[WINDOW - 90 : WINDOW + 130].split())
+                violations.append((p, rule, snippet))
+    return violations
+
+
+def main() -> int:
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--root", action="append", default=None, help="directory to scan (repeatable)")
+    a = ap.parse_args()
+    roots = [Path(r).expanduser() for r in (a.root or ["~/meridian/dist", "~/meridian/public"])]
+
+    rules = load_rules()
+    missing = [r for r in roots if not r.exists()]
+    if missing and len(missing) == len(roots):
+        raise SystemExit(f"FAIL: none of the scan roots exist: {[str(m) for m in missing]}")
+
+    all_v: list[tuple[Path, Rule, str]] = []
+    for r in roots:
+        if r.exists():
+            all_v.extend(scan(r, rules))
+
+    print(f"retracted-claims check: {len(rules)} rules over {len([r for r in roots if r.exists()])} root(s)")
+    if not all_v:
+        print("  PASS — no withdrawn claim is asserted anywhere in the publish set")
+        return 0
+
+    print(f"  FAIL — {len(all_v)} assertion(s) of a claim this record has withdrawn:\n")
+    for p, rule, snippet in all_v:
+        print(f"   {p}")
+        print(f"     rule [{rule.seq}]: {rule.pattern.pattern}")
+        print(f"     context: …{snippet}…\n")
+    print("  Either remove the claim, or state the retraction next to it. Do NOT weaken the rule.")
+    return 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())

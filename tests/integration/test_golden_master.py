@@ -419,6 +419,11 @@ def test_golden_master_full(tmp_path: Path) -> None:
         "unfilled_final_bar": 1,  # the C29-close BTC flatten
         "forced_flat": 0,  # every instrument has bars to the end
         "funding_events_applied": 8,
+        # Optional execution-realism providers are disabled in this crypto golden
+        # master. Their zero counters prove the compatibility path remains inert.
+        "corporate_actions_applied": 0,
+        "cash_dividends_applied": 0,
+        "financing_intervals_applied": 0,
         # Crypto perps have no borrow leg (borrow_frac_per_day == 0), so the short-borrow
         # accrual is skipped entirely -> 0 charges. This 0 is the byte-identity proof: the
         # equity-only borrow leg leaves the crypto golden master untouched.

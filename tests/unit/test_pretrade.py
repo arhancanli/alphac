@@ -19,6 +19,7 @@ from alphaforge.core.instruments import Instrument
 from alphaforge.core.types import AssetClass, MarketType, OrderRequest, OrderType, Side
 from alphaforge.costs import TransactionCostModel
 from alphaforge.risk import CheckReport, PreTradeChecker, RiskLimits
+from alphaforge.risk.crowding import CrowdingObservation, CrowdingPolicy
 
 LISTED = 1_577_836_800_000  # 2020-01-01T00:00:00Z
 DECISION_TS = 1_700_000_000_000
@@ -384,3 +385,71 @@ class TestSystemicBreach:
         order = make_order(side=Side.SELL, qty=150.0, reduce_only=False)
         with pytest.raises(RiskLimitError, match="systemic"):
             run_check([order], self.LIMITS, positions={BTC: 400.0})
+
+
+def _crowding_policy() -> CrowdingPolicy:
+    return CrowdingPolicy(
+        max_institutional_ownership_frac=0.85,
+        max_short_interest_frac_float=0.25,
+        max_borrow_utilization=0.90,
+        max_absolute_fund_flow_frac_aum=0.10,
+        daily_liquidation_participation=0.10,
+        stressed_adv_haircut=0.50,
+        max_stressed_liquidation_days=5.0,
+    )
+
+
+def _crowding_observation(*, ownership: float = 0.50, available_at: int = DECISION_TS):
+    return CrowdingObservation(
+        instrument_id=BTC,
+        observed_ts=DECISION_TS,
+        available_at=available_at,
+        valid_from=DECISION_TS,
+        valid_until=DECISION_TS + 1,
+        institutional_ownership_frac=ownership,
+        short_interest_frac_float=0.10,
+        borrow_utilization=0.50,
+        absolute_fund_flow_frac_aum=0.02,
+    )
+
+
+class TestCrowdingGate:
+    def test_missing_required_observation_rejects_new_risk(self) -> None:
+        checker = PreTradeChecker(make_limits(), TransactionCostModel(), _crowding_policy())
+        report = checker.check(
+            [make_order()],
+            equity=EQUITY,
+            positions={},
+            closes={BTC: CLOSE},
+            adv_quote={BTC: ADV},
+            sigma_daily={BTC: SIGMA},
+            instruments=INSTRUMENTS,
+        )
+        assert "crowding_unassessable" in reasons_text(report, 0)
+
+    def test_observed_limit_breach_rejects_new_risk(self) -> None:
+        checker = PreTradeChecker(make_limits(), TransactionCostModel(), _crowding_policy())
+        report = checker.check(
+            [make_order()],
+            equity=EQUITY,
+            positions={},
+            closes={BTC: CLOSE},
+            adv_quote={BTC: ADV},
+            sigma_daily={BTC: SIGMA},
+            instruments=INSTRUMENTS,
+            crowding={BTC: _crowding_observation(ownership=0.90)},
+        )
+        assert "institutional_ownership_limit" in reasons_text(report, 0)
+
+    def test_reduce_only_remains_permitted_without_crowding_observation(self) -> None:
+        checker = PreTradeChecker(make_limits(), TransactionCostModel(), _crowding_policy())
+        report = checker.check(
+            [make_order(side=Side.SELL, qty=5.0, reduce_only=True)],
+            equity=EQUITY,
+            positions={BTC: 10.0},
+            closes={BTC: CLOSE},
+            adv_quote={BTC: ADV},
+            sigma_daily={BTC: SIGMA},
+            instruments=INSTRUMENTS,
+        )
+        assert report.n_accepted == 1

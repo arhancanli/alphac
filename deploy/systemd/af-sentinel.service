@@ -1,0 +1,18 @@
+[Unit]
+Description=AlphaForge read-only 24/7 operational sentinel
+After=network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/alphaforge
+ExecStart=/opt/alphaforge/.venv/bin/python /opt/alphaforge/scripts/sentinel.py --root /opt/alphaforge --json-out /opt/alphaforge/var/sentinel/status.json
+TimeoutStartSec=30
+Nice=10
+StandardOutput=append:/var/log/af-sentinel.log
+StandardError=append:/var/log/af-sentinel.log
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/alphaforge/var/sentinel
+

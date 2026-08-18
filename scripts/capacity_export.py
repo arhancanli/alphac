@@ -102,11 +102,21 @@ def stamp(payload: dict[str, Any]) -> dict[str, Any]:
     return payload
 
 
+# Mirrored to the dashboard too (2026-08-06). Writing only to the landing dir left
+# app.canlicapital.com serving six-week-old glass-box artifacts, including a track
+# record showing 0.00% over "3 days" while the landing showed -2.54% over 38.
+APP_OUT_DIR: Final[Path] = REPO.parent / "meridian-app" / "public" / "glassbox"
+
+
 def write_json(out_dir: Path, filename: str, payload: dict[str, Any]) -> Path:
-    """Stamp + write a payload as pretty JSON; return the written path."""
+    """Stamp + write a payload as pretty JSON to every public dir; return the primary path."""
+    stamped = json.dumps(stamp(payload), indent=2) + "\n"
     out_dir.mkdir(parents=True, exist_ok=True)
     path = out_dir / filename
-    path.write_text(json.dumps(stamp(payload), indent=2) + "\n")
+    path.write_text(stamped)
+    if out_dir.resolve() == OUT_DIR.resolve():
+        APP_OUT_DIR.mkdir(parents=True, exist_ok=True)
+        (APP_OUT_DIR / filename).write_text(stamped)
     return path
 
 
@@ -383,8 +393,9 @@ def build_capacity() -> dict[str, Any]:
             "The crypto carry sleeve is MEASURED finite-capacity alpha: its realized Sharpe "
             "goes negative by $10M as market impact consumes the thin signal. The equity "
             "momentum core scales much further (MODELED), so above ~$100M AUM the book IS the "
-            "equity core. Forward Sharpe is the deflated 0.7-1.0 expectation, never the 1.51 "
-            "in-sample headline."
+            "equity core. Forward Sharpe is the deflated 0.3-0.9 expectation (lowered from 0.7-1.0 "
+            "on 2026-07-29; this artifact carried the superseded band until 2026-08-06), never "
+            "the in-sample headline."
         ),
         "honesty_note": (
             "Every figure is labelled MEASURED (read from a real artifact), MODELED (derived "
@@ -459,8 +470,8 @@ def build_capacity() -> dict[str, Any]:
             ),
             "deflation": (
                 "Combined-book DSR is 0.44 at N=69 honest trials vs the 0.95 gate; the in-sample "
-                "1.51 Sharpe does not survive the search that produced it. The honest forward is "
-                "the deflated 0.7-1.0, NOT 1.51 / 28%."
+                "Sharpe does not survive the search that produced it. The honest forward is "
+                "the deflated 0.3-0.9, with a real chance of ~0 in year one."
             ),
             "source": "CROSS_ASSET_BOOK.md l.66-72; PRE_REGISTRATION.md l.91-96",
         },

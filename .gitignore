@@ -30,6 +30,10 @@ htmlcov/
 /var_mf_exp/
 /var_sharadar/
 /var_fut_real/
+# 2026-08-18: var_inventory/ was untracked-but-not-ignored and a `git add -A` DID stage its live
+# ops.sqlite. That is the exact failure this block's comment already warned about, repeated. The
+# rule is per-directory and every new var_* sleeve dir must be added here the day it is created.
+/var_inventory/
 
 # throwaway working files
 /scratch/

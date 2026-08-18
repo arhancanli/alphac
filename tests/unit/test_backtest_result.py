@@ -170,6 +170,8 @@ def test_save_writes_complete_artifact_layout(saved_dir: Path) -> None:
         "equity.parquet",
         "fills.parquet",
         "funding.parquet",
+        "corporate_actions.parquet",
+        "financing.parquet",
         "orders.parquet",
         "positions.parquet",
         "run_meta.json",
@@ -197,6 +199,8 @@ def test_round_trip_load(saved_dir: Path, result: BacktestResult) -> None:
     pd.testing.assert_series_equal(loaded.equity, result.equity)
     pd.testing.assert_frame_equal(loaded.fills, result.fills)
     pd.testing.assert_frame_equal(loaded.funding_events, result.funding_events)
+    pd.testing.assert_frame_equal(loaded.corporate_actions, result.corporate_actions)
+    pd.testing.assert_frame_equal(loaded.financing_events, result.financing_events)
     pd.testing.assert_frame_equal(loaded.orders, result.orders)
     pd.testing.assert_frame_equal(loaded.positions, result.positions)
     assert loaded.counters == result.counters

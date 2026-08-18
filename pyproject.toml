@@ -27,6 +27,8 @@ dependencies = [
     "boto3>=1.43.31",
     "opentimestamps-client>=0.7.2",
     "databento>=0.80.0",
+    "pypdf>=6.16.1",
+    "xlrd>=2.0.2",
 ]
 
 [project.scripts]
@@ -94,5 +96,6 @@ testpaths = ["tests"]
 addopts = "-q --strict-markers -m 'not network' --cov=alphaforge --cov-branch"
 markers = [
     "network: tests that hit live exchange APIs (deselected in CI)",
+    "no_cover: wall-clock benchmarks excluded from coverage instrumentation",
     "slow: long-running tests",
 ]

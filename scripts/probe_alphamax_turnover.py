@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 """PROBE 3 — ALPHAMAX turnover reduction: hysteresis bands + hold-longer rank-persistence.
 
-MEASURE-ONLY. New file only; reads src/** as templates; NEVER mutates it. Writes only
-artifacts/probe/alphamax_turnover/*. Does NOT append to any experiments ledger (it is a
-cheap construction SCREEN, not a production walk-forward): TRIALS BURNED = 0. The DSR at
-ledger N is computed read-only via dsr_from_returns (a pure function) so the deflated view
-is visible without recording a trial.
+MEASURE-ONLY. Reads src/** as templates, mutates no production state, and writes only
+artifacts/probe/alphamax_turnover/*. Every cadence-arm return hypothesis must pass union-ledger
+preflight and is recorded before identity-aligned DSR. Paused research fails closed before data
+loading when an identity is unregistered.
 
 WHY A SELF-CONTAINED BOOK SIMULATOR (not the production WalkForwardRunner):
   AlphaMax's binding constraint is turnover/cost, not signal (every momentum-SIGNAL variant
@@ -34,7 +33,7 @@ dollar_neutral=True, and the equity.yaml frictions):
     no-trade band (base.yaml) suppresses dust trades, common to all arms.
   * PIT: weights decided from data through the close of rebalance day r are effective for r+1's
     return onward — never same-bar. Weights drift buy-and-hold between reforms; turnover at a
-    reform = Σ_i|w_target_i − w_drifted_i| (one-way, repo turnover() semantics).
+    reform = Σ_i|w_target_i - w_drifted_i| (one-way, repo turnover() semantics).
 
 PRE-REGISTERED ARMS (locked before any result; a single selection state machine parametrized by
 (enter_frac, exit_frac, min_hold_bars); a held name is DROPPED at a reform iff it leaves the exit
@@ -48,7 +47,7 @@ Run at TWO reform cadences: 21 sessions (monthly — the task's framing, where t
 visible) and 63 sessions (quarterly — the production rebalance_bars, the decision-relevant cadence).
 
 SUCCESS GATE (pre-registered): an arm PROMOTES only if net Sharpe ≥ baseline AND ann turnover
-falls ≥30–40%. HONEST CAVEAT stated up front: these fixes raise NET alpha by cutting COST; the
+falls ≥30-40%. HONEST CAVEAT stated up front: these fixes raise NET alpha by cutting COST; the
 GROSS Sharpe barely moves — a flat/near-flat net Sharpe with a big turnover cut is the win, and a
 pure wash is a legitimate (and common) outcome.
 
@@ -98,7 +97,7 @@ CADENCES = [("monthly_21", 21), ("quarterly_63", 63)]
 
 
 # --------------------------------------------------------------- daily-return probe spec
-def _probe_dret_fn(ctx, spec):  # noqa: ANN001, ANN202 — FeatureSpec body signature
+def _probe_dret_fn(ctx, spec):
     """Daily SIMPLE return panel from the sanctioned PIT split-adjusted close.
 
     Reuses equity_price._adjusted_close_panel (the ONE place equity adjustment happens) so
@@ -113,7 +112,7 @@ def _probe_dret_fn(ctx, spec):  # noqa: ANN001, ANN202 — FeatureSpec body sign
     return long_series(px.pct_change(), name=spec.name)
 
 
-def _register_dret(reg) -> None:  # noqa: ANN001
+def _register_dret(reg) -> None:
     from alphaforge.features.spec import Family, FeatureSpec
 
     have = {s.name for s in reg.all_specs()}
@@ -232,7 +231,7 @@ def simulate(
     # (reset to target daily — the standard decile-portfolio convention). This is bounded (no
     # unbounded intra-period drift to blow up on a small-cap 10-bagger) and makes the A/B pristine:
     # the ONLY thing that varies across arms is the reform-time SELECTION, hence the turnover.
-    # Turnover is charged target-to-target at each reform (Σ|w_new − w_old|, one-way) — exactly
+    # Turnover is charged target-to-target at each reform (Σ|w_new - w_old|, one-way) — exactly
     # the selection churn the treatments attack; signal-independent intra-period drift-trades are
     # second-order and common to all arms (documented simplification).
     w_tgt = np.zeros(N, dtype=np.float64)     # weights currently in force
@@ -268,7 +267,7 @@ def simulate(
             ei = np.where(elig)[0]
             order = ei[np.argsort(-m[ei], kind="stable")]  # strongest momentum first
             frac[order] = np.arange(order.size, dtype=np.float64) / float(order.size)
-            K = max(1, int(round(enter * n_elig)))
+            K = max(1, round(enter * n_elig))
 
             long_sel = _select(frac, elig, hl_entry, t, enter, exit_, min_hold, K, low_is_strong=True)
             short_sel = _select(frac, elig, hs_entry, t, enter, exit_, min_hold, K, low_is_strong=False)
@@ -346,7 +345,7 @@ def main(argv=None) -> int:
     from alphaforge.config.settings import load_settings
     from alphaforge.config.sleeve import sleeve_for
     from alphaforge.core.instruments import InstrumentStore
-    from alphaforge.core.time import parse_utc
+    from alphaforge.core.time import now_ms, parse_utc
     from alphaforge.data.schemas import ohlcv_dataset
     from alphaforge.data.store.lake import LakePaths
     from alphaforge.data.store.reader import PITDataReader
@@ -355,9 +354,45 @@ def main(argv=None) -> int:
     from alphaforge.features.registry import default_registry
     from alphaforge.research.ic_report import _membership_mask
     from alphaforge.validation.dsr import dsr_from_returns
-    from alphaforge.validation.experiments import ExperimentLog
+    from alphaforge.validation.experiments import ExperimentUnion
+    from alphaforge.validation.probe_ledger import record_probe_trial
 
     settings = load_settings(a.profile)
+    union = ExperimentUnion.discover(settings.paths.var_dir / "experiments.jsonl", _REPO)
+
+    def trial_config(
+        cadence: str,
+        reform_bars: int,
+        arm: str,
+        enter_frac: float,
+        exit_frac: float,
+        min_hold_bars: int,
+    ) -> dict:
+        return {
+            "profile": a.profile,
+            "cadence": cadence,
+            "reform_bars": reform_bars,
+            "arm": arm,
+            "signal": "eq_mom_252_21",
+            "enter_frac": enter_frac,
+            "exit_frac": exit_frac,
+            "min_hold_bars": min_hold_bars,
+            "vol_window": VOL_WINDOW,
+            "gross_leg": GROSS_LEG,
+            "cost_oneway": COST_ONEWAY,
+            "borrow_ann": BORROW_ANN,
+            "start": a.start,
+            "end": a.end,
+        }
+
+    configs = {
+        (cadence, arm): trial_config(cadence, reform, arm, enter, exit_, hold)
+        for cadence, reform in CADENCES
+        for arm, enter, exit_, hold in ARMS
+    }
+    union.preflight_hypotheses(
+        [{"probe": "alphamax_turnover", **config} for config in configs.values()]
+    )
     sleeve = sleeve_for(settings.data.asset_class)
     tf = sleeve.anchor_tf
     start = parse_utc(f"{a.start}T00:00:00Z")
@@ -394,25 +429,22 @@ def main(argv=None) -> int:
     print(f"panels: T={mom.shape[0]} sessions x N={mom.shape[1]} names | "
           f"finite momentum cells: {np.isfinite(mom).mean():.1%} | member cells: {member.mean():.1%}")
 
-    # ledgers for the read-only DSR deflation (NO trial is recorded by this probe)
-    leds = {}
-    for name, rel in (("var", "var/experiments.jsonl"), ("var_sharadar", "var_sharadar/experiments.jsonl")):
-        fp = _REPO / rel
-        if fp.exists():
-            led = ExperimentLog(fp)
-            leds[name] = (led.n_trials(), led.trial_sharpe_variance())
-
     results: dict = {}
+    audit_before = union.n_trials()
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     for cad_name, reform in CADENCES:
         results[cad_name] = {}
         for arm, enter, exit_, mh in ARMS:
             sim = simulate(mom, ret, member, vol, dates, reform, enter, exit_, mh)
             met = _metrics(sim["net"], sim["gross"])
-            dsr = {}
-            for lname, (n_led, var_sr) in leds.items():
-                rep = dsr_from_returns(sim["net"], max(2, n_led), var_sr, ANN)
-                dsr[lname] = {"N": n_led, "dsr": float(np.real(rep.dsr)), "psr": float(np.real(rep.psr))}
+            record_probe_trial(
+                "alphamax_turnover",
+                configs[(cad_name, arm)],
+                sim["net"],
+                now_ms=now_ms(),
+                periods_per_year=int(ANN),
+                experiment_log=union,
+            )
             results[cad_name][arm] = {
                 "enter": enter, "exit": exit_, "min_hold_bars": mh,
                 **met,
@@ -422,9 +454,21 @@ def main(argv=None) -> int:
                 "avg_long_names": sim["avg_long_names"],
                 "avg_short_names": sim["avg_short_names"],
                 "n_reforms": sim["n_reforms"], "n_days": sim["n_days"],
-                "dsr": dsr,
                 "_net": sim["net"],
             }
+
+    n_led, var_sr = union.n_hypotheses(), union.hypothesis_sharpe_variance()
+    for arms in results.values():
+        for result in arms.values():
+            rep = dsr_from_returns(result["_net"], max(2, n_led), var_sr, ANN)
+            result["dsr"] = {
+                "selection_union": {
+                    "N": n_led,
+                    "dsr": float(np.real(rep.dsr)),
+                    "psr": float(np.real(rep.psr)),
+                }
+            }
+    trials_logged = union.n_trials() - audit_before
 
     # ------------------------------------------------------------------- report
     def pct(x: float) -> str:
@@ -442,7 +486,7 @@ def main(argv=None) -> int:
             r = results[cad_name][arm]
             dturn = (r["turnover_ann"] - base["turnover_ann"]) / base["turnover_ann"] if base["turnover_ann"] else float("nan")
             dsr365 = r["net_sharpe_ann365"] - base["net_sharpe_ann365"]
-            dsr_var = r["dsr"].get("var", {}).get("dsr", float("nan"))
+            dsr_var = r["dsr"].get("selection_union", {}).get("dsr", float("nan"))
             print(
                 f"{arm:<10}{r['net_sharpe_ann365']:>9.3f}{r['net_sharpe_ann252']:>9.3f}"
                 f"{r['gross_sharpe_ann365']:>8.3f}{r['turnover_ann']:>9.2f}{pct(dturn):>8}"
@@ -480,7 +524,7 @@ def main(argv=None) -> int:
             "cost_oneway_bps": COST_ONEWAY * 1e4, "borrow_ann_bps": BORROW_ANN * 1e4,
             "no_trade_band": NO_TRADE_BAND, "enter_frac": ENTER_FRAC,
         },
-        "ledgers": {k: {"N": v[0], "var_sr": v[1]} for k, v in leds.items()},
+        "selection_union": {"N": n_led, "var_sr": var_sr},
         "stored_baselines": {
             "k30_dn_63_live": {"net_sharpe": 0.907, "turnover_ann": 4.11},
             "prereg_momentum_deep": {"net_sharpe": -0.049, "turnover_ann": 3.26},
@@ -490,12 +534,12 @@ def main(argv=None) -> int:
             for cad, arms in results.items()
         },
         "gate": verdict,
-        "trials_burned": 0,
-        "note": "SCREEN ONLY — no experiments-ledger append; DSR is read-only. Promotion into src is a separate human step.",
+        "trials_logged_this_run": trials_logged,
+        "note": "Every measured arm is union-registered before DSR; promotion remains a separate decision.",
     }
     (OUT_DIR / "report.json").write_text(json.dumps(payload, indent=2, default=float) + "\n", encoding="utf-8")
     print(f"\npersisted: {OUT_DIR / 'report.json'}")
-    print("TRIALS BURNED THIS RUN: 0 (cheap construction screen; no ledger append).")
+    print(f"TRIAL RECORDS APPENDED THIS RUN: {trials_logged}")
     return 0
 
 

@@ -314,8 +314,11 @@ def calendar_for(asset_class: AssetClass) -> TradingCalendar:
     EQUITY maps to the singleton :class:`XNYSCalendar` (NYSE sessions, 252-day basis,
     via ``exchange_calendars``).
 
+    Dated futures and options deliberately have no generic calendar: session boundaries
+    differ by exchange and product. They fail until a product-specific calendar is supplied.
+
     Raises:
-        NotImplementedError: for any future asset class with no registered calendar.
+        NotImplementedError: for any asset class with no registered calendar.
     """
     if asset_class in (AssetClass.CRYPTO_PERP, AssetClass.CRYPTO_SPOT):
         return _ALWAYS_24X7

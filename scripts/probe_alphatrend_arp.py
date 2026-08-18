@@ -38,9 +38,9 @@ PIT + committed costs: weights decided through close t are effective t+1 (never 
 50bp/yr borrow on the short leg, accrued daily. Piecewise-constant target weights (monthly
 rebalance, no intra-month drift-trading) -- identical across variants, so the delta is clean.
 
-Screen only. NO ledger trials are logged (a full deflated WF is the SEPARATE, deliberate next step,
-justified only if a treatment beats baseline here). DSR is reported at the CURRENT ledger N for
-context (deflating against the standing multiple-testing burden) without adding to it.
+Screen only. Every measured construction arm is union-registered before DSR. A full deflated WF is
+the separate next stage, justified only if a treatment beats baseline here. Under a paused campaign,
+unregistered arms fail preflight before market data is loaded.
 
     uv run python scripts/probe_alphatrend_arp.py
 """
@@ -59,9 +59,11 @@ _SRC = REPO / "src"
 if str(_SRC) not in sys.path:
     sys.path.insert(0, str(_SRC))
 
+from alphaforge.core.time import now_ms  # noqa: E402
 from alphaforge.portfolio.covariance import ledoit_wolf_cc  # read-only import  # noqa: E402
 from alphaforge.validation.dsr import dsr_from_returns  # read-only import  # noqa: E402
-from alphaforge.validation.experiments import ExperimentLog  # read-only import  # noqa: E402
+from alphaforge.validation.experiments import ExperimentUnion  # noqa: E402
+from alphaforge.validation.probe_ledger import record_probe_trial  # noqa: E402
 
 LAKE = REPO / "data" / "lake_mf" / "ohlcv_1d"
 OUT = REPO / "artifacts" / "sweep" / "alphatrend_arp"
@@ -142,9 +144,11 @@ def target_weights(
     sign = np.sign(signal_row)
     g = np.zeros_like(sign)
     ok = (sigma_ann > 0) & np.isfinite(sign)
-    g[ok] = sign[ok] / sigma_ann[ok]                 # signed inverse-vol = the vol-normalized vector
+    # Signed inverse-vol is the vol-normalized vector.
+    g[ok] = sign[ok] / sigma_ann[ok]
     if mode == "t1":
-        g = corr_inv_sqrt(cov_ann) @ g               # <-- the ONLY delta vs baseline: C^(-1/2) whiten
+        # The only delta versus baseline is correlation whitening.
+        g = corr_inv_sqrt(cov_ann) @ g
     # gross-normalize -> clip -> renormalize toward full gross (TrendVolTarget.solve)
     gross = np.abs(g).sum()
     if gross <= 0:
@@ -197,7 +201,7 @@ def run_variant(
         S = 0.5 * (S + S.T)
         try:
             S_shr, _ = ledoit_wolf_cc(sub, S)        # Ledoit-Wolf constant-correlation shrink
-        except Exception:                            # noqa: BLE001
+        except Exception:
             S_shr = S
         cov_ann = S_shr * ANN
         sigma_ann = np.sqrt(np.clip(np.diag(cov_ann), 1e-12, None))
@@ -222,7 +226,11 @@ def run_variant(
     net = (gross_ret - borrow - cost).dropna()
     net = net.loc[net.index >= pd.Timestamp(START)]
     turn_ann = float(np.sum(turn_events) / (len(net) / ANN)) if len(net) else float("nan")
-    return net, {"turnover_ann": turn_ann, "n_rebals": len(rebal_dates), "gross_cost": float(cost.sum())}
+    return net, {
+        "turnover_ann": turn_ann,
+        "n_rebals": len(rebal_dates),
+        "gross_cost": float(cost.sum()),
+    }
 
 
 # ------------------------------------------------------------------- metrics
@@ -264,6 +272,31 @@ def spy_corr(net: pd.Series, ret: pd.DataFrame) -> float:
 
 
 def main() -> int:
+    variants = {
+        "baseline": ("baseline", "blend_63_126_252"),
+        "T1_corr_whiten": ("t1", "blend_63_126_252"),
+        "T2_single_110": ("baseline", "single_110"),
+    }
+
+    def trial_config(name: str, mode: str, signal: str) -> dict:
+        return {
+            "variant": name,
+            "allocator": mode,
+            "signal": signal,
+            "universe": "managed_futures_17_etfs",
+            "vol_span": VOL_SPAN,
+            "rebalance_bars": REBALANCE,
+            "gross_max": GROSS_MAX,
+            "cost_per_side": COST_PER_SIDE,
+            "borrow_ann": BORROW_ANN,
+        }
+
+    configs = {name: trial_config(name, mode, signal) for name, (mode, signal) in variants.items()}
+    union = ExperimentUnion.discover(LEDGER, REPO)
+    union.preflight_hypotheses(
+        [{"probe": "alphatrend_arp", **config} for config in configs.values()]
+    )
+
     OUT.mkdir(parents=True, exist_ok=True)
     panel = load_panel()
     logclose = np.log(panel)
@@ -281,19 +314,14 @@ def main() -> int:
     grid = [d for d in all_dates if d >= first]
     rebal_dates = grid[::REBALANCE]
 
-    # ledger context (read-only): N and trial-Sharpe variance for DSR deflation. NO writes.
-    log = ExperimentLog(LEDGER)
-    n_trials = log.n_trials()
-    sr_var = log.trial_sharpe_variance()
-
-    variants = {
+    variant_inputs = {
         "baseline": ("baseline", blend3),
         "T1_corr_whiten": ("t1", blend3),
-        "T2_single_110": ("baseline", single110),  # same allocator, single-leg signal
+        "T2_single_110": ("baseline", single110),
     }
     nets: dict[str, pd.Series] = {}
     diags: dict[str, dict] = {}
-    for name, (mode, sig) in variants.items():
+    for name, (mode, sig) in variant_inputs.items():
         net, d = run_variant(panel, logclose, ret, sig, rebal_dates, all_dates, mode)
         nets[name] = net
         diags[name] = d
@@ -304,6 +332,20 @@ def main() -> int:
         common = common.intersection(n.index)
     base_vol = vol_ann(nets["baseline"].loc[common])
     match_vol = round(base_vol, 4)
+
+    audit_before = union.n_trials()
+    for name, net in nets.items():
+        record_probe_trial(
+            "alphatrend_arp",
+            configs[name],
+            net.loc[common],
+            now_ms=now_ms(),
+            periods_per_year=int(ANN),
+            experiment_log=union,
+        )
+    trials_logged = union.n_trials() - audit_before
+    n_trials = union.n_hypotheses()
+    sr_var = union.hypothesis_sharpe_variance()
 
     # avg pairwise correlation + effective breadth over the common window (the ceiling context)
     rc = ret.reindex(common).dropna(how="all", axis=1)
@@ -372,7 +414,8 @@ def main() -> int:
 
     report = {
         "probe": "alphatrend_arp", "window": [str(common.min().date()), str(common.max().date())],
-        "n_sessions": int(len(common)), "ledger_N": int(n_trials), "trials_logged": 0,
+        "n_sessions": len(common), "ledger_N": int(n_trials),
+        "trials_logged_this_run": trials_logged,
         "rhobar": rhobar, "N_eff": n_eff, "vol_match_target": match_vol,
         "table": json.loads(tab.reset_index().to_json(orient="records")),
         "crisis_maxdd_volmatched": crow, "diags": diags,
@@ -380,7 +423,7 @@ def main() -> int:
     (OUT / "report.json").write_text(json.dumps(report, indent=1))
     (OUT / "report.txt").write_text("\n".join(lines))
     say()
-    say(f"artifacts -> {OUT}  (report.txt / report.json)  | trials burned: 0")
+    say(f"artifacts -> {OUT}  (report.txt / report.json)  | records appended: {trials_logged}")
     return 0
 
 

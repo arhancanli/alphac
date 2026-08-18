@@ -26,7 +26,13 @@ from alphaforge.backtest.engine import (
     Strategy,
     StrategyContext,
 )
-from alphaforge.backtest.fills import BarView, FillModel, MakerFill, NextOpenFill
+from alphaforge.backtest.fills import (
+    BarView,
+    FillModel,
+    MakerFill,
+    NextOpenFill,
+    ParticipationCappedFill,
+)
 from alphaforge.backtest.ledger import Ledger
 from alphaforge.backtest.result import BacktestResult
 
@@ -40,6 +46,7 @@ __all__ = [
     "Ledger",
     "MakerFill",
     "NextOpenFill",
+    "ParticipationCappedFill",
     "RankStrategy",
     "ScriptedStrategy",
     "StaticCostInputs",

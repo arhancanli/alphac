@@ -76,7 +76,9 @@ __all__ = [
     "DEFAULT_SR_TRIALS_VARIANCE",
     "ExperimentLog",
     "ExperimentRecord",
+    "ExperimentUnion",
     "config_hash",
+    "hypothesis_hash",
 ]
 
 DEFAULT_LOG_PATH: Final[Path] = Path("var/experiments.jsonl")
@@ -95,6 +97,7 @@ the deflation is not yet data-driven.
 """
 
 _HASH_LEN: Final[int] = 16
+_HYPOTHESIS_WINDOW_KEYS: Final[frozenset[str]] = frozenset({"start", "end"})
 
 
 def config_hash(config: Mapping[str, Any]) -> str:
@@ -113,6 +116,23 @@ def config_hash(config: Mapping[str, Any]) -> str:
     canonical = json.dumps(config, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
     digest = hashlib.sha256(canonical.encode("ascii")).hexdigest()
     return digest[:_HASH_LEN]
+
+
+def hypothesis_hash(config: Mapping[str, object]) -> str:
+    """Hash the economic hypothesis while excluding only its evaluation window.
+
+    ``start`` and ``end`` describe when an existing idea was remeasured. Every other
+    field remains identity-bearing, so parameter, universe, allocator, feature, and
+    preregistration changes continue to spend distinct hypotheses.
+    """
+    payload = {k: v for k, v in config.items() if k not in _HYPOTHESIS_WINDOW_KEYS}
+    canonical = json.dumps(
+        payload,
+        sort_keys=True,
+        ensure_ascii=True,
+        default=str,
+    ).encode("utf-8")
+    return hashlib.sha256(canonical).hexdigest()[:_HASH_LEN]
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
@@ -294,10 +314,6 @@ class ExperimentLog:
             fh.write(line + "\n")
         return record
 
-    #: Config keys that describe WHEN a hypothesis was measured, not WHAT was hypothesised.
-    #: The exemption below is deliberately this narrow -- see :meth:`n_hypotheses`.
-    _WINDOW_KEYS: Final[frozenset[str]] = frozenset({"start", "end"})
-
     def n_trials(self) -> int:
         """Number of DISTINCT configurations on the ledger.
 
@@ -311,10 +327,7 @@ class ExperimentLog:
         return len(self._hashes())
 
     def _hypothesis_key(self, config: Mapping[str, object]) -> str:
-        payload = {k: v for k, v in config.items() if k not in self._WINDOW_KEYS}
-        return hashlib.sha256(
-            json.dumps(payload, sort_keys=True, ensure_ascii=True, default=str).encode("utf-8")
-        ).hexdigest()[:16]
+        return hypothesis_hash(config)
 
     def n_hypotheses(self) -> int:
         """Number of distinct HYPOTHESES tried -- the honest DSR ``N``.
@@ -340,6 +353,18 @@ class ExperimentLog:
         behind it, because a sweep by definition changes something other than the dates.
         """
         return len({self._hypothesis_key(r.config) for r in self.all()})
+
+    def hypothesis_records(self) -> list[ExperimentRecord]:
+        """First immutable measurement for each hypothesis identity, in time order.
+
+        Rolling-window records remain in :meth:`all` for audit and operations, but selection
+        statistics must not drift merely because an already-selected strategy stayed live. The
+        first record is the observation available when that identity entered the search.
+        """
+        first: dict[str, ExperimentRecord] = {}
+        for record in sorted(self.all(), key=lambda item: (item.now_ms, item.config_hash)):
+            first.setdefault(self._hypothesis_key(record.config), record)
+        return list(first.values())
 
     def window_only_reevaluations(self) -> int:
         """Rows that are re-measurements of an existing hypothesis, not new trials.
@@ -375,22 +400,192 @@ class ExperimentLog:
         *per-period* Sharpes because DSR's ``SR*`` and ``SR`` are both per-period
         (section 7.4).
         """
+        return _sharpe_variance(self.all())
+
+    def hypothesis_sharpe_variance(self) -> float:
+        """DSR ``V[SR]`` over first-recorded hypothesis identities only.
+
+        This is the variance companion to :meth:`n_hypotheses`. Using all rows here while using
+        hypothesis identities for ``N`` lets rolling operational remeasurements change ``SR*``;
+        that inconsistency is exactly what this method closes.
+        """
+        return _sharpe_variance(self.hypothesis_records())
+
+
+class ExperimentUnion:
+    """Append to one profile while reading selection evidence across every profile.
+
+    The active profile remains the sole write destination. Exact config hashes already present in
+    any member are idempotent across the union. Audit rows and hypothesis identities are deduped
+    deterministically, with the earliest immutable record representing each selection identity.
+    """
+
+    __slots__ = ("_active", "_members", "_root")
+
+    def __init__(
+        self,
+        active_path: Path | str,
+        member_paths: Sequence[Path | str],
+        *,
+        root: Path | str | None = None,
+    ) -> None:
+        self._active = ExperimentLog(active_path)
+        self._root = None if root is None else Path(root).resolve()
+        paths = {Path(path).resolve() for path in member_paths}
+        paths.add(self._active.path.resolve())
+        self._members = tuple(ExperimentLog(path) for path in sorted(paths))
+
+    @classmethod
+    def discover(cls, active_path: Path | str, root: Path | str) -> ExperimentUnion:
+        """Discover direct ``var*/experiments.jsonl`` ledgers under a verified repo root."""
+        base = Path(root).resolve()
+        if not (base / "configs" / "base.yaml").is_file():
+            raise ValueError(f"experiment-union root has no configs/base.yaml: {base}")
+        members = [
+            path
+            for path in base.glob("var*/experiments.jsonl")
+            if not any("archive" in part.casefold() for part in path.relative_to(base).parts)
+        ]
+        return cls(active_path, members, root=base)
+
+    @property
+    def path(self) -> Path:
+        """The sole append destination (compatibility with :class:`ExperimentLog`)."""
+        return self._active.path
+
+    @property
+    def paths(self) -> tuple[Path, ...]:
+        """Every union member in deterministic order."""
+        return tuple(member.path for member in self._members)
+
+    def all(self) -> list[ExperimentRecord]:
+        """Config-hash-unique audit records across all profiles, earliest record wins."""
+        first: dict[str, ExperimentRecord] = {}
+        records = (record for member in self._members for record in member.all())
+        for record in sorted(records, key=lambda item: (item.now_ms, item.config_hash)):
+            first.setdefault(record.config_hash, record)
+        return list(first.values())
+
+    def record(
+        self,
+        config: Mapping[str, Any],
+        *,
+        sharpe_ann: float,
+        sharpe_per_period: float,
+        n_obs: int,
+        skew: float,
+        kurtosis: float,
+        now_ms: Ms,
+        path_sharpes: Sequence[float] | None = None,
+    ) -> ExperimentRecord:
+        """Append locally unless the exact configuration already exists anywhere."""
+        h = config_hash(config)
         records = self.all()
-        if any(rec.sharpe_per_path is not None for rec in records):
-            sharpes = [
-                s
-                for rec in records
-                if rec.sharpe_per_path is not None
-                for s in rec.sharpe_per_path
-                if math.isfinite(s)
-            ]
-        else:
-            sharpes = [
-                rec.sharpe_per_period for rec in records if math.isfinite(rec.sharpe_per_period)
-            ]
-        n = len(sharpes)
-        if n < 2:
-            return DEFAULT_SR_TRIALS_VARIANCE
-        mean = math.fsum(sharpes) / n
-        ss = math.fsum((x - mean) ** 2 for x in sharpes)
-        return ss / (n - 1)
+        for existing in records:
+            if existing.config_hash == h:
+                return existing
+        hypothesis = self._active._hypothesis_key(config)
+        known_hypotheses = {self._active._hypothesis_key(record.config) for record in records}
+        if hypothesis not in known_hypotheses:
+            pause_status = self._research_pause_status()
+            if pause_status is not None:
+                raise RuntimeError(
+                    f"new return-hypothesis registration blocked by {pause_status}; "
+                    "see config/trial_accounting.json"
+                )
+        return self._active.record(
+            config,
+            sharpe_ann=sharpe_ann,
+            sharpe_per_period=sharpe_per_period,
+            n_obs=n_obs,
+            skew=skew,
+            kurtosis=kurtosis,
+            now_ms=now_ms,
+            path_sharpes=path_sharpes,
+        )
+
+    def preflight_hypotheses(self, configs: Sequence[Mapping[str, Any]]) -> None:
+        """Fail before computation when paused policy forbids any requested identity.
+
+        Historical scripts can otherwise spend minutes rebuilding panels before discovering at
+        append time that a return hypothesis is not authorized. This read-only preflight uses the
+        exact same identity rule as :meth:`record`. An active campaign permits unknown identities;
+        a paused campaign permits only exact hypotheses already represented in the union, including
+        start/end-only operational remeasurements.
+        """
+        pause_status = self._research_pause_status()
+        if pause_status is None:
+            return
+        known = {self._active._hypothesis_key(record.config) for record in self.all()}
+        unknown = [
+            config for config in configs if self._active._hypothesis_key(config) not in known
+        ]
+        if unknown:
+            hashes = ", ".join(config_hash(config) for config in unknown[:5])
+            suffix = "" if len(unknown) <= 5 else f", +{len(unknown) - 5} more"
+            raise RuntimeError(
+                f"{len(unknown)} unregistered return hypothesis/hypotheses blocked by "
+                f"{pause_status} before computation (config hashes: {hashes}{suffix}); "
+                "see config/trial_accounting.json"
+            )
+
+    def _research_pause_status(self) -> str | None:
+        """Return the machine-enforced pause status, if this union has a policy root."""
+        if self._root is None:
+            return None
+        policy_path = self._root / "config" / "trial_accounting.json"
+        if not policy_path.is_file():
+            return None
+        try:
+            policy = json.loads(policy_path.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, OSError) as exc:
+            raise RuntimeError(f"cannot read trial-accounting policy {policy_path}: {exc}") from exc
+        status = str(policy.get("research_status", "ACTIVE"))
+        return status if status.startswith("PAUSED_") else None
+
+    def n_trials(self) -> int:
+        """Config-hash-unique immutable execution records across the union."""
+        return len(self.all())
+
+    def hypothesis_records(self) -> list[ExperimentRecord]:
+        """Earliest record for each union-wide hypothesis identity."""
+        first: dict[str, ExperimentRecord] = {}
+        for record in self.all():
+            first.setdefault(self._active._hypothesis_key(record.config), record)
+        return list(first.values())
+
+    def n_hypotheses(self) -> int:
+        """Union-wide DSR selection ``N``."""
+        return len(self.hypothesis_records())
+
+    def window_only_reevaluations(self) -> int:
+        """Audit records excluded from union selection ``N``."""
+        return self.n_trials() - self.n_hypotheses()
+
+    def trial_sharpe_variance(self) -> float:
+        """Raw-row variance retained for audit/backward compatibility."""
+        return _sharpe_variance(self.all())
+
+    def hypothesis_sharpe_variance(self) -> float:
+        """Union-wide DSR variance aligned to :meth:`n_hypotheses`."""
+        return _sharpe_variance(self.hypothesis_records())
+
+
+def _sharpe_variance(records: Sequence[ExperimentRecord]) -> float:
+    """Variance implementation shared by raw-row and identity-level accounting."""
+    if any(rec.sharpe_per_path is not None for rec in records):
+        sharpes = [
+            s
+            for rec in records
+            if rec.sharpe_per_path is not None
+            for s in rec.sharpe_per_path
+            if math.isfinite(s)
+        ]
+    else:
+        sharpes = [rec.sharpe_per_period for rec in records if math.isfinite(rec.sharpe_per_period)]
+    n = len(sharpes)
+    if n < 2:
+        return DEFAULT_SR_TRIALS_VARIANCE
+    mean = math.fsum(sharpes) / n
+    ss = math.fsum((x - mean) ** 2 for x in sharpes)
+    return ss / (n - 1)

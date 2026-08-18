@@ -4,7 +4,8 @@ Canonical instrument identity (dataDesign.md §2.3, buildabilityCritique.md ruli
 
     "<EXCHANGE>:<MARKET>:<EXCHANGE_SYMBOL>"   e.g. "BINANCE:PERP:BTCUSDT"
 
-- ``EXCHANGE`` and ``EXCHANGE_SYMBOL`` are uppercase, ``MARKET`` ∈ {``PERP``, ``SPOT``}
+- ``EXCHANGE`` and ``EXCHANGE_SYMBOL`` are uppercase; ``MARKET`` is a
+  :class:`~alphaforge.core.types.MarketType` member name.
   (the :class:`~alphaforge.core.types.MarketType` member name).
 - ccxt unified symbols: spot ``"BTC/USDT"``; linear perp ``"BTC/USDT:USDT"`` (settle
   currency equals the quote — inverse contracts are out of scope and rejected).
@@ -193,15 +194,15 @@ class SymbolMapper:
 
         ``"BINANCE:PERP:BTCUSDT"`` → ``"BTC/USDT:USDT"`` (linear perp, settle = quote);
         ``"BINANCE:SPOT:BTCUSDT"`` → ``"BTC/USDT"``. Raises :class:`SchemaError` on a
-        malformed id, an unrecognized quote suffix, or a ``CASH``-equity id (ccxt is a
-        crypto-venue vocabulary; routing an equity id here would emit a spurious crypto
-        market symbol — critique B4 — so it is rejected loudly, not mis-translated).
+        malformed id, an unrecognized quote suffix, or any non-crypto market id (ccxt is a
+        crypto-venue vocabulary; routing cash equities, dated futures, or options here would
+        emit a spurious crypto market symbol, so they are rejected loudly, not mis-translated).
         """
         _, market_type, symbol = SymbolMapper.parse_instrument_id(instrument_id)
-        if market_type is MarketType.CASH:
+        if market_type not in (MarketType.PERP, MarketType.SPOT):
             raise SchemaError(
-                f"cannot map CASH-equity id {instrument_id!r} to a ccxt symbol; equities "
-                "are not a ccxt venue (use the equities source's own routing)"
+                f"cannot map {market_type.name} id {instrument_id!r} to a ccxt symbol; "
+                "only crypto PERP/SPOT markets use ccxt routing"
             )
         base, quote = SymbolMapper.split_exchange_symbol(symbol)
         if market_type is MarketType.PERP:
