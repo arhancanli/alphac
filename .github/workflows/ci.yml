@@ -1,18 +1,21 @@
 name: ci
 
-# The enforced quality gate. Every quality claim about AlphaForge (the governed
-# Ruff scope clean, mypy --strict clean, the full offline test suite green) is
-# converted here from developer discipline into a check on every push and pull
-# request. Historical scripts are not silently excluded: their exact Ruff debt
-# is source-bound in artifacts/engineering/lint_debt_contract.json.
+# The enforced clean-checkout quality gate: governed Ruff scope, mypy --strict,
+# and the portable offline test suite. Workstation evidence checks are reported
+# separately because their ignored corpus and sibling repositories are absent
+# from a GitHub checkout. The historical-script Ruff debt exporter is executed
+# here to prove it remains buildable, but its local contract is not falsely
+# presented as a tracked freshness comparison.
 #
 # Reproducibility: the environment is built from the committed uv.lock with
 # "uv sync --frozen" so CI resolves the EXACT pinned dependency set (it never
 # rewrites pyproject.toml or the lock). PYTHONHASHSEED is pinned for determinism
 # (belt-and-suspenders; the suite has no known hash-ordering dependency today).
 #
-# Offline by decree: pytest's addopts already deselect the "network" marker, so
-# no job ever reaches a live exchange API.
+# Offline by decree: no job reaches a live exchange API. The clean-checkout job
+# also deselects explicitly marked workspace-evidence integration checks, whose
+# inputs are intentionally git-ignored or live in sibling site workspaces. The
+# complete offline suite remains a separate local verification claim.
 
 on:
   push:
@@ -49,10 +52,10 @@ jobs:
         run: uv sync --frozen --dev
       - name: ruff check
         run: uv run ruff check src/alphaforge tests
-      - name: Verify the disclosed historical-script debt is current
+      - name: Build the disclosed historical-script debt contract
         run: |
           uv run python scripts/export_lint_debt_contract.py
-          git diff --exit-code -- artifacts/engineering/lint_debt_contract.json
+          test -s artifacts/engineering/lint_debt_contract.json
 
   typecheck:
     name: mypy --strict
@@ -85,16 +88,20 @@ jobs:
         run: uv python install
       - name: Sync the frozen environment
         run: uv sync --frozen --dev
-      # The "network" marker is deselected by pyproject addopts; the suite is
-      # deterministic and offline, so it runs unchanged here. Branch coverage of
-      # the alphaforge package is collected by the pyproject addopts
+      # Network tests and workspace-evidence integration tests are excluded from
+      # this portable clean-checkout gate. The latter cannot run without the
+      # deliberately unversioned evidence corpus and sibling website workspaces;
+      # each such test is explicitly marked instead of failing accidentally.
+      # Branch coverage of the alphaforge package is collected by pyproject
       # (--cov=alphaforge --cov-branch) on every run; -p no:randomly is not used
       # because nothing here is order-dependent. We emit an XML report and a
       # terminal summary as build artifacts. No --cov-fail-under is enforced yet
       # (see pyproject): a floor is pinned once a true baseline is observed,
       # rather than redding CI aspirationally.
-      - name: pytest (with branch coverage)
-        run: uv run pytest --cov-report=xml --cov-report=term
+      - name: pytest (portable offline suite with branch coverage)
+        run: >-
+          uv run pytest -m 'not network and not workspace_evidence'
+          --cov-report=xml --cov-report=term
       - name: Upload coverage report
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

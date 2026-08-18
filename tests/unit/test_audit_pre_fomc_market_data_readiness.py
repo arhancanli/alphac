@@ -5,6 +5,9 @@ from datetime import date
 from pathlib import Path
 
 import pandas as pd
+import pytest
+
+pytestmark = pytest.mark.workspace_evidence
 
 MODULE_PATH = (
     Path(__file__).resolve().parents[2] / "scripts" / "audit_pre_fomc_market_data_readiness.py"

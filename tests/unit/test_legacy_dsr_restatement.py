@@ -6,6 +6,8 @@ import importlib.util
 from pathlib import Path
 from types import ModuleType
 
+import pytest
+
 ROOT = Path(__file__).resolve().parents[2]
 
 
@@ -18,6 +20,7 @@ def _load() -> ModuleType:
     return module
 
 
+@pytest.mark.workspace_evidence
 def test_restatement_uses_current_union_and_retires_missing_return_families() -> None:
     payload = _load().build()
     summary = payload["summary"]

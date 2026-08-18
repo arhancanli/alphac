@@ -10,6 +10,12 @@ configured Ruff rules. The production package also passes strict mypy across all
 the current non-network test suite contains 3,760 passing tests. Twelve credentialed network tests
 remain deliberately deselected from the offline suite.
 
+GitHub's clean-checkout gate has a narrower, explicit boundary. It deselects 37 tests marked
+`workspace_evidence` because those checks require the git-ignored evidence corpus or the adjacent
+Canli Capital site workspaces. Those 37 checks remain part of the complete local offline suite;
+they are not represented as portable CI coverage. The marker makes this distinction visible in
+test collection instead of allowing a clean runner to fail on undeclared local dependencies.
+
 ## Explicit debt
 
 The `scripts` tree contains historical probes, one-off data collectors, diagnostics, and active

@@ -68,6 +68,7 @@ def test_current_metric_prose_uses_current_tilt_and_correlation_constants() -> N
     assert "f\"0.3 to 0.9 (the {TILT_PROSE} beta" in source
 
 
+@pytest.mark.workspace_evidence
 def test_open_book_exposes_sealed_alphavintage_correction(modules) -> None:
     _, research = modules
     payload = research.build_research_export()
@@ -78,6 +79,7 @@ def test_open_book_exposes_sealed_alphavintage_correction(modules) -> None:
     assert correction["public_path"] == "/research/alphavintage-missing-release-correction.md"
 
 
+@pytest.mark.workspace_evidence
 def test_export_carries_fail_closed_sleeve_atlas(modules) -> None:
     _, research = modules
     payload = research.build_research_export()
@@ -114,6 +116,7 @@ def test_export_carries_fail_closed_sleeve_atlas(modules) -> None:
     assert section["lineage_audit_public_path"] == "/glassbox/sleeve_family_lineage_audit.json"
 
 
+@pytest.mark.workspace_evidence
 def test_export_carries_shared_brutal_admission_contract(modules) -> None:
     _, research = modules
     section = research.build_research_export()["sleeve_admission_contract"]
@@ -133,6 +136,7 @@ def test_export_carries_shared_brutal_admission_contract(modules) -> None:
     assert len(section["source_sha256"]) == 64
 
 
+@pytest.mark.workspace_evidence
 def test_export_distinguishes_ledger_records_from_hypothesis_identities(modules) -> None:
     _, research = modules
     ledger = research.build_research_export()["trial_accounting"]
@@ -179,6 +183,7 @@ def test_export_distinguishes_ledger_records_from_hypothesis_identities(modules)
     assert selection["audit_raw_record_sharpe_variance"] > 0.0
 
 
+@pytest.mark.workspace_evidence
 def test_execution_realism_book_page_is_published_identically() -> None:
     source = REPO / "docs" / "research" / "EXECUTION_REALISM.md"
     legacy = REPO.parent / "meridian" / "public" / "research" / "execution-realism.md"
@@ -187,6 +192,7 @@ def test_execution_realism_book_page_is_published_identically() -> None:
     assert source.read_bytes() == legacy.read_bytes() == app.read_bytes()
 
 
+@pytest.mark.workspace_evidence
 def test_execution_benchmark_is_honest_and_published_identically(modules) -> None:
     _, research = modules
     section = research.build_research_export()["engineering_benchmarks"][
@@ -207,6 +213,7 @@ def test_execution_benchmark_is_honest_and_published_identically(modules) -> Non
     assert source.read_bytes() == legacy.read_bytes() == app.read_bytes()
 
 
+@pytest.mark.workspace_evidence
 def test_futures_capability_is_bounded_and_published_identically(modules) -> None:
     _, research = modules
     section = research.build_research_export()["engineering_capabilities"][
@@ -238,6 +245,7 @@ def test_futures_capability_is_bounded_and_published_identically(modules) -> Non
     assert book.read_bytes() == legacy_book.read_bytes() == app_book.read_bytes()
 
 
+@pytest.mark.workspace_evidence
 def test_options_capability_is_bounded_and_published_identically(modules) -> None:
     _, research = modules
     section = research.build_research_export()["engineering_capabilities"][
@@ -269,6 +277,7 @@ def test_options_capability_is_bounded_and_published_identically(modules) -> Non
     assert book.read_bytes() == legacy_book.read_bytes() == app_book.read_bytes()
 
 
+@pytest.mark.workspace_evidence
 def test_borrow_capability_is_bounded_and_published_identically(modules) -> None:
     _, research = modules
     section = research.build_research_export()["engineering_capabilities"]["borrow_execution"]
@@ -298,6 +307,7 @@ def test_borrow_capability_is_bounded_and_published_identically(modules) -> None
     assert book.read_bytes() == legacy_book.read_bytes() == app_book.read_bytes()
 
 
+@pytest.mark.workspace_evidence
 def test_market_status_capability_is_bounded_and_published_identically(modules) -> None:
     _, research = modules
     section = research.build_research_export()["engineering_capabilities"][
@@ -322,6 +332,7 @@ def test_market_status_capability_is_bounded_and_published_identically(modules) 
     assert book.read_bytes() == legacy_book.read_bytes() == app_book.read_bytes()
 
 
+@pytest.mark.workspace_evidence
 def test_crowding_capability_confesses_coverage_and_publishes_identically(modules) -> None:
     _, research = modules
     section = research.build_research_export()["engineering_capabilities"]["crowding_risk"]
@@ -346,6 +357,7 @@ def test_crowding_capability_confesses_coverage_and_publishes_identically(module
     assert book.read_bytes() == legacy_book.read_bytes() == app_book.read_bytes()
 
 
+@pytest.mark.workspace_evidence
 def test_corporate_action_capability_is_bounded_and_published_identically(modules) -> None:
     _, research = modules
     section = research.build_research_export()["engineering_capabilities"][
@@ -376,6 +388,7 @@ def test_corporate_action_capability_is_bounded_and_published_identically(module
     assert book.read_bytes() == legacy_book.read_bytes() == app_book.read_bytes()
 
 
+@pytest.mark.workspace_evidence
 def test_financing_capability_confesses_coverage_and_publishes_identically(modules) -> None:
     _, research = modules
     section = research.build_research_export()["engineering_capabilities"]["financing"]
@@ -396,6 +409,7 @@ def test_financing_capability_confesses_coverage_and_publishes_identically(modul
     assert book.read_bytes() == legacy_book.read_bytes() == app_book.read_bytes()
 
 
+@pytest.mark.workspace_evidence
 def test_lint_debt_boundary_publishes_identically_without_a_clean_repo_claim(modules) -> None:
     _, research = modules
     section = research.build_research_export()["engineering_quality"]["lint_debt"]

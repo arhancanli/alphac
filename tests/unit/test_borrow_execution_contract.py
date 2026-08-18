@@ -37,6 +37,7 @@ def test_contract_is_deterministic_source_bound_and_non_research(exporter) -> No
     assert all(len(value) == 64 for value in first["source_sha256"].values())
 
 
+@pytest.mark.workspace_evidence
 def test_persisted_contract_matches_builder_and_content_hash(exporter) -> None:
     persisted = json.loads(exporter.OUTPUT.read_text())
     assert persisted == exporter.build_contract()
