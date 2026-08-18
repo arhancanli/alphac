@@ -56,3 +56,15 @@
 # definitionally a correction. No pattern in the SECOND field was touched; nothing that was
 # blocked before is permitted now except where a correction is present in the same window.
 # The rule was not weakened. The rule was taught the words we actually use to retract.
+
+# 2026-08-19 — ALPHAVINTAGE. Deployed 2026-08-10 at a quarter of the book on a verdict of ADD
+# (net Sharpe 0.3403, Newey-West t 1.82). Re-run 2026-08-16 with a calendar correction that
+# retains zero-exposure sessions: net Sharpe 0.2298, NW t 1.267, check `b_nw_t_ge_1p5` FALSE, and
+# artifacts/probe/cpi_surprise_size/result.json records `verdict: KILLED`. The published block in
+# scripts/paper_trading_state.py was hard-coded and never tracked the artifact, so the superseded
+# figures sat on the live site for three days describing a killed candidate as a validated one.
+# The numbers must remain quotable inside their own retraction; they may not be asserted bare.
+-- :: 0\.3403 :: withdraw|WITHDRAWN|superseded|KILLED|CORRECTION|we published|we said|not the
+-- :: Newey-West t of 1\.82 :: withdraw|WITHDRAWN|superseded|KILLED|CORRECTION|we published|we said
+-- :: net Sharpe 0\.34 with :: withdraw|WITHDRAWN|superseded|KILLED|CORRECTION|we published|we said
+
