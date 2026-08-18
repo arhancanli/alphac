@@ -1,0 +1,14 @@
+cff-version: 1.2.0
+message: "If you use ALPHAC or AlphaForge, please cite the software and its author."
+title: "ALPHAC: A point-in-time multi-asset quantitative research platform"
+type: software
+authors:
+  - family-names: "Canli"
+    given-names: "Arhan"
+repository-code: "https://github.com/arhancanli/alphac"
+url: "https://canlicapital.com"
+license: MIT
+abstract: >-
+  ALPHAC is the open quantitative research and portfolio-engineering platform behind Canli
+  Capital, with point-in-time data controls, reproducible validation, execution-realism models,
+  trial accounting, and evidence-bounded technical publication.

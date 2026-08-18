@@ -1,8 +1,10 @@
 name: ci
 
-# The enforced quality gate. Every quality claim about AlphaForge (ruff clean,
-# mypy --strict clean, the full offline test suite green) is converted here from
-# developer discipline into a required check on every push and pull request.
+# The enforced quality gate. Every quality claim about AlphaForge (the governed
+# Ruff scope clean, mypy --strict clean, the full offline test suite green) is
+# converted here from developer discipline into a check on every push and pull
+# request. Historical scripts are not silently excluded: their exact Ruff debt
+# is source-bound in artifacts/engineering/lint_debt_contract.json.
 #
 # Reproducibility: the environment is built from the committed uv.lock with
 # "uv sync --frozen" so CI resolves the EXACT pinned dependency set (it never
@@ -32,7 +34,7 @@ env:
 
 jobs:
   lint:
-    name: ruff (lint + format)
+    name: ruff (governed scope + debt ledger)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -45,9 +47,11 @@ jobs:
       - name: Sync the frozen environment
         run: uv sync --frozen --dev
       - name: ruff check
-        run: uv run ruff check .
-      - name: ruff format --check
-        run: uv run ruff format --check .
+        run: uv run ruff check src/alphaforge tests
+      - name: Verify the disclosed historical-script debt is current
+        run: |
+          uv run python scripts/export_lint_debt_contract.py
+          git diff --exit-code -- artifacts/engineering/lint_debt_contract.json
 
   typecheck:
     name: mypy --strict

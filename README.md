@@ -5,6 +5,11 @@ the data lake, the point-in-time reader, the backtester, the walk-forward harnes
 multiple-testing machinery, the portfolio optimizer, the live broker loop, and every design
 document and adversarial review that produced them.
 
+**Created and maintained by [Arhan Canli](https://github.com/arhancanli) for Canli Capital.**
+Development uses reviewed AI-assisted tooling, but project ownership, research decisions,
+methodology, claims, and publication responsibility remain with Arhan Canli. Citation metadata is
+provided in [`CITATION.cff`](CITATION.cff).
+
 It is public because the claim we actually make is not *"this makes money."* It is
 **"every number we publish can be checked, including the ones that embarrass us."** That claim
 is worthless if the code is hidden.
@@ -136,6 +141,7 @@ from data lake through live paper trading.
 uv sync                 # install env (Python 3.12 pinned via uv)
 uv run af --help        # CLI
 uv run pytest           # tests
-uv run ruff check .     # lint
+uv run ruff check src/alphaforge tests  # governed lint-clean scope
+uv run python scripts/export_lint_debt_contract.py  # disclose legacy script debt
 uv run mypy             # types (strict)
 ```

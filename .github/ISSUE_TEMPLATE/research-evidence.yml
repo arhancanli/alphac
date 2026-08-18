@@ -1,0 +1,33 @@
+name: Research or evidence correction
+description: Challenge a published method, assumption, artifact, or claim
+title: "evidence: "
+labels: ["research-evidence"]
+body:
+  - type: textarea
+    id: claim
+    attributes:
+      label: Claim or artifact
+      description: Link to the exact claim, document, code path, or artifact field.
+    validations:
+      required: true
+  - type: textarea
+    id: concern
+    attributes:
+      label: Concern
+      description: Explain the methodological, point-in-time, statistical, or implementation issue.
+    validations:
+      required: true
+  - type: textarea
+    id: falsification
+    attributes:
+      label: Reproduction or falsification path
+      description: Provide a safe reproduction, primary source, or test that could resolve the issue.
+    validations:
+      required: true
+  - type: checkboxes
+    id: boundary
+    attributes:
+      label: Evidence boundary
+      options:
+        - label: This report contains no credentials, licensed data, or non-public account information.
+          required: true
