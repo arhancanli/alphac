@@ -62,6 +62,20 @@ class MarketStatusEvent:
 
 
 class MarketStatusProvider(Protocol):
+    def require_coverage(
+        self,
+        instrument_ids: tuple[str, ...],
+        *,
+        start: Ms,
+        end: Ms,
+    ) -> str | None:
+        """Fail closed unless every instrument is explicitly covered over ``[start, end)``.
+
+        Source-reviewed providers return a deterministic evidence hash. Synthetic providers may
+        return ``None`` but must still prove interval completeness.
+        """
+        ...
+
     def status(self, instrument_id: str, *, as_of: Ms) -> MarketStatusEvent | None:
         """Return the explicit effective status at ``as_of``, or ``None`` for no coverage."""
         ...
@@ -104,6 +118,46 @@ class StaticMarketStatusProvider:
                 f"exceeds decision {as_of}"
             )
         return selected
+
+    def require_coverage(
+        self,
+        instrument_ids: tuple[str, ...],
+        *,
+        start: Ms,
+        end: Ms,
+    ) -> str | None:
+        """Require explicit status for every millisecond in each requested interval.
+
+        Effective and availability boundaries are swept rather than sampled on a bar grid. A
+        future-known instrument event therefore cannot be hidden by a venue-wide OPEN interval.
+        """
+        if not instrument_ids:
+            raise ValueError("market-status preflight requires at least one instrument")
+        if start < 0 or end <= start:
+            raise ValueError("market-status preflight requires 0 <= start < end")
+        for instrument_id in dict.fromkeys(instrument_ids):
+            venue, _, _ = SymbolMapper.parse_instrument_id(instrument_id)
+            applicable = tuple(
+                event
+                for event in self.events
+                if event.venue == venue
+                and event.instrument_id in (None, instrument_id)
+                and event.effective_from < end
+                and event.effective_until > start
+            )
+            boundaries = {start, end}
+            for event in applicable:
+                boundaries.add(max(start, event.effective_from))
+                boundaries.add(min(end, event.effective_until))
+                if start < event.available_at < end:
+                    boundaries.add(event.available_at)
+            for effective_from, effective_until in pairwise(sorted(boundaries)):
+                if self.status(instrument_id, as_of=effective_from) is None:
+                    raise ValueError(
+                        f"missing PIT market-status coverage for {instrument_id!r} over "
+                        f"[{effective_from}, {effective_until})"
+                    )
+        return None
 
 
 def execution_block_reason(event: MarketStatusEvent, order: OrderRequest) -> str | None:

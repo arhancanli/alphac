@@ -738,6 +738,11 @@ class EventDrivenBacktester:
                     raise ValueError(f"unknown instrument {iid!r} (no SCD2 record)")
                 inst = history[0][2]
             insts[iid] = inst
+        market_status_coverage_hash: str | None = None
+        if self._market_status is not None:
+            market_status_coverage_hash = self._market_status.require_coverage(
+                tuple(ids), start=start, end=end
+            )
         financing_currency: str | None = None
         if self._financing_data is not None:
             currencies = {inst.quote for inst in insts.values()}
@@ -1087,6 +1092,7 @@ class EventDrivenBacktester:
             order_records=order_records,
             position_records=position_records,
             reason_by_order=reason_by_order,
+            market_status_coverage_hash=market_status_coverage_hash,
         )
 
     # ----------------------------------------------------------- loop pieces
@@ -1609,7 +1615,22 @@ class EventDrivenBacktester:
                 ex_date=int(ex_col[i]),
                 available_at=int(available_col[i]),
                 ratio=float(ratio_col[i]),
-                cash_amount=None if cash_col[i] is None else float(cash_col[i]),
+                # The lake encodes "this split carries no cash" as NaN, not NULL, so
+                # `cash_col[i] is None` is False and a NaN reached CorporateAction, which
+                # correctly refuses it ("split cash_amount must be null"). Every one of the
+                # 4,804 splits in lake_sharadar and 4,512 of 5,156 in lake carry NaN, so this
+                # aborted any run whose window contained a split -- it killed the AlphaLedger
+                # pinned re-run 26 minutes in. NULL and NaN are the same intent here and the
+                # boundary is where they must be reconciled. Normalising non-finite to None is
+                # safe in BOTH directions: a split becomes valid, while a CASH_DIVIDEND whose
+                # amount is genuinely missing still fails loudly on "requires a finite
+                # cash_amount" rather than being silently swallowed. Both asserted in
+                # tests/unit/test_corporate_action_nan_cash.py.
+                cash_amount=(
+                    None
+                    if cash_col[i] is None or not math.isfinite(float(cash_col[i]))
+                    else float(cash_col[i])
+                ),
             )
             action.require_known_before_boundary()
             out.setdefault(action.instrument_id, []).append(action)
@@ -1725,6 +1746,7 @@ class EventDrivenBacktester:
         order_records: list[dict[str, object]],
         position_records: list[dict[str, object]],
         reason_by_order: dict[str, str],
+        market_status_coverage_hash: str | None,
     ) -> BacktestResult:
         """Assemble frames + :func:`summarize` into a :class:`BacktestResult`."""
         equity = ledger.equity_curve()
@@ -1777,6 +1799,10 @@ class EventDrivenBacktester:
             ),
             **self._config_echo,
         }
+        if self._market_status is not None:
+            config["market_status_coverage"] = "run_interval_preflight"
+            if market_status_coverage_hash is not None:
+                config["market_status_coverage_hash"] = market_status_coverage_hash
         return BacktestResult(
             equity=equity,
             fills=fills,

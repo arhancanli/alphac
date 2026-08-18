@@ -68,6 +68,41 @@ def test_future_known_status_raises_instead_of_leaking() -> None:
         provider.status(IID, as_of=150)
 
 
+def test_preflight_requires_complete_interval_even_without_status_queries() -> None:
+    provider = StaticMarketStatusProvider(
+        events=(_event(status=MarketStatus.OPEN, start=120, end=180, available_at=120),)
+    )
+    with pytest.raises(ValueError, match=r"coverage.*\[100, 120\)"):
+        provider.require_coverage((IID,), start=100, end=200)
+
+
+def test_preflight_passes_adjacent_explicit_intervals() -> None:
+    provider = StaticMarketStatusProvider(
+        events=(
+            _event(status=MarketStatus.OPEN, start=100, end=150, available_at=100),
+            _event(status=MarketStatus.OUTAGE, start=150, end=200, available_at=150),
+        )
+    )
+    assert provider.require_coverage((IID,), start=100, end=200) is None
+
+
+def test_preflight_does_not_hide_future_known_specific_status_with_venue_open() -> None:
+    provider = StaticMarketStatusProvider(
+        events=(
+            _event(status=MarketStatus.OPEN, start=100, end=200, available_at=100),
+            _event(
+                status=MarketStatus.HALTED,
+                start=120,
+                end=180,
+                available_at=140,
+                instrument_id=IID,
+            ),
+        )
+    )
+    with pytest.raises(LookaheadError, match="market status"):
+        provider.require_coverage((IID,), start=100, end=200)
+
+
 def test_instrument_status_overrides_venue_status() -> None:
     provider = StaticMarketStatusProvider(
         events=(

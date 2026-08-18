@@ -2,6 +2,11 @@
 name = "alphaforge"
 version = "0.1.0"
 description = "Institutional-grade mid-frequency quantitative trading system"
+authors = [
+    { name = "Arhan Canli" },
+]
+readme = "README.md"
+license = "MIT"
 requires-python = ">=3.12"
 dependencies = [
     "pydantic>=2.7",
@@ -30,6 +35,10 @@ dependencies = [
     "pypdf>=6.16.1",
     "xlrd>=2.0.2",
 ]
+
+[project.urls]
+Homepage = "https://canlicapital.com"
+Repository = "https://github.com/arhancanli/alphac"
 
 [project.scripts]
 af = "alphaforge.cli.main:app"

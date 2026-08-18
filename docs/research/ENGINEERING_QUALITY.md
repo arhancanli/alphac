@@ -6,8 +6,8 @@ investment-performance evidence, and generating it evaluates no return stream or
 ## Verified clean scopes
 
 The production package under `src/alphaforge` and the complete `tests` tree pass the repository's
-configured Ruff rules. The production package also passes strict mypy across all 161 modules, and
-the current non-network test suite contains 3,702 passing tests. Twelve credentialed network tests
+configured Ruff rules. The production package also passes strict mypy across all 162 modules, and
+the current non-network test suite contains 3,760 passing tests. Twelve credentialed network tests
 remain deliberately deselected from the offline suite.
 
 ## Explicit debt

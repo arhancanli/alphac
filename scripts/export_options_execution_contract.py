@@ -37,6 +37,10 @@ FEE_SOURCE: Final[Path] = REPO / "src" / "alphaforge" / "execution" / "options_f
 FEE_TESTS: Final[Path] = REPO / "tests" / "unit" / "test_options_fees.py"
 MARGIN_SOURCE: Final[Path] = REPO / "src" / "alphaforge" / "execution" / "options_margin.py"
 MARGIN_TESTS: Final[Path] = REPO / "tests" / "unit" / "test_options_margin.py"
+STATUS_INGEST_SOURCE: Final[Path] = (
+    REPO / "src" / "alphaforge" / "data" / "ingest" / "market_status.py"
+)
+STATUS_INGEST_TESTS: Final[Path] = REPO / "tests" / "unit" / "test_market_status_ingest.py"
 OUTPUT: Final[Path] = REPO / "artifacts" / "engineering" / "options_execution_contract.json"
 
 
@@ -47,7 +51,7 @@ def sha256(path: Path) -> str:
 def build_contract() -> dict[str, object]:
     """Build the deterministic, source-bound capability statement."""
     payload: dict[str, object] = {
-        "schema": "alphaforge.options-execution-contract.v9",
+        "schema": "alphaforge.options-execution-contract.v12",
         "classification": "engineering capability; not return or admission evidence",
         "status": "DOMAIN_PRIMITIVES_ONLY",
         "trial_accounting": {
@@ -92,6 +96,22 @@ def build_contract() -> dict[str, object]:
             (
                 "close-only package execution only after integer-contract position evidence proves "
                 "every requested leg reduces without increasing or flipping exposure"
+            ),
+            (
+                "strict source-byte-bound reviewed status manifests with separate publication, "
+                "observation, availability, capture, and review timestamps"
+            ),
+            (
+                "exact dual-reviewed official-exchange versus vendor status reconciliation usable "
+                "for OPTION instrument identities"
+            ),
+            (
+                "reconciliation-only status coverage preflight for explicit OPTION instrument "
+                "intervals with missing and future-known gaps published exactly"
+            ),
+            (
+                "source-reconciled status providers refuse uncovered requested intervals and "
+                "return a deterministic coverage-audit hash for run artifacts"
             ),
             (
                 "exact-decimal point-in-time option fee schedule revisions keyed by venue, "
@@ -150,6 +170,16 @@ def build_contract() -> dict[str, object]:
                 "known status; halts, outages, and continuous fills in auction-only state block, "
                 "while close-only permits only pre-validated reduce-only packages"
             ),
+            "market_status_ingest": (
+                "unknown fields, source-digest mismatch, impossible timestamp order, identity "
+                "collision, future-known use, missing dual review, and cross-source status/scope/"
+                "interval disagreement fail closed"
+            ),
+            "market_status_coverage": (
+                "source silence never implies OPEN; instrument status keeps precedence over venue "
+                "status, future-known specific status cannot fall back to venue coverage, and "
+                "covered plus gap durations must equal every explicit requirement"
+            ),
             "option_fee_assessment": (
                 "only a schedule revision both effective and available at assessment may apply; "
                 "trade fees consume accepted leg executions and exact fee lines must reconcile "
@@ -178,8 +208,9 @@ def build_contract() -> dict[str, object]:
             (
                 "a content-verified historical venue/account/product fee corpus and production "
                 "fee adapter; beyond-displayed-size impact, queue position, complex-order-"
-                "book price improvement, and complex-order auction execution; historical option "
-                "status ingestion and live outage polling/failover"
+                "book price improvement, and complex-order auction execution; a content-verified "
+                "historical option-status corpus, production status adapters, broad coverage "
+                "evidence, and live outage polling/failover"
             ),
             (
                 "broker/OCC/regulatory margin equivalence, a validated option stress repricer and "
@@ -199,8 +230,10 @@ def build_contract() -> dict[str, object]:
             "fee schedule corpus or calibrated venue rates are bundled. The package replay is an "
             "atomic crossing "
             "assumption over independently displayed legs, not evidence of simultaneous market "
-            "fillability. Status replay consumes supplied PIT events but has no historical option "
-            "status corpus or live venue polling. The archive accepts an injectable transport, "
+            "fillability. Reviewed status manifests can normalize and reconcile supplied PIT "
+            "records and audit explicitly supplied interval coverage, but no historical option-"
+            "status corpus, production adapter, broad-market coverage evidence, or live venue "
+            "polling is bundled. The archive accepts an injectable transport, "
             "but current live OCC access "
             "is challenge-blocked. These primitives do not constitute a historical OCC corpus, "
             "prove adjustment coverage, actual package fillability, fill probability, or price "
@@ -222,6 +255,8 @@ def build_contract() -> dict[str, object]:
             "fee_assessment_tests": sha256(FEE_TESTS),
             "scenario_margin_implementation": sha256(MARGIN_SOURCE),
             "scenario_margin_tests": sha256(MARGIN_TESTS),
+            "market_status_ingest_implementation": sha256(STATUS_INGEST_SOURCE),
+            "market_status_ingest_tests": sha256(STATUS_INGEST_TESTS),
         },
     }
     canonical = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode()
