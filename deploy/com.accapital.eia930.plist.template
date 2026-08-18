@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>com.accapital.eia930</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/zsh</string><string>-c</string>
+    <string>$HOME/alphaforge/scripts/eia930_sweep.sh</string>
+  </array>
+  <key>StartCalendarInterval</key>
+  <array>
+    <dict><key>Hour</key><integer>2</integer><key>Minute</key><integer>20</integer></dict>
+    <dict><key>Hour</key><integer>8</integer><key>Minute</key><integer>20</integer></dict>
+    <dict><key>Hour</key><integer>14</integer><key>Minute</key><integer>20</integer></dict>
+    <dict><key>Hour</key><integer>20</integer><key>Minute</key><integer>20</integer></dict>
+  </array>
+  <key>StandardOutPath</key><string>/Users/arhancanli/alphaforge/var/log/eia930.out</string>
+  <key>StandardErrorPath</key><string>/Users/arhancanli/alphaforge/var/log/eia930.err</string>
+  <key>EnvironmentVariables</key><dict><key>HOME</key><string>/Users/arhancanli</string></dict>
+  <key>ProcessType</key><string>Background</string><key>RunAtLoad</key><false/>
+</dict>
+</plist>
