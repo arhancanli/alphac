@@ -16,8 +16,9 @@ name: ci
 
 on:
   push:
-    branches: ["**"]
+    branches: [main]
   pull_request:
+    branches: [main]
 
 # Cancel superseded runs on the same ref to save CI minutes.
 concurrency:
