@@ -242,6 +242,12 @@ class BlendStrategy:
         # Mutable per-run state (the engine calls strictly forward in time).
         self._next_rebalance_ts: Ms | None = None
         self._equity_hist: list[float] = []
+        # Overlay scale in force during each observed bar, index-aligned with
+        # ``_equity_hist``. Needed because ``_equity_hist`` is the POST-overlay account
+        # curve while the overlay's ex-ante leg is computed from PRE-overlay optimizer
+        # weights: without this the two sides of ``max(ex_ante, realized)`` are on
+        # different scales and the fast realized leg cannot win. See _realized_vol_ann.
+        self._scale_hist: list[float] = []
         self._last_result: OptResult | None = None
         self._last_scale: float = math.nan
         # Most recent PRE-ladder-multiplier target book (the vol-targeted,
@@ -375,6 +381,11 @@ class BlendStrategy:
         observability counter (see :attr:`counters`).
         """
         self._equity_hist.append(ctx.equity)
+        # Appended here, BEFORE this bar's rebalance can overwrite ``_last_scale``, so
+        # ``_scale_hist[t]`` is the scale that was in force while the return into
+        # ``_equity_hist[t]`` was being earned (it was set at bar t-1). NaN until the
+        # first completed rebalance; _realized_vol_ann masks those bars.
+        self._scale_hist.append(self._last_scale)
         state = self._ladder.update(ctx.equity)
         if state is DDState.FLAT_HALTED:
             # Absorbing flatten: explicit zeros for the whole run universe,
@@ -623,13 +634,41 @@ class BlendStrategy:
         if eq.size < 2:
             return 0.0
         rets = eq[1:] / eq[:-1] - 1.0
-        var = (
-            pd.Series(rets)
-            .pow(2)
-            .ewm(halflife=self._rv_halflife_bars, adjust=True, min_periods=1)
-            .mean()
-            .iloc[-1]
-        )
+
+        # DE-LEVER BEFORE MEASURING. ``_equity_hist`` is the account curve, i.e. the book
+        # AFTER the overlay scaled it by ``s``; the ex-ante leg this value is compared
+        # against is computed from the optimizer's PRE-overlay weights (see the
+        # ``vol_target`` call site). Comparing them raw compares two different books:
+        # while the book runs de-levered (s < 1) the realized side is shrunk by roughly s
+        # and can never win ``max(ex_ante, realized)``, so the FAST regime detector
+        # (halflife 240) is silently disabled and only the SLOW covariance leg (halflife
+        # 720) runs. Measured in artifacts/analysis/frontier_14: the realized leg bound
+        # 0.02% of days as shipped versus 81.8% once de-levered, worth +0.6 to +2.2pp of
+        # expected maximum drawdown. Above 1x the same defect ran the other way, with the
+        # overlay double-counting its own leverage.
+        #
+        # Dividing PER BAR (not the aggregate vol) is what makes this correct when the
+        # scale varied across the window, and it is the same quantity the drawdown study
+        # measured: `observed = r / max(scale, eps)`.
+        #
+        # WHAT THIS DOES NOT DE-LEVER, stated so the next reader does not assume more than
+        # is true: the drawdown ladder's gross multiplier and the per-name w_max clip also
+        # move the traded book relative to the optimizer's weights. Both are 1.0/no-op in
+        # the NORMAL regime that dominates the sample, and neither was included in the arm
+        # that produced the measured numbers above, so neither is included here.
+        scales = np.asarray(self._scale_hist, dtype=np.float64)[1:]
+        if scales.size == rets.size:
+            usable = np.isfinite(scales) & (scales > 1e-9)
+            # Bars before the first rebalance (scale NaN) and flat/halted bars carry no
+            # information about the unlevered book's vol. Dropping them is right; dividing
+            # a ~0 return by a ~0 scale would inject noise, and flooring the divisor would
+            # inject a spurious 0 into the EWMA and understate vol.
+            rets = np.where(usable, rets / np.where(usable, scales, 1.0), np.nan)
+
+        ser = pd.Series(rets).pow(2)
+        var = ser.ewm(halflife=self._rv_halflife_bars, adjust=True, min_periods=1).mean().iloc[-1]
+        if not np.isfinite(var):
+            return 0.0
         return float(np.sqrt(max(float(var), 0.0)) * np.sqrt(periods_per_year))
 
 
