@@ -25,7 +25,7 @@
 
 24 :: DSR 0\.83 :: withdraw|WITHDRAWN|wrong|WRONG|re-derived|RE-DERIVED|old 0\.83|previously|we published DSR
 24 :: first (new )?sleeve to (CLEAR|clear) (multiple-testing )?deflation :: withdraw|WITHDRAWN|wrong|WRONG|re-derived|RE-DERIVED|called it
-24 :: statistically real,? (rather than|not) a backtest fluke :: withdraw|WITHDRAWN|wrong|WRONG|re-derived|RE-DERIVED|called it
+24 :: statistically real,? (rather than|not) a backtest fluke :: withdraw|WITHDRAWN|wrong|WRONG|re-derived|RE-DERIVED|called it|we called|CORRECTION
 21 :: forward Sharpe of 1\.46 :: in-sample|deflat|withdraw|WITHDRAWN
 # The book has run FOUR sleeves at equal quarters since 2026-08-10. Any surviving text describing
 # the old fixed 40/40/20 or a two/three-sleeve book overstates neither returns nor risk, but it
@@ -34,10 +34,25 @@
 -- :: equal-risk combination of the first two :: until|previously|no longer
 # rho_bar was corrected from about -0.02 to +0.0274 on 2026-08-06; the negative figure and the
 # claim that decorrelation IS the edge were both withdrawn.
--- :: decorrelation is the edge :: withdraw|WITHDRAWN|wrong|WRONG|previously|we called
+-- :: decorrelation is the edge :: withdraw|WITHDRAWN|wrong|WRONG|previously|we called|we call|CORRECTION|correcting
 
 # The signed chain holds 239 ENTRIES across 39 DISTINCT DATES. Presenting the entry count
 # as a day count overstates the length of the record ~6x. js/holdings.js already said
 # "entries"; index.html still said "days" -- the number was data-bound, the noun was not.
 -- :: entries">--</span> days hashed :: 
--- :: entry_count[^,}]*}} days :: 
+-- :: entry_count[^,}]*}} days ::
+
+# 2026-08-18 — THE GATE WAS CRYING WOLF, AND BECAUSE IT ONLY WARNS, NOBODY HEARD IT.
+# A run of check_retracted_claims.py found 4 "violations", and all 4 were the CORRECTIONS
+# themselves quoting the claim they withdraw — precisely the usage the third field exists to
+# permit. The exemption alternations simply did not contain this project's own retraction
+# vocabulary: the record says "CORRECTION 2026-08-06 —" and "the sleeve we called '...'", while
+# the rules listed only "called it" and "previously". So the honesty gate had been failing on its
+# own honesty, every run, into a log read by nobody, which is the same as no gate at all.
+#
+# Widening an exemption is the one edit this file warns against, so, stated exactly: the terms
+# added below are CORRECTION, correcting, we call and we called. Each is an unambiguous marker
+# that the surrounding text is a retraction — a passage containing "CORRECTION 2026-08-06" is
+# definitionally a correction. No pattern in the SECOND field was touched; nothing that was
+# blocked before is permitted now except where a correction is present in the same window.
+# The rule was not weakened. The rule was taught the words we actually use to retract.
