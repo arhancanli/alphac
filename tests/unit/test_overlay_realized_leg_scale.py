@@ -94,7 +94,9 @@ def test_the_realized_leg_actually_wins_the_max_once_de_levered(levered_run) -> 
     _, s_defect = vol_target(w, cov, naive, target=0.10, s_max=1.5, gross_max=10.0)
     _, s_fixed = vol_target(w, cov, fixed, target=0.10, s_max=1.5, gross_max=10.0)
 
-    assert s_defect == pytest.approx(0.10 / ex_ante), "as shipped, ex_ante wins and realized is inert"
+    assert s_defect == pytest.approx(0.10 / ex_ante), (
+        "as shipped, ex_ante wins and realized is inert"
+    )
     assert s_fixed == pytest.approx(0.10 / fixed), "de-levered, the realized leg binds"
     assert s_fixed < s_defect, "binding on the hotter estimate must DE-lever further"
 
@@ -141,5 +143,6 @@ def test_this_check_can_fail(levered_run) -> None:
     """
     equity, _, s = levered_run
     naive = _naive_vol(equity)
-    unlevered_direct = _naive_vol(_equity_from((np.asarray(equity[1:]) / np.asarray(equity[:-1]) - 1.0) / s))
+    returns = np.asarray(equity[1:]) / np.asarray(equity[:-1]) - 1.0
+    unlevered_direct = _naive_vol(_equity_from(returns / s))
     assert naive == pytest.approx(unlevered_direct * s, rel=0.05)
