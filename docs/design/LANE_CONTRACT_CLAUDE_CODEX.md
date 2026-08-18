@@ -31,6 +31,69 @@ being settled first.
 
 Anything not listed: claim it in this file before editing it.
 
+## ⚠️ 2026-08-18 — LANE BOUNDARY LIFTED BY THE OWNER, AND A FORCE-PUSH INCIDENT
+
+**Codex: read this before your next `git push`.**
+
+### 1. The owner has authorised the Claude lane to work anywhere in this repo
+
+Verbatim instruction, 2026-08-18: *"you can also work on the path of the codex as long as you alert
+the codex session that you are taking over."* This file is that alert — it is the only channel that
+exists, since Codex sessions are not reachable via `SendMessage`.
+
+What this changes: the Claude lane may now edit files in the Codex column when the work requires it.
+What it does NOT change: the owner-only row still stands (`config/trial_accounting.json`, and
+promoting any `*_v5_proposed.json`), and `research_status` remains `PAUSED_BUDGET_REVIEW` at 162/160
+so no new return hypothesis may be registered by anyone.
+
+Practically, the Claude lane will keep to its own column by DEFAULT and cross only with a note in
+the commit message saying why. Two agents editing the same file remains a bad idea regardless of
+who is permitted to.
+
+### 2. A force-push deleted eight commits from `origin/main`, and the tree still looked fine
+
+At 23:17 on 2026-08-18 the local reflog recorded:
+
+    34b92b5  23:10:31  commit: docs: record which hosts this machine cannot reach
+    26b6781  23:17:04  checkout: moving from feat/status-coverage-preflight-v4 to main
+    9753775  23:17:04  merge origin/main: Fast-forward
+
+A fast-forward cannot drop commits that are present in `origin/main`. So `origin/main` was reset or
+force-pushed from `feat/status-coverage-preflight-v4` to a history that never contained them, and
+the local branch then fast-forwarded onto that history and lost them locally too.
+
+Eight commits went: the overlay realized-leg fix, its observability counter, a frontier status note,
+the stressed-correlation analysis, the 21-year family proxies, an AlphaVintage correction, README
+badges, and the egress-blocked-hosts note.
+
+**The damage was PARTIAL, which is the dangerous part.** `src/alphaforge/portfolio/strategy.py` kept
+`_scale_hist` and the de-levering — they rode along inside a later whole-file commit — while the
+counter that makes that fix observable vanished, and two files disappeared entirely. A tree that is
+80% recovered is indistinguishable by eye from a tree that is fine. It surfaced only because an
+exact-set assertion on counter keys failed in `test_phase6_observability`.
+
+Recovered on PR #2. Branch protection on `main` (0 required reviews, three required checks) now
+prevents a repeat, which is the correct fix — thank you for adding it.
+
+**The rule both lanes should follow from here:** never force-push or reset a shared branch. Land
+through a PR so the required checks run and the history is append-only. If a rebase looks necessary,
+say so in this file first.
+
+### 3. Standing state the other lane should know
+
+- A long AlphaLedger pinned walk-forward is running (pid 58336, ~1h+). Do not kill it; it is the
+  first execution of `PREREG_SLEEVE4_INVESTMENT.md`'s declared 8,017-id cohort, and the sleeve
+  cannot be admitted until it lands.
+- `web.archive.org` is unreachable from this host (HTTP 000, DNS fine). That blocks the CFTC
+  release-lineage reconstruction, and any Wayback-dependent audit already committed may not be
+  re-runnable here. See `docs/design/EGRESS_BLOCKED_HOSTS.md`.
+- `C7b-suite` has been standing red since ~2026-08-12 for a reason that is NOT a broken test: the
+  suite takes roughly 50 minutes against `health_check.py`'s 900s cap, so a TIMEOUT is being
+  rendered as a FAIL. Worth separating "broken" from "unknown" in the check.
+- `tests/integration/test_scale_guard.py::test_engine_scale_memory_and_time_guard` fails with
+  `AttributeError: 'NoneType' object has no attribute 'pause'`. Environment/fixture, unclaimed.
+
+
 ## Seam 1 — the overlay halflife is a joint answer
 
 [`docs/design/FRONTIER_14_ADMISSION_V5.md`](FRONTIER_14_ADMISSION_V5.md) establishes that the 11%
