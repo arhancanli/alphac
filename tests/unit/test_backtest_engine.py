@@ -1149,6 +1149,7 @@ def test_outage_blocks_fill_even_when_a_bar_exists(tmp_path: Path) -> None:
     assert result.fills.empty
     assert result.counters["market_status_blocks"] == 1
     assert result.orders.iloc[0]["status"] == "blocked_venue_outage"
+    assert result.config["market_status_coverage"] == "run_interval_preflight"
 
 
 def test_close_only_blocks_new_risk_but_permits_reduce_only(tmp_path: Path) -> None:
@@ -1188,7 +1189,7 @@ def test_close_only_blocks_new_risk_but_permits_reduce_only(tmp_path: Path) -> N
     assert "blocked_close_only_blocks_risk_increase" in set(result.orders["status"])
 
 
-def test_market_status_provider_requires_explicit_fill_time_coverage(tmp_path: Path) -> None:
+def test_market_status_provider_requires_full_run_coverage_before_any_order(tmp_path: Path) -> None:
     engine = build_engine(
         tmp_path,
         [bar_row(BTC, T0 + k * HOUR, open_=100.0, close=100.0) for k in range(4)],
@@ -1199,7 +1200,7 @@ def test_market_status_provider_requires_explicit_fill_time_coverage(tmp_path: P
     )
     with pytest.raises(ValueError, match="missing PIT market-status coverage"):
         engine.run(
-            ScriptedStrategy({T0 + HOUR: {BTC: 0.01}}),
+            ScriptedStrategy({}),
             [BTC],
             start=T0,
             end=T0 + 4 * HOUR,

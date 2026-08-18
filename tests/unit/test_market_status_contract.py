@@ -27,12 +27,27 @@ def exporter():
 def test_contract_is_deterministic_source_bound_and_non_research(exporter) -> None:
     first = exporter.build_contract()
     assert first == exporter.build_contract()
+    assert first["schema"] == "alphaforge.market-status-contract.v4"
     assert first["status"] == "EVENT_DRIVEN_BACKTEST_INTEGRATED"
+    assert (
+        first["coverage_status"]
+        == "REVIEWED_INGEST_AND_BOUND_PREFLIGHT_NO_BUNDLED_CORPUS"
+    )
     assert first["trial_accounting"]["hypotheses_spent"] == 0
     assert first["trial_accounting"]["returns_evaluated"] is False
+    assert "source_lineage" in first["invariants"]
+    assert "historical_availability" in first["invariants"]
+    assert "independent_confirmation" in first["invariants"]
+    assert "coverage_preflight" in first["invariants"]
+    assert "ingest_implementation" in first["source_sha256"]
+    assert "ingest_tests" in first["source_sha256"]
+    assert any("official-exchange" in item for item in first["implemented"])
+    assert any("pre-run coverage audit" in item for item in first["implemented"])
+    assert any("historical exchange-status corpus" in item for item in first["not_implemented"])
     assert all(len(value) == 64 for value in first["source_sha256"].values())
 
 
+@pytest.mark.workspace_evidence
 def test_persisted_contract_matches_builder_and_content_hash(exporter) -> None:
     persisted = json.loads(exporter.OUTPUT.read_text())
     assert persisted == exporter.build_contract()

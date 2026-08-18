@@ -27,7 +27,7 @@ def exporter():
 def test_contract_is_deterministic_source_bound_and_non_research(exporter) -> None:
     first = exporter.build_contract()
     assert first == exporter.build_contract()
-    assert first["schema"] == "alphaforge.options-execution-contract.v9"
+    assert first["schema"] == "alphaforge.options-execution-contract.v12"
     assert first["status"] == "DOMAIN_PRIMITIVES_ONLY"
     assert first["trial_accounting"] == {
         "market_data_opened": False,
@@ -41,6 +41,8 @@ def test_contract_is_deterministic_source_bound_and_non_research(exporter) -> No
     assert "occ_source_archive" in first["invariants"]
     assert "displayed_package_execution" in first["invariants"]
     assert "option_market_status" in first["invariants"]
+    assert "market_status_ingest" in first["invariants"]
+    assert "market_status_coverage" in first["invariants"]
     assert "option_fee_assessment" in first["invariants"]
     assert "internal_scenario_margin" in first["invariants"]
     assert any("convexity" in item for item in first["implemented"])
@@ -51,6 +53,8 @@ def test_contract_is_deterministic_source_bound_and_non_research(exporter) -> No
     assert any("minimum-credit" in item for item in first["implemented"])
     assert any("AUCTION_ONLY" in item for item in first["implemented"])
     assert any("close-only package" in item for item in first["implemented"])
+    assert any("official-exchange" in item for item in first["implemented"])
+    assert any("coverage preflight" in item for item in first["implemented"])
     assert any("exact-decimal" in item for item in first["implemented"])
     assert any("assignment fees" in item for item in first["implemented"])
     assert any("scenario margin" in item for item in first["implemented"])
@@ -67,11 +71,14 @@ def test_contract_is_deterministic_source_bound_and_non_research(exporter) -> No
     assert "fee_assessment_tests" in first["source_sha256"]
     assert "scenario_margin_implementation" in first["source_sha256"]
     assert "scenario_margin_tests" in first["source_sha256"]
+    assert "market_status_ingest_implementation" in first["source_sha256"]
+    assert "market_status_ingest_tests" in first["source_sha256"]
     assert any("Cloudflare" in item for item in first["not_implemented"])
     assert "actual package fillability" in first["claim_boundary"]
     assert all(len(value) == 64 for value in first["source_sha256"].values())
 
 
+@pytest.mark.workspace_evidence
 def test_persisted_contract_matches_builder_and_content_hash(exporter) -> None:
     persisted = json.loads(exporter.OUTPUT.read_text())
     assert persisted == exporter.build_contract()

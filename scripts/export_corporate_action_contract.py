@@ -18,6 +18,9 @@ ENGINE_TESTS: Final[Path] = REPO / "tests" / "unit" / "test_backtest_engine.py"
 INTEGRATION_TESTS: Final[Path] = (
     REPO / "tests" / "integration" / "test_split_marking_running_path.py"
 )
+NAN_BOUNDARY_TESTS: Final[Path] = (
+    REPO / "tests" / "unit" / "test_corporate_action_nan_cash.py"
+)
 OUTPUT: Final[Path] = (
     REPO / "artifacts" / "engineering" / "corporate_action_contract.json"
 )
@@ -29,7 +32,7 @@ def sha256(path: Path) -> str:
 
 def build_contract() -> dict[str, object]:
     payload: dict[str, object] = {
-        "schema": "alphaforge.corporate-action-contract.v1",
+        "schema": "alphaforge.corporate-action-contract.v2",
         "classification": "engineering capability; not return or admission evidence",
         "status": "EVENT_DRIVEN_BACKTEST_INTEGRATED",
         "trial_accounting": {
@@ -46,6 +49,10 @@ def build_contract() -> dict[str, object]:
             "persisted corporate_actions.parquet cashflow and transformation ledger",
             "delisting liquidation only with explicit SCD2 delisted_ts support",
             "fail-closed terminal price history for instruments still marked active",
+            (
+                "lake NaN split-cash normalization to null at the engine boundary while "
+                "non-finite cash-dividend amounts still fail closed"
+            ),
         ],
         "not_implemented": [
             "payable-date cash settlement and withholding-tax conventions",
@@ -68,6 +75,7 @@ def build_contract() -> dict[str, object]:
             "domain_tests": sha256(UNIT_TESTS),
             "engine_tests": sha256(ENGINE_TESTS),
             "integration_tests": sha256(INTEGRATION_TESTS),
+            "nan_boundary_tests": sha256(NAN_BOUNDARY_TESTS),
         },
     }
     canonical = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode()

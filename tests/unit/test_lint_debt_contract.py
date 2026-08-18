@@ -38,6 +38,7 @@ def test_contract_proves_clean_boundaries_and_confesses_script_debt(exporter) ->
     }
 
 
+@pytest.mark.workspace_evidence
 def test_persisted_contract_matches_builder_and_content_hash(exporter) -> None:
     persisted = json.loads(exporter.OUTPUT.read_text())
     assert persisted == exporter.build_contract()

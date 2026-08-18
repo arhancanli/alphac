@@ -31,7 +31,7 @@ We run this on paper capital. No real money has been deployed.
 **Not one sleeve is statistically distinguishable from luck once its own search is accounted
 for.** That is not a marketing frame, it is the measurement. It does not mean the strategies are
 worthless — it means the *backtest* evidence cannot carry them, and only a long forward record
-can settle it. That record is 11 days old.
+can settle it. That record began on 2026-08-07.
 
 Maximum drawdown reads −4.5%, but that is the live-overlap window only (2023-07 onward). It
 excludes 2022 and Covid and **is not a risk estimate**. The realistic worst case, including the
@@ -108,11 +108,11 @@ provided "as is", without warranty of any kind.
 
 ---
 
-# AlphaForge
+## Engine architecture
 
-Institutional-grade mid-frequency quantitative trading system. Multi-asset core; v1 trades
-Binance USDT-M perpetuals on 1h bars (signal at bar close, execution at next open), full stack
-from data lake through live paper trading.
+Production-oriented mid-frequency quantitative research and paper-trading system under active
+development. The multi-asset core includes a Binance USDT-M perpetual path on 1h bars (signal at
+bar close, execution at next open), spanning the data lake through live paper operations.
 
 ## Non-negotiables
 

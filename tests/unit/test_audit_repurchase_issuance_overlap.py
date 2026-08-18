@@ -5,6 +5,8 @@ import json
 import sys
 from pathlib import Path
 
+import pytest
+
 SCRIPT = Path(__file__).parents[2] / "scripts/audit_repurchase_issuance_overlap.py"
 SPEC = importlib.util.spec_from_file_location("audit_repurchase_issuance_overlap", SCRIPT)
 assert SPEC and SPEC.loader
@@ -40,6 +42,7 @@ def test_prior_issuance_trials_are_counted_without_opening_new_returns(tmp_path:
     assert all("sharpe_ann" in record for record in records)
 
 
+@pytest.mark.workspace_evidence
 def test_production_overlap_is_same_family_and_cannot_count_as_new_sleeve() -> None:
     result = MODULE.audit_overlap(list(MODULE.ROOT.glob("var*/experiments.jsonl")))
 

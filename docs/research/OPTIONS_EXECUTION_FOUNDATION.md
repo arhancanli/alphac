@@ -34,6 +34,15 @@ build it and no research hypothesis was spent.
   HALTED and OUTAGE block; AUCTION_ONLY cannot use the continuous displayed-leg assumption; and
   missing or future-known coverage fails closed. Each queried leg's effective status and reason is
   retained on the execution evidence record.
+- Status inputs can be normalized through strict reviewed manifests bound to the exact SHA-256 of
+  supplied source bytes. Publication, event observation, historical availability, local capture,
+  and review timestamps remain separate. Qualification requires dual review; exact reconciliation
+  requires distinct official-exchange and vendor bytes to agree on status, scope, and the complete
+  effective interval. The generic contract accepts canonical OPTION instrument identities.
+- A reconciliation-only preflight can require complete explicit status coverage over each option
+  instrument interval. Source silence never implies OPEN; instrument status retains precedence,
+  future-known specific status cannot fall back to a venue-wide event, and every missing interval
+  is labeled while covered plus gap milliseconds must reconcile to the requirement.
 - CLOSE_ONLY permits a package only when it is explicitly reduce-only and supplied integer-contract
   positions prove that every full requested ratio leg moves toward zero without increasing or
   flipping exposure. The same integrity check applies to reduce-only packages in OPEN markets, so
@@ -110,9 +119,11 @@ content-verified fee-source archive, calibrated rate set, or production adapter 
 default option commission is invented. Internal scenario margin is an AlphaForge risk measure,
 not a broker, OCC, exchange, regulatory, TIMS, STANS, or portfolio-margin replica; the supplied
 stress prices are not independently validated by an option repricer, and opening premium cash is
-outside the requirement. Status replay consumes supplied point-in-time events, but there is no
-historical options status corpus, complex-order auction model, live venue-status polling, or outage
-failover. The archive transport is
+outside the requirement. Status replay consumes supplied point-in-time events and the reviewed
+ingestion and preflight boundaries can normalize and audit supplied source artifacts, but there is
+no historical options status corpus, production status adapter, empirical broad-market coverage
+evidence, complex-order auction model, live venue-status polling, or outage failover. The archive
+transport is
 injectable, but operational unattended acquisition is not established: on 2026-08-18, direct HTTP
 and headless Chromium requests to the live OCC memo endpoint both returned HTTP 403 with
 `cf-mitigated: challenge` and exposed no PDF bytes. This limitation is preserved as a negative

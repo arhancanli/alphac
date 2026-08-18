@@ -39,6 +39,7 @@ def test_contract_is_deterministic_and_confesses_missing_coverage(exporter) -> N
     }
 
 
+@pytest.mark.workspace_evidence
 def test_persisted_contract_matches_builder_and_content_hash(exporter) -> None:
     persisted = json.loads(exporter.OUTPUT.read_text())
     assert persisted == exporter.build_contract()

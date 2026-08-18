@@ -15,11 +15,11 @@ capability statement, not evidence of investment performance. The compatibility 
 | Partial fills | Optional next-bar participation cap, lot-flooring, explicit canceled residual | Missing/zero quote volume fails closed |
 | Rejected/unfilled orders | Missing bars, missing cost inputs, missing liquidity and final-bar orders are counted and labeled; broker recovery ingests full or partial venue executions | No synthetic fallback fill |
 | Holidays | Equity D1 execution follows exchange sessions | Weekend/holiday hopping is tested |
-| Corporate actions | PIT split and cash-dividend replay, queued-order split rescaling, and metadata-confirmed delisting force-flat | No complex reorganizations, full historical coverage, dedicated delisting returns, or live broker path |
+| Corporate actions | PIT split and cash-dividend replay, lake NaN-to-null normalization for no-cash splits with non-finite dividends still rejected, queued-order split rescaling, and metadata-confirmed delisting force-flat | No complex reorganizations, full historical coverage, dedicated delisting returns, or live broker path |
 | Delistings | Point-in-time membership and metadata-confirmed conservative administrative force-flat | Dedicated delisting-return data remains a promotion requirement |
 | Borrow and financing | General-collateral equity borrow and stored perp funding accrue; optional PIT locates, dynamic fees, recall buy-ins, cash credit, margin debit, and segregated short-sale-proceeds rates | No broad historical lending/rate coverage, multicurrency collateral, margin-call liquidation, broker reservation, restart persistence, auction replay or live broker path |
-| Stale/missing data | Signal staleness holds, price collars, missing-bar drops and feed-quality checks | Historical venue-outage replay is not implemented |
-| Market status/outages | Optional PIT OPEN/HALTED/OUTAGE/AUCTION_ONLY/CLOSE_ONLY replay blocks impossible fills in the event-driven engine | No historical status ingestion, auction-price model, smart routing or live status polling |
+| Stale/missing data | Signal staleness holds, price collars, missing-bar drops and feed-quality checks | No bundled historical venue-outage coverage |
+| Market status/outages | Optional PIT OPEN/HALTED/OUTAGE/AUCTION_ONLY/CLOSE_ONLY replay blocks impossible fills; enabling it now requires full run-interval coverage for every instrument before bars are read, while strict source-byte-bound manifests, exact official/vendor reconciliation, and audit-hash-bound reviewed providers preserve PIT lineage and expose every missing/future-known millisecond | No bundled historical status corpus, production feed adapter, empirical broad-market coverage evidence, auction-price model, smart routing or live status polling |
 | Crowding and liquidation | Optional PIT ownership, short-interest, borrow-utilization and flow gate; ADV-haircut liquidation stress in shared pre-trade | No broad historical ownership/flow coverage, empirical unwind calibration or correlated-depth model |
 | Operational controls | Pre-trade limits, reconciliation, risk-event storage, drawdown ladder and absorbing kill switch; three consecutive fill-outcome reconciliation failures persistently engage the kill and block submission | Live effectiveness still requires prospective paper evidence |
 | Dated futures lifecycle | PIT contract metadata, session-counted first-notice/last-trade exits, immediate-next rolls, locked-limit classification and variation margin | Domain primitives only; no futures data, product calendar, cost schedule, backtest or broker path |
@@ -68,7 +68,7 @@ at [`/glassbox/execution_models_benchmark.json`](/glassbox/execution_models_benc
   complex-order-book execution, queue and
   beyond-displayed-size impact, historical option-status ingestion, complex-order auction
   execution, live outage polling/failover, backtest ledger, and broker reconciliation.
-- Calibrated queue position, partial-fill continuation, auction imbalance/price formation, historical status ingestion, and live outage failover.
+- Calibrated queue position, partial-fill continuation, auction imbalance/price formation, a content-verified historical status corpus with production adapters, and live outage failover.
 - Historical crowding coverage and calibration: point-in-time ownership/flows, cross-manager overlap, and correlated liquidation-depth feedback.
 
 No sleeve may claim these risks are modeled merely because the platform has a generic cost or

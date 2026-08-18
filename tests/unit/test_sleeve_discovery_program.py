@@ -3,6 +3,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pytest
+
 from alphaforge.validation.prereg import load_prereg
 
 PROGRAM = Path(__file__).resolve().parents[2] / "config" / "sleeve_discovery.json"
@@ -211,6 +213,7 @@ def test_stablecoin_review_is_source_bound_and_outside_return_queue() -> None:
     assert "public candles cannot pass" in review["claim_boundary"]
 
 
+@pytest.mark.workspace_evidence
 def test_spin_off_review_preserves_failed_initial_document_identity() -> None:
     data = json.loads(PROGRAM.read_text())
     lineage = json.loads(SPIN_OFF_LINEAGE_RESULT.read_text())
@@ -239,6 +242,7 @@ def test_spin_off_review_preserves_failed_initial_document_identity() -> None:
     assert review["return_hypotheses_spent"] == documents["return_hypotheses_spent"] == 0
 
 
+@pytest.mark.workspace_evidence
 def test_natural_gas_review_inherits_prior_inventory_trial_and_source_gate() -> None:
     data = json.loads(PROGRAM.read_text())
     result = json.loads(NATURAL_GAS_FEASIBILITY_RESULT.read_text())
@@ -270,6 +274,7 @@ def test_natural_gas_review_inherits_prior_inventory_trial_and_source_gate() -> 
     assert review["return_hypotheses_spent"] == result["return_hypotheses_spent"] == 0
 
 
+@pytest.mark.workspace_evidence
 def test_customer_supplier_review_preserves_failed_named_relationship_gate() -> None:
     data = json.loads(PROGRAM.read_text())
     result = json.loads(CUSTOMER_SUPPLIER_FEASIBILITY_RESULT.read_text())
@@ -300,6 +305,7 @@ def test_customer_supplier_review_preserves_failed_named_relationship_gate() -> 
     assert review["return_hypotheses_spent"] == result["return_hypotheses_spent"] == 0
 
 
+@pytest.mark.workspace_evidence
 def test_bond_etf_nav_review_preserves_stale_mark_and_source_gates() -> None:
     data = json.loads(PROGRAM.read_text())
     result = json.loads(BOND_ETF_NAV_FEASIBILITY_RESULT.read_text())
@@ -340,6 +346,7 @@ def test_retired_candidates_are_not_relisted_as_fresh_research() -> None:
     assert all(candidate["verdict"] == "KILLED" for candidate in data["retired_candidates"])
 
 
+@pytest.mark.workspace_evidence
 def test_treasury_feasibility_matches_the_sealed_result() -> None:
     program = json.loads(PROGRAM.read_text())
     result = json.loads(TREASURY_RESULT.read_text())
@@ -380,6 +387,7 @@ def test_treasury_feasibility_matches_the_sealed_result() -> None:
     assert revision["return_hypotheses_spent"] == 0
 
 
+@pytest.mark.workspace_evidence
 def test_cftc_feasibility_matches_the_sealed_data_gate() -> None:
     program = json.loads(PROGRAM.read_text())
     result = json.loads(CFTC_RESULT.read_text())
@@ -398,6 +406,7 @@ def test_cftc_feasibility_matches_the_sealed_data_gate() -> None:
     assert feasibility["manifest_sha256"] == result["manifest_sha256"]
 
 
+@pytest.mark.workspace_evidence
 def test_pre_fomc_discovery_state_matches_lineage_and_preregistration() -> None:
     program = json.loads(PROGRAM.read_text())
     feasibility_result = json.loads(PRE_FOMC_RESULT.read_text())
@@ -486,6 +495,7 @@ def test_admission_gates_preserve_statistical_honesty() -> None:
     assert gates["stressed_pairwise_correlation_max"] <= 0.50
 
 
+@pytest.mark.workspace_evidence
 def test_retired_insider_metrics_match_the_preserved_result() -> None:
     program = json.loads(PROGRAM.read_text())
     result = json.loads(INSIDER_RESULT.read_text())
@@ -503,6 +513,7 @@ def test_retired_insider_metrics_match_the_preserved_result() -> None:
     assert retired["average_correlation"] == result["correlation"]["average"]
 
 
+@pytest.mark.workspace_evidence
 def test_retired_inventory_metrics_match_the_preserved_result() -> None:
     program = json.loads(PROGRAM.read_text())
     result = json.loads(INVENTORY_RESULT.read_text())
