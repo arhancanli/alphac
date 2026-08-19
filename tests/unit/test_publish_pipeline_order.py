@@ -43,6 +43,14 @@ EDGES: tuple[tuple[str, str, tuple[str, ...]], ...] = (
         "meridian/public/paper-state.json",
         ("audit_sleeve_family_lineage.py",),
     ),
+    # The lineage audit reads the PUBLISHED kill ledger too, not just the published book. Both of
+    # its inputs are written by earlier steps, and both edges have to be declared: an undeclared
+    # edge is not a weaker guard, it is no guard, and a later reorder would break it in silence.
+    (
+        "glassbox_export.py",
+        "meridian/public/glassbox/kill_log.json",
+        ("audit_sleeve_family_lineage.py",),
+    ),
     (
         "audit_sleeve_family_lineage.py",
         "artifacts/discovery/sleeve_family_lineage_audit.json",
