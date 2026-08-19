@@ -47,6 +47,20 @@ def _artifact(path: Path) -> dict:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
+#: WHY THESE CARRY `workspace_evidence`, added 2026-08-19 after CI went red on them.
+#: The artifacts they read live under `artifacts/`, which is git-ignored, so a clean CI checkout
+#: does not have them. `_artifact()` skips when one is absent, and
+#: `test_every_listed_artifact_exists` deliberately FAILS on absence so those skips can never go
+#: vacuous. Both behaviours are right on the machine that publishes and wrong in CI, where the
+#: evidence is legitimately missing — so CI failed for a reason that had nothing to do with the
+#: claim under test. The whole evidence-dependent set is marked together, because splitting them
+#: would leave the skip-guard running without the tests it guards. `test_this_check_can_fail` is
+#: synthetic and stays unmarked, so CI still proves the predicates have teeth.
+#: The real guarantee runs where publishing happens; see scripts/live_tick.sh.
+_needs_evidence = pytest.mark.workspace_evidence
+
+
+@_needs_evidence
 @pytest.mark.parametrize("sleeve,artifact_path", sorted(SLEEVE_ARTIFACTS.items()))
 def test_published_sharpe_is_not_a_superseded_value(sleeve: str, artifact_path: Path) -> None:
     """The site must not publish a number the artifact itself labels superseded.
@@ -77,6 +91,7 @@ def test_published_sharpe_is_not_a_superseded_value(sleeve: str, artifact_path: 
             )
 
 
+@_needs_evidence
 @pytest.mark.parametrize("sleeve,artifact_path", sorted(SLEEVE_ARTIFACTS.items()))
 def test_a_killed_sleeve_is_disclosed_as_killed(sleeve: str, artifact_path: Path) -> None:
     """A sleeve whose own artifact says KILLED may still be held, but must not read as validated.
@@ -97,6 +112,7 @@ def test_a_killed_sleeve_is_disclosed_as_killed(sleeve: str, artifact_path: Path
     )
 
 
+@_needs_evidence
 @pytest.mark.parametrize("sleeve,artifact_path", sorted(SLEEVE_ARTIFACTS.items()))
 def test_failed_preregistered_checks_are_disclosed(sleeve: str, artifact_path: Path) -> None:
     """If a pre-registered check is FALSE, the published copy must not imply it passed."""
@@ -121,8 +137,12 @@ def test_this_check_can_fail() -> None:
     Proves the guarantee has teeth: a synthetic artifact declaring a superseded figure and a
     KILLED verdict must be detected as such by the same predicates the tests above use.
     """
-    art = {"net_sharpe": 0.1, "active_day_net_sharpe_superseded": 0.99, "verdict": "KILLED",
-           "checks": {"b_nw_t_ge_1p5": False}}
+    art = {
+        "net_sharpe": 0.1,
+        "active_day_net_sharpe_superseded": 0.99,
+        "verdict": "KILLED",
+        "checks": {"b_nw_t_ge_1p5": False},
+    }
     superseded = [v for k, v in art.items() if "superseded" in k and isinstance(v, (int, float))]
     assert superseded == [0.99]
     assert str(art["verdict"]).upper() == "KILLED"
@@ -131,6 +151,7 @@ def test_this_check_can_fail() -> None:
     assert _has_retraction_language("CORRECTION 2026-08-19 — those numbers are WITHDRAWN")
 
 
+@_needs_evidence
 def test_every_listed_artifact_exists() -> None:
     """A mapping that silently points at nothing makes every case above vacuously skip."""
     missing = [s for s, p in SLEEVE_ARTIFACTS.items() if not p.exists()]
@@ -148,6 +169,13 @@ def _find_all(haystack: str, needle: str) -> list[int]:
 def _has_retraction_language(window: str) -> bool:
     return any(
         w in window
-        for w in ("WITHDRAWN", "withdraw", "CORRECTION", "superseded", "KILLED",
-                  "we published", "we said")
+        for w in (
+            "WITHDRAWN",
+            "withdraw",
+            "CORRECTION",
+            "superseded",
+            "KILLED",
+            "we published",
+            "we said",
+        )
     )
