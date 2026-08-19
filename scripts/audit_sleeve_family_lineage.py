@@ -44,11 +44,41 @@ def _current_ids(paper_state: dict[str, Any]) -> set[str]:
 
 
 def _candidate_ids(discovery: dict[str, Any]) -> set[str]:
-    return {
-        str(row["id"])
-        for row in discovery.get("candidates", [])
-        if row.get("id")
-    }
+    """Every reference target a family may cite under `#candidates:`.
+
+    A bare candidate id, plus every DOTTED path into that candidate's nested structure --
+    `merger_arbitrage`, `merger_arbitrage.feasibility`,
+    `merger_arbitrage.tender_only_document_feasibility`, and so on.
+
+    WHY THE DOTTED FORM EXISTS. A family whose evidence is one specific feasibility block
+    inside a candidate should be able to say so. Citing the bare candidate id would resolve,
+    but it would only assert that the candidate exists -- a weaker claim than the one the
+    registry is actually making, and this audit is supposed to check the claim that was made.
+
+    WHAT WENT WRONG. `tender_offer_spread` cites
+    `config/sleeve_discovery.json#candidates:merger_arbitrage.tender_only_document_feasibility`.
+    Only bare ids were collected here, so the reference could not resolve, `evidence_resolves`
+    went FALSE and the whole audit went FAIL_CLOSED -- correctly, on a reference that is in fact
+    perfectly good. It has been failing since the reference was added on 2026-08-18, and nobody
+    saw it: no publish job runs this audit, so `research_export.py` kept COPYING the artifact
+    from a 2026-08-16 run that said PASS. The site published a passing verdict for three days
+    while the audit itself failed.
+
+    The fix is to resolve the reference, NOT to blunt it back to a bare id. Making an audit pass
+    by weakening the claim it checks is the failure mode this repo exists to avoid.
+    """
+    targets: set[str] = set()
+
+    def walk(prefix: str, node: Any) -> None:
+        targets.add(prefix)
+        if isinstance(node, dict):
+            for key, value in node.items():
+                walk(f"{prefix}.{key}", value)
+
+    for row in discovery.get("candidates", []):
+        if row.get("id"):
+            walk(str(row["id"]), row)
+    return targets
 
 
 def _feasibility_review_ids(discovery: dict[str, Any]) -> set[str]:
@@ -220,9 +250,16 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     payload["source_sha256"] = {
         name: file_sha256(path) for name, path in paths.items()
     }
+    # generated_at is stamped BEFORE the hash is taken, not after. The public verifier
+    # (scripts/reproduce.py, downloadable from the site) recomputes every artifact's hash over
+    # the whole payload MINUS content_hash -- generated_at included. Stamping it afterwards put
+    # a field inside the file that no hash covered, so this artifact could never reproduce: it
+    # was the single FAIL in a 23-artifact kit that we published anyway, on a site whose whole
+    # claim is that the record verifies. Ten sibling artifacts already hash generated_at; this
+    # one was the outlier, not the convention.
+    payload["generated_at"] = datetime.now(UTC).isoformat()
     canonical = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode()
     payload["content_hash"] = f"sha256:{hashlib.sha256(canonical).hexdigest()}"
-    payload["generated_at"] = datetime.now(UTC).isoformat()
     out = Path(args.out)
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(payload, indent=2) + "\n")
