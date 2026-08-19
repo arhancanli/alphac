@@ -290,7 +290,10 @@ class BlendStrategy:
         Precomputed mode only (live mode never builds per-leg frames). REPLACES
         the precomputed signal frame (re-validating it identically) and PRESERVES
         the :class:`~alphaforge.risk.DrawdownLadder` (state + HWM), the
-        realized-vol equity history (``_equity_hist``), ``_last_result`` /
+        realized-vol equity history (``_equity_hist``) and its index-aligned
+        ``_scale_hist`` (these two MUST be preserved and dropped together -- the
+        realized leg de-levers bar-by-bar using the pair, so clearing one alone
+        silently mis-scales every subsequent vol estimate), ``_last_result`` /
         ``_last_scale`` / ``_last_targets``, and all observability counters.
         RESETS ``_next_rebalance_ts`` to None so the leg — which restarts FLAT
         (positions do not cross the boundary; this is the documented pessimistic

@@ -206,7 +206,7 @@ nothing that is not a gate appears in this table.
 | `book_expected_max_drawdown_max` | — | **0.11** | new | the drawdown objective, gated at the statistic that can actually hold it |
 | `covariance_halflife_days_max` | — | **21** | new | 720 (production today) holds 16.4% at permitted stressed rho; 21 holds 10.2%. Provisional pending execution costing |
 | `realized_vol_halflife_days_max` | — | **240** | new | production's value and the one every sweep cell used; bounds regression, not design |
-| `realized_vol_leg_must_be_unlevered` | — | **true** | new | the leg is measured on levered equity today and therefore binds on 0.02% of days instead of 81.8% |
+| `realized_vol_leg_must_be_unlevered` | — | **true** | new | ~~the leg is measured on levered equity today and therefore binds on 0.02% of days instead of 81.8%~~ **FIXED 2026-08-18**; the bar this row proposed is now satisfied by the shipped code, and `counters["realized_leg_bound"]` reports the live rate |
 
 `stressed_pairwise_correlation_max` stays at 0.50, survivable *given* the overlay rather than on its
 own. `deflated_sharpe_min` keeps its 0.95 value but changes selection unit — see below.
