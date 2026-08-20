@@ -1472,10 +1472,18 @@ def main():
             "matrix."
         ),
         "gauntlet_grade": "C+",
+        # "multiple-testing deflation" is load-bearing, not decoration: the DEFLATED Sharpe is
+        # what this grade is about, and health_check.py's C4d keystone asserts the disclosure is
+        # present in the published sentence. The word was dropped to a bare "multiple-testing
+        # gate" in the 2026-08-18 checkpoint commit — no decision was taken, it was a casualty of
+        # a large rewrite — and C4d went red on 2026-08-15 and stayed red for five days while the
+        # site published a weaker claim than the record supports. Restored 2026-08-20 and pinned
+        # by tests/unit/test_published_prose_matches_constants.py, so the next silent drop is
+        # blocked by CI rather than reported in a daily email nobody actions.
         "gauntlet_pass": (
-            "real but modest; no sleeve clears the multiple-testing gate in-sample, so the only "
-            "credible next evidence is a live record where the full book transacts through a "
-            "risk-off episode"
+            "real but modest; no sleeve clears the multiple-testing deflation gate in-sample, so "
+            "the only credible next evidence is a live record where the full book transacts "
+            "through a risk-off episode"
         ),
         # BOOK-level live_days must track the BOOK (ALPHAC), not one sleeve. This read from
         # crypto_live, which was harmless while crypto was the reference sleeve but became wrong
