@@ -117,10 +117,13 @@ def _published_literal(key: str) -> str:
     for node in ast.walk(tree):
         if not isinstance(node, ast.Dict):
             continue
-        for k, v in zip(node.keys, node.values):
-            if isinstance(k, ast.Constant) and k.value == key:
-                if isinstance(v, ast.Constant) and isinstance(v.value, str):
-                    found.append(v.value)
+        # strict=True: ast.Dict always pairs keys with values, so a length mismatch is a bug in
+        # our assumption about the tree, not a case to tolerate silently.
+        for k, v in zip(node.keys, node.values, strict=True):
+            if not (isinstance(k, ast.Constant) and k.value == key):
+                continue
+            if isinstance(v, ast.Constant) and isinstance(v.value, str):
+                found.append(v.value)
     assert found, (
         f"no published string literal found for {key!r} in {_GEN.name}. If the value became an "
         "f-string or was moved to a helper, RETARGET this check — do not delete it. A scan that "
