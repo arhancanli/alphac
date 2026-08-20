@@ -90,6 +90,24 @@ deploy_prod() {
   # bundle carried a hand-produced verdict. Non-fatal on purpose — a FAIL_CLOSED is published.
   uv run python scripts/audit_sleeve_family_lineage.py >/dev/null \
     || echo "NOTE: sleeve-family lineage audit is FAIL_CLOSED — publishing that verdict as measured"
+  # REBUILD the lint-debt contract before research_export COPIES it to both sites.
+  # Found 2026-08-20, and it is the same defect the research.json note above describes, recurring
+  # on a different artifact: scripts/export_lint_debt_contract.py was invoked from exactly one
+  # place, .github/workflows/ci.yml, where its output is checked for non-emptiness and then
+  # thrown away with the runner. NOTHING here rebuilt it. research_export.py line ~1269 simply
+  # copies artifacts/engineering/lint_debt_contract.json into public/glassbox on both hosts, so
+  # the site published "PRODUCTION_AND_TESTS_CLEAN_HISTORICAL_SCRIPTS_DEBT" bound to
+  # source_sha256 values that were only as fresh as the last time a human ran the exporter by
+  # hand. The claim could not go stale loudly: it would keep publishing clean while the code it
+  # names drifted underneath it, because no publish path ever re-derived it.
+  # tests/unit/test_lint_debt_contract.py pins persisted == freshly built, and it does catch this
+  # — but it is marked workspace_evidence, so CI skips it, and it lives in the full local suite
+  # that had been timing out for eight days. A guard nothing can run is a guard that does not
+  # exist. Rebuilding it here is what makes the published claim true by construction.
+  # Soft-fail deliberately: if ruff or the exporter is broken, that is an engineering-tooling
+  # problem and it must not stop the track record from publishing. It is loud instead.
+  uv run python scripts/export_lint_debt_contract.py >/dev/null \
+    || echo "WARNING: lint debt contract NOT rebuilt — publishing one bound to older source hashes"
   uv run python scripts/research_export.py || { echo "research_export FAILED"; FAIL=1; }
   # sign the day's record into the tamper-evident transparency chain before deploying it
   uv run python scripts/transparency_log.py || { echo "transparency_log FAILED"; FAIL=1; }

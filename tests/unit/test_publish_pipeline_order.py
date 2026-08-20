@@ -56,6 +56,15 @@ EDGES: tuple[tuple[str, str, tuple[str, ...]], ...] = (
         "artifacts/discovery/sleeve_family_lineage_audit.json",
         ("research_export.py",),
     ),
+    # research_export.py copies the lint-debt contract into both site bundles verbatim, so the
+    # exporter that derives it from the current source has to run first. Until 2026-08-20 it ran
+    # in neither pipeline — only in CI, where the output is discarded — so the published
+    # engineering-quality claim was pinned to whenever a human last ran it by hand.
+    (
+        "export_lint_debt_contract.py",
+        "artifacts/engineering/lint_debt_contract.json",
+        ("research_export.py",),
+    ),
 )
 
 PIPELINES = ("scripts/live_tick.sh", "scripts/live_publish.sh")

@@ -93,6 +93,19 @@ WATCHDOG_S=2400   # 40 min cap: hourly cache-hit cycles are ~3 min; the once-dai
   # It must be loud, and it must be current.
   uv run python scripts/audit_sleeve_family_lineage.py >/dev/null \
     || echo "NOTE: sleeve-family lineage audit is FAIL_CLOSED — publishing that verdict as measured"
+  # SAME CLASS AS THE PARAGRAPH ABOVE, different artifact — found 2026-08-20.
+  # research_export.py also merely COPIES artifacts/engineering/lint_debt_contract.json into the
+  # bundle, and scripts/export_lint_debt_contract.py was invoked from exactly one place in the
+  # whole system: .github/workflows/ci.yml, where the output is checked for non-emptiness and
+  # then thrown away with the runner. No publish path rebuilt it. So the site published
+  # "PRODUCTION_AND_TESTS_CLEAN_HISTORICAL_SCRIPTS_DEBT" bound to source_sha256 values that were
+  # only ever as fresh as the last hand-run of the exporter — a clean-code claim that could not
+  # go stale loudly, because nothing re-derived it from the code it names.
+  # An artifact nothing regenerates is a screenshot, not a check.
+  # Soft-fail: broken lint tooling is an engineering problem and must not stop the track record
+  # from publishing. Loud instead, and named precisely enough to act on.
+  uv run python scripts/export_lint_debt_contract.py >/dev/null \
+    || echo "WARNING: lint debt contract NOT rebuilt — publishing one bound to older source hashes"
   uv run python scripts/research_export.py
   # anchor the day's track record into the signed append-only transparency chain (no-op if
   # nothing changed since the last entry) — the tamper-evident proof the record isn't rewritten
