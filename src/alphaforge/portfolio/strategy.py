@@ -262,6 +262,10 @@ class BlendStrategy:
         #     rank-fallback is no longer silent.
         self._n_rebalances: int = 0
         self._n_fallback_used: int = 0
+        # Did the FAST realized leg actually overrule the SLOW covariance leg? Simulation
+        # said 0.02% of days as shipped vs 81.8% de-levered; a counter makes that
+        # measurable in the REAL book instead of only in a study.
+        self._n_realized_leg_bound: int = 0
         #   per hold/halt reason (F-E): a dead/stale feed (frozen book) is now
         #     distinguishable from healthy between-rebalance holding.
         self._n_hold_between_rebalance: int = 0
@@ -347,6 +351,11 @@ class BlendStrategy:
                 target book.
             bars_half_gross: bars emitted at the HALF_GROSS de-grossed level
                 (rebalance or every-bar re-emit, F-B).
+            realized_leg_bound: rebalances where the FAST realized leg exceeded the
+                SLOW ex-ante leg and therefore set the size. Near-zero against a
+                large n_rebalances means the fast regime detector is inert -- the
+                exact failure that hid the pre-overlay/post-overlay scale defect,
+                which is why this is counted rather than assumed.
             n_auto_rearms: times the ladder auto-rearmed out of FLAT_HALTED
                 after the cooldown elapsed (resumed trading from a reset HWM).
                 Zero here means either no full halt occurred or the run ended
@@ -355,6 +364,7 @@ class BlendStrategy:
         return {
             "n_rebalances": self._n_rebalances,
             "n_fallback_used": self._n_fallback_used,
+            "realized_leg_bound": self._n_realized_leg_bound,
             "hold_between_rebalance": self._n_hold_between_rebalance,
             "hold_stale_signal": self._n_hold_stale_signal,
             "hold_cov_cold_start": self._n_hold_cov_cold_start,
@@ -547,10 +557,16 @@ class BlendStrategy:
         cost = np.full(len(ids), self._cost_frac, dtype=np.float64)
 
         result = self._allocator.solve(mu, cov_ann, w_prev, cost, shortable)
+        realized_ann = self._realized_vol_ann(periods_per_year)
+        # Recomputed here rather than read back out of vol_target so the counter cannot
+        # drift from the overlay's own definition of ex-ante without a test noticing.
+        _w = np.asarray(result.weights, dtype=np.float64).ravel()
+        if realized_ann > math.sqrt(max(float(_w @ cov_ann @ _w), 0.0)):
+            self._n_realized_leg_bound += 1
         w_vt, scale = vol_target(
             result.weights,
             cov_ann,
-            self._realized_vol_ann(periods_per_year),
+            realized_ann,
             target=self._vol_target_ann,
             s_max=self._vol_scale_max,
             gross_max=self._gross_max,
