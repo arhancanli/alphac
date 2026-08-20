@@ -32,7 +32,21 @@ for f in "$LOGDIR"/*.log; do
   [ "$size" -gt "$MAX_BYTES" ] 2>/dev/null || continue
 
   if /bin/cp "$f" "$f.1" 2>/dev/null; then
-    : > "$f" || { echo "  rotate: truncate FAILED for $f" ; continue ; }
+    # CARRY THE TAIL FORWARD, do not truncate to empty (fixed 2026-08-20, same day, by this
+    # script breaking a monitor within the hour). health_check.py's C5a/C5c/C5d/publisher checks
+    # answer "when did this loop last run?" by grepping the log for a marker line like
+    # "=== alphamax_tick done 2026-08-20T05:06:28Z ===". Emptying the file deletes the only
+    # record of that, and the check does not degrade to "unknown" — it reports "no marker", which
+    # is the same shape as "the job never ran". Rotation is disk hygiene; it must not be able to
+    # tell the monitor a job is dead.
+    # The carried lines keep their ORIGINAL timestamps, so the age the monitor computes stays
+    # true. Nothing here fabricates a run.
+    # Single redirect rather than truncate-then-append: the file is never observably empty.
+    if ! /usr/bin/tail -n 300 "$f.1" > "$f" 2>/dev/null; then
+      echo "  rotate: carry-forward FAILED for $f — leaving it alone"
+      /bin/rm -f "$f.1"
+      continue
+    fi
     /usr/bin/gzip -f "$f.1" 2>/dev/null &
     mb=$(( size / 1024 / 1024 ))
     echo "  rotated $(basename "$f") (${mb}MB) -> $(basename "$f").1.gz"

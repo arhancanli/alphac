@@ -199,7 +199,19 @@ def http(url: str, method: str = "GET", timeout: int = 20) -> int:
 
 
 def get_json(url: str, timeout: int = 20):
-    rc, out = sh(f"/usr/bin/curl -sS --max-time {timeout} {url}", timeout=timeout + 5)
+    # PARSE STDOUT ONLY (2026-08-20). sh() returns stdout+stderr concatenated, and curl -sS writes
+    # transient network complaints to stderr — so a single stderr line lands inside the text handed
+    # to json.loads, the parse fails, and every caller reads the None as "the host is unreachable".
+    # That is a wrong answer about the SITE produced by noise from our own client. Observed: C1b
+    # reported track_record.json and kill_log.json unreachable on a run where both returned 200 on
+    # both hosts seconds later, and a retry then failed a DIFFERENT file — the signature of a
+    # flaky parse, not a flaky host.
+    # --fail turns an HTTP error into a nonzero rc rather than an error page that would parse as
+    # garbage or, worse, as valid JSON with no content_hash.
+    rc, out = sh(f"/usr/bin/curl -sS --fail --max-time {timeout} {url} 2>/dev/null",
+                 timeout=timeout + 5)
+    if rc != 0:
+        return None
     try:
         return json.loads(out)
     except Exception:  # noqa: BLE001
@@ -353,10 +365,21 @@ def check_data():
     _GLASSBOX = ("track_record.json", "kill_log.json", "research.json", "capacity.json",
                  "deflation.json", "reproducibility.json", "red_team.json",
                  "pre_registration.json", "transparency_log.json")
+    # RETRY ONCE before calling a host unreachable (2026-08-20). This check is about DIVERGENCE,
+    # not availability — C3-landing-apex / C3-app-host already own "is the site up", with their own
+    # severity. A single dropped fetch here produced "unreachable=['track_record.json',
+    # 'kill_log.json']" on a run where both files answered 200 on both hosts moments later, and it
+    # named the two most important artifacts on the site while the 831KB research.json came back
+    # fine — so it read like a publish failure and was noise. This file's whole history is checks
+    # that stopped carrying information because they cried wolf; one retry is the cheapest way not
+    # to add another. A host that is genuinely down still fails both attempts, and still fails C3.
+    def _glassbox_json(url: str):
+        return get_json(url) or get_json(url)
+
     drift, unreachable = [], []
     for fn in _GLASSBOX:
-        dl = get_json(f"{LANDING}/glassbox/{fn}")
-        da = get_json(f"{APP}/glassbox/{fn}")
+        dl = _glassbox_json(f"{LANDING}/glassbox/{fn}")
+        da = _glassbox_json(f"{APP}/glassbox/{fn}")
         if not dl or not da:
             unreachable.append(fn)
             continue
