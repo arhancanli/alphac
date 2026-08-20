@@ -171,8 +171,8 @@ def _publish(chain: list[dict[str, Any]], pub_hex: str) -> None:
         "schema": "glassbox.transparency_log/1",
         "title": "The Transparency Log",
         "summary": (
-            "Every published day of our track record is hashed, chained to the day before, and "
-            "signed. Change any past day and every signature after it breaks. Our history is "
+            "Every published state of our track record is hashed, chained to the one before, and "
+            "signed. Change any past entry and every signature after it breaks. Our history is "
             "provably append-only — verify it yourself."
         ),
         "what_it_proves": (
@@ -186,6 +186,17 @@ def _publish(chain: list[dict[str, Any]], pub_hex: str) -> None:
         "entries": chain,
         "head": chain[-1] if chain else None,
         "entry_count": len(chain),
+        # DAYS AND ENTRIES ARE NOT THE SAME NUMBER, and publishing one as the other overstated the
+        # record by ~8x. The chain gains an entry on every PUBLISH, and the tick publishes hourly,
+        # so 371 entries spanned 47 calendar dates. open.html rendered entry_count followed by the
+        # literal word "days", under the heading "Signed chain", on the one page whose whole
+        # argument is "don't trust us, verify us". The longer the site ran the worse the claim got,
+        # because nothing tied the label to the data.
+        # Both numbers are emitted, DERIVED from the chain and never typed, so the site can no
+        # longer choose a flattering one by accident and neither can drift from the entries below.
+        "distinct_days": len({e["date"] for e in chain}),
+        "first_date": chain[0]["date"] if chain else None,
+        "last_date": chain[-1]["date"] if chain else None,
         "generated_at": dt.datetime.now(tz=dt.UTC).isoformat(),
     }
     if PUBLIC_OUT.parent.is_dir() or True:
