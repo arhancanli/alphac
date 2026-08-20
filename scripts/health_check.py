@@ -55,6 +55,7 @@ import os
 import shutil
 import subprocess
 import sys
+import time
 from pathlib import Path
 
 HOME = os.path.expanduser("~")
@@ -252,12 +253,32 @@ def check_suite():
     # it asserts clean-checkout properties (no duplicate hashes) that the live system's
     # legitimate daily appends break. It belongs in CI on a clean checkout; the golden
     # master is the gating hermetic test here.
-    rc, out = sh(f"cd {AF} && uv run pytest -q --no-cov "
+    # BUDGET RAISED 900 -> 2700s on 2026-08-20, after eight straight days of exit=124.
+    # The suite was never the problem: it completes in ~460s standalone. Every timeout was a
+    # SCHEDULED 03:10 run and every daytime standalone run in the same window passed — see
+    # var/health/history: PASS on 08-12 at 19:22, 19:30, 20:25 and 21:30, TIMEOUT on every
+    # 23:10Z run from 08-06 to 08-19. The one daytime timeout, 2026-08-18T10:38:22Z, is the
+    # exception that confirms the rule: live_publish.log records a full publish ceremony
+    # starting that same second. So the cause is contention with the 02:10 nightly publish, on a
+    # laptop free to idle-sleep mid-run — and a subprocess timeout is WALL clock, so a sleeping
+    # machine spends the entire budget without spending any CPU. caffeinate -i holds sleep off
+    # for exactly the length of the run and no longer.
+    #
+    # WHY THIS IS NOT SILENCING A TRIPWIRE, the question this file always asks of itself: the
+    # timeout HID two real failures for eight days. test_lint_debt_contract had two assertions
+    # failing the whole time and no one could see them, because a timeout reports how long we
+    # waited and never what broke. A budget that cannot be met turns the one check that proves
+    # correctness into noise, which is strictly worse than no check. The elapsed time is now
+    # recorded in the observation on every run, pass or fail, so creep toward the new budget is
+    # visible long before it trips — measured, not assumed.
+    t_started = time.monotonic()
+    rc, out = sh(f"cd {AF} && /usr/bin/caffeinate -i uv run pytest -q --no-cov "
                  f"--ignore=tests/integration/test_experiments_honest_trial_count.py",
-                 timeout=900, env=UV_ENV)
+                 timeout=2700, env=UV_ENV)
+    elapsed_s = time.monotonic() - t_started
     ok = rc == 0
     add("C7b-suite", "tests", "Full pytest suite",
-        "PASS" if ok else "FAIL", "high", observed=f"exit={rc}",
+        "PASS" if ok else "FAIL", "high", observed=f"exit={rc} in {elapsed_s:.0f}s",
         expected="exit=0", evidence=_summary_line(out))
     return ok
 
