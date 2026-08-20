@@ -61,8 +61,39 @@ WATCHDOG_S=2400   # 40 min cap: hourly cache-hit cycles are ~3 min; the once-dai
     || echo "WARN: VPS sync returned non-zero — state below is regenerated from the LAST GOOD pull"
   kill "$WD" 2>/dev/null; wait "$WD" 2>/dev/null
   echo "--- regenerate published state from realized NAV ---"
-  uv run python scripts/glassbox_export.py
+  # ORDER IS LOAD-BEARING (fixed 2026-08-19). paper_trading_state.py WRITES data/paper/state.json;
+  # glassbox_export.py READS it. Both jobs used to call glassbox FIRST, so every glass-box artifact
+  # derived from that state -- track_record.json above all, the site's headline "Proven in the
+  # Open" record -- was rendered from the PREVIOUS cycle. When prose changed, the two files the
+  # dashboard shows side by side could not agree within a run: the AlphaVintage correction landed
+  # in paper-state.json and track_record.json kept asserting the withdrawn 0.3403 for another
+  # cycle. The dependency is file-mediated and therefore invisible in the call order; pinned by
+  # tests/unit/test_publish_pipeline_order.py.
   uv run python scripts/paper_trading_state.py
+  uv run python scripts/glassbox_export.py
+  # research.json IS part of the served bundle and was NOT regenerated here until 2026-08-19.
+  # It is owned by the nightly ceremony, which last fired on 2026-08-18 -- the 02:10 schedule
+  # lands while this laptop is asleep -- so research.json went a full day stale while paper-state
+  # refreshed hourly, and it was still asserting AlphaVintage's withdrawn 0.3403 after the
+  # correction had already shipped in the file next to it.
+  #
+  # That is also what made the retracted-claim gate below unable to see the problem: THIS job runs
+  # the gate but did not regenerate research.json, and the NIGHTLY job regenerated research.json
+  # but did not run the gate. Two jobs, each covering what the other checked. Split coverage reads
+  # as coverage right up until you ask which job checks which file. It costs ~1s.
+  # The family-lineage audit is FAIL-CLOSED evidence and was never run by any publish job --
+  # research_export.py merely COPIES artifacts/discovery/sleeve_family_lineage_audit.json into the
+  # bundle. So the site published whatever verdict a human last produced by hand. On 2026-08-18 a
+  # new evidence reference made the audit FAIL_CLOSED; the published copy was from 2026-08-16 and
+  # said PASS, so canlicapital.com asserted a passing lineage audit for three days while the audit
+  # itself failed. An artifact nothing regenerates is a screenshot, not a check.
+  #
+  # Deliberately NON-fatal: a FAIL_CLOSED verdict is meant to be PUBLISHED, not suppressed. The
+  # artifact carries its own decision, so shipping it is the honest outcome and hiding it is not.
+  # It must be loud, and it must be current.
+  uv run python scripts/audit_sleeve_family_lineage.py >/dev/null \
+    || echo "NOTE: sleeve-family lineage audit is FAIL_CLOSED — publishing that verdict as measured"
+  uv run python scripts/research_export.py
   # anchor the day's track record into the signed append-only transparency chain (no-op if
   # nothing changed since the last entry) — the tamper-evident proof the record isn't rewritten
   uv run python scripts/transparency_log.py
@@ -72,8 +103,27 @@ WATCHDOG_S=2400   # 40 min cap: hourly cache-hit cycles are ~3 min; the once-dai
   # unfurl card, and still asserted in three glass-box artifacts six days later. The pipeline was
   # publishing the correction and the error in the same run. Non-fatal to TRADING (this whole block
   # is downstream of it) but it must be loud, and it must be able to fail.
-  uv run python scripts/check_retracted_claims.py \
-    || echo "WARN: RETRACTED CLAIM IS BEING PUBLISHED — see output above, fix before it spreads"
+  #
+  # IT NOW BLOCKS THE DEPLOY (2026-08-19). For its whole life this gate printed a WARN and the
+  # deploy ran anyway: `grep -c` over var/log/live_tick.log counts 41 ticks that announced
+  # "RETRACTED CLAIM IS BEING PUBLISHED" and published it 41 times. That is the failure this repo
+  # keeps rediscovering under different names -- a check that cannot stop the thing it checks is
+  # not a gate, it is a log line. AlphaVintage's withdrawn Sharpe reached the live site through
+  # exactly this hole and stayed for three days.
+  #
+  # WHAT BLOCKING ACTUALLY BUYS, stated honestly: skipping the deploy does NOT remove a bad claim
+  # that is already live -- the site simply keeps serving the previous bundle. What it buys is
+  # that the failure stops being invisible. The published `generated_at` freezes, which is a
+  # symptom somebody notices, instead of a warning in a log nobody reads. Trading is untouched:
+  # this whole block is downstream of the trading loop and the deploy is cosmetic.
+  if uv run python scripts/check_retracted_claims.py; then
+    _PUBLISHABLE=1
+  else
+    _PUBLISHABLE=0
+    echo "BLOCKED: A RETRACTED CLAIM IS IN THE REGENERATED BUNDLE — SKIPPING THE WEB DEPLOY."
+    echo "         The site will serve the PREVIOUS bundle and its generated_at will go stale"
+    echo "         until this is fixed. Fix the source prose; do NOT weaken the blocklist."
+  fi
   # HOURLY web refresh: redeploy the public sites when the served data changed (change-gated,
   # freshness-guarded; see live_deploy_hourly.sh). The web app now tracks the live book hourly.
   # WATCHDOGGED (added 2026-08-03 after a real incident): `vercel deploy` has no timeout of its
@@ -87,7 +137,11 @@ WATCHDOG_S=2400   # 40 min cap: hourly cache-hit cycles are ~3 min; the once-dai
   ( sleep 600; pkill -TERM -f "live_deploy_hourly" 2>/dev/null; \
     sleep 15; pkill -KILL -f "live_deploy_hourly" 2>/dev/null ) &
   _DWD=$!
-  /bin/zsh scripts/live_deploy_hourly.sh || echo "WARN: hourly web deploy failed (next hour retries)"
+  if [ "$_PUBLISHABLE" -eq 1 ]; then
+    /bin/zsh scripts/live_deploy_hourly.sh || echo "WARN: hourly web deploy failed (next hour retries)"
+  else
+    echo "  (deploy skipped by the retracted-claim gate)"
+  fi
   kill "$_DWD" 2>/dev/null; wait "$_DWD" 2>/dev/null
   # MAKER SHADOW — DELIBERATELY NOT RUN HERE ANY MORE. Read this before re-enabling it.
   #
