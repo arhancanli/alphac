@@ -263,6 +263,10 @@ def test_save_writes_artifact_layout(world: World, tmp_path: Path) -> None:
         "bars_halted_flat",
         "bars_half_gross",
         "n_auto_rearms",
+        # Added with the overlay realized-leg fix. Asserted EXACTLY on purpose: the counters
+        # are the operator's confession, so silently gaining or losing one changes what a run
+        # reports about itself and must be acknowledged here.
+        "realized_leg_bound",
     }
     assert set(meta["config"]["risk_counters"]) == expected_keys
     for leg_row in meta["legs"]:
