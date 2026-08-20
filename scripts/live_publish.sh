@@ -59,6 +59,11 @@ deploy_prod() {
 {
   echo "=== live_publish $(date -u '+%Y-%m-%dT%H:%M:%SZ') ==="
 
+  # 0) bound var/log BEFORE the ceremony touches anything. There was no rotation at all until
+  # 2026-08-20 and var/log had reached 284MB. Deliberately first and deliberately incapable of
+  # failing the job: a disk-hygiene chore must never be the reason a publish did not happen.
+  "$HOME/alphaforge/scripts/rotate_logs.sh" || echo "  log rotation skipped (non-fatal)"
+
   # 1) regenerate the published artifacts from the realized NAV
   # ORDER IS LOAD-BEARING (fixed 2026-08-19). paper_trading_state.py WRITES data/paper/state.json;
   # glassbox_export.py READS it. Both jobs used to call glassbox FIRST, so every glass-box artifact
