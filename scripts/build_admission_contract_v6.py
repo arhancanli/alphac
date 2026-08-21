@@ -307,6 +307,25 @@ def main() -> int:
             "intensity. That was conservative while the EWMA's effective sample exceeded 720; at "
             "a short halflife it is not, and the shrinkage would be materially too weak."
         ),
+        "the_mapping_is_now_measured": {
+            "evidence": "artifacts/analysis/live_covariance_memory/result.json",
+            "finding": (
+                "The estimator's memory is bounded by cov_window_bars, not by the halflife. On "
+                "the crypto H1 sleeve a 720-bar window is 30 DAYS, so every halflife from 21 to "
+                "720 days yields an effective memory between 20.3 and 24.9 days: the parameter is "
+                "nearly inert there, and the drawdown improvement the sweep attributed to it is "
+                "not available through it. On the equity D1 sleeve the same parameter is faithful "
+                "at short halflives and truncated at long ones, and the legacy 720-bar setting "
+                "means 720 days requested against 529 days of actual memory."
+            ),
+            "consequence": (
+                "Shortening the covariance halflife is the wrong lever on crypto; shortening "
+                "cov_window_bars is the one that would move it, and no study has measured that. "
+                "On equity the lever works, and that is also where the Ledoit-Wolf intensity "
+                "mismatch is largest: at a 21-day halflife the effective sample is 60.6 rows "
+                "while the shrinkage is computed with T=720."
+            ),
+        },
         "what_would_make_it_shippable": (
             "Measure the halflife on the LIVE estimator per sleeve, on each sleeve's own "
             "calendar, with the window, the seed and the shrinkage in the loop, and pass the "
