@@ -58,6 +58,9 @@ GOLDEN_MASTER: Final[Path] = REPO / "tests" / "integration" / "test_golden_maste
 PRE_REGISTRATION_MD: Final[Path] = REPO / "docs" / "design" / "PRE_REGISTRATION.md"
 CROSS_ASSET_BOOK_MD: Final[Path] = REPO / "docs" / "design" / "CROSS_ASSET_BOOK.md"
 SLEEVE_DISCOVERY_JSON: Final[Path] = REPO / "config" / "sleeve_discovery.json"
+ADMISSION_DRY_RUN_JSON: Final[Path] = (
+    REPO / "artifacts" / "analysis" / "admission_dry_run" / "result.json"
+)
 
 # The discovery bundle's human-facing gate summary is DERIVED from the admission contract rather
 # than transcribed beside it. It was transcribed until v6, and by then it had gone stale in the
@@ -1223,6 +1226,19 @@ def build_research_export() -> dict[str, Any]:
             "audit_source_path": rel(SLEEVE_ATLAS_AUDIT_JSON),
             "lineage_audit_source_path": rel(SLEEVE_LINEAGE_AUDIT_JSON),
         },
+        # The contract run against a REAL candidate through the production evaluator, rather than
+        # only against a fixture written to pass. It is published because its verdict bears on an
+        # open allocation decision: the sleeve currently carrying a quarter of the book.
+        "admission_dry_run": (
+            {
+                "result": json.loads(ADMISSION_DRY_RUN_JSON.read_text()),
+                "public_path": "/glassbox/admission_dry_run.json",
+                "source_path": rel(ADMISSION_DRY_RUN_JSON),
+                "source_sha256": hashlib.sha256(ADMISSION_DRY_RUN_JSON.read_bytes()).hexdigest(),
+            }
+            if ADMISSION_DRY_RUN_JSON.exists()
+            else None
+        ),
         "sleeve_admission_contract": {
             "contract": json.loads(SLEEVE_ADMISSION_CONTRACT_JSON.read_text()),
             "source_sha256": hashlib.sha256(
@@ -1346,6 +1362,8 @@ def main(out_dir: Path = OUT_DIR) -> Path:
     (out_dir / "sleeve_admission_contract.json").write_text(
         SLEEVE_ADMISSION_CONTRACT_JSON.read_text()
     )
+    if ADMISSION_DRY_RUN_JSON.exists():
+        (out_dir / "admission_dry_run.json").write_text(ADMISSION_DRY_RUN_JSON.read_text())
     (out_dir / "execution_models_benchmark.json").write_text(
         EXECUTION_BENCHMARK_JSON.read_text()
     )
@@ -1537,6 +1555,8 @@ def main(out_dir: Path = OUT_DIR) -> Path:
         (app_dir / "sleeve_family_lineage_audit.json").write_text(
             SLEEVE_LINEAGE_AUDIT_JSON.read_text()
         )
+        if ADMISSION_DRY_RUN_JSON.exists():
+            (app_dir / "admission_dry_run.json").write_text(ADMISSION_DRY_RUN_JSON.read_text())
         (app_dir / "sleeve_admission_contract.json").write_text(
             SLEEVE_ADMISSION_CONTRACT_JSON.read_text()
         )
