@@ -135,7 +135,7 @@ DONE WHEN: `paper_trading_state.py` writes the live config fingerprint into the 
 one.
 
 ### A4 · Confirm the live-change gate fires in a real tick
-STATUS: TODO
+STATUS: DONE — observed in two scheduled ticks; BLOCK path still only mutation-tested
 WHY: A guard wired into a script is not a guard that ran. `scripts/check_live_change_declared.py`
 was added to `live_tick.sh` but has never been observed executing in a scheduled run.
 DONE WHEN: `var/log/live_tick.log` shows the check running in a scheduled `:25` tick with its
@@ -413,3 +413,15 @@ where it is.*
   reads the source and fails if the stamp ever appears on a `raise`, `assert` or `sys.exit` line.
   Three guards added, all mutation-tested: publishing a record stamped under a foreign
   fingerprint fails, and removing the stamp entirely fails two. Suite green.
+- `2026-08-22 01:45` — **A4 DONE, by reading the log rather than inferring it.** The gate ran in
+  two scheduled `:25` ticks: `var/log/live_tick.log:227907` inside the tick that started
+  `20:25:03Z`, and `:227946` inside `21:25:03Z`. Stronger than the item asked for — the
+  fingerprint CHANGED between them (`e79dd975…` → `ec06c65b…`, A2's coverage extension), which
+  proves the tick reads the live value rather than a cached one.
+  ⚠️ **Only the PASS path is confirmed in production.** The BLOCK path has never fired in a real
+  tick because the configuration has never disagreed; it is confirmed by mutation test only. That
+  distinction is recorded rather than glossed.
+  Also fixed while here: the deploy-skip message hard-coded "(deploy skipped by the
+  retracted-claim gate)" and there are two gates on that branch now, so a live-change block would
+  have named the wrong cause and sent the next reader to the wrong file. It now names whichever
+  gate blocked, or both. All four combinations exercised against the real logic. Suite green.
