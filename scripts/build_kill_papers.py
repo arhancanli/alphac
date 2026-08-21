@@ -5,6 +5,13 @@ survived. Almost nobody publishes the forty-six. A kill log is a table of names 
 paper says what the idea was, why it was worth the trial, and what specifically ended it -- which
 is the part another researcher can actually use, and the part that cannot be faked.
 
+⚠️ TRACEABLE IS NOT THE SAME AS HONEST. The guard below checks that every number in a paper comes
+FROM the artifact. It cannot check that the number means what the column header says. Four probes
+carried a hand-written 0.0 in a slot typed `float`, because "not separately measured" was
+unsayable there -- and this generator faithfully rendered that sentinel as "Screen net Sharpe
+0.0000", four decimals of precision nobody measured, in a table beside prose saying the candidate
+screened at 1.47. The slot is `float | None` now, and a bare 0.0 in it is refused outright.
+
 THE HONESTY CONSTRUCTION. Prose is written by hand. Every NUMBER is injected from the kill-log
 entry through `_figure`, which reads the field and formats it, and is recorded as it goes. No
 figure is ever typed into a template. `tests/unit/test_kill_papers_quote_their_artifact.py`
@@ -112,7 +119,7 @@ def _figure(entry: dict[str, Any], field: str, fmt: str, quoted: list[str]) -> s
     """Format one figure FROM the entry and record it. The only path a number may take."""
     value = entry.get(field)
     if value is None:
-        return "not recorded"
+        return "not separately measured"
     rendered = format(value, fmt) if isinstance(value, (int, float)) else str(value)
     quoted.append(rendered)
     return rendered

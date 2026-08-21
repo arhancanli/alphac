@@ -272,7 +272,14 @@ SURVIVORS: Final[list[tuple[str, str, str, float, str]]] = [
 # screen->gauntlet funnel is the point: kill weak ideas cheaply, build only what shows an edge.
 # Entry shape: (name, readable_name, screen_net_sharpe, reason) or the same plus a trailing
 # `stage` string. Stage defaults to 'screen_prototype' when omitted.
-ScreenKill = tuple[str, str, float, str] | tuple[str, str, float, str, str]
+# The Sharpe slot is `float | None`. None means NOT SEPARATELY MEASURED, which is a different
+# claim from zero and used to be unsayable: the slot was typed `float`, so four probes whose
+# finding was "null" or "no single Sharpe exists" had a hand-written 0.0 put in a measurement
+# field. Published, that became "Screen net Sharpe 0.0000" -- four decimals of precision nobody
+# measured, sitting in a table beside prose that said the candidate screened at 1.47.
+ScreenKill = (
+    tuple[str, str, float | None, str] | tuple[str, str, float | None, str, str]
+)
 
 SCREEN_KILLS: Final[list[ScreenKill]] = [
     (
@@ -468,7 +475,9 @@ SCREEN_KILLS: Final[list[ScreenKill]] = [
     (
         "crypto_dated_basis",
         "Crypto Dated-Futures Basis (campaign)",
-        0.0,
+        # NOT SEPARATELY MEASURED: the screened 1.47 was refuted as a roll-accounting artifact; no
+        # honest standalone Sharpe survives it.
+        None,
         "Screened at an apparent 1.47 but refuted 3x and reproduced from scratch: the 8.2%/yr "
         "'carry' is a roll-accounting fiction — the kept days (+0.55) and the dropped roll days "
         "(-0.55) cancel; honest all-days P&L telescopes to ~0%/yr, skew -6.84. A construction-"
@@ -509,7 +518,9 @@ SCREEN_KILLS: Final[list[ScreenKill]] = [
     (
         "pm_odds_signal",
         "Prediction-Market Odds as Macro Signal (probe)",
-        0.0,
+        # NOT SEPARATELY MEASURED: the finding is a null LEAD across 5 markets x 5 ETFs, not a
+        # single tradable Sharpe.
+        None,
         "Do Polymarket-implied probabilities lead tradable markets? No — they lag them. The "
         "forward lead is null across 5 macro markets x 5 ETFs; the reverse is strong: bonds "
         "reprice a Fed move first and the odds catch up the NEXT day (corr +0.40 to TLT). Only "
@@ -600,7 +611,9 @@ SCREEN_KILLS: Final[list[ScreenKill]] = [
     (
         "intraday_mom",
         "Intraday Flow-Momentum, first-30m predicts last-30m (probe)",
-        0.0,
+        # NOT SEPARATELY MEASURED: two opposite regimes (dead-zero 2023-2026, inverted 2020-2022);
+        # one number would misdescribe both.
+        None,
         "The twice-JFE-documented effect (Gao-Han-Li-Zhou) is fully DECAYED post-publication on "
         "SPY/QQQ/IWM: dead-zero in 2023-2026, and significantly INVERTED in 2020-2022 (a textbook "
         "publish-then-arbitrage overshoot). The only statistically-alive cell (TLT overnight, "
@@ -667,7 +680,9 @@ SCREEN_KILLS: Final[list[ScreenKill]] = [
     (
         "multivenue_funding",
         "Crypto Multi-Venue Funding Aggregation (probe)",
-        0.0,
+        # NOT SEPARATELY MEASURED: the pre-registered test was a DELTA against the Binance-only
+        # baseline, not a standalone Sharpe.
+        None,
         "Would aggregating funding across exchanges beat our Binance-only carry signal? No — null "
         "by its own pre-registered rule (promote required +0.10 Sharpe at 90% bootstrap "
         "confidence). The reason is structural: Binance and Bybit annualized funding are 0.94 "
@@ -816,7 +831,7 @@ def build_kill_log() -> dict[str, Any]:
         {
             "name": e[0],
             "readable_name": e[1],
-            "screen_net_sharpe": round(e[2], 3),
+            "screen_net_sharpe": None if e[2] is None else round(e[2], 3),
             "stage": e[4] if len(e) > 4 else "screen_prototype",
             "verdict": "KILLED",
             "reason": e[3],
