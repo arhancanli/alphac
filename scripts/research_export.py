@@ -61,6 +61,9 @@ SLEEVE_DISCOVERY_JSON: Final[Path] = REPO / "config" / "sleeve_discovery.json"
 ADMISSION_DRY_RUN_JSON: Final[Path] = (
     REPO / "artifacts" / "analysis" / "admission_dry_run" / "result.json"
 )
+BOOK_WITHOUT_ALPHAVINTAGE_JSON: Final[Path] = (
+    REPO / "artifacts" / "analysis" / "book_without_alphavintage" / "result.json"
+)
 
 # The discovery bundle's human-facing gate summary is DERIVED from the admission contract rather
 # than transcribed beside it. It was transcribed until v6, and by then it had gone stale in the
@@ -1239,6 +1242,13 @@ def build_research_export() -> dict[str, Any]:
             if ADMISSION_DRY_RUN_JSON.exists()
             else None
         ),
+        # The book measured with and without the sleeve whose allocation is an open decision.
+        # Published because the decision is the owner's and the input it needs is a measurement.
+        "book_without_alphavintage": (
+            json.loads(BOOK_WITHOUT_ALPHAVINTAGE_JSON.read_text())
+            if BOOK_WITHOUT_ALPHAVINTAGE_JSON.exists()
+            else None
+        ),
         "sleeve_admission_contract": {
             "contract": json.loads(SLEEVE_ADMISSION_CONTRACT_JSON.read_text()),
             "source_sha256": hashlib.sha256(
@@ -1364,6 +1374,10 @@ def main(out_dir: Path = OUT_DIR) -> Path:
     )
     if ADMISSION_DRY_RUN_JSON.exists():
         (out_dir / "admission_dry_run.json").write_text(ADMISSION_DRY_RUN_JSON.read_text())
+    if BOOK_WITHOUT_ALPHAVINTAGE_JSON.exists():
+        (out_dir / "book_without_alphavintage.json").write_text(
+            BOOK_WITHOUT_ALPHAVINTAGE_JSON.read_text()
+        )
     (out_dir / "execution_models_benchmark.json").write_text(
         EXECUTION_BENCHMARK_JSON.read_text()
     )
@@ -1557,6 +1571,10 @@ def main(out_dir: Path = OUT_DIR) -> Path:
         )
         if ADMISSION_DRY_RUN_JSON.exists():
             (app_dir / "admission_dry_run.json").write_text(ADMISSION_DRY_RUN_JSON.read_text())
+        if BOOK_WITHOUT_ALPHAVINTAGE_JSON.exists():
+            (app_dir / "book_without_alphavintage.json").write_text(
+                BOOK_WITHOUT_ALPHAVINTAGE_JSON.read_text()
+            )
         (app_dir / "sleeve_admission_contract.json").write_text(
             SLEEVE_ADMISSION_CONTRACT_JSON.read_text()
         )

@@ -54,6 +54,18 @@ def main() -> int:
     thresholds["average_pairwise_correlation_upper_95_max"] = 0.10
     thresholds["capacity_usd_min"] = 500_000
 
+    # A CANDIDATE'S SAMPLE AND THE BOOK'S COMMON WINDOW ARE DIFFERENT QUANTITIES.
+    # minimum_oos_observations = 756 is a property of the candidate and a candidate can have it.
+    # correlation_observations is the INTERSECTION of the candidate and the book, so applying the
+    # same 756 to it makes admission depend on the book's own history -- and this book cannot
+    # supply it on any basis: the blessed evidence curves span 728 days and END 2026-06-01 by
+    # design (they are frozen, pinned by disclosure protocol, and no tick regenerates them),
+    # while the live-forward basis is shorter still at 177 days. Refreshing cannot fix it.
+    # Precision is protected by average_pairwise_correlation_upper_95_max, which gates the BOUND
+    # and therefore already accounts for sample length; this floor exists to refuse an absurdly
+    # short window, not to carry that job alone.
+    thresholds["minimum_correlation_observations"] = 504
+
     # THE PER-SLEEVE DEFLATION GATE WAS THE SAME DEFECT AS THE t-GATE, ONE LAYER DOWN.
     # deflated_sharpe_min 0.95 over the contract's own 756-observation minimum requires an
     # annualized Sharpe of 1.184 EVEN AT n_trials=2, the least deflation the formula permits --
@@ -203,6 +215,14 @@ def main() -> int:
             "minimum_oos_observations, and net_sharpe_min against deflated_sharpe_min solved at "
             "n_trials=2. Both pairs were violated before v6, in the same way and undetected, "
             "which is why the check is structural rather than a corrected number."
+        ),
+        "correlation_observations_decoupled": (
+            "minimum_correlation_observations is separate from minimum_oos_observations because "
+            "they measure different things: a candidate's own sample is the candidate's to "
+            "supply, while the correlation window is its intersection with the BOOK. Tying them "
+            "together made admission impossible for a reason that had nothing to do with any "
+            "candidate -- v6 briefly required 756 correlation observations against a book that "
+            "can supply 728 on its blessed basis and 177 on its live-forward one."
         ),
         "minimum_oos_observations_raised_from": 252,
         "minimum_oos_observations_reason": (

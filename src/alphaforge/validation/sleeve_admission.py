@@ -49,6 +49,12 @@ OPTIONAL_NUMERIC_GATES: dict[str, tuple[str, str]] = {
     # Optional since v6: see OPTIONAL_MEASUREMENT_GATES for why the per-sleeve deflated Sharpe is
     # measured and published rather than gated at 0.95.
     "deflated_sharpe_min": ("statistics.deflated_sharpe", ">="),
+    # Separated from minimum_oos_observations in v6. A candidate's own sample length is a
+    # property of the CANDIDATE; the correlation window is the intersection of the candidate and
+    # the BOOK, so tying them together means a book with a short common history can admit
+    # nothing, however long the candidate's record. See minimum_correlation_observations in the
+    # contract for what actually protects precision here.
+    "minimum_correlation_observations": ("diversification.correlation_observations", ">="),
 }
 
 # Gates that require a figure to be MEASURED AND PRESENT without imposing a threshold on its
@@ -69,7 +75,7 @@ OPTIONAL_BOOLEAN_GATES: dict[str, str] = {
 
 # Checks that are neither lineage, robustness, execution dimensions nor optional gates: the
 # always-present numeric gates plus the capacity-curve reconciliation.
-_BASE_CHECKS = 20
+_BASE_CHECKS = 19
 
 
 @dataclass(frozen=True, slots=True)
@@ -321,10 +327,6 @@ def evaluate_sleeve_evidence(
         "diversification.max_stressed_pairwise_correlation_upper_95": (
             "<=",
             thresholds["stressed_pairwise_correlation_upper_95_max"],
-        ),
-        "diversification.correlation_observations": (
-            ">=",
-            thresholds["minimum_oos_observations"],
         ),
         "portfolio.book_sharpe_delta": (
             ">",
