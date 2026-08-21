@@ -129,10 +129,12 @@ WATCHDOG_S=2400   # 40 min cap: hourly cache-hit cycles are ~3 min; the once-dai
   # that the failure stops being invisible. The published `generated_at` freezes, which is a
   # symptom somebody notices, instead of a warning in a log nobody reads. Trading is untouched:
   # this whole block is downstream of the trading loop and the deploy is cosmetic.
+  _BLOCKED_BY=""
   if uv run python scripts/check_retracted_claims.py; then
     _PUBLISHABLE=1
   else
     _PUBLISHABLE=0
+    _BLOCKED_BY="the retracted-claim gate"
     echo "BLOCKED: A RETRACTED CLAIM IS IN THE REGENERATED BUNDLE — SKIPPING THE WEB DEPLOY."
     echo "         The site will serve the PREVIOUS bundle and its generated_at will go stale"
     echo "         until this is fixed. Fix the source prose; do NOT weaken the blocklist."
@@ -155,6 +157,7 @@ WATCHDOG_S=2400   # 40 min cap: hourly cache-hit cycles are ~3 min; the once-dai
     :
   else
     _PUBLISHABLE=0
+    _BLOCKED_BY="${_BLOCKED_BY:+${_BLOCKED_BY} and }the live-change gate"
     echo "BLOCKED: THE LIVE TRADING CONFIGURATION IS UNDECLARED — SKIPPING THE WEB DEPLOY."
     echo "         Declare it in config/live_change_contract.json and mark the forward record."
   fi
@@ -174,7 +177,7 @@ WATCHDOG_S=2400   # 40 min cap: hourly cache-hit cycles are ~3 min; the once-dai
   if [ "$_PUBLISHABLE" -eq 1 ]; then
     /bin/zsh scripts/live_deploy_hourly.sh || echo "WARN: hourly web deploy failed (next hour retries)"
   else
-    echo "  (deploy skipped by the retracted-claim gate)"
+    echo "  (deploy skipped by ${_BLOCKED_BY:-a publish gate})"
   fi
   kill "$_DWD" 2>/dev/null; wait "$_DWD" 2>/dev/null
   # MAKER SHADOW — DELIBERATELY NOT RUN HERE ANY MORE. Read this before re-enabling it.
