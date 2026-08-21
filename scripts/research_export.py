@@ -67,6 +67,9 @@ BOOK_WITHOUT_ALPHAVINTAGE_JSON: Final[Path] = (
 SPINOFF_PRORATA_GATE_JSON: Final[Path] = (
     REPO / "artifacts" / "analysis" / "spinoff_prorata_gate" / "result.json"
 )
+GATE_REACHABILITY_JSON: Final[Path] = (
+    REPO / "artifacts" / "analysis" / "feasibility_gate_reachability" / "result.json"
+)
 
 # The discovery bundle's human-facing gate summary is DERIVED from the admission contract rather
 # than transcribed beside it. It was transcribed until v6, and by then it had gone stale in the
@@ -1255,6 +1258,13 @@ def build_research_export() -> dict[str, Any]:
         # The family closest to clearing feasibility, and why its last gate cannot be reached by
         # improving extraction. Published because a null that closes a line of enquiry is worth
         # as much to a reader as one that opens it.
+        # The same question asked of the other two near-miss families. Published together because
+        # the answer is the same shape for all three and it is not the encouraging one.
+        "feasibility_gate_reachability": (
+            json.loads(GATE_REACHABILITY_JSON.read_text())
+            if GATE_REACHABILITY_JSON.exists()
+            else None
+        ),
         "spinoff_prorata_gate": (
             json.loads(SPINOFF_PRORATA_GATE_JSON.read_text())
             if SPINOFF_PRORATA_GATE_JSON.exists()
@@ -1385,6 +1395,10 @@ def main(out_dir: Path = OUT_DIR) -> Path:
     )
     if ADMISSION_DRY_RUN_JSON.exists():
         (out_dir / "admission_dry_run.json").write_text(ADMISSION_DRY_RUN_JSON.read_text())
+    if GATE_REACHABILITY_JSON.exists():
+        (out_dir / "feasibility_gate_reachability.json").write_text(
+            GATE_REACHABILITY_JSON.read_text()
+        )
     if SPINOFF_PRORATA_GATE_JSON.exists():
         (out_dir / "spinoff_prorata_gate.json").write_text(
             SPINOFF_PRORATA_GATE_JSON.read_text()
@@ -1586,6 +1600,10 @@ def main(out_dir: Path = OUT_DIR) -> Path:
         )
         if ADMISSION_DRY_RUN_JSON.exists():
             (app_dir / "admission_dry_run.json").write_text(ADMISSION_DRY_RUN_JSON.read_text())
+        if GATE_REACHABILITY_JSON.exists():
+            (app_dir / "feasibility_gate_reachability.json").write_text(
+                GATE_REACHABILITY_JSON.read_text()
+            )
         if SPINOFF_PRORATA_GATE_JSON.exists():
             (app_dir / "spinoff_prorata_gate.json").write_text(
                 SPINOFF_PRORATA_GATE_JSON.read_text()
