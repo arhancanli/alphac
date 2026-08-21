@@ -127,7 +127,7 @@ DONE WHEN: `scripts/export_live_config_fingerprint.py` covers them, derived not 
 newly covered field.
 
 ### A3 · Stamp the record with its own provenance
-STATUS: TODO
+STATUS: DONE — published in paper-state.json and research.json, guarded, mutation-tested
 WHY: The published track record does not say which configuration produced it. A future reader
 cannot tell whether a stretch of the curve was run under the same book.
 DONE WHEN: `paper_trading_state.py` writes the live config fingerprint into the published state,
@@ -401,3 +401,15 @@ where it is.*
   day it appears. It fired on its own first run — the mutation helper could not perturb a dict, so
   it accused `sleeves` and `strategic_tilt_mix` of being uncovered when they are not. The helper
   was measuring itself; every branch now actually changes the value. Suite green.
+- `2026-08-21 21:55` — **A3 DONE.** The published record now carries the fingerprint of the
+  configuration that produced it, in `paper-state.json` on both hosts and in `research.json`.
+  Measured by the same function the tick-time gate uses, so the stamp cannot disagree with the
+  guard, and the DECLARED value is carried beside the measured one so a disagreement is visible
+  in the artifact rather than only in a test.
+  The design choice that matters: `matches_declaration` is published as a BOOLEAN and never used
+  to refuse to write the record. Refusing to publish because a configuration changed would
+  destroy the record in order to protect it — a marked discontinuity is recoverable, a hole in
+  the forward record is not, and a hole is the same harm the ceremony exists to prevent. A guard
+  reads the source and fails if the stamp ever appears on a `raise`, `assert` or `sys.exit` line.
+  Three guards added, all mutation-tested: publishing a record stamped under a foreign
+  fingerprint fails, and removing the stamp entirely fails two. Suite green.

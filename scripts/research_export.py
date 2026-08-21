@@ -1109,6 +1109,7 @@ def build_track_record(state: dict[str, Any]) -> dict[str, Any]:
         "research_curve_return_pct": return_pct(research_end_nav),
         "research_curve_points": len(research),
         "honesty_policy": list(state["transparency"]),
+        "live_config": state.get("live_config"),
         "source_path": rel(STATE_JSON),
     }
 

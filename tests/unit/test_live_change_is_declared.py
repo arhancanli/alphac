@@ -185,3 +185,78 @@ def test_the_risk_path_is_inside_the_surface() -> None:
         "w_max",
     ):
         assert field in surface["risk_path_settings"], f"{field} is outside the live-config guard"
+
+
+# --------------------------------------------------------------------------------------------
+# The PUBLISHED record must carry the configuration that produced it (backlog A3)
+# --------------------------------------------------------------------------------------------
+
+PUBLISHED_STATES = (
+    REPO.parent / "meridian" / "public" / "paper-state.json",
+    REPO.parent / "meridian-app" / "public" / "paper-state.json",
+    REPO / "data" / "paper" / "state.json",
+)
+
+
+def _published_states() -> list[tuple[Path, dict]]:
+    found = [(p, json.loads(p.read_text())) for p in PUBLISHED_STATES if p.exists()]
+    assert found, (
+        "no published paper-state.json found on any host or in the repo; this guard would pass "
+        "vacuously, which is the failure mode it exists to prevent"
+    )
+    return found
+
+
+def test_the_published_record_says_which_configuration_produced_it() -> None:
+    """A curve that cannot say what it was cannot be read as one experiment.
+
+    The forward record is the only evidence that can defeat deflation, and its value is entirely
+    in being ONE continuous test of ONE specification. Without a stamp, a reader cannot tell a
+    continuous record from a curve that changed underneath itself.
+    """
+    for path, state in _published_states():
+        assert "live_config" in state, f"{path} publishes a record with no configuration stamp"
+        stamp = state["live_config"]
+        for field in ("fingerprint", "declared_fingerprint", "matches_declaration"):
+            assert field in stamp, f"{path} stamp is missing {field!r}"
+        assert stamp["fingerprint"].startswith("sha256:")
+
+
+def test_the_published_stamp_agrees_with_the_declaration() -> None:
+    """Published, measured and declared must be the same value — all three, not two of three."""
+    declared = _contract()["declared_fingerprint"]
+    measured = fingerprinter.build_fingerprint()["fingerprint"]
+    for path, state in _published_states():
+        stamp = state["live_config"]
+        assert stamp["declared_fingerprint"] == declared, (
+            f"{path} carries a stale declaration: {stamp['declared_fingerprint']} vs {declared}"
+        )
+        assert stamp["fingerprint"] == measured, (
+            f"{path} was stamped under a different configuration than the one running now: "
+            f"{stamp['fingerprint']} vs {measured}. Either the record is stale or the live "
+            "configuration moved after it was written."
+        )
+        assert stamp["matches_declaration"] is True, (
+            f"{path} records a configuration that does not match the declaration. The record now "
+            "contains a discontinuity; declare it in config/live_change_contract.json and mark "
+            "the forward record at this date."
+        )
+
+
+def test_the_stamp_is_a_boolean_not_a_refusal() -> None:
+    """`matches_declaration` must be REPORTED, never used to refuse to write the record.
+
+    Refusing to publish because a configuration changed would destroy the record in order to
+    protect it. A marked discontinuity is recoverable; a hole in the forward record is not, and a
+    hole is the same harm the whole live-change ceremony exists to prevent.
+    """
+    source = (REPO / "scripts" / "paper_trading_state.py").read_text()
+    assert "matches_declaration" in source
+    for line in source.splitlines():
+        stripped = line.strip()
+        if "matches_declaration" not in stripped or stripped.startswith("#"):
+            continue
+        assert not stripped.startswith(("raise", "assert", "sys.exit")), (
+            "the provenance stamp must not be able to abort the record it stamps: "
+            f"{stripped!r}"
+        )
