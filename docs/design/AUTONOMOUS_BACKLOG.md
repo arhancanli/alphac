@@ -107,7 +107,7 @@ Then, in `~/meridian`: `npm run build && npm run verify`, and deploy with
 2026-08-07. Every day is something that can only be waited for.*
 
 ### A1 · Draft the forward pre-registration (DO NOT PUBLISH)
-STATUS: TODO
+STATUS: DONE — docs/design/FORWARD_PREREGISTRATION_DRAFT.md, unsigned, unpublished
 WHY: `docs/design/PRE_REGISTRATION.md` already promises "earn the grade forward: ≥6–12 months
 paper-trading the frozen book", but no artifact says WHAT is frozen, FROM when, and judged HOW.
 Without it, 14 days of record is data. With it, it is an N=1 forward test whose hurdle is 0.88 at
@@ -376,3 +376,12 @@ where it is.*
   objective re-anchored to honest forward 1.5, 80 research papers + 13 topic hubs published (99
   URLs, was 6), www→apex 301, live-change ceremony built and blocking, covariance memory measured
   and one published claim corrected. Full suite green, reproduce kit 23/23, site audit 0 errors.
+- `2026-08-21 21:20` — **A1 DONE.** Forward pre-registration drafted at
+  `docs/design/FORWARD_PREREGISTRATION_DRAFT.md`. Freezes the four-sleeve book at equal quarters
+  plus the disclosed +10% tilt, the sizing configuration bound to fingerprint `e79dd975…`, the
+  10% vol-target overlay, and the 2026-08-07 start. Judgement thresholds are `1.96/sqrt(T)` —
+  1.960 at 1y, 1.132 at 3y, 0.877 at 5y, 0.620 at 10y — measured on the NEUTRAL CORE with the
+  tilt excluded, and stated explicitly as *not* the 1.5 target so clearing them cannot be read as
+  reaching it. INCONCLUSIVE named as the expected outcome for years. Five void conditions written
+  down, including any change to AlphaVintage's allocation. Verified NOT referenced from either
+  publish script. Suite green. **Unsigned — signing is owner-blocked.**
