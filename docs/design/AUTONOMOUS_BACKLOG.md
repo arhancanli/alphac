@@ -214,7 +214,7 @@ detector would reach, so any family must pass it BEFORE a protocol is written. A
 retroactively to the three known cases and reproducing their published answers.
 
 ### C2 · Reachability screen across the untouched atlas families
-STATUS: TODO
+STATUS: DONE
 WHY: 20 families are `NOVEL_ATLAS` with `return_data_opened: 0`. Writing protocols against them
 without a reachability screen repeats the mistake three times over.
 DONE WHEN: each is screened on literature and metadata ONLY — no return data, no hypothesis
@@ -573,3 +573,40 @@ where it is.*
   Full unit suite green, `ruff` clean on the new files, retracted-claim gate PASS, reproduce kit
   23/23 content hashes + 2/2 signatures + golden master. 0 trials — the harness reads frozen
   artifacts read-only and authorises no candidate.
+- `2026-08-22 01:20` — **C2 DONE.** `scripts/atlas_reachability_screen.py`, published at
+  `/glassbox/atlas_reachability_screen.json`. All twenty untouched `NOVEL_ATLAS` families screened
+  on obtainability alone — no return data, no hypothesis, 0 trials.
+  **The decisive part needs no judgement.** The contract requires 756 daily OOS observations,
+  which is **3.0 years**; a candidate's return series cannot outlast the source that produces it,
+  so any family whose best source has less history than that is out of reach on arithmetic before
+  anyone argues about the idea. Both the 756 and the family list are read from the contract and
+  the atlas rather than typed, and the history of all seven sources this repo holds is re-derived
+  from the lake on every run: EDGAR indexes 15.75y, FRED 10y breakevens 23.63y, FINRA short
+  interest 8.54y, crypto perp funding 6.00y, Deribit option snapshots **0.16y**.
+  **The result: 6 of 20 are blocked on engineering. The other 14 are not, and no amount of work
+  closes them.** Ten are vendor-licensed — a spending decision with a number attached, not a
+  research question. Two trade on prices that are *assessed or indicated rather than transacted*
+  (Baltic route assessments, cat-bond broker sheets): the record is obtainable and a backtest on
+  it would measure a price nobody could have traded, which is worse than a null because it
+  produces a number. One, `crypto_liquidation_pressure`, has **no point-in-time record at all** —
+  venues stream forced liquidations and archive at most a rolling window, so it cannot be bought
+  or scraped after the fact, only collected forward starting now; the contract minimum is then a
+  three-year WAIT, and that wait is the finding.
+  ⚠️ **The trap the screen was built to catch, and did.** `securities_lending_supply` is priced off
+  the borrow FEE. This repo holds FINRA short interest — available, correlated, and a different
+  quantity: the size of the position, not its cost. A screen reporting "we have short interest"
+  would have sent the next iteration to work on a family whose mechanism we cannot price. The
+  verdict is VENDOR and the note says why the held proxy does not substitute.
+  Best find: `inflation_breakeven_relative_value` is reachable **today** on data already held —
+  daily breakevens from 2003-01-02, unrevised market quantities, so point-in-time by construction
+  rather than by careful handling. Narrower than it looks and the artifact says so: what is held
+  supports the breakeven-versus-realised formulation and NOT the swap-versus-breakeven one.
+  Measured and judged are separated per FIELD rather than in a disclaimer — every row about a
+  record we do not hold is stamped `JUDGEMENT_NOT_VERIFIED_THIS_RUN` and carries the concrete
+  check that would settle it, with a test asserting no such row can exist without one.
+  `tests/unit/test_atlas_reachability_screen.py` (11 tests) breaks the derivation in both
+  directions — a family added to the atlas fails the screen, a family that opens return data fails
+  it too — pins that the arithmetic outranks the obtainability class (a two-year source we hold is
+  held and useless, and must not read as held) and that it does NOT rescue a vendor or marks
+  verdict, and proves an absent lake measures as absent rather than as a span of zero.
+  Full unit suite green, ruff clean, retracted-claim gate PASS, reproduce kit 23/23. Deployed.
