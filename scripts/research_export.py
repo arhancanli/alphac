@@ -88,6 +88,9 @@ SLEEVE_QUALITY_JSON: Final[Path] = (
 EXECUTION_GAP_POWER_JSON: Final[Path] = (
     REPO / "artifacts" / "analysis" / "execution_gap_power" / "result.json"
 )
+COST_MODEL_REALISM_JSON: Final[Path] = (
+    REPO / "artifacts" / "analysis" / "cost_model_realism" / "result.json"
+)
 
 # The discovery bundle's human-facing gate summary is DERIVED from the admission contract rather
 # than transcribed beside it. It was transcribed until v6, and by then it had gone stale in the
@@ -1295,6 +1298,14 @@ def build_research_export() -> dict[str, Any]:
         # Whether the live book is delivering its backtest — and the honest answer that the
         # record is far too short to say. Published because "we cannot tell yet, here is when we
         # can" is a result, and a noisy estimate presented as one would not be.
+        # Whether the modelled cost matches what the live book pays. Published including the
+        # parts that cannot be checked from what is recorded, because that boundary is the
+        # actionable half of the result.
+        "cost_model_realism": (
+            json.loads(COST_MODEL_REALISM_JSON.read_text())
+            if COST_MODEL_REALISM_JSON.exists()
+            else None
+        ),
         "execution_gap_power": (
             json.loads(EXECUTION_GAP_POWER_JSON.read_text())
             if EXECUTION_GAP_POWER_JSON.exists()
@@ -1456,6 +1467,10 @@ def main(out_dir: Path = OUT_DIR) -> Path:
     )
     if ADMISSION_DRY_RUN_JSON.exists():
         (out_dir / "admission_dry_run.json").write_text(ADMISSION_DRY_RUN_JSON.read_text())
+    if COST_MODEL_REALISM_JSON.exists():
+        (out_dir / "cost_model_realism.json").write_text(
+            COST_MODEL_REALISM_JSON.read_text()
+        )
     if EXECUTION_GAP_POWER_JSON.exists():
         (out_dir / "execution_gap_power.json").write_text(
             EXECUTION_GAP_POWER_JSON.read_text()
@@ -1685,6 +1700,10 @@ def main(out_dir: Path = OUT_DIR) -> Path:
         )
         if ADMISSION_DRY_RUN_JSON.exists():
             (app_dir / "admission_dry_run.json").write_text(ADMISSION_DRY_RUN_JSON.read_text())
+        if COST_MODEL_REALISM_JSON.exists():
+            (app_dir / "cost_model_realism.json").write_text(
+                COST_MODEL_REALISM_JSON.read_text()
+            )
         if EXECUTION_GAP_POWER_JSON.exists():
             (app_dir / "execution_gap_power.json").write_text(
                 EXECUTION_GAP_POWER_JSON.read_text()
