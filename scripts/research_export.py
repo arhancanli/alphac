@@ -97,6 +97,9 @@ REACHABILITY_HARNESS_JSON: Final[Path] = (
 ATLAS_REACHABILITY_SCREEN_JSON: Final[Path] = (
     REPO / "artifacts" / "analysis" / "atlas_reachability_screen" / "result.json"
 )
+ORTHOGONALITY_PRIOR_JSON: Final[Path] = (
+    REPO / "artifacts" / "analysis" / "orthogonality_prior" / "result.json"
+)
 
 # The discovery bundle's human-facing gate summary is DERIVED from the admission contract rather
 # than transcribed beside it. It was transcribed until v6, and by then it had gone stale in the
@@ -1367,6 +1370,17 @@ def build_research_export() -> dict[str, Any]:
             if ATLAS_REACHABILITY_SCREEN_JSON.exists()
             else None
         ),
+        # The same twenty families ordered by expected orthogonality, BEFORE any is measured.
+        # Published as a prior and labelled one in every row, because an ordering stated after the
+        # measurement is not an ordering. It also prints the number the ordering exists to serve:
+        # a book whose every new pair sits exactly on the correlation gate still misses the target,
+        # so the gate is necessary and not sufficient, and that arithmetic belongs on the same
+        # page as the target rather than in a drawer.
+        "orthogonality_prior": (
+            json.loads(ORTHOGONALITY_PRIOR_JSON.read_text())
+            if ORTHOGONALITY_PRIOR_JSON.exists()
+            else None
+        ),
         "sleeve_admission_contract": {
             "contract": json.loads(SLEEVE_ADMISSION_CONTRACT_JSON.read_text()),
             "source_sha256": hashlib.sha256(
@@ -1535,6 +1549,10 @@ def main(out_dir: Path = OUT_DIR) -> Path:
     if ATLAS_REACHABILITY_SCREEN_JSON.exists():
         (out_dir / "atlas_reachability_screen.json").write_text(
             ATLAS_REACHABILITY_SCREEN_JSON.read_text()
+        )
+    if ORTHOGONALITY_PRIOR_JSON.exists():
+        (out_dir / "orthogonality_prior.json").write_text(
+            ORTHOGONALITY_PRIOR_JSON.read_text()
         )
     if BOOK_WITHOUT_ALPHAVINTAGE_JSON.exists():
         (out_dir / "book_without_alphavintage.json").write_text(
@@ -1787,6 +1805,10 @@ def main(out_dir: Path = OUT_DIR) -> Path:
         if ATLAS_REACHABILITY_SCREEN_JSON.exists():
             (app_dir / "atlas_reachability_screen.json").write_text(
                 ATLAS_REACHABILITY_SCREEN_JSON.read_text()
+            )
+        if ORTHOGONALITY_PRIOR_JSON.exists():
+            (app_dir / "orthogonality_prior.json").write_text(
+                ORTHOGONALITY_PRIOR_JSON.read_text()
             )
         if BOOK_WITHOUT_ALPHAVINTAGE_JSON.exists():
             (app_dir / "book_without_alphavintage.json").write_text(

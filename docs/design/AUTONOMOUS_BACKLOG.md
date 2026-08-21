@@ -22,7 +22,18 @@ target quoted in-sample is quoted in the units that flatter. The implied in-samp
 
 A 2.0–2.5 forward target was published and is **withdrawn**: reaching it needed an average
 pairwise correlation of −0.062 against a PSD floor of −0.077, which is 81% of the mathematical
-limit. An honest 1.5 needs ρ̄ ≤ −0.0174 at measured quality, or s̄ ≥ 0.601 — both inside the floor.
+limit. An honest 1.5 needs ρ̄ ≤ **−0.030** at measured quality, or s̄ ≥ 0.601 — both inside the
+floor.
+
+> **Corrected 2026-08-22 (C3).** This line read −0.0174 until then, and −0.0174 is the ρ̄ that
+> reaches an IN-SAMPLE 2.0, which is a forward 1.33 at the optimistic end of this book's own
+> published haircut band. Reaching a forward 1.5 needs in-sample 2.25 and therefore ρ̄ ≤ −0.030,
+> which is what `config/sleeve_admission_contract.json` has carried all along as
+> `average_pairwise_correlation_objective`. The old figure was a pre-re-anchoring number
+> carried across the re-anchoring without being re-derived, and it flattered in the direction
+> the paragraph above warns about. Nothing published ever carried it — the site derives this
+> from the contract — so the correction is to this file only. s̄ ≥ 0.601 was and is right: it
+> is the same in-sample 2.25 reached on the quality lever instead.
 
 **The second half of the goal is the one that matters and it is not a number.** A forward 1.5 that
 anyone can check — signed forward record, every killed candidate published, gates that provably
@@ -33,7 +44,7 @@ increases verifiability counts as progress toward the goal, not as overhead.
 
 | | |
 |---|---|
-| Correlation | **NOT binding.** A real candidate measured ρ̄ = −0.0203 against a −0.0174 requirement. |
+| Correlation | **BINDING after all.** A real candidate measured ρ̄ = −0.0203 against the corrected −0.030 requirement — it clears the 2.0 bar it was compared against and misses the forward-1.5 one by 0.010, worth forward 1.37 vs 1.50. |
 | Per-sleeve quality s̄ | **BINDING.** Measured 0.469 (live four) / 0.529 (three traded). Needs ≥ 0.601. |
 | Sleeve count | Weakest lever. 14 vs 20 barely moves it. |
 | Forward record | **14 days old** (reset 2026-08-07). The only instrument that defeats deflation. |
@@ -221,8 +232,8 @@ DONE WHEN: each is screened on literature and metadata ONLY — no return data, 
 registered — and ranked by whether its evidence is obtainable at all. Published.
 
 ### C3 · Orthogonality prior per family
-STATUS: TODO
-WHY: The goal needs ρ̄ ≤ −0.0174. Families should be ranked by expected orthogonality to the
+STATUS: DONE
+WHY: The goal needs ρ̄ ≤ −0.030. Families should be ranked by expected orthogonality to the
 existing book before any is chosen, not after.
 DONE WHEN: a documented prior per family with its reasoning, explicitly labelled as a prior and
 not a measurement.
@@ -609,4 +620,54 @@ where it is.*
   it too — pins that the arithmetic outranks the obtainability class (a two-year source we hold is
   held and useless, and must not read as held) and that it does NOT rescue a vendor or marks
   verdict, and proves an absent lake measures as absent rather than as a span of zero.
+  Full unit suite green, ruff clean, retracted-claim gate PASS, reproduce kit 23/23. Deployed.
+- `2026-08-22 02:05` — **C3 DONE.** `scripts/orthogonality_prior.py`, published at
+  `/glassbox/orthogonality_prior.json`. A rule stated before scoring and applied by code, never
+  case by case: shares a factor family with a live sleeve → LIKELY_CORRELATED; else shares a
+  crisis direction → UNCERTAIN; else driven by something other than a price → STRONGLY_ORTHOGONAL;
+  else LIKELY_ORTHOGONAL. Every row stamped `PRIOR_NOT_A_MEASUREMENT`.
+  **Asset class is deliberately NOT in the rule, and the evidence is why.** Four sleeves give six
+  pairs; at 1061 common days the Fisher SE is 0.0307, so only two resolve — and they are exactly
+  the two that are structurally distinctive. The pair sharing a FACTOR family (AlphaMax × AlphaTrend,
+  both momentum, different asset classes) is **+0.210 at 6.9 SE**, the largest in the book. The
+  pair sharing an ASSET CLASS (AlphaMax × AlphaVintage, both US equity, different factors) is
+  **−0.062**, negative. The four sharing neither are all inside 1.5 SE of zero. Factor overlap
+  produced correlation; asset-class overlap produced the opposite of it.
+  **The result: 1 of 20 remaining families is structurally orthogonal on this rule.** Five share a
+  factor outright and fourteen lose money in the same event as AlphaForge. The atlas's remaining
+  families are disproportionately carry and basis trades in twenty different wrappers — breadth
+  measured in asset classes is not breadth, and `carbon_allowance_carry` is the clean illustration:
+  nothing about European carbon resembles crypto perpetuals and it is the same trade.
+  ⚠️ **The collision worth acting on.** `inflation_breakeven_relative_value` is the ONE family C2
+  found reachable today on data already held — and it is priced off CPI, which is exactly what
+  AlphaVintage trades. The cheapest family to work on is the one that diversifies least. An
+  ordering built on obtainability alone would have put it first.
+  ⚠️⚠️ **A correction to this file, found by doing the arithmetic instead of quoting it.** THE GOAL
+  section said an honest 1.5 needs ρ̄ ≤ −0.0174. It does not: −0.0174 gives in-sample 1.995, which
+  is forward **1.33** at the optimistic end of this book's own haircut band. Forward 1.5 needs
+  in-sample 2.25 and therefore **ρ̄ ≤ −0.030** — the figure `sleeve_admission_contract.json` has
+  carried as `average_pairwise_correlation_objective` all along. −0.0174 was a pre-re-anchoring
+  number carried across the re-anchoring without being re-derived, and it flattered in exactly the
+  direction the paragraph above it warns about. Consequence: the "what binds" table said
+  correlation was NOT binding because a real candidate measured −0.0203 against −0.0174. Against
+  the correct −0.030 that candidate **misses**, at forward 1.37 against 1.50. Correlation is
+  binding after all. Nothing published ever carried −0.0174 — the site derives this from the
+  contract — so the correction is to this file only. s̄ ≥ 0.601 was and stays right.
+  **And the ordering has a job because the gate cannot do it.** Every new pair landing exactly on
+  the contract's 0.00 correlation gate gives a book ρ̄ of +0.0017 and a forward Sharpe of **1.16**.
+  The 85 new pairs must average **−0.0340**. The gate is necessary and not sufficient by 0.34 of
+  forward Sharpe, and a pre-measurement ordering is the only lever that acts on the difference.
+  This extends `breadth_acquisition`, which reached the same conclusion against the superseded 0.15
+  gate.
+  Published UNCALIBRATED and says so: two informative pairs is one observation per structural cell,
+  a direction rather than a coefficient. The weakest joint is named in the artifact — the crisis
+  axis decides fourteen of the twenty rankings and this book holds one SHORT_LIQUIDITY sleeve, so
+  no pair tests it. What would calibrate it is breadth, which is the uncomfortable ordering: the
+  prior is least testable exactly while it is most needed.
+  `tests/unit/test_orthogonality_prior.py` (13 tests) derives coverage from the atlas in both
+  directions, exercises the rule branch that is EMPTY in today's data, pins the precedence, and
+  mutation-tests that the measured pairs are classified by the SAME sleeve table the families are
+  scored against — retag AlphaTrend's factor and the shared-factor flag flips, so the artifact
+  cannot argue from one taxonomy and rank by another. The required new-pair average round-trips
+  back to the objective, and the gate-is-insufficient claim is recomputed rather than transcribed.
   Full unit suite green, ruff clean, retracted-claim gate PASS, reproduce kit 23/23. Deployed.
