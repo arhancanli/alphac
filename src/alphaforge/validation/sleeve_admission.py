@@ -26,6 +26,11 @@ SUPPORTED_SCHEMAS = frozenset(
 # used both by the contract's own consistency check and by the autocorrelation-inflation gate.
 ANNUALIZATION_DAYS = 252.0
 
+# Pooled cross-trial Sharpe variance measured across this project's own ledger. It is the honest
+# V[SR] that replaced the ~80x-too-small value one sleeve had been graded against, and it is used
+# here only to test whether the contract's own thresholds can coexist.
+_POOLED_CROSS_TRIAL_SHARPE_VARIANCE = 7.96e-04
+
 # Gates a contract may or may not declare. Each applies if and only if the contract declares its
 # threshold, which keeps the contract the single source of truth for what is enforced: an older
 # contract is unaffected, and a newer one cannot declare a gate that quietly does nothing.
@@ -41,6 +46,16 @@ OPTIONAL_NUMERIC_GATES: dict[str, tuple[str, str]] = {
         "diversification.average_pairwise_correlation_upper_95",
         "<=",
     ),
+    # Optional since v6: see OPTIONAL_MEASUREMENT_GATES for why the per-sleeve deflated Sharpe is
+    # measured and published rather than gated at 0.95.
+    "deflated_sharpe_min": ("statistics.deflated_sharpe", ">="),
+}
+
+# Gates that require a figure to be MEASURED AND PRESENT without imposing a threshold on its
+# value. A quantity can be load-bearing evidence without being a pass/fail bar, and pretending
+# otherwise is how a bar nobody can clear ends up in a contract.
+OPTIONAL_MEASUREMENT_GATES: dict[str, str] = {
+    "deflated_sharpe_must_be_measured": "statistics.deflated_sharpe",
 }
 
 # Gates computed from several evidence fields rather than read from one path. They follow the same
@@ -54,7 +69,7 @@ OPTIONAL_BOOLEAN_GATES: dict[str, str] = {
 
 # Checks that are neither lineage, robustness, execution dimensions nor optional gates: the
 # always-present numeric gates plus the capacity-curve reconciliation.
-_BASE_CHECKS = 21
+_BASE_CHECKS = 20
 
 
 @dataclass(frozen=True, slots=True)
@@ -67,6 +82,37 @@ class AdmissionReport:
     @property
     def eligible(self) -> bool:
         return self.decision == "TECHNICALLY_ELIGIBLE"
+
+
+def _minimum_sharpe_for_deflated(target: float, observations: int) -> float:
+    """Smallest annualized Sharpe that can reach `target` DSR, under the MOST favourable search.
+
+    Solved at ``n_trials = 2``, the fewest the deflation formula accepts and therefore the least
+    deflation any selection unit can attract. If a candidate sitting on the contract's Sharpe
+    floor cannot reach the DSR gate even here, it cannot reach it under any selection unit, and
+    the two thresholds are unsatisfiable together regardless of how trials are accounted.
+
+    Zero skew and Gaussian kurtosis are assumed because they are the neutral case; real skew and
+    fat tails move the requirement further away, never closer, so this stays a lower bound.
+    """
+    from alphaforge.validation.dsr import deflated_sharpe_ratio
+
+    low, high = 0.0, 20.0
+    for _ in range(90):
+        mid = (low + high) / 2.0
+        achieved = deflated_sharpe_ratio(
+            sr=mid / math.sqrt(ANNUALIZATION_DAYS),
+            n_obs=observations,
+            n_trials=2,
+            sr_trials_variance=_POOLED_CROSS_TRIAL_SHARPE_VARIANCE,
+            skew=0.0,
+            kurtosis=3.0,
+        )
+        if achieved < target:
+            low = mid
+        else:
+            high = mid
+    return high
 
 
 def _reject_unsatisfiable_significance_floors(contract: Mapping[str, Any], path: Path) -> None:
@@ -104,20 +150,40 @@ def _reject_unsatisfiable_significance_floors(contract: Mapping[str, Any], path:
         raise ValueError(f"minimum_oos_observations must be positive in {path}")
     years = float(minimum_observations) / ANNUALIZATION_DAYS
     attainable_t = float(sharpe_floor) * math.sqrt(years)
+    # Collect EVERY violated pair rather than raising on the first. Both superseded contracts
+    # violate both pairs, and a report that names one of them invites fixing that one and
+    # rediscovering the other.
+    problems: list[str] = []
+
     if float(t_floor) > attainable_t:
         required_years = (float(t_floor) / float(sharpe_floor)) ** 2 if sharpe_floor > 0 else None
         detail = (
             f"{required_years:.1f} years" if required_years is not None else "an infinite sample"
         )
-        raise ValueError(
-            f"self-contradictory significance floors in {path}: net_sharpe_min="
-            f"{sharpe_floor} with minimum_oos_observations={minimum_observations} "
-            f"({years:.2f} years) attains at most newey_west_t={attainable_t:.3f}, but "
-            f"newey_west_t_min={t_floor} is declared. A candidate at the Sharpe floor would need "
-            f"{detail} of out-of-sample data to clear the t floor, so the t floor -- not the "
-            "declared Sharpe floor -- is the real gate. Lower newey_west_t_min, raise "
+        problems.append(
+            f"newey_west_t_min={t_floor} exceeds the {attainable_t:.3f} a candidate at "
+            f"net_sharpe_min={sharpe_floor} attains over {minimum_observations} observations "
+            f"({years:.2f} years); it would need {detail} of out-of-sample data, so the t floor "
+            "and not the declared Sharpe floor is the real gate. Lower newey_west_t_min, raise "
             "net_sharpe_min, or raise minimum_oos_observations until the three agree."
         )
+
+    deflated_floor = thresholds.get("deflated_sharpe_min")
+    if deflated_floor is not None and _finite_number(deflated_floor) and sharpe_floor > 0:
+        required = _minimum_sharpe_for_deflated(float(deflated_floor), int(minimum_observations))
+        if required > float(sharpe_floor):
+            problems.append(
+                f"deflated_sharpe_min={deflated_floor} needs an annualized Sharpe of at least "
+                f"{required:.3f} over {minimum_observations} observations even at the most "
+                f"favourable possible trial count, but net_sharpe_min is only {sharpe_floor} -- "
+                f"about {required / float(sharpe_floor):.0f}x lower. Raise net_sharpe_min, lower "
+                "deflated_sharpe_min, or stop gating the per-sleeve deflated Sharpe and gate the "
+                "book's instead: the published claim is the book's."
+            )
+
+    if problems:
+        joined = "".join(f"\n  - {problem}" for problem in problems)
+        raise ValueError(f"self-contradictory significance floors in {path}:{joined}")
 
 
 def load_admission_contract(path: Path) -> dict[str, Any]:
@@ -133,7 +199,12 @@ def load_admission_contract(path: Path) -> dict[str, Any]:
     declared = set(contract["thresholds"])
     optional_declared = len(
         declared
-        & (set(OPTIONAL_NUMERIC_GATES) | set(OPTIONAL_BOOLEAN_GATES) | OPTIONAL_DERIVED_GATES)
+        & (
+            set(OPTIONAL_NUMERIC_GATES)
+            | set(OPTIONAL_BOOLEAN_GATES)
+            | set(OPTIONAL_MEASUREMENT_GATES)
+            | OPTIONAL_DERIVED_GATES
+        )
     )
     expected_checks = (
         len(contract["required_lineage"])
@@ -230,7 +301,6 @@ def evaluate_sleeve_evidence(
         "statistics.net_sharpe": (">=", thresholds["net_sharpe_min"]),
         "statistics.stressed_sharpe": (">=", thresholds["stressed_sharpe_min"]),
         "statistics.newey_west_t": (">=", thresholds["newey_west_t_min"]),
-        "statistics.deflated_sharpe": (">=", thresholds["deflated_sharpe_min"]),
         "diversification.absolute_beta": ("<=", thresholds["absolute_beta_max"]),
         "diversification.average_pairwise_correlation": (
             "<=",
@@ -330,6 +400,17 @@ def evaluate_sleeve_evidence(
                 failures.append(
                     f"threshold:statistics.newey_west_t_ratio:{ratio:.4f}<{ratio_floor}"
                 )
+
+    # Measurement gates: the figure must be present and finite. Absent fails closed, exactly as a
+    # threshold gate would, because unmeasured is not the same as unremarkable.
+    for key, path in OPTIONAL_MEASUREMENT_GATES.items():
+        if key not in thresholds:
+            continue
+        checks += 1
+        if thresholds[key] is not True:
+            continue
+        if not _finite_number(_nested(evidence, path)):
+            failures.append(f"missing_numeric:{path}")
 
     # Boolean gates follow the same declare-to-enforce rule. `is True` rather than truthiness:
     # a placeholder string or a 1 must not satisfy a safety flag.

@@ -160,3 +160,93 @@ def test_correlation_gate_is_not_merely_looser_than_it_was() -> None:
     assert contract["thresholds"]["average_pairwise_correlation_max"] < (
         superseded["thresholds"]["average_pairwise_correlation_max"]
     )
+
+
+# --------------------------------------------------------------------------------------------
+# 4. the per-sleeve deflation gate, which was the same defect one layer down
+# --------------------------------------------------------------------------------------------
+
+
+def test_per_sleeve_deflated_sharpe_is_measured_not_gated() -> None:
+    """It is re-scoped, not lowered, and the distinction is the whole argument.
+
+    A deflated-Sharpe floor of 0.95 over this contract's 756-observation minimum requires an
+    annualized Sharpe of 1.184 EVEN AT n_trials=2, the least deflation the formula permits --
+    roughly eight times the declared net_sharpe_min. So the Sharpe floor was decoration for the
+    second time, and the real bar was one the book itself cannot clear: 0 of 33 restated variants
+    reach 0.95, the live sleeves' own configurations among them.
+
+    A sleeve admitted for its correlation contribution is not claiming standalone edge, so
+    deflating its standalone Sharpe measures the wrong object. The object actually published is
+    the book's, and it stays gated at 0.95 against the COMPLETE union -- strictly harder, on the
+    claim that is actually made.
+    """
+    contract = _contract()
+    thresholds = contract["thresholds"]
+
+    assert "deflated_sharpe_min" not in thresholds
+    assert thresholds["deflated_sharpe_must_be_measured"] is True
+    assert thresholds["book_deflated_sharpe_min"] == 0.95, (
+        "removing the per-sleeve gate is only defensible while the BOOK's deflation is gated"
+    )
+    assert (
+        contract["deflation_policy"]["book_selection_unit"]
+        == "complete_union_hypothesis_identities"
+    )
+
+
+def test_evidence_without_a_deflated_sharpe_fails_closed() -> None:
+    """Unmeasured is not the same as unremarkable."""
+    contract = _contract()
+    evidence = copy.deepcopy(passing_evidence())
+    del evidence["statistics"]["deflated_sharpe"]
+
+    failures = _failure_paths(evidence, contract)
+    assert "statistics.deflated_sharpe" in failures, failures
+
+
+def test_a_low_per_sleeve_deflated_sharpe_no_longer_blocks_admission() -> None:
+    """The point of the re-scoping, stated as a behaviour rather than a comment.
+
+    This is the candidate the whole fourteen-sleeve programme needs: modest standalone edge,
+    genuinely negative correlation, a book improvement whose bootstrap lower bound clears zero.
+    Under the old gate it was rejected on a number that was never the claim.
+    """
+    contract = _contract()
+    evidence = copy.deepcopy(passing_evidence())
+    evidence["statistics"]["deflated_sharpe"] = 0.05
+
+    report = evaluate_sleeve_evidence(evidence, contract)
+    assert report.eligible, report.failures
+
+
+def test_loader_refuses_a_contract_that_regates_per_sleeve_deflation_inconsistently(
+    tmp_path: Path,
+) -> None:
+    """The mutation: put the 0.95 per-sleeve floor back beside the 0.15 Sharpe floor."""
+    contract = json.loads(CONTRACT_PATH.read_text())
+    contract["thresholds"]["deflated_sharpe_min"] = 0.95
+    path = tmp_path / "sleeve_admission_contract.json"
+    path.write_text(json.dumps(contract))
+
+    with pytest.raises(ValueError, match="deflated_sharpe_min"):
+        load_admission_contract(path)
+
+
+def test_a_consistent_per_sleeve_deflation_gate_is_still_allowed(tmp_path: Path) -> None:
+    """The validator must not be a ban. A contract whose floors AGREE has to load.
+
+    Otherwise this is not a consistency check, it is a hard-coded preference wearing one, and the
+    next reader cannot tell which.
+    """
+    contract = json.loads(CONTRACT_PATH.read_text())
+    contract["thresholds"]["deflated_sharpe_min"] = 0.95
+    contract["thresholds"]["net_sharpe_min"] = 2.0     # comfortably above the 1.184 requirement
+    contract["thresholds"]["stressed_sharpe_min"] = 2.0
+    contract["thresholds"]["newey_west_t_min"] = 2.0   # 2.0 * sqrt(3) = 3.46, so this agrees too
+    contract["evidence_checks_per_candidate"] += 1     # the re-declared threshold adds a check
+    path = tmp_path / "sleeve_admission_contract.json"
+    path.write_text(json.dumps(contract))
+
+    loaded = load_admission_contract(path)
+    assert loaded["thresholds"]["deflated_sharpe_min"] == 0.95

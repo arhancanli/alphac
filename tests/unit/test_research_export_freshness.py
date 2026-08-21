@@ -169,13 +169,25 @@ def test_export_distinguishes_ledger_records_from_hypothesis_identities(modules)
     assert sum(p["immutable_execution_records"] for p in ledger["profiles"]) == ledger[
         "immutable_execution_records"
     ]
-    assert ledger["budget_status"] == "PAUSE_RESEARCH"
-    assert ledger["distinct_hypothesis_identities"] == 162
+    # Stated as the RELATIONSHIP between the count, the budget and the status rather than as the
+    # three literals they happened to hold. Pinning the literals meant that authorizing a budget
+    # broke this test for a reason that had nothing to do with what it is checking: that the
+    # published ledger's status follows from its own numbers. It now fails on an inconsistent
+    # ledger and passes on a consistent one at any budget.
+    over_budget = (
+        ledger["distinct_hypothesis_identities"] > ledger["hypothesis_identity_budget"]
+    )
+    assert ledger["budget_status"] == ("PAUSE_RESEARCH" if over_budget else "PASS")
     assert ledger["budget_remaining"] == (
         ledger["hypothesis_identity_budget"] - ledger["distinct_hypothesis_identities"]
     )
-    assert ledger["budget_remaining"] == -2
-    assert ledger["research_status"] == "PAUSED_BUDGET_REVIEW"
+    assert ledger["research_status"].startswith("PAUSED_") == over_budget, (
+        "a ledger that is over budget must say research is paused, and one that is not must not"
+    )
+    assert ledger["distinct_hypothesis_identities"] == 162, (
+        "the observed identity count is a fact about work already done; it must not move when a "
+        "budget is authorized"
+    )
     assert ledger["trial_debt_reconciliation"]["source_path"] == (
         "artifacts/audit/trial_debt_reconciliation.json"
     )

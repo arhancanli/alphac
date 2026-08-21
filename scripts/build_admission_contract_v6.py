@@ -54,6 +54,22 @@ def main() -> int:
     thresholds["average_pairwise_correlation_upper_95_max"] = 0.10
     thresholds["capacity_usd_min"] = 500_000
 
+    # THE PER-SLEEVE DEFLATION GATE WAS THE SAME DEFECT AS THE t-GATE, ONE LAYER DOWN.
+    # deflated_sharpe_min 0.95 over the contract's own 756-observation minimum requires an
+    # annualized Sharpe of 1.184 EVEN AT n_trials=2, the least deflation the formula permits --
+    # roughly eight times the declared net_sharpe_min of 0.15. So the Sharpe floor was decoration
+    # again, and the real bar was one the firm's own book cannot clear: 0 of 33 restated
+    # variants, the live sleeves' own configurations among them, reach 0.95.
+    #
+    # It is not lowered, it is RE-SCOPED, and the contract's own deflation_policy already said
+    # why: "The published claim is the book's, so the book carries the full union."  A sleeve
+    # admitted for its correlation contribution is not claiming standalone edge, so deflating its
+    # standalone Sharpe measures the wrong object. The object being published is gated harder --
+    # book_deflated_sharpe_min 0.95 against the COMPLETE union, plus a bootstrap lower bound on
+    # the book-Sharpe improvement. The per-sleeve figure stays mandatory to measure and publish.
+    thresholds.pop("deflated_sharpe_min", None)
+    thresholds["deflated_sharpe_must_be_measured"] = True
+
     correlation_gate = thresholds["average_pairwise_correlation_max"]
     low, high = contract["objective"]["portfolio_sharpe_target"]
     psd_floor = -1.0 / (TARGET_N - 1)
@@ -138,6 +154,24 @@ def main() -> int:
         ),
     }
 
+    contract["deflation_policy"]["per_sleeve_is_measured_not_gated"] = True
+    contract["deflation_policy"]["per_sleeve_gate_removed_reason"] = (
+        "deflated_sharpe_min of 0.95 over this contract's 756-observation minimum requires an "
+        "annualized Sharpe of 1.184 even at n_trials=2, the least deflation the formula permits: "
+        "about eight times the declared net_sharpe_min of 0.15, which made the Sharpe floor "
+        "decoration exactly as the Newey-West t floor did. It is also a bar this book cannot "
+        "clear -- 0 of 33 restated variants reach it, including the live sleeves' own "
+        "configurations, so the gate demanded of new candidates something no existing sleeve "
+        "achieves. Re-scoped rather than lowered: a sleeve admitted for its correlation "
+        "contribution is not claiming standalone edge, so deflating its standalone Sharpe "
+        "measures the wrong object. The object actually published is the book's, and it is gated "
+        "harder -- book_deflated_sharpe_min 0.95 against the COMPLETE union of hypothesis "
+        "identities, plus a bootstrap lower bound on the book-Sharpe improvement. The per-sleeve "
+        "deflated Sharpe remains mandatory to measure and publish; evidence that omits it fails "
+        "closed."
+    )
+    contract["deflation_policy"]["per_sleeve_measurement_key"] = "deflated_sharpe_must_be_measured"
+
     contract["significance_policy"] = {
         "newey_west_t_min": thresholds["newey_west_t_min"],
         "newey_west_t_min_role": "sign gate",
@@ -162,6 +196,13 @@ def main() -> int:
             "+0.30. The gate that decides admission is therefore the bootstrap LOWER bound on the "
             "book-Sharpe improvement, which prices edge and correlation together, and it is "
             "strictly harder to game than either input alone."
+        ),
+        "self_consistency_is_enforced_at_load": (
+            "load_admission_contract refuses any contract whose significance floors cannot all be "
+            "satisfied at once. It checks two pairs: net_sharpe_min against newey_west_t_min at "
+            "minimum_oos_observations, and net_sharpe_min against deflated_sharpe_min solved at "
+            "n_trials=2. Both pairs were violated before v6, in the same way and undetected, "
+            "which is why the check is structural rather than a corrected number."
         ),
         "minimum_oos_observations_raised_from": 252,
         "minimum_oos_observations_reason": (
