@@ -142,7 +142,7 @@ DONE WHEN: `var/log/live_tick.log` shows the check running in a scheduled `:25` 
 result, confirmed by reading the log rather than by inference.
 
 ### A5 · Record-continuity audit
-STATUS: TODO
+STATUS: DONE — published, guarded, and it found a systemic gap and crypto AT the threshold
 WHY: Nothing measures whether the forward record has gaps. A gap is as damaging as a config change
 and is currently invisible.
 DONE WHEN: a script reports, per sleeve, every day since go-live with no mark, publishes the gap
@@ -425,3 +425,16 @@ where it is.*
   retracted-claim gate)" and there are two gates on that branch now, so a live-change block would
   have named the wrong cause and sent the next reader to the wrong file. It now names whichever
   gate blocked, or both. All four combinations exercised against the real logic. Suite green.
+- `2026-08-22 01:55` — **A5 DONE, and it found something.** `scripts/audit_record_continuity.py`
+  measures every day since go-live with no mark, per sleeve, and it does NOT count them the same
+  way for all four: a weekend absence is legitimate for a sleeve that does not trade weekends and
+  a real gap for one that trades 24/7. Counting them identically would make the equity sleeves
+  look permanently broken and hide a genuine crypto hole.
+  ⚠️ **Two findings on a 15-day-old record.** `2026-08-10`, a MONDAY, has no mark on ANY sleeve —
+  systemic, the tick did not run. And the crypto sleeve sits at **exactly 20.0%**, the declared
+  threshold, so one more missed day fails it. Published at `/glassbox/record_continuity.json`.
+  Threshold is DECLARED at 20% rather than fitted; a guard asserts it does not equal the worst
+  observed rate, which is what a fitted bar looks like.
+  Six guards, mutation-tested (a 35% gap rate fails the gate). Wired into BOTH publish jobs — the
+  pipeline-order test caught that I had added it to the hourly tick only, which is the exact
+  split-coverage defect where two jobs each cover what the other checks. Edge declared. Suite green.

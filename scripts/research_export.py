@@ -73,6 +73,9 @@ GATE_REACHABILITY_JSON: Final[Path] = (
 COVARIANCE_MEMORY_JSON: Final[Path] = (
     REPO / "artifacts" / "analysis" / "live_covariance_memory" / "result.json"
 )
+RECORD_CONTINUITY_JSON: Final[Path] = (
+    REPO / "artifacts" / "engineering" / "record_continuity.json"
+)
 
 # The discovery bundle's human-facing gate summary is DERIVED from the admission contract rather
 # than transcribed beside it. It was transcribed until v6, and by then it had gone stale in the
@@ -1266,6 +1269,13 @@ def build_research_export() -> dict[str, Any]:
         # the answer is the same shape for all three and it is not the encouraging one.
         # What the LIVE covariance estimator does with a halflife, per sleeve. Published because
         # the overlay policy was set from a simulation of a different estimator.
+        # Whether the forward record has holes. Published because the record's whole value is
+        # its continuity, and a gap that is only visible internally is a gap nobody can check.
+        "record_continuity": (
+            json.loads(RECORD_CONTINUITY_JSON.read_text())
+            if RECORD_CONTINUITY_JSON.exists()
+            else None
+        ),
         "live_covariance_memory": (
             json.loads(COVARIANCE_MEMORY_JSON.read_text())
             if COVARIANCE_MEMORY_JSON.exists()
@@ -1406,6 +1416,10 @@ def main(out_dir: Path = OUT_DIR) -> Path:
     )
     if ADMISSION_DRY_RUN_JSON.exists():
         (out_dir / "admission_dry_run.json").write_text(ADMISSION_DRY_RUN_JSON.read_text())
+    if RECORD_CONTINUITY_JSON.exists():
+        (out_dir / "record_continuity.json").write_text(
+            RECORD_CONTINUITY_JSON.read_text()
+        )
     if COVARIANCE_MEMORY_JSON.exists():
         (out_dir / "live_covariance_memory.json").write_text(
             COVARIANCE_MEMORY_JSON.read_text()
@@ -1615,6 +1629,10 @@ def main(out_dir: Path = OUT_DIR) -> Path:
         )
         if ADMISSION_DRY_RUN_JSON.exists():
             (app_dir / "admission_dry_run.json").write_text(ADMISSION_DRY_RUN_JSON.read_text())
+        if RECORD_CONTINUITY_JSON.exists():
+            (app_dir / "record_continuity.json").write_text(
+                RECORD_CONTINUITY_JSON.read_text()
+            )
         if COVARIANCE_MEMORY_JSON.exists():
             (app_dir / "live_covariance_memory.json").write_text(
                 COVARIANCE_MEMORY_JSON.read_text()
