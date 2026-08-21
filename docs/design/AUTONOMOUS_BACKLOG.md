@@ -191,7 +191,7 @@ sample length stated prominently. **If 14–30 days is too short to measure, say
 result** — publish the power calculation rather than a noisy estimate.
 
 ### B5 · Cost model realism check
-STATUS: TODO
+STATUS: DONE — the one checkable component matches exactly; the fix is a schema field, not a parameter
 WHY: `cost_frac_oneway = 0.001` is a flat one-way cost that does not widen in stress. The red-team
 artifact already flags this as an open weakness.
 DONE WHEN: the live fills are compared against the modelled cost on the days the record covers,
@@ -500,3 +500,22 @@ where it is.*
   needs 6.7–9.2 years** and is not answerable by waiting; it would have to be attacked by
   measuring fills against their decision prices directly.
   Suite green.
+- `2026-08-22 03:20` — **B5 DONE. Track B complete.** Published at
+  `/glassbox/cost_model_realism.json`.
+  **What matched:** crypto commission, MEASURED at **5.00bp** against a modelled taker fee of
+  **5.0bp** — exact. The one cost component in the book that can be checked against reality
+  checks out. Crypto slippage against `modeled_price` averages −3.18bp (favourable), all taker,
+  book never exhausted.
+  ⚠️ **The latency finding.** Median submit-to-fill across the equity sleeves is **5.5 HOURS** —
+  orders go in after the close and fill at the next open. The model represents latency as a flat
+  2bp add-on, which is a microstructure quantity. An overnight gap is not a spread; it is
+  unhedged exposure with a fat-tailed cost. Not evidence the model is wrong by an amount —
+  evidence it models this component as the wrong KIND of thing.
+  ⚠️ **Zero crypto fills since go-live** (last 2026-07-30) against a weekly rebalance over a
+  15-day record. Surfaced, not diagnosed.
+  **What cannot be asked, and the fix.** Equity slippage is not computable: the fills record
+  `limit_price`, a PADDED marketable limit, so a fill "beating" it by 54bp is beating the padding.
+  Equity commission has no fee column at all. **THE FIX IS ONE FIELD — record the reference mid at
+  `submitted_ts`** — which turns implementation shortfall from unanswerable into a daily
+  measurement and costs nothing to capture. No cost parameter should move on this evidence; the
+  schema should. Suite green.
