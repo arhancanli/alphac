@@ -91,6 +91,9 @@ EXECUTION_GAP_POWER_JSON: Final[Path] = (
 COST_MODEL_REALISM_JSON: Final[Path] = (
     REPO / "artifacts" / "analysis" / "cost_model_realism" / "result.json"
 )
+REACHABILITY_HARNESS_JSON: Final[Path] = (
+    REPO / "artifacts" / "analysis" / "reachability_harness" / "result.json"
+)
 
 # The discovery bundle's human-facing gate summary is DERIVED from the admission contract rather
 # than transcribed beside it. It was transcribed until v6, and by then it had gone stale in the
@@ -1342,6 +1345,15 @@ def build_research_export() -> dict[str, Any]:
             if SPINOFF_PRORATA_GATE_JSON.exists()
             else None
         ),
+        # The pre-test the two artifacts above are now instances of. Published because the
+        # reusable part is the thing worth copying: ask whether a near-miss gate is reachable
+        # AT ALL before writing a protocol, since the alternative move is always to widen the
+        # detector until the number clears, and that is tuning a measurement to fit a target.
+        "reachability_harness": (
+            json.loads(REACHABILITY_HARNESS_JSON.read_text())
+            if REACHABILITY_HARNESS_JSON.exists()
+            else None
+        ),
         "sleeve_admission_contract": {
             "contract": json.loads(SLEEVE_ADMISSION_CONTRACT_JSON.read_text()),
             "source_sha256": hashlib.sha256(
@@ -1503,6 +1515,10 @@ def main(out_dir: Path = OUT_DIR) -> Path:
         (out_dir / "spinoff_prorata_gate.json").write_text(
             SPINOFF_PRORATA_GATE_JSON.read_text()
         )
+    if REACHABILITY_HARNESS_JSON.exists():
+        (out_dir / "reachability_harness.json").write_text(
+            REACHABILITY_HARNESS_JSON.read_text()
+        )
     if BOOK_WITHOUT_ALPHAVINTAGE_JSON.exists():
         (out_dir / "book_without_alphavintage.json").write_text(
             BOOK_WITHOUT_ALPHAVINTAGE_JSON.read_text()
@@ -1552,6 +1568,17 @@ def main(out_dir: Path = OUT_DIR) -> Path:
     )
     (literature_dir / "financing-replay.md").write_text(FINANCING_REPLAY_MD.read_text())
     (literature_dir / "engineering-quality.md").write_text(ENGINEERING_QUALITY_MD.read_text())
+    # MISSING FROM THE PRIMARY SITE until 2026-08-22. The app host published this paper and this
+    # host did not, because the two write blocks are hand-mirrored copies and one edit landed in
+    # only one of them. Nothing could notice: the paper is not linked from research.json, so its
+    # absence produced no broken link and no failing check — the primary site was simply missing
+    # the document that restates every Sharpe the deflation correction touched.
+    # tests/unit/test_glassbox_write_paths.py now compares the two blocks as sets, so the next
+    # one-sided edit fails a test rather than quietly publishing to one host.
+    if LEGACY_DSR_RESTATEMENT_MD.exists():
+        (literature_dir / "legacy-dsr-restatement.md").write_text(
+            LEGACY_DSR_RESTATEMENT_MD.read_text()
+        )
     (literature_dir / "literature-frontier-2026-08-16.md").write_text(
         LITERATURE_FRONTIER_MD.read_text()
     )
@@ -1735,6 +1762,10 @@ def main(out_dir: Path = OUT_DIR) -> Path:
         if SPINOFF_PRORATA_GATE_JSON.exists():
             (app_dir / "spinoff_prorata_gate.json").write_text(
                 SPINOFF_PRORATA_GATE_JSON.read_text()
+            )
+        if REACHABILITY_HARNESS_JSON.exists():
+            (app_dir / "reachability_harness.json").write_text(
+                REACHABILITY_HARNESS_JSON.read_text()
             )
         if BOOK_WITHOUT_ALPHAVINTAGE_JSON.exists():
             (app_dir / "book_without_alphavintage.json").write_text(
