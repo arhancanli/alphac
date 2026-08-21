@@ -114,3 +114,74 @@ def test_the_guard_can_fail(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(fingerprinter, "strategy_settings", mutated)
     measured = fingerprinter.build_fingerprint()
     assert measured["fingerprint"] != _contract()["declared_fingerprint"]
+
+
+def test_every_field_in_the_surface_actually_moves_the_fingerprint() -> None:
+    """A field recorded in the surface but not reaching the hash is decoration, not coverage.
+
+    Stated over the WHOLE surface rather than against a list of field names, so a setting added
+    tomorrow is checked the day it appears. This is the invariant that would have caught the
+    original gap: the overlay's vol target, the ladder's halve and flatten depths, the halt
+    cooldown, the staleness limit and the inviolable per-name cap are read off Settings rather
+    than passed to the constructor, so all eight sat outside a fingerprint that claimed to cover
+    "how the live book trades".
+    """
+    baseline = fingerprinter.build_fingerprint()
+    surface = baseline["surface"]
+    assert surface, "an empty surface would make this guard vacuous"
+
+    def bump(value: object) -> object:
+        """Every branch must actually CHANGE the value.
+
+        A branch that returns its input unchanged reports the field as uncovered when it is not.
+        That happened on this test's first run: `sleeves` and `strategic_tilt_mix` are dicts, the
+        helper returned them as-is, and the guard accused a fingerprint that hashes them
+        correctly. The check would have been measuring the helper, not the thing it guards.
+        """
+        if isinstance(value, bool):
+            return not value
+        if isinstance(value, (int, float)):
+            return value + 1
+        if isinstance(value, str):
+            return f"{value}_mutated"
+        if isinstance(value, dict):
+            return {**value, "__mutated__": 1}
+        if isinstance(value, list):
+            return [*value, "__mutated__"]
+        return "__mutated__" if value is None else value
+
+    unmoved: list[str] = []
+    for section, values in surface.items():
+        if not isinstance(values, dict):
+            continue
+        for field, value in values.items():
+            mutated = json.loads(json.dumps(surface))
+            mutated[section][field] = bump(value)
+            if fingerprinter.canonical_fingerprint(mutated) == baseline["fingerprint"]:
+                unmoved.append(f"{section}.{field}")
+
+    assert not unmoved, (
+        f"these fields are recorded in the live-config surface but do not reach the fingerprint, "
+        f"so changing them would not be detected: {unmoved}"
+    )
+
+
+def test_the_risk_path_is_inside_the_surface() -> None:
+    """Named explicitly because these were the fields that were missing, and why they were.
+
+    They are not constructor defaults: BlendStrategy reads them off Settings, so a guard built by
+    inspecting the constructor signature cannot see them however carefully it is written.
+    """
+    surface = fingerprinter.build_fingerprint()["surface"]
+    assert "risk_path_settings" in surface
+    for field in (
+        "vol_target_ann",
+        "vol_scale_max",
+        "gross_max",
+        "dd_halve_gross",
+        "dd_flat_halt",
+        "flat_cooldown_bars",
+        "staleness_max_bars",
+        "w_max",
+    ):
+        assert field in surface["risk_path_settings"], f"{field} is outside the live-config guard"

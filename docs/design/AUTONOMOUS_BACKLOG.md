@@ -118,7 +118,7 @@ and fail at 1/3/5 years, what would VOID the test, and the config fingerprint it
 is committed, marked `UNSIGNED — REQUIRES OWNER`, and is NOT referenced from the public site.
 
 ### A2 · Extend the live-change fingerprint to the overlay and ladder
-STATUS: TODO
+STATUS: DONE — 8 risk-path fields added, each mutation-tested through the real config path
 WHY: The fingerprint covers `BlendStrategy` defaults and book composition. The overlay's
 vol-target, the drawdown ladder's gross multipliers and the per-name `w_max` clip also move the
 traded book and are outside it.
@@ -385,3 +385,19 @@ where it is.*
   reaching it. INCONCLUSIVE named as the expected outcome for years. Five void conditions written
   down, including any change to AlphaVintage's allocation. Verified NOT referenced from either
   publish script. Suite green. **Unsigned — signing is owner-blocked.**
+- `2026-08-21 21:40` — **A2 DONE.** The fingerprint claimed to cover "how the live book trades"
+  and did not: the overlay's `vol_target_ann` / `vol_scale_max` / `gross_max`, the ladder's
+  `dd_halve_gross` / `dd_flat_halt` / `flat_cooldown_bars`, `staleness_max_bars` and the
+  inviolable per-name `w_max` are read off `Settings` (strategy.py:198-231) rather than passed to
+  the constructor, so a guard built by inspecting the constructor signature could not see them
+  however carefully written. All eight now read through `Settings` and
+  `PortfolioConstraints.from_settings`, so a config change reaches the fingerprint by the same
+  path it reaches the book. Re-declared (`ec06c65b…`) as a COVERAGE change — every value recorded
+  is the value already running, and no live configuration was touched.
+  Mutation-tested twice: all 8 fields individually, and `vol_target_ann` 0.15 → 0.22 edited in
+  `config/settings.py` itself, which the tick-time gate blocks while naming the field.
+  New invariant `test_every_field_in_the_surface_actually_moves_the_fingerprint` asserts over the
+  WHOLE surface that a recorded field reaches the hash, so a setting added tomorrow is checked the
+  day it appears. It fired on its own first run — the mutation helper could not perturb a dict, so
+  it accused `sleeves` and `strategic_tilt_mix` of being uncovered when they are not. The helper
+  was measuring itself; every branch now actually changes the value. Suite green.
