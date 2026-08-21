@@ -183,7 +183,7 @@ DONE WHEN: each sleeve's standalone Sharpe is decomposed into signal, cost and e
 components on its own curve, published, with the largest single recoverable component named.
 
 ### B4 · Live-versus-backtest execution gap
-STATUS: TODO
+STATUS: DONE — NOT measurable yet; power published. Re-run at ~3 months for a 5% gap
 WHY: The cheapest possible s̄ is not new research, it is the deployed sleeves delivering what their
 backtests claim. Historically this book has run at roughly half its backtest quality.
 DONE WHEN: measured per sleeve for the days the live record covers, with the honest caveat about
@@ -485,3 +485,18 @@ where it is.*
   as total transaction cost understates it badly.
   Also caught: a closure over the loop variables would have computed every sleeve with the LAST
   sleeve's equity, vol and horizon — and the numbers would still have looked plausible. Suite green.
+- `2026-08-22 03:05` — **B4 DONE, and the answer is "not yet".** Published at
+  `/glassbox/execution_gap_power.json`. Overlap between live marks and a walk-forward covering
+  the live period exists for TWO sleeves only — the blessed research curves end 2026-06-01 by
+  design, before go-live, so they cannot answer this at any record length. That overlap is 5 and
+  9 days: **four and eight return observations**.
+  Observed: AlphaMax **−11.81% ± 10.48%** annualised (−1.13 SE), AlphaTrend **−2.84% ± 8.68%**
+  (−0.33 SE). Both negative, neither distinguishable from noise. Recorded as OBSERVATIONS, not
+  estimates.
+  **The deliverable is the power, and it is actionable.** The tracking difference
+  `d = r_live − r_backtest` answers this far sooner than either Sharpe, because both run the same
+  signal on the same days and the difference series is much less noisy than either level.
+  A **5% annual gap becomes visible in 3–4 months** — that is when to re-run this. A **1% gap
+  needs 6.7–9.2 years** and is not answerable by waiting; it would have to be attacked by
+  measuring fills against their decision prices directly.
+  Suite green.
