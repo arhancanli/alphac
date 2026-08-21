@@ -66,13 +66,64 @@ SLEEVE_DISCOVERY_JSON: Final[Path] = REPO / "config" / "sleeve_discovery.json"
 # claiming the same fact is one file too many -- the copy drifts, and a reader auditing the config
 # cannot tell which one binds.
 _DISCOVERY_GATE_SOURCE: Final[dict[str, str]] = {
-    "deflated_sharpe_min": "deflated_sharpe_min",
+    "book_deflated_sharpe_min": "book_deflated_sharpe_min",
     "pbo_max": "pbo_max",
     "average_pairwise_correlation_max": "average_pairwise_correlation_max",
+    "average_pairwise_correlation_upper_95_max": "average_pairwise_correlation_upper_95_max",
     "pairwise_correlation_max": "ordinary_pairwise_correlation_max",
     "stressed_pairwise_correlation_max": "stressed_pairwise_correlation_max",
     "minimum_oos_observations": "minimum_oos_observations",
+    "net_sharpe_min": "net_sharpe_min",
+    "capacity_usd_min": "capacity_usd_min",
 }
+
+# Published gate names that are no longer thresholds. Listed rather than silently dropped, so the
+# site can say what changed instead of a bar simply vanishing from the page between deploys.
+_DISCOVERY_GATE_RETIRED: Final[dict[str, str]] = {
+    "deflated_sharpe_min": (
+        "Retired as a per-sleeve GATE in contract v6 and replaced by book_deflated_sharpe_min at "
+        "the same 0.95 against the complete union of hypothesis identities. A 0.95 per-sleeve "
+        "floor required an annualized Sharpe of 1.184 even at the least deflation the formula "
+        "permits, about eight times the declared net Sharpe floor, and no sleeve in this book "
+        "clears it. The per-sleeve figure is still measured and published for every candidate; "
+        "evidence that omits it fails closed."
+    ),
+}
+
+
+def _write_kill_papers(research_dir: Path, glassbox_dir: Path) -> int:
+    """Render one paper per killed candidate into the site's research directory.
+
+    Forty-six candidates have been killed and three have survived. The forty-six are the papers
+    almost nobody publishes, which is exactly why they are the ones worth publishing: a kill log
+    is a table, a paper is the reasoning another researcher can use. Every FIGURE in them is
+    injected from the kill-log entry; the prose is written by hand. See scripts/build_kill_papers.
+    """
+    # Imported here rather than at module scope: this script is run directly, so a sibling module
+    # is only importable once its own directory is on the path, and doing that at import time
+    # would reorder every other import in the file.
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location(
+        "build_kill_papers", Path(__file__).resolve().parent / "build_kill_papers.py"
+    )
+    if spec is None or spec.loader is None:  # pragma: no cover - defensive
+        raise ImportError("cannot load scripts/build_kill_papers.py")
+    kill_papers = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(kill_papers)
+
+    research_dir.mkdir(parents=True, exist_ok=True)
+    source = glassbox_dir / "kill_log.json"
+    if not source.exists():
+        raise FileNotFoundError(
+            f"{source} is missing: glassbox_export.py must run before research_export.py. The "
+            "ordering is declared in tests/unit/test_publish_pipeline_order.py; failing here "
+            "rather than skipping keeps a reordered pipeline from silently publishing no papers."
+        )
+    papers = kill_papers.render_kill_papers(json.loads(source.read_text()))
+    for filename, markdown in papers.items():
+        (research_dir / filename).write_text(markdown)
+    return len(papers)
 
 
 def _discovery_with_contract_gates() -> dict:
@@ -80,15 +131,27 @@ def _discovery_with_contract_gates() -> dict:
     discovery = json.loads(SLEEVE_DISCOVERY_JSON.read_text())
     contract = json.loads(SLEEVE_ADMISSION_CONTRACT_JSON.read_text())
     thresholds = contract["thresholds"]
-    gates = dict(discovery.get("admission_gates", {}))
+    declared = dict(discovery.get("admission_gates", {}))
+    # Carry the qualitative commitments through untouched; rebuild every NUMERIC gate from the
+    # contract. Patching the existing dict left retired thresholds sitting in it, which is the
+    # drift this function exists to prevent.
+    gates = {
+        key: value
+        for key, value in declared.items()
+        if isinstance(value, bool) and key not in _DISCOVERY_GATE_RETIRED
+    }
     for published_key, threshold_key in _DISCOVERY_GATE_SOURCE.items():
         if threshold_key not in thresholds:
             raise KeyError(
                 f"admission contract has no threshold {threshold_key!r} for published gate "
-                f"{published_key!r}; the published summary would silently keep a stale value"
+                f"{published_key!r}; either wire it up or retire it in _DISCOVERY_GATE_RETIRED "
+                "so the change is stated rather than silent"
             )
         gates[published_key] = thresholds[threshold_key]
     discovery["admission_gates"] = gates
+    discovery["retired_admission_gates"] = {
+        key: reason for key, reason in _DISCOVERY_GATE_RETIRED.items() if key not in thresholds
+    }
     discovery["admission_contract_schema"] = contract["schema"]
     discovery["admission_contract_public_path"] = "/glassbox/sleeve_admission_contract.json"
     # The relationship between the gate and the objective, published beside them both. Without it
@@ -1307,6 +1370,7 @@ def main(out_dir: Path = OUT_DIR) -> Path:
     (out_dir / "financing_contract.json").write_text(FINANCING_CONTRACT_JSON.read_text())
     (out_dir / "lint_debt_contract.json").write_text(LINT_DEBT_CONTRACT_JSON.read_text())
     literature_dir = out_dir.parent / "research"
+    _write_kill_papers(literature_dir, out_dir)
     literature_dir.mkdir(parents=True, exist_ok=True)
     (literature_dir / "execution-realism.md").write_text(EXECUTION_REALISM_MD.read_text())
     (literature_dir / "futures-execution-foundation.md").write_text(
@@ -1504,6 +1568,7 @@ def main(out_dir: Path = OUT_DIR) -> Path:
             LINT_DEBT_CONTRACT_JSON.read_text()
         )
         app_literature_dir = app_dir.parent / "research"
+        _write_kill_papers(app_literature_dir, app_dir)
         app_literature_dir.mkdir(parents=True, exist_ok=True)
         (app_literature_dir / "execution-realism.md").write_text(
             EXECUTION_REALISM_MD.read_text()

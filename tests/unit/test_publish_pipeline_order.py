@@ -46,10 +46,14 @@ EDGES: tuple[tuple[str, str, tuple[str, ...]], ...] = (
     # The lineage audit reads the PUBLISHED kill ledger too, not just the published book. Both of
     # its inputs are written by earlier steps, and both edges have to be declared: an undeclared
     # edge is not a weaker guard, it is no guard, and a later reorder would break it in silence.
+    # research_export.py joined this edge when the kill papers were added: it renders one paper
+    # per killed candidate from the PUBLISHED kill log, so it must run after the step that writes
+    # it. Declaring the new consumer rather than relying on the existing edge -- an undeclared
+    # edge is not a weaker guard, it is no guard, and a later reorder would break it in silence.
     (
         "glassbox_export.py",
         "meridian/public/glassbox/kill_log.json",
-        ("audit_sleeve_family_lineage.py",),
+        ("audit_sleeve_family_lineage.py", "research_export.py"),
     ),
     (
         "audit_sleeve_family_lineage.py",

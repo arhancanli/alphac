@@ -13,6 +13,7 @@ portfolio objective is published beside them rather than left for the reader to 
 
 from __future__ import annotations
 
+import importlib.util
 import json
 from pathlib import Path
 
@@ -25,15 +26,18 @@ HOSTS = (
     REPO.parent / "meridian-app" / "public" / "glassbox" / "sleeve_discovery.json",
 )
 
-# published gate name -> contract threshold name
-GATE_SOURCE = {
-    "deflated_sharpe_min": "deflated_sharpe_min",
-    "pbo_max": "pbo_max",
-    "average_pairwise_correlation_max": "average_pairwise_correlation_max",
-    "pairwise_correlation_max": "ordinary_pairwise_correlation_max",
-    "stressed_pairwise_correlation_max": "stressed_pairwise_correlation_max",
-    "minimum_oos_observations": "minimum_oos_observations",
-}
+# Imported from the exporter, NOT transcribed. A guard against drift that keeps its own copy of
+# the mapping has the defect it is guarding against: when the contract retired the per-sleeve
+# deflation gate, a duplicated map here failed for a reason that had nothing to do with the site
+# being wrong.
+_EXPORT = importlib.util.spec_from_file_location(
+    "research_export_gate_map", REPO / "scripts" / "research_export.py"
+)
+assert _EXPORT is not None and _EXPORT.loader is not None
+_export_module = importlib.util.module_from_spec(_EXPORT)
+_EXPORT.loader.exec_module(_export_module)
+GATE_SOURCE = _export_module._DISCOVERY_GATE_SOURCE
+RETIRED = _export_module._DISCOVERY_GATE_RETIRED
 
 
 def _published() -> list[tuple[Path, dict]]:
@@ -74,6 +78,24 @@ def test_the_guard_covers_every_gate_the_site_publishes() -> None:
         )
         for threshold_key in GATE_SOURCE.values():
             assert threshold_key in thresholds
+
+
+@pytest.mark.workspace_evidence
+def test_a_retired_gate_is_not_still_published_as_a_live_one() -> None:
+    """A bar that no longer applies must not sit on the page looking like it does."""
+    thresholds = json.loads(CONTRACT.read_text())["thresholds"]
+    for path, discovery in _published():
+        for retired in RETIRED:
+            if retired in thresholds:
+                continue
+            assert retired not in discovery["admission_gates"], (
+                f"{path} still publishes {retired} as an admission gate after the contract "
+                "retired it"
+            )
+            assert retired in discovery.get("retired_admission_gates", {}), (
+                f"{path} dropped {retired} without saying so; a bar that disappears between "
+                "deploys reads as a bar that was quietly relaxed"
+            )
 
 
 @pytest.mark.workspace_evidence

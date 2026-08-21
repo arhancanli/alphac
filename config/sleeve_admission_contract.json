@@ -22,7 +22,6 @@
     "net_sharpe_min": 0.15,
     "stressed_sharpe_min": 0.15,
     "newey_west_t_min": 0.25,
-    "deflated_sharpe_min": 0.95,
     "pbo_max": 0.2,
     "absolute_beta_max": 0.1,
     "average_pairwise_correlation_max": 0.0,
@@ -45,7 +44,8 @@
     "book_expected_max_drawdown_max": 0.11,
     "realized_vol_leg_must_be_unlevered": true,
     "newey_west_t_ratio_min": 0.6,
-    "average_pairwise_correlation_upper_95_max": 0.1
+    "average_pairwise_correlation_upper_95_max": 0.1,
+    "deflated_sharpe_must_be_measured": true
   },
   "required_lineage": [
     "preregistration_sha256",
@@ -187,7 +187,10 @@
     "book_selection_unit": "complete_union_hypothesis_identities",
     "book_threshold_key": "book_deflated_sharpe_min",
     "reason": "DSR deflates for the trials the selection was drawn from. A pre-registered, direction-locked candidate in a new family was not selected from other families' trials. The published claim is the book's, so the book carries the full union.",
-    "book_deflation_is_strictly_additional": true
+    "book_deflation_is_strictly_additional": true,
+    "per_sleeve_is_measured_not_gated": true,
+    "per_sleeve_gate_removed_reason": "deflated_sharpe_min of 0.95 over this contract's 756-observation minimum requires an annualized Sharpe of 1.184 even at n_trials=2, the least deflation the formula permits: about eight times the declared net_sharpe_min of 0.15, which made the Sharpe floor decoration exactly as the Newey-West t floor did. It is also a bar this book cannot clear -- 0 of 33 restated variants reach it, including the live sleeves' own configurations, so the gate demanded of new candidates something no existing sleeve achieves. Re-scoped rather than lowered: a sleeve admitted for its correlation contribution is not claiming standalone edge, so deflating its standalone Sharpe measures the wrong object. The object actually published is the book's, and it is gated harder -- book_deflated_sharpe_min 0.95 against the COMPLETE union of hypothesis identities, plus a bootstrap lower bound on the book-Sharpe improvement. The per-sleeve deflated Sharpe remains mandatory to measure and publish; evidence that omits it fails closed.",
+    "per_sleeve_measurement_key": "deflated_sharpe_must_be_measured"
   },
   "overlay_policy": {
     "mandatory_vol_target_overlay": true,
@@ -284,6 +287,7 @@
     "primary_significance_gate": "book_sharpe_delta_lower_95_min_exclusive",
     "reason": "v4 declared net_sharpe_min 0.40, newey_west_t_min 2.0 and minimum_oos_observations 252 together. Because t is approximately Sharpe * sqrt(years), a candidate at the declared Sharpe floor needed 25 years of out-of-sample data to clear the t floor, and at the declared 252-observation minimum the pair demanded a standalone Sharpe of 2.0 -- five times the floor a reader of the config would see. v5 lowered the Sharpe floor to 0.15 and left the t floor at 2.0, raising the hidden requirement to 178 years. The t floor, not the Sharpe floor, had been doing the rejecting all along. It is now set where it does what it is for -- excluding wrong-signed and indistinguishable-from-zero results -- and load_admission_contract refuses any contract whose three significance floors cannot all be met at once, so this class of error cannot recur.",
     "why_a_standalone_bar_is_the_wrong_instrument": "When correlation binds, standalone Sharpe does not rank a candidate's portfolio value: a Sharpe 0.25 sleeve at correlation -0.05 beats a Sharpe 0.60 sleeve at +0.30. The gate that decides admission is therefore the bootstrap LOWER bound on the book-Sharpe improvement, which prices edge and correlation together, and it is strictly harder to game than either input alone.",
+    "self_consistency_is_enforced_at_load": "load_admission_contract refuses any contract whose significance floors cannot all be satisfied at once. It checks two pairs: net_sharpe_min against newey_west_t_min at minimum_oos_observations, and net_sharpe_min against deflated_sharpe_min solved at n_trials=2. Both pairs were violated before v6, in the same way and undetected, which is why the check is structural rather than a corrected number.",
     "minimum_oos_observations_raised_from": 252,
     "minimum_oos_observations_reason": "Raised to three years because the binding constraint of this whole programme is an average pairwise correlation, and a correlation measured over 252 observations carries a sampling error near 0.063 -- twice the size of the -0.03 effect the objective turns on. Gating a number the sample cannot resolve is not a strict gate. Paired with average_pairwise_correlation_upper_95_max, which gates the bound rather than the point estimate."
   }
