@@ -33,7 +33,7 @@ LEGACY_HALFLIFE_BARS = 720
 # Bars per day on each sleeve's own calendar: periods_per_year(tf) / periods_per_year(D1).
 SLEEVES = {"crypto_H1": 24.0, "equity_D1": 1.0}
 # Day counts worth mapping: the legacy setting on each calendar, and the sweep's ladder.
-CANDIDATE_DAYS = (21.0, 63.0, 126.0, 252.0, 720.0)
+CANDIDATE_DAYS = (3.0, 7.0, 14.0, 21.0, 30.0, 63.0, 126.0, 252.0, 720.0)
 
 
 def weights(halflife_bars: float, window: int = WINDOW_BARS, seed: int = MIN_PERIODS):
@@ -47,12 +47,18 @@ def weights(halflife_bars: float, window: int = WINDOW_BARS, seed: int = MIN_PER
     return w
 
 
-def profile(halflife_bars: float, bars_per_day: float) -> dict:
-    w = weights(halflife_bars)
-    ages = np.arange(WINDOW_BARS - 1, -1, -1, dtype=np.float64)  # row 0 is the OLDEST
+def profile(
+    halflife_bars: float,
+    bars_per_day: float,
+    window: int = WINDOW_BARS,
+    seed: int = MIN_PERIODS,
+) -> dict:
+    w = weights(halflife_bars, window=window, seed=seed)
+    ages = np.arange(window - 1, -1, -1, dtype=np.float64)  # row 0 is the OLDEST
     lam = 0.5 ** (1.0 / float(halflife_bars))
     cumulative = np.cumsum(w[::-1])          # newest-first
-    median_age = float(ages[::-1][int(np.searchsorted(cumulative, 0.5))])
+    index = min(int(np.searchsorted(cumulative, 0.5)), window - 1)
+    median_age = float(ages[::-1][index])
     effective_sample = float(1.0 / np.sum(w**2))   # Kish
     mean_age = float(np.sum(w * ages))
     # The halflife an UNTRUNCATED EWMA would need to show this median age. For an untruncated
@@ -60,7 +66,10 @@ def profile(halflife_bars: float, bars_per_day: float) -> dict:
     return {
         "halflife_bars": halflife_bars,
         "halflife_days": halflife_bars / bars_per_day,
-        "seed_block_weight": float(np.sum(w[:MIN_PERIODS])),
+        "window_bars": window,
+        "seed_bars": seed,
+        "window_days": window / bars_per_day,
+        "seed_block_weight": float(np.sum(w[:seed])),
         "lambda": lam,
         "effective_sample_rows": effective_sample,
         "mean_weight_age_days": mean_age / bars_per_day,
@@ -93,9 +102,13 @@ def main() -> int:
         }
 
     crypto = sleeves["crypto_H1"]
-    crypto_21 = next(r for r in crypto["by_requested_days"] if r["halflife_days"] == 21.0)
-    equity = sleeves["equity_D1"]
-    equity_21 = next(r for r in equity["by_requested_days"] if r["halflife_days"] == 21.0)
+    def _at(data: dict, days: float) -> dict:
+        return next(r for r in data["by_requested_days"] if r["halflife_days"] == days)
+
+    crypto_7 = _at(crypto, 7.0)
+    crypto_14 = _at(crypto, 14.0)
+    crypto_30 = _at(crypto, 30.0)
+    crypto_720 = _at(crypto, 720.0)
 
     result = {
         "schema": "canli.alphac-live-covariance-memory.v1",
@@ -120,15 +133,34 @@ def main() -> int:
         ),
         "sleeves": sleeves,
         "the_headline": (
-            f"Asking for a 21-day halflife gives the CRYPTO sleeve an effective memory of "
-            f"{crypto_21['median_weight_age_days']:.1f} days, not 21, because "
-            f"{crypto_21['seed_block_weight']:.1%} of the estimate is still the flat seed block. "
-            "On the EQUITY sleeve the same request gives "
-            f"{equity_21['median_weight_age_days']:.1f} "
-            f"days, and the legacy 720-bar setting there means "
-            f"{equity['legacy_setting']['means_days']:.0f} days requested and "
-            f"{equity['legacy_setting']['median_weight_age_days']:.1f} days of actual memory. One "
-            "parameter, two calendars, and neither delivers what it says."
+            "The WINDOW bounds the memory, so the halflife is faithful below it and truncated "
+            f"above it. On the crypto H1 sleeve the 720-bar window is 30 days: a 7-day request "
+            f"delivers {crypto_7['median_weight_age_days']:.1f} days and a 14-day request "
+            f"{crypto_14['median_weight_age_days']:.1f}, while a 30-day request delivers "
+            f"{crypto_30['median_weight_age_days']:.1f} and a 720-day request "
+            f"{crypto_720['median_weight_age_days']:.1f}. The legacy setting is 30 days requested "
+            "against 22 days of memory. On the equity D1 sleeve the same 720-bar window is 720 "
+            "SESSIONS, so the parameter is faithful across the whole practical range and only the "
+            "legacy 720-day setting is truncated, to 529 days."
+        ),
+        "correction_2026_08_21": (
+            "An earlier revision of this analysis sampled only 21 days and up, found every result "
+            "in a 20-25 day band, and concluded the parameter was 'nearly inert' on crypto with "
+            "cov_window_bars as the only lever. That was wrong and is withdrawn. The band is the "
+            "window, not the parameter: below 30 days the halflife is honoured almost exactly "
+            "(3d -> 3.0d, 7d -> 7.0d, 14d -> 14.0d). Reading the shape of a sampled range as a "
+            "property of the mechanism is the error, and the ladder now spans both sides of the "
+            "window so it cannot recur."
+        ),
+        "which_lever_to_use_for_SHORT_memory": (
+            "Both routes reach short memory and they are not equivalent. Halflife 7 days at the "
+            "production 720-bar window gives 7.0 days of memory on an effective sample of ~475 "
+            "rows; shortening the window to 240 bars gives ~8 days of memory on ~107 rows. The "
+            "HALFLIFE route preserves roughly four times the effective sample for comparable "
+            "memory, which also keeps ledoit_wolf_cc's T=720 approximation far closer to valid. "
+            "If the drawdown study's finding holds -- that shorter covariance memory reduces "
+            "expected maximum drawdown -- the halflife is the instrument, and it has to be asked "
+            "for BELOW the window rather than at 21 days where truncation has already started."
         ),
         "ledoit_wolf_intensity_mismatch": {
             "site": "src/alphaforge/portfolio/strategy.py, the ledoit_wolf_cc call",
