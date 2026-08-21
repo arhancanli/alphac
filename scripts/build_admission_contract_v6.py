@@ -82,8 +82,71 @@ def main() -> int:
     thresholds.pop("deflated_sharpe_min", None)
     thresholds["deflated_sharpe_must_be_measured"] = True
 
+    # ── RE-ANCHORED 2026-08-21: the objective is an HONEST FORWARD Sharpe, not a backtest one ──
+    #
+    # The published target was an in-sample band of 2.0-2.5 with no haircut named. That is the
+    # wrong quantity to aim at, for a reason this book's own numbers make plain: it publishes an
+    # in-sample equal-risk Sharpe near 1.04 and an honest forward estimate of 0.3-0.9, so the
+    # realised haircut on THIS book has been roughly 1.5x to 3x. A target stated in-sample is
+    # therefore a target stated in the units that flatter.
+    #
+    # It was also unreachable. A verified forward 2.0 at measured quality requires an average
+    # pairwise correlation of -0.062 against a PSD floor of -0.077 -- 81% of the mathematical
+    # limit, meaning nearly every sleeve maximally hedging every other. An honest forward 1.5 sits
+    # inside that floor at every quality above 0.47, which is the whole difference.
+    #
+    # Both numbers are published: the forward target that is actually being aimed at, and the
+    # in-sample range it implies under each haircut, so nobody has to guess which one a future
+    # result should be read against.
+    objective = contract["objective"]
+    objective["honest_forward_sharpe_target"] = 1.5
+    objective["superseded_in_sample_sharpe_target"] = [2.0, 2.5]
+    objective["superseded_reason"] = (
+        "Stated in-sample with no haircut named, and unreachable as a forward result: a verified "
+        "forward 2.0 at measured per-sleeve quality needs an average pairwise correlation of "
+        "-0.062 against a PSD floor of -0.077. Withdrawn 2026-08-21 and replaced with an honest "
+        "FORWARD target of 1.5, which is inside the floor at every plausible quality."
+    )
+    objective["backtest_to_forward_haircut"] = {
+        "measured_on_this_book": "in-sample equal-risk ~1.04 against an honest forward of 0.3-0.9",
+        "range": [1.5, 3.0],
+        "note": (
+            "The haircut IS the uncertainty. Until the forward record is long enough to speak, "
+            "every in-sample figure should be read through it, and the range is this book's own "
+            "published pair rather than a convention borrowed from elsewhere."
+        ),
+    }
+    objective["implied_in_sample_target"] = {
+        "at_1_5x_haircut": 1.5 * 1.5,
+        "at_2_0x_haircut": 1.5 * 2.0,
+        "at_3_0x_haircut": 1.5 * 3.0,
+    }
+    objective["what_reaching_it_requires"] = (
+        "Both halves, not either: an average pairwise correlation meaningfully BELOW zero, and "
+        "per-sleeve quality above roughly 0.60. At today's measured 0.469 the forward target is "
+        "reachable only at a correlation near -0.030 and only on the optimistic haircut."
+    )
+    objective["why_this_is_not_a_retreat"] = (
+        "The rarer thing was never the number. A forward Sharpe near 1.5 that is genuinely "
+        "verifiable -- signed forward record, every killed candidate published in full, gates "
+        "that provably bite, and the arithmetic showing where the gate falls short of the target "
+        "printed on the same page as the target -- is harder to find than a 2.5 nobody can check."
+    )
+
+    # portfolio_sharpe_target now carries the IMPLIED IN-SAMPLE band, because that is the unit
+    # the ceiling s_bar/sqrt(rho_bar) is measured in. Comparing an in-sample ceiling against a
+    # forward target was comparing two different quantities and reading the answer as a verdict.
+    objective["portfolio_sharpe_target"] = [
+        objective["implied_in_sample_target"]["at_1_5x_haircut"],
+        objective["implied_in_sample_target"]["at_2_0x_haircut"],
+    ]
+    objective["portfolio_sharpe_target_unit"] = (
+        "IN-SAMPLE, being the band that an honest forward 1.5 implies at the 1.5x and 2.0x ends "
+        "of this book's own measured haircut. The headline target is honest_forward_sharpe_target."
+    )
+
     correlation_gate = thresholds["average_pairwise_correlation_max"]
-    low, high = contract["objective"]["portfolio_sharpe_target"]
+    low, high = objective["portfolio_sharpe_target"]
     psd_floor = -1.0 / (TARGET_N - 1)
 
     contract["frontier_arithmetic"] = {
