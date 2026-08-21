@@ -1319,6 +1319,46 @@ def _crypto_uptime_verdict() -> str:
     )
 
 
+def _live_config_provenance() -> dict:
+    """The fingerprint of the configuration that produced this record, measured and declared.
+
+    Measured by the same function the tick-time gate uses, so the published stamp cannot disagree
+    with the guard. `matches_declaration` is published as a BOOLEAN rather than being asserted
+    here: refusing to write the record because a configuration changed would destroy the record
+    to protect it, and a marked discontinuity is worth more than a hole.
+    """
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location(
+        "export_live_config_fingerprint",
+        Path(__file__).resolve().parent / "export_live_config_fingerprint.py",
+    )
+    if spec is None or spec.loader is None:  # pragma: no cover - defensive
+        raise ImportError("cannot load scripts/export_live_config_fingerprint.py")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+
+    measured = module.build_fingerprint()
+    contract_path = Path(__file__).resolve().parents[1] / "config" / "live_change_contract.json"
+    declared = (
+        json.loads(contract_path.read_text()).get("declared_fingerprint")
+        if contract_path.exists()
+        else None
+    )
+    return {
+        "fingerprint": measured["fingerprint"],
+        "declared_fingerprint": declared,
+        "matches_declaration": declared == measured["fingerprint"],
+        "declared_in": "config/live_change_contract.json",
+        "what_it_covers": measured["what_this_covers"],
+        "why": (
+            "A record that cannot say which configuration produced it cannot be read as one "
+            "experiment. This stamp is what lets a reader tell a continuous forward test from a "
+            "curve that changed underneath itself."
+        ),
+    }
+
+
 def main():
     crypto_wf = load_wf(CRYPTO_WF)
     equity_wf = load_wf(EQUITY_WF)
@@ -1500,6 +1540,12 @@ def main():
     state = {
         "generated_at": dt.datetime.now(dt.UTC).isoformat(),
         "go_live_date": GO_LIVE,
+        # WHICH CONFIGURATION PRODUCED THIS RECORD. Without it a reader cannot tell whether a
+        # stretch of the published curve was run under the same book — and the forward record is
+        # the only evidence that can ever defeat deflation, so a curve that cannot say what it was
+        # is a curve that proves nothing. The declared value is carried beside the measured one so
+        # a disagreement is visible in the published artifact rather than only in a test.
+        "live_config": _live_config_provenance(),
         "rebaseline": {
             "v1": {"go_live": V1_GO_LIVE, "ended": V1_ENDED,
                    "result": "flat, $0 realized ($100k -> $100k); crypto carry held cash, "
