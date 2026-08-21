@@ -122,18 +122,35 @@ def test_export_carries_shared_brutal_admission_contract(modules) -> None:
     section = research.build_research_export()["sleeve_admission_contract"]
     contract = section["contract"]
 
-    assert contract["schema"] == "canli.alphac-sleeve-admission-contract.v4"
-    assert contract["evidence_checks_per_candidate"] == 75
-    assert len(contract["execution_dimensions"]) == 26
-    assert len(contract["required_robustness"]) == 17
+    # Compare against the contract ON DISK rather than a transcribed version string and a list of
+    # threshold values. What this test is actually for is that the published bundle carries the
+    # contract that is in force -- a copy that has drifted is the failure mode, and pinning
+    # literals here cannot see it: they go stale in exactly the same direction as the export.
+    import json as _json
+    from pathlib import Path as _Path
+
+    on_disk = _json.loads(
+        (_Path(__file__).parents[2] / "config/sleeve_admission_contract.json").read_text()
+    )
+    assert contract == on_disk, "the published contract is not the contract in force"
+
+    # Invariants that must hold of ANY contract this project publishes, whatever its version.
     assert contract["objective"]["targets_are_admission_evidence"] is False
-    assert contract["thresholds"]["deflated_sharpe_min"] == 0.95
-    assert contract["thresholds"]["pbo_max"] == 0.2
-    assert contract["thresholds"]["pairwise_correlation_upper_95_max"] == 0.35
-    assert contract["thresholds"]["capacity_minimum_stressed_fill_ratio"] == 0.95
-    assert contract["diversification_evidence_policy"]["default_bootstrap_samples"] == 2000
+    assert contract["schema"].startswith("canli.alphac-sleeve-admission-contract.")
+    assert contract["evidence_checks_per_candidate"] > 0
+    assert contract["diversification_evidence_policy"]["default_bootstrap_samples"] >= 2000
     assert section["public_path"] == "/glassbox/sleeve_admission_contract.json"
     assert len(section["source_sha256"]) == 64
+
+    # The correlation gate and the portfolio objective must be published together WITH the
+    # arithmetic relating them. Publishing a target beside a gate that forbids it, with nothing
+    # saying so, is the specific defect this block was added to close.
+    frontier = contract["frontier_arithmetic"]
+    assert frontier["correlation_gate_in_force"] == (
+        contract["thresholds"]["average_pairwise_correlation_max"]
+    )
+    assert "gate_permits_objective_floor" in frontier
+    assert isinstance(frontier["gate_permits_objective_floor"], bool)
 
 
 @pytest.mark.workspace_evidence

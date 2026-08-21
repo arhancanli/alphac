@@ -58,6 +58,45 @@ GOLDEN_MASTER: Final[Path] = REPO / "tests" / "integration" / "test_golden_maste
 PRE_REGISTRATION_MD: Final[Path] = REPO / "docs" / "design" / "PRE_REGISTRATION.md"
 CROSS_ASSET_BOOK_MD: Final[Path] = REPO / "docs" / "design" / "CROSS_ASSET_BOOK.md"
 SLEEVE_DISCOVERY_JSON: Final[Path] = REPO / "config" / "sleeve_discovery.json"
+
+# The discovery bundle's human-facing gate summary is DERIVED from the admission contract rather
+# than transcribed beside it. It was transcribed until v6, and by then it had gone stale in the
+# direction that flatters: the site published an average-correlation ceiling of 0.15 and a
+# 252-observation minimum after the contract in force had moved to 0.00 and 756. Two files
+# claiming the same fact is one file too many -- the copy drifts, and a reader auditing the config
+# cannot tell which one binds.
+_DISCOVERY_GATE_SOURCE: Final[dict[str, str]] = {
+    "deflated_sharpe_min": "deflated_sharpe_min",
+    "pbo_max": "pbo_max",
+    "average_pairwise_correlation_max": "average_pairwise_correlation_max",
+    "pairwise_correlation_max": "ordinary_pairwise_correlation_max",
+    "stressed_pairwise_correlation_max": "stressed_pairwise_correlation_max",
+    "minimum_oos_observations": "minimum_oos_observations",
+}
+
+
+def _discovery_with_contract_gates() -> dict:
+    """Project the in-force contract's thresholds over the discovery bundle's gate summary."""
+    discovery = json.loads(SLEEVE_DISCOVERY_JSON.read_text())
+    contract = json.loads(SLEEVE_ADMISSION_CONTRACT_JSON.read_text())
+    thresholds = contract["thresholds"]
+    gates = dict(discovery.get("admission_gates", {}))
+    for published_key, threshold_key in _DISCOVERY_GATE_SOURCE.items():
+        if threshold_key not in thresholds:
+            raise KeyError(
+                f"admission contract has no threshold {threshold_key!r} for published gate "
+                f"{published_key!r}; the published summary would silently keep a stale value"
+            )
+        gates[published_key] = thresholds[threshold_key]
+    discovery["admission_gates"] = gates
+    discovery["admission_contract_schema"] = contract["schema"]
+    discovery["admission_contract_public_path"] = "/glassbox/sleeve_admission_contract.json"
+    # The relationship between the gate and the objective, published beside them both. Without it
+    # the page states a target next to a ceiling and leaves the reader to discover that one
+    # forbids the other.
+    if "frontier_arithmetic" in contract:
+        discovery["frontier_arithmetic"] = contract["frontier_arithmetic"]
+    return discovery
 SLEEVE_ATLAS_JSON: Final[Path] = REPO / "artifacts" / "discovery" / "sleeve_atlas.json"
 SLEEVE_ATLAS_AUDIT_JSON: Final[Path] = (
     REPO / "artifacts" / "discovery" / "sleeve_atlas_audit.json"
@@ -1107,7 +1146,7 @@ def build_research_export() -> dict[str, Any]:
         "roadmap": build_roadmap(),
         "active_probe_results": build_active_probe_results(),
         "sleeve_discovery": {
-            **json.loads(SLEEVE_DISCOVERY_JSON.read_text()),
+            **_discovery_with_contract_gates(),
             "source_path": rel(SLEEVE_DISCOVERY_JSON),
         },
         "sleeve_atlas": {
@@ -1234,7 +1273,7 @@ def main(out_dir: Path = OUT_DIR) -> Path:
         (out_dir / "legacy_dsr_restatement.json").write_text(
             LEGACY_DSR_RESTATEMENT_JSON.read_text()
         )
-    discovery = json.dumps(json.loads(SLEEVE_DISCOVERY_JSON.read_text()), indent=2) + "\n"
+    discovery = json.dumps(_discovery_with_contract_gates(), indent=2) + "\n"
     (out_dir / "sleeve_discovery.json").write_text(discovery)
     (out_dir / "sleeve_atlas.json").write_text(SLEEVE_ATLAS_JSON.read_text())
     (out_dir / "sleeve_atlas_audit.json").write_text(SLEEVE_ATLAS_AUDIT_JSON.read_text())

@@ -26,6 +26,7 @@ class DiversificationReport:
     pairwise_correlation_upper_95: dict[str, float]
     stressed_pairwise_correlation_upper_95: dict[str, float]
     average_pairwise_correlation: float
+    average_pairwise_correlation_upper_95: float
     max_pairwise_correlation: float
     max_stressed_pairwise_correlation: float
     max_pairwise_correlation_upper_95: float
@@ -89,6 +90,53 @@ def _bootstrap_upper(
         starts = rng.integers(0, left.size, size=block_count)
         indices = ((starts[:, None] + offsets) % left.size).reshape(-1)[: left.size]
         estimates[sample] = _correlation(left[indices], right[indices])
+    return float(np.quantile(estimates, 0.95))
+
+
+def _bootstrap_average_upper(
+    candidate: NDArray[np.float64],
+    sleeves: Sequence[NDArray[np.float64]],
+    *,
+    samples: int,
+    block_size: int,
+    rng: np.random.Generator,
+) -> float:
+    """One-sided upper 95% bound on the AVERAGE pairwise correlation.
+
+    The average pairwise correlation is the quantity the book's Sharpe ceiling is a function of
+    (``s_bar / sqrt(rho_bar)``), so admitting a candidate on its point estimate alone admits it on
+    a number whose standard error can exceed the effect being gated: at 252 observations the
+    sampling error of a correlation is about 0.063, while the correlation objective that separates
+    a reachable book from an unreachable one is -0.03. This bound is what makes the average
+    gateable rather than merely reportable.
+
+    EVERY SLEEVE IS RESAMPLED ON THE SAME DRAWN INDEX SET within a bootstrap sample. That is what
+    makes this the bootstrap distribution *of the average*: it preserves the cross-sleeve
+    dependence that the average is taken over. Averaging the per-pair upper bounds returned by
+    ``_bootstrap_upper`` would NOT give this number and must not be substituted for it -- the mean
+    of upper bounds is the upper bound of no statistic at all, and because averaging reduces
+    variance it is systematically too wide, which would reject candidates the evidence supports.
+
+    Called after the per-pair loop so the shared ``rng`` stream reaching the existing
+    ``_bootstrap_upper`` calls is byte-for-byte unchanged by this addition.
+    """
+    if samples < 200:
+        raise ValueError("bootstrap_samples must be at least 200")
+    size = candidate.size
+    if not 1 <= block_size <= size:
+        raise ValueError("bootstrap_block_size must be between one and sample length")
+    if not sleeves:
+        raise ValueError("at least one current sleeve is required")
+    block_count = int(np.ceil(size / block_size))
+    offsets = np.arange(block_size, dtype=np.int64)
+    estimates = np.empty(samples, dtype=np.float64)
+    for sample in range(samples):
+        starts = rng.integers(0, size, size=block_count)
+        indices = ((starts[:, None] + offsets) % size).reshape(-1)[:size]
+        drawn = candidate[indices]
+        estimates[sample] = float(
+            np.mean([_correlation(drawn, sleeve[indices]) for sleeve in sleeves])
+        )
     return float(np.quantile(estimates, 0.95))
 
 
@@ -178,6 +226,14 @@ def diversification_report(
             rng=rng,
         )
 
+    average_upper = _bootstrap_average_upper(
+        candidate,
+        [sleeves[name] for name in sorted(sleeves)],
+        samples=bootstrap_samples,
+        block_size=bootstrap_block_size,
+        rng=rng,
+    )
+
     blended = (1.0 - candidate_weight) * book + candidate_weight * candidate
     book_sharpe = _sharpe(book, annualization)
     blended_sharpe = _sharpe(blended, annualization)
@@ -202,6 +258,7 @@ def diversification_report(
         pairwise_correlation_upper_95=ordinary_upper,
         stressed_pairwise_correlation_upper_95=stressed_upper,
         average_pairwise_correlation=float(np.mean(list(ordinary.values()))),
+        average_pairwise_correlation_upper_95=average_upper,
         max_pairwise_correlation=max(ordinary.values()),
         max_stressed_pairwise_correlation=max(stressed.values()),
         max_pairwise_correlation_upper_95=max(ordinary_upper.values()),
