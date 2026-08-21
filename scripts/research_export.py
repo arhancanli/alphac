@@ -94,6 +94,9 @@ COST_MODEL_REALISM_JSON: Final[Path] = (
 REACHABILITY_HARNESS_JSON: Final[Path] = (
     REPO / "artifacts" / "analysis" / "reachability_harness" / "result.json"
 )
+ATLAS_REACHABILITY_SCREEN_JSON: Final[Path] = (
+    REPO / "artifacts" / "analysis" / "atlas_reachability_screen" / "result.json"
+)
 
 # The discovery bundle's human-facing gate summary is DERIVED from the admission contract rather
 # than transcribed beside it. It was transcribed until v6, and by then it had gone stale in the
@@ -1354,6 +1357,16 @@ def build_research_export() -> dict[str, Any]:
             if REACHABILITY_HARNESS_JSON.exists()
             else None
         ),
+        # The harness above, applied to the twenty families nothing has been spent on. Published
+        # because the answer is the useful kind of discouraging: most of what is left is blocked
+        # on money, on a record nobody archived, or on prices nobody could trade — and none of
+        # those is closed by working harder, which is what a reader deciding whether to believe
+        # this programme most needs to know.
+        "atlas_reachability_screen": (
+            json.loads(ATLAS_REACHABILITY_SCREEN_JSON.read_text())
+            if ATLAS_REACHABILITY_SCREEN_JSON.exists()
+            else None
+        ),
         "sleeve_admission_contract": {
             "contract": json.loads(SLEEVE_ADMISSION_CONTRACT_JSON.read_text()),
             "source_sha256": hashlib.sha256(
@@ -1518,6 +1531,10 @@ def main(out_dir: Path = OUT_DIR) -> Path:
     if REACHABILITY_HARNESS_JSON.exists():
         (out_dir / "reachability_harness.json").write_text(
             REACHABILITY_HARNESS_JSON.read_text()
+        )
+    if ATLAS_REACHABILITY_SCREEN_JSON.exists():
+        (out_dir / "atlas_reachability_screen.json").write_text(
+            ATLAS_REACHABILITY_SCREEN_JSON.read_text()
         )
     if BOOK_WITHOUT_ALPHAVINTAGE_JSON.exists():
         (out_dir / "book_without_alphavintage.json").write_text(
@@ -1766,6 +1783,10 @@ def main(out_dir: Path = OUT_DIR) -> Path:
         if REACHABILITY_HARNESS_JSON.exists():
             (app_dir / "reachability_harness.json").write_text(
                 REACHABILITY_HARNESS_JSON.read_text()
+            )
+        if ATLAS_REACHABILITY_SCREEN_JSON.exists():
+            (app_dir / "atlas_reachability_screen.json").write_text(
+                ATLAS_REACHABILITY_SCREEN_JSON.read_text()
             )
         if BOOK_WITHOUT_ALPHAVINTAGE_JSON.exists():
             (app_dir / "book_without_alphavintage.json").write_text(
