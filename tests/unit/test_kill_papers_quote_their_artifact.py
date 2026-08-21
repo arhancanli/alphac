@@ -120,3 +120,41 @@ def test_no_paper_reuses_the_default_framing_where_a_specific_one_exists() -> No
         "these candidates fell through to the default framing, so their paper says nothing "
         f"specific about what was tested: {generic_only}"
     )
+
+
+def test_no_screen_sharpe_is_a_bare_zero_sentinel() -> None:
+    """A sentinel faithfully traced is still a misrepresentation.
+
+    `screen_net_sharpe` is rounded to three decimals at the source, so an exact 0.0 is not a
+    measurement anyone made -- it is what gets written when the slot is typed `float` and the real
+    answer is "no standalone Sharpe exists here". Four entries carried one, and this generator
+    rendered them as "Screen net Sharpe 0.0000": four decimals of precision beside prose saying
+    the candidate screened at 1.47.
+
+    The slot accepts None now, and None renders as "not separately measured". This refuses the
+    sentinel's return. It is deliberately strict about a value a real measurement could in
+    principle take, because publishing a manufactured zero costs far more than re-stating a
+    genuine one as 0.001.
+    """
+    offenders = [
+        entry["name"]
+        for entry in _entries()
+        if entry.get("screen_net_sharpe") == 0 or entry.get("sharpe") == 0
+    ]
+    assert not offenders, (
+        f"these entries carry an exact 0.0 Sharpe: {offenders}. If the value was genuinely "
+        "measured, record its real precision; if it means 'not separately measured', use None."
+    )
+
+
+def test_an_unmeasured_figure_says_so_rather_than_showing_a_number() -> None:
+    unmeasured = [
+        e for e in _entries() if "screen_net_sharpe" in e and e["screen_net_sharpe"] is None
+    ]
+    assert unmeasured, "no unmeasured entries left to check; this guard would pass vacuously"
+    for entry in unmeasured:
+        markdown, _ = kill_papers.render_kill_paper(entry)
+        assert "not separately measured" in markdown, entry["name"]
+        assert "| 0.0000 |" not in markdown, (
+            f"{entry['name']} publishes a fabricated zero where nothing was measured"
+        )

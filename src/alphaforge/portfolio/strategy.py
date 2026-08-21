@@ -96,6 +96,16 @@ from alphaforge.portfolio.overlay import vol_target
 from alphaforge.risk import DDState, DrawdownLadder
 from alphaforge.signals.sizing import MU_ANN_COLUMN
 
+# The covariance halflife every live sleeve has ACTUALLY been running, in bars. It is incoherent
+# across sleeves by construction -- 720 bars is 30 days on the crypto H1 sleeve and 720 SESSIONS
+# (about 2.86 years) on equity D1 -- and that incoherence is exactly why the parameter is now
+# expressible in days. It remains the default anyway, because changing a default here changes the
+# LIVE BOOK: no call site passes this argument (crypto at cli/paper_cmds.py, the AlphaTrend
+# gauntlet, and the AlphaMax walk-forward all take the default), the walk-forwards are regenerated
+# by the daily ticks, and live_cycle.py submits the last leg's weights straight to the broker. A
+# default change is a trade, not a configuration edit.
+LEGACY_COV_HALFLIFE_BARS: Final[int] = 720
+
 if TYPE_CHECKING:
     from collections.abc import Callable, Mapping
 
@@ -137,10 +147,12 @@ class BlendStrategy:
             delegates to the same fallback on any solver trouble).
         rebalance_bars: bars between decisions (default 24 = daily on 1h).
         cov_window_bars: trailing return window for Σ (default 720 = 30d).
-        cov_halflife_days: EWMA covariance halflife in DAYS (default 21). Converted to
-            bars against the sleeve's own calendar at the point of use, so the same
-            number means the same duration on every sleeve. See ``_cov_halflife_bars_for``
-            for why this is a day count and not a bar count.
+        cov_halflife_days: EWMA covariance halflife in DAYS, converted to bars against the
+            sleeve's own calendar at the point of use so the same number means the same
+            duration on every sleeve (see ``_cov_halflife_bars_for``). ``None`` (the
+            default) keeps ``LEGACY_COV_HALFLIFE_BARS``, which is the configuration every
+            live sleeve has actually been running. That default is deliberately NOT the
+            drawdown study's 21 days: see ``_cov_halflife_bars_for``.
         cov_min_periods: minimum return rows before Σ is trusted; fewer ->
             hold (cold start). Default 240 (10d).
         realized_vol_halflife_bars: EWMA halflife of realized portfolio-return
@@ -159,7 +171,7 @@ class BlendStrategy:
         rebalance_bars: int = 24,
         rebalance_anchor: Literal["run", "epoch"] = "run",
         cov_window_bars: int = 720,
-        cov_halflife_days: float = 21.0,
+        cov_halflife_days: float | None = None,
         cov_min_periods: int = 240,
         realized_vol_halflife_bars: int = 240,
         cost_frac_oneway: float = _DEFAULT_COST_FRAC,
@@ -176,7 +188,9 @@ class BlendStrategy:
                 f"need cov_window_bars ({cov_window_bars}) >= cov_min_periods "
                 f"({cov_min_periods}) >= 2"
             )
-        if cov_halflife_days <= 0 or realized_vol_halflife_bars <= 0:
+        if (cov_halflife_days is not None and cov_halflife_days <= 0) or (
+            realized_vol_halflife_bars <= 0
+        ):
             raise ValueError("cov_halflife_days/realized_vol_halflife_bars must be > 0")
         if not math.isfinite(cost_frac_oneway) or cost_frac_oneway < 0.0:
             raise ValueError(f"cost_frac_oneway must be finite and >= 0, got {cost_frac_oneway!r}")
@@ -659,6 +673,8 @@ class BlendStrategy:
         Floored at one bar, because a sub-bar halflife is not representable and silently
         rounding it to zero would make ``lambda`` zero and throw away the estimator entirely.
         """
+        if self._cov_halflife_days is None:
+            return LEGACY_COV_HALFLIFE_BARS
         bars_per_day = ctx.calendar.periods_per_year(tf) / ctx.calendar.periods_per_year(
             Timeframe.D1
         )
