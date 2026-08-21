@@ -166,7 +166,7 @@ whether it materially mis-shrinks the live book. **Do not change the live path**
 report.
 
 ### B2 · Covariance window study through the LIVE estimator
-STATUS: TODO
+STATUS: DONE — halflife is the lever, window is not; 720/7 buys 2.29pp for 0.031 Sharpe
 WHY: The drawdown sweep simulated an untruncated EWMA. Production is windowed and seeded. The
 mapping is now measured (`artifacts/analysis/live_covariance_memory`) but no drawdown study has
 been run through the real estimator.
@@ -454,3 +454,17 @@ where it is.*
   **Verdict graded by materiality, not direction:** 0.36% mean ex-ante vol error at production
   (immaterial), 4.46% mean and 38.1% worst case at a 21-bar halflife (material). **Fix it BEFORE
   shortening the covariance halflife, not after** — which is now a precondition on B2. Suite green.
+- `2026-08-22 02:30` — **B2 DONE.** The original sweep updates covariance with an UNTRUNCATED
+  recursion — infinite memory, no window, no seed. Re-run through a vectorized twin of the
+  PRODUCTION estimator, asserted equal to `ewma_cov` on real states (max abs error 1.4e-19) before
+  any result was reported. Published at `/glassbox/drawdown_live_estimator.json`.
+  **THE HALFLIFE IS THE LEVER AND THE WINDOW IS NOT.** Inside the production 720-bar window,
+  expected max drawdown falls monotonically: 10.25% at halflife 720, 9.45% at 63, 8.38% at 21,
+  7.96% at 7. Shortening the WINDOW buys nothing on top — 168/21 gives 8.52% against 720/21's
+  8.38%, inside the standard error. This confirms the corrected reading and finally settles the
+  claim I published and withdrew earlier today.
+  **Priced.** 720/21 buys 1.87pp for **0.0103 Sharpe** at 10bp; 720/7 buys 2.29pp for 0.0306.
+  720/21 is the better ratio. ⚠️ No configuration holds p95 at or under 11% — best is 13.5%.
+  ⚠️ **Precondition recorded:** at a 21-bar halflife the Ledoit-Wolf error (B1) is 4.46% of
+  ex-ante vol and worse at 7. Fix B1 BEFORE shortening. Any change is owner-gated and VOIDS the
+  forward pre-registration draft. Suite green.

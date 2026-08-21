@@ -79,6 +79,9 @@ RECORD_CONTINUITY_JSON: Final[Path] = (
 LEDOIT_WOLF_JSON: Final[Path] = (
     REPO / "artifacts" / "analysis" / "ledoit_wolf_effective_sample" / "result.json"
 )
+DRAWDOWN_LIVE_ESTIMATOR_JSON: Final[Path] = (
+    REPO / "artifacts" / "analysis" / "drawdown_live_estimator" / "result.json"
+)
 
 # The discovery bundle's human-facing gate summary is DERIVED from the admission contract rather
 # than transcribed beside it. It was transcribed until v6, and by then it had gone stale in the
@@ -1277,6 +1280,14 @@ def build_research_export() -> dict[str, Any]:
         # A documented approximation measured rather than trusted. Published because it bears on
         # the open drawdown decision: it is immaterial today and material at the halflife the
         # drawdown study points toward.
+        # The drawdown sweep re-run through the estimator production actually uses, rather than
+        # the untruncated recursion the original simulated. Published because the earlier answer
+        # is on this site and this one supersedes it.
+        "drawdown_live_estimator": (
+            json.loads(DRAWDOWN_LIVE_ESTIMATOR_JSON.read_text())
+            if DRAWDOWN_LIVE_ESTIMATOR_JSON.exists()
+            else None
+        ),
         "ledoit_wolf_effective_sample": (
             json.loads(LEDOIT_WOLF_JSON.read_text()) if LEDOIT_WOLF_JSON.exists() else None
         ),
@@ -1425,6 +1436,10 @@ def main(out_dir: Path = OUT_DIR) -> Path:
     )
     if ADMISSION_DRY_RUN_JSON.exists():
         (out_dir / "admission_dry_run.json").write_text(ADMISSION_DRY_RUN_JSON.read_text())
+    if DRAWDOWN_LIVE_ESTIMATOR_JSON.exists():
+        (out_dir / "drawdown_live_estimator.json").write_text(
+            DRAWDOWN_LIVE_ESTIMATOR_JSON.read_text()
+        )
     if LEDOIT_WOLF_JSON.exists():
         (out_dir / "ledoit_wolf_effective_sample.json").write_text(
             LEDOIT_WOLF_JSON.read_text()
@@ -1642,6 +1657,10 @@ def main(out_dir: Path = OUT_DIR) -> Path:
         )
         if ADMISSION_DRY_RUN_JSON.exists():
             (app_dir / "admission_dry_run.json").write_text(ADMISSION_DRY_RUN_JSON.read_text())
+        if DRAWDOWN_LIVE_ESTIMATOR_JSON.exists():
+            (app_dir / "drawdown_live_estimator.json").write_text(
+                DRAWDOWN_LIVE_ESTIMATOR_JSON.read_text()
+            )
         if LEDOIT_WOLF_JSON.exists():
             (app_dir / "ledoit_wolf_effective_sample.json").write_text(
                 LEDOIT_WOLF_JSON.read_text()
