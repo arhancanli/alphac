@@ -82,6 +82,9 @@ LEDOIT_WOLF_JSON: Final[Path] = (
 DRAWDOWN_LIVE_ESTIMATOR_JSON: Final[Path] = (
     REPO / "artifacts" / "analysis" / "drawdown_live_estimator" / "result.json"
 )
+SLEEVE_QUALITY_JSON: Final[Path] = (
+    REPO / "artifacts" / "analysis" / "sleeve_quality_decomposition" / "result.json"
+)
 
 # The discovery bundle's human-facing gate summary is DERIVED from the admission contract rather
 # than transcribed beside it. It was transcribed until v6, and by then it had gone stale in the
@@ -1283,6 +1286,12 @@ def build_research_export() -> dict[str, Any]:
         # The drawdown sweep re-run through the estimator production actually uses, rather than
         # the untruncated recursion the original simulated. Published because the earlier answer
         # is on this site and this one supersedes it.
+        # Which sleeve drags per-sleeve quality, and whether the drag is construction or cost.
+        # Published with its own boundary: commission is measured, spread is modelled, and market
+        # impact is not separable from what the artifacts carry.
+        "sleeve_quality_decomposition": (
+            json.loads(SLEEVE_QUALITY_JSON.read_text()) if SLEEVE_QUALITY_JSON.exists() else None
+        ),
         "drawdown_live_estimator": (
             json.loads(DRAWDOWN_LIVE_ESTIMATOR_JSON.read_text())
             if DRAWDOWN_LIVE_ESTIMATOR_JSON.exists()
@@ -1436,6 +1445,10 @@ def main(out_dir: Path = OUT_DIR) -> Path:
     )
     if ADMISSION_DRY_RUN_JSON.exists():
         (out_dir / "admission_dry_run.json").write_text(ADMISSION_DRY_RUN_JSON.read_text())
+    if SLEEVE_QUALITY_JSON.exists():
+        (out_dir / "sleeve_quality_decomposition.json").write_text(
+            SLEEVE_QUALITY_JSON.read_text()
+        )
     if DRAWDOWN_LIVE_ESTIMATOR_JSON.exists():
         (out_dir / "drawdown_live_estimator.json").write_text(
             DRAWDOWN_LIVE_ESTIMATOR_JSON.read_text()
@@ -1657,6 +1670,10 @@ def main(out_dir: Path = OUT_DIR) -> Path:
         )
         if ADMISSION_DRY_RUN_JSON.exists():
             (app_dir / "admission_dry_run.json").write_text(ADMISSION_DRY_RUN_JSON.read_text())
+        if SLEEVE_QUALITY_JSON.exists():
+            (app_dir / "sleeve_quality_decomposition.json").write_text(
+                SLEEVE_QUALITY_JSON.read_text()
+            )
         if DRAWDOWN_LIVE_ESTIMATOR_JSON.exists():
             (app_dir / "drawdown_live_estimator.json").write_text(
                 DRAWDOWN_LIVE_ESTIMATOR_JSON.read_text()

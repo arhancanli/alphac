@@ -176,7 +176,7 @@ expected max drawdown on THIS estimator. Report only; changing the live config i
 owner-gated.
 
 ### B3 · Per-sleeve quality decomposition
-STATUS: TODO
+STATUS: DONE — AlphaTrend's drag is construction; the recoverable component is AlphaForge's cost
 WHY: s̄ is an average over four very different sleeves and nothing says which one is dragging or
 whether the drag is construction or execution.
 DONE WHEN: each sleeve's standalone Sharpe is decomposed into signal, cost and execution
@@ -468,3 +468,20 @@ where it is.*
   ⚠️ **Precondition recorded:** at a 21-bar halflife the Ledoit-Wolf error (B1) is 4.46% of
   ex-ante vol and worse at 7. Fix B1 BEFORE shortening. Any change is owner-gated and VOIDS the
   forward pre-registration draft. Suite green.
+- `2026-08-22 02:50` — **B3 DONE.** Published at `/glassbox/sleeve_quality_decomposition.json`.
+  | sleeve | net SR | commission | spread | funding | signal residual |
+  |---|---|---|---|---|---|
+  | AlphaMax | 0.907 | 0.003 | 0.017 | — | 0.927 |
+  | AlphaForge | 0.677 | 0.145 | 0.130 | **0.382** | 0.569 |
+  | AlphaTrend | **0.327** | 0.021 | 0.104 | — | 0.451 |
+  **AlphaTrend is the weakest and its drag is CONSTRUCTION, not execution** — its whole cost
+  burden is 0.125 Sharpe points, so recovering every penny still leaves it at 0.451.
+  **The largest recoverable component is AlphaForge's transaction cost: 0.275 Sharpe points**,
+  driven by 33.2x annual turnover. Recovering half is worth 0.137 on that sleeve.
+  ⚠️ **The boundary is the finding as much as the numbers.** `fees_paid` in every summary.txt is
+  COMMISSION ONLY — measured at 1bp equity / 5bp crypto — while spread and impact are applied to
+  the FILL PRICE and never recorded as a line item. So spread is MODELLED from declared bps and
+  market impact is NOT SEPARABLE at all; it sits inside the residual. Anyone reading `fees_paid`
+  as total transaction cost understates it badly.
+  Also caught: a closure over the loop variables would have computed every sleeve with the LAST
+  sleeve's equity, vol and horizon — and the numbers would still have looked plausible. Suite green.
