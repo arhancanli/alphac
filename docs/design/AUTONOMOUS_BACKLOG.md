@@ -205,7 +205,7 @@ and the gap is published per sleeve.
 — but it is the only route to fourteen sleeves.*
 
 ### C1 · Generalise the reachability pre-test into a reusable harness
-STATUS: TODO
+STATUS: DONE
 WHY: On 2026-08-21 all three families "one gate from passing" turned out to be unreachable by
 extraction — the gates asked for things the documents do not contain, or blended populations.
 That test was written three times by hand.
@@ -519,3 +519,39 @@ where it is.*
   `submitted_ts`** — which turns implementation shortfall from unanswerable into a daily
   measurement and costs nothing to capture. No cost parameter should move on this evidence; the
   schema should. Suite green.
+- `2026-08-22 00:35` — **C1 DONE.** `scripts/reachability_harness.py`. Takes a family and its
+  failing gate and answers whether the gate is reachable AT ALL before any protocol is written:
+  four verdicts from three numbers (measured rate, gate, ceiling) plus a heterogeneity test for
+  the case where one threshold is applied across populations that do not share the obligation it
+  tests. Re-derives all three hand-worked answers — spin-off `0.1633` vs a `0.1122` ceiling and
+  `0.30` gate, customer-supplier `0.3533` vs `0.3714` and `0.50`, merger-arb `0.6702` vs a `0.80`
+  gate that blends two filing populations — and REFUSES TO RUN if any of them stops reproducing.
+  **What deliberately does not generalise: the ceiling probe.** What a perfect detector would find
+  is a property of the mechanism, so each family must supply its own; the harness makes that a
+  required argument rather than inventing one, because a harness that guessed the ceiling would be
+  a rubber stamp — it would clear everything, which is precisely the move (widen the detector until
+  the number clears) the pre-test exists to prevent. The BLENDED verdict carries its own warning in
+  the artifact: a clearing subgroup is not permission to narrow the universe, because selecting it
+  after observing that it passes makes its rate in-sample for that decision.
+  `tests/unit/test_reachability_harness.py` exercises every branch on constructed cases, not only
+  the three registered families — a verdict function that returned UNREACHABLE for everything would
+  have reproduced two of the three published answers and looked correct — and mutation-tests the
+  drift guard by flipping an expected verdict and asserting the run aborts.
+  ⚠️ **A real defect found on the way, in the publish path rather than the research.** Wiring the
+  new artifact into `research_export.py` meant editing THREE hand-mirrored lists (bundle key,
+  primary-host copy, app-host copy), and one of them had already drifted:
+  `legacy-dsr-restatement.md` — the paper restating every Sharpe the deflation correction touched
+  — was being published to the app host and **not to the primary site**. Nothing could have caught
+  it. The paper is not linked from `research.json`, so its absence broke no link, failed no build
+  and returned no 404; the primary site was simply missing a document, silently, until two
+  directories were diffed by hand. Fixed, and `tests/unit/test_glassbox_write_paths.py` now
+  compares the two blocks as SETS of (public name, source) copy pairs — an invariant over the
+  class, not a list of today's filenames. It pins a floor on each side first, because the cheapest
+  way to satisfy `A == B` is for a broken parser to make both empty; it pins the
+  `literature_dir`-inside-`app_literature_dir` substring trap that would fold one host's writes
+  into the other's set; and it excludes computed writes by the rule that only file-sourced writes
+  are copies, rather than by an exemption list that would rot. Verified against the pre-fix source:
+  the guard reports exactly the one-sided write.
+  Full unit suite green, `ruff` clean on the new files, retracted-claim gate PASS, reproduce kit
+  23/23 content hashes + 2/2 signatures + golden master. 0 trials — the harness reads frozen
+  artifacts read-only and authorises no candidate.
