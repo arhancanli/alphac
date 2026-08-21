@@ -1,23 +1,31 @@
 {
-  "schema": "canli.alphac-sleeve-admission-contract.v4",
-  "evidence_checks_per_candidate": 75,
+  "schema": "canli.alphac-sleeve-admission-contract.v6",
+  "evidence_checks_per_candidate": 85,
   "objective": {
     "target_total_sleeves": 14,
     "minimum_new_sleeves": 10,
-    "portfolio_sharpe_target": [2.0, 2.5],
+    "portfolio_sharpe_target": [
+      2.0,
+      2.5
+    ],
     "portfolio_max_drawdown_target": 0.11,
-    "targets_are_admission_evidence": false
+    "targets_are_admission_evidence": false,
+    "portfolio_max_drawdown_statistic": "expected_maximum_drawdown",
+    "portfolio_p95_max_drawdown_is_gated": false,
+    "portfolio_p95_max_drawdown_must_be_published": true,
+    "average_pairwise_correlation_objective": -0.03,
+    "average_pairwise_correlation_objective_note": "An objective, not a gate. -0.03 is the average pairwise correlation at which fourteen sleeves of measured quality reach 2.5. Thresholds are gates and live in 'thresholds'; anything that is not enforced must not sit there wearing a gate's costume."
   },
   "thresholds": {
-    "minimum_oos_observations": 252,
+    "minimum_oos_observations": 756,
     "minimum_stressed_oos_observations": 63,
-    "net_sharpe_min": 0.4,
-    "stressed_sharpe_min": 0.4,
-    "newey_west_t_min": 2.0,
+    "net_sharpe_min": 0.15,
+    "stressed_sharpe_min": 0.15,
+    "newey_west_t_min": 0.25,
     "deflated_sharpe_min": 0.95,
     "pbo_max": 0.2,
     "absolute_beta_max": 0.1,
-    "average_pairwise_correlation_max": 0.15,
+    "average_pairwise_correlation_max": 0.0,
     "ordinary_pairwise_correlation_max": 0.35,
     "stressed_pairwise_correlation_max": 0.5,
     "pairwise_correlation_upper_95_max": 0.35,
@@ -26,10 +34,18 @@
     "minimum_leave_one_period_out_book_sharpe_delta_exclusive": 0.0,
     "book_max_drawdown_delta_max": 0.01,
     "book_expected_shortfall_delta_max": 0.0,
-    "capacity_usd_min": 5000000,
+    "capacity_usd_min": 500000,
     "capacity_curve_min_points": 3,
     "capacity_minimum_stressed_fill_ratio": 0.95,
-    "minimum_execution_scenarios_per_dimension": 3
+    "minimum_execution_scenarios_per_dimension": 3,
+    "book_sharpe_delta_lower_95_min_exclusive": 0.0,
+    "book_deflated_sharpe_min": 0.95,
+    "covariance_halflife_days_max": 21,
+    "realized_vol_halflife_days_max": 240,
+    "book_expected_max_drawdown_max": 0.11,
+    "realized_vol_leg_must_be_unlevered": true,
+    "newey_west_t_ratio_min": 0.6,
+    "average_pairwise_correlation_upper_95_max": 0.1
   },
   "required_lineage": [
     "preregistration_sha256",
@@ -61,7 +77,9 @@
     "tail_co_loss",
     "execution_replay",
     "capacity_stress",
-    "canonical_diversification_report"
+    "canonical_diversification_report",
+    "book_level_deflation",
+    "overlay_replay"
   ],
   "execution_dimensions": [
     "commissions",
@@ -103,17 +121,40 @@
     "stressed_cost_bps"
   ],
   "lineage_types": {
-    "sha256_fields": ["preregistration_sha256", "data_manifest_sha256", "diversification_report_sha256"],
-    "identifier_fields": ["family_trial_account", "return_identity_id"],
-    "boolean_fields": ["point_in_time_data", "survivorship_control", "corporate_action_control", "direction_locked", "parameters_locked"],
+    "sha256_fields": [
+      "preregistration_sha256",
+      "data_manifest_sha256",
+      "diversification_report_sha256"
+    ],
+    "identifier_fields": [
+      "family_trial_account",
+      "return_identity_id"
+    ],
+    "boolean_fields": [
+      "point_in_time_data",
+      "survivorship_control",
+      "corporate_action_control",
+      "direction_locked",
+      "parameters_locked"
+    ],
     "code_commit_field": "code_commit"
   },
   "execution_evidence_policy": {
     "tested_statuses_require_sha256": true,
     "tested_statuses_require_scenarios": true,
     "tested_statuses_require_scenario_manifest": true,
-    "scenario_manifest_required_fields": ["scenario_id", "status", "assumptions", "assumptions_sha256", "result", "result_sha256"],
-    "scenario_statuses": ["PASS", "FAIL"],
+    "scenario_manifest_required_fields": [
+      "scenario_id",
+      "status",
+      "assumptions",
+      "assumptions_sha256",
+      "result",
+      "result_sha256"
+    ],
+    "scenario_statuses": [
+      "PASS",
+      "FAIL"
+    ],
     "scenario_hashes_are_canonical_payload_hashes": true,
     "dimension_hash_is_canonical_manifest_hash": true,
     "not_applicable_requires_sha256": true
@@ -135,5 +176,96 @@
     "single_identity_value_must_be_null": true,
     "never_report_not_defined_as_zero": true
   },
-  "claim_boundary": "Passing this contract makes a result technically eligible for an explicit admission decision. It does not guarantee a sleeve, future performance, the target Sharpe, or the target drawdown. Point estimates cannot override confidence-bound, crisis-conditional, tail-loss, execution-evidence, or capacity-reconciliation failures."
+  "claim_boundary": "Passing this contract makes a result technically eligible for an explicit admission decision. It does not guarantee a sleeve, future performance, the target Sharpe, or the target drawdown. Point estimates cannot override confidence-bound, crisis-conditional, tail-loss, execution-evidence, or capacity-reconciliation failures. v6 additionally refuses to load if its own significance floors cannot all be satisfied at once, gates the average pairwise correlation on its upper confidence bound as well as its point estimate, and publishes the arithmetic relating the correlation gate to the portfolio objective -- including the distance the gate does not close.",
+  "status": "IN_FORCE",
+  "derived_from": "canli.alphac-sleeve-admission-contract.v5-proposed",
+  "rationale": "docs/design/ADMISSION_V6.md",
+  "evidence": "artifacts/analysis/frontier_14/result.json",
+  "deflation_policy": {
+    "per_sleeve_selection_unit": "family_trial_account",
+    "per_sleeve_threshold_key": "deflated_sharpe_min",
+    "book_selection_unit": "complete_union_hypothesis_identities",
+    "book_threshold_key": "book_deflated_sharpe_min",
+    "reason": "DSR deflates for the trials the selection was drawn from. A pre-registered, direction-locked candidate in a new family was not selected from other families' trials. The published claim is the book's, so the book carries the full union.",
+    "book_deflation_is_strictly_additional": true
+  },
+  "overlay_policy": {
+    "mandatory_vol_target_overlay": true,
+    "implementation": "alphaforge.portfolio.overlay.vol_target",
+    "sigma_hat_rule": "max(ex_ante, realized)",
+    "annualized_vol_target": 0.1,
+    "covariance_halflife_days_max": 21,
+    "realized_vol_halflife_days_max": 240,
+    "halflife_pending_execution_costing": true,
+    "reason": "Permitted stressed pairwise correlation of 0.50 implies an expected maximum drawdown near 20% with no overlay and 16.4% with the overlay as shipped today. Correcting the realized-leg scale and shortening the covariance halflife to 21 holds it at 10.2%. The overlay, not a tighter correlation ceiling, is what holds the drawdown objective.",
+    "realized_vol_leg_must_be_unlevered": true,
+    "production_cov_halflife_today": 720,
+    "production_realized_vol_halflife_today": 240,
+    "known_defect": {
+      "site": "src/alphaforge/portfolio/strategy.py (_realized_vol_ann)",
+      "description": "The realized leg was measured on the post-overlay account equity curve while the ex-ante leg used pre-overlay optimizer weights. The book runs de-levered, so the realized leg lost max() essentially always and the fast regime detector never fired.",
+      "measured_bind_fraction_as_shipped": 0.000193,
+      "measured_bind_fraction_if_fixed": 0.817626,
+      "expected_max_drawdown_cost_at_permitted_stressed_rho": 0.0217,
+      "status": "RESOLVED in production. The realized leg is now de-levered per bar before comparison, and tests/unit/test_overlay_realized_leg_scale.py pins the caller's value rather than the function's intention."
+    },
+    "realized_vol_halflife_note": "240 is production's value and the value every sweep cell used. No shorter realized-leg halflife was tested, so none is required; this threshold bounds regression, not design.",
+    "covariance_halflife_note": "21 is the only tested covariance halflife that holds expected max drawdown at or under the objective at the permitted stressed correlation. Provisional pending execution costing.",
+    "remaining_gap_to_the_drawdown_objective": "Production still runs cov_halflife_bars=720. The measured study holds expected maximum drawdown at 10.2% only with BOTH the realized-leg scale correction (shipped) and the covariance halflife shortened to 21 (not shipped). Either alone is insufficient. The objective is an EXPECTED maximum drawdown; no tested configuration held the 95th percentile at or under 11%, and the best was 13.8%. Both figures are published."
+  },
+  "additional_required_portfolio_evidence": [
+    "book_sharpe_delta_lower_95",
+    "book_expected_max_drawdown"
+  ],
+  "frontier_arithmetic": {
+    "claim_boundary": "Derived from the governing identity alone. Reads no data, runs no backtest, spends no hypothesis, and claims no candidate's correlation, sign or return.",
+    "identity": "S_book = s_bar * sqrt(N / (1 + (N - 1) * rho_bar))",
+    "target_sleeve_count": 14,
+    "psd_floor_at_target_n": -0.07692307692307693,
+    "psd_floor_note": "Average pairwise correlation cannot fall below -1/(N-1) for any real correlation matrix. At fourteen sleeves that floor is far from binding, which is why a negative average is arithmetically available here and is not at 250 sleeves.",
+    "correlation_gate_in_force": 0.0,
+    "book_sharpe_ceiling_at_the_gate": {
+      "s_bar_traded_basis": 1.979336757603415,
+      "s_bar_four_curve_basis": 1.736129027463109
+    },
+    "gate_permits_objective_floor": false,
+    "gate_permits_objective_ceiling": false,
+    "quality_precondition_at_the_gate": {
+      "note": "What the tightened correlation gate alone does NOT buy. At the gate exactly, reaching each end of the objective band requires at least this average standalone Sharpe across fourteen sleeves.",
+      "s_bar_required_for_2.0": 0.5345224838248488,
+      "s_bar_required_for_2.5": 0.6681531047810609,
+      "s_bar_measured_traded_basis": 0.529,
+      "s_bar_measured_four_curve_basis": 0.464
+    },
+    "correlation_required_at_measured_quality": {
+      "note": "The other route to the same place: hold quality where it is measured today and read off the average pairwise correlation each end of the band demands.",
+      "traded_basis": {
+        "rho_bar_required_for_2.0": -0.001581269230769229,
+        "rho_bar_required_for_2.5": -0.02870432
+      },
+      "four_curve_basis": {
+        "rho_bar_required_for_2.0": -0.018958769230769223,
+        "rho_bar_required_for_2.5": -0.039825919999999994
+      }
+    },
+    "honest_reading": "Tightening the correlation ceiling from 0.15 to 0.00 removes a ceiling that sat BELOW the objective at every plausible quality, which is why the v4 gate could not have produced the objective at any sleeve count. It does not on its own deliver the objective. At the gate exactly, fourteen sleeves of today's measured quality reach the figure recorded above, and the remaining distance has to be bought with per-sleeve quality, genuinely negative correlation, or both. Publishing this is the point: a target sitting beside a gate that forbids it is not a stretch goal."
+  },
+  "capacity_policy": {
+    "capacity_usd_min_previous": 5000000,
+    "capacity_usd_min": 500000,
+    "reason": "A 5,000,000 USD floor per sleeve implies a 70,000,000 USD book at fourteen sleeves. It was written for a fund that does not exist yet, and it did not reject candidates uniformly: the return sources most likely to be genuinely anti-correlated with a momentum-and-carry book -- catastrophe bonds, municipal basis, freight, power, sovereign dislocation -- are structurally thin. The floor therefore selected AGAINST the diversification the objective depends on, which is the opposite of what a capacity gate is for.",
+    "what_this_does_not_relax": "The capacity CURVE, its monotonicity reconciliation, and the stressed fill-ratio floor are unchanged. A candidate must still show Sharpe decaying and cost rising with capital, and must still reconcile its reported capacity to that curve.",
+    "review_trigger": "Re-raise per sleeve when deployed capital per sleeve exceeds one fifth of this floor. Capacity is a property of the strategy, but the FLOOR is a property of the book, and a floor that outruns the book is a constraint that costs edge for nothing."
+  },
+  "significance_policy": {
+    "newey_west_t_min": 0.25,
+    "newey_west_t_min_role": "sign gate",
+    "newey_west_t_ratio_min": 0.6,
+    "newey_west_t_ratio_role": "autocorrelation-inflation gate",
+    "primary_significance_gate": "book_sharpe_delta_lower_95_min_exclusive",
+    "reason": "v4 declared net_sharpe_min 0.40, newey_west_t_min 2.0 and minimum_oos_observations 252 together. Because t is approximately Sharpe * sqrt(years), a candidate at the declared Sharpe floor needed 25 years of out-of-sample data to clear the t floor, and at the declared 252-observation minimum the pair demanded a standalone Sharpe of 2.0 -- five times the floor a reader of the config would see. v5 lowered the Sharpe floor to 0.15 and left the t floor at 2.0, raising the hidden requirement to 178 years. The t floor, not the Sharpe floor, had been doing the rejecting all along. It is now set where it does what it is for -- excluding wrong-signed and indistinguishable-from-zero results -- and load_admission_contract refuses any contract whose three significance floors cannot all be met at once, so this class of error cannot recur.",
+    "why_a_standalone_bar_is_the_wrong_instrument": "When correlation binds, standalone Sharpe does not rank a candidate's portfolio value: a Sharpe 0.25 sleeve at correlation -0.05 beats a Sharpe 0.60 sleeve at +0.30. The gate that decides admission is therefore the bootstrap LOWER bound on the book-Sharpe improvement, which prices edge and correlation together, and it is strictly harder to game than either input alone.",
+    "minimum_oos_observations_raised_from": 252,
+    "minimum_oos_observations_reason": "Raised to three years because the binding constraint of this whole programme is an average pairwise correlation, and a correlation measured over 252 observations carries a sampling error near 0.063 -- twice the size of the -0.03 effect the objective turns on. Gating a number the sample cannot resolve is not a strict gate. Paired with average_pairwise_correlation_upper_95_max, which gates the bound rather than the point estimate."
+  }
 }

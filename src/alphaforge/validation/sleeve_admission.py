@@ -18,8 +18,13 @@ SUPPORTED_SCHEMAS = frozenset(
     {
         "canli.alphac-sleeve-admission-contract.v4",
         "canli.alphac-sleeve-admission-contract.v5-proposed",
+        "canli.alphac-sleeve-admission-contract.v6",
     }
 )
+
+# Trading days per year. The one place the Sharpe <-> t-statistic relationship is annualized,
+# used both by the contract's own consistency check and by the autocorrelation-inflation gate.
+ANNUALIZATION_DAYS = 252.0
 
 # Gates a contract may or may not declare. Each applies if and only if the contract declares its
 # threshold, which keeps the contract the single source of truth for what is enforced: an older
@@ -32,7 +37,16 @@ OPTIONAL_NUMERIC_GATES: dict[str, tuple[str, str]] = {
     "book_expected_max_drawdown_max": ("portfolio.book_expected_max_drawdown", "<="),
     "covariance_halflife_days_max": ("overlay.covariance_halflife_days", "<="),
     "realized_vol_halflife_days_max": ("overlay.realized_vol_halflife_days", "<="),
+    "average_pairwise_correlation_upper_95_max": (
+        "diversification.average_pairwise_correlation_upper_95",
+        "<=",
+    ),
 }
+
+# Gates computed from several evidence fields rather than read from one path. They follow the same
+# declare-to-enforce rule as the tables above: named here, applied if and only if the contract
+# declares the key, and counted in `evidence_checks_per_candidate` by `load_admission_contract`.
+OPTIONAL_DERIVED_GATES: frozenset[str] = frozenset({"newey_west_t_ratio_min"})
 
 OPTIONAL_BOOLEAN_GATES: dict[str, str] = {
     "realized_vol_leg_must_be_unlevered": "overlay.realized_vol_leg_is_unlevered",
@@ -55,17 +69,72 @@ class AdmissionReport:
         return self.decision == "TECHNICALLY_ELIGIBLE"
 
 
+def _reject_unsatisfiable_significance_floors(contract: Mapping[str, Any], path: Path) -> None:
+    """Refuse a contract whose Sharpe floor and t-statistic floor cannot both be met.
+
+    A t-statistic on a mean return is approximately ``Sharpe * sqrt(years)``, so the three
+    thresholds ``net_sharpe_min``, ``newey_west_t_min`` and ``minimum_oos_observations`` are not
+    independent: fixing any two determines whether the third is reachable. A candidate sitting
+    exactly on the Sharpe floor, measured over exactly the minimum sample the contract demands,
+    attains at most ``net_sharpe_min * sqrt(minimum_oos_observations / 252)``. If the t floor sits
+    above that value, then the Sharpe floor is not the binding gate and never was -- the t floor
+    silently replaces it with a much higher effective Sharpe requirement that nobody chose and
+    that no reader of the config can see.
+
+    That is exactly what the v4 contract did. Its floors of Sharpe 0.40, t 2.0 and 252 observations
+    require 25 YEARS of out-of-sample data from a candidate sitting at the Sharpe floor; at the
+    252-observation minimum the pair demands a standalone Sharpe of 2.0 outright, five times the
+    declared floor. The v5 proposal lowered the Sharpe floor to 0.15 while leaving the t floor at
+    2.0, which raised the hidden requirement to 178 years. No sleeve in the atlas was ever going to
+    pass, and the config gave no hint of it.
+
+    This is a load-time structural check rather than a per-candidate gate because it is a property
+    of the CONTRACT, not of any evidence: a contract that cannot be satisfied is not a strict
+    contract, it is a broken one, and it should fail before it is ever used to judge anything.
+    """
+    thresholds = contract["thresholds"]
+    sharpe_floor = thresholds["net_sharpe_min"]
+    t_floor = thresholds["newey_west_t_min"]
+    minimum_observations = thresholds["minimum_oos_observations"]
+    if not all(
+        _finite_number(value) for value in (sharpe_floor, t_floor, minimum_observations)
+    ):
+        raise ValueError(f"non-numeric significance floors in {path}")
+    if minimum_observations <= 0:
+        raise ValueError(f"minimum_oos_observations must be positive in {path}")
+    years = float(minimum_observations) / ANNUALIZATION_DAYS
+    attainable_t = float(sharpe_floor) * math.sqrt(years)
+    if float(t_floor) > attainable_t:
+        required_years = (float(t_floor) / float(sharpe_floor)) ** 2 if sharpe_floor > 0 else None
+        detail = (
+            f"{required_years:.1f} years" if required_years is not None else "an infinite sample"
+        )
+        raise ValueError(
+            f"self-contradictory significance floors in {path}: net_sharpe_min="
+            f"{sharpe_floor} with minimum_oos_observations={minimum_observations} "
+            f"({years:.2f} years) attains at most newey_west_t={attainable_t:.3f}, but "
+            f"newey_west_t_min={t_floor} is declared. A candidate at the Sharpe floor would need "
+            f"{detail} of out-of-sample data to clear the t floor, so the t floor -- not the "
+            "declared Sharpe floor -- is the real gate. Lower newey_west_t_min, raise "
+            "net_sharpe_min, or raise minimum_oos_observations until the three agree."
+        )
+
+
 def load_admission_contract(path: Path) -> dict[str, Any]:
     contract = cast(dict[str, Any], json.loads(path.read_text()))
     if contract.get("schema") not in SUPPORTED_SCHEMAS:
         raise ValueError(f"unsupported sleeve admission contract: {path}")
     if contract.get("objective", {}).get("targets_are_admission_evidence") is not False:
         raise ValueError("portfolio targets must never count as sleeve-admission evidence")
+    _reject_unsatisfiable_significance_floors(contract, path)
     # Whether every declared threshold is actually read is pinned by
     # tests/unit/test_admission_contract_is_fully_enforced.py, which records real fetches during
     # an evaluation rather than comparing against a hand-maintained list here that would drift.
     declared = set(contract["thresholds"])
-    optional_declared = len(declared & (set(OPTIONAL_NUMERIC_GATES) | set(OPTIONAL_BOOLEAN_GATES)))
+    optional_declared = len(
+        declared
+        & (set(OPTIONAL_NUMERIC_GATES) | set(OPTIONAL_BOOLEAN_GATES) | OPTIONAL_DERIVED_GATES)
+    )
     expected_checks = (
         len(contract["required_lineage"])
         + len(contract["required_robustness"])
@@ -226,6 +295,41 @@ def evaluate_sleeve_evidence(
             failures.append(f"threshold:{path}:{value}>{threshold}")
         elif operator == ">" and value <= threshold:
             failures.append(f"threshold:{path}:{value}<={threshold}")
+
+    # Declare-to-enforce: see OPTIONAL_DERIVED_GATES at module level.
+    #
+    # WHAT THIS GATE IS FOR, because it is not another significance bar. A Newey-West t corrects
+    # for autocorrelation in the return stream. A sleeve priced off stale or appraised marks --
+    # catastrophe bonds, municipal basis, freight derivatives, anything thinly traded, which is
+    # precisely the corner of the atlas where the anti-correlated sources live -- shows an
+    # inflated naive Sharpe because its measured volatility is smoothed. The tell is not a low t;
+    # it is a t far BELOW the one its own reported Sharpe implies. Gating that ratio catches
+    # smoothed pricing at any Sharpe level, which a flat t floor cannot do: a flat floor waves
+    # through a stale-priced sleeve with a high headline Sharpe and rejects an honest one with a
+    # modest Sharpe, getting both cases backwards.
+    #
+    # Uses only evidence the contract already requires, so it adds a check and no new burden.
+    if "newey_west_t_ratio_min" in thresholds:
+        checks += 1
+        ratio_floor = thresholds["newey_west_t_ratio_min"]
+        newey_west_t = _nested(evidence, "statistics.newey_west_t")
+        net_sharpe = _nested(evidence, "statistics.net_sharpe")
+        observations = _nested(evidence, "statistics.oos_observations")
+        if not all(
+            _finite_number(value) for value in (newey_west_t, net_sharpe, observations)
+        ):
+            failures.append("missing_numeric:statistics.newey_west_t_ratio")
+        elif net_sharpe <= 0 or observations <= 0:
+            # A non-positive Sharpe has no meaningful implied t to compare against; the sleeve is
+            # already rejected by net_sharpe_min, and dividing here would invent a verdict.
+            failures.append("undefined:statistics.newey_west_t_ratio")
+        else:
+            implied_t = float(net_sharpe) * math.sqrt(float(observations) / ANNUALIZATION_DAYS)
+            ratio = float(newey_west_t) / implied_t
+            if ratio < ratio_floor:
+                failures.append(
+                    f"threshold:statistics.newey_west_t_ratio:{ratio:.4f}<{ratio_floor}"
+                )
 
     # Boolean gates follow the same declare-to-enforce rule. `is True` rather than truthiness:
     # a placeholder string or a 1 must not satisfy a safety flag.
