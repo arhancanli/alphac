@@ -240,6 +240,24 @@ identity would look like. **Draft only — registering it spends a trial.**
 
 *99 indexable URLs, 13 topic hubs, 80 papers. The corpus is strong; the explanation is thin.*
 
+### D0 · Surface the twelve published-but-invisible measurements
+STATUS: TODO
+WHY: Found 2026-08-22 while wiring C1's artifact into the publish path. Twelve analysis artifacts
+are copied to `/glassbox/*.json` and embedded in `research.json`, and `js/research.js` renders
+NONE of them: admission_dry_run, book_without_alphavintage, spinoff_prorata_gate,
+feasibility_gate_reachability, reachability_harness, live_covariance_memory, record_continuity,
+ledoit_wolf_effective_sample, drawdown_live_estimator, sleeve_quality_decomposition,
+execution_gap_power, cost_model_realism. Every one is a real measurement — several are the
+corrections and the nulls, which are the site's whole argument — and a reader reaches them only by
+guessing a JSON URL. This is the same shape as the defect C1 found (published to one place, not
+the other) and it is larger: the strongest evidence on the site is the least visible, and unlinked
+JSON earns no search ranking at all.
+DONE WHEN: each artifact is rendered on a page a reader can reach by clicking, with its claim
+boundary shown beside its numbers, and every one is reachable from `/research` or `/systems` in at
+most two clicks. The renderer must be driven by what `research.json` CONTAINS rather than by a
+hard-coded list, so the next artifact appears without a site edit — otherwise this item recurs.
+On-page audit still 0 errors.
+
 ### D1 · Make /systems explain the engine end to end
 STATUS: TODO
 WHY: The page lists components. A reader cannot follow how a signal becomes a position becomes a
