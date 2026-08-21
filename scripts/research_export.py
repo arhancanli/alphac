@@ -85,6 +85,9 @@ DRAWDOWN_LIVE_ESTIMATOR_JSON: Final[Path] = (
 SLEEVE_QUALITY_JSON: Final[Path] = (
     REPO / "artifacts" / "analysis" / "sleeve_quality_decomposition" / "result.json"
 )
+EXECUTION_GAP_POWER_JSON: Final[Path] = (
+    REPO / "artifacts" / "analysis" / "execution_gap_power" / "result.json"
+)
 
 # The discovery bundle's human-facing gate summary is DERIVED from the admission contract rather
 # than transcribed beside it. It was transcribed until v6, and by then it had gone stale in the
@@ -1289,6 +1292,14 @@ def build_research_export() -> dict[str, Any]:
         # Which sleeve drags per-sleeve quality, and whether the drag is construction or cost.
         # Published with its own boundary: commission is measured, spread is modelled, and market
         # impact is not separable from what the artifacts carry.
+        # Whether the live book is delivering its backtest — and the honest answer that the
+        # record is far too short to say. Published because "we cannot tell yet, here is when we
+        # can" is a result, and a noisy estimate presented as one would not be.
+        "execution_gap_power": (
+            json.loads(EXECUTION_GAP_POWER_JSON.read_text())
+            if EXECUTION_GAP_POWER_JSON.exists()
+            else None
+        ),
         "sleeve_quality_decomposition": (
             json.loads(SLEEVE_QUALITY_JSON.read_text()) if SLEEVE_QUALITY_JSON.exists() else None
         ),
@@ -1445,6 +1456,10 @@ def main(out_dir: Path = OUT_DIR) -> Path:
     )
     if ADMISSION_DRY_RUN_JSON.exists():
         (out_dir / "admission_dry_run.json").write_text(ADMISSION_DRY_RUN_JSON.read_text())
+    if EXECUTION_GAP_POWER_JSON.exists():
+        (out_dir / "execution_gap_power.json").write_text(
+            EXECUTION_GAP_POWER_JSON.read_text()
+        )
     if SLEEVE_QUALITY_JSON.exists():
         (out_dir / "sleeve_quality_decomposition.json").write_text(
             SLEEVE_QUALITY_JSON.read_text()
@@ -1670,6 +1685,10 @@ def main(out_dir: Path = OUT_DIR) -> Path:
         )
         if ADMISSION_DRY_RUN_JSON.exists():
             (app_dir / "admission_dry_run.json").write_text(ADMISSION_DRY_RUN_JSON.read_text())
+        if EXECUTION_GAP_POWER_JSON.exists():
+            (app_dir / "execution_gap_power.json").write_text(
+                EXECUTION_GAP_POWER_JSON.read_text()
+            )
         if SLEEVE_QUALITY_JSON.exists():
             (app_dir / "sleeve_quality_decomposition.json").write_text(
                 SLEEVE_QUALITY_JSON.read_text()
