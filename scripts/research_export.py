@@ -76,6 +76,9 @@ COVARIANCE_MEMORY_JSON: Final[Path] = (
 RECORD_CONTINUITY_JSON: Final[Path] = (
     REPO / "artifacts" / "engineering" / "record_continuity.json"
 )
+LEDOIT_WOLF_JSON: Final[Path] = (
+    REPO / "artifacts" / "analysis" / "ledoit_wolf_effective_sample" / "result.json"
+)
 
 # The discovery bundle's human-facing gate summary is DERIVED from the admission contract rather
 # than transcribed beside it. It was transcribed until v6, and by then it had gone stale in the
@@ -1271,6 +1274,12 @@ def build_research_export() -> dict[str, Any]:
         # the overlay policy was set from a simulation of a different estimator.
         # Whether the forward record has holes. Published because the record's whole value is
         # its continuity, and a gap that is only visible internally is a gap nobody can check.
+        # A documented approximation measured rather than trusted. Published because it bears on
+        # the open drawdown decision: it is immaterial today and material at the halflife the
+        # drawdown study points toward.
+        "ledoit_wolf_effective_sample": (
+            json.loads(LEDOIT_WOLF_JSON.read_text()) if LEDOIT_WOLF_JSON.exists() else None
+        ),
         "record_continuity": (
             json.loads(RECORD_CONTINUITY_JSON.read_text())
             if RECORD_CONTINUITY_JSON.exists()
@@ -1416,6 +1425,10 @@ def main(out_dir: Path = OUT_DIR) -> Path:
     )
     if ADMISSION_DRY_RUN_JSON.exists():
         (out_dir / "admission_dry_run.json").write_text(ADMISSION_DRY_RUN_JSON.read_text())
+    if LEDOIT_WOLF_JSON.exists():
+        (out_dir / "ledoit_wolf_effective_sample.json").write_text(
+            LEDOIT_WOLF_JSON.read_text()
+        )
     if RECORD_CONTINUITY_JSON.exists():
         (out_dir / "record_continuity.json").write_text(
             RECORD_CONTINUITY_JSON.read_text()
@@ -1629,6 +1642,10 @@ def main(out_dir: Path = OUT_DIR) -> Path:
         )
         if ADMISSION_DRY_RUN_JSON.exists():
             (app_dir / "admission_dry_run.json").write_text(ADMISSION_DRY_RUN_JSON.read_text())
+        if LEDOIT_WOLF_JSON.exists():
+            (app_dir / "ledoit_wolf_effective_sample.json").write_text(
+                LEDOIT_WOLF_JSON.read_text()
+            )
         if RECORD_CONTINUITY_JSON.exists():
             (app_dir / "record_continuity.json").write_text(
                 RECORD_CONTINUITY_JSON.read_text()

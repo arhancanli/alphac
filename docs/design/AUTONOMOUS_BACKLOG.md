@@ -155,7 +155,7 @@ count, and a guard fails if the gap rate exceeds a declared threshold.
 *s̄ measured 0.469; the goal needs ≥ 0.601. This is where the number comes from.*
 
 ### B1 · Ledoit–Wolf shrinkage at the EWMA's true effective sample
-STATUS: TODO
+STATUS: DONE — immaterial today (0.36%), material at short halflife (4.5%); fix BEFORE shortening
 WHY: `ledoit_wolf_cc` computes its intensity with `T` = the rows passed, and production passes the
 full unweighted 720-row window while the matrix being shrunk is the EWMA. Conservative only while
 the EWMA's effective sample exceeds 720. At a 21-day halflife on equity the effective sample is
@@ -438,3 +438,19 @@ where it is.*
   Six guards, mutation-tested (a 35% gap rate fails the gate). Wired into BOTH publish jobs — the
   pipeline-order test caught that I had added it to the hourly tick only, which is the exact
   split-coverage defect where two jobs each cover what the other checks. Edge declared. Suite green.
+- `2026-08-22 02:10` — **B1 DONE.** Measured on the real 17-ETF basket, 720 sessions, published
+  at `/glassbox/ledoit_wolf_effective_sample.json`. Live path unchanged.
+  **The approximation is non-conservative at EVERY halflife, not just short ones**, and the
+  documented reasoning is why: it assumed the EWMA's effective sample could EXCEED the 720-row
+  window. A windowed estimator's effective sample is bounded BY the window — measured, it peaks
+  at 635 rows and is 514 at the production setting, so delta* is understated everywhere
+  (1.13x–11.88x).
+  **But the channel matters more than the direction.** The constant-correlation target shares S's
+  diagonal, so this shrinkage cannot change a variance and inverse-vol weights — what the
+  production `rank` allocator sizes on — are mathematically INVARIANT to it. My first impact
+  measurement returned 0.000000 at every halflife, which is what a measurement that cannot move
+  looks like rather than a finding; I investigated instead of reporting it. The error reaches the
+  book only through the off-diagonal, i.e. the overlay's ex-ante vol.
+  **Verdict graded by materiality, not direction:** 0.36% mean ex-ante vol error at production
+  (immaterial), 4.46% mean and 38.1% worst case at a 21-bar halflife (material). **Fix it BEFORE
+  shortening the covariance halflife, not after** — which is now a precondition on B2. Suite green.
