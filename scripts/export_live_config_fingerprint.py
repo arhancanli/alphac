@@ -27,6 +27,8 @@ import json
 from pathlib import Path
 from typing import Any
 
+from alphaforge.config.settings import Settings
+from alphaforge.portfolio.optimizer import PortfolioConstraints
 from alphaforge.portfolio.strategy import BlendStrategy
 
 REPO = Path(__file__).resolve().parents[1]
@@ -50,6 +52,38 @@ def strategy_settings() -> dict[str, Any]:
     }
 
 
+def risk_path_settings() -> dict[str, Any]:
+    """The overlay, the drawdown ladder and the per-name clip, read the way the strategy reads them.
+
+    These are not constructor defaults — `BlendStrategy.__init__` pulls them off `Settings`
+    (strategy.py:198-231), so the first version of this fingerprint missed them entirely while
+    appearing to cover "how the live book trades". Each one moves the traded book:
+
+      vol_target_ann / vol_scale_max / gross_max  the overlay's scaling of every position
+      dd_halve_gross / dd_flat_halt               the depths at which gross is halved or flattened
+      flat_cooldown_bars                          how long a halt lasts before auto-rearm
+      staleness_max_bars                          when the book refuses to trade on stale data
+      w_max                                       the inviolable per-name cap applied after
+                                                  the overlay and before the ladder multiplier
+
+    Read through Settings and PortfolioConstraints.from_settings rather than transcribed, so a
+    config change reaches this fingerprint by the same path it reaches the book.
+    """
+    settings = Settings()
+    portfolio, risk = settings.portfolio, settings.risk
+    constraints = PortfolioConstraints.from_settings(settings)
+    return {
+        "vol_target_ann": portfolio.vol_target_ann,
+        "vol_scale_max": portfolio.vol_scale_max,
+        "gross_max": portfolio.gross_max,
+        "dd_halve_gross": risk.dd_halve_gross,
+        "dd_flat_halt": risk.dd_flat_halt,
+        "flat_cooldown_bars": risk.flat_cooldown_bars,
+        "staleness_max_bars": risk.staleness_max_bars,
+        "w_max": constraints.w_max,
+    }
+
+
 def book_composition() -> dict[str, Any]:
     """The book's SPECIFICATION only: which sleeves, at what weights, and the disclosed tilt.
 
@@ -69,26 +103,33 @@ def book_composition() -> dict[str, Any]:
     }
 
 
+def canonical_fingerprint(surface: dict[str, Any]) -> str:
+    """The one place a surface becomes a hash, so tests and the exporter cannot disagree."""
+    canonical = json.dumps(surface, sort_keys=True, separators=(",", ":")).encode()
+    return f"sha256:{hashlib.sha256(canonical).hexdigest()}"
+
+
 def build_fingerprint() -> dict[str, Any]:
     surface = {
         "strategy_settings": strategy_settings(),
+        "risk_path_settings": risk_path_settings(),
         "book_composition": book_composition(),
     }
-    canonical = json.dumps(surface, sort_keys=True, separators=(",", ":")).encode()
     return {
         "schema": "canli.alphac-live-config-fingerprint.v1",
         "what_this_covers": (
-            "Every setting that decides how the live book trades: the BlendStrategy defaults that "
-            "reach production because no call site overrides them, and the book's sleeve "
-            "composition, weights and disclosed tilt. Derived from inspect.signature and the "
-            "published state, never from a hand-maintained list."
+            "Every setting that decides how the live book trades: the BlendStrategy defaults "
+            "that reach production because no call site overrides them; the overlay, drawdown "
+            "ladder and per-name clip that the strategy reads off Settings; and the book's "
+            "sleeve composition, weights and disclosed tilt. Derived from inspect.signature, "
+            "Settings and the published state, never from a hand-maintained list."
         ),
         "what_this_deliberately_excludes": (
             "Anything that moves because the book is running -- equity, marks, dates, live days. "
             "A fingerprint that changed daily would be ignored within a week."
         ),
         "surface": surface,
-        "fingerprint": f"sha256:{hashlib.sha256(canonical).hexdigest()}",
+        "fingerprint": canonical_fingerprint(surface),
     }
 
 
@@ -99,6 +140,8 @@ def main() -> int:
     print(f"wrote {OUTPUT.relative_to(REPO)}")
     print(f"  {fingerprint['fingerprint']}")
     for name, value in sorted(fingerprint["surface"]["strategy_settings"].items()):
+        print(f"    {name:30} = {value!r}")
+    for name, value in sorted(fingerprint["surface"]["risk_path_settings"].items()):
         print(f"    {name:30} = {value!r}")
     composition = fingerprint["surface"]["book_composition"]
     print(f"    sleeves: {composition.get('sleeves')}")
