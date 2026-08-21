@@ -201,3 +201,58 @@ and every one of them raises the book's own deflation hurdle under the proposed 
 Both lanes can proceed on engineering, data lineage, execution and publication work indefinitely.
 Neither can produce a fourteenth sleeve until that budget is re-authorized with the arithmetic
 stated. Do not route around it.
+
+---
+
+## 2026-08-21 — Claude lane: admission contract v6, and two files claimed
+
+**Owner instruction, verbatim:** *"you do everything give me the credit though dont put yourself
+as a contributer"*, in reply to a question that offered "draft v6, show me, I promote" against
+"draft and promote it yourself". That authorises this lane to promote an admission contract, which
+the owner-only row above otherwise reserves. The row still stands for
+`config/trial_accounting.json`: **the budget was not touched and research remains
+`PAUSED_BUDGET_REVIEW` at 162 identities.** No hypothesis was registered and no return data
+opened by any of this work.
+
+### Files claimed under "anything not listed: claim it here"
+
+- **`src/alphaforge/analytics/walkforward.py`** — its `cov_halflife_bars` default had to move with
+  the strategy's. Leaving them apart would recreate the exact defect this repository has hit twice
+  (the live path running a configuration the research path never validated). Nothing was re-run:
+  the new default only takes effect on a future walkforward, and that run is governed by the trial
+  accounting like any other.
+- **`src/alphaforge/portfolio/strategy.py`** — already in the Claude column, noted because the
+  change is to the LIVE sizing path.
+
+### The change, and the unit defect found on the way in
+
+The drawdown objective needs the covariance halflife at 21. Applying that to
+`cov_halflife_bars` would have been a live sizing defect, not a configuration change:
+**a bar is not a day, and it is a different amount of time on each sleeve.** One hour on the
+crypto H1 sleeve, one session on equity D1. The old default of 720 bars therefore meant 30 days
+to crypto and about 2.9 YEARS to equities, and the study that set the policy measured a daily
+book — its sweep values (21, 63, 126, 252, 720) are day counts. Writing 21 into the bar parameter
+would have given the crypto sleeve a **21-hour** covariance halflife.
+
+The parameter is now `cov_halflife_days`, converted at the point of use via
+`periods_per_year(tf) / periods_per_year(D1)` — the calendar being the one annualization source
+this codebase already insists on. `tests/unit/test_cov_halflife_units.py` pins 21 days to 504 bars
+on crypto H1 and 21 bars on equity D1, and fails if anyone reintroduces a bar-valued default.
+
+**Still bar-valued and NOT changed, flagged rather than fixed:** `cov_window_bars` (720) and
+`cov_min_periods` (240) carry the same ambiguity — 30 days and 10 days on crypto, 720 and 240
+sessions on equity. No study measured them, so changing them here would be an unmeasured change
+riding along with a measured one. Codex: this is the next thing in that file worth costing.
+
+### Cost of the halflife change, derived at 0 trials
+
+`scripts/analyze_overlay_halflife_decision.py` → `artifacts/analysis/overlay_halflife_decision/`.
+At the stressed correlation the contract permits (0.50): expected maximum drawdown **14.21% →
+10.22%**, for **0.0045 Sharpe** at a 10bp round trip (0.023 even at 50bp), and the simulated book
+Sharpe **rises** 1.773 → 1.991.
+
+⚠️ The unit nearly went wrong here too, in the same session. Turnover is a MULTIPLE OF EQUITY per
+year; a round-trip cost in basis points is a fraction of the NOTIONAL TRADED. Dividing by 100
+instead of 10,000 turns a 0.0045 Sharpe cost into 0.45 and reverses the decision. That is why the
+conversion is one named function with one test rather than an expression inlined at three call
+sites.

@@ -137,7 +137,10 @@ class BlendStrategy:
             delegates to the same fallback on any solver trouble).
         rebalance_bars: bars between decisions (default 24 = daily on 1h).
         cov_window_bars: trailing return window for Σ (default 720 = 30d).
-        cov_halflife_bars: EWMA covariance halflife (default 720).
+        cov_halflife_days: EWMA covariance halflife in DAYS (default 21). Converted to
+            bars against the sleeve's own calendar at the point of use, so the same
+            number means the same duration on every sleeve. See ``_cov_halflife_bars_for``
+            for why this is a day count and not a bar count.
         cov_min_periods: minimum return rows before Σ is trusted; fewer ->
             hold (cold start). Default 240 (10d).
         realized_vol_halflife_bars: EWMA halflife of realized portfolio-return
@@ -156,7 +159,7 @@ class BlendStrategy:
         rebalance_bars: int = 24,
         rebalance_anchor: Literal["run", "epoch"] = "run",
         cov_window_bars: int = 720,
-        cov_halflife_bars: int = 720,
+        cov_halflife_days: float = 21.0,
         cov_min_periods: int = 240,
         realized_vol_halflife_bars: int = 240,
         cost_frac_oneway: float = _DEFAULT_COST_FRAC,
@@ -173,8 +176,8 @@ class BlendStrategy:
                 f"need cov_window_bars ({cov_window_bars}) >= cov_min_periods "
                 f"({cov_min_periods}) >= 2"
             )
-        if cov_halflife_bars <= 0 or realized_vol_halflife_bars <= 0:
-            raise ValueError("cov_halflife_bars/realized_vol_halflife_bars must be > 0")
+        if cov_halflife_days <= 0 or realized_vol_halflife_bars <= 0:
+            raise ValueError("cov_halflife_days/realized_vol_halflife_bars must be > 0")
         if not math.isfinite(cost_frac_oneway) or cost_frac_oneway < 0.0:
             raise ValueError(f"cost_frac_oneway must be finite and >= 0, got {cost_frac_oneway!r}")
 
@@ -226,7 +229,7 @@ class BlendStrategy:
         # (ts % (rebalance_bars * tf.ms) == 0) OR the book is flat (the boot entry).
         self._rebalance_anchor = rebalance_anchor
         self._cov_window_bars = cov_window_bars
-        self._cov_halflife_bars = cov_halflife_bars
+        self._cov_halflife_days = cov_halflife_days
         self._cov_min_periods = cov_min_periods
         self._rv_halflife_bars = realized_vol_halflife_bars
         self._cost_frac = cost_frac_oneway
@@ -513,7 +516,7 @@ class BlendStrategy:
 
         cov_bar = ewma_cov(
             rets.loc[:, ids],
-            halflife_bars=self._cov_halflife_bars,
+            halflife_bars=self._cov_halflife_bars_for(ctx, tf),
             min_periods=self._cov_min_periods,
         )
         # Zero-variance columns (constant prints) make inverse-vol sizing
@@ -635,6 +638,31 @@ class BlendStrategy:
             .reindex(index=index, columns=ids)
             .astype("float64")
         )
+
+    def _cov_halflife_bars_for(self, ctx: StrategyContext, tf: Timeframe) -> int:
+        """Convert the covariance halflife from DAYS to bars on this sleeve's calendar.
+
+        WHY THIS IS NOT A BAR COUNT. ``ewma_cov`` takes a halflife in bars, and a bar is a
+        different amount of time on different sleeves: one hour on the crypto H1 sleeve, one
+        session on equity D1. A single bar-valued default therefore means 30 days to crypto
+        and roughly 2.9 YEARS to equities, and the drawdown study that set this policy
+        measured a DAILY book -- its sweep values (21, 63, 126, 252, 720) are day counts.
+        Setting the bar parameter to the study's 21 would have given the crypto sleeve a
+        21-HOUR covariance halflife: not the change that was measured, and a live sizing
+        defect rather than a configuration choice. The admission contract states the gate in
+        days (``covariance_halflife_days_max``) for the same reason.
+
+        Bars per day comes from the calendar, which is the one annualization source in this
+        codebase: ``periods_per_year(tf) / periods_per_year(D1)`` is 8760/365 = 24 for crypto
+        H1 and 252/252 = 1 for equity D1. Never a hard-coded 24.
+
+        Floored at one bar, because a sub-bar halflife is not representable and silently
+        rounding it to zero would make ``lambda`` zero and throw away the estimator entirely.
+        """
+        bars_per_day = ctx.calendar.periods_per_year(tf) / ctx.calendar.periods_per_year(
+            Timeframe.D1
+        )
+        return max(1, round(self._cov_halflife_days * bars_per_day))
 
     def _realized_vol_ann(self, periods_per_year: float) -> float:
         """Annualized zero-mean EWMA vol of realized per-bar equity returns.
