@@ -64,6 +64,9 @@ ADMISSION_DRY_RUN_JSON: Final[Path] = (
 BOOK_WITHOUT_ALPHAVINTAGE_JSON: Final[Path] = (
     REPO / "artifacts" / "analysis" / "book_without_alphavintage" / "result.json"
 )
+SPINOFF_PRORATA_GATE_JSON: Final[Path] = (
+    REPO / "artifacts" / "analysis" / "spinoff_prorata_gate" / "result.json"
+)
 
 # The discovery bundle's human-facing gate summary is DERIVED from the admission contract rather
 # than transcribed beside it. It was transcribed until v6, and by then it had gone stale in the
@@ -1249,6 +1252,14 @@ def build_research_export() -> dict[str, Any]:
             if BOOK_WITHOUT_ALPHAVINTAGE_JSON.exists()
             else None
         ),
+        # The family closest to clearing feasibility, and why its last gate cannot be reached by
+        # improving extraction. Published because a null that closes a line of enquiry is worth
+        # as much to a reader as one that opens it.
+        "spinoff_prorata_gate": (
+            json.loads(SPINOFF_PRORATA_GATE_JSON.read_text())
+            if SPINOFF_PRORATA_GATE_JSON.exists()
+            else None
+        ),
         "sleeve_admission_contract": {
             "contract": json.loads(SLEEVE_ADMISSION_CONTRACT_JSON.read_text()),
             "source_sha256": hashlib.sha256(
@@ -1374,6 +1385,10 @@ def main(out_dir: Path = OUT_DIR) -> Path:
     )
     if ADMISSION_DRY_RUN_JSON.exists():
         (out_dir / "admission_dry_run.json").write_text(ADMISSION_DRY_RUN_JSON.read_text())
+    if SPINOFF_PRORATA_GATE_JSON.exists():
+        (out_dir / "spinoff_prorata_gate.json").write_text(
+            SPINOFF_PRORATA_GATE_JSON.read_text()
+        )
     if BOOK_WITHOUT_ALPHAVINTAGE_JSON.exists():
         (out_dir / "book_without_alphavintage.json").write_text(
             BOOK_WITHOUT_ALPHAVINTAGE_JSON.read_text()
@@ -1571,6 +1586,10 @@ def main(out_dir: Path = OUT_DIR) -> Path:
         )
         if ADMISSION_DRY_RUN_JSON.exists():
             (app_dir / "admission_dry_run.json").write_text(ADMISSION_DRY_RUN_JSON.read_text())
+        if SPINOFF_PRORATA_GATE_JSON.exists():
+            (app_dir / "spinoff_prorata_gate.json").write_text(
+                SPINOFF_PRORATA_GATE_JSON.read_text()
+            )
         if BOOK_WITHOUT_ALPHAVINTAGE_JSON.exists():
             (app_dir / "book_without_alphavintage.json").write_text(
                 BOOK_WITHOUT_ALPHAVINTAGE_JSON.read_text()
