@@ -191,13 +191,52 @@ def main() -> int:
             "value rather than the function's intention."
         ),
     }
+    overlay["production_cov_halflife_today"] = 21
+    overlay["production_halflife_unit"] = "days, converted to bars on each sleeve's own calendar"
+    overlay["both_halves_shipped"] = True
     overlay["remaining_gap_to_the_drawdown_objective"] = (
-        "Production still runs cov_halflife_bars=720. The measured study holds expected maximum "
-        "drawdown at 10.2% only with BOTH the realized-leg scale correction (shipped) and the "
-        "covariance halflife shortened to 21 (not shipped). Either alone is insufficient. The "
-        "objective is an EXPECTED maximum drawdown; no tested configuration held the 95th "
-        "percentile at or under 11%, and the best was 13.8%. Both figures are published."
+        "Closed on the configuration. The measured study holds expected maximum drawdown at "
+        "10.2% only with BOTH the realized-leg scale correction and the covariance halflife at "
+        "21 days; either alone is insufficient, and both are now in the live sizing path. What "
+        "remains is that this is a SIMULATION under a two-state correlation model, not a "
+        "measurement of the live book, and that the objective is an EXPECTED maximum drawdown -- "
+        "no tested configuration held the 95th percentile at or under 11%, the best being 13.8%. "
+        "Both figures are published together, always."
     )
+    overlay["halflife_unit_defect"] = {
+        "found": "2026-08-21",
+        "description": (
+            "The halflife was a BAR count while the objective and this contract are stated in "
+            "DAYS, and a bar is one hour on the crypto H1 sleeve against one session on equity "
+            "D1. The old 720-bar default therefore meant 30 days to crypto and about 2.9 years "
+            "to equities. Writing the study's 21 into the bar parameter would have given the "
+            "crypto sleeve a 21-HOUR covariance halflife."
+        ),
+        "resolution": (
+            "The parameter is cov_halflife_days, converted at the point of use via "
+            "periods_per_year(tf) / periods_per_year(D1). Pinned by "
+            "tests/unit/test_cov_halflife_units.py, which fails if the conversion is removed."
+        ),
+        "still_ambiguous_and_not_changed": (
+            "cov_window_bars (720) and cov_min_periods (240) carry the same ambiguity. No study "
+            "measured them, so changing them here would be an unmeasured change riding along "
+            "with a measured one."
+        ),
+    }
+    overlay["cost_of_the_halflife_change"] = {
+        "evidence": "artifacts/analysis/overlay_halflife_decision/result.json",
+        "evaluated_at_stressed_correlation": 0.50,
+        "expected_max_drawdown_before": 0.14213,
+        "expected_max_drawdown_after": 0.10225,
+        "sharpe_cost_at_10bp_round_trip": 0.0045,
+        "sharpe_cost_at_50bp_round_trip": 0.0226,
+        "simulated_book_sharpe_before": 1.773,
+        "simulated_book_sharpe_after": 1.991,
+        "note": (
+            "The simulated book Sharpe RISES, because the overlay targets risk better when its "
+            "covariance leg can see a regime change. The trade is not drawdown against return."
+        ),
+    }
 
     contract["claim_boundary"] = (
         "Passing this contract makes a result technically eligible for an explicit admission "
