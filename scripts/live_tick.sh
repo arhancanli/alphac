@@ -104,6 +104,8 @@ WATCHDOG_S=2400   # 40 min cap: hourly cache-hit cycles are ~3 min; the once-dai
   # An artifact nothing regenerates is a screenshot, not a check.
   # Soft-fail: broken lint tooling is an engineering problem and must not stop the track record
   # from publishing. Loud instead, and named precisely enough to act on.
+  uv run python scripts/audit_record_continuity.py >/dev/null \
+    || echo "WARN: record-continuity audit failed — the published report will be stale"
   uv run python scripts/export_lint_debt_contract.py >/dev/null \
     || echo "WARNING: lint debt contract NOT rebuilt — publishing one bound to older source hashes"
   uv run python scripts/research_export.py

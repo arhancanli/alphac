@@ -106,6 +106,8 @@ deploy_prod() {
   # exist. Rebuilding it here is what makes the published claim true by construction.
   # Soft-fail deliberately: if ruff or the exporter is broken, that is an engineering-tooling
   # problem and it must not stop the track record from publishing. It is loud instead.
+  uv run python scripts/audit_record_continuity.py >/dev/null \
+    || echo "WARN: record-continuity audit failed — the published report will be stale"
   uv run python scripts/export_lint_debt_contract.py >/dev/null \
     || echo "WARNING: lint debt contract NOT rebuilt — publishing one bound to older source hashes"
   uv run python scripts/research_export.py || { echo "research_export FAILED"; FAIL=1; }
