@@ -310,20 +310,30 @@ def main() -> int:
         "the_mapping_is_now_measured": {
             "evidence": "artifacts/analysis/live_covariance_memory/result.json",
             "finding": (
-                "The estimator's memory is bounded by cov_window_bars, not by the halflife. On "
-                "the crypto H1 sleeve a 720-bar window is 30 DAYS, so every halflife from 21 to "
-                "720 days yields an effective memory between 20.3 and 24.9 days: the parameter is "
-                "nearly inert there, and the drawdown improvement the sweep attributed to it is "
-                "not available through it. On the equity D1 sleeve the same parameter is faithful "
-                "at short halflives and truncated at long ones, and the legacy 720-bar setting "
-                "means 720 days requested against 529 days of actual memory."
+                "The estimator's memory is bounded by cov_window_bars, so the halflife is "
+                "faithful BELOW the window and truncated above it. On the crypto H1 sleeve the "
+                "720-bar window is 30 days: 7 days requested delivers 7.0, 14 delivers 14.0, but "
+                "30 delivers 22.0 and 720 delivers 24.9. On the equity D1 sleeve the same window "
+                "is 720 SESSIONS, so the parameter is faithful across the practical range and "
+                "only the legacy 720-day setting is truncated, to 529 days."
+            ),
+            "correction": (
+                "An earlier revision of this block said the parameter was 'nearly inert' on "
+                "crypto and named cov_window_bars as the only lever. That was withdrawn the same "
+                "day: it came from sampling only 21 days and up, where every result is truncated "
+                "into a 20-25 day band by the window. Below the window the halflife works."
             ),
             "consequence": (
-                "Shortening the covariance halflife is the wrong lever on crypto; shortening "
-                "cov_window_bars is the one that would move it, and no study has measured that. "
-                "On equity the lever works, and that is also where the Ledoit-Wolf intensity "
-                "mismatch is largest: at a 21-day halflife the effective sample is 60.6 rows "
-                "while the shrinkage is computed with T=720."
+                "If the drawdown study's finding holds -- shorter covariance memory reduces "
+                "expected maximum drawdown -- the halflife IS the instrument on both sleeves, and "
+                "it must be asked for BELOW the window rather than at 21 days where truncation "
+                "has already begun. It is also the better of the two routes: 7 days at the "
+                "production window gives 7.0 days of memory on ~475 effective rows, while "
+                "shortening the window to 240 bars gives ~8 days on ~107 rows. Four times the "
+                "effective sample for comparable memory, which also keeps ledoit_wolf_cc's T=720 "
+                "approximation far closer to valid. That approximation is where the remaining "
+                "exposure sits: at a 21-day halflife on equity the effective sample is 60.6 rows "
+                "against a T of 720."
             ),
         },
         "what_would_make_it_shippable": (
