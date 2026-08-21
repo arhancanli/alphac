@@ -5,8 +5,8 @@
     "target_total_sleeves": 14,
     "minimum_new_sleeves": 10,
     "portfolio_sharpe_target": [
-      2.0,
-      2.5
+      2.25,
+      3.0
     ],
     "portfolio_max_drawdown_target": 0.11,
     "targets_are_admission_evidence": false,
@@ -14,7 +14,29 @@
     "portfolio_p95_max_drawdown_is_gated": false,
     "portfolio_p95_max_drawdown_must_be_published": true,
     "average_pairwise_correlation_objective": -0.03,
-    "average_pairwise_correlation_objective_note": "An objective, not a gate. -0.03 is the average pairwise correlation at which fourteen sleeves of measured quality reach 2.5. Thresholds are gates and live in 'thresholds'; anything that is not enforced must not sit there wearing a gate's costume."
+    "average_pairwise_correlation_objective_note": "An objective, not a gate. -0.03 is the average pairwise correlation at which fourteen sleeves of measured quality reach 2.5. Thresholds are gates and live in 'thresholds'; anything that is not enforced must not sit there wearing a gate's costume.",
+    "honest_forward_sharpe_target": 1.5,
+    "superseded_in_sample_sharpe_target": [
+      2.0,
+      2.5
+    ],
+    "superseded_reason": "Stated in-sample with no haircut named, and unreachable as a forward result: a verified forward 2.0 at measured per-sleeve quality needs an average pairwise correlation of -0.062 against a PSD floor of -0.077. Withdrawn 2026-08-21 and replaced with an honest FORWARD target of 1.5, which is inside the floor at every plausible quality.",
+    "backtest_to_forward_haircut": {
+      "measured_on_this_book": "in-sample equal-risk ~1.04 against an honest forward of 0.3-0.9",
+      "range": [
+        1.5,
+        3.0
+      ],
+      "note": "The haircut IS the uncertainty. Until the forward record is long enough to speak, every in-sample figure should be read through it, and the range is this book's own published pair rather than a convention borrowed from elsewhere."
+    },
+    "implied_in_sample_target": {
+      "at_1_5x_haircut": 2.25,
+      "at_2_0x_haircut": 3.0,
+      "at_3_0x_haircut": 4.5
+    },
+    "what_reaching_it_requires": "Both halves, not either: an average pairwise correlation meaningfully BELOW zero, and per-sleeve quality above roughly 0.60. At today's measured 0.469 the forward target is reachable only at a correlation near -0.030 and only on the optimistic haircut.",
+    "why_this_is_not_a_retreat": "The rarer thing was never the number. A forward Sharpe near 1.5 that is genuinely verifiable -- signed forward record, every killed candidate published in full, gates that provably bite, and the arithmetic showing where the gate falls short of the target printed on the same page as the target -- is harder to find than a 2.5 nobody can check.",
+    "portfolio_sharpe_target_unit": "IN-SAMPLE, being the band that an honest forward 1.5 implies at the 1.5x and 2.0x ends of this book's own measured haircut. The headline target is honest_forward_sharpe_target."
   },
   "thresholds": {
     "minimum_oos_observations": 756,
@@ -267,20 +289,20 @@
     "gate_permits_objective_ceiling": false,
     "quality_precondition_at_the_gate": {
       "note": "What the tightened correlation gate alone does NOT buy. At the gate exactly, reaching each end of the objective band requires at least this average standalone Sharpe across fourteen sleeves.",
-      "s_bar_required_for_2.0": 0.5345224838248488,
-      "s_bar_required_for_2.5": 0.6681531047810609,
+      "s_bar_required_for_2.25": 0.6013377943029549,
+      "s_bar_required_for_3.0": 0.8017837257372732,
       "s_bar_measured_traded_basis": 0.529,
       "s_bar_measured_four_curve_basis": 0.464
     },
     "correlation_required_at_measured_quality": {
       "note": "The other route to the same place: hold quality where it is measured today and read off the average pairwise correlation each end of the band demands.",
       "traded_basis": {
-        "rho_bar_required_for_2.0": -0.001581269230769229,
-        "rho_bar_required_for_2.5": -0.02870432
+        "rho_bar_required_for_2.25": -0.017393747388414055,
+        "rho_bar_required_for_3.0": -0.04343782905982906
       },
       "four_curve_basis": {
-        "rho_bar_required_for_2.0": -0.018958769230769223,
-        "rho_bar_required_for_2.5": -0.039825919999999994
+        "rho_bar_required_for_2.25": -0.031124117758784424,
+        "rho_bar_required_for_3.0": -0.05116116239316239
       }
     },
     "honest_reading": "Tightening the correlation ceiling from 0.15 to 0.00 removes a ceiling that sat BELOW the objective at every plausible quality, which is why the v4 gate could not have produced the objective at any sleeve count. It does not on its own deliver the objective. At the gate exactly, fourteen sleeves of today's measured quality reach the figure recorded above, and the remaining distance has to be bought with per-sleeve quality, genuinely negative correlation, or both. Publishing this is the point: a target sitting beside a gate that forbids it is not a stretch goal."
