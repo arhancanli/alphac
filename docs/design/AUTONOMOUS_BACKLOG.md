@@ -384,6 +384,21 @@ nothing, where the whole-corpus fallback is all there is; the audit reports them
 bucket so the weaker basis is visible rather than blended into one total. `8,436` came back when
 the fallback was tightened, which is the point.
 
+### E6 · AlphaTrend's SPY-correlation diagnostic has never once been computed (BLOCKED-OWNER)
+STATUS: BLOCKED-OWNER — the fix is not a code change, it is a decision about which SPY series the
+diagnostic should read, and the obvious one-line patch would make things WORSE. See the work log
+entry of 2026-08-22 20:40 for the full diagnosis. In short: `scripts/mf_gauntlet.py` prints
+`corr to SPY : +nan` beside the words "want ~0 / negative — diversifies the book", and it has done
+so on **all 40 runs in the log**. Two independent blockers, found by measurement:
+  1. the book's equity index is tz-NAIVE and the SPY index is tz-AWARE, so the join raises
+     `TypeError: Cannot compare tz-naive and tz-aware timestamps` — which IS reported, not silent;
+  2. behind that, once both indices are normalised the overlap is **0 days**: the SPY series in
+     `data/lake_mf/` does not cover the live forward window at all.
+Fixing (1) alone would replace a loud, explained exception with a silent `+nan` — strictly worse.
+Fixing (2) means pointing a live tick's diagnostic at a different data source, which is the owner's
+call. **Scope is bounded and was verified: log only.** `paper-state.json` parses with zero
+NaN-valued fields and nothing NaN reaches either published site.
+
 ### E5 · The number-trace universe dilutes itself
 STATUS: DONE
 WHY: `audit-published-numbers.mjs` traces a page's numerals against EVERY number in EVERY published
@@ -1406,3 +1421,26 @@ where it is.*
   launchd environment, but **not yet by an unattended run**. The last unattended run, at 05:25Z, is
   still the pre-fix failure in the log. The next iteration should read `var/log/live_deploy.log`
   for a `06:25Z` block and confirm it ends `=== hourly deploy OK ===` with an IndexNow line.
+- `2026-08-22 20:40` — **Verification pass. Swept every scheduled job's log for the first time,
+  and found a diagnostic that has never worked — then deliberately did not patch it.**
+  No backlog item. Previous passes checked the deploy path and the published bytes; the other eight
+  timed jobs had never been looked at. The nightly publish ceremony's last run ended
+  `=== publish OK 2026-08-21T22:11:43Z ===` with 23/23 hashes and both hosts deployed. `mf_tick`
+  ran clean and correctly skipped submission because it is not a US session.
+  ⚠️ **`corr to SPY : +nan` in the managed-futures gauntlet, on all 40 runs in the log**, printed
+  beside "want ~0 / negative — diversifies the book". Diagnosed to root cause rather than guessed:
+  the book's equity index is tz-naive and SPY's is tz-aware, so the join raises `TypeError: Cannot
+  compare tz-naive and tz-aware timestamps` — and the log DOES carry that message, so it is loud,
+  not silent. Behind it, normalising both indices by hand gives an overlap of **0 days**: the SPY
+  series in `data/lake_mf/` does not cover the live forward window at all.
+  ⚠️⚠️ **The one-line fix would have made it worse, which is why it is recorded and not applied.**
+  Normalising the timezone removes the exception and leaves the correlation uncomputable, so the
+  loud, explained failure becomes a quiet `+nan` — the opposite of everything this file has spent
+  the day enforcing. The real fix is choosing which SPY series a live tick's diagnostic should
+  read, which is a decision, so it is E6 and BLOCKED-OWNER.
+  **Scope checked, not assumed.** A naive grep for "NaN" in `paper-state.json` matched — on the
+  letters in "Bi**nan**ce". The structured check is the authoritative one: the file parses and has
+  **zero NaN-valued fields**, and nothing NaN reaches either published host.
+  ⚠️ Still waiting on the clock: it is 06:20Z and the hourly job's next unattended run is 06:25Z.
+  The zsh fix remains verified interactively and under a reproduced launchd environment, and not
+  yet by an unattended run.
