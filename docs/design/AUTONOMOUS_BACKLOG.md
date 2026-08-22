@@ -384,16 +384,23 @@ nothing, where the whole-corpus fallback is all there is; the audit reports them
 bucket so the weaker basis is visible rather than blended into one total. `8,436` came back when
 the fallback was tightened, which is the point.
 
-### E6 · AlphaTrend's SPY-correlation diagnostic has never once been computed (BLOCKED-OWNER)
-STATUS: BLOCKED-OWNER — the fix is not a code change, it is a decision about which SPY series the
+### E6 · AlphaTrend's SPY-correlation diagnostic has never once been computed
+STATUS: DONE — 2026-08-22, on the owner's instruction. **My BLOCKED-OWNER diagnosis below was
+WRONG and is kept for the record.** There was no data-source decision to make: the series was
+already right and I had reproduced one of the two bugs while measuring it. See the work log entry
+of 2026-08-22 21:40. The original (incorrect) note follows.
+ORIGINAL NOTE — the fix is not a code change, it is a decision about which SPY series the
 diagnostic should read, and the obvious one-line patch would make things WORSE. See the work log
 entry of 2026-08-22 20:40 for the full diagnosis. In short: `scripts/mf_gauntlet.py` prints
 `corr to SPY : +nan` beside the words "want ~0 / negative — diversifies the book", and it has done
 so on **all 40 runs in the log**. Two independent blockers, found by measurement:
   1. the book's equity index is tz-NAIVE and the SPY index is tz-AWARE, so the join raises
      `TypeError: Cannot compare tz-naive and tz-aware timestamps` — which IS reported, not silent;
-  2. behind that, once both indices are normalised the overlap is **0 days**: the SPY series in
-     `data/lake_mf/` does not cover the live forward window at all.
+  2. ~~behind that, once both indices are normalised the overlap is **0 days**: the SPY series in
+     `data/lake_mf/` does not cover the live forward window at all.~~ **WRONG.** The overlap is
+     **5,189 days**. I measured 0 because my probe used `next(glob(...))` exactly as the script
+     did — I reproduced bug 1 in the instrument I was using to diagnose bug 1, so the measurement
+     inherited the defect it was measuring.
 Fixing (1) alone would replace a loud, explained exception with a silent `+nan` — strictly worse.
 Fixing (2) means pointing a live tick's diagnostic at a different data source, which is the owner's
 call. **Scope is bounded and was verified: log only.** `paper-state.json` parses with zero
@@ -1488,3 +1495,31 @@ where it is.*
   explicitly and which I have done all night. Recorded in the BLOCKED section with the one command
   that does it. This is the boundary between "the site is change-gated and reversible, deploy
   freely" and "publishing 43 commits to a public repository", and they are not the same permission.
+- `2026-08-22 21:40` — **E6 DONE, and my own diagnosis of it was wrong.** Owner authorised the
+  work; recording the error first because it is the more useful half.
+  ⚠️⚠️ **I declared E6 BLOCKED-OWNER on the grounds that the overlap between the book and SPY was
+  0 days and that fixing the timezone alone would turn a loud exception into a silent NaN. The
+  first half was false.** The overlap is **5,189 days**. I measured 0 because my diagnostic probe
+  used `next(glob("**/*.parquet"))` — copied from the script — so **I reproduced the bug I was
+  diagnosing inside the instrument I was diagnosing it with**, and the instrument returned the
+  defect's own answer. A probe that borrows the suspect's code inherits the suspect's blind spot.
+  **There were two bugs, not one, and either alone was enough to produce `+nan`:**
+  1. `next(glob(...))` read **one year partition of a per-year series — 252 rows of 6,325**. With
+     the book's curve starting in 2006, a single recent partition can overlap it by nothing.
+  2. the book's `ts` is `int64` epoch-ms while SPY's `ts_open` is `datetime64[ms, UTC]`, so
+     `pd.to_datetime(idx, unit="ms")` left SPY tz-AWARE and the join raised
+     `TypeError: Cannot compare tz-naive and tz-aware timestamps`.
+  Fixed together: **5,189 overlapping days, corr to SPY = +0.079** — near zero, which is exactly
+  what the line beside it asks for ("want ~0 / negative — diversifies the book"). **AlphaTrend does
+  diversify the book, and nobody could have known that from 40 runs of this report.** A short
+  overlap now prints how many days it had instead of printing `nan`.
+  Also removed while in the file: a dead `a2, b2 = …` assignment and a `# noqa: BLE001` for a rule
+  that is not enabled.
+  ⚠️ **The guard's honest limit.** `tests/unit/test_mf_gauntlet_spy_correlation.py` has four tests,
+  and the mutation run shows the two behavioural ones did **not** catch either bug reintroduction —
+  only the source backstop did. That is because the behavioural tests reproduce the join
+  themselves, so they guard the DATA (does a real correlation exist over a real overlap?) and not
+  the SCRIPT. Both bugs were caught, by the backstop, and the split is stated here rather than
+  implied: extracting the gauntlet's inline block into something importable would let the
+  behavioural tests guard the script too, and that is a refactor of a live-tick path I am not
+  doing unattended.
