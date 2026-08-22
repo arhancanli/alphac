@@ -329,7 +329,7 @@ documented as accepted with the reason, so the warning stops being noise.
 *This is what makes the goal's second half real. It is not overhead.*
 
 ### E1 · Mutation-test every guard that has never been mutated
-STATUS: TODO
+STATUS: DONE
 WHY: Several guards have never been proven able to fail. A check that cannot fail is worse than no
 check, and this repository has shipped that failure repeatedly.
 DONE WHEN: every test under `tests/unit/` that guards a published claim has a recorded mutation
@@ -985,3 +985,40 @@ where it is.*
   Four mutations, all caught: a long-titled paper with no short title, a short title that is not
   short, the H1 renamed, and the extractor going blind.
   `npm run verify` **0 errors, 0 warnings**, 126 URLs, all within three clicks.
+- `2026-08-22 11:40` — **E1 DONE.** `scripts/mutation_ledger.py`, published at
+  `/glassbox/mutation_ledger.json`. **All 20 guards over published claims now have a recorded
+  mutation result: 20/20 behaved as expected, 1 negative control, 0 findings outstanding.** For
+  each it breaks the thing the guard watches, runs that guard alone, records the outcome, restores
+  the file and **verifies the restoration by hash** before continuing.
+  Coverage is DERIVED from `tests/unit` by one rule, not listed — and `tests/unit/
+  test_mutation_coverage.py` runs that rule in milliseconds on every commit, so a guard added
+  without a mutation fails immediately instead of joining the unmutated majority until the next
+  deliberate run. Mutation-tested: a new unmutated guard file fails it.
+  ⚠️⚠️ **The most useful result was about MY OWN mutations, not the guards.** The first pass
+  reported **five survivors**. Every one was my mutation aiming at the wrong thing: the frontier
+  guard reads the correlation GATE, not the objective; the chain-label guard watches what the PAGE
+  calls the number, not the chain file; the kill-paper guard regenerates each paper from its entry,
+  so moving the entry moves both sides together and it watches the GENERATOR; the sleeve-claims
+  guard watches DISCLOSURE LANGUAGE, not numbers; the lineage guard runs over fixtures and watches
+  the audit's LOGIC. **A mutation that misses is indistinguishable from a guard that cannot fail**,
+  and a harness that reported those five as findings would have been worse than useless — it would
+  have sent someone to "fix" five guards that were already correct. Every retarget is recorded in
+  the artifact with what it first aimed at and why that was wrong.
+  ⚠️ **One genuinely weak guard, found and fixed.** `test_a_killed_sleeve_is_disclosed_as_killed`
+  asserted `"KILLED" in text` over a five-hundred-line script. Stripping the word from every string
+  a reader sees still passed, because **four of the seven mentions are source comments** — and a
+  comment discloses nothing to anybody outside this repo. Scoped to non-comment published copy;
+  the mutation now catches it. Straight from the "guards scoped page-wide cannot fail" class.
+  **A negative control is declared and required.** One registered mutation edits a COMMENT and
+  nothing else, and must NOT be caught. Without it a harness reporting CAUGHT for everything looks
+  strongest exactly when it is broken — if the runner fails for reasons unrelated to the mutation,
+  every line reads as a pass. `test_mutation_coverage.py` fails if no control exists.
+  ⚠️⚠️ **And it found the real cause of D8's disappearing edits.** During this item the short titles
+  vanished from the 14 kill papers for the second time. The cause: **the kill papers are
+  GENERATED** — `research_export.py` regenerates all 46 on every publish, so hand-editing
+  `public/research/*.md` was always going to be erased. Fixed at the generator, which now emits a
+  short title **derived** from the readable name by three declared trims (drop a trailing
+  parenthetical, then a trailing comma clause, then a slash half) rather than from a list a new
+  kill would not be on. **55 short titles now, up from 23**, and the site is still 0 errors,
+  0 warnings. My D8 note above is corrected by this: hand-editing generated output was the wrong
+  fix and it looked right twice.

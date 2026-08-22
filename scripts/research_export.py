@@ -100,6 +100,9 @@ ATLAS_REACHABILITY_SCREEN_JSON: Final[Path] = (
 ORTHOGONALITY_PRIOR_JSON: Final[Path] = (
     REPO / "artifacts" / "analysis" / "orthogonality_prior" / "result.json"
 )
+MUTATION_LEDGER_JSON: Final[Path] = (
+    REPO / "artifacts" / "engineering" / "mutation_ledger.json"
+)
 SPINOFF_FORM_UNIVERSE_JSON: Final[Path] = (
     REPO / "artifacts" / "analysis" / "spinoff_form_universe" / "result.json"
 )
@@ -1387,6 +1390,16 @@ def build_research_export() -> dict[str, Any]:
             if ORTHOGONALITY_PRIOR_JSON.exists()
             else None
         ),
+        # Which of this engine's guards have been PROVEN able to fail, and how. Published because
+        # a reader has no way to tell a working check from a decorative one from the outside, and
+        # because the honest version of "our tests pass" is a table showing what happens when the
+        # thing each test watches is deliberately broken. Includes a negative control: an edit
+        # that changes nothing and must NOT be caught.
+        "mutation_ledger": (
+            json.loads(MUTATION_LEDGER_JSON.read_text())
+            if MUTATION_LEDGER_JSON.exists()
+            else None
+        ),
         # The three families whose gates were unreachable, redesigned as far as they can be
         # WITHOUT spending a trial: what document would carry the evidence, and what a corrected
         # identity would look like. Published with the measurement that replaced the prose test —
@@ -1577,6 +1590,10 @@ def main(out_dir: Path = OUT_DIR) -> Path:
     if ORTHOGONALITY_PRIOR_JSON.exists():
         (out_dir / "orthogonality_prior.json").write_text(
             ORTHOGONALITY_PRIOR_JSON.read_text()
+        )
+    if MUTATION_LEDGER_JSON.exists():
+        (out_dir / "mutation_ledger.json").write_text(
+            MUTATION_LEDGER_JSON.read_text()
         )
     if SPINOFF_FORM_UNIVERSE_JSON.exists():
         (out_dir / "spinoff_form_universe.json").write_text(
@@ -1840,6 +1857,10 @@ def main(out_dir: Path = OUT_DIR) -> Path:
         if ORTHOGONALITY_PRIOR_JSON.exists():
             (app_dir / "orthogonality_prior.json").write_text(
                 ORTHOGONALITY_PRIOR_JSON.read_text()
+            )
+        if MUTATION_LEDGER_JSON.exists():
+            (app_dir / "mutation_ledger.json").write_text(
+                MUTATION_LEDGER_JSON.read_text()
             )
         if SPINOFF_FORM_UNIVERSE_JSON.exists():
             (app_dir / "spinoff_form_universe.json").write_text(

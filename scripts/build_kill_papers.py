@@ -22,6 +22,7 @@ withdrawn AlphaVintage figures on the site for six days.
 
 from __future__ import annotations
 
+import re
 from typing import Any
 
 __all__ = ["kill_paper_filename", "render_kill_paper", "render_kill_papers"]
@@ -129,6 +130,29 @@ def kill_paper_filename(entry: dict[str, Any]) -> str:
     return f"kill-{str(entry['name']).replace('_', '-')}.md"
 
 
+#: A search result shows about 65 characters, and the site appends " / Canli Capital", so a
+#: paper's short title has to fit in roughly 49. A killed candidate's readable name is usually
+#: already that short; where it is not, it is long in one of three predictable ways, and each is
+#: trimmed by rule rather than by a hand-written list that a new kill would not be on.
+_SHORT_NAME_BUDGET = 41  # 49 minus ": killed"
+
+
+def _short_name(name: str) -> str:
+    """Trim a readable name to something a search result can show, in declared steps."""
+    if len(name) <= _SHORT_NAME_BUDGET:
+        return name
+    # 1. A trailing parenthetical is a qualifier, not the name: "(campaign)", "(probe)".
+    trimmed = re.sub(r"\s*\([^)]*\)\s*$", "", name)
+    if len(trimmed) <= _SHORT_NAME_BUDGET:
+        return trimmed
+    # 2. A trailing clause after a comma restates the mechanism: "…, first-30m predicts last-30m".
+    trimmed = trimmed.split(",")[0].strip()
+    if len(trimmed) <= _SHORT_NAME_BUDGET:
+        return trimmed
+    # 3. A slash joins two halves of one idea; the first half names it.
+    return trimmed.split(" / ")[0].strip()
+
+
 def render_kill_paper(entry: dict[str, Any]) -> tuple[str, list[str]]:
     """Return the paper's markdown and the list of figures injected into it."""
     quoted: list[str] = []
@@ -179,6 +203,8 @@ def render_kill_paper(entry: dict[str, Any]) -> tuple[str, list[str]]:
     # less than nothing to a reader, who learns what this candidate was only after a paragraph
     # that could have been about any of them.
     body = f"""# {name}: a killed candidate
+
+**Short title:** {_short_name(name)}: killed
 
 **Verdict:** {verdict}  {f"**Stage:** {stage}  " if stage else ""}{window}
 **Identity:** `{entry["name"]}`
