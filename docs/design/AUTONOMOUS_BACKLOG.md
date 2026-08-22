@@ -443,6 +443,15 @@ DONE WHEN: `docs/design/SYSTEM_MAP.md` exists, derived from the actual files rat
 
 # BLOCKED — owner decisions, do not act on these
 
+- **52 signed commits are unpushed** (branch `fix/honesty-keystones-20260820`, 43 of them from the
+  night of 2026-08-21/22). They exist on this machine only. Verified 2026-08-22 21:05: **all 52
+  verify as signed-good**, so the signing blocker recorded earlier is resolved — `commit.gpgsign`
+  is on, format `ssh`, key `~/.ssh/git_signing_ed25519.pub` — and a `git push --dry-run` reports a
+  clean fast-forward `c8edae8..ae233d6` with no rejection. **Not pushed deliberately**: the repo is
+  public, so pushing publishes the work, and nothing in this file authorises an outward-facing
+  action beyond deploying the site. One command when you want it:
+  `git push origin fix/honesty-keystones-20260820`.
+
 - **EIA API key** (free, `eia.gov/opendata/register.php`) — unblocks `electricity_load_weather`.
 - **Databento** (paid) — unblocks `natural_gas_storage_weather`.
 - **AlphaVintage allocation** — carries 25% of the book; the production evaluator rejects it, and
@@ -1464,3 +1473,18 @@ where it is.*
   The method is worth keeping in mind: comparing a whole rendered corpus byte-for-byte against
   production detected a ONE-ENTRY difference across 133 pages, and the same-length signature
   pointed straight at which field had moved.
+- `2026-08-22 21:05` — **Verification pass. Everything I had left open is closed; found one thing
+  the owner needs to know on waking.**
+  All prior open claims are now closed: the zsh fix verified by an unattended run, live bytes
+  matching on both hosts and host-to-host, all 133 pages byte-identical to a fresh build, every
+  scheduled job's log swept, every guard mutation-tested.
+  ⚠️ **52 commits are unpushed and exist on this machine only** — 43 of them from tonight. That is
+  a single-point-of-failure on a laptop, and it is the most useful fact I can leave. Measured
+  rather than assumed: **all 52 verify as signed-good**, so the signing blocker this file recorded
+  earlier is RESOLVED (`commit.gpgsign` on, `ssh` format, key present), and `git push --dry-run`
+  reports a clean fast-forward `c8edae8..ae233d6` with no rejection. The push would simply work.
+  **Not pushed, deliberately.** The repository is public, so a push publishes the work, and nothing
+  in this file authorises an outward-facing action beyond deploying the site — which it authorises
+  explicitly and which I have done all night. Recorded in the BLOCKED section with the one command
+  that does it. This is the boundary between "the site is change-gated and reversible, deploy
+  freely" and "publishing 43 commits to a public repository", and they are not the same permission.
