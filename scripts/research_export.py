@@ -117,6 +117,15 @@ PUBLISHED_AS: Final[dict[str, str]] = {
     "trial_accounting": "trial_ledger.json",
 }
 
+PREREG_PARAMETERS_JSON: Final[Path] = (
+    REPO / "artifacts" / "engineering" / "prereg_earnings_narrative_parameters.json"
+)
+ALPHAVINTAGE_SEALED_JSON: Final[Path] = (
+    REPO / "artifacts" / "engineering" / "alphavintage_sealed_outcome.json"
+)
+DATA_LAKE_SCALE_JSON: Final[Path] = (
+    REPO / "artifacts" / "engineering" / "data_lake_scale.json"
+)
 CLAIM_COVERAGE_MAP_JSON: Final[Path] = (
     REPO / "artifacts" / "engineering" / "claim_coverage_map.json"
 )
@@ -1447,6 +1456,32 @@ def build_research_export() -> dict[str, Any]:
         # Provenance, declared by the producer: which file each artifact key was published as.
         # Anything not listed publishes under its own key.
         "published_as": PUBLISHED_AS,
+        # The scale figures the marketing pages put in a panel, each with a definition. Published
+        # because they were hand-typed until 2026-08-22 and two were wrong: the fundamentals count
+        # was OVERSTATED and "8,436 survivorship-free US stocks" matched neither store. A number on
+        # a page that traces to nothing is a number nobody can check, including us.
+        # The figures the AlphaVintage correction paper quotes, recomputed from the probe's own
+        # artifacts. Two of them traced to nothing published — the superseded Sharpe and the
+        # maximum drawdown, which was in no artifact at all. A correction paper whose own numbers
+        # cannot be checked asks for the same credence the original mistake did.
+        # A pre-registration's parameters as DATA. Its function is that the spec is fixed before
+        # measurement so a reader can check the run against it, and these existed only as English
+        # sentences — so nothing could compare the executed run to the committed spec.
+        "prereg_earnings_narrative_parameters": (
+            json.loads(PREREG_PARAMETERS_JSON.read_text())
+            if PREREG_PARAMETERS_JSON.exists()
+            else None
+        ),
+        "alphavintage_sealed_outcome": (
+            json.loads(ALPHAVINTAGE_SEALED_JSON.read_text())
+            if ALPHAVINTAGE_SEALED_JSON.exists()
+            else None
+        ),
+        "data_lake_scale": (
+            json.loads(DATA_LAKE_SCALE_JSON.read_text())
+            if DATA_LAKE_SCALE_JSON.exists()
+            else None
+        ),
         "claim_coverage_map": (
             json.loads(CLAIM_COVERAGE_MAP_JSON.read_text())
             if CLAIM_COVERAGE_MAP_JSON.exists()
@@ -1661,6 +1696,18 @@ def main(out_dir: Path = OUT_DIR) -> Path:
     if CONTRACT_UNIT_AUDIT_JSON.exists():
         (out_dir / "contract_and_unit_audit.json").write_text(
             CONTRACT_UNIT_AUDIT_JSON.read_text()
+        )
+    if PREREG_PARAMETERS_JSON.exists():
+        (out_dir / "prereg_earnings_narrative_parameters.json").write_text(
+            PREREG_PARAMETERS_JSON.read_text()
+        )
+    if ALPHAVINTAGE_SEALED_JSON.exists():
+        (out_dir / "alphavintage_sealed_outcome.json").write_text(
+            ALPHAVINTAGE_SEALED_JSON.read_text()
+        )
+    if DATA_LAKE_SCALE_JSON.exists():
+        (out_dir / "data_lake_scale.json").write_text(
+            DATA_LAKE_SCALE_JSON.read_text()
         )
     if CLAIM_COVERAGE_MAP_JSON.exists():
         (out_dir / "claim_coverage_map.json").write_text(
@@ -1943,6 +1990,18 @@ def main(out_dir: Path = OUT_DIR) -> Path:
         if CONTRACT_UNIT_AUDIT_JSON.exists():
             (app_dir / "contract_and_unit_audit.json").write_text(
                 CONTRACT_UNIT_AUDIT_JSON.read_text()
+            )
+        if PREREG_PARAMETERS_JSON.exists():
+            (app_dir / "prereg_earnings_narrative_parameters.json").write_text(
+                PREREG_PARAMETERS_JSON.read_text()
+            )
+        if ALPHAVINTAGE_SEALED_JSON.exists():
+            (app_dir / "alphavintage_sealed_outcome.json").write_text(
+                ALPHAVINTAGE_SEALED_JSON.read_text()
+            )
+        if DATA_LAKE_SCALE_JSON.exists():
+            (app_dir / "data_lake_scale.json").write_text(
+                DATA_LAKE_SCALE_JSON.read_text()
             )
         if CLAIM_COVERAGE_MAP_JSON.exists():
             (app_dir / "claim_coverage_map.json").write_text(
