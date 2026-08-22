@@ -305,7 +305,7 @@ DONE WHEN: a page answers them in the project's own words, each linking to the p
 demonstrates it.
 
 ### D6 · Internal-link reachability audit
-STATUS: TODO
+STATUS: DONE
 WHY: Nothing asserts every paper is reachable from the homepage in a bounded number of clicks.
 DONE WHEN: a script builds the internal link graph from `dist/` and fails if any indexable page is
 more than three clicks from `/`, wired into `npm run verify`.
@@ -897,3 +897,32 @@ where it is.*
   the markup mismatch and the evidence count, exactly as intended — and `/research` losing its
   static link.
   `npm run verify` **0 errors**, 126 URLs.
+- `2026-08-22 08:55` — **D6 DONE.** `scripts/audit-link-graph.mjs`, wired into `npm run verify`.
+  It builds the internal link graph from `dist/`, breadth-first searches from `/`, and fails if any
+  indexable page is unreachable or more than three clicks away.
+  **It found the defect immediately: 22 pages beyond the bound — 14 at four clicks, 8 at five.**
+  Root cause was not depth, it was that **`/research` linked eleven papers and NOT ONE of the
+  thirteen topic hubs that are its own taxonomy**. The hubs existed, were in the sitemap, had
+  essays written for them yesterday — and the library page did not link a single one, so they were
+  reachable only by chance through another paper's related-work section, with their exclusive
+  members stranded behind them. A library that does not link its own index is the defect; the depth
+  was only how it showed up.
+  Fixed by generating a Browse-by-topic block on `/research` from the hubs `build-papers.mjs`
+  actually renders, between asserted sentinels — a silent no-op there would restore the defect
+  invisibly. **Result: 126 pages, 1,309 internal links, depth 0:1 / 1:8 / 2:45 / 3:72, nothing
+  beyond three.**
+  The graph is built from STATIC HTML only, deliberately: the shared nav and footer are assembled
+  at runtime by `shell.js`, so a link that exists only there is invisible both to a crawler reading
+  the delivered document and to a reader with JS off. That is why every item this week added static
+  links rather than relying on the nav. It also checks graph and sitemap agree in BOTH directions —
+  an orphan page ranks for nothing, and a sitemap entry with no page is a 404 we advertised.
+  ⚠️⚠️ **A mutation caught a bug in the audit itself, and it was the vacuous-pass one.** Neutralising
+  every `href` on the site to `data-href` did NOT fail the audit, because `data-href="/x"` CONTAINS
+  `href="/x"` and the extractor's pattern had no left boundary. So it happily counted 1,309 links
+  on a site that had none — the exact substring trap as `literature_dir` inside
+  `app_literature_dir`, met a third time. Anchored, re-mutated: now reports **0 internal links**
+  and fires the floor, plus every page as an orphan. Without that mutation the audit would have
+  shipped unable to detect its own blindness.
+  Four mutations, all now caught: `/research` losing its hub links (reproduces the original 4-click
+  defect), a page unlinked everywhere, a sitemap entry with no page, and the extractor going blind.
+  `npm run verify` **0 errors**, 126 URLs, every one within three clicks.
