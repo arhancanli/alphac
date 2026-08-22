@@ -1444,3 +1444,23 @@ where it is.*
   ⚠️ Still waiting on the clock: it is 06:20Z and the hourly job's next unattended run is 06:25Z.
   The zsh fix remains verified interactively and under a reproduced launchd environment, and not
   yet by an unattended run.
+- `2026-08-22 20:55` — **The open claim is CLOSED: the zsh fix is verified by an unattended run.**
+  The 06:25Z scheduled job — launchd → `live_tick.sh` → `live_deploy_hourly.sh`, nobody typing
+  anything — ended:
+  `  [indexnow] IndexNow accepted 133 canonical URLs (HTTP 200).`
+  `  === hourly deploy OK 2026-08-22T06:26:44Z ===`
+  The 05:25Z run, the last one before the fix, ended `read-only variable: status` then
+  `WARN: hourly web deploy failed`. **IndexNow is now being submitted by the deploy path itself**,
+  which is what D7 was for and what it had never once done.
+  **And the other half of the outside-in verification: all 133 built PAGES against the live site**,
+  not only the 68 artifacts. First run: 128 identical, **5 different — with identical byte
+  lengths**, which is the signature of one number of the same width changing. Diffed rather than
+  assumed: `/verify`, `/founder`, `/methodology` and two measurement pages all print the
+  transparency chain's length, and **live said 408 while my local build said 407**.
+  ⚠️ **The direction mattered and reading it wrong would have been a false alarm.** The live site
+  was FRESHER than my working copy — the 05:26Z tick had appended an entry and the hourly job
+  deployed it, while my `dist/` predated that. Not a stale deploy; a stale local build. Rebuilt and
+  re-compared: **133 of 133 identical.**
+  The method is worth keeping in mind: comparing a whole rendered corpus byte-for-byte against
+  production detected a ONE-ENTRY difference across 133 pages, and the same-length signature
+  pointed straight at which field had moved.
