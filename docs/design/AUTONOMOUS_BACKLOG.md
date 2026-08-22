@@ -337,7 +337,7 @@ result. Produce a table of guard → mutation → observed failure. Any guard th
 fail is a finding.
 
 ### E2 · Complete the four unfinished audit dimensions
-STATUS: TODO
+STATUS: DONE
 WHY: An adversarial audit was stopped after two of six dimensions reported. Never completed:
 contract satisfiability beyond the pairs already fixed, guards-that-cannot-fire, published-claims
 versus artifacts, and unit/numerical correctness.
@@ -1022,3 +1022,44 @@ where it is.*
   kill would not be on. **55 short titles now, up from 23**, and the site is still 0 errors,
   0 warnings. My D8 note above is corrected by this: hand-editing generated output was the wrong
   fix and it looked right twice.
+- `2026-08-22 12:40` — **E2 DONE.** All four dimensions worked and published, **with the
+  refutations kept**: `/glassbox/guards_that_cannot_fire.json` and
+  `/glassbox/contract_and_unit_audit.json`. An audit that reports only its hits cannot be told
+  apart from one that did not run.
+  **Guards-that-cannot-fire** — a structural scan of 589 files for four shapes: a guard excluded
+  from the environment meant to run it, an assertion inside a loop that can run zero times, an
+  exemption naming a path that is not there, and an existence-guarded block whose path does not
+  exist. **One confirmed finding, fixed**: `test_no_trading_tick_invokes_the_weekly_job` globbed
+  `scripts/*.sh` and asserted inside the loop — a glob returning nothing would have passed it
+  having checked nothing. Floor added; the detector was then re-run against the un-floored version
+  and still finds it.
+  ⚠️⚠️ **Two of my own detectors were wrong, and the audit's self-check caught one of them.**
+  Shape B first reported **133 findings**, almost all `for name in SPEC_NAMES` over module-level
+  constants that cannot be empty — a finding list that is mostly false is worse than no audit, the
+  same defect as the 23 warnings D8 just cleared. Narrowed to collections DISCOVERED at runtime:
+  133 → 1. Shape D reported **7**, every one its own arithmetic: it joined quoted path segments
+  onto `REPO` regardless of whether the constant was rooted at `Path.home()` or a data directory.
+  Restricted to unambiguously `REPO /`-rooted constants: 7 → 0.
+  ⚠️ **And the self-check found a third.** Every shape reports zero, and zero is what a scanner
+  that has gone blind reports — so each detector is now run against a PLANTED instance and the
+  audit refuses to publish a clean result it cannot demonstrate it earned. Shape B failed its own
+  planted case: `_asserts_non_empty` counted ANY assertion mentioning the name, so `assert
+  item.name` — inside the loop, and silent about how many items there were — read as proof the
+  collection was non-empty. Narrowed to non-emptiness assertions OUTSIDE the loop.
+  **Contract satisfiability, beyond the two pairs the loader already rejects.** Two confirmed:
+  ⚠️ the **upper-95 correlation gate can never be decisive** — at 504 observations the SE is 0.0447,
+  so the bound only exceeds 0.10 once the point estimate passes +0.0265, which already fails the
+  0.00 point gate. Both are satisfiable together, so the loader is right not to reject them; but
+  the contract reads as carrying two independent correlation hurdles and carries one.
+  ⚠️ the **book deflated-Sharpe gate of 0.95 is unreachable in practice today**: the best figure
+  this book has measured is **0.2112** blended and **0.5093** for the best single restated variant.
+  Satisfiable by a better book, not by any candidate — which belongs beside the gate rather than
+  being discovered by whoever tries. The t-ratio floor is recorded **UNDECIDABLE** rather than
+  quietly counted as satisfied: "we did not check this" and "this is fine" must not look the same.
+  **Published claims vs artifacts: REFUTED** — all 9 narrative figures are present in the evidence
+  the bundle carries — with a second CONFIRMED finding beside it saying nine is too few for the
+  dimension to mean much, and that the strong property is E3's and has NOT been established here.
+  **Units: REFUTED** over **723** unit-declaring fields, against rules encoding real defect classes
+  (a basis-point field over 10,000, a percent over 1,000, a day count over 20,000 — the count
+  labelled as a duration that overstated a record eight-fold). Proven not blind: a planted
+  5,000,000 `_pct` field is detected, and the clean result returns when it is removed.
