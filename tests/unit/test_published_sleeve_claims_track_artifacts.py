@@ -104,11 +104,23 @@ def test_a_killed_sleeve_is_disclosed_as_killed(sleeve: str, artifact_path: Path
     if verdict != "KILLED":
         pytest.skip(f"{sleeve}: artifact verdict is {verdict or 'absent'}, not KILLED")
 
-    text = STATE_SCRIPT.read_text(encoding="utf-8")
-    assert "KILLED" in text, (
-        f"{sleeve}: its artifact records verdict KILLED and the published state never says so. "
-        f"A killed candidate carrying live weight must disclose that, whatever the allocation "
-        f"decision turns out to be."
+    # SCOPED TO WHAT IS PUBLISHED, not to the file. This assertion read `"KILLED" in text` over
+    # the whole five-hundred-line script until 2026-08-22, when the mutation ledger removed the
+    # disclosure from every string a reader ever sees and the guard still passed — four of the
+    # seven mentions are in SOURCE COMMENTS, and a comment discloses nothing to anybody outside
+    # this repository. A guard scoped to the whole file cannot fail while any line mentions the
+    # word.
+    lines = STATE_SCRIPT.read_text(encoding="utf-8").splitlines()
+    published = [ln for ln in lines if not ln.lstrip().startswith("#")]
+    disclosed = [ln for ln in published if "KILLED" in ln]
+    assert disclosed, (
+        f"{sleeve}: its artifact records verdict KILLED and no line the reader sees says so. "
+        f"There may still be comments in the source that mention it; a comment is not a "
+        f"disclosure. A killed candidate carrying live weight must disclose that, whatever the "
+        f"allocation decision turns out to be."
+    )
+    assert any('"' in ln or "'" in ln for ln in disclosed), (
+        f"{sleeve}: the only non-comment mention of KILLED is not inside published copy"
     )
 
 
