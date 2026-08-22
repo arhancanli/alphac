@@ -8,8 +8,8 @@ line of its own docstring, each pipeline's steps are the scripts it actually inv
 contract's boundary is the boundary it states about itself. A script with no docstring appears as
 having none.
 
-At a glance: **192 Python scripts**, **17 shell entry points**,
-**6 configuration contracts**, **14 engineering artifacts**,
+At a glance: **195 Python scripts**, **17 shell entry points**,
+**6 configuration contracts**, **17 engineering artifacts**,
 **238 unit test files**, **20 data directories**, **9 scheduled jobs**.
 
 
@@ -153,11 +153,13 @@ are the ones a reader has to know about; everything else is derived from them.
 | `config/sleeve_discovery.json` | _(no stated boundary)_ |
 | `config/sleeve_family_lineage.json` | This registry governs novelty only. |
 | `config/trial_accounting.json` | _(no stated boundary)_ |
+| `artifacts/engineering/alphavintage_sealed_outcome.json` | The figures the published correction paper quotes, recomputed from the probe's own artifacts so a reader can check them. |
 | `artifacts/engineering/borrow_execution_contract.json` | These primitives prevent current borrow flags and general-collateral rates from being silently treated as historical security-level evidence. |
 | `artifacts/engineering/claim_coverage_map.json` | Maps each PUBLISHED ARTIFACT to the mechanisms that guard it and records when each mechanism last ran, by running it. |
 | `artifacts/engineering/contract_and_unit_audit.json` | Three audit dimensions worked against the contract in force and the published bundle. |
 | `artifacts/engineering/corporate_action_contract.json` | The event-driven engine now accounts for source-bound splits, cash dividends, and metadata-confirmed delistings. |
 | `artifacts/engineering/crowding_risk_contract.json` | The gate and stress arithmetic are implemented. |
+| `artifacts/engineering/data_lake_scale.json` | Counts what is on disk and what pytest collects. |
 | `artifacts/engineering/financing_contract.json` | The event-driven engine can replay fully covered financing schedules and persist their cash effects. |
 | `artifacts/engineering/futures_execution_contract.json` | These primitives prevent several classes of futures lifecycle leakage and unsafe fallback. |
 | `artifacts/engineering/guards_that_cannot_fire.json` | A STRUCTURAL scan of source for checks that cannot fail. |
@@ -166,6 +168,7 @@ are the ones a reader has to know about; everything else is derived from them.
 | `artifacts/engineering/market_status_contract.json` | Explicit status replay can block impossible fills, and reviewed source-bound manifests can normalize and exactly reconcile supplied official/vendor re… |
 | `artifacts/engineering/mutation_ledger.json` | Breaks what each guard watches and records whether the guard failed. |
 | `artifacts/engineering/options_execution_contract.json` | These primitives make option quote, cross-strike integrity, adjusted-deliverable normalization/reconciliation, source-byte archival, displayed-size pa… |
+| `artifacts/engineering/prereg_earnings_narrative_parameters.json` | The numeric parameters this pre-registration commits to, extracted from the committed document and stated as data. |
 | `artifacts/engineering/record_continuity.json` | Reads the per-sleeve trading databases read-only. |
 
 ## Scripts by kind
@@ -199,7 +202,7 @@ and is worth more than a hand-made taxonomy that would drift.
 | `analyze_target_2p5.py` | ANALYSIS — what would a book Sharpe of 2.5 actually require, and is it reachable? |
 | `analyze_trial_budget_cost.py` | Price a prospective trial budget before it is authorized. |
 
-### `audit_*` (37)
+### `audit_*` (38)
 
 | script | first line of its docstring |
 |---|---|
@@ -212,6 +215,7 @@ and is worth more than a hand-made taxonomy that would drift.
 | `audit_cftc_hedging_pressure_feasibility.py` | Audit CFTC COT metadata without loading positions, prices, or returns. |
 | `audit_contract_and_units.py` | Three of the four audit dimensions that were opened and never finished. |
 | `audit_customer_supplier_propagation_feasibility.py` | Audit public 10-K major-customer source feasibility without opening return data. |
+| `audit_data_lake_scale.py` | Measure every scale figure the site puts on a page, with a definition for each. |
 | `audit_electricity_load_weather_feasibility.py` | Audit EIA-930 load/forecast lineage without opening prices or returns. |
 | `audit_guards_that_cannot_fire.py` | Find the checks in this repository that are structurally unable to fail. |
 | `audit_merger_metadata_feasibility.py` | Audit merger-arbitrage timeline metadata using only cached official SEC submissions JSON. |
@@ -332,10 +336,11 @@ and is worth more than a hand-made taxonomy that would drift.
 | `check_live_change_declared.py` | Block the publish if the live trading configuration has changed without being declared. |
 | `check_retracted_claims.py` | Refuse to publish a claim this record has already withdrawn. |
 
-### `export_*` (9)
+### `export_*` (11)
 
 | script | first line of its docstring |
 |---|---|
+| `export_alphavintage_sealed_outcome.py` | Publish the figures the AlphaVintage correction paper quotes, each recomputed from its inputs. |
 | `export_borrow_execution_contract.py` | Emit the deterministic securities-borrow engineering capability contract. |
 | `export_corporate_action_contract.py` | Emit deterministic corporate-action and delisting replay evidence. |
 | `export_crowding_risk_contract.py` | Emit deterministic crowding-risk and stressed-capacity engineering evidence. |
@@ -345,6 +350,7 @@ and is worth more than a hand-made taxonomy that would drift.
 | `export_live_config_fingerprint.py` | Fingerprint every setting that decides how the LIVE book trades, derived from the code itself. |
 | `export_market_status_contract.py` | Emit the deterministic PIT market-status replay capability contract. |
 | `export_options_execution_contract.py` | Emit the deterministic options engineering capability contract. |
+| `export_prereg_parameters.py` | Publish the earnings-narrative-change pre-registration's parameters as data, not prose. |
 
 ### `run_*` (3)
 

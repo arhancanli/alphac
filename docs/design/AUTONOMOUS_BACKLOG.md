@@ -362,59 +362,27 @@ DONE WHEN: a guard extracts numerals from the rendered site and reports any that
 to a glassbox artifact. Expect false positives on dates and version numbers; handle them by rule,
 not by exemption list.
 
-### E3b · Ten published numbers trace to nothing (BLOCKED-OWNER)
-STATUS: BLOCKED-OWNER — each is a hand-written figure with no artifact anywhere in the repository;
-removing one would withdraw something that may be true, and manufacturing an artifact for it would
-be worse. The owner has to say, for each, either what run produced it or that it should go.
-`npm run verify` is RED until then, by design: the alternative is a green gate on a site that
-publishes numbers a reader cannot check.
+### E3b · Published numbers that trace to nothing
+STATUS: DONE — 2026-08-22, on the owner's instruction. **Zero remain**; `npm run numbers` reports
+"every numeral a reader can see traces to a published artifact". Each of the eight was a different
+problem and none was fixed by deleting a number:
 
-  /progress                                    2,820
-  /progress, /systems                          8,436   ("survivorship-free US stocks")
-  /research/alphavintage-missing-release-correction    -25.1, 0.3382071994
-  /research/engineering-quality                3,760
-  /research/options-execution-foundation       26853, 59573
-  /research/prereg-earnings-narrative-change   24.6
+  | figure | page | what it was | resolution |
+  |---|---|---|---|
+  | 2,820+ tests | /progress | stale, understated | measured 3,961; published |
+  | 8,436 US stocks | /progress, /systems | matched NEITHER store | 6,835 PIT-membership; published |
+  | 392K+ fundamentals | both | **OVERSTATED** — 380,878 | corrected; published |
+  | -25.1% drawdown | alphavintage correction | true, in NO artifact | recomputed and published |
+  | 0.3382071994 | alphavintage correction | in an unpublished probe | published |
+  | 3,760 tests | engineering-quality | stale by 5% | measured 3,961 |
+  | 26853 | options-execution | an OCC memo NUMBER | guard fixed: it reads hrefs now |
+  | -252, 22.5 | prereg | spec parameters, prose only | published as data |
 
-⚠️ Was TEN on 2026-08-22 13:50, then EIGHT: `-252` and `22.5` dropped off without anybody fixing
-them, because publishing the claim-coverage map added its own numbers to the traceable universe.
-E5 fixed the dilution for the 31 pages whose generator declares its sources — those are now traced
-against ONLY those artifacts and report **zero** findings. These eight sit on pages that declare
-nothing, where the whole-corpus fallback is all there is; the audit reports them in their own
-bucket so the weaker basis is visible rather than blended into one total. `8,436` came back when
-the fallback was tightened, which is the point.
-
-### E6 · AlphaTrend's SPY-correlation diagnostic has never once been computed
-STATUS: DONE — 2026-08-22, on the owner's instruction. **My BLOCKED-OWNER diagnosis below was
-WRONG and is kept for the record.** There was no data-source decision to make: the series was
-already right and I had reproduced one of the two bugs while measuring it. See the work log entry
-of 2026-08-22 21:40. The original (incorrect) note follows.
-ORIGINAL NOTE — the fix is not a code change, it is a decision about which SPY series the
-diagnostic should read, and the obvious one-line patch would make things WORSE. See the work log
-entry of 2026-08-22 20:40 for the full diagnosis. In short: `scripts/mf_gauntlet.py` prints
-`corr to SPY : +nan` beside the words "want ~0 / negative — diversifies the book", and it has done
-so on **all 40 runs in the log**. Two independent blockers, found by measurement:
-  1. the book's equity index is tz-NAIVE and the SPY index is tz-AWARE, so the join raises
-     `TypeError: Cannot compare tz-naive and tz-aware timestamps` — which IS reported, not silent;
-  2. ~~behind that, once both indices are normalised the overlap is **0 days**: the SPY series in
-     `data/lake_mf/` does not cover the live forward window at all.~~ **WRONG.** The overlap is
-     **5,189 days**. I measured 0 because my probe used `next(glob(...))` exactly as the script
-     did — I reproduced bug 1 in the instrument I was using to diagnose bug 1, so the measurement
-     inherited the defect it was measuring.
-Fixing (1) alone would replace a loud, explained exception with a silent `+nan` — strictly worse.
-Fixing (2) means pointing a live tick's diagnostic at a different data source, which is the owner's
-call. **Scope is bounded and was verified: log only.** `paper-state.json` parses with zero
-NaN-valued fields and nothing NaN reaches either published site.
-
-### E5 · The number-trace universe dilutes itself
-STATUS: DONE
-WHY: `audit-published-numbers.mjs` traces a page's numerals against EVERY number in EVERY published
-artifact, and that corpus grows on every publish. Two genuinely untraceable figures started tracing
-within two hours of E3 shipping, purely because a new artifact happened to contain matching values.
-A guard that weakens each time the record grows is one that expires.
-DONE WHEN: a page's numerals are traced against the artifacts THAT PAGE references — exact for
-measurement pages, which name their source — with the whole-corpus fallback used only where a page
-declares no source, and that fallback reported separately so its weakness is visible.
+⚠️ Two of these were **wrong, not merely stale**: the fundamentals count claimed more than exists,
+and "8,436 survivorship-free US stocks" matched neither the 18,015 instruments with bars nor the
+6,835 in point-in-time membership. Two more were understated behind a "+", which made them true and
+uninformative — "3.5M+ hourly bars" against a real 13.7M tells a reader something false about the
+size of the thing.
 
 ### E4 · Claim-coverage map
 STATUS: DONE
@@ -450,7 +418,13 @@ DONE WHEN: `docs/design/SYSTEM_MAP.md` exists, derived from the actual files rat
 
 # BLOCKED — owner decisions, do not act on these
 
-- **52 signed commits are unpushed** (branch `fix/honesty-keystones-20260820`, 43 of them from the
+- ~~**52 signed commits are unpushed**~~ **PUSHED 2026-08-22 on the owner's instruction.** One
+  thing remains and it is a GitHub account setting I cannot reach: the commits show
+  `verified: false / no_user` because the signing public key is not registered on the account as a
+  **Signing key** (an Authentication key does not verify commits), and/or `arhancanli@icloud.com`
+  is not a verified email there. Add at github.com/settings/ssh/new, type "Signing Key":
+  `ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAID6Mv18WmfygOn4nRganqXXa6zA301zRicte+xpyToP1`.
+  Original note: **52 signed commits are unpushed** (branch `fix/honesty-keystones-20260820`, 43 of them from the
   night of 2026-08-21/22). They exist on this machine only. Verified 2026-08-22 21:05: **all 52
   verify as signed-good**, so the signing blocker recorded earlier is resolved — `commit.gpgsign`
   is on, format `ssh`, key `~/.ssh/git_signing_ed25519.pub` — and a `git push --dry-run` reports a
@@ -1523,3 +1497,30 @@ where it is.*
   implied: extracting the gauntlet's inline block into something importable would let the
   behavioural tests guard the script too, and that is a refactor of a live-tick path I am not
   doing unattended.
+- `2026-08-22 22:30` — **Owner authorised items 1-3. All three done.**
+  **1. Pushed.** 53 signed commits, clean fast-forward. Every commit tonight is authored
+  `Arhan Canli <arhancanli@icloud.com>` and **zero carry a co-author trailer** — checked, not
+  assumed. GitHub still shows `verified: false / no_user`: the signing key is not registered on the
+  account as a *Signing* key, or the commit email is not verified there. My CLI token lacks both
+  `admin:ssh_signing_key` and `user` scope, so that one is genuinely owner-only; the key and the
+  URL are in the BLOCKED section.
+  **2. Every published number now traces.** All eight resolved and **not one by deleting a
+  figure** — the table in E3b above says what each was. Two were WRONG rather than stale: "392K+
+  point-in-time fundamentals" against a real **380,878**, and "8,436 survivorship-free US stocks",
+  which matched neither the 18,015 instruments with bars nor the 6,835 in point-in-time membership.
+  Two more were understated behind a "+", which made them true and uninformative — "3.5M+ hourly
+  bars" against a real 13.7M.
+  The durable part is not the corrections. `config/brand.js` is the single source those numbers
+  bind from, and the **static fallback text inside each `data-fact` span had drifted from it** —
+  which matters because that text is exactly what a crawler and a reader with JS off see. A new
+  check compares all 24 fallbacks against the source, so a stale second copy of a number cannot
+  survive a build. And every figure is now published at `/glassbox/data_lake_scale.json` **with a
+  definition**, because "how many US stocks" has two defensible answers that differ by 2.6x.
+  ⚠️ **Two of my own greps lied to me during this**, both the same way: `grep "22.5"` matched
+  inside a longer number, and `grep "252"` matched inside the string
+  `"individual_252d_spy_beta_clamped"`. Both times the structured check disagreed with the grep and
+  the structured check was right. A substring match is not a value match, which is the third time
+  that exact confusion has cost time in this record.
+  **3. E6 fixed** — see the entry above. Two bugs, not the one I had diagnosed, and my
+  BLOCKED-OWNER note was wrong because my probe had reproduced one of them.
+  Site: **0 errors, 0 warnings, and the number-trace audit green for the first time.**
