@@ -103,6 +103,12 @@ ORTHOGONALITY_PRIOR_JSON: Final[Path] = (
 MUTATION_LEDGER_JSON: Final[Path] = (
     REPO / "artifacts" / "engineering" / "mutation_ledger.json"
 )
+GUARDS_CANNOT_FIRE_JSON: Final[Path] = (
+    REPO / "artifacts" / "engineering" / "guards_that_cannot_fire.json"
+)
+CONTRACT_UNIT_AUDIT_JSON: Final[Path] = (
+    REPO / "artifacts" / "engineering" / "contract_and_unit_audit.json"
+)
 SPINOFF_FORM_UNIVERSE_JSON: Final[Path] = (
     REPO / "artifacts" / "analysis" / "spinoff_form_universe" / "result.json"
 )
@@ -1400,6 +1406,20 @@ def build_research_export() -> dict[str, Any]:
             if MUTATION_LEDGER_JSON.exists()
             else None
         ),
+        # The four audit dimensions that were opened and never finished, worked and published
+        # with their REFUTATIONS kept. An audit that reports only its hits cannot be told apart
+        # from one that did not run — and two of these dimensions found nothing, which is only
+        # worth reading because the artifact says what each one checked.
+        "audit_guards_that_cannot_fire": (
+            json.loads(GUARDS_CANNOT_FIRE_JSON.read_text())
+            if GUARDS_CANNOT_FIRE_JSON.exists()
+            else None
+        ),
+        "audit_contract_and_units": (
+            json.loads(CONTRACT_UNIT_AUDIT_JSON.read_text())
+            if CONTRACT_UNIT_AUDIT_JSON.exists()
+            else None
+        ),
         # The three families whose gates were unreachable, redesigned as far as they can be
         # WITHOUT spending a trial: what document would carry the evidence, and what a corrected
         # identity would look like. Published with the measurement that replaced the prose test —
@@ -1594,6 +1614,14 @@ def main(out_dir: Path = OUT_DIR) -> Path:
     if MUTATION_LEDGER_JSON.exists():
         (out_dir / "mutation_ledger.json").write_text(
             MUTATION_LEDGER_JSON.read_text()
+        )
+    if GUARDS_CANNOT_FIRE_JSON.exists():
+        (out_dir / "guards_that_cannot_fire.json").write_text(
+            GUARDS_CANNOT_FIRE_JSON.read_text()
+        )
+    if CONTRACT_UNIT_AUDIT_JSON.exists():
+        (out_dir / "contract_and_unit_audit.json").write_text(
+            CONTRACT_UNIT_AUDIT_JSON.read_text()
         )
     if SPINOFF_FORM_UNIVERSE_JSON.exists():
         (out_dir / "spinoff_form_universe.json").write_text(
@@ -1861,6 +1889,14 @@ def main(out_dir: Path = OUT_DIR) -> Path:
         if MUTATION_LEDGER_JSON.exists():
             (app_dir / "mutation_ledger.json").write_text(
                 MUTATION_LEDGER_JSON.read_text()
+            )
+        if GUARDS_CANNOT_FIRE_JSON.exists():
+            (app_dir / "guards_that_cannot_fire.json").write_text(
+                GUARDS_CANNOT_FIRE_JSON.read_text()
+            )
+        if CONTRACT_UNIT_AUDIT_JSON.exists():
+            (app_dir / "contract_and_unit_audit.json").write_text(
+                CONTRACT_UNIT_AUDIT_JSON.read_text()
             )
         if SPINOFF_FORM_UNIVERSE_JSON.exists():
             (app_dir / "spinoff_form_universe.json").write_text(
