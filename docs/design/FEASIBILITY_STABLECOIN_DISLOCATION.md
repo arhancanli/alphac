@@ -1,5 +1,7 @@
 # Stablecoin par dislocations: locked no-return feasibility protocol
 
+**Short title:** Stablecoin par dislocations: feasibility
+
 **Declared:** 2026-08-16  
 **Return data:** prohibited  
 **Hypotheses spent:** zero  
