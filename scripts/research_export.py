@@ -100,6 +100,12 @@ ATLAS_REACHABILITY_SCREEN_JSON: Final[Path] = (
 ORTHOGONALITY_PRIOR_JSON: Final[Path] = (
     REPO / "artifacts" / "analysis" / "orthogonality_prior" / "result.json"
 )
+SPINOFF_FORM_UNIVERSE_JSON: Final[Path] = (
+    REPO / "artifacts" / "analysis" / "spinoff_form_universe" / "result.json"
+)
+IDENTITY_REDESIGN_NOTES_MD: Final[Path] = (
+    REPO / "docs" / "design" / "IDENTITY_REDESIGN_NOTES.md"
+)
 
 # The discovery bundle's human-facing gate summary is DERIVED from the admission contract rather
 # than transcribed beside it. It was transcribed until v6, and by then it had gone stale in the
@@ -1381,6 +1387,24 @@ def build_research_export() -> dict[str, Any]:
             if ORTHOGONALITY_PRIOR_JSON.exists()
             else None
         ),
+        # The three families whose gates were unreachable, redesigned as far as they can be
+        # WITHOUT spending a trial: what document would carry the evidence, and what a corrected
+        # identity would look like. Published with the measurement that replaced the prose test —
+        # the spin-off event universe is declared by a FORM TYPE, 386 registrations over sixteen
+        # years, and the corporate-action route was checked and does not carry the event.
+        "identity_redesign": {
+            "form_universe": (
+                json.loads(SPINOFF_FORM_UNIVERSE_JSON.read_text())
+                if SPINOFF_FORM_UNIVERSE_JSON.exists()
+                else None
+            ),
+            "notes_public_path": "/research/identity-redesign-notes.md",
+            "notes_source_path": rel(IDENTITY_REDESIGN_NOTES_MD),
+            "notes_sha256": hashlib.sha256(IDENTITY_REDESIGN_NOTES_MD.read_bytes()).hexdigest(),
+            "public_path": "/glassbox/spinoff_form_universe.json",
+            "source_path": rel(SPINOFF_FORM_UNIVERSE_JSON),
+            "status": "DRAFT — nothing here is registered and no threshold is proposed",
+        },
         "sleeve_admission_contract": {
             "contract": json.loads(SLEEVE_ADMISSION_CONTRACT_JSON.read_text()),
             "source_sha256": hashlib.sha256(
@@ -1554,6 +1578,10 @@ def main(out_dir: Path = OUT_DIR) -> Path:
         (out_dir / "orthogonality_prior.json").write_text(
             ORTHOGONALITY_PRIOR_JSON.read_text()
         )
+    if SPINOFF_FORM_UNIVERSE_JSON.exists():
+        (out_dir / "spinoff_form_universe.json").write_text(
+            SPINOFF_FORM_UNIVERSE_JSON.read_text()
+        )
     if BOOK_WITHOUT_ALPHAVINTAGE_JSON.exists():
         (out_dir / "book_without_alphavintage.json").write_text(
             BOOK_WITHOUT_ALPHAVINTAGE_JSON.read_text()
@@ -1602,6 +1630,9 @@ def main(out_dir: Path = OUT_DIR) -> Path:
         CORPORATE_ACTION_LIFECYCLE_MD.read_text()
     )
     (literature_dir / "financing-replay.md").write_text(FINANCING_REPLAY_MD.read_text())
+    (literature_dir / "identity-redesign-notes.md").write_text(
+        IDENTITY_REDESIGN_NOTES_MD.read_text()
+    )
     (literature_dir / "engineering-quality.md").write_text(ENGINEERING_QUALITY_MD.read_text())
     # MISSING FROM THE PRIMARY SITE until 2026-08-22. The app host published this paper and this
     # host did not, because the two write blocks are hand-mirrored copies and one edit landed in
@@ -1810,6 +1841,10 @@ def main(out_dir: Path = OUT_DIR) -> Path:
             (app_dir / "orthogonality_prior.json").write_text(
                 ORTHOGONALITY_PRIOR_JSON.read_text()
             )
+        if SPINOFF_FORM_UNIVERSE_JSON.exists():
+            (app_dir / "spinoff_form_universe.json").write_text(
+                SPINOFF_FORM_UNIVERSE_JSON.read_text()
+            )
         if BOOK_WITHOUT_ALPHAVINTAGE_JSON.exists():
             (app_dir / "book_without_alphavintage.json").write_text(
                 BOOK_WITHOUT_ALPHAVINTAGE_JSON.read_text()
@@ -1870,6 +1905,9 @@ def main(out_dir: Path = OUT_DIR) -> Path:
         )
         (app_literature_dir / "financing-replay.md").write_text(
             FINANCING_REPLAY_MD.read_text()
+        )
+        (app_literature_dir / "identity-redesign-notes.md").write_text(
+            IDENTITY_REDESIGN_NOTES_MD.read_text()
         )
         (app_literature_dir / "engineering-quality.md").write_text(
             ENGINEERING_QUALITY_MD.read_text()
