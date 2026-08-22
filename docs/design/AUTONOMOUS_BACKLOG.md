@@ -270,7 +270,7 @@ hard-coded list, so the next artifact appears without a site edit — otherwise 
 On-page audit still 0 errors.
 
 ### D1 · Make /systems explain the engine end to end
-STATUS: TODO
+STATUS: DONE
 WHY: The page lists components. A reader cannot follow how a signal becomes a position becomes a
 published number.
 DONE WHEN: the page walks the whole path — lake → factor → portfolio → overlay → execution →
@@ -748,3 +748,33 @@ where it is.*
   `research.json` fails with the unrendered artifact named.
   `npm run verify` **0 errors**, 123 URLs, 82 papers + 13 hubs + 21 measurements. The 23 warnings
   are all pre-existing paper titles over 65 chars — that is D8, untouched here.
+- `2026-08-22 04:35` — **D1 DONE.** `/systems` gains chapter **07 / End to end**: one funding rate
+  followed the whole way — lake → factor → portfolio → overlay → execution → publication — with
+  **the artifact that measured each stage linked from that stage**. Thirteen proof links, all
+  resolving.
+  The six chapters already on the page describe stages one at a time, which is why a reader could
+  finish it and still not answer the only question that decides whether the rest is worth
+  believing: what happens between an observation and a number on this site, and where could it go
+  wrong. Each row now states the stage, **the failure mode that stage is exposed to**, and the
+  measurement that would show it: a lookahead-stamped series, a factor the book already owns, an
+  unmeasured estimator halflife, a brake tuned on a simulation of a different estimator, a cost
+  model that flatters, a record with a hole in it.
+  **Deliberately a list, not a diagram.** A diagram asserts that the stages connect; a link lets
+  the reader check. Where the evidence is narrower than the stage, the row says so instead of
+  borrowing a nearby number's confidence — the lake row reads "for one data layer rather than all
+  of them", because that is what the artifact covers.
+  It is NOT marked `data-stage`, so the pipeline spine and the tentpole pin still track the six
+  engine stages rather than gaining a phantom seventh; the rail and the chapter array were extended
+  together so the counter stays aligned.
+  ⚠️ **Guarded in the existing gate again, not a new one.** `verify-papers.mjs` now checks the walk
+  by NAMED stage rather than by count — a walk that silently dropped Execution would still be six
+  rows long if another stage were split in two — that every row carries its own proof, and that
+  every proof link resolves to a built page. A proof link that 404s is worse than no link: it
+  invites the reader to verify and then wastes the attempt.
+  Mutation-tested four ways, all caught: a broken proof link, a renamed stage, a row stripped of its
+  proof, and the whole walk deleted. ⚠️ The third one first reported NOT CAUGHT — and the guard was
+  fine; the BSD `sed` I mutated with had silently matched nothing. Re-run with an asserted edit it
+  fails correctly. An un-asserted replace passing for a working guard is the same defect class this
+  file already warns about, met from the other side.
+  `npm run verify` **0 errors**, 123 URLs. The 23 warnings remain the pre-existing paper titles
+  (D8), untouched.
