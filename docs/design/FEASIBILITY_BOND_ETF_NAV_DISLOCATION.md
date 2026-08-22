@@ -1,5 +1,7 @@
 # Bond-ETF NAV dislocation — locked no-return source feasibility protocol
 
+**Short title:** Bond-ETF NAV dislocation: feasibility
+
 **Declared:** 2026-08-16 before collecting issuer page payloads or computing historical coverage.
 **Stage:** source and execution-measurement feasibility only. No ETF prices from a market-data
 vendor, no TRACE transaction records, no returns, and no signal parameter may be opened.

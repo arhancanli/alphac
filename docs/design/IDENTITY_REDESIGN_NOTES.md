@@ -1,5 +1,7 @@
 # Identity redesign notes: three families that mis-specified their population
 
+**Short title:** Identity redesign: three mis-specified families
+
 **Status: DRAFT. Nothing here is registered.** No hypothesis identity, no threshold, no universe is
 fixed by this document. Registering any of it spends a trial from a budget that belongs to the
 owner. What follows is the analysis that must come *before* a pre-registration, written down so

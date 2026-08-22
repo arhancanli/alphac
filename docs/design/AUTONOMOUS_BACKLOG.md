@@ -317,7 +317,7 @@ DONE WHEN: `npm run indexnow` runs as part of the deploy path, and a failure is 
 silent.
 
 ### D8 · Title-length residual
-STATUS: TODO
+STATUS: DONE
 WHY: 22 pages carry titles over 65 characters because the documents' real names are long.
 DONE WHEN: either a defensible short-title field is added at the source, or the residual is
 documented as accepted with the reason, so the warning stops being noise.
@@ -954,3 +954,34 @@ where it is.*
   check the thing it named.
   Six mutations, all now caught: submit call removed, staleness report removed, helper not sourced
   (twice), submission ungated from the deploy result, and the network call unbounded.
+- `2026-08-22 10:30` — **D8 DONE. The site is now 0 errors AND 0 warnings**, from 23 warnings that
+  had been printing on every build for a week.
+  Took the first option, not the second: **a search result headline is not a document's name.**
+  "Managed-Futures fast-trend / real-futures breadth (campaign): a killed candidate" is the right
+  name for that document and the wrong thing to truncate mid-word in a result. So a paper may
+  declare `**Short title:** …` in its markdown, used for `<title>` ONLY — the H1, the Open Graph
+  title and the structured-data headline all keep the real name. Twenty-three short titles written
+  by hand, each ≤49 chars so the brand suffix still fits.
+  Authored at the SOURCE in each case, which meant nine of them in `~/alphaforge/docs/design/`
+  rather than in the site: those files are overwritten by `research_export.py` on every publish, so
+  editing the site's copies would have looked right and vanished at the next tick.
+  **The residual is now an ERROR, not a warning.** It was a warning while 23 pages carried long
+  titles, and a warning that fires 23 times a build is noise a reader learns to scroll past — which
+  is exactly how it survived a week. Tightened only once the count was actually zero.
+  ⚠️ **The guard's first version could not see the mechanism's real danger.** A short title that
+  replaces the H1 would RENAME the document, and the check for that was a conjunction of two
+  presence tests — the H1 marker exists, and the real name appears somewhere on the page. Pointing
+  the H1 at the short title passed it, because the real name still appeared in Open Graph and
+  structured data. Now it reads the heading's actual contents and compares. Re-mutated: it names
+  both titles and says the document has been renamed.
+  ⚠️ **Two process failures worth recording, both mine.** First: the initial batch edit reported
+  "inserted" for all fourteen files from a function's return value, and **not one had landed on
+  disk** — an un-asserted write reporting success, the exact defect class this file already warns
+  about. Redone with a per-file assertion that reads the file back. Second: my mutation harness
+  restored a file with `git checkout --`, which **discarded uncommitted work** — it wiped the
+  builder changes I had just made, and the next verify passed only because it was reading a stale
+  `dist/`. Restore from a copy the harness made, never from git, whenever the file has uncommitted
+  changes.
+  Four mutations, all caught: a long-titled paper with no short title, a short title that is not
+  short, the H1 renamed, and the extractor going blind.
+  `npm run verify` **0 errors, 0 warnings**, 126 URLs, all within three clicks.
