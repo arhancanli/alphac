@@ -128,6 +128,7 @@ deploy_prod() {
   # publishing a record that doesn't reproduce -- warn loudly, do not silently deploy a broken claim.
   for d in "$HOME/meridian/public/glassbox" "$HOME/meridian-app/public/glassbox"; do
     cp scripts/reproduce.py "$d/reproduce.py" 2>/dev/null
+    cp scripts/verify_transparency.py "$d/verify_transparency.py" 2>/dev/null
   done
   PUBLISHABLE=1
   uv run python scripts/reproduce.py || {
