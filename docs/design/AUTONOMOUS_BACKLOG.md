@@ -365,13 +365,16 @@ publishes numbers a reader cannot check.
   /research/options-execution-foundation       26853, 59573
   /research/prereg-earnings-narrative-change   24.6
 
-⚠️ Was TEN on 2026-08-22 13:50. `-252` and `22.5` dropped off two hours later WITHOUT anybody
-fixing them: publishing the claim-coverage map added its own numbers to the traceable universe and
-those two now match something, coincidentally. See E5 — the guard gets weaker every time we
-publish, which is a guard with an expiry date.
+⚠️ Was TEN on 2026-08-22 13:50, then EIGHT: `-252` and `22.5` dropped off without anybody fixing
+them, because publishing the claim-coverage map added its own numbers to the traceable universe.
+E5 fixed the dilution for the 31 pages whose generator declares its sources — those are now traced
+against ONLY those artifacts and report **zero** findings. These eight sit on pages that declare
+nothing, where the whole-corpus fallback is all there is; the audit reports them in their own
+bucket so the weaker basis is visible rather than blended into one total. `8,436` came back when
+the fallback was tightened, which is the point.
 
 ### E5 · The number-trace universe dilutes itself
-STATUS: TODO
+STATUS: DONE
 WHY: `audit-published-numbers.mjs` traces a page's numerals against EVERY number in EVERY published
 artifact, and that corpus grows on every publish. Two genuinely untraceable figures started tracing
 within two hours of E3 shipping, purely because a new artifact happened to contain matching values.
@@ -1161,3 +1164,38 @@ where it is.*
   `"    for _name, _path in REPURCHASE_AUDITS:"` matched twice, because the eight-space version
   contains the four-space one. The assertion caught it and nothing was written; redone
   line-anchored. This repository has that exact trap written down.
+- `2026-08-22 15:45` — **E5 DONE.** The number-trace guard no longer weakens as the record grows.
+  **A page is scoped to the artifacts its GENERATOR declares**, via `<meta name="canli:sources">`
+  emitted by the measurement, founder, methodology and verify builders. **31 pages scoped, and
+  they report ZERO untraceable numerals.** The other 102 declare nothing and fall back to the whole
+  corpus, reported in a separate bucket with its own count so the weaker basis is visible instead
+  of blended into one reassuring total.
+  ⚠️ **The first scoping rule made things worse, and measuring it is what showed that.** Treating
+  any glassbox LINK in prose as a declaration scoped research papers to the single artifact they
+  happened to cite while they quoted figures from three others — **159 findings, nearly all false**.
+  A link is a citation; it is not a statement that it is the only source. Partial declaration is
+  worse than none, so the scope now comes only from a generator saying "these are all of them".
+  **Four real defects fell out of doing this**, none of which the old whole-corpus guard could see:
+  ⚠️ **Four measurement pages linked a raw artifact that does not exist.** The "check it yourself"
+  link was derived by guessing the filename from the bundle key, and four keys do not predict their
+  file — on the pages whose entire purpose is that a reader can check. Fixed at the source by
+  naming bundle keys after the files they publish, with `published_as` declared by the exporter for
+  the one that genuinely differs (`trial_accounting` → `trial_ledger.json`), and the builder now
+  **throws** rather than emitting a link it has not verified.
+  ⚠️ **`&#39;` was being read as the number 39.** The scanner stripped named entities and not
+  numeric ones, so every escaped apostrophe contributed a figure — reported on three measurement
+  pages as a claim tracing to nothing, when it is punctuation.
+  ⚠️ **Numerals inside field NAMES are labels.** A page rendering `projected_book_sharpe_at_14_
+  sleeves` prints "14", and the value scanner cannot see it because the lookbehind that stops
+  `1961-1970` reading as a negative also rejects a digit glued into an identifier. Those are now
+  admitted as verbatim — **on the scoped path only**: folding them into the corpus made `8,436`
+  start tracing to a digit sequence inside an unrelated identifier, which is the exact dilution
+  this item exists to stop. Container sizes are admitted the same way, because a page reporting
+  "2 further fields" is counting the artifact's own keys.
+  ⚠️ **A slug moved and the `/systems` walk caught it.** Renaming the bundle keys moved a
+  measurement page, and the end-to-end walk's link guard failed the build naming the dead link.
+  That guard was written two days ago for exactly this.
+  Mutation-tested: a figure planted on a scoped page is caught in the scoped bucket and named;
+  removing a page's declaration moves it to the fallback and the counts shift by one.
+  `npm run verify`: **0 errors, 0 warnings** on the site checks; the numbers audit remains RED on
+  the eight E3b figures, which is their honest state.
