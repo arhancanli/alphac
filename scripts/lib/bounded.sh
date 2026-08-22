@@ -28,7 +28,8 @@ run_bounded() {
   # open — so `url=$(run_bounded ... vercel deploy ...)` would block on the capture even after the
   # child died. That would have reproduced the exact 28h hang this file exists to prevent.
   # zsh's MONITOR option does not enable job control in a script (verified), hence the perl hop.
-  perl -e 'setpgrp(0,0); exec {$ARGV[0]} @ARGV or exit 127' -- "$@" &
+  perl -e 'setpgrp(0,0); exec {$ARGV[0]} @ARGV
+           or print STDERR "run_bounded: cannot exec $ARGV[0]: $!\n" and exit 127' -- "$@" &
   local _pid=$!
   # Kill the GROUP (-pid). If setpgrp somehow failed, -pid matches no group and the kill is a
   # no-op, so we fall back to the pid — never to our own group, since our pgid != _pid.

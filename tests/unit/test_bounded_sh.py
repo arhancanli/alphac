@@ -78,9 +78,46 @@ def test_hang_with_grandchild_is_killed() -> None:
     )
     elapsed = time.monotonic() - t0
     assert "after:[]" in r.stdout, "capture did not return — a grandchild still holds the pipe"
-    assert elapsed < 25, (
-        f"hang outlived its 3s cap ({elapsed:.1f}s) — watchdog did not kill the tree"
+    assert elapsed < 60, (
+        f"hang outlived its 3s cap ({elapsed:.1f}s) — watchdog did not kill the tree. The failure "
+        "this guards against is the full 600s sleep, so anything under a minute means the tree "
+        "was killed; the bound is loose on purpose because the suite runs in parallel."
     )
+
+
+def test_a_missing_command_says_which_command() -> None:
+    """A failure that cannot be read is a failure that cannot be fixed.
+
+    perl's exec failure is silent, so a missing binary produced exit 127 and not one byte of
+    output — every caller logged an empty error tail and had to guess. Found while checking
+    whether the IndexNow submission survives launchd's minimal PATH: it reported SUBMISSION FAILED
+    followed by a blank line. Same defect class as the deploy that piped vercel's output into grep
+    and discarded the reason for a 23-hour outage.
+    """
+    result = subprocess.run(
+        ["zsh", "-c", f". {LIB}; run_bounded 5 definitely_not_a_command_xyz"],
+        capture_output=True,
+        text=True,
+        cwd=LIB.parents[2],
+    )
+    assert result.returncode == 127, f"expected 127 for a missing command, got {result.returncode}"
+    combined = result.stdout + result.stderr
+    assert "definitely_not_a_command_xyz" in combined, (
+        f"run_bounded did not say which command it could not run: {combined!r}"
+    )
+    assert "cannot exec" in combined
+
+
+def test_a_command_that_exists_still_passes_its_output_through() -> None:
+    """The half that would break if the diagnostic were added carelessly."""
+    result = subprocess.run(
+        ["sh", "-c", f". {LIB}; run_bounded 5 echo hello-from-bounded"],
+        capture_output=True,
+        text=True,
+        cwd=LIB.parents[2],
+    )
+    assert result.returncode == 0
+    assert "hello-from-bounded" in result.stdout
 
 
 def test_hang_leaves_no_orphan() -> None:
