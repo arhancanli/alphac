@@ -97,8 +97,11 @@ These are not preferences. Violating one costs something that cannot be bought b
   shipped work here before.
 - **Reach the state through the real path.** Fixtures pass on states the product cannot enter.
 - **Run the full unit suite before committing.** `.venv/bin/python -m pytest tests/unit -q --no-cov`
-- **The lint-debt test failing after you add a script is a known transient.** Resync with the
-  publish pipeline in declared order, do not edit the test.
+- **The lint-debt transient is fixed (F1, 2026-08-22).** Adding a script no longer fails that
+  guard: the census counts are floored rather than pinned, the verdict is compared on its own, and
+  provenance drift reports itself as PROVENANCE ONLY by name. On a fresh checkout run
+  `scripts/install_hooks.sh` once so the pre-commit hook regenerates the contract for any commit
+  touching Python. If the verdict test fails, something real changed — do not resync, read it.
 - **One item per commit**, with a message that says what was found, not what was done.
 
 ### The publish pipeline, in declared order
@@ -394,7 +397,7 @@ DONE WHEN: a published map of claim → guard → last-run, with unguarded claim
 # TRACK F — Housekeeping that protects everything else
 
 ### F1 · Make the lint-debt resync automatic
-STATUS: TODO
+STATUS: DONE
 WHY: `test_persisted_contract_matches_builder_and_content_hash` fails after any script edit and
 has been hand-resynced ~10 times in one day. A test that routinely fails for a benign reason
 trains its reader to ignore a real failure.
@@ -1199,3 +1202,28 @@ where it is.*
   removing a page's declaration moves it to the fallback and the counts shift by one.
   `npm run verify`: **0 errors, 0 warnings** on the site checks; the numbers audit remains RED on
   the eight E3b figures, which is their honest state.
+- `2026-08-22 16:30` — **F1 DONE.** The guard that had been hand-resynced about ten times in one
+  day now fails only when something real changed. **Both halves of the DONE WHEN, not one.**
+  **The split.** The contract carries two kinds of content and the old single equality assertion
+  treated them alike. `status`, per-scope `violations` and `files_with_violations`, the claim
+  boundary and the trial accounting are a CLAIM — compared exactly, and a production violation
+  appearing still fails. `python_files` is a CENSUS that moves by one whenever any script is added,
+  and `source_sha256` is PROVENANCE that moves whenever a covered file is edited. Those are no
+  longer conflated with the verdict: the census is **floored** rather than pinned, so a scope that
+  collapsed to zero still fails while +1 does not, and provenance drift now fails with a message
+  beginning **PROVENANCE ONLY**, naming the changed files and the one command that fixes it.
+  Nothing is weaker. Demonstrated rather than asserted: with one script added, the old equality
+  returned False (`historical_scripts.python_files` 195 → 196) and the new split passes; with
+  production violations moved 0 → 3 in a *consistently rehashed* artifact, only the verdict test
+  fails; a hand-edit without rehashing fails the content-hash test.
+  **The other half: stop the drift happening.** `scripts/hooks/pre-commit` regenerates the contract
+  for any commit that touches Python, and `scripts/install_hooks.sh` points `core.hooksPath` at it.
+  Hooks live in the repository because `.git/hooks` is not tracked — **a hook that exists only in
+  one working copy exists for exactly one clone**, which is how this class of thing quietly stops
+  running. Proven end to end: a contract corrupted to `python_files: 1` was regenerated to 195 by
+  the hook, and the hook exits clean on a commit with no Python, because a hook that errors on an
+  ordinary commit is one somebody deletes.
+  `tests/unit/test_hooks_are_tracked_and_installed.py` pins that the hook is tracked, executable,
+  invokes the exporter, is CONDITIONAL on Python being staged, and runs clean with nothing staged.
+  It deliberately does not assert the hook is installed HERE — that is a local setting a fresh
+  checkout will not have, and asserting it would fail for everyone else.
