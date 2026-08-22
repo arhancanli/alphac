@@ -109,6 +109,14 @@ GUARDS_CANNOT_FIRE_JSON: Final[Path] = (
 CONTRACT_UNIT_AUDIT_JSON: Final[Path] = (
     REPO / "artifacts" / "engineering" / "contract_and_unit_audit.json"
 )
+#: Bundle keys whose published FILENAME differs from the key. The measurement pages derive their
+#: "check it yourself" link from the key, so a mismatch it cannot predict is a 404 on a page whose
+#: whole purpose is that a reader can check. Declared here rather than guessed there, and
+#: tests/unit/test_bundle_keys_resolve_to_files.py fails if a new mismatch appears undeclared.
+PUBLISHED_AS: Final[dict[str, str]] = {
+    "trial_accounting": "trial_ledger.json",
+}
+
 CLAIM_COVERAGE_MAP_JSON: Final[Path] = (
     REPO / "artifacts" / "engineering" / "claim_coverage_map.json"
 )
@@ -1285,7 +1293,7 @@ def build_research_export() -> dict[str, Any]:
         "sleeve_atlas": {
             "atlas": json.loads(SLEEVE_ATLAS_JSON.read_text()),
             "audit": json.loads(SLEEVE_ATLAS_AUDIT_JSON.read_text()),
-            "lineage_audit": json.loads(SLEEVE_LINEAGE_AUDIT_JSON.read_text()),
+            "sleeve_family_lineage_audit": json.loads(SLEEVE_LINEAGE_AUDIT_JSON.read_text()),
             "atlas_public_path": "/glassbox/sleeve_atlas.json",
             "audit_public_path": "/glassbox/sleeve_atlas_audit.json",
             "lineage_audit_public_path": "/glassbox/sleeve_family_lineage_audit.json",
@@ -1422,12 +1430,12 @@ def build_research_export() -> dict[str, Any]:
         # with their REFUTATIONS kept. An audit that reports only its hits cannot be told apart
         # from one that did not run — and two of these dimensions found nothing, which is only
         # worth reading because the artifact says what each one checked.
-        "audit_guards_that_cannot_fire": (
+        "guards_that_cannot_fire": (
             json.loads(GUARDS_CANNOT_FIRE_JSON.read_text())
             if GUARDS_CANNOT_FIRE_JSON.exists()
             else None
         ),
-        "audit_contract_and_units": (
+        "contract_and_unit_audit": (
             json.loads(CONTRACT_UNIT_AUDIT_JSON.read_text())
             if CONTRACT_UNIT_AUDIT_JSON.exists()
             else None
@@ -1436,13 +1444,16 @@ def build_research_export() -> dict[str, Any]:
         # mechanism last ran — observed by running it. Published because every guard here reports
         # on itself and none reported on the SET, and a reader cannot tell an artifact with three
         # checks from one with none by looking at either.
+        # Provenance, declared by the producer: which file each artifact key was published as.
+        # Anything not listed publishes under its own key.
+        "published_as": PUBLISHED_AS,
         "claim_coverage_map": (
             json.loads(CLAIM_COVERAGE_MAP_JSON.read_text())
             if CLAIM_COVERAGE_MAP_JSON.exists()
             else None
         ),
         "repurchase_issuance_feasibility_audits": {
-            name.removeprefix("repurchase_issuance_").removesuffix(".json"): json.loads(
+            name.removesuffix(".json"): json.loads(
                 path.read_text()
             )
             for name, path in REPURCHASE_AUDITS
@@ -1454,7 +1465,7 @@ def build_research_export() -> dict[str, Any]:
         # the spin-off event universe is declared by a FORM TYPE, 386 registrations over sixteen
         # years, and the corporate-action route was checked and does not carry the event.
         "identity_redesign": {
-            "form_universe": (
+            "spinoff_form_universe": (
                 json.loads(SPINOFF_FORM_UNIVERSE_JSON.read_text())
                 if SPINOFF_FORM_UNIVERSE_JSON.exists()
                 else None

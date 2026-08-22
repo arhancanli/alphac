@@ -110,9 +110,9 @@ def test_export_carries_fail_closed_sleeve_atlas(modules) -> None:
     assert audit["summary"]["return_hypotheses_spent"] == 0
     assert section["atlas_public_path"] == "/glassbox/sleeve_atlas.json"
     assert section["audit_public_path"] == "/glassbox/sleeve_atlas_audit.json"
-    assert section["lineage_audit"]["summary"]["decision"] == "PASS"
-    assert section["lineage_audit"]["summary"]["current_book_exact_match"] is True
-    assert section["lineage_audit"]["summary"]["family_failures"] == 0
+    assert section["sleeve_family_lineage_audit"]["summary"]["decision"] == "PASS"
+    assert section["sleeve_family_lineage_audit"]["summary"]["current_book_exact_match"] is True
+    assert section["sleeve_family_lineage_audit"]["summary"]["family_failures"] == 0
     assert section["lineage_audit_public_path"] == "/glassbox/sleeve_family_lineage_audit.json"
 
 
