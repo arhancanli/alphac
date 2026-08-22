@@ -311,7 +311,7 @@ DONE WHEN: a script builds the internal link graph from `dist/` and fails if any
 more than three clicks from `/`, wired into `npm run verify`.
 
 ### D7 · Re-submit IndexNow after every publish
-STATUS: TODO
+STATUS: DONE
 WHY: 99 URLs were submitted once by hand. New pages will not be.
 DONE WHEN: `npm run indexnow` runs as part of the deploy path, and a failure is loud rather than
 silent.
@@ -926,3 +926,31 @@ where it is.*
   Four mutations, all now caught: `/research` losing its hub links (reproduces the original 4-click
   defect), a page unlinked everywhere, a sitemap entry with no page, and the extractor going blind.
   `npm run verify` **0 errors**, 126 URLs, every one within three clicks.
+- `2026-08-22 09:35` — **D7 DONE.** `scripts/lib/indexnow.sh`, sourced by **both** deploy paths —
+  the hourly change-gated one and the nightly ceremony. A push channel that runs only when somebody
+  remembers is not a push channel: 99 URLs were submitted once by hand, and the 27 pages published
+  since would have waited for a crawler to rediscover the sitemap on its own.
+  **One shared file, not two copies, and the test enforces that.** This repo has been bitten twice
+  by identical logic in two hand-mirrored places — the retracted-claim gate the hourly job ran and
+  the nightly one did not, and the glassbox copy list where one host got a paper the other did not.
+  Both looked correct in every file anyone opened. So the guard requires the shared file, both
+  callers to SOURCE it, and neither to carry its own submission.
+  **Loud but not fatal, and "not fatal" is not allowed to mean "not noticed".** IndexNow is a
+  notification to third parties, not a correctness gate on what we published, so a network blip
+  must not mark a good publication as failed. Instead every attempt writes a marker with its status
+  and count, a success stamps a separate `.ok` file, and `indexnow_warn_if_stale` puts a warning at
+  the top of every subsequent publish once the last SUCCESS is over 26 hours old. One failure is a
+  line in a log; a run of them is a line the next run cannot avoid printing.
+  Gated on the landing deploy actually succeeding — announcing URLs after a failed deploy
+  advertises pages that may not be there — and bounded, because an unbounded external call in this
+  repo once hung for 28 hours.
+  All four behaviours exercised against a fake submitter: never-submitted, a failing submitter
+  (loud, marker written, exit 0), a succeeding one (count and `.ok` stamp), and a stale success
+  correctly reported at 73h. Then run for real through the helper: **126 URLs accepted, HTTP 200.**
+  ⚠️ **A mutation caught a weak assertion in my own guard.** Deleting the `. …/indexnow.sh` source
+  line did NOT fail the test, because the path also appears in a nearby COMMENT and the check was a
+  plain substring test. Anchored to the source directive itself; re-mutated, both deletion and
+  commenting-out now fail. That is the third time this week a presence check turned out not to
+  check the thing it named.
+  Six mutations, all now caught: submit call removed, staleness report removed, helper not sourced
+  (twice), submission ungated from the deploy result, and the network call unbounded.

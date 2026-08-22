@@ -16,6 +16,7 @@ export PATH="$HOME/.local/bin:$HOME/.nvm/versions/node/v20.20.2/bin:/usr/bin:/bi
 cd "$HOME/alphaforge" || exit 1
 mkdir -p var/log
 . "$HOME/alphaforge/scripts/lib/bounded.sh"
+. "$HOME/alphaforge/scripts/lib/indexnow.sh"
 
 FAIL=0
 
@@ -177,9 +178,19 @@ deploy_prod() {
   fi
   echo "--- deploy landing ---"
   deploy_prod "$HOME/meridian" landing ac-capital.vercel.app meridian-pearl-mu.vercel.app
+  LANDING_OK=$?
 
   echo "--- deploy app ---"
   deploy_prod "$HOME/meridian-app" app ac-capital-app.vercel.app
+
+  echo "--- indexnow ---"
+  # Same rule as the hourly job, from the same shared file rather than a second copy of it.
+  if [ "$LANDING_OK" = "0" ]; then
+    indexnow_submit "$HOME/meridian"
+  else
+    echo "  [indexnow] skipped: the landing deploy failed, so there is nothing new to announce"
+  fi
+  indexnow_warn_if_stale
 
   if [ "$FAIL" -eq 0 ]; then
     echo "=== publish OK $(date -u '+%Y-%m-%dT%H:%M:%SZ') ==="
