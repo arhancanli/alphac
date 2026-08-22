@@ -252,7 +252,7 @@ identity would look like. **Draft only — registering it spends a trial.**
 *99 indexable URLs, 13 topic hubs, 80 papers. The corpus is strong; the explanation is thin.*
 
 ### D0 · Surface the twelve published-but-invisible measurements
-STATUS: TODO
+STATUS: DONE
 WHY: Found 2026-08-22 while wiring C1's artifact into the publish path. Twelve analysis artifacts
 are copied to `/glassbox/*.json` and embedded in `research.json`, and `js/research.js` renders
 NONE of them: admission_dry_run, book_without_alphavintage, spinoff_prorata_gate,
@@ -715,3 +715,36 @@ where it is.*
   Writing that check also found an invented number in the note itself: an illustrative "23% of
   revenue" with nothing behind it, in a document arguing against exactly that. Removed.
   Full unit suite green, ruff clean, retracted-claim gate PASS, reproduce kit 23/23. 0 trials.
+- `2026-08-22 03:50` — **D0 DONE.** `/measurements` plus **21 generated pages**, one per artifact.
+  The twelve named in this item turned out to be twenty-one once the rule was written to find them
+  rather than list them: `scripts/build-measurements.mjs` discovers anything in `research.json`
+  carrying a canli schema or a claim boundary, at the top level or one level in. **The next artifact
+  the exporter adds gets a page with no site edit at all** — which is the whole point, because a
+  hand-kept list is exactly how this site once published a six-URL sitemap for thirty-four
+  documents.
+  **Built, not fetched.** Rendering these client-side would have put the evidence back out of reach
+  of the thing that ranks it — the shared nav is assembled by `shell.js`, so a crawler reading the
+  delivered HTML sees no link there at all. The numbers are in the HTML. Site URLs **99 → 123**.
+  **The claim boundary is the most prominent element under the title on every page**, in its own
+  framed block, above the numbers it qualifies. A measurement published without its limits is the
+  failure this record exists to avoid, so on these pages the limits are not a footnote. Where an
+  artifact carries no boundary field the page says so rather than inventing one.
+  Reuses the research-paper shell (`css/paper.css`) rather than forking a second document design;
+  the only new components are the boundary block, a facts list and a table, and no token is
+  redefined. Each page is `Dataset` JSON-LD with a `DataDownload` pointing at the raw artifact, the
+  index is a `CollectionPage`, and the sitemap entries are derived from what landed on disk.
+  Reachability: STATIC links added on `/research` and `/open` (not nav-only), plus nav and footer
+  entries — so every measurement is two clicks from `/research`, and the verifier proves it rather
+  than assuming it.
+  ⚠️ **The guard lives in the EXISTING gate, not a new one.** `verify-papers.mjs` now re-runs the
+  builder's own discovery rule against the SHIPPED `research.json` and checks one page per artifact,
+  each with a self-canonical, Dataset markup, a rendered claim boundary, a sitemap entry, and a link
+  from the index. Adding a second job would have recreated the split-coverage defect that let the
+  retracted claim survive: two gates, each assuming the other checked the file. There is a floor of
+  12 on the discovery count for the same reason the paper checks have one — a rule that stops
+  matching makes every assertion below it pass vacuously, which is the exact shape of the bug.
+  Mutation-tested three ways, all caught, and clean state passes: deleting a page fails the count
+  AND the per-artifact check; stripping the boundary heading fails; adding an artifact to
+  `research.json` fails with the unrendered artifact named.
+  `npm run verify` **0 errors**, 123 URLs, 82 papers + 13 hubs + 21 measurements. The 23 warnings
+  are all pre-existing paper titles over 65 chars — that is D8, untouched here.
