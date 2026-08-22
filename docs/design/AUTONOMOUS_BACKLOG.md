@@ -1366,3 +1366,23 @@ where it is.*
   RETURNED, which a surviving grandchild would prevent — is untouched and load-independent. A
   wall-clock assertion that fails for scheduling delay trains its reader to re-run rather than to
   read, which is the same reason F1 split the lint-debt guard.
+- `2026-08-22 20:10` — **Verification pass, from the outside this time. Nothing found, and the
+  record is now checked at the one boundary it had never been checked at.**
+  No backlog item. The previous two passes each found a defect in code I had just shipped; this one
+  asked a question none of the existing guards ask: **does the live site actually serve the bytes we
+  published?** The reproduce kit proves each artifact is internally consistent with its own hash.
+  `test_glassbox_write_paths.py` proves both hosts receive the same file **at build time**. Neither
+  says anything about what canlicapital.com is serving right now — a stale deploy or a cached edge
+  copy would be invisible to both.
+  **Fetched all 68 published artifacts from the live origin and compared byte-for-byte against the
+  repository's published copies: 68 identical, 0 different, 0 unreachable.**
+  Then ran the site's OWN published instructions against itself, exactly as `/verify` tells a
+  reader to: downloaded the artifact set and `reproduce.py` from the live origin and ran it —
+  **26/26 content hashes, 2/2 signatures** — then downloaded `verify_transparency.py` and the chain
+  and re-derived it: **PASS, 408 entries, chain intact, every signature valid**, head `seq 407`
+  under public key `0c6606a6…`.
+  **No new guard was added, deliberately.** The mechanism that checks this already exists, is
+  published, and is the thing the site asks readers to run; making it a unit test would put the
+  network inside the suite and trade a real property (hermetic tests) for one already covered. What
+  was missing was not a check — it was ever having run it against production. Now it has been, and
+  the result is recorded rather than assumed.
