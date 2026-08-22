@@ -1333,3 +1333,36 @@ where it is.*
   fails two of them.
   Verified against the real thing rather than a fixture: `/bin/zsh scripts/live_deploy_hourly.sh`
   now runs deploy → alias → **IndexNow accepted 133 URLs** → `=== hourly deploy OK ===`.
+- `2026-08-22 19:45` — **Verification pass. The zsh fix HOLDS in the unattended environment, and
+  checking that properly found a diagnosability defect in the shared bounding helper.**
+  No backlog item; the file has none. The open claim from the previous entry was "the next
+  scheduled run will confirm it unattended", and rather than wait an hour I reproduced launchd's
+  environment directly: `env -i` with only `HOME` and a bare `PATH`, `/bin/zsh`, the way the plist
+  invokes it.
+  **First result: a false alarm, correctly resolved.** Under a bare `PATH` the submission fails
+  because `npm` is not found — but `live_tick.sh` and `live_deploy_hourly.sh` both `export PATH`
+  with the node bin directory before anything runs. Re-tested with the PATH the job actually
+  constructs: **IndexNow accepted 133 URLs**. So the unattended path is verified and there is no
+  second defect. My `env -i` reproduction was harsher than reality and saying so is the finding —
+  a check that is stricter than production manufactures failures that are not there.
+  ⚠️ **Second result, and this one is real: a missing command produced exit 127 and NOT ONE BYTE of
+  output.** `run_bounded` execs through perl, and perl's `exec` failure is silent, so every caller
+  in this repository logged an empty error tail and had to guess. The harsh reproduction printed
+  `SUBMISSION FAILED` followed by a blank line — the same defect class as the deploy that piped
+  vercel's output into `grep` and discarded the reason for a 23-hour outage. Fixed: the exec
+  failure now names the command and the reason. The IndexNow helper also stops printing an empty
+  tail under a FAILED banner and says what to check instead.
+  Verified both ways: `run_bounded 5 definitely_not_a_command` now prints
+  `run_bounded: cannot exec definitely_not_a_command: No such file or directory` and still exits
+  127, and a command that exists still passes its output through untouched — which is the half a
+  careless diagnostic would have broken. Mutation-tested: restoring the silent `exit 127` fails the
+  new test.
+  ⚠️ **And a flake surfaced, caused by F2 making the suite parallel earlier today.**
+  `test_hang_with_grandchild_is_killed` asserts a hung tree dies well inside its cap, and its
+  wall-clock bound of 25s failed once on a loaded machine, then passed in isolation and across
+  three consecutive full-suite runs. The bound is now 60s with the reasoning written down: the
+  behaviour it guards against is a tree running its full **600-second** sleep, so anything under a
+  minute proves the watchdog killed it, and the sharp assertion beside it — that the CAPTURE
+  RETURNED, which a surviving grandchild would prevent — is untouched and load-independent. A
+  wall-clock assertion that fails for scheduling delay trains its reader to re-run rather than to
+  read, which is the same reason F1 split the lint-debt guard.

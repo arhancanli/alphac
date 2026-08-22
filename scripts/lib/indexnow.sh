@@ -41,7 +41,12 @@ indexnow_submit() {
   if ! out=$( cd "$site" && run_bounded 120 npm run --silent indexnow 2>&1 ); then
     outcome="FAILED"
     echo "  [indexnow] SUBMISSION FAILED — search engines were NOT told about this deploy"
-    printf '%s\n' "$out" | tail -8 | sed 's/^/    [indexnow:err] /'
+    if [ -n "$out" ]; then
+      printf '%s\n' "$out" | tail -8 | sed 's/^/    [indexnow:err] /'
+    else
+      echo "    [indexnow:err] the submitter produced no output at all — check that npm is on"
+      echo "    [indexnow:err] PATH for this job; the deploy scripts export it, a bare shell does not"
+    fi
   else
     outcome="OK"
     echo "  [indexnow] $out"
