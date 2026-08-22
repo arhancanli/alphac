@@ -1386,3 +1386,23 @@ where it is.*
   network inside the suite and trade a real property (hermetic tests) for one already covered. What
   was missing was not a check — it was ever having run it against production. Now it has been, and
   the result is recorded rather than assumed.
+- `2026-08-22 20:25` — **Verification pass. Closed the asymmetry the previous pass left open.**
+  No backlog item. Last pass verified that `canlicapital.com` serves the bytes we published, and
+  left the SECOND host unchecked — which is precisely the shape that has bitten this repository
+  twice: the legacy-DSR paper published to one host and not the other, and the retracted-claim gate
+  run by one job and not the other. Checking one host and calling the property verified would have
+  been the same mistake in a third costume.
+  **Three comparisons, all clean.** The app host against its own repository copies:
+  `app.canlicapital.com` **68 identical, 0 different, 0 unreachable**, and
+  `ac-capital-app.vercel.app` the same. And the question the build-time mirror guard actually
+  exists to protect — **do the two LIVE hosts serve identical bytes?** — asked directly rather than
+  inferred from the fact that one script wrote both: **68 of 68 identical**.
+  That last one is the check with real content. `test_glassbox_write_paths.py` proves the exporter
+  writes the same file to both directories; it cannot see a deploy that succeeded on one host and
+  failed on the other, or an edge cache serving yesterday's copy to one of them. Now that has been
+  looked at rather than assumed.
+  ⚠️ **Still open, and it needs the clock rather than more work:** the hourly job's next scheduled
+  run is 06:25Z and it is 06:12Z. The zsh fix is verified interactively and under a reproduced
+  launchd environment, but **not yet by an unattended run**. The last unattended run, at 05:25Z, is
+  still the pre-fix failure in the log. The next iteration should read `var/log/live_deploy.log`
+  for a `06:25Z` block and confirm it ends `=== hourly deploy OK ===` with an IndexNow line.
