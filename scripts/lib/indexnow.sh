@@ -21,19 +21,29 @@
 INDEXNOW_MARKER="${INDEXNOW_MARKER:-$HOME/alphaforge/var/log/indexnow_last.json}"
 INDEXNOW_STALE_SECONDS="${INDEXNOW_STALE_SECONDS:-93600}"   # 26h: one missed hourly run is fine
 
+# ⚠️ NAMING, IN THIS FILE SPECIFICALLY. This is sourced by scripts that run under BOTH /bin/sh and
+# /bin/zsh, and zsh reserves several lowercase names as read-only special parameters — `status`
+# (an alias for $?), `path`, `argv`, `options`, `signals`. Declaring `local status` here aborted
+# the function, and because live_deploy_hourly.sh is a zsh script that abort took the whole
+# hourly deploy job down with it: every run since this file shipped logged
+# "read-only variable: status" and then "WARN: hourly web deploy failed". The deploy itself had
+# already completed, so the site was never stale — but IndexNow was never submitted by the deploy
+# path, and the job reported failure every hour. Do not introduce a variable with one of those
+# names here.
+#
 # Submit, bounded, and record the outcome either way. Never returns non-zero.
 indexnow_submit() {
   local site="${1:-$HOME/meridian}"
-  local now out status count
+  local now out outcome count
   now=$(date -u '+%Y-%m-%dT%H:%M:%SZ')
   mkdir -p "$(dirname "$INDEXNOW_MARKER")"
 
   if ! out=$( cd "$site" && run_bounded 120 npm run --silent indexnow 2>&1 ); then
-    status="FAILED"
+    outcome="FAILED"
     echo "  [indexnow] SUBMISSION FAILED — search engines were NOT told about this deploy"
     printf '%s\n' "$out" | tail -8 | sed 's/^/    [indexnow:err] /'
   else
-    status="OK"
+    outcome="OK"
     echo "  [indexnow] $out"
   fi
   count=$(printf '%s\n' "$out" | grep -oE 'accepted [0-9]+' | grep -oE '[0-9]+' | tail -1)
@@ -42,8 +52,8 @@ indexnow_submit() {
   # The marker is written on FAILURE too, with the status, so "when did this last work" is a
   # question the file can answer rather than one that needs the log.
   printf '{\n  "attempted_at": "%s",\n  "status": "%s",\n  "urls_submitted": %s\n}\n' \
-    "$now" "$status" "$count" > "$INDEXNOW_MARKER"
-  [ "$status" = "OK" ] && printf '%s\n' "$now" > "${INDEXNOW_MARKER%.json}.ok"
+    "$now" "$outcome" "$count" > "$INDEXNOW_MARKER"
+  [ "$outcome" = "OK" ] && printf '%s\n' "$now" > "${INDEXNOW_MARKER%.json}.ok"
   return 0
 }
 
