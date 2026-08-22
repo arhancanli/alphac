@@ -16,6 +16,8 @@ copy of the submission.
 from __future__ import annotations
 
 import re
+import shutil
+import subprocess
 from pathlib import Path
 
 import pytest
@@ -71,6 +73,75 @@ def test_submission_is_gated_on_the_landing_deploy_succeeding(script: Path) -> N
     )
     guarded = re.search(r'if \[ "\$LANDING_OK" = "0" \]; then\s*\n\s*indexnow_submit', source)
     assert guarded, f"{script.name} submits without checking the landing deploy succeeded"
+
+
+@pytest.mark.parametrize("shell", ["sh", "zsh", "bash"])
+def test_the_helper_actually_runs_in_every_shell_that_sources_it(
+    shell: str, tmp_path: Path
+) -> None:
+    """EXECUTE it, do not just read it. This is the test that was missing.
+
+    Everything else in this file inspects SOURCE — that the helper is sourced, that the call is
+    there, that it is bounded. All of it passed while the function aborted on its first line every
+    time the hourly deploy ran: `status` is a READ-ONLY special parameter in zsh, and
+    live_deploy_hourly.sh is a zsh script. The job logged "read-only variable: status" and then
+    "WARN: hourly web deploy failed", hourly, and no test noticed because no test ran the code.
+
+    Pinning the intention is not pinning the path.
+    """
+    if shutil.which(shell) is None:
+        pytest.skip(f"{shell} is not installed on this machine")
+    marker = tmp_path / "marker.json"
+    fake = tmp_path / "site"
+    fake.mkdir()
+    (fake / "package.json").write_text(
+        '{"name":"fake","scripts":{"indexnow":"node -e \\"console.log(\'accepted 7 urls\')\\""}}'
+    )
+    script = (
+        f'. {REPO}/scripts/lib/bounded.sh\n'
+        f'. {REPO}/scripts/lib/indexnow.sh\n'
+        f'INDEXNOW_MARKER={marker} indexnow_submit {fake}\n'
+    )
+    result = subprocess.run([shell, "-c", script], capture_output=True, text=True, cwd=REPO)
+    assert result.returncode == 0, (
+        f"indexnow_submit exited {result.returncode} under {shell}: "
+        f"{result.stderr.strip() or result.stdout.strip()}"
+    )
+    assert "read-only" not in (result.stderr + result.stdout), (
+        f"{shell} reports a read-only variable — a name reserved by that shell is being declared "
+        f"local: {result.stderr.strip()}"
+    )
+    assert marker.exists(), f"no marker was written under {shell}, so a failure would be silent"
+
+
+@pytest.mark.parametrize("shell", ["sh", "zsh"])
+def test_the_staleness_report_runs_in_every_shell_too(shell: str, tmp_path: Path) -> None:
+    """The half that makes a silent failure loud must not itself fail silently."""
+    if shutil.which(shell) is None:
+        pytest.skip(f"{shell} is not installed on this machine")
+    marker = tmp_path / "marker.json"
+    script = (
+        f'. {REPO}/scripts/lib/indexnow.sh\n'
+        f'INDEXNOW_MARKER={marker} indexnow_warn_if_stale\n'
+    )
+    result = subprocess.run([shell, "-c", script], capture_output=True, text=True, cwd=REPO)
+    assert result.returncode == 0, f"indexnow_warn_if_stale failed under {shell}: {result.stderr}"
+    assert "no successful submission" in result.stdout, (
+        f"with no marker present, {shell} should report that none has ever succeeded"
+    )
+
+
+def test_no_variable_declared_here_is_reserved_by_zsh() -> None:
+    """A rule over the CLASS, so the next reserved name is caught before it reaches production."""
+    reserved = {"status", "path", "argv", "options", "signals", "commands", "functions"}
+    source = LIB.read_text()
+    declared = set(re.findall(r"^\s*local\s+([\w\s]+)$", source, re.MULTILINE))
+    names = {n for group in declared for n in group.split()}
+    clash = sorted(names & reserved)
+    assert clash == [], (
+        f"these locals are read-only special parameters in zsh: {clash}. This file is sourced by "
+        "a zsh script, and declaring one aborts the function on its first line."
+    )
 
 
 def test_the_submission_is_bounded() -> None:

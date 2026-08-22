@@ -1308,3 +1308,28 @@ where it is.*
   eight figures above. A note has been added at the top of HOW TO PICK THE NEXT ITEM telling the
   next loop iteration not to invent work — adding items would be re-planning, and the tracks are
   the owner's plan, not mine.
+- `2026-08-22 19:35` — **A PRODUCTION DEFECT OF MY OWN, found by the verification pass the
+  exhaustion note asks for, and fixed.** No backlog item — the file has none left — and this is why
+  "verify the record" is the right instruction rather than "invent an item".
+  ⚠️⚠️ **`scripts/lib/indexnow.sh` declared `local status`, and `status` is a READ-ONLY special
+  parameter in zsh** (an alias for `$?`). `live_deploy_hourly.sh` runs under `/bin/zsh`, so the
+  function aborted on its first line — and because it aborted non-zero it took the whole job with
+  it. Every hourly run since D7 shipped logged `indexnow_submit:11: read-only variable: status`
+  followed by `WARN: hourly web deploy failed`, and `=== hourly deploy INCOMPLETE ===`.
+  **What was and was not damaged.** The site was never stale: the IndexNow step runs AFTER the
+  deploy, so landing and app deployed and aliased correctly every hour. What did not happen is the
+  submission — **IndexNow has not been pushed by the deploy path once since D7**; every submission
+  today was me running it by hand, which is exactly the situation D7 existed to end. And the job
+  reported failure hourly, which is how a real failure gets ignored.
+  ⚠️ **My own test suite passed throughout, and that is the more useful finding.** Every check in
+  `test_indexnow_is_in_the_deploy_path.py` inspected SOURCE — that the helper is sourced, that the
+  call is present, that it is bounded, that neither caller carries its own copy. All true, all
+  passing, while the code aborted on its first line every hour. **Pinning the intention is not
+  pinning the path**, and this file already had that lesson written down.
+  Fixed by renaming the variable, with the reason recorded in the file so nobody reintroduces it.
+  Three new tests EXECUTE the helper under `sh`, `zsh` and `bash`, assert exit 0 and a marker
+  written, and a fourth checks the CLASS — no local here may be named `status`, `path`, `argv`,
+  `options`, `signals`, `commands` or `functions`. Mutation-tested: reintroducing `local status`
+  fails two of them.
+  Verified against the real thing rather than a fixture: `/bin/zsh scripts/live_deploy_hourly.sh`
+  now runs deploy → alias → **IndexNow accepted 133 URLs** → `=== hourly deploy OK ===`.
