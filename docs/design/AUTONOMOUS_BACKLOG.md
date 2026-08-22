@@ -345,11 +345,25 @@ DONE WHEN: each is worked by hand and its findings recorded — confirmed or ref
 refutations kept.
 
 ### E3 · Every published number traces to an artifact
-STATUS: TODO
+STATUS: DONE — guard shipped and in `npm run verify`; 10 residual numerals are BLOCKED-OWNER below
 WHY: The kill papers have this guarantee. The rest of the site does not.
 DONE WHEN: a guard extracts numerals from the rendered site and reports any that cannot be traced
 to a glassbox artifact. Expect false positives on dates and version numbers; handle them by rule,
 not by exemption list.
+
+### E3b · Ten published numbers trace to nothing (BLOCKED-OWNER)
+STATUS: BLOCKED-OWNER — each is a hand-written figure with no artifact anywhere in the repository;
+removing one would withdraw something that may be true, and manufacturing an artifact for it would
+be worse. The owner has to say, for each, either what run produced it or that it should go.
+`npm run verify` is RED until then, by design: the alternative is a green gate on a site that
+publishes numbers a reader cannot check.
+
+  /progress                                    2,820
+  /progress, /systems                          8,436   ("survivorship-free US stocks")
+  /research/alphavintage-missing-release-correction    -25.1, 0.3382071994
+  /research/engineering-quality                3,760
+  /research/options-execution-foundation       26853, 59573
+  /research/prereg-earnings-narrative-change   24.6, -252, 22.5
 
 ### E4 · Claim-coverage map
 STATUS: TODO
@@ -1063,3 +1077,38 @@ where it is.*
   (a basis-point field over 10,000, a percent over 1,000, a day count over 20,000 — the count
   labelled as a duration that overstated a record eight-fold). Proven not blind: a planted
   5,000,000 `_pct` field is detected, and the clean result returns when it is removed.
+- `2026-08-22 13:50` — **E3 DONE.** `meridian/scripts/audit-published-numbers.mjs`, wired into
+  `npm run verify`. It reads every numeral a READER can see across **132 pages — 2,706 of them** —
+  and traces each against **44,690 numbers in 68 published artifacts**.
+  **Traced by rule, never by exemption list**, because an exemption list is how a check stops
+  checking: EXACT (verbatim in an artifact), ROUNDED (some artifact value rounds to the token *at
+  the token's own precision*), PERCENT, DATE, IDENTIFIER (a DOI, an arXiv id, a URL component, a
+  hex digest), STRUCTURE (a count of what the built site contains, recomputed here).
+  ⚠️ **The ROUNDED rule is the one that matters, and the first run without it reported 573 false
+  positives.** A page showing `0.4689` and an artifact holding `0.46893918…` are the same number;
+  a verbatim check calls that untraceable. Two more tokenisation rules followed from real
+  misreads: exponential notation is ONE numeral, not two (an artifact holding `3e-06` was
+  contributing the tokens `3` and `06`), and **a hyphen between two digits is a range, not a minus
+  sign** — reading `1961-1970` as the number −1970 invented an unpublished claim out of a date
+  range. 573 → 45 → 25 → 18.
+  **Then it found real ones.** Seven were closed by publishing the artifacts the
+  repurchase-issuance feasibility PAPER quotes — its issuer counts, overlap fraction and semantics
+  sample were on the site and their evidence was not, so every figure in it was uncheckable. Now
+  published on both hosts.
+  ⚠️ **And two dead slots on `/research`.** The page rendered "Combined DSR (N=69)" and "Combined
+  DSR (N=518)" against fields the exporter stopped emitting — a permanent em-dash beside labels
+  advertising selection counts of 69 and 518, while the published trial ledger stands at **162**.
+  Removed and replaced with the deflation verdict the bundle actually carries. Withdrawing nothing
+  true: no value was being shown, only a contradictory label.
+  **Ten remain and they are the owner's**, recorded as E3b above rather than exempted. Each is a
+  hand-written figure with no artifact anywhere in the repository — including "8,436
+  survivorship-free US stocks", which appears on both `/progress` and `/systems`. **`npm run
+  verify` is RED until they are resolved, deliberately**: a green gate on a site publishing numbers
+  a reader cannot check is the thing this whole record exists not to be.
+  Mutation-tested three ways, all caught: a hand-typed `91.37%` planted on `/verify` is named and
+  located; an emptied artifact universe fires the floor rather than reporting 1,149 findings as if
+  they were real; and the clean-state result returns unchanged.
+  Also fixed on the way: the three newly published audits humanised to 75-79 character titles and
+  failed the on-page gate, so the measurements builder now shortens a nested title to its leaf —
+  **but only when no other artifact's leaf humanises the same way**, computed over the whole set so
+  uniqueness is a property of the run rather than an assumption.
