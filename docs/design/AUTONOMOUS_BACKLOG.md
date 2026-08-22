@@ -363,10 +363,25 @@ publishes numbers a reader cannot check.
   /research/alphavintage-missing-release-correction    -25.1, 0.3382071994
   /research/engineering-quality                3,760
   /research/options-execution-foundation       26853, 59573
-  /research/prereg-earnings-narrative-change   24.6, -252, 22.5
+  /research/prereg-earnings-narrative-change   24.6
+
+⚠️ Was TEN on 2026-08-22 13:50. `-252` and `22.5` dropped off two hours later WITHOUT anybody
+fixing them: publishing the claim-coverage map added its own numbers to the traceable universe and
+those two now match something, coincidentally. See E5 — the guard gets weaker every time we
+publish, which is a guard with an expiry date.
+
+### E5 · The number-trace universe dilutes itself
+STATUS: TODO
+WHY: `audit-published-numbers.mjs` traces a page's numerals against EVERY number in EVERY published
+artifact, and that corpus grows on every publish. Two genuinely untraceable figures started tracing
+within two hours of E3 shipping, purely because a new artifact happened to contain matching values.
+A guard that weakens each time the record grows is one that expires.
+DONE WHEN: a page's numerals are traced against the artifacts THAT PAGE references — exact for
+measurement pages, which name their source — with the whole-corpus fallback used only where a page
+declares no source, and that fallback reported separately so its weakness is visible.
 
 ### E4 · Claim-coverage map
-STATUS: TODO
+STATUS: DONE
 WHY: Nothing says which published claims have a guard and which do not. Split coverage reads as
 coverage.
 DONE WHEN: a published map of claim → guard → last-run, with unguarded claims named.
@@ -1112,3 +1127,37 @@ where it is.*
   failed the on-page gate, so the measurements builder now shortens a nested title to its leaf —
   **but only when no other artifact's leaf humanises the same way**, computed over the whole set so
   uniqueness is a property of the run rather than an assumption.
+- `2026-08-22 14:35` — **E4 DONE.** `scripts/build_claim_coverage_map.py`, published at
+  `/glassbox/claim_coverage_map.json`. **68 published artifacts, 0 unguarded, 48 with a named
+  guard** — and the finding: **8 are guarded ONLY by the host mirror.**
+  Five mechanisms, and the map says plainly that they are not equal. NAMED_GUARD (a test that
+  mentions this artifact) is the strongest. CONTENT_HASH proves it was not edited after publication
+  and **nothing about whether it is right**. SIGNATURE covers the two commitments and the chain.
+  RENDERED_PAGE means the site verifier checks it renders with a claim boundary. HOST_MIRROR is the
+  weakest and the map says why: *it verifies two copies agree and nothing about what they say — if
+  the contents went stale, both hosts would publish the same wrong thing and every check would
+  pass.* That is the residue of "split coverage reads as coverage", now named rather than implied.
+  **Last-run is OBSERVED, not asserted**: the map runs the unit suite, the reproduce kit, the
+  retracted-claim gate and the site verifiers and records each exit. Today: PASS, PASS, PASS, and
+  **FAIL for the site verifiers**, which is E3b's ten-now-eight untraceable numerals showing up
+  exactly where they should.
+  ⚠️ **The first run recorded the unit suite as FAILING and that was the map's fault, not the
+  suite's.** Adding a script leaves the lint-debt contract stale until the exporter reruns, and the
+  publish path reruns it before anything is checked — so observing the suite in a state the publish
+  never ships would have published a failure describing nothing real. The map now rebuilds in the
+  publish pipeline's declared order first, and says so in the artifact.
+  `tests/unit/test_claim_coverage.py` runs the SET question in milliseconds on every commit: every
+  published artifact has at least one mechanism, the mirror-only count may fall but not rise, and
+  both floors are pinned so an empty scan cannot pass. Mutation-tested: publishing an unguarded
+  artifact fails it by name.
+  ⚠️⚠️ **And it exposed a real weakness in E3, shipped two hours earlier.** The number-trace guard
+  checks a page's numerals against EVERY number in EVERY artifact — a corpus that grows on every
+  publish. Publishing this very map added enough numbers that **two genuinely untraceable figures
+  started tracing by coincidence**, with nobody fixing them. E3b's list is corrected from ten to
+  eight with that reason attached rather than quietly updated, and E5 is opened to trace each page
+  against the artifacts it actually references. A guard that weakens each time the record grows is
+  a guard with an expiry date.
+  ⚠️ **The substring-indentation trap again, on my own edit.** Anchoring a replacement on
+  `"    for _name, _path in REPURCHASE_AUDITS:"` matched twice, because the eight-space version
+  contains the four-space one. The assertion caught it and nothing was written; redone
+  line-anchored. This repository has that exact trap written down.
