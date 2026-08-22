@@ -109,6 +109,9 @@ GUARDS_CANNOT_FIRE_JSON: Final[Path] = (
 CONTRACT_UNIT_AUDIT_JSON: Final[Path] = (
     REPO / "artifacts" / "engineering" / "contract_and_unit_audit.json"
 )
+CLAIM_COVERAGE_MAP_JSON: Final[Path] = (
+    REPO / "artifacts" / "engineering" / "claim_coverage_map.json"
+)
 #: The three audits the repurchase-issuance feasibility PAPER quotes. They were not published, so
 #: every figure in that paper — the issuer counts, the overlap fraction, the semantics sample —
 #: was a number a reader could see and could not check. Found by
@@ -1429,6 +1432,15 @@ def build_research_export() -> dict[str, Any]:
             if CONTRACT_UNIT_AUDIT_JSON.exists()
             else None
         ),
+        # Which published claims have a guard, which mechanism guards them, and when each
+        # mechanism last ran — observed by running it. Published because every guard here reports
+        # on itself and none reported on the SET, and a reader cannot tell an artifact with three
+        # checks from one with none by looking at either.
+        "claim_coverage_map": (
+            json.loads(CLAIM_COVERAGE_MAP_JSON.read_text())
+            if CLAIM_COVERAGE_MAP_JSON.exists()
+            else None
+        ),
         "repurchase_issuance_feasibility_audits": {
             name.removeprefix("repurchase_issuance_").removesuffix(".json"): json.loads(
                 path.read_text()
@@ -1638,6 +1650,10 @@ def main(out_dir: Path = OUT_DIR) -> Path:
     if CONTRACT_UNIT_AUDIT_JSON.exists():
         (out_dir / "contract_and_unit_audit.json").write_text(
             CONTRACT_UNIT_AUDIT_JSON.read_text()
+        )
+    if CLAIM_COVERAGE_MAP_JSON.exists():
+        (out_dir / "claim_coverage_map.json").write_text(
+            CLAIM_COVERAGE_MAP_JSON.read_text()
         )
     for _name, _path in REPURCHASE_AUDITS:
         if _path.exists():
@@ -1916,6 +1932,10 @@ def main(out_dir: Path = OUT_DIR) -> Path:
         if CONTRACT_UNIT_AUDIT_JSON.exists():
             (app_dir / "contract_and_unit_audit.json").write_text(
                 CONTRACT_UNIT_AUDIT_JSON.read_text()
+            )
+        if CLAIM_COVERAGE_MAP_JSON.exists():
+            (app_dir / "claim_coverage_map.json").write_text(
+                CLAIM_COVERAGE_MAP_JSON.read_text()
             )
         for _name, _path in REPURCHASE_AUDITS:
             if _path.exists():
