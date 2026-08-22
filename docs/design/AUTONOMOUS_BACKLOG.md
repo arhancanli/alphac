@@ -97,6 +97,7 @@ These are not preferences. Violating one costs something that cannot be bought b
   shipped work here before.
 - **Reach the state through the real path.** Fixtures pass on states the product cannot enter.
 - **Run the full unit suite before committing.** `.venv/bin/python -m pytest tests/unit -q --no-cov`
+  It now runs in parallel by default (`-n auto --dist loadfile`). To debug one test, add `-n0`.
 - **The lint-debt transient is fixed (F1, 2026-08-22).** Adding a script no longer fails that
   guard: the census counts are floored rather than pinned, the verdict is compared on its own, and
   provenance drift reports itself as PROVENANCE ONLY by name. On a fresh checkout run
@@ -405,7 +406,7 @@ DONE WHEN: the contract regenerates as part of the pre-commit or test path, or t
 distinguishes a benign staleness from a real violation and says which.
 
 ### F2 · Full-suite runtime
-STATUS: TODO
+STATUS: DONE
 WHY: The unit suite takes ~2.5 minutes and is run many times per session.
 DONE WHEN: the slowest tests are identified and either parallelised or justified, with the before
 and after recorded.
@@ -1227,3 +1228,29 @@ where it is.*
   invokes the exporter, is CONDITIONAL on Python being staged, and runs clean with nothing staged.
   It deliberately does not assert the hook is installed HERE — that is a local setting a fresh
   checkout will not have, and asserting it would fail for everyone else.
+- `2026-08-22 17:25` — **F2 DONE.** The suite runs in parallel by default — `-n auto --dist
+  loadfile` in `pyproject.toml` — and the slowest tests are identified and justified rather than
+  trimmed.
+  **Measured back to back on the same machine under the same load**, because that is the only
+  comparison worth anything here: **serial 194s and 219s; parallel 110s, 134s, 134s. About 1.6x.**
+  ⚠️ **The first parallel run said 49 seconds and I did not believe it, correctly.** Repeats came
+  back at 102-136s and one at 218s serial, so the honest reading is that this machine has variable
+  background load and a before/after taken twenty minutes apart measures the machine, not the
+  change. The paired runs above are the evidence; the 49s is recorded here as the number that did
+  not reproduce.
+  `--dist loadfile`, not the default `load`: every test in a file goes to one worker, so a
+  module-scoped fixture is built once and any file whose tests share state keeps its ordering. A
+  scan for tests writing outside a temp directory returned ten candidates and all ten proved to be
+  `tmp_path`-derived on inspection — the detector's context window, not real shared state.
+  **The slowest are justified, and the justification is already in the source.** `test_pbo.py`
+  (~37s) enumerates the FULL C(16,8) rather than sub-sampling, and its comment says why: on an
+  adverse seed the sub-sampled statistic drags toward 0.65 and the property stops holding.
+  `test_regime_hmm.py` (~27s) fits a separate HMM per property — two-state recovery, three-state
+  recovery, determinism, truncation invariance, a collapsed cluster — so there is no repeated fit
+  to hoist. `test_bounded_sh.py` (6s) sleeps on purpose: its subject IS a timeout, and a fast
+  version of it would prove nothing.
+  Verified that the change does not break the two things that would have made it a false win:
+  coverage still reports under xdist (83% on the CI selection, unchanged shape), and the CI
+  invocation `-m 'not network and not workspace_evidence'` runs clean.
+  ⚠️ Editing `pyproject.toml` fired the new PROVENANCE ONLY message from F1 within the hour, naming
+  the one changed file. That is the guard behaving as designed on its first real outing.

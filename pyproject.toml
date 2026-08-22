@@ -58,6 +58,7 @@ dev = [
     # Direct (was transitive via scikit-learn): used by the reference-hash
     # regression to assert BLAS/OpenMP pools are pinned to a single thread.
     "threadpoolctl>=3.5",
+    "pytest-xdist>=3.8.0",
 ]
 
 [build-system]
@@ -103,7 +104,7 @@ testpaths = ["tests"]
 # floor is set yet: an aspirational threshold would red CI without measuring
 # the true baseline first. Once a baseline is observed, pin a floor at or just
 # below it here, e.g.  # --cov-fail-under=85
-addopts = "-q --strict-markers -m 'not network' --cov=alphaforge --cov-branch"
+addopts = "-q --strict-markers -m 'not network' --cov=alphaforge --cov-branch -n auto --dist loadfile"
 markers = [
     "network: tests that hit live exchange APIs (deselected in CI)",
     "workspace_evidence: offline integration checks that require git-ignored evidence or sibling site workspaces",
