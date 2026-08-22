@@ -109,6 +109,15 @@ GUARDS_CANNOT_FIRE_JSON: Final[Path] = (
 CONTRACT_UNIT_AUDIT_JSON: Final[Path] = (
     REPO / "artifacts" / "engineering" / "contract_and_unit_audit.json"
 )
+#: The three audits the repurchase-issuance feasibility PAPER quotes. They were not published, so
+#: every figure in that paper — the issuer counts, the overlap fraction, the semantics sample —
+#: was a number a reader could see and could not check. Found by
+#: meridian/scripts/audit-published-numbers.mjs on 2026-08-22.
+REPURCHASE_AUDITS: Final[tuple[tuple[str, Path], ...]] = tuple(
+    (f"repurchase_issuance_{name}.json", REPO / "artifacts" / "feasibility"
+     / "repurchase_issuance_flow" / f"{name}.json")
+    for name in ("companyfacts_audit", "semantics_audit", "identity_overlap_audit")
+)
 SPINOFF_FORM_UNIVERSE_JSON: Final[Path] = (
     REPO / "artifacts" / "analysis" / "spinoff_form_universe" / "result.json"
 )
@@ -1420,6 +1429,13 @@ def build_research_export() -> dict[str, Any]:
             if CONTRACT_UNIT_AUDIT_JSON.exists()
             else None
         ),
+        "repurchase_issuance_feasibility_audits": {
+            name.removeprefix("repurchase_issuance_").removesuffix(".json"): json.loads(
+                path.read_text()
+            )
+            for name, path in REPURCHASE_AUDITS
+            if path.exists()
+        },
         # The three families whose gates were unreachable, redesigned as far as they can be
         # WITHOUT spending a trial: what document would carry the evidence, and what a corrected
         # identity would look like. Published with the measurement that replaced the prose test —
@@ -1623,6 +1639,9 @@ def main(out_dir: Path = OUT_DIR) -> Path:
         (out_dir / "contract_and_unit_audit.json").write_text(
             CONTRACT_UNIT_AUDIT_JSON.read_text()
         )
+    for _name, _path in REPURCHASE_AUDITS:
+        if _path.exists():
+            (out_dir / _name).write_text(_path.read_text())
     if SPINOFF_FORM_UNIVERSE_JSON.exists():
         (out_dir / "spinoff_form_universe.json").write_text(
             SPINOFF_FORM_UNIVERSE_JSON.read_text()
@@ -1898,6 +1917,9 @@ def main(out_dir: Path = OUT_DIR) -> Path:
             (app_dir / "contract_and_unit_audit.json").write_text(
                 CONTRACT_UNIT_AUDIT_JSON.read_text()
             )
+        for _name, _path in REPURCHASE_AUDITS:
+            if _path.exists():
+                (app_dir / _name).write_text(_path.read_text())
         if SPINOFF_FORM_UNIVERSE_JSON.exists():
             (app_dir / "spinoff_form_universe.json").write_text(
                 SPINOFF_FORM_UNIVERSE_JSON.read_text()
