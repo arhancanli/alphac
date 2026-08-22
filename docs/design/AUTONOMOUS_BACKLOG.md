@@ -77,6 +77,13 @@ These are not preferences. Violating one costs something that cannot be bought b
 
 ## HOW TO PICK THE NEXT ITEM
 
+> **THE BACKLOG IS EXHAUSTED as of 2026-08-22 18:55.** Every item in tracks A-F is DONE. What is
+> left is the BLOCKED section, and this file says do not act on those — each needs a decision, a
+> credential or a trial that belongs to the owner. **If you are a loop iteration reading this and
+> there is still no TODO: do not invent one.** Adding items is re-planning, and the tracks are the
+> owner's plan. Verify the record instead — the commands are under "How to check that any of this
+> is true" in `docs/design/SYSTEM_MAP.md` — and stop.
+
 1. Read **WORK LOG** at the bottom to see what the last iteration did.
 2. Scan the tracks **in order A → B → C → D → E → F**. Within a track, top to bottom.
 3. Take the first item whose `STATUS:` is `TODO`. Skip `DONE`, `BLOCKED-OWNER`, `IN-PROGRESS`
@@ -1280,3 +1287,24 @@ where it is.*
   shell, `pyproject.toml` or a config contract. Verified the generator reacts — adding a throwaway
   script put it in the map — and noted the one wrinkle: the staging branch is a no-op while the map
   is untracked, because `git diff` does not see untracked files. It becomes live with this commit.
+- `2026-08-22 18:55` — **BACKLOG EXHAUSTED. All 30 items across tracks A-F are DONE**, and a full
+  verification pass was run rather than assumed, because "everything is fine" is a claim like any
+  other.
+  **Green, all of it observed just now:** unit suite PASS; retracted-claim gate PASS; reproduce kit
+  **26/26 content hashes, 2/2 signatures, golden master PASS**; mutation ledger **20/20 guards
+  behaved as expected with 1 negative control and 0 findings**; guards-that-cannot-fire **0
+  confirmed across 595 files, every detector proven on a planted instance**; claim coverage **68
+  published artifacts, 0 unguarded, 48 named**; site **0 errors, 0 warnings** across 82 papers, 13
+  hubs, 28 measurement pages, 55 short titles, and every generated page's own guard.
+  **Three things are deliberately NOT green, and each is the honest state rather than a defect:**
+  the number-trace audit is RED on **8 hand-written figures** with no artifact anywhere (E3b —
+  owner's, because removing one would withdraw something that may be true); the **upper-95
+  correlation gate can never be decisive** and the **book deflated-Sharpe gate of 0.95 is
+  unreachable in practice** at a measured best of 0.2112 (published in the contract audit rather
+  than quietly carried); and **8 artifacts are guarded only by the host mirror**, which verifies
+  two copies agree and nothing about what they say.
+  **What is left is owner-only** and this file already lists it: the free EIA key, Databento, the
+  AlphaVintage allocation, signing the forward pre-registration, releasing trial budget, and the
+  eight figures above. A note has been added at the top of HOW TO PICK THE NEXT ITEM telling the
+  next loop iteration not to invent work — adding items would be re-planning, and the tracks are
+  the owner's plan, not mine.
