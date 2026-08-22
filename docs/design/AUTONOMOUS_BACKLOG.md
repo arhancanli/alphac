@@ -239,7 +239,7 @@ DONE WHEN: a documented prior per family with its reasoning, explicitly labelled
 not a measurement.
 
 ### C4 · Identity-redesign notes for the three failed families
-STATUS: TODO
+STATUS: DONE
 WHY: spin-off, customer-supplier and merger-arb each mis-specified their population. A redesign
 must name the document that carries the mechanics before it names a threshold.
 DONE WHEN: one note per family saying what document would carry the evidence and what a corrected
@@ -671,3 +671,47 @@ where it is.*
   cannot argue from one taxonomy and rank by another. The required new-pair average round-trips
   back to the objective, and the gate-is-insufficient claim is recomputed rather than transcribed.
   Full unit suite green, ruff clean, retracted-claim gate PASS, reproduce kit 23/23. Deployed.
+- `2026-08-22 02:55` — **C4 DONE.** `docs/design/IDENTITY_REDESIGN_NOTES.md`, published at
+  `/research/identity-redesign-notes.md`. Three notes, **DRAFT, nothing registered, and no note
+  proposes a threshold** — a test enforces that last part against the SHAPE of a proposal rather
+  than a phrase list, so it cannot be rephrased around.
+  **The three failures turned out to be one failure, three times.** Every protocol specified a
+  LANGUAGE test where the identity needed a STRUCTURAL fact: a form type, a timestamp, or a
+  counterparty named on a contract. Narrative prose is the least reliable carrier of any of them —
+  an issuer writes the narrative, while the structure is imposed on them and does not move when a
+  drafting convention changes. Each note therefore names the document that carries the evidence
+  BEFORE it says anything about a threshold, which is the ordering the whole item is about.
+  **Spin-off — measured, not argued.** A Form 10 is a REGISTRATION statement; the distribution
+  ratio and record date are not settled when it is filed, which is why its information statement
+  carries `[•]` where the ratio will go. The protocol asked a document to state a fact that did not
+  exist on the day it was written. The universe it was trying to rediscover by reading prose is
+  declared by the form type: `scripts/audit_spinoff_form_universe.py` counts **386 initial Form
+  10-12B registrations over 2010–2025, mean 24.1/yr**, straight out of the sixty-four EDGAR master
+  indexes already held — metadata, zero parsing, no look-ahead. The unwelcome half is published in
+  the same artifact: 386 events in sixteen years is thin, and that bound belongs in the
+  pre-registration rather than in a footnote after a disappointing result.
+  ⚠️ **The obvious alternative was CHECKED and does not exist.** The tempting route was to take the
+  event universe from the corporate-action feed we already hold. Sampling 600 instruments, the lake
+  carries exactly two action types — `dividend` and `split` — and **nothing resembling a
+  distribution**. Unmeasured, the note would have proposed a route that is not there and would have
+  read just as confidently.
+  **Customer-supplier.** The disclosure obligation is to report the CONCENTRATION, not the
+  counterparty: an issuer must say a customer is material, and nothing requires them to say which.
+  The gate asked the narrative for something the rule producing the narrative never required. The
+  contract names its counterparty on its face, so the redesign keys on material-contract exhibit
+  metadata — and the note explicitly refuses to carry the 50% threshold across to the new surface,
+  because the naming rate in exhibit descriptions **has not been measured** and assuming it would
+  repeat the original error with a new document.
+  **Merger-arb.** The gate tested for the PRESENCE OF A DOCUMENT when the identity needs a
+  TIMESTAMP, and several documents supply one. Requiring one specific form is a specification error
+  dressed as a data-quality gate. The note restates in bold that this is not permission to keep the
+  tender-offer stratum: 0.8665 is now in-sample for that choice and cannot be its own evidence.
+  ⚠️ **A guard that passed and should not have, caught by mutation-testing it.** The first version
+  asserted each artifact figure APPEARS in the note. That is the weak direction: `37.1%` is quoted
+  twice, and corrupting one of them passed — as did changing `386` to `586`. Both were demonstrated
+  before the fix. The check now runs the other way: **every measurement-shaped token in the prose
+  must be derivable from an artifact**, with two declared non-measurements (an SEC item number and
+  the drafting date). Re-mutated afterwards — all four previously-missed corruptions now fail.
+  Writing that check also found an invented number in the note itself: an illustrative "23% of
+  revenue" with nothing behind it, in a document arguing against exactly that. Removed.
+  Full unit suite green, ruff clean, retracted-claim gate PASS, reproduce kit 23/23. 0 trials.
