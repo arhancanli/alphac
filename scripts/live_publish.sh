@@ -16,6 +16,7 @@ export PATH="$HOME/.local/bin:$HOME/.nvm/versions/node/v20.20.2/bin:/usr/bin:/bi
 cd "$HOME/alphaforge" || exit 1
 mkdir -p var/log
 . "$HOME/alphaforge/scripts/lib/bounded.sh"
+. "$HOME/alphaforge/scripts/lib/indexnow.sh"
 
 FAIL=0
 
@@ -59,7 +60,21 @@ deploy_prod() {
 {
   echo "=== live_publish $(date -u '+%Y-%m-%dT%H:%M:%SZ') ==="
 
+  # 0) bound var/log BEFORE the ceremony touches anything. There was no rotation at all until
+  # 2026-08-20 and var/log had reached 284MB. Deliberately first and deliberately incapable of
+  # failing the job: a disk-hygiene chore must never be the reason a publish did not happen.
+  "$HOME/alphaforge/scripts/rotate_logs.sh" || echo "  log rotation skipped (non-fatal)"
+
   # 1) regenerate the published artifacts from the realized NAV
+  # ORDER IS LOAD-BEARING (fixed 2026-08-19). paper_trading_state.py WRITES data/paper/state.json;
+  # glassbox_export.py READS it. Both jobs used to call glassbox FIRST, so every glass-box artifact
+  # derived from that state -- track_record.json above all, the site's headline "Proven in the
+  # Open" record -- was rendered from the PREVIOUS cycle. When prose changed, the two files the
+  # dashboard shows side by side could not agree within a run: the AlphaVintage correction landed
+  # in paper-state.json and track_record.json kept asserting the withdrawn 0.3403 for another
+  # cycle. The dependency is file-mediated and therefore invisible in the call order; pinned by
+  # tests/unit/test_publish_pipeline_order.py.
+  uv run python scripts/paper_trading_state.py || { echo "paper_trading_state FAILED"; FAIL=1; }
   uv run python scripts/glassbox_export.py || { echo "glassbox_export FAILED"; FAIL=1; }
   # keep capacity.json fresh + hash-consistent (it grounds the commitment AND the reproducibility kit;
   # leaving it out of the pipeline is what let it go stale once). Soft-fail: it is near-static.
@@ -68,11 +83,34 @@ deploy_prod() {
   uv run python scripts/capacity_commitment.py || echo "capacity_commitment soft-failed — non-fatal"
   # signed founder skin-in-the-game disclosure. Soft-fail: it is near-static.
   uv run python scripts/founder_commitment.py || echo "founder_commitment soft-failed — non-fatal"
-  uv run python scripts/paper_trading_state.py || { echo "paper_trading_state FAILED"; FAIL=1; }
   # research.json is a separate comprehensive contract. It once stayed frozen for nine days while
   # paper-state moved from two to four sleeves because this pipeline never invoked its exporter.
   # Generate it after paper-state so composition, weights, tilt and evidence timestamps are from
   # the same canonical state that the public dashboard will serve.
+  # See live_tick.sh: this audit is fail-closed evidence that no publish job used to run, so the
+  # bundle carried a hand-produced verdict. Non-fatal on purpose — a FAIL_CLOSED is published.
+  uv run python scripts/audit_sleeve_family_lineage.py >/dev/null \
+    || echo "NOTE: sleeve-family lineage audit is FAIL_CLOSED — publishing that verdict as measured"
+  # REBUILD the lint-debt contract before research_export COPIES it to both sites.
+  # Found 2026-08-20, and it is the same defect the research.json note above describes, recurring
+  # on a different artifact: scripts/export_lint_debt_contract.py was invoked from exactly one
+  # place, .github/workflows/ci.yml, where its output is checked for non-emptiness and then
+  # thrown away with the runner. NOTHING here rebuilt it. research_export.py line ~1269 simply
+  # copies artifacts/engineering/lint_debt_contract.json into public/glassbox on both hosts, so
+  # the site published "PRODUCTION_AND_TESTS_CLEAN_HISTORICAL_SCRIPTS_DEBT" bound to
+  # source_sha256 values that were only as fresh as the last time a human ran the exporter by
+  # hand. The claim could not go stale loudly: it would keep publishing clean while the code it
+  # names drifted underneath it, because no publish path ever re-derived it.
+  # tests/unit/test_lint_debt_contract.py pins persisted == freshly built, and it does catch this
+  # — but it is marked workspace_evidence, so CI skips it, and it lives in the full local suite
+  # that had been timing out for eight days. A guard nothing can run is a guard that does not
+  # exist. Rebuilding it here is what makes the published claim true by construction.
+  # Soft-fail deliberately: if ruff or the exporter is broken, that is an engineering-tooling
+  # problem and it must not stop the track record from publishing. It is loud instead.
+  uv run python scripts/audit_record_continuity.py >/dev/null \
+    || echo "WARN: record-continuity audit failed — the published report will be stale"
+  uv run python scripts/export_lint_debt_contract.py >/dev/null \
+    || echo "WARNING: lint debt contract NOT rebuilt — publishing one bound to older source hashes"
   uv run python scripts/research_export.py || { echo "research_export FAILED"; FAIL=1; }
   # sign the day's record into the tamper-evident transparency chain before deploying it
   uv run python scripts/transparency_log.py || { echo "transparency_log FAILED"; FAIL=1; }
@@ -91,8 +129,36 @@ deploy_prod() {
   # publishing a record that doesn't reproduce -- warn loudly, do not silently deploy a broken claim.
   for d in "$HOME/meridian/public/glassbox" "$HOME/meridian-app/public/glassbox"; do
     cp scripts/reproduce.py "$d/reproduce.py" 2>/dev/null
+    cp scripts/verify_transparency.py "$d/verify_transparency.py" 2>/dev/null
   done
-  uv run python scripts/reproduce.py || echo "WARN: reproduce.py self-check FAILED — the published record does not reproduce"
+  PUBLISHABLE=1
+  uv run python scripts/reproduce.py || {
+    echo "BLOCKED: reproduce.py self-check FAILED — the published record does not reproduce"
+    PUBLISHABLE=0
+  }
+
+  # RETRACTED-CLAIM GATE. This job did not run it at all until 2026-08-19, which is how the hole
+  # stayed open: the hourly tick runs the gate but never regenerates research.json, and THIS job
+  # regenerates research.json but never ran the gate. AlphaVintage's withdrawn net Sharpe 0.3403
+  # therefore lived in the one artifact that no run checked. Split coverage reads as coverage
+  # right up until you ask which job checks which file.
+  uv run python scripts/check_retracted_claims.py || {
+    echo "BLOCKED: a RETRACTED CLAIM is in the regenerated bundle"
+    PUBLISHABLE=0
+  }
+
+  # NEITHER FAILURE IS A WARNING ANY MORE. Both were, and both were ignored by the deploy that
+  # followed them in the same run: the 2026-08-18 publish logged "1 CHECK(S) FAILED — the
+  # published record does not reproduce" and then shipped, so the verifier we advertise on the
+  # site returned a FAIL to anyone who downloaded it. A record whose only asset is that it checks
+  # out cannot ship a bundle that does not check out. The artifacts above are already written and
+  # signed; the next run publishes them once the cause is fixed.
+  if [ "$PUBLISHABLE" -eq 0 ]; then
+    echo "=== publish HALTED BEFORE DEPLOY $(date -u '+%Y-%m-%dT%H:%M:%SZ') ==="
+    echo "    Artifacts are regenerated and signed. The SITE IS UNCHANGED and will go stale."
+    echo "    Fix the cause; do not weaken the check."
+    exit 1
+  fi
 
   # 2) publish both sites (each leg independent + retried)
   # shared lock with the hourly deploy (schedules overlap: hourly :05, this job 02:10). An hourly
@@ -112,9 +178,19 @@ deploy_prod() {
   fi
   echo "--- deploy landing ---"
   deploy_prod "$HOME/meridian" landing ac-capital.vercel.app meridian-pearl-mu.vercel.app
+  LANDING_OK=$?
 
   echo "--- deploy app ---"
   deploy_prod "$HOME/meridian-app" app ac-capital-app.vercel.app
+
+  echo "--- indexnow ---"
+  # Same rule as the hourly job, from the same shared file rather than a second copy of it.
+  if [ "$LANDING_OK" = "0" ]; then
+    indexnow_submit "$HOME/meridian"
+  else
+    echo "  [indexnow] skipped: the landing deploy failed, so there is nothing new to announce"
+  fi
+  indexnow_warn_if_stale
 
   if [ "$FAIL" -eq 0 ]; then
     echo "=== publish OK $(date -u '+%Y-%m-%dT%H:%M:%SZ') ==="

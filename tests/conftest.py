@@ -37,3 +37,26 @@ for _var in (
     "MKL_NUM_THREADS",
 ):
     os.environ.setdefault(_var, "1")
+
+
+def pytest_collection_modifyitems(config, items) -> None:
+    """Drop the ``no_cover`` marker when coverage is switched off.
+
+    pytest-cov's ``no_cover`` handling calls ``self.cov_controller.pause()``, and under
+    ``--no-cov`` that controller is ``None`` — so the marker raises
+    ``AttributeError: 'NoneType' object has no attribute 'pause'`` and the test FAILS for a
+    reason that has nothing to do with the test. There is nothing to pause when coverage is
+    already off, so the marker is simply removed.
+
+    This is not cosmetic. ``tests/integration/test_scale_guard.py`` passes under the default
+    (coverage-on) invocation and fails under ``uv run pytest --no-cov`` — the fast invocation
+    anyone reaches for. It was recorded in a 2026-08-18 commit message as a genuine outstanding
+    failure inherited from another lane. It was neither: it was the flag.
+    """
+    if config.pluginmanager.hasplugin("_cov"):
+        cov = config.pluginmanager.getplugin("_cov")
+        if getattr(cov, "cov_controller", None) is not None:
+            return
+    for item in items:
+        if item.get_closest_marker("no_cover") is not None:
+            item.own_markers = [m for m in item.own_markers if m.name != "no_cover"]

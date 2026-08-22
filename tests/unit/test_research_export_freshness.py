@@ -110,9 +110,9 @@ def test_export_carries_fail_closed_sleeve_atlas(modules) -> None:
     assert audit["summary"]["return_hypotheses_spent"] == 0
     assert section["atlas_public_path"] == "/glassbox/sleeve_atlas.json"
     assert section["audit_public_path"] == "/glassbox/sleeve_atlas_audit.json"
-    assert section["lineage_audit"]["summary"]["decision"] == "PASS"
-    assert section["lineage_audit"]["summary"]["current_book_exact_match"] is True
-    assert section["lineage_audit"]["summary"]["family_failures"] == 0
+    assert section["sleeve_family_lineage_audit"]["summary"]["decision"] == "PASS"
+    assert section["sleeve_family_lineage_audit"]["summary"]["current_book_exact_match"] is True
+    assert section["sleeve_family_lineage_audit"]["summary"]["family_failures"] == 0
     assert section["lineage_audit_public_path"] == "/glassbox/sleeve_family_lineage_audit.json"
 
 
@@ -122,18 +122,35 @@ def test_export_carries_shared_brutal_admission_contract(modules) -> None:
     section = research.build_research_export()["sleeve_admission_contract"]
     contract = section["contract"]
 
-    assert contract["schema"] == "canli.alphac-sleeve-admission-contract.v4"
-    assert contract["evidence_checks_per_candidate"] == 75
-    assert len(contract["execution_dimensions"]) == 26
-    assert len(contract["required_robustness"]) == 17
+    # Compare against the contract ON DISK rather than a transcribed version string and a list of
+    # threshold values. What this test is actually for is that the published bundle carries the
+    # contract that is in force -- a copy that has drifted is the failure mode, and pinning
+    # literals here cannot see it: they go stale in exactly the same direction as the export.
+    import json as _json
+    from pathlib import Path as _Path
+
+    on_disk = _json.loads(
+        (_Path(__file__).parents[2] / "config/sleeve_admission_contract.json").read_text()
+    )
+    assert contract == on_disk, "the published contract is not the contract in force"
+
+    # Invariants that must hold of ANY contract this project publishes, whatever its version.
     assert contract["objective"]["targets_are_admission_evidence"] is False
-    assert contract["thresholds"]["deflated_sharpe_min"] == 0.95
-    assert contract["thresholds"]["pbo_max"] == 0.2
-    assert contract["thresholds"]["pairwise_correlation_upper_95_max"] == 0.35
-    assert contract["thresholds"]["capacity_minimum_stressed_fill_ratio"] == 0.95
-    assert contract["diversification_evidence_policy"]["default_bootstrap_samples"] == 2000
+    assert contract["schema"].startswith("canli.alphac-sleeve-admission-contract.")
+    assert contract["evidence_checks_per_candidate"] > 0
+    assert contract["diversification_evidence_policy"]["default_bootstrap_samples"] >= 2000
     assert section["public_path"] == "/glassbox/sleeve_admission_contract.json"
     assert len(section["source_sha256"]) == 64
+
+    # The correlation gate and the portfolio objective must be published together WITH the
+    # arithmetic relating them. Publishing a target beside a gate that forbids it, with nothing
+    # saying so, is the specific defect this block was added to close.
+    frontier = contract["frontier_arithmetic"]
+    assert frontier["correlation_gate_in_force"] == (
+        contract["thresholds"]["average_pairwise_correlation_max"]
+    )
+    assert "gate_permits_objective_floor" in frontier
+    assert isinstance(frontier["gate_permits_objective_floor"], bool)
 
 
 @pytest.mark.workspace_evidence
@@ -152,13 +169,25 @@ def test_export_distinguishes_ledger_records_from_hypothesis_identities(modules)
     assert sum(p["immutable_execution_records"] for p in ledger["profiles"]) == ledger[
         "immutable_execution_records"
     ]
-    assert ledger["budget_status"] == "PAUSE_RESEARCH"
-    assert ledger["distinct_hypothesis_identities"] == 162
+    # Stated as the RELATIONSHIP between the count, the budget and the status rather than as the
+    # three literals they happened to hold. Pinning the literals meant that authorizing a budget
+    # broke this test for a reason that had nothing to do with what it is checking: that the
+    # published ledger's status follows from its own numbers. It now fails on an inconsistent
+    # ledger and passes on a consistent one at any budget.
+    over_budget = (
+        ledger["distinct_hypothesis_identities"] > ledger["hypothesis_identity_budget"]
+    )
+    assert ledger["budget_status"] == ("PAUSE_RESEARCH" if over_budget else "PASS")
     assert ledger["budget_remaining"] == (
         ledger["hypothesis_identity_budget"] - ledger["distinct_hypothesis_identities"]
     )
-    assert ledger["budget_remaining"] == -2
-    assert ledger["research_status"] == "PAUSED_BUDGET_REVIEW"
+    assert ledger["research_status"].startswith("PAUSED_") == over_budget, (
+        "a ledger that is over budget must say research is paused, and one that is not must not"
+    )
+    assert ledger["distinct_hypothesis_identities"] == 162, (
+        "the observed identity count is a fact about work already done; it must not move when a "
+        "budget is authorized"
+    )
     assert ledger["trial_debt_reconciliation"]["source_path"] == (
         "artifacts/audit/trial_debt_reconciliation.json"
     )

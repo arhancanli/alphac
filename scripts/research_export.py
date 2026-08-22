@@ -58,6 +58,194 @@ GOLDEN_MASTER: Final[Path] = REPO / "tests" / "integration" / "test_golden_maste
 PRE_REGISTRATION_MD: Final[Path] = REPO / "docs" / "design" / "PRE_REGISTRATION.md"
 CROSS_ASSET_BOOK_MD: Final[Path] = REPO / "docs" / "design" / "CROSS_ASSET_BOOK.md"
 SLEEVE_DISCOVERY_JSON: Final[Path] = REPO / "config" / "sleeve_discovery.json"
+ADMISSION_DRY_RUN_JSON: Final[Path] = (
+    REPO / "artifacts" / "analysis" / "admission_dry_run" / "result.json"
+)
+BOOK_WITHOUT_ALPHAVINTAGE_JSON: Final[Path] = (
+    REPO / "artifacts" / "analysis" / "book_without_alphavintage" / "result.json"
+)
+SPINOFF_PRORATA_GATE_JSON: Final[Path] = (
+    REPO / "artifacts" / "analysis" / "spinoff_prorata_gate" / "result.json"
+)
+GATE_REACHABILITY_JSON: Final[Path] = (
+    REPO / "artifacts" / "analysis" / "feasibility_gate_reachability" / "result.json"
+)
+COVARIANCE_MEMORY_JSON: Final[Path] = (
+    REPO / "artifacts" / "analysis" / "live_covariance_memory" / "result.json"
+)
+RECORD_CONTINUITY_JSON: Final[Path] = (
+    REPO / "artifacts" / "engineering" / "record_continuity.json"
+)
+LEDOIT_WOLF_JSON: Final[Path] = (
+    REPO / "artifacts" / "analysis" / "ledoit_wolf_effective_sample" / "result.json"
+)
+DRAWDOWN_LIVE_ESTIMATOR_JSON: Final[Path] = (
+    REPO / "artifacts" / "analysis" / "drawdown_live_estimator" / "result.json"
+)
+SLEEVE_QUALITY_JSON: Final[Path] = (
+    REPO / "artifacts" / "analysis" / "sleeve_quality_decomposition" / "result.json"
+)
+EXECUTION_GAP_POWER_JSON: Final[Path] = (
+    REPO / "artifacts" / "analysis" / "execution_gap_power" / "result.json"
+)
+COST_MODEL_REALISM_JSON: Final[Path] = (
+    REPO / "artifacts" / "analysis" / "cost_model_realism" / "result.json"
+)
+REACHABILITY_HARNESS_JSON: Final[Path] = (
+    REPO / "artifacts" / "analysis" / "reachability_harness" / "result.json"
+)
+ATLAS_REACHABILITY_SCREEN_JSON: Final[Path] = (
+    REPO / "artifacts" / "analysis" / "atlas_reachability_screen" / "result.json"
+)
+ORTHOGONALITY_PRIOR_JSON: Final[Path] = (
+    REPO / "artifacts" / "analysis" / "orthogonality_prior" / "result.json"
+)
+MUTATION_LEDGER_JSON: Final[Path] = (
+    REPO / "artifacts" / "engineering" / "mutation_ledger.json"
+)
+GUARDS_CANNOT_FIRE_JSON: Final[Path] = (
+    REPO / "artifacts" / "engineering" / "guards_that_cannot_fire.json"
+)
+CONTRACT_UNIT_AUDIT_JSON: Final[Path] = (
+    REPO / "artifacts" / "engineering" / "contract_and_unit_audit.json"
+)
+#: Bundle keys whose published FILENAME differs from the key. The measurement pages derive their
+#: "check it yourself" link from the key, so a mismatch it cannot predict is a 404 on a page whose
+#: whole purpose is that a reader can check. Declared here rather than guessed there, and
+#: tests/unit/test_bundle_keys_resolve_to_files.py fails if a new mismatch appears undeclared.
+PUBLISHED_AS: Final[dict[str, str]] = {
+    "trial_accounting": "trial_ledger.json",
+}
+
+PREREG_PARAMETERS_JSON: Final[Path] = (
+    REPO / "artifacts" / "engineering" / "prereg_earnings_narrative_parameters.json"
+)
+ALPHAVINTAGE_SEALED_JSON: Final[Path] = (
+    REPO / "artifacts" / "engineering" / "alphavintage_sealed_outcome.json"
+)
+DATA_LAKE_SCALE_JSON: Final[Path] = (
+    REPO / "artifacts" / "engineering" / "data_lake_scale.json"
+)
+CLAIM_COVERAGE_MAP_JSON: Final[Path] = (
+    REPO / "artifacts" / "engineering" / "claim_coverage_map.json"
+)
+#: The three audits the repurchase-issuance feasibility PAPER quotes. They were not published, so
+#: every figure in that paper — the issuer counts, the overlap fraction, the semantics sample —
+#: was a number a reader could see and could not check. Found by
+#: meridian/scripts/audit-published-numbers.mjs on 2026-08-22.
+REPURCHASE_AUDITS: Final[tuple[tuple[str, Path], ...]] = tuple(
+    (f"repurchase_issuance_{name}.json", REPO / "artifacts" / "feasibility"
+     / "repurchase_issuance_flow" / f"{name}.json")
+    for name in ("companyfacts_audit", "semantics_audit", "identity_overlap_audit")
+)
+SPINOFF_FORM_UNIVERSE_JSON: Final[Path] = (
+    REPO / "artifacts" / "analysis" / "spinoff_form_universe" / "result.json"
+)
+IDENTITY_REDESIGN_NOTES_MD: Final[Path] = (
+    REPO / "docs" / "design" / "IDENTITY_REDESIGN_NOTES.md"
+)
+
+# The discovery bundle's human-facing gate summary is DERIVED from the admission contract rather
+# than transcribed beside it. It was transcribed until v6, and by then it had gone stale in the
+# direction that flatters: the site published an average-correlation ceiling of 0.15 and a
+# 252-observation minimum after the contract in force had moved to 0.00 and 756. Two files
+# claiming the same fact is one file too many -- the copy drifts, and a reader auditing the config
+# cannot tell which one binds.
+_DISCOVERY_GATE_SOURCE: Final[dict[str, str]] = {
+    "book_deflated_sharpe_min": "book_deflated_sharpe_min",
+    "pbo_max": "pbo_max",
+    "average_pairwise_correlation_max": "average_pairwise_correlation_max",
+    "average_pairwise_correlation_upper_95_max": "average_pairwise_correlation_upper_95_max",
+    "pairwise_correlation_max": "ordinary_pairwise_correlation_max",
+    "stressed_pairwise_correlation_max": "stressed_pairwise_correlation_max",
+    "minimum_oos_observations": "minimum_oos_observations",
+    "net_sharpe_min": "net_sharpe_min",
+    "capacity_usd_min": "capacity_usd_min",
+}
+
+# Published gate names that are no longer thresholds. Listed rather than silently dropped, so the
+# site can say what changed instead of a bar simply vanishing from the page between deploys.
+_DISCOVERY_GATE_RETIRED: Final[dict[str, str]] = {
+    "deflated_sharpe_min": (
+        "Retired as a per-sleeve GATE in contract v6 and replaced by book_deflated_sharpe_min at "
+        "the same 0.95 against the complete union of hypothesis identities. A 0.95 per-sleeve "
+        "floor required an annualized Sharpe of 1.184 even at the least deflation the formula "
+        "permits, about eight times the declared net Sharpe floor, and no sleeve in this book "
+        "clears it. The per-sleeve figure is still measured and published for every candidate; "
+        "evidence that omits it fails closed."
+    ),
+}
+
+
+def _write_kill_papers(research_dir: Path, glassbox_dir: Path) -> int:
+    """Render one paper per killed candidate into the site's research directory.
+
+    Forty-six candidates have been killed and three have survived. The forty-six are the papers
+    almost nobody publishes, which is exactly why they are the ones worth publishing: a kill log
+    is a table, a paper is the reasoning another researcher can use. Every FIGURE in them is
+    injected from the kill-log entry; the prose is written by hand. See scripts/build_kill_papers.
+    """
+    # Imported here rather than at module scope: this script is run directly, so a sibling module
+    # is only importable once its own directory is on the path, and doing that at import time
+    # would reorder every other import in the file.
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location(
+        "build_kill_papers", Path(__file__).resolve().parent / "build_kill_papers.py"
+    )
+    if spec is None or spec.loader is None:  # pragma: no cover - defensive
+        raise ImportError("cannot load scripts/build_kill_papers.py")
+    kill_papers = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(kill_papers)
+
+    research_dir.mkdir(parents=True, exist_ok=True)
+    source = glassbox_dir / "kill_log.json"
+    if not source.exists():
+        raise FileNotFoundError(
+            f"{source} is missing: glassbox_export.py must run before research_export.py. The "
+            "ordering is declared in tests/unit/test_publish_pipeline_order.py; failing here "
+            "rather than skipping keeps a reordered pipeline from silently publishing no papers."
+        )
+    papers = kill_papers.render_kill_papers(json.loads(source.read_text()))
+    for filename, markdown in papers.items():
+        (research_dir / filename).write_text(markdown)
+    return len(papers)
+
+
+def _discovery_with_contract_gates() -> dict:
+    """Project the in-force contract's thresholds over the discovery bundle's gate summary."""
+    discovery = json.loads(SLEEVE_DISCOVERY_JSON.read_text())
+    contract = json.loads(SLEEVE_ADMISSION_CONTRACT_JSON.read_text())
+    thresholds = contract["thresholds"]
+    declared = dict(discovery.get("admission_gates", {}))
+    # Carry the qualitative commitments through untouched; rebuild every NUMERIC gate from the
+    # contract. Patching the existing dict left retired thresholds sitting in it, which is the
+    # drift this function exists to prevent.
+    gates = {
+        key: value
+        for key, value in declared.items()
+        if isinstance(value, bool) and key not in _DISCOVERY_GATE_RETIRED
+    }
+    for published_key, threshold_key in _DISCOVERY_GATE_SOURCE.items():
+        if threshold_key not in thresholds:
+            raise KeyError(
+                f"admission contract has no threshold {threshold_key!r} for published gate "
+                f"{published_key!r}; either wire it up or retire it in _DISCOVERY_GATE_RETIRED "
+                "so the change is stated rather than silent"
+            )
+        gates[published_key] = thresholds[threshold_key]
+    discovery["admission_gates"] = gates
+    discovery["retired_admission_gates"] = {
+        key: reason for key, reason in _DISCOVERY_GATE_RETIRED.items() if key not in thresholds
+    }
+    discovery["admission_contract_schema"] = contract["schema"]
+    discovery["admission_contract_public_path"] = "/glassbox/sleeve_admission_contract.json"
+    # The relationship between the gate and the objective, published beside them both. Without it
+    # the page states a target next to a ceiling and leaves the reader to discover that one
+    # forbids the other.
+    if "frontier_arithmetic" in contract:
+        discovery["frontier_arithmetic"] = contract["frontier_arithmetic"]
+    return discovery
 SLEEVE_ATLAS_JSON: Final[Path] = REPO / "artifacts" / "discovery" / "sleeve_atlas.json"
 SLEEVE_ATLAS_AUDIT_JSON: Final[Path] = (
     REPO / "artifacts" / "discovery" / "sleeve_atlas_audit.json"
@@ -992,6 +1180,7 @@ def build_track_record(state: dict[str, Any]) -> dict[str, Any]:
         "research_curve_return_pct": return_pct(research_end_nav),
         "research_curve_points": len(research),
         "honesty_policy": list(state["transparency"]),
+        "live_config": state.get("live_config"),
         "source_path": rel(STATE_JSON),
     }
 
@@ -1107,19 +1296,221 @@ def build_research_export() -> dict[str, Any]:
         "roadmap": build_roadmap(),
         "active_probe_results": build_active_probe_results(),
         "sleeve_discovery": {
-            **json.loads(SLEEVE_DISCOVERY_JSON.read_text()),
+            **_discovery_with_contract_gates(),
             "source_path": rel(SLEEVE_DISCOVERY_JSON),
         },
         "sleeve_atlas": {
             "atlas": json.loads(SLEEVE_ATLAS_JSON.read_text()),
             "audit": json.loads(SLEEVE_ATLAS_AUDIT_JSON.read_text()),
-            "lineage_audit": json.loads(SLEEVE_LINEAGE_AUDIT_JSON.read_text()),
+            "sleeve_family_lineage_audit": json.loads(SLEEVE_LINEAGE_AUDIT_JSON.read_text()),
             "atlas_public_path": "/glassbox/sleeve_atlas.json",
             "audit_public_path": "/glassbox/sleeve_atlas_audit.json",
             "lineage_audit_public_path": "/glassbox/sleeve_family_lineage_audit.json",
             "atlas_source_path": rel(SLEEVE_ATLAS_JSON),
             "audit_source_path": rel(SLEEVE_ATLAS_AUDIT_JSON),
             "lineage_audit_source_path": rel(SLEEVE_LINEAGE_AUDIT_JSON),
+        },
+        # The contract run against a REAL candidate through the production evaluator, rather than
+        # only against a fixture written to pass. It is published because its verdict bears on an
+        # open allocation decision: the sleeve currently carrying a quarter of the book.
+        "admission_dry_run": (
+            {
+                "result": json.loads(ADMISSION_DRY_RUN_JSON.read_text()),
+                "public_path": "/glassbox/admission_dry_run.json",
+                "source_path": rel(ADMISSION_DRY_RUN_JSON),
+                "source_sha256": hashlib.sha256(ADMISSION_DRY_RUN_JSON.read_bytes()).hexdigest(),
+            }
+            if ADMISSION_DRY_RUN_JSON.exists()
+            else None
+        ),
+        # The book measured with and without the sleeve whose allocation is an open decision.
+        # Published because the decision is the owner's and the input it needs is a measurement.
+        "book_without_alphavintage": (
+            json.loads(BOOK_WITHOUT_ALPHAVINTAGE_JSON.read_text())
+            if BOOK_WITHOUT_ALPHAVINTAGE_JSON.exists()
+            else None
+        ),
+        # The family closest to clearing feasibility, and why its last gate cannot be reached by
+        # improving extraction. Published because a null that closes a line of enquiry is worth
+        # as much to a reader as one that opens it.
+        # The same question asked of the other two near-miss families. Published together because
+        # the answer is the same shape for all three and it is not the encouraging one.
+        # What the LIVE covariance estimator does with a halflife, per sleeve. Published because
+        # the overlay policy was set from a simulation of a different estimator.
+        # Whether the forward record has holes. Published because the record's whole value is
+        # its continuity, and a gap that is only visible internally is a gap nobody can check.
+        # A documented approximation measured rather than trusted. Published because it bears on
+        # the open drawdown decision: it is immaterial today and material at the halflife the
+        # drawdown study points toward.
+        # The drawdown sweep re-run through the estimator production actually uses, rather than
+        # the untruncated recursion the original simulated. Published because the earlier answer
+        # is on this site and this one supersedes it.
+        # Which sleeve drags per-sleeve quality, and whether the drag is construction or cost.
+        # Published with its own boundary: commission is measured, spread is modelled, and market
+        # impact is not separable from what the artifacts carry.
+        # Whether the live book is delivering its backtest — and the honest answer that the
+        # record is far too short to say. Published because "we cannot tell yet, here is when we
+        # can" is a result, and a noisy estimate presented as one would not be.
+        # Whether the modelled cost matches what the live book pays. Published including the
+        # parts that cannot be checked from what is recorded, because that boundary is the
+        # actionable half of the result.
+        "cost_model_realism": (
+            json.loads(COST_MODEL_REALISM_JSON.read_text())
+            if COST_MODEL_REALISM_JSON.exists()
+            else None
+        ),
+        "execution_gap_power": (
+            json.loads(EXECUTION_GAP_POWER_JSON.read_text())
+            if EXECUTION_GAP_POWER_JSON.exists()
+            else None
+        ),
+        "sleeve_quality_decomposition": (
+            json.loads(SLEEVE_QUALITY_JSON.read_text()) if SLEEVE_QUALITY_JSON.exists() else None
+        ),
+        "drawdown_live_estimator": (
+            json.loads(DRAWDOWN_LIVE_ESTIMATOR_JSON.read_text())
+            if DRAWDOWN_LIVE_ESTIMATOR_JSON.exists()
+            else None
+        ),
+        "ledoit_wolf_effective_sample": (
+            json.loads(LEDOIT_WOLF_JSON.read_text()) if LEDOIT_WOLF_JSON.exists() else None
+        ),
+        "record_continuity": (
+            json.loads(RECORD_CONTINUITY_JSON.read_text())
+            if RECORD_CONTINUITY_JSON.exists()
+            else None
+        ),
+        "live_covariance_memory": (
+            json.loads(COVARIANCE_MEMORY_JSON.read_text())
+            if COVARIANCE_MEMORY_JSON.exists()
+            else None
+        ),
+        "feasibility_gate_reachability": (
+            json.loads(GATE_REACHABILITY_JSON.read_text())
+            if GATE_REACHABILITY_JSON.exists()
+            else None
+        ),
+        "spinoff_prorata_gate": (
+            json.loads(SPINOFF_PRORATA_GATE_JSON.read_text())
+            if SPINOFF_PRORATA_GATE_JSON.exists()
+            else None
+        ),
+        # The pre-test the two artifacts above are now instances of. Published because the
+        # reusable part is the thing worth copying: ask whether a near-miss gate is reachable
+        # AT ALL before writing a protocol, since the alternative move is always to widen the
+        # detector until the number clears, and that is tuning a measurement to fit a target.
+        "reachability_harness": (
+            json.loads(REACHABILITY_HARNESS_JSON.read_text())
+            if REACHABILITY_HARNESS_JSON.exists()
+            else None
+        ),
+        # The harness above, applied to the twenty families nothing has been spent on. Published
+        # because the answer is the useful kind of discouraging: most of what is left is blocked
+        # on money, on a record nobody archived, or on prices nobody could trade — and none of
+        # those is closed by working harder, which is what a reader deciding whether to believe
+        # this programme most needs to know.
+        "atlas_reachability_screen": (
+            json.loads(ATLAS_REACHABILITY_SCREEN_JSON.read_text())
+            if ATLAS_REACHABILITY_SCREEN_JSON.exists()
+            else None
+        ),
+        # The same twenty families ordered by expected orthogonality, BEFORE any is measured.
+        # Published as a prior and labelled one in every row, because an ordering stated after the
+        # measurement is not an ordering. It also prints the number the ordering exists to serve:
+        # a book whose every new pair sits exactly on the correlation gate still misses the target,
+        # so the gate is necessary and not sufficient, and that arithmetic belongs on the same
+        # page as the target rather than in a drawer.
+        "orthogonality_prior": (
+            json.loads(ORTHOGONALITY_PRIOR_JSON.read_text())
+            if ORTHOGONALITY_PRIOR_JSON.exists()
+            else None
+        ),
+        # Which of this engine's guards have been PROVEN able to fail, and how. Published because
+        # a reader has no way to tell a working check from a decorative one from the outside, and
+        # because the honest version of "our tests pass" is a table showing what happens when the
+        # thing each test watches is deliberately broken. Includes a negative control: an edit
+        # that changes nothing and must NOT be caught.
+        "mutation_ledger": (
+            json.loads(MUTATION_LEDGER_JSON.read_text())
+            if MUTATION_LEDGER_JSON.exists()
+            else None
+        ),
+        # The four audit dimensions that were opened and never finished, worked and published
+        # with their REFUTATIONS kept. An audit that reports only its hits cannot be told apart
+        # from one that did not run — and two of these dimensions found nothing, which is only
+        # worth reading because the artifact says what each one checked.
+        "guards_that_cannot_fire": (
+            json.loads(GUARDS_CANNOT_FIRE_JSON.read_text())
+            if GUARDS_CANNOT_FIRE_JSON.exists()
+            else None
+        ),
+        "contract_and_unit_audit": (
+            json.loads(CONTRACT_UNIT_AUDIT_JSON.read_text())
+            if CONTRACT_UNIT_AUDIT_JSON.exists()
+            else None
+        ),
+        # Which published claims have a guard, which mechanism guards them, and when each
+        # mechanism last ran — observed by running it. Published because every guard here reports
+        # on itself and none reported on the SET, and a reader cannot tell an artifact with three
+        # checks from one with none by looking at either.
+        # Provenance, declared by the producer: which file each artifact key was published as.
+        # Anything not listed publishes under its own key.
+        "published_as": PUBLISHED_AS,
+        # The scale figures the marketing pages put in a panel, each with a definition. Published
+        # because they were hand-typed until 2026-08-22 and two were wrong: the fundamentals count
+        # was OVERSTATED and "8,436 survivorship-free US stocks" matched neither store. A number on
+        # a page that traces to nothing is a number nobody can check, including us.
+        # The figures the AlphaVintage correction paper quotes, recomputed from the probe's own
+        # artifacts. Two of them traced to nothing published — the superseded Sharpe and the
+        # maximum drawdown, which was in no artifact at all. A correction paper whose own numbers
+        # cannot be checked asks for the same credence the original mistake did.
+        # A pre-registration's parameters as DATA. Its function is that the spec is fixed before
+        # measurement so a reader can check the run against it, and these existed only as English
+        # sentences — so nothing could compare the executed run to the committed spec.
+        "prereg_earnings_narrative_parameters": (
+            json.loads(PREREG_PARAMETERS_JSON.read_text())
+            if PREREG_PARAMETERS_JSON.exists()
+            else None
+        ),
+        "alphavintage_sealed_outcome": (
+            json.loads(ALPHAVINTAGE_SEALED_JSON.read_text())
+            if ALPHAVINTAGE_SEALED_JSON.exists()
+            else None
+        ),
+        "data_lake_scale": (
+            json.loads(DATA_LAKE_SCALE_JSON.read_text())
+            if DATA_LAKE_SCALE_JSON.exists()
+            else None
+        ),
+        "claim_coverage_map": (
+            json.loads(CLAIM_COVERAGE_MAP_JSON.read_text())
+            if CLAIM_COVERAGE_MAP_JSON.exists()
+            else None
+        ),
+        "repurchase_issuance_feasibility_audits": {
+            name.removesuffix(".json"): json.loads(
+                path.read_text()
+            )
+            for name, path in REPURCHASE_AUDITS
+            if path.exists()
+        },
+        # The three families whose gates were unreachable, redesigned as far as they can be
+        # WITHOUT spending a trial: what document would carry the evidence, and what a corrected
+        # identity would look like. Published with the measurement that replaced the prose test —
+        # the spin-off event universe is declared by a FORM TYPE, 386 registrations over sixteen
+        # years, and the corporate-action route was checked and does not carry the event.
+        "identity_redesign": {
+            "spinoff_form_universe": (
+                json.loads(SPINOFF_FORM_UNIVERSE_JSON.read_text())
+                if SPINOFF_FORM_UNIVERSE_JSON.exists()
+                else None
+            ),
+            "notes_public_path": "/research/identity-redesign-notes.md",
+            "notes_source_path": rel(IDENTITY_REDESIGN_NOTES_MD),
+            "notes_sha256": hashlib.sha256(IDENTITY_REDESIGN_NOTES_MD.read_bytes()).hexdigest(),
+            "public_path": "/glassbox/spinoff_form_universe.json",
+            "source_path": rel(SPINOFF_FORM_UNIVERSE_JSON),
+            "status": "DRAFT — nothing here is registered and no threshold is proposed",
         },
         "sleeve_admission_contract": {
             "contract": json.loads(SLEEVE_ADMISSION_CONTRACT_JSON.read_text()),
@@ -1234,7 +1625,7 @@ def main(out_dir: Path = OUT_DIR) -> Path:
         (out_dir / "legacy_dsr_restatement.json").write_text(
             LEGACY_DSR_RESTATEMENT_JSON.read_text()
         )
-    discovery = json.dumps(json.loads(SLEEVE_DISCOVERY_JSON.read_text()), indent=2) + "\n"
+    discovery = json.dumps(_discovery_with_contract_gates(), indent=2) + "\n"
     (out_dir / "sleeve_discovery.json").write_text(discovery)
     (out_dir / "sleeve_atlas.json").write_text(SLEEVE_ATLAS_JSON.read_text())
     (out_dir / "sleeve_atlas_audit.json").write_text(SLEEVE_ATLAS_AUDIT_JSON.read_text())
@@ -1244,6 +1635,95 @@ def main(out_dir: Path = OUT_DIR) -> Path:
     (out_dir / "sleeve_admission_contract.json").write_text(
         SLEEVE_ADMISSION_CONTRACT_JSON.read_text()
     )
+    if ADMISSION_DRY_RUN_JSON.exists():
+        (out_dir / "admission_dry_run.json").write_text(ADMISSION_DRY_RUN_JSON.read_text())
+    if COST_MODEL_REALISM_JSON.exists():
+        (out_dir / "cost_model_realism.json").write_text(
+            COST_MODEL_REALISM_JSON.read_text()
+        )
+    if EXECUTION_GAP_POWER_JSON.exists():
+        (out_dir / "execution_gap_power.json").write_text(
+            EXECUTION_GAP_POWER_JSON.read_text()
+        )
+    if SLEEVE_QUALITY_JSON.exists():
+        (out_dir / "sleeve_quality_decomposition.json").write_text(
+            SLEEVE_QUALITY_JSON.read_text()
+        )
+    if DRAWDOWN_LIVE_ESTIMATOR_JSON.exists():
+        (out_dir / "drawdown_live_estimator.json").write_text(
+            DRAWDOWN_LIVE_ESTIMATOR_JSON.read_text()
+        )
+    if LEDOIT_WOLF_JSON.exists():
+        (out_dir / "ledoit_wolf_effective_sample.json").write_text(
+            LEDOIT_WOLF_JSON.read_text()
+        )
+    if RECORD_CONTINUITY_JSON.exists():
+        (out_dir / "record_continuity.json").write_text(
+            RECORD_CONTINUITY_JSON.read_text()
+        )
+    if COVARIANCE_MEMORY_JSON.exists():
+        (out_dir / "live_covariance_memory.json").write_text(
+            COVARIANCE_MEMORY_JSON.read_text()
+        )
+    if GATE_REACHABILITY_JSON.exists():
+        (out_dir / "feasibility_gate_reachability.json").write_text(
+            GATE_REACHABILITY_JSON.read_text()
+        )
+    if SPINOFF_PRORATA_GATE_JSON.exists():
+        (out_dir / "spinoff_prorata_gate.json").write_text(
+            SPINOFF_PRORATA_GATE_JSON.read_text()
+        )
+    if REACHABILITY_HARNESS_JSON.exists():
+        (out_dir / "reachability_harness.json").write_text(
+            REACHABILITY_HARNESS_JSON.read_text()
+        )
+    if ATLAS_REACHABILITY_SCREEN_JSON.exists():
+        (out_dir / "atlas_reachability_screen.json").write_text(
+            ATLAS_REACHABILITY_SCREEN_JSON.read_text()
+        )
+    if ORTHOGONALITY_PRIOR_JSON.exists():
+        (out_dir / "orthogonality_prior.json").write_text(
+            ORTHOGONALITY_PRIOR_JSON.read_text()
+        )
+    if MUTATION_LEDGER_JSON.exists():
+        (out_dir / "mutation_ledger.json").write_text(
+            MUTATION_LEDGER_JSON.read_text()
+        )
+    if GUARDS_CANNOT_FIRE_JSON.exists():
+        (out_dir / "guards_that_cannot_fire.json").write_text(
+            GUARDS_CANNOT_FIRE_JSON.read_text()
+        )
+    if CONTRACT_UNIT_AUDIT_JSON.exists():
+        (out_dir / "contract_and_unit_audit.json").write_text(
+            CONTRACT_UNIT_AUDIT_JSON.read_text()
+        )
+    if PREREG_PARAMETERS_JSON.exists():
+        (out_dir / "prereg_earnings_narrative_parameters.json").write_text(
+            PREREG_PARAMETERS_JSON.read_text()
+        )
+    if ALPHAVINTAGE_SEALED_JSON.exists():
+        (out_dir / "alphavintage_sealed_outcome.json").write_text(
+            ALPHAVINTAGE_SEALED_JSON.read_text()
+        )
+    if DATA_LAKE_SCALE_JSON.exists():
+        (out_dir / "data_lake_scale.json").write_text(
+            DATA_LAKE_SCALE_JSON.read_text()
+        )
+    if CLAIM_COVERAGE_MAP_JSON.exists():
+        (out_dir / "claim_coverage_map.json").write_text(
+            CLAIM_COVERAGE_MAP_JSON.read_text()
+        )
+    for _name, _path in REPURCHASE_AUDITS:
+        if _path.exists():
+            (out_dir / _name).write_text(_path.read_text())
+    if SPINOFF_FORM_UNIVERSE_JSON.exists():
+        (out_dir / "spinoff_form_universe.json").write_text(
+            SPINOFF_FORM_UNIVERSE_JSON.read_text()
+        )
+    if BOOK_WITHOUT_ALPHAVINTAGE_JSON.exists():
+        (out_dir / "book_without_alphavintage.json").write_text(
+            BOOK_WITHOUT_ALPHAVINTAGE_JSON.read_text()
+        )
     (out_dir / "execution_models_benchmark.json").write_text(
         EXECUTION_BENCHMARK_JSON.read_text()
     )
@@ -1268,6 +1748,7 @@ def main(out_dir: Path = OUT_DIR) -> Path:
     (out_dir / "financing_contract.json").write_text(FINANCING_CONTRACT_JSON.read_text())
     (out_dir / "lint_debt_contract.json").write_text(LINT_DEBT_CONTRACT_JSON.read_text())
     literature_dir = out_dir.parent / "research"
+    _write_kill_papers(literature_dir, out_dir)
     literature_dir.mkdir(parents=True, exist_ok=True)
     (literature_dir / "execution-realism.md").write_text(EXECUTION_REALISM_MD.read_text())
     (literature_dir / "futures-execution-foundation.md").write_text(
@@ -1287,7 +1768,21 @@ def main(out_dir: Path = OUT_DIR) -> Path:
         CORPORATE_ACTION_LIFECYCLE_MD.read_text()
     )
     (literature_dir / "financing-replay.md").write_text(FINANCING_REPLAY_MD.read_text())
+    (literature_dir / "identity-redesign-notes.md").write_text(
+        IDENTITY_REDESIGN_NOTES_MD.read_text()
+    )
     (literature_dir / "engineering-quality.md").write_text(ENGINEERING_QUALITY_MD.read_text())
+    # MISSING FROM THE PRIMARY SITE until 2026-08-22. The app host published this paper and this
+    # host did not, because the two write blocks are hand-mirrored copies and one edit landed in
+    # only one of them. Nothing could notice: the paper is not linked from research.json, so its
+    # absence produced no broken link and no failing check — the primary site was simply missing
+    # the document that restates every Sharpe the deflation correction touched.
+    # tests/unit/test_glassbox_write_paths.py now compares the two blocks as sets, so the next
+    # one-sided edit fails a test rather than quietly publishing to one host.
+    if LEGACY_DSR_RESTATEMENT_MD.exists():
+        (literature_dir / "legacy-dsr-restatement.md").write_text(
+            LEGACY_DSR_RESTATEMENT_MD.read_text()
+        )
     (literature_dir / "literature-frontier-2026-08-16.md").write_text(
         LITERATURE_FRONTIER_MD.read_text()
     )
@@ -1434,6 +1929,95 @@ def main(out_dir: Path = OUT_DIR) -> Path:
         (app_dir / "sleeve_family_lineage_audit.json").write_text(
             SLEEVE_LINEAGE_AUDIT_JSON.read_text()
         )
+        if ADMISSION_DRY_RUN_JSON.exists():
+            (app_dir / "admission_dry_run.json").write_text(ADMISSION_DRY_RUN_JSON.read_text())
+        if COST_MODEL_REALISM_JSON.exists():
+            (app_dir / "cost_model_realism.json").write_text(
+                COST_MODEL_REALISM_JSON.read_text()
+            )
+        if EXECUTION_GAP_POWER_JSON.exists():
+            (app_dir / "execution_gap_power.json").write_text(
+                EXECUTION_GAP_POWER_JSON.read_text()
+            )
+        if SLEEVE_QUALITY_JSON.exists():
+            (app_dir / "sleeve_quality_decomposition.json").write_text(
+                SLEEVE_QUALITY_JSON.read_text()
+            )
+        if DRAWDOWN_LIVE_ESTIMATOR_JSON.exists():
+            (app_dir / "drawdown_live_estimator.json").write_text(
+                DRAWDOWN_LIVE_ESTIMATOR_JSON.read_text()
+            )
+        if LEDOIT_WOLF_JSON.exists():
+            (app_dir / "ledoit_wolf_effective_sample.json").write_text(
+                LEDOIT_WOLF_JSON.read_text()
+            )
+        if RECORD_CONTINUITY_JSON.exists():
+            (app_dir / "record_continuity.json").write_text(
+                RECORD_CONTINUITY_JSON.read_text()
+            )
+        if COVARIANCE_MEMORY_JSON.exists():
+            (app_dir / "live_covariance_memory.json").write_text(
+                COVARIANCE_MEMORY_JSON.read_text()
+            )
+        if GATE_REACHABILITY_JSON.exists():
+            (app_dir / "feasibility_gate_reachability.json").write_text(
+                GATE_REACHABILITY_JSON.read_text()
+            )
+        if SPINOFF_PRORATA_GATE_JSON.exists():
+            (app_dir / "spinoff_prorata_gate.json").write_text(
+                SPINOFF_PRORATA_GATE_JSON.read_text()
+            )
+        if REACHABILITY_HARNESS_JSON.exists():
+            (app_dir / "reachability_harness.json").write_text(
+                REACHABILITY_HARNESS_JSON.read_text()
+            )
+        if ATLAS_REACHABILITY_SCREEN_JSON.exists():
+            (app_dir / "atlas_reachability_screen.json").write_text(
+                ATLAS_REACHABILITY_SCREEN_JSON.read_text()
+            )
+        if ORTHOGONALITY_PRIOR_JSON.exists():
+            (app_dir / "orthogonality_prior.json").write_text(
+                ORTHOGONALITY_PRIOR_JSON.read_text()
+            )
+        if MUTATION_LEDGER_JSON.exists():
+            (app_dir / "mutation_ledger.json").write_text(
+                MUTATION_LEDGER_JSON.read_text()
+            )
+        if GUARDS_CANNOT_FIRE_JSON.exists():
+            (app_dir / "guards_that_cannot_fire.json").write_text(
+                GUARDS_CANNOT_FIRE_JSON.read_text()
+            )
+        if CONTRACT_UNIT_AUDIT_JSON.exists():
+            (app_dir / "contract_and_unit_audit.json").write_text(
+                CONTRACT_UNIT_AUDIT_JSON.read_text()
+            )
+        if PREREG_PARAMETERS_JSON.exists():
+            (app_dir / "prereg_earnings_narrative_parameters.json").write_text(
+                PREREG_PARAMETERS_JSON.read_text()
+            )
+        if ALPHAVINTAGE_SEALED_JSON.exists():
+            (app_dir / "alphavintage_sealed_outcome.json").write_text(
+                ALPHAVINTAGE_SEALED_JSON.read_text()
+            )
+        if DATA_LAKE_SCALE_JSON.exists():
+            (app_dir / "data_lake_scale.json").write_text(
+                DATA_LAKE_SCALE_JSON.read_text()
+            )
+        if CLAIM_COVERAGE_MAP_JSON.exists():
+            (app_dir / "claim_coverage_map.json").write_text(
+                CLAIM_COVERAGE_MAP_JSON.read_text()
+            )
+        for _name, _path in REPURCHASE_AUDITS:
+            if _path.exists():
+                (app_dir / _name).write_text(_path.read_text())
+        if SPINOFF_FORM_UNIVERSE_JSON.exists():
+            (app_dir / "spinoff_form_universe.json").write_text(
+                SPINOFF_FORM_UNIVERSE_JSON.read_text()
+            )
+        if BOOK_WITHOUT_ALPHAVINTAGE_JSON.exists():
+            (app_dir / "book_without_alphavintage.json").write_text(
+                BOOK_WITHOUT_ALPHAVINTAGE_JSON.read_text()
+            )
         (app_dir / "sleeve_admission_contract.json").write_text(
             SLEEVE_ADMISSION_CONTRACT_JSON.read_text()
         )
@@ -1465,6 +2049,7 @@ def main(out_dir: Path = OUT_DIR) -> Path:
             LINT_DEBT_CONTRACT_JSON.read_text()
         )
         app_literature_dir = app_dir.parent / "research"
+        _write_kill_papers(app_literature_dir, app_dir)
         app_literature_dir.mkdir(parents=True, exist_ok=True)
         (app_literature_dir / "execution-realism.md").write_text(
             EXECUTION_REALISM_MD.read_text()
@@ -1489,6 +2074,9 @@ def main(out_dir: Path = OUT_DIR) -> Path:
         )
         (app_literature_dir / "financing-replay.md").write_text(
             FINANCING_REPLAY_MD.read_text()
+        )
+        (app_literature_dir / "identity-redesign-notes.md").write_text(
+            IDENTITY_REDESIGN_NOTES_MD.read_text()
         )
         (app_literature_dir / "engineering-quality.md").write_text(
             ENGINEERING_QUALITY_MD.read_text()

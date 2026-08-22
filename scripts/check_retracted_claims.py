@@ -37,9 +37,25 @@ WINDOW = 400
 SCAN_SUFFIXES = {".html", ".json", ".js", ".txt", ".md"}
 SKIP_DIRS = {"node_modules", ".git", ".vercel", "assets"}
 
-#: Files that legitimately hold the full history and are exempt wholesale: the signed chain and
-#: any artifact whose PURPOSE is to record what was withdrawn.
-EXEMPT_NAMES = {"paper-state.json", "track_record.json", "transparency.json"}
+#: The ONLY file exempt wholesale: the signed append-only chain. It is exempt because it cannot be
+#: repaired -- an entry is hash-linked and signed the moment it is written, so a bare assertion
+#: inside it can only be answered by APPENDING a retraction the 400-byte window will never see.
+#: Failing forever on an un-editable file does not protect the record; it pressures someone into
+#: weakening the rule, which this file warns against in its own header.
+#:
+#: NARROWED 2026-08-19, and this is the point of the change. The set previously read
+#: {"paper-state.json", "track_record.json", "transparency.json"} -- three entries, none of them
+#: right. "transparency.json" MATCHES NO FILE: the chain is published as transparency_log.json, so
+#: the one exemption that was justified was never in force (the chain passed on its merits, which
+#: is how nobody noticed). The two that WERE in force are the two published surfaces the whole
+#: dashboard renders from, and they are regenerated from source every hour -- so a bare claim in
+#: them is always fixable, and exempting them is what let AlphaVintage's withdrawn 0.3403 sit on
+#: canlicapital.com in the single most-read file on the site while this gate reported a pass.
+#:
+#: The rule is now: an IMMUTABLE copy is exempt, every MUTABLE copy is scanned. Because the
+#: mutable copies are generated from the same prose that later gets signed into the chain, a bare
+#: assertion is caught before it can ever reach the copy that cannot be fixed.
+EXEMPT_NAMES = {"transparency_log.json"}
 
 
 class Rule:
