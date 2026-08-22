@@ -19,6 +19,7 @@ AF="$HOME/alphaforge"
 cd "$AF" || exit 1
 mkdir -p var/log
 . "$HOME/alphaforge/scripts/lib/bounded.sh"
+. "$HOME/alphaforge/scripts/lib/indexnow.sh"
 LOG="var/log/live_deploy.log"
 HASH_FILE="var/last_web_deploy.hash"
 
@@ -108,7 +109,19 @@ PY
   }
 
   deploy_prod "$HOME/meridian" "landing" "ac-capital.vercel.app" "meridian-pearl-mu.vercel.app"
+  LANDING_OK=$?
   deploy_prod "$HOME/meridian-app" "app" "ac-capital-app.vercel.app"
+
+  # Tell the search engines, but ONLY if the landing deploy actually succeeded: submitting URLs
+  # against a deploy that failed would advertise pages that may not be there. Loud on failure,
+  # never fatal — see scripts/lib/indexnow.sh for why that is the right shape here and how a
+  # persistent failure stops being silent.
+  if [ "$LANDING_OK" = "0" ]; then
+    indexnow_submit "$HOME/meridian"
+  else
+    echo "  [indexnow] skipped: the landing deploy failed, so there is nothing new to announce"
+  fi
+  indexnow_warn_if_stale
 
   if [ "$FAIL" = "0" ]; then
     echo "$NEW_HASH" > "$AF/$HASH_FILE"
