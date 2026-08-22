@@ -278,7 +278,7 @@ publication — with each stage linking to the artifact that proves it, and the 
 reports 0 errors.
 
 ### D2 · Give each topic hub a real essay introduction
-STATUS: TODO
+STATUS: DONE
 WHY: Each hub carries one paragraph. A hub is a page that should rank for its subject, and one
 paragraph over a link list is thin.
 DONE WHEN: each of the 13 hubs opens with 3–6 paragraphs of genuine subject content — what the
@@ -778,3 +778,32 @@ where it is.*
   file already warns about, met from the other side.
   `npm run verify` **0 errors**, 123 URLs. The 23 warnings remain the pre-existing paper titles
   (D8), untouched.
+- `2026-08-22 05:25` — **D2 DONE.** All 13 hubs now open with a written essay — **52 distinct
+  paragraphs, ~3,660 words**, four per hub, none shared between any two. Each answers the three
+  questions the item asked for: what the mechanism is, what the published evidence supports, and
+  what THIS book found — which is consistently less than the literature would suggest and is
+  written that way.
+  Some of the more useful things now stated in prose rather than implied by a link list: that a
+  kill log's real function is to be the DENOMINATOR, because deflation is only possible if the
+  trial count is honest; that the equity cluster is "not virgin ground, and an edge found here is
+  much more likely to be a construction artifact than a discovery", with the surviving momentum
+  sleeve named against ten published kills around it; that crypto funding carry is "a
+  liquidity-provision trade wearing a yield's clothing"; that the event-driven failures share one
+  shape — a language test where the identity needed a structural fact; and that the one fully
+  checkable cost component matched **exactly at 5.00bp against a modelled 5.0**, while equity
+  slippage is not computable at all because the fills record a padded limit, so "a fill that
+  appears to beat it is beating the padding".
+  Every figure quoted is read from a published artifact; where a claim is qualitative it is left
+  qualitative rather than given an invented number.
+  ⚠️ **The guard that matters is the anti-template one.** Length checks alone would be satisfied by
+  boilerplate with the subject noun swapped, which is exactly what a hub essay degenerates into and
+  exactly what would deserve to rank for nothing. `verify-papers.mjs` now collects every essay
+  paragraph across every hub and fails if any paragraph appears on two — plus ≥3 paragraphs and
+  ≥180 words per hub, the standfirst explicitly NOT counting toward either (it is what the item
+  was raised about), and a floor of 39 distinct paragraphs site-wide so a broken extractor cannot
+  make the whole check pass vacuously.
+  Mutation-tested three ways, all caught, clean state passes: two paragraphs deleted from one hub,
+  a paragraph copied from one hub to another, and an essay removed entirely. Each mutation asserts
+  it actually applied — after last item's BSD `sed` no-op, an un-asserted edit reporting NOT CAUGHT
+  is now indistinguishable from a broken guard, so the harness refuses to report either.
+  `npm run verify` **0 errors**, 123 URLs.
