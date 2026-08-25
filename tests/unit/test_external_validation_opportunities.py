@@ -1,0 +1,68 @@
+from __future__ import annotations
+
+import hashlib
+import importlib.util
+import json
+from pathlib import Path
+from typing import Any
+
+SCRIPT = Path(__file__).resolve().parents[2] / "scripts/seal_external_validation_opportunities.py"
+SPEC = importlib.util.spec_from_file_location("external_validation_opportunities_test", SCRIPT)
+assert SPEC is not None and SPEC.loader is not None
+MODULE = importlib.util.module_from_spec(SPEC)
+SPEC.loader.exec_module(MODULE)
+
+
+def _content_hash(payload: dict[str, Any]) -> str:
+    body = {key: value for key, value in payload.items() if key != "content_hash"}
+    encoded = json.dumps(body, sort_keys=True, separators=(",", ":")).encode()
+    return "sha256:" + hashlib.sha256(encoded).hexdigest()
+
+
+def test_external_validation_audit_fails_closed() -> None:
+    payload = MODULE.build()
+    assert payload["schema"] == MODULE.SCHEMA
+    assert payload["content_hash"] == _content_hash(payload)
+    assert payload["decision"] == "NO_EXTERNAL_ACTION_AUTHORIZED_ELIGIBILITY_FACTS_REMAIN"
+    assert payload["counts"] == {
+        "opportunities": 6,
+        "registered": 0,
+        "submitted": 0,
+        "awarded": 0,
+        "registration_authorized": 0,
+        "exact_future_deadlines": 1,
+    }
+    assert len(payload["owner_facts_required"]) == 6
+    assert all(row["registration_authorized"] is False for row in payload["opportunities"])
+    assert all(row["entry_claimed"] is False for row in payload["opportunities"])
+    assert all(row["unknowns"] for row in payload["opportunities"])
+    assert all(
+        url.startswith("https://")
+        for row in payload["opportunities"]
+        for url in row["official_sources"]
+    )
+
+
+def test_high_priority_rules_preserve_verified_constraints() -> None:
+    rows = {row["id"]: row for row in MODULE.build()["opportunities"]}
+    isef = rows["regeneron_isef_2027"]
+    assert isef["eligibility"]["research_window"].endswith("no work before 2026-01-01")
+    assert "may not write" in isef["ai_boundary"]
+
+    wharton = rows["wharton_investment_2026_2027"]
+    assert wharton["eligibility"]["team_size"] == "4-6 students from the same school"
+    assert wharton["eligibility"]["registration_actor"] == "advisor, not student"
+    assert wharton["exact_deadline"] is None
+
+    diamond = rows["diamond_challenge_2027"]
+    assert diamond["window_opens"] == "2026-09-16"
+    assert diamond["exact_deadline"] == "2027-01-14T17:00:00-05:00"
+
+    emirates = rows["emirates_young_scientist_next_cycle"]
+    assert emirates["eligibility"]["individual"] == "UAE nationals only"
+    assert "at most one non-UAE national" in emirates["eligibility"]["group"]
+
+
+def test_checked_in_external_validation_audit_is_current() -> None:
+    path = Path("artifacts/analysis/external_validation_opportunities.json")
+    assert json.loads(path.read_text(encoding="utf-8")) == MODULE.build()

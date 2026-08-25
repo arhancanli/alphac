@@ -3,6 +3,10 @@
 **Applicant, project owner, and accountable author:** Arhan Canli  
 **Status:** execution plan; no entry, submission, review, replication, DOI, award, or acceptance is claimed
 
+The machine-readable authority for current rules, unresolved owner facts, official sources, and
+external-action state is `artifacts/analysis/external_validation_opportunities.json`. It is dated,
+fail-closed, and must be reverified immediately before any registration or submission.
+
 ## Objective
 
 Turn ALPHAC into a compact, defensible demonstration of computer-science depth: a system that can
@@ -44,9 +48,9 @@ must be confirmed before any registration. The table records opportunity, not pa
 | 1 | Regeneron ISEF 2027 through an affiliated fair | One new preregistered experiment on falsifiable quantitative-research methodology, provenance, or backtest-overfitting control | Grades 9–12 or equivalent and under 20 on the stated date; qualification must come through an affiliated fair. The 2027 project may contain no more than 12 continuous months and no work before January 2026. Locate the UAE-affiliated fair and adult sponsor before changing or beginning the competition protocol. |
 | 2 | Wharton Global High School Investment Competition 2026–27 | A team portfolio thesis that uses ALPHAC's evidence discipline without claiming the platform or old returns as a competition result | The current cycle is for teams of 4–6 eligible secondary-school students with a teacher advisor. Registration opened 10 August 2026. Confirm grade eligibility, form the team, appoint the school advisor, and read the current case and trading rules before entry. |
 | 3 | Diamond Challenge 2027 | ALPHAC as an evidence-first research-software or financial-literacy venture, with a real user problem and validation interviews | Teams of 2–4 high-school students aged 14–18 at the submission deadline need an adult advisor. The submission window opens 16 September 2026 and closes 14 January 2027 at 5 p.m. EST. Decide the business or social-innovation track only after customer interviews support it. |
-| 4 | Emirates Young Scientist Competition, next announced cycle | A UAE-facing scientific or engineering version of the new prospective experiment | The 2026 page described grades 9–12 and school teams of 2–3. Do not infer 2027 dates or rules. Monitor the Ministry of Education and ATRC announcement and verify them before entering. |
-| 5 | Conrad Challenge, next current cycle | Product innovation and systems engineering, if the exact challenge category fits | The program is for student innovators aged 13–18, but current dates, team rules, and category fit require a fresh official check before work is committed. |
-| 6 | New York Academy of Sciences Junior Academy, next open cohort | Mentored global problem-solving and an external collaboration record | The program describes ages 13–17 and a sustained weekly commitment. Fall 2026 applications are closed. Check the next official recruitment window rather than claiming availability. |
+| 4 | Emirates Young Scientist Competition, next announced cycle | A UAE-facing scientific or engineering version of the new prospective experiment | The current official interface covers grades 5–12. Individual projects are limited to UAE nationals; groups may contain up to three students and at most one non-UAE national, with a teacher or supervisor. Arhan's nationality and team route are unresolved, and no next-cycle date is claimed. |
+| 5 | Conrad Challenge 2026–27 | Product innovation and systems engineering, if the exact challenge category fits | Official pages confirm the 2026–27 cycle, an annual August-to-April program and ages 13–18. The exact current phase dates and full team, coach, fee and category rules were not available on the verified current pages, so the old 2025–26 calendar may not be reused. |
+| 6 | New York Academy of Sciences Junior Academy, next open cohort | Mentored global problem-solving and an external collaboration record | The program requires ages 13–17, remaining under 18 during the challenge, and 3–4 hours weekly. Fall 2026 applications are closed. The official page says recruitment is normally offered again, but no undated pattern is treated as a current deadline. |
 
 WorldQuant IQC 2026 and Kaggle's 2026 Liquidity Arena are not current targets. Their relevant 2026
 entry stages have passed, and their age or university-team requirements make them unsuitable as
@@ -61,8 +65,8 @@ Official sources:
   <https://www.societyforscience.org/isef/international-rules/rules-for-all-projects/> and
   <https://findafair.societyforscience.org/>
 - Diamond Challenge 2027 rules and dates: <https://diamondchallenge.org/competition/>
-- Emirates Young Scientist Competition 2026 page:
-  <https://challengeon.atrc.ae/en/challenges/eysc2026>
+- Emirates Young Scientist Competition current official interface:
+  <https://e.moe.gov.ae/ords/moe/r/nsti/eysc>
 - Conrad Challenge student eligibility:
   <https://conrad.spacecenter.org/participate/student-innovators/>
 - New York Academy of Sciences Junior Academy:

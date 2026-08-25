@@ -218,6 +218,9 @@ SPLIT_LIFECYCLE_DISCONTINUITY_RESOLUTION_JSON: Final[Path] = (
 NEXT_SLEEVE_SELECTION_JSON: Final[Path] = (
     REPO / "artifacts" / "analysis" / "next_sleeve_selection.json"
 )
+EXTERNAL_VALIDATION_OPPORTUNITIES_JSON: Final[Path] = (
+    REPO / "artifacts" / "analysis" / "external_validation_opportunities.json"
+)
 ACTIVE_OWNERSHIP_HANDOFF_RECEIPT_JSON: Final[Path] = (
     REPO / "artifacts" / "handoffs" / "active_ownership_13d_item4_v3_blind.json"
 )
@@ -2995,6 +2998,9 @@ def build_research_export() -> dict[str, Any]:
             if NEXT_SLEEVE_SELECTION_JSON.exists()
             else None
         ),
+        "external_validation_opportunities": json.loads(
+            EXTERNAL_VALIDATION_OPPORTUNITIES_JSON.read_text()
+        ),
         "active_ownership_blind_handoff_receipt": (
             json.loads(ACTIVE_OWNERSHIP_HANDOFF_RECEIPT_JSON.read_text())
             if ACTIVE_OWNERSHIP_HANDOFF_RECEIPT_JSON.exists()
@@ -3519,6 +3525,9 @@ def main(out_dir: Path = OUT_DIR) -> Path:
     )
     (out_dir / "external_submission_plan.json").write_text(
         EXTERNAL_SUBMISSION_PLAN_JSON.read_text()
+    )
+    (out_dir / "external_validation_opportunities.json").write_text(
+        EXTERNAL_VALIDATION_OPPORTUNITIES_JSON.read_text()
     )
     (out_dir / "wave1_data_rights_audit.json").write_text(WAVE1_DATA_RIGHTS_AUDIT_JSON.read_text())
     (out_dir / "wave1_release_candidates.json").write_text(
@@ -4329,6 +4338,9 @@ def main(out_dir: Path = OUT_DIR) -> Path:
         )
         (app_dir / "external_submission_plan.json").write_text(
             EXTERNAL_SUBMISSION_PLAN_JSON.read_text()
+        )
+        (app_dir / "external_validation_opportunities.json").write_text(
+            EXTERNAL_VALIDATION_OPPORTUNITIES_JSON.read_text()
         )
         (app_dir / "wave1_data_rights_audit.json").write_text(
             WAVE1_DATA_RIGHTS_AUDIT_JSON.read_text()

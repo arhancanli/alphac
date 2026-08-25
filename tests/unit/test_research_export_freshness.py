@@ -245,17 +245,17 @@ def test_program_status_composes_targets_live_provenance_and_evidence_gaps(modul
 
     assert status["schema"] == "canli.alphac-program-status.v2"
     assert status["owner"]["name"] == "Arhan Canli"
-    assert status["achievement"]["forward_sharpe_status"] == "FAIL_CLOSED_PROVENANCE"
+    assert status["achievement"]["forward_sharpe_status"] == "IMMATURE_RECORD_TOO_SHORT"
     assert status["achievement"]["forward_sharpe_underlying_status"] == "IMMATURE_RECORD_TOO_SHORT"
     assert status["achievement"]["overall"] == "TARGETS_NOT_YET_ACHIEVED"
     assert status["forward_record"]["capital_kind"] == "PAPER_ONLY"
     assert status["forward_record"]["normalized_starting_equity"] > 0
     assert status["forward_record"]["curve_points"] >= 2
     maturity = status["forward_record"]["evidence_maturity"]
-    assert maturity["status"] == "FAIL_CLOSED_PROVENANCE"
+    assert maturity["status"] == "IMMATURE_RECORD_TOO_SHORT"
     assert maturity["underlying_status"] == "IMMATURE_RECORD_TOO_SHORT"
-    assert maturity["provenance_passes"] is False
-    assert "crypto_position_attribution_complete" in maturity["failed_provenance_checks"]
+    assert maturity["provenance_passes"] is True
+    assert maturity["failed_provenance_checks"] == []
     assert maturity["sharpe"]["annualized_point_estimate"] is None
     assert maturity["sharpe"]["target_statistically_established"] is False
     assert maturity["drawdown"]["realized_status"] == (
@@ -711,9 +711,11 @@ def test_crypto_attribution_rollout_evidence_is_public_and_byte_identical(module
     assert evidence["schema"] == (
         "canli.alphac-crypto-position-attribution-rollout-verification.v1"
     )
-    assert evidence["status"] == "NO_DEPLOYMENT_RECEIPT"
-    assert evidence["passes"] is False
-    assert evidence["remote_query_performed"] is False
+    assert evidence["status"] == "VERIFIED_FIRST_NATURAL_MARKED_CYCLE"
+    assert evidence["passes"] is True
+    assert evidence["remote_query_performed"] is True
+    assert evidence["natural_cycle_after_deployment"] is True
+    assert evidence["attribution"]["latest_cycle"]["position_arithmetic_passes"] is True
     assert source.read_bytes() == legacy.read_bytes() == app.read_bytes()
 
 
@@ -763,4 +765,29 @@ def test_active_ownership_handoff_is_hash_bound_and_identical_on_both_hosts(modu
     assert receipt["labels_completed"] == 0
     assert receipt["prediction_blind"] is True
     assert receipt["archive_sha256"] == hashlib.sha256(source.read_bytes()).hexdigest()
+    assert source.read_bytes() == legacy.read_bytes() == app.read_bytes()
+
+
+@pytest.mark.workspace_evidence
+def test_external_validation_audit_is_public_and_fail_closed(modules) -> None:
+    _, research = modules
+    payload = research.build_research_export()
+    audit = payload["external_validation_opportunities"]
+    source = research.EXTERNAL_VALIDATION_OPPORTUNITIES_JSON
+    legacy = REPO.parent / "meridian" / "public" / "glassbox" / source.name
+    app = REPO.parent / "meridian-app" / "public" / "glassbox" / source.name
+
+    assert audit["schema"] == "canli.alphac-external-validation-opportunities.v1"
+    assert audit["decision"] == "NO_EXTERNAL_ACTION_AUTHORIZED_ELIGIBILITY_FACTS_REMAIN"
+    assert audit["counts"] == {
+        "awarded": 0,
+        "exact_future_deadlines": 1,
+        "opportunities": 6,
+        "registered": 0,
+        "registration_authorized": 0,
+        "submitted": 0,
+    }
+    assert len(audit["content_hash"]) == 71
+    assert all(not row["registration_authorized"] for row in audit["opportunities"])
+    assert all(not row["entry_claimed"] for row in audit["opportunities"])
     assert source.read_bytes() == legacy.read_bytes() == app.read_bytes()
