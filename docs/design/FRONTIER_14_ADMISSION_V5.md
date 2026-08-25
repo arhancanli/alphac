@@ -111,6 +111,25 @@ with separate halflives — covariance at 720 bars, realized vol at 240 — and 
 entire point: the covariance leg is slow, the realized leg is fast, so the realized leg is the
 book's quick regime detector.
 
+> **STATUS 2026-08-18 — FIXED IN PRODUCTION.** Everything in this section described the shipped
+> code when it was written and is retained as the diagnosis, not as current state.
+> `_realized_vol_ann` now divides each observed bar return by the overlay scale that was in force
+> for that bar before taking the EWMA, which is the same quantity the sweep's `leg=unlevered` arm
+> measured. A `_scale_hist` list is appended alongside `_equity_hist`, index-aligned by
+> construction. The follow-up this section asks for below is also done, and better than proposed:
+> rather than a log to be read by hand, `BlendStrategy.counters` now reports `realized_leg_bound`,
+> so the bind rate is a standing observable of the live book. Regression tests are in
+> `tests/unit/test_overlay_realized_leg_scale.py`; note they live outside `test_overlay.py`
+> deliberately, because the existing `test_realized_vol_dominates_when_larger` calls `vol_target()`
+> directly and passed straight through this defect.
+>
+> Two things this does NOT change. The ladder's gross multiplier and the per-name `w_max` clip
+> also move the traded book and are still not de-levered — both are no-ops in the NORMAL regime
+> that dominates the sample, and neither was in the measured arm. And the drawdown objective still
+> needs the covariance halflife decision as well: this study's own result is that **11% requires
+> both**, and neither alone suffices. That half remains open pending the execution-side cost model
+> for the turnover a shorter halflife implies.
+
 It cannot fire. `BlendStrategy._realized_vol_ann` (`strategy.py:609`) measures the EWMA vol of
 `_equity_hist`, which is appended post-overlay at `strategy.py:377` — the **levered** account
 equity curve. The ex-ante leg is computed from `result.weights` at `strategy.py:539` — the
@@ -187,7 +206,7 @@ nothing that is not a gate appears in this table.
 | `book_expected_max_drawdown_max` | — | **0.11** | new | the drawdown objective, gated at the statistic that can actually hold it |
 | `covariance_halflife_days_max` | — | **21** | new | 720 (production today) holds 16.4% at permitted stressed rho; 21 holds 10.2%. Provisional pending execution costing |
 | `realized_vol_halflife_days_max` | — | **240** | new | production's value and the one every sweep cell used; bounds regression, not design |
-| `realized_vol_leg_must_be_unlevered` | — | **true** | new | the leg is measured on levered equity today and therefore binds on 0.02% of days instead of 81.8% |
+| `realized_vol_leg_must_be_unlevered` | — | **true** | new | ~~the leg is measured on levered equity today and therefore binds on 0.02% of days instead of 81.8%~~ **FIXED 2026-08-18**; the bar this row proposed is now satisfied by the shipped code, and `counters["realized_leg_bound"]` reports the live rate |
 
 `stressed_pairwise_correlation_max` stays at 0.50, survivable *given* the overlay rather than on its
 own. `deflated_sharpe_min` keeps its 0.95 value but changes selection unit — see below.

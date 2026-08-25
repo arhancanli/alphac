@@ -184,7 +184,9 @@ MF_LIVE_DB = Path("var/trading_managed_futures.sqlite")
 # LEVERAGE, disclosed: live runs at HALF the probe's notional (gross 1.0x rather than the spec's
 # 2.0x), because 2.0x exceeds live_cycle's _GROSS_HARD_CAP of 1.5x — which engages the GLOBAL kill
 # switch rather than skipping the sleeve — and equals this account's Reg T overnight limit exactly.
-# Sharpe is scale-invariant so the validated 0.3403 still applies; dollar return, vol and drawdown
+# Sharpe is scale-invariant so the measured figure still applies at any notional; dollar return,
+# vol and drawdown scale. NOTE: the figure is 0.2298 (calendar-corrected), NOT the 0.3403 this
+# comment previously carried — see artifacts/probe/cpi_surprise_size/result.json, verdict KILLED.
 # are all halved. See scripts/alphavintage_target.py for the full rationale.
 VINTAGE_WF = "alphavintage_live"
 VINTAGE_GO_LIVE = "2026-08-10"
@@ -229,7 +231,8 @@ N_SLEEVES_WORD = {2: "two", 3: "three", 4: "four", 5: "five", 6: "six"}.get(N_SL
 #: figures EXACTLY (rho_bar +0.0723, s_bar +0.5288), which is what makes this number checkable
 #: rather than asserted. Adding it cut rho_bar from +0.0723 to +0.0274 and lifted the theoretical
 #: ceiling s_bar/sqrt(rho_bar) from 1.97 to 2.99 — the sleeve's entire contribution is
-#: diversification, NOT return: its own net Sharpe is 0.3403 and does not clear our 0.95 gate.
+#: diversification, NOT return: its own net Sharpe is 0.2298 (superseded 0.3403) and does not
+#: clear our 0.95 gate. Its artifact records verdict KILLED on a failed pre-registered t gate.
 RHO_BAR = 0.0274
 RHO_BAR_PRIOR_3_SLEEVE = 0.0723
 
@@ -521,7 +524,8 @@ WEIGHT_SCHEDULE: list[tuple[str, dict[str, float]]] = [
     # $1,000,000 account, so equal weight is a real dollar allocation rather than a reporting
     # convention. And it remains the only scheme the evidence supports — every sleeve's deflated
     # Sharpe still sits far below the 0.95 gate, so any fitted weight would be a claim the
-    # measurements cannot carry. AlphaVintage's own net Sharpe is 0.3403 (NW t 1.82) and it does
+    # measurements cannot carry. AlphaVintage's own net Sharpe is 0.2298 (NW t 1.267; the 0.3403 /
+    # 1.82 pair is superseded and its artifact records verdict KILLED) and it does
     # NOT clear that gate either; it earns its quarter by being uncorrelated, not by being better.
     (VINTAGE_GO_LIVE, {"crypto": 1 / 4, "equity": 1 / 4, "mf": 1 / 4, "vintage": 1 / 4}),
 ]
@@ -603,7 +607,10 @@ ALGOS = [
                 f"that number improved from {RHO_BAR_PRIOR_3_SLEEVE:+.4f}: it is the only sleeve "
                 "reading a revision-aware macro release rather than price, funding or a balance "
                 "sheet, and it earns its share by being uncorrelated, NOT by being better — its own "
-                "net Sharpe is 0.34 and does not clear our 0.95 deflation gate either. "
+                "net Sharpe is 0.2298 (Newey-West t 1.267) and does not clear our 0.95 deflation gate "
+                "either. CORRECTION 2026-08-19: we published 0.34 / t 1.82 here; a calendar-"
+                "corrected re-run on 2026-08-16 withdrew both and its own artifact records "
+                "verdict KILLED on a FAILED pre-registered t>=1.5 gate. "
                 "AlphaTrend's re-derived DSR is 0.000, not the 0.83 we published: it is "
                 "the WORST of them on the deflation measure, not the best. We keep it for "
                 "measured drawdown reduction (removing it makes the book's max DD 22.7% worse: "
@@ -667,18 +674,33 @@ ALGOS = [
         "desc": "Point-in-time CPI surprise — the standardized AR(3) residual of headline (PCPI) "
                 "and core (PCPIX) inflation, differenced WITHIN a single ALFRED vintage — traded "
                 "as a dollar-neutral IWM-minus-SPY size spread, monthly.",
-        "standalone_sharpe": 0.34,
+        # CORRECTED 2026-08-19. This block published 0.3403 / NW t 1.82 / 5,996 days. Every one of
+        # those figures is SUPERSEDED and the sleeve's own artifact
+        # (artifacts/probe/cpi_surprise_size/result.json) records `verdict: KILLED`. The probe was
+        # re-run on 2026-08-16 with a calendar correction that retains zero-exposure sessions
+        # between first and last activity; net Sharpe fell 0.3403 -> 0.2298, Newey-West t fell
+        # 1.82 -> 1.267, and check `b_nw_t_ge_1p5` flipped to FALSE, which is a FAILED
+        # pre-registered gate, not a soft miss. The sleeve was deployed on 2026-08-10, six days
+        # BEFORE that correction existed, and the published block was never updated.
+        "standalone_sharpe": 0.23,
         "live_kind": "LIVE broker-executed — the two-leg spread is submitted to a dedicated Alpaca "
                      "paper account (PA39G6N49JRY); first fills 2026-08-10 at the US open.",
-        "caveat": "Live since " + VINTAGE_GO_LIVE + ", so the record is DAYS old and proves nothing "
-                  "yet. Net Sharpe 0.3403 with Newey-West t 1.82 over 5,996 days does NOT clear our "
-                  "0.95 deflation gate — it earns its quarter of the book by being UNCORRELATED "
-                  "(-0.065 to equity momentum, -0.046 to managed futures), not by being better. Two "
-                  "disclosures: it runs at HALF the researched notional (gross 1.0x not 2.0x) "
-                  "because 2.0x breaches our own runaway brake and this account's Reg T limit — "
-                  "Sharpe is unchanged by scaling, dollar return is halved; and the research "
-                  "modelled NO short-borrow cost while the live sleeve is short SPY ~95% of days, "
-                  "a drag we now charge at 50bp/yr (0.3403 -> ~0.3060).",
+        "caveat": "CORRECTION 2026-08-19 — we published this sleeve at net Sharpe 0.3403 with "
+                  "Newey-West t 1.82 over 5,996 days. Those numbers are WITHDRAWN. Re-run on "
+                  "2026-08-16 with a calendar correction that retains zero-exposure sessions, its "
+                  "net Sharpe is 0.2298 and its Newey-West t is 1.267 over 6,296 portfolio days "
+                  "(5,998 active). That t FAILS the 1.5 bar this candidate pre-registered, so its "
+                  "own result artifact records verdict KILLED — and we deployed it on 2026-08-10, "
+                  "six days before the corrected run existed, then left the old figures on this "
+                  "page. It is still carrying a quarter of the book while we decide whether to "
+                  "withdraw it; that decision is open and we are not going to describe a killed "
+                  "candidate as a validated one in the meantime. It never cleared the 0.95 "
+                  "deflation gate on any version of the numbers. Two further disclosures stand: it "
+                  "runs at HALF the researched notional (gross 1.0x not 2.0x) because 2.0x "
+                  "breaches our own runaway brake and this account's Reg T limit — Sharpe is "
+                  "unchanged by scaling, dollar return is halved; and the research modelled NO "
+                  "short-borrow cost while the live sleeve is short SPY ~95% of days, a drag we "
+                  "charge at 50bp/yr.",
         "wf": VINTAGE_WF, "live_db": str(VINTAGE_LIVE_DB),
     },
     {
@@ -1175,18 +1197,28 @@ def transparency_entries() -> list[str]:
         "surprise (the standardized AR(3) residual of headline and core inflation, differenced "
         "WITHIN a single ALFRED vintage), and it is the only sleeve here reading a revision-aware "
         "macro release rather than price, funding or a balance sheet. Two things must be said "
-        "plainly. First, it does NOT clear our deflation gate: net Sharpe 0.3403 with a "
-        "Newey-West t of 1.82 over 5,996 days. It earns its quarter by being uncorrelated "
+        "plainly. First, it does NOT clear our deflation gate, and the figures we published for "
+        "it are WITHDRAWN: we said net Sharpe 0.3403 with a Newey-West t of 1.82 over 5,996 "
+        "days; the calendar-corrected re-run of 2026-08-16 measures 0.2298 with a t of 1.267 "
+        "over 6,296 portfolio days, which FAILS the t>=1.5 bar this candidate pre-registered "
+        "and is recorded in its own artifact as verdict KILLED. We deployed it on 2026-08-10, "
+        "six days before that correction existed, and left the superseded numbers on this page "
+        "until 2026-08-19. It earns its quarter by being uncorrelated "
         "(-0.065 to equity momentum, -0.046 to managed futures), not by being better — adding it "
         "cut the book's average pairwise correlation from +0.0723 to +0.0274. Second, it runs at "
         "HALF the researched notional: the pre-registered spec sizes each leg at 1.0x NAV for "
         "2.0x gross, which exceeds our own runaway brake and equals this account's Reg T "
         "overnight limit exactly, leaving no cushion on a month-long hold. Sharpe is "
-        "scale-invariant so the validated figure still applies; the dollar return, the volatility "
-        "and the drawdown are all halved. A third disclosure we owe: the research modelled NO "
-        "short-borrow cost while the live sleeve is short SPY on about 95% of days. Charged at "
-        "50bp/yr that is 0.3403 -> roughly 0.3060, and the live sleeve is therefore held to a "
-        "harsher standard than the study that justified it. The days before 2026-08-10 continue "
+        "scale-invariant so the measured figure applies at either notional; the dollar return, "
+        "the volatility and the drawdown are all halved. A third disclosure we owe: the research "
+        "modelled NO short-borrow cost while the live sleeve is short SPY on about 95% of days, "
+        "and we charge it at 50bp/yr. The adjustment we published for that charge was 0.3403 -> "
+        "roughly 0.3060; it is WITHDRAWN along with the figure it was computed from. We have NOT "
+        "re-derived the borrow drag against the corrected 0.2298, because the calendar correction "
+        "changed the day count the volatility is measured over -- 6,296 portfolio days rather "
+        "than 5,998 active ones -- and rescaling the old adjustment by hand would be a number we "
+        "invented rather than measured. The live sleeve is still held to a harsher standard than "
+        "the study that justified it. The days before 2026-08-10 continue "
         "to compound at equal thirds; we appended a dated weight entry rather than restating "
         "three already-published days.",
         "CHANGE 2026-08-12 — we cut the strategic beta overlay from +20% to +10%, on measurement "
@@ -1544,8 +1576,12 @@ def main():
                 # book_sleeves payload among them) saw a book that did not include a sleeve holding
                 # $1M of live positions. Appended at the END to preserve composition order, per the
                 # note above, so the signed chain sees an addition rather than a reshuffle.
+                # 0.34 was the SUPERSEDED active-day figure and it was hard-coded in TWO places:
+                # here and in the algorithms block above. That duplication is how it survived the
+                # 2026-08-16 calendar correction untouched. Corrected to the artifact's value; the
+                # verdict is disclosed in the sleeve caveat and in the transparency log.
                 {"key": "alphavintage", "name": "AlphaVintage", "desc": ALGO_BY_KEY["alphavintage"]["desc"],
-                 "standalone_sharpe": 0.34,
+                 "standalone_sharpe": 0.23,
                  "weight": round(float(book.weights[VINTAGE_WF].mean()), 3)},
             ],
         },
