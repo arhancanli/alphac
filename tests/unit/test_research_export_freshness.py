@@ -788,6 +788,7 @@ def test_external_validation_audit_is_public_and_fail_closed(modules) -> None:
         "submitted": 0,
     }
     assert len(audit["content_hash"]) == 71
+    assert len(audit["opportunity_shortlist"]) == 6
     assert all(not row["registration_authorized"] for row in audit["opportunities"])
     assert all(not row["entry_claimed"] for row in audit["opportunities"])
     assert source.read_bytes() == legacy.read_bytes() == app.read_bytes()
