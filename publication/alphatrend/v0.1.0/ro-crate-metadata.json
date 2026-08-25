@@ -1,0 +1,208 @@
+{
+  "@context": "https://w3id.org/ro/crate/1.1/context",
+  "@graph": [
+    {
+      "@id": "ro-crate-metadata.json",
+      "@type": "CreativeWork",
+      "about": {
+        "@id": "./"
+      },
+      "conformsTo": {
+        "@id": "https://w3id.org/ro/crate/1.1"
+      }
+    },
+    {
+      "@id": "./",
+      "@type": "Dataset",
+      "author": {
+        "@id": "#arhan-canli"
+      },
+      "datePublished": "2026-08-23",
+      "hasPart": [
+        {
+          "@id": "CITATION.cff"
+        },
+        {
+          "@id": "CORRECTIONS.md"
+        },
+        {
+          "@id": "LICENSE"
+        },
+        {
+          "@id": "README.md"
+        },
+        {
+          "@id": "archival_visual_inspection_receipt.json"
+        },
+        {
+          "@id": "bundle_manifest.json"
+        },
+        {
+          "@id": "codemeta.json"
+        },
+        {
+          "@id": "data_manifest.json"
+        },
+        {
+          "@id": "evidence/family_result.json"
+        },
+        {
+          "@id": "internal_replay_receipt.json"
+        },
+        {
+          "@id": "isolated_replay_receipt.json"
+        },
+        {
+          "@id": "paper.html"
+        },
+        {
+          "@id": "paper.json"
+        },
+        {
+          "@id": "paper.md"
+        },
+        {
+          "@id": "paper.pdf"
+        },
+        {
+          "@id": "paper.tex"
+        },
+        {
+          "@id": "pdf_validation.json"
+        },
+        {
+          "@id": "references.bib"
+        },
+        {
+          "@id": "references.json"
+        },
+        {
+          "@id": "reproduction.json"
+        },
+        {
+          "@id": "sbom.spdx.json"
+        },
+        {
+          "@id": "trial_accounting.json"
+        }
+      ],
+      "name": "Managed-Futures Trend as an Unresolved Diversifier: Complete Trial Lineage and Forward Burden of Proof",
+      "version": "0.1.0"
+    },
+    {
+      "@id": "#arhan-canli",
+      "@type": "Person",
+      "name": "Arhan Canli"
+    },
+    {
+      "@id": "CITATION.cff",
+      "@type": "File",
+      "sha256": "b29a9e36fe1639a30b5c1daa8f4918cf989f42d8d1bab488b9347ad8a91e5697"
+    },
+    {
+      "@id": "CORRECTIONS.md",
+      "@type": "File",
+      "sha256": "ee8bdf05a5d422800bd87d6963cf0dd3696fd1f14c61e294e8904e027d38eefe"
+    },
+    {
+      "@id": "LICENSE",
+      "@type": "File",
+      "sha256": "e679ca02271c3b6ff38e197098b9260900656c23f06b787383624681f425fa26"
+    },
+    {
+      "@id": "README.md",
+      "@type": "File",
+      "sha256": "f9c7ded0eb56bae268e81f1e774cceb5bf0209524429733d5c0dfb494540cda4"
+    },
+    {
+      "@id": "archival_visual_inspection_receipt.json",
+      "@type": "File",
+      "sha256": "7a40b8c55de12ec4dd2f93143810266ac8854dc14fdd2ac1a336f64ff9dd8578"
+    },
+    {
+      "@id": "bundle_manifest.json",
+      "@type": "File",
+      "sha256": "4839834154b4337690da327f395a10abf53fa2eb787a7587e45b2b36ed0a9f2f"
+    },
+    {
+      "@id": "codemeta.json",
+      "@type": "File",
+      "sha256": "1b6ff9f53387e390a33ec51722d3df6102c25a8d2a677119d2cb513285306e6f"
+    },
+    {
+      "@id": "data_manifest.json",
+      "@type": "File",
+      "sha256": "c7f101a87d1917e147e7b8f0beeeb0a664ce54d8d94f60659ad2e61ff49753e7"
+    },
+    {
+      "@id": "evidence/family_result.json",
+      "@type": "File",
+      "sha256": "59bc39da95d216241213e5bfd2cccae1fdd3932ea7bcdc67b81d95c203a7cfbb"
+    },
+    {
+      "@id": "internal_replay_receipt.json",
+      "@type": "File",
+      "sha256": "70ac0c8d8542294e02c396085216646208a786295c747940f0eb0f576010ec95"
+    },
+    {
+      "@id": "isolated_replay_receipt.json",
+      "@type": "File",
+      "sha256": "d0df878375d415986fa639487e4ccffc9cad6396dca9bde5f3be4a7fdf50b2ad"
+    },
+    {
+      "@id": "paper.html",
+      "@type": "File",
+      "sha256": "3c19c3aab942501a395d1e9ece173bb3ca3e118516015dcb2101df82a2278df3"
+    },
+    {
+      "@id": "paper.json",
+      "@type": "File",
+      "sha256": "c732385f2a9c5ed985960731f6574b6bc1db4df6e8b103831b2de8303914798b"
+    },
+    {
+      "@id": "paper.md",
+      "@type": "File",
+      "sha256": "b3907e279cc289e3009e477e5c2d0124e7a16685fc53f9cc6f1c596ab3aa657b"
+    },
+    {
+      "@id": "paper.pdf",
+      "@type": "File",
+      "sha256": "029428552d4fed9e9ea2c79f655c9f239d3546c390f695c42176f4d53fe8ceac"
+    },
+    {
+      "@id": "paper.tex",
+      "@type": "File",
+      "sha256": "37ef7306c7459f7a2a1ff6612c8ed6026633005da484d2640c25f14f137c5007"
+    },
+    {
+      "@id": "pdf_validation.json",
+      "@type": "File",
+      "sha256": "08ff14b9fca6052f7402a572edd0a084d20bcca788bcdde6259af0f3bcbe57a2"
+    },
+    {
+      "@id": "references.bib",
+      "@type": "File",
+      "sha256": "a38921248f9d6b9fd144f966238057914c39441a95421177a9454c065299ccbf"
+    },
+    {
+      "@id": "references.json",
+      "@type": "File",
+      "sha256": "1453d961f4a2cde20cc0607405c47191857364e094c2076768b172c66513991a"
+    },
+    {
+      "@id": "reproduction.json",
+      "@type": "File",
+      "sha256": "8132ed243efa481ae76cecb3c93e6a816dfae4f6a85e609bd6154fd7f27c5a69"
+    },
+    {
+      "@id": "sbom.spdx.json",
+      "@type": "File",
+      "sha256": "200c81e21485b684594bc8dcee61227592debb231366ad572e3b219c71d99a08"
+    },
+    {
+      "@id": "trial_accounting.json",
+      "@type": "File",
+      "sha256": "cf1561bb30800612ef20b09a5d6ca0919cd34fb47d5716d2cf792faf1b20fce9"
+    }
+  ]
+}

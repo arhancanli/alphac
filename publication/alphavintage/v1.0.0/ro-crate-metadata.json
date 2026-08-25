@@ -1,0 +1,328 @@
+{
+  "@context": "https://w3id.org/ro/crate/1.1/context",
+  "@graph": [
+    {
+      "@id": "ro-crate-metadata.json",
+      "@type": "CreativeWork",
+      "about": {
+        "@id": "./"
+      },
+      "conformsTo": {
+        "@id": "https://w3id.org/ro/crate/1.1"
+      }
+    },
+    {
+      "@id": "./",
+      "@type": "Dataset",
+      "author": {
+        "@id": "#arhan-canli"
+      },
+      "datePublished": "2026-08-23",
+      "hasPart": [
+        {
+          "@id": "CITATION.cff"
+        },
+        {
+          "@id": "CORRECTIONS.md"
+        },
+        {
+          "@id": "LICENSE"
+        },
+        {
+          "@id": "README.md"
+        },
+        {
+          "@id": "alpaca_paper_evidence.json"
+        },
+        {
+          "@id": "alphamax_upstream_clean_workspace_receipt.json"
+        },
+        {
+          "@id": "alphamax_upstream_replay_manifest.json"
+        },
+        {
+          "@id": "alphatrend_upstream_clean_workspace_receipt.json"
+        },
+        {
+          "@id": "alphatrend_upstream_replay_manifest.json"
+        },
+        {
+          "@id": "archival_visual_inspection_receipt.json"
+        },
+        {
+          "@id": "book_without_alphavintage.json"
+        },
+        {
+          "@id": "bundle_manifest.json"
+        },
+        {
+          "@id": "codemeta.json"
+        },
+        {
+          "@id": "core_portable_reproduction_receipt.json"
+        },
+        {
+          "@id": "current_book_diversification.json"
+        },
+        {
+          "@id": "data_manifest.json"
+        },
+        {
+          "@id": "full_decision_clean_workspace_receipt.json"
+        },
+        {
+          "@id": "full_decision_replay_attempt_ledger.json"
+        },
+        {
+          "@id": "internal_replay_receipt.json"
+        },
+        {
+          "@id": "isolated_replay_receipt.json"
+        },
+        {
+          "@id": "macro_family.json"
+        },
+        {
+          "@id": "paper.html"
+        },
+        {
+          "@id": "paper.json"
+        },
+        {
+          "@id": "paper.md"
+        },
+        {
+          "@id": "paper.pdf"
+        },
+        {
+          "@id": "paper.tex"
+        },
+        {
+          "@id": "pdf_validation.json"
+        },
+        {
+          "@id": "prereg_investment_historical_lineage.json"
+        },
+        {
+          "@id": "prereg_investment_upstream_clean_workspace_receipt.json"
+        },
+        {
+          "@id": "prereg_investment_upstream_replay_manifest.json"
+        },
+        {
+          "@id": "references.bib"
+        },
+        {
+          "@id": "reproduction.json"
+        },
+        {
+          "@id": "result.json"
+        },
+        {
+          "@id": "rtdsm_portable_fetch_receipt.json"
+        },
+        {
+          "@id": "sbom.spdx.json"
+        },
+        {
+          "@id": "sealed_outcome.json"
+        },
+        {
+          "@id": "trial_accounting.json"
+        }
+      ],
+      "name": "Point-in-Time Inflation Surprise and the Equity Size Spread: A Corrected Null, a Deployment-Governance Failure, and a Frozen Forward Experiment",
+      "version": "1.0.0"
+    },
+    {
+      "@id": "#arhan-canli",
+      "@type": "Person",
+      "name": "Arhan Canli"
+    },
+    {
+      "@id": "CITATION.cff",
+      "@type": "File",
+      "sha256": "b1c81eda30faf5d83a151fae6b6be8ddc45682feef8e01b35185d3f18b39186b"
+    },
+    {
+      "@id": "CORRECTIONS.md",
+      "@type": "File",
+      "sha256": "f741d8be665d590bcd8188d184a8793dedc39822b022b06e601775523a93ab58"
+    },
+    {
+      "@id": "LICENSE",
+      "@type": "File",
+      "sha256": "e679ca02271c3b6ff38e197098b9260900656c23f06b787383624681f425fa26"
+    },
+    {
+      "@id": "README.md",
+      "@type": "File",
+      "sha256": "65ad8258039188c566820f958517b79d91a4035299a030ca981c8c1c31996b6a"
+    },
+    {
+      "@id": "alpaca_paper_evidence.json",
+      "@type": "File",
+      "sha256": "4e69365fd8ebb86ab81cfb440ee6db30593d58e951d0c55e5e2f7bd22870b228"
+    },
+    {
+      "@id": "alphamax_upstream_clean_workspace_receipt.json",
+      "@type": "File",
+      "sha256": "ba3a2d2d005401276d6c3ee864a0c9f341cfe6f217f3c95efc0288ec20b1e41f"
+    },
+    {
+      "@id": "alphamax_upstream_replay_manifest.json",
+      "@type": "File",
+      "sha256": "46f5e79ebd6ec40952871faa2616499cda26a1a48905676b3fd57a978d32f1fc"
+    },
+    {
+      "@id": "alphatrend_upstream_clean_workspace_receipt.json",
+      "@type": "File",
+      "sha256": "c44c07d8ee87f3857a8deeb844653326d6b950f2313f7e1afa99e190f4a18c41"
+    },
+    {
+      "@id": "alphatrend_upstream_replay_manifest.json",
+      "@type": "File",
+      "sha256": "cfc0a8c21906d220436289801f288048a163b4fb26eadf38ec6b60f1d8312b0b"
+    },
+    {
+      "@id": "archival_visual_inspection_receipt.json",
+      "@type": "File",
+      "sha256": "7a40b8c55de12ec4dd2f93143810266ac8854dc14fdd2ac1a336f64ff9dd8578"
+    },
+    {
+      "@id": "book_without_alphavintage.json",
+      "@type": "File",
+      "sha256": "b62046344cdfd7dda640305539a6eddebe5d49d8a714847221332de989b94865"
+    },
+    {
+      "@id": "bundle_manifest.json",
+      "@type": "File",
+      "sha256": "a3456d74dbf961faa5240bd4b4a2f0aecd282f2b7f41c256dc8f83b5f7498d79"
+    },
+    {
+      "@id": "codemeta.json",
+      "@type": "File",
+      "sha256": "773095f87f04cb320ff3ce4cb56c9d9838bc6a31cf5e997eb63171f6cfc6d4d3"
+    },
+    {
+      "@id": "core_portable_reproduction_receipt.json",
+      "@type": "File",
+      "sha256": "20ecf970bc4f71cd5272fe4dd336a31813869bb9967b346423e3ebd18cb9745a"
+    },
+    {
+      "@id": "current_book_diversification.json",
+      "@type": "File",
+      "sha256": "043431eb3548d925cfb52efcf6fb9a3c2fcbc0aeed869e6d3fa1ae0c6f7ac04b"
+    },
+    {
+      "@id": "data_manifest.json",
+      "@type": "File",
+      "sha256": "7440fad63bc9a23e0039412c1af55e52bc56bd251e526840441cccec51ddbdfb"
+    },
+    {
+      "@id": "full_decision_clean_workspace_receipt.json",
+      "@type": "File",
+      "sha256": "0245d65d319f52267a269659d4f80d957788f167d12af30f756a41b63a1e4e7d"
+    },
+    {
+      "@id": "full_decision_replay_attempt_ledger.json",
+      "@type": "File",
+      "sha256": "1e8c12409c96222982b01867770aec307b45eb975f852c0440b1d27abc711656"
+    },
+    {
+      "@id": "internal_replay_receipt.json",
+      "@type": "File",
+      "sha256": "70ac0c8d8542294e02c396085216646208a786295c747940f0eb0f576010ec95"
+    },
+    {
+      "@id": "isolated_replay_receipt.json",
+      "@type": "File",
+      "sha256": "d0df878375d415986fa639487e4ccffc9cad6396dca9bde5f3be4a7fdf50b2ad"
+    },
+    {
+      "@id": "macro_family.json",
+      "@type": "File",
+      "sha256": "db6cb64852e242ce696bc090c11ceec6ad10561e7c8529b2348e418f5572300c"
+    },
+    {
+      "@id": "paper.html",
+      "@type": "File",
+      "sha256": "ef5f7831b8782fbb7f58368f6c8b73afaf0444b14b1ed6307995c2494d8f01b9"
+    },
+    {
+      "@id": "paper.json",
+      "@type": "File",
+      "sha256": "bcba84214d3ef267acdaf1a0100573e2a30af0996d07494c56dc3d08b8913932"
+    },
+    {
+      "@id": "paper.md",
+      "@type": "File",
+      "sha256": "7d932502929797af79146da7100d204a1a4965b528f43df38f4b3bba788e78ae"
+    },
+    {
+      "@id": "paper.pdf",
+      "@type": "File",
+      "sha256": "1a008c6c32b3b8fc313515f636d986be678187ef92a44c0a9d6651585c790f47"
+    },
+    {
+      "@id": "paper.tex",
+      "@type": "File",
+      "sha256": "927e56d0e9e7757c6c05c52a603a42cd3ed0411aafe3f2af29acea20bdcddbee"
+    },
+    {
+      "@id": "pdf_validation.json",
+      "@type": "File",
+      "sha256": "4badae5a9b4a1c6979217bb386c867b8c3eef165585aa5145e567f85db5f27d3"
+    },
+    {
+      "@id": "prereg_investment_historical_lineage.json",
+      "@type": "File",
+      "sha256": "1b6a17c6424698b807646684692eda9767fb3cd14559f573feac6467c876a6d1"
+    },
+    {
+      "@id": "prereg_investment_upstream_clean_workspace_receipt.json",
+      "@type": "File",
+      "sha256": "3c49bf6a710a20a7116e2fbf8b9655c7a72f6298ed3ecc1fc19b825016160ec7"
+    },
+    {
+      "@id": "prereg_investment_upstream_replay_manifest.json",
+      "@type": "File",
+      "sha256": "86f9f1146601eebc3cbef1db12bedbc490df3bbfdf466d52fa1ca2e436096769"
+    },
+    {
+      "@id": "references.bib",
+      "@type": "File",
+      "sha256": "a5fd6c102bdc19437173044d5ce563e0a81f3576b2966acd38b23bb9560b980c"
+    },
+    {
+      "@id": "reproduction.json",
+      "@type": "File",
+      "sha256": "3389390b1eb1618b82e355f2a7957ceb08c8d032a799047468846905d67b30e1"
+    },
+    {
+      "@id": "result.json",
+      "@type": "File",
+      "sha256": "686654b4617efb8322f6fda37f2e71a375423aecc6de03477a0186cf2844e509"
+    },
+    {
+      "@id": "rtdsm_portable_fetch_receipt.json",
+      "@type": "File",
+      "sha256": "0d9377ccc8aafd82b425ef6af96c5aa78cdd8ae458627dd45b97c1c54ce35c8e"
+    },
+    {
+      "@id": "sbom.spdx.json",
+      "@type": "File",
+      "sha256": "36fb8ff59e1112292a9404f7ea5a31fb5981db234d537d6513c1be8244f838ff"
+    },
+    {
+      "@id": "sealed_outcome.json",
+      "@type": "File",
+      "sha256": "f51cc701cecadb1ab09e7ac4eeda07af762e9f384706d47ef242d52a3093564c"
+    },
+    {
+      "@id": "trial_accounting.json",
+      "@type": "File",
+      "sha256": "bb1e3c19aca1db66c2dd47b6c24fbfed19cc6e22a6a2732091bde8aad56ae7c4"
+    }
+  ]
+}

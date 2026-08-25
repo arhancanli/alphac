@@ -1,0 +1,725 @@
+{
+  "complete_recorded_union_extracted": true,
+  "distinct_recorded_hypothesis_identities": 7,
+  "every_identity_packet_complete": false,
+  "global_ledger": {
+    "path": "config/trial_accounting.json",
+    "sha256": "f15af7c989aded5da6c5259a7f7e5587377ab33977b5cd3c5b2395a84ea45043"
+  },
+  "identities": [
+    {
+      "candidate_match_is_verified": true,
+      "candidate_public_papers": [
+        "/research/kill-econtrend.md",
+        "/research/legacy-dsr-restatement.md"
+      ],
+      "completion_assessment": {
+        "blockers": [
+          {
+            "code": "IDENTITY_PREREGISTRATION_AND_ORIGINAL_ENVIRONMENT_NOT_BOUND",
+            "evidence": [
+              {
+                "path": "artifacts/research/macro_economic_trend_family.json",
+                "sha256": "db6cb64852e242ce696bc090c11ceec6ad10561e7c8529b2348e418f5572300c"
+              },
+              {
+                "path": "var/experiments.jsonl",
+                "sha256": "b5a318c0997d980575f758451f509e0154eecbbb50d734e49a587d473062bd08"
+              }
+            ],
+            "finding": "The canonical family audit binds this identity to its immutable ledger measurement, but does not bind an identity-level preregistration, original code commit, runner hash, lockfile, and input snapshot. Those missing historical fields cannot be reconstructed from the family summary.",
+            "required_section": "preregistration_and_hashes"
+          },
+          {
+            "code": "IDENTITY_LEVEL_DECISION_PACKET_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/research/macro_economic_trend_family.json",
+                "sha256": "db6cb64852e242ce696bc090c11ceec6ad10561e7c8529b2348e418f5572300c"
+              }
+            ],
+            "finding": "The family-level admission status is NOT_ESTABLISHED_RESEARCH_ONLY; it is not a preserved identity-level gate decision under the complete packet contract.",
+            "required_section": "admission_or_kill_decision"
+          },
+          {
+            "code": "IMMUTABLE_SUMMARY_LACKS_COMPLETE_IDENTITY_CURVE",
+            "evidence": [
+              {
+                "path": "artifacts/research/macro_economic_trend_family.json",
+                "sha256": "db6cb64852e242ce696bc090c11ceec6ad10561e7c8529b2348e418f5572300c"
+              },
+              {
+                "path": "var/experiments.jsonl",
+                "sha256": "b5a318c0997d980575f758451f509e0154eecbbb50d734e49a587d473062bd08"
+              }
+            ],
+            "finding": "The immutable ledger summary preserves the first measurement but not the complete identity-level curve, uncertainty, stress, capacity, and diversification evidence required for packet completion.",
+            "required_section": "result_uncertainty_stress_capacity_and_diversification"
+          },
+          {
+            "code": "IDENTITY_CAPACITY_NOT_MEASURED",
+            "evidence": [
+              {
+                "path": "artifacts/research/macro_economic_trend_family.json",
+                "sha256": "db6cb64852e242ce696bc090c11ceec6ad10561e7c8529b2348e418f5572300c"
+              }
+            ],
+            "finding": "The canonical family audit records capacity as UNMEASURED_OR_NOT_FAMILY_WIDE; no identity-level capacity evidence can be credited.",
+            "required_section": "result_uncertainty_stress_capacity_and_diversification"
+          }
+        ],
+        "config_hash": "aeea431164594fe5",
+        "evidence_grade": "immutable_ledger_summary_with_optional_family_artifact",
+        "family_audit": "artifacts/research/macro_economic_trend_family.json",
+        "status": "AUDITED_NOT_CURRENTLY_COMPLETABLE"
+      },
+      "config_hash": "aeea431164594fe5",
+      "coverage_status": "VERIFIED_INCOMPLETE_IDENTITY_PACKET",
+      "family_paper_binding_status": "VERIFIED_TAXONOMY_BINDING",
+      "first_recorded_at": "2026-07-11T21:00:00.108000+00:00",
+      "hypothesis_key": "c2d99e83ff3ec57a",
+      "identity_packet_content_hash": "sha256:9f2bcb5389605dfb3be9c83d6d51d287783d975e1dc537722718f6190f6de533",
+      "identity_packet_status": "INCOMPLETE_BACKFILL_REQUIRED",
+      "label": "econtrend",
+      "ledger_profile": "var",
+      "ledger_source_path": "var/experiments.jsonl",
+      "measurement": {
+        "annualized_sharpe": 0.21093885031168313,
+        "kurtosis": 18.924529121318805,
+        "observations": 5165,
+        "skew": -0.55728366524265
+      },
+      "missing_sections": [
+        "preregistration_and_hashes",
+        "point_in_time_data_and_survivorship_controls",
+        "execution_and_cost_model",
+        "result_uncertainty_stress_capacity_and_diversification",
+        "admission_or_kill_decision",
+        "code_environment_and_reproduction"
+      ],
+      "research_family_key": "macro_economic_trend",
+      "research_family_title": "Point-in-time macroeconomic trend",
+      "sleeve_context": "Diversifier research",
+      "verified_family_paper_path": "/research/macro-economic-trend-lineage.md",
+      "verified_packet_path": "/glassbox/trial-packets/c2d99e83ff3ec57a.json",
+      "verified_sections": [
+        "identity_and_authorship",
+        "economic_mechanism_and_falsifiable_hypothesis",
+        "literature_and_overlap_decision",
+        "family_and_union_trial_accounting",
+        "machine_readable_packet_and_stable_public_paper"
+      ]
+    },
+    {
+      "candidate_match_is_verified": true,
+      "candidate_public_papers": [
+        "/research/alphavintage-macro-surprise-lineage.md"
+      ],
+      "completion_assessment": {
+        "blockers": [
+          {
+            "code": "IDENTITY_PREREGISTRATION_AND_ORIGINAL_ENVIRONMENT_NOT_BOUND",
+            "evidence": [
+              {
+                "path": "artifacts/research/macro_economic_trend_family.json",
+                "sha256": "db6cb64852e242ce696bc090c11ceec6ad10561e7c8529b2348e418f5572300c"
+              },
+              {
+                "path": "var/experiments.jsonl",
+                "sha256": "b5a318c0997d980575f758451f509e0154eecbbb50d734e49a587d473062bd08"
+              }
+            ],
+            "finding": "The canonical family audit binds this identity to its immutable ledger measurement, but does not bind an identity-level preregistration, original code commit, runner hash, lockfile, and input snapshot. Those missing historical fields cannot be reconstructed from the family summary.",
+            "required_section": "preregistration_and_hashes"
+          },
+          {
+            "code": "IDENTITY_LEVEL_DECISION_PACKET_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/research/macro_economic_trend_family.json",
+                "sha256": "db6cb64852e242ce696bc090c11ceec6ad10561e7c8529b2348e418f5572300c"
+              }
+            ],
+            "finding": "The family-level admission status is NOT_ESTABLISHED_RESEARCH_ONLY; it is not a preserved identity-level gate decision under the complete packet contract.",
+            "required_section": "admission_or_kill_decision"
+          },
+          {
+            "code": "IMMUTABLE_SUMMARY_LACKS_COMPLETE_IDENTITY_CURVE",
+            "evidence": [
+              {
+                "path": "artifacts/research/macro_economic_trend_family.json",
+                "sha256": "db6cb64852e242ce696bc090c11ceec6ad10561e7c8529b2348e418f5572300c"
+              },
+              {
+                "path": "var/experiments.jsonl",
+                "sha256": "b5a318c0997d980575f758451f509e0154eecbbb50d734e49a587d473062bd08"
+              }
+            ],
+            "finding": "The immutable ledger summary preserves the first measurement but not the complete identity-level curve, uncertainty, stress, capacity, and diversification evidence required for packet completion.",
+            "required_section": "result_uncertainty_stress_capacity_and_diversification"
+          },
+          {
+            "code": "IDENTITY_CAPACITY_NOT_MEASURED",
+            "evidence": [
+              {
+                "path": "artifacts/research/macro_economic_trend_family.json",
+                "sha256": "db6cb64852e242ce696bc090c11ceec6ad10561e7c8529b2348e418f5572300c"
+              }
+            ],
+            "finding": "The canonical family audit records capacity as UNMEASURED_OR_NOT_FAMILY_WIDE; no identity-level capacity evidence can be credited.",
+            "required_section": "result_uncertainty_stress_capacity_and_diversification"
+          }
+        ],
+        "config_hash": "db95275a78e25ab1",
+        "evidence_grade": "immutable_ledger_summary_with_optional_family_artifact",
+        "family_audit": "artifacts/research/macro_economic_trend_family.json",
+        "status": "AUDITED_NOT_CURRENTLY_COMPLETABLE"
+      },
+      "config_hash": "db95275a78e25ab1",
+      "coverage_status": "VERIFIED_INCOMPLETE_IDENTITY_PACKET",
+      "family_paper_binding_status": "VERIFIED_TAXONOMY_BINDING",
+      "first_recorded_at": "2026-08-07T08:09:51.417000+00:00",
+      "hypothesis_key": "df2ff29afd9fcdb8",
+      "identity_packet_content_hash": "sha256:aa17db67ed5c07cdf48b48c24e5874b404db8dfdab236d2756f2b25119aeb882",
+      "identity_packet_status": "INCOMPLETE_BACKFILL_REQUIRED",
+      "label": "cpi_surprise_size",
+      "ledger_profile": "var",
+      "ledger_source_path": "var/experiments.jsonl",
+      "measurement": {
+        "annualized_sharpe": 0.34027975889222084,
+        "kurtosis": 26.783649295947033,
+        "observations": 5977,
+        "skew": 0.43280667449863913
+      },
+      "missing_sections": [
+        "preregistration_and_hashes",
+        "point_in_time_data_and_survivorship_controls",
+        "execution_and_cost_model",
+        "result_uncertainty_stress_capacity_and_diversification",
+        "admission_or_kill_decision",
+        "code_environment_and_reproduction"
+      ],
+      "research_family_key": "macro_economic_trend",
+      "research_family_title": "Point-in-time macroeconomic trend",
+      "sleeve_context": "Diversifier research",
+      "verified_family_paper_path": "/research/macro-economic-trend-lineage.md",
+      "verified_packet_path": "/glassbox/trial-packets/df2ff29afd9fcdb8.json",
+      "verified_sections": [
+        "identity_and_authorship",
+        "economic_mechanism_and_falsifiable_hypothesis",
+        "literature_and_overlap_decision",
+        "family_and_union_trial_accounting",
+        "machine_readable_packet_and_stable_public_paper"
+      ]
+    },
+    {
+      "candidate_match_is_verified": true,
+      "candidate_public_papers": [],
+      "completion_assessment": {
+        "blockers": [
+          {
+            "code": "IDENTITY_PREREGISTRATION_AND_ORIGINAL_ENVIRONMENT_NOT_BOUND",
+            "evidence": [
+              {
+                "path": "artifacts/research/macro_economic_trend_family.json",
+                "sha256": "db6cb64852e242ce696bc090c11ceec6ad10561e7c8529b2348e418f5572300c"
+              },
+              {
+                "path": "var/experiments.jsonl",
+                "sha256": "b5a318c0997d980575f758451f509e0154eecbbb50d734e49a587d473062bd08"
+              }
+            ],
+            "finding": "The canonical family audit binds this identity to its immutable ledger measurement, but does not bind an identity-level preregistration, original code commit, runner hash, lockfile, and input snapshot. Those missing historical fields cannot be reconstructed from the family summary.",
+            "required_section": "preregistration_and_hashes"
+          },
+          {
+            "code": "IDENTITY_LEVEL_DECISION_PACKET_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/research/macro_economic_trend_family.json",
+                "sha256": "db6cb64852e242ce696bc090c11ceec6ad10561e7c8529b2348e418f5572300c"
+              }
+            ],
+            "finding": "The family-level admission status is NOT_ESTABLISHED_RESEARCH_ONLY; it is not a preserved identity-level gate decision under the complete packet contract.",
+            "required_section": "admission_or_kill_decision"
+          },
+          {
+            "code": "IMMUTABLE_SUMMARY_LACKS_COMPLETE_IDENTITY_CURVE",
+            "evidence": [
+              {
+                "path": "artifacts/research/macro_economic_trend_family.json",
+                "sha256": "db6cb64852e242ce696bc090c11ceec6ad10561e7c8529b2348e418f5572300c"
+              },
+              {
+                "path": "var/experiments.jsonl",
+                "sha256": "b5a318c0997d980575f758451f509e0154eecbbb50d734e49a587d473062bd08"
+              }
+            ],
+            "finding": "The immutable ledger summary preserves the first measurement but not the complete identity-level curve, uncertainty, stress, capacity, and diversification evidence required for packet completion.",
+            "required_section": "result_uncertainty_stress_capacity_and_diversification"
+          },
+          {
+            "code": "IDENTITY_CAPACITY_NOT_MEASURED",
+            "evidence": [
+              {
+                "path": "artifacts/research/macro_economic_trend_family.json",
+                "sha256": "db6cb64852e242ce696bc090c11ceec6ad10561e7c8529b2348e418f5572300c"
+              }
+            ],
+            "finding": "The canonical family audit records capacity as UNMEASURED_OR_NOT_FAMILY_WIDE; no identity-level capacity evidence can be credited.",
+            "required_section": "result_uncertainty_stress_capacity_and_diversification"
+          }
+        ],
+        "config_hash": "83bde907f0562fc4",
+        "evidence_grade": "immutable_ledger_summary_with_optional_family_artifact",
+        "family_audit": "artifacts/research/macro_economic_trend_family.json",
+        "status": "AUDITED_NOT_CURRENTLY_COMPLETABLE"
+      },
+      "config_hash": "83bde907f0562fc4",
+      "coverage_status": "VERIFIED_INCOMPLETE_IDENTITY_PACKET",
+      "family_paper_binding_status": "VERIFIED_TAXONOMY_BINDING",
+      "first_recorded_at": "2026-08-07T08:09:52.328000+00:00",
+      "hypothesis_key": "396ff291d893e2b4",
+      "identity_packet_content_hash": "sha256:411ebceb28abf44d7cecc8319cf19c6eec7133b7030e3a2f8f51d454b38b9c59",
+      "identity_packet_status": "INCOMPLETE_BACKFILL_REQUIRED",
+      "label": "macro_vintage_family",
+      "ledger_profile": "var",
+      "ledger_source_path": "var/experiments.jsonl",
+      "measurement": {
+        "annualized_sharpe": -0.2980670369523188,
+        "kurtosis": 23.322149406218408,
+        "observations": 5977,
+        "skew": -0.08269825663033786
+      },
+      "missing_sections": [
+        "preregistration_and_hashes",
+        "point_in_time_data_and_survivorship_controls",
+        "execution_and_cost_model",
+        "result_uncertainty_stress_capacity_and_diversification",
+        "admission_or_kill_decision",
+        "code_environment_and_reproduction"
+      ],
+      "research_family_key": "macro_economic_trend",
+      "research_family_title": "Point-in-time macroeconomic trend",
+      "sleeve_context": "Diversifier research",
+      "verified_family_paper_path": "/research/macro-economic-trend-lineage.md",
+      "verified_packet_path": "/glassbox/trial-packets/396ff291d893e2b4.json",
+      "verified_sections": [
+        "identity_and_authorship",
+        "economic_mechanism_and_falsifiable_hypothesis",
+        "literature_and_overlap_decision",
+        "family_and_union_trial_accounting",
+        "machine_readable_packet_and_stable_public_paper"
+      ]
+    },
+    {
+      "candidate_match_is_verified": true,
+      "candidate_public_papers": [],
+      "completion_assessment": {
+        "blockers": [
+          {
+            "code": "IDENTITY_PREREGISTRATION_AND_ORIGINAL_ENVIRONMENT_NOT_BOUND",
+            "evidence": [
+              {
+                "path": "artifacts/research/macro_economic_trend_family.json",
+                "sha256": "db6cb64852e242ce696bc090c11ceec6ad10561e7c8529b2348e418f5572300c"
+              },
+              {
+                "path": "var/experiments.jsonl",
+                "sha256": "b5a318c0997d980575f758451f509e0154eecbbb50d734e49a587d473062bd08"
+              }
+            ],
+            "finding": "The canonical family audit binds this identity to its immutable ledger measurement, but does not bind an identity-level preregistration, original code commit, runner hash, lockfile, and input snapshot. Those missing historical fields cannot be reconstructed from the family summary.",
+            "required_section": "preregistration_and_hashes"
+          },
+          {
+            "code": "IDENTITY_LEVEL_DECISION_PACKET_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/research/macro_economic_trend_family.json",
+                "sha256": "db6cb64852e242ce696bc090c11ceec6ad10561e7c8529b2348e418f5572300c"
+              }
+            ],
+            "finding": "The family-level admission status is NOT_ESTABLISHED_RESEARCH_ONLY; it is not a preserved identity-level gate decision under the complete packet contract.",
+            "required_section": "admission_or_kill_decision"
+          },
+          {
+            "code": "IMMUTABLE_SUMMARY_LACKS_COMPLETE_IDENTITY_CURVE",
+            "evidence": [
+              {
+                "path": "artifacts/research/macro_economic_trend_family.json",
+                "sha256": "db6cb64852e242ce696bc090c11ceec6ad10561e7c8529b2348e418f5572300c"
+              },
+              {
+                "path": "var/experiments.jsonl",
+                "sha256": "b5a318c0997d980575f758451f509e0154eecbbb50d734e49a587d473062bd08"
+              }
+            ],
+            "finding": "The immutable ledger summary preserves the first measurement but not the complete identity-level curve, uncertainty, stress, capacity, and diversification evidence required for packet completion.",
+            "required_section": "result_uncertainty_stress_capacity_and_diversification"
+          },
+          {
+            "code": "IDENTITY_CAPACITY_NOT_MEASURED",
+            "evidence": [
+              {
+                "path": "artifacts/research/macro_economic_trend_family.json",
+                "sha256": "db6cb64852e242ce696bc090c11ceec6ad10561e7c8529b2348e418f5572300c"
+              }
+            ],
+            "finding": "The canonical family audit records capacity as UNMEASURED_OR_NOT_FAMILY_WIDE; no identity-level capacity evidence can be credited.",
+            "required_section": "result_uncertainty_stress_capacity_and_diversification"
+          }
+        ],
+        "config_hash": "62b87e56c400faa4",
+        "evidence_grade": "immutable_ledger_summary_with_optional_family_artifact",
+        "family_audit": "artifacts/research/macro_economic_trend_family.json",
+        "status": "AUDITED_NOT_CURRENTLY_COMPLETABLE"
+      },
+      "config_hash": "62b87e56c400faa4",
+      "coverage_status": "VERIFIED_INCOMPLETE_IDENTITY_PACKET",
+      "family_paper_binding_status": "VERIFIED_TAXONOMY_BINDING",
+      "first_recorded_at": "2026-08-07T08:09:52.520000+00:00",
+      "hypothesis_key": "5facc6dd331d80aa",
+      "identity_packet_content_hash": "sha256:b389d812f58647e65d006257d79f6188214962d8e0981bae8649d2efc0174796",
+      "identity_packet_status": "INCOMPLETE_BACKFILL_REQUIRED",
+      "label": "macro_vintage_family",
+      "ledger_profile": "var",
+      "ledger_source_path": "var/experiments.jsonl",
+      "measurement": {
+        "annualized_sharpe": -0.20229872435347265,
+        "kurtosis": 27.077269837924334,
+        "observations": 5977,
+        "skew": -0.39138799333622076
+      },
+      "missing_sections": [
+        "preregistration_and_hashes",
+        "point_in_time_data_and_survivorship_controls",
+        "execution_and_cost_model",
+        "result_uncertainty_stress_capacity_and_diversification",
+        "admission_or_kill_decision",
+        "code_environment_and_reproduction"
+      ],
+      "research_family_key": "macro_economic_trend",
+      "research_family_title": "Point-in-time macroeconomic trend",
+      "sleeve_context": "Diversifier research",
+      "verified_family_paper_path": "/research/macro-economic-trend-lineage.md",
+      "verified_packet_path": "/glassbox/trial-packets/5facc6dd331d80aa.json",
+      "verified_sections": [
+        "identity_and_authorship",
+        "economic_mechanism_and_falsifiable_hypothesis",
+        "literature_and_overlap_decision",
+        "family_and_union_trial_accounting",
+        "machine_readable_packet_and_stable_public_paper"
+      ]
+    },
+    {
+      "candidate_match_is_verified": true,
+      "candidate_public_papers": [],
+      "completion_assessment": {
+        "blockers": [
+          {
+            "code": "IDENTITY_PREREGISTRATION_AND_ORIGINAL_ENVIRONMENT_NOT_BOUND",
+            "evidence": [
+              {
+                "path": "artifacts/research/macro_economic_trend_family.json",
+                "sha256": "db6cb64852e242ce696bc090c11ceec6ad10561e7c8529b2348e418f5572300c"
+              },
+              {
+                "path": "var/experiments.jsonl",
+                "sha256": "b5a318c0997d980575f758451f509e0154eecbbb50d734e49a587d473062bd08"
+              }
+            ],
+            "finding": "The canonical family audit binds this identity to its immutable ledger measurement, but does not bind an identity-level preregistration, original code commit, runner hash, lockfile, and input snapshot. Those missing historical fields cannot be reconstructed from the family summary.",
+            "required_section": "preregistration_and_hashes"
+          },
+          {
+            "code": "IDENTITY_LEVEL_DECISION_PACKET_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/research/macro_economic_trend_family.json",
+                "sha256": "db6cb64852e242ce696bc090c11ceec6ad10561e7c8529b2348e418f5572300c"
+              }
+            ],
+            "finding": "The family-level admission status is NOT_ESTABLISHED_RESEARCH_ONLY; it is not a preserved identity-level gate decision under the complete packet contract.",
+            "required_section": "admission_or_kill_decision"
+          },
+          {
+            "code": "IMMUTABLE_SUMMARY_LACKS_COMPLETE_IDENTITY_CURVE",
+            "evidence": [
+              {
+                "path": "artifacts/research/macro_economic_trend_family.json",
+                "sha256": "db6cb64852e242ce696bc090c11ceec6ad10561e7c8529b2348e418f5572300c"
+              },
+              {
+                "path": "var/experiments.jsonl",
+                "sha256": "b5a318c0997d980575f758451f509e0154eecbbb50d734e49a587d473062bd08"
+              }
+            ],
+            "finding": "The immutable ledger summary preserves the first measurement but not the complete identity-level curve, uncertainty, stress, capacity, and diversification evidence required for packet completion.",
+            "required_section": "result_uncertainty_stress_capacity_and_diversification"
+          },
+          {
+            "code": "IDENTITY_CAPACITY_NOT_MEASURED",
+            "evidence": [
+              {
+                "path": "artifacts/research/macro_economic_trend_family.json",
+                "sha256": "db6cb64852e242ce696bc090c11ceec6ad10561e7c8529b2348e418f5572300c"
+              }
+            ],
+            "finding": "The canonical family audit records capacity as UNMEASURED_OR_NOT_FAMILY_WIDE; no identity-level capacity evidence can be credited.",
+            "required_section": "result_uncertainty_stress_capacity_and_diversification"
+          }
+        ],
+        "config_hash": "528ebf7ffb456aea",
+        "evidence_grade": "immutable_ledger_summary_with_optional_family_artifact",
+        "family_audit": "artifacts/research/macro_economic_trend_family.json",
+        "status": "AUDITED_NOT_CURRENTLY_COMPLETABLE"
+      },
+      "config_hash": "528ebf7ffb456aea",
+      "coverage_status": "VERIFIED_INCOMPLETE_IDENTITY_PACKET",
+      "family_paper_binding_status": "VERIFIED_TAXONOMY_BINDING",
+      "first_recorded_at": "2026-08-07T08:09:52.694000+00:00",
+      "hypothesis_key": "f552797a038b9cc5",
+      "identity_packet_content_hash": "sha256:1512747110be715ac3a558f78b8ff9f09f3a0ab8d9987fa77df748172eb2901f",
+      "identity_packet_status": "INCOMPLETE_BACKFILL_REQUIRED",
+      "label": "macro_vintage_family",
+      "ledger_profile": "var",
+      "ledger_source_path": "var/experiments.jsonl",
+      "measurement": {
+        "annualized_sharpe": 0.0697693449374498,
+        "kurtosis": 17.077360169237842,
+        "observations": 5977,
+        "skew": -0.2376038638819288
+      },
+      "missing_sections": [
+        "preregistration_and_hashes",
+        "point_in_time_data_and_survivorship_controls",
+        "execution_and_cost_model",
+        "result_uncertainty_stress_capacity_and_diversification",
+        "admission_or_kill_decision",
+        "code_environment_and_reproduction"
+      ],
+      "research_family_key": "macro_economic_trend",
+      "research_family_title": "Point-in-time macroeconomic trend",
+      "sleeve_context": "Diversifier research",
+      "verified_family_paper_path": "/research/macro-economic-trend-lineage.md",
+      "verified_packet_path": "/glassbox/trial-packets/f552797a038b9cc5.json",
+      "verified_sections": [
+        "identity_and_authorship",
+        "economic_mechanism_and_falsifiable_hypothesis",
+        "literature_and_overlap_decision",
+        "family_and_union_trial_accounting",
+        "machine_readable_packet_and_stable_public_paper"
+      ]
+    },
+    {
+      "candidate_match_is_verified": true,
+      "candidate_public_papers": [],
+      "completion_assessment": {
+        "blockers": [
+          {
+            "code": "IDENTITY_PREREGISTRATION_AND_ORIGINAL_ENVIRONMENT_NOT_BOUND",
+            "evidence": [
+              {
+                "path": "artifacts/research/macro_economic_trend_family.json",
+                "sha256": "db6cb64852e242ce696bc090c11ceec6ad10561e7c8529b2348e418f5572300c"
+              },
+              {
+                "path": "var/experiments.jsonl",
+                "sha256": "b5a318c0997d980575f758451f509e0154eecbbb50d734e49a587d473062bd08"
+              }
+            ],
+            "finding": "The canonical family audit binds this identity to its immutable ledger measurement, but does not bind an identity-level preregistration, original code commit, runner hash, lockfile, and input snapshot. Those missing historical fields cannot be reconstructed from the family summary.",
+            "required_section": "preregistration_and_hashes"
+          },
+          {
+            "code": "IDENTITY_LEVEL_DECISION_PACKET_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/research/macro_economic_trend_family.json",
+                "sha256": "db6cb64852e242ce696bc090c11ceec6ad10561e7c8529b2348e418f5572300c"
+              }
+            ],
+            "finding": "The family-level admission status is NOT_ESTABLISHED_RESEARCH_ONLY; it is not a preserved identity-level gate decision under the complete packet contract.",
+            "required_section": "admission_or_kill_decision"
+          },
+          {
+            "code": "IMMUTABLE_SUMMARY_LACKS_COMPLETE_IDENTITY_CURVE",
+            "evidence": [
+              {
+                "path": "artifacts/research/macro_economic_trend_family.json",
+                "sha256": "db6cb64852e242ce696bc090c11ceec6ad10561e7c8529b2348e418f5572300c"
+              },
+              {
+                "path": "var/experiments.jsonl",
+                "sha256": "b5a318c0997d980575f758451f509e0154eecbbb50d734e49a587d473062bd08"
+              }
+            ],
+            "finding": "The immutable ledger summary preserves the first measurement but not the complete identity-level curve, uncertainty, stress, capacity, and diversification evidence required for packet completion.",
+            "required_section": "result_uncertainty_stress_capacity_and_diversification"
+          },
+          {
+            "code": "IDENTITY_CAPACITY_NOT_MEASURED",
+            "evidence": [
+              {
+                "path": "artifacts/research/macro_economic_trend_family.json",
+                "sha256": "db6cb64852e242ce696bc090c11ceec6ad10561e7c8529b2348e418f5572300c"
+              }
+            ],
+            "finding": "The canonical family audit records capacity as UNMEASURED_OR_NOT_FAMILY_WIDE; no identity-level capacity evidence can be credited.",
+            "required_section": "result_uncertainty_stress_capacity_and_diversification"
+          }
+        ],
+        "config_hash": "105a4b361cabec32",
+        "evidence_grade": "immutable_ledger_summary_with_optional_family_artifact",
+        "family_audit": "artifacts/research/macro_economic_trend_family.json",
+        "status": "AUDITED_NOT_CURRENTLY_COMPLETABLE"
+      },
+      "config_hash": "105a4b361cabec32",
+      "coverage_status": "VERIFIED_INCOMPLETE_IDENTITY_PACKET",
+      "family_paper_binding_status": "VERIFIED_TAXONOMY_BINDING",
+      "first_recorded_at": "2026-08-07T08:09:52.781000+00:00",
+      "hypothesis_key": "7b64d1bcb48d1706",
+      "identity_packet_content_hash": "sha256:22f8a108100c3d74b6024d1c8f69ea6eb112f568210accee36e5dd853b47aed7",
+      "identity_packet_status": "INCOMPLETE_BACKFILL_REQUIRED",
+      "label": "macro_vintage_family",
+      "ledger_profile": "var",
+      "ledger_source_path": "var/experiments.jsonl",
+      "measurement": {
+        "annualized_sharpe": -0.07470973857914942,
+        "kurtosis": 30.377502756743706,
+        "observations": 5996,
+        "skew": -0.5167850000733164
+      },
+      "missing_sections": [
+        "preregistration_and_hashes",
+        "point_in_time_data_and_survivorship_controls",
+        "execution_and_cost_model",
+        "result_uncertainty_stress_capacity_and_diversification",
+        "admission_or_kill_decision",
+        "code_environment_and_reproduction"
+      ],
+      "research_family_key": "macro_economic_trend",
+      "research_family_title": "Point-in-time macroeconomic trend",
+      "sleeve_context": "Diversifier research",
+      "verified_family_paper_path": "/research/macro-economic-trend-lineage.md",
+      "verified_packet_path": "/glassbox/trial-packets/7b64d1bcb48d1706.json",
+      "verified_sections": [
+        "identity_and_authorship",
+        "economic_mechanism_and_falsifiable_hypothesis",
+        "literature_and_overlap_decision",
+        "family_and_union_trial_accounting",
+        "machine_readable_packet_and_stable_public_paper"
+      ]
+    },
+    {
+      "candidate_match_is_verified": true,
+      "candidate_public_papers": [],
+      "completion_assessment": {
+        "blockers": [
+          {
+            "code": "IDENTITY_PREREGISTRATION_AND_ORIGINAL_ENVIRONMENT_NOT_BOUND",
+            "evidence": [
+              {
+                "path": "artifacts/research/macro_economic_trend_family.json",
+                "sha256": "db6cb64852e242ce696bc090c11ceec6ad10561e7c8529b2348e418f5572300c"
+              },
+              {
+                "path": "var/experiments.jsonl",
+                "sha256": "b5a318c0997d980575f758451f509e0154eecbbb50d734e49a587d473062bd08"
+              }
+            ],
+            "finding": "The canonical family audit binds this identity to its immutable ledger measurement, but does not bind an identity-level preregistration, original code commit, runner hash, lockfile, and input snapshot. Those missing historical fields cannot be reconstructed from the family summary.",
+            "required_section": "preregistration_and_hashes"
+          },
+          {
+            "code": "IDENTITY_LEVEL_DECISION_PACKET_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/research/macro_economic_trend_family.json",
+                "sha256": "db6cb64852e242ce696bc090c11ceec6ad10561e7c8529b2348e418f5572300c"
+              }
+            ],
+            "finding": "The family-level admission status is NOT_ESTABLISHED_RESEARCH_ONLY; it is not a preserved identity-level gate decision under the complete packet contract.",
+            "required_section": "admission_or_kill_decision"
+          },
+          {
+            "code": "IMMUTABLE_SUMMARY_LACKS_COMPLETE_IDENTITY_CURVE",
+            "evidence": [
+              {
+                "path": "artifacts/research/macro_economic_trend_family.json",
+                "sha256": "db6cb64852e242ce696bc090c11ceec6ad10561e7c8529b2348e418f5572300c"
+              },
+              {
+                "path": "var/experiments.jsonl",
+                "sha256": "b5a318c0997d980575f758451f509e0154eecbbb50d734e49a587d473062bd08"
+              }
+            ],
+            "finding": "The immutable ledger summary preserves the first measurement but not the complete identity-level curve, uncertainty, stress, capacity, and diversification evidence required for packet completion.",
+            "required_section": "result_uncertainty_stress_capacity_and_diversification"
+          },
+          {
+            "code": "IDENTITY_CAPACITY_NOT_MEASURED",
+            "evidence": [
+              {
+                "path": "artifacts/research/macro_economic_trend_family.json",
+                "sha256": "db6cb64852e242ce696bc090c11ceec6ad10561e7c8529b2348e418f5572300c"
+              }
+            ],
+            "finding": "The canonical family audit records capacity as UNMEASURED_OR_NOT_FAMILY_WIDE; no identity-level capacity evidence can be credited.",
+            "required_section": "result_uncertainty_stress_capacity_and_diversification"
+          }
+        ],
+        "config_hash": "7d4aeb6f6cdfbdda",
+        "evidence_grade": "immutable_ledger_summary_with_optional_family_artifact",
+        "family_audit": "artifacts/research/macro_economic_trend_family.json",
+        "status": "AUDITED_NOT_CURRENTLY_COMPLETABLE"
+      },
+      "config_hash": "7d4aeb6f6cdfbdda",
+      "coverage_status": "VERIFIED_INCOMPLETE_IDENTITY_PACKET",
+      "family_paper_binding_status": "VERIFIED_TAXONOMY_BINDING",
+      "first_recorded_at": "2026-08-07T08:09:52.848000+00:00",
+      "hypothesis_key": "3c11c45eb8f40024",
+      "identity_packet_content_hash": "sha256:1ca98ceb297eb2161b6cdc99e5363cab7bfc603441c94f5ad398cdfbcc04657f",
+      "identity_packet_status": "INCOMPLETE_BACKFILL_REQUIRED",
+      "label": "macro_vintage_family",
+      "ledger_profile": "var",
+      "ledger_source_path": "var/experiments.jsonl",
+      "measurement": {
+        "annualized_sharpe": 0.11261133663417566,
+        "kurtosis": 9.327705462007483,
+        "observations": 6157,
+        "skew": 0.09949589213034486
+      },
+      "missing_sections": [
+        "preregistration_and_hashes",
+        "point_in_time_data_and_survivorship_controls",
+        "execution_and_cost_model",
+        "result_uncertainty_stress_capacity_and_diversification",
+        "admission_or_kill_decision",
+        "code_environment_and_reproduction"
+      ],
+      "research_family_key": "macro_economic_trend",
+      "research_family_title": "Point-in-time macroeconomic trend",
+      "sleeve_context": "Diversifier research",
+      "verified_family_paper_path": "/research/macro-economic-trend-lineage.md",
+      "verified_packet_path": "/glassbox/trial-packets/3c11c45eb8f40024.json",
+      "verified_sections": [
+        "identity_and_authorship",
+        "economic_mechanism_and_falsifiable_hypothesis",
+        "literature_and_overlap_decision",
+        "family_and_union_trial_accounting",
+        "machine_readable_packet_and_stable_public_paper"
+      ]
+    }
+  ],
+  "registry_key": "macro_economic_trend",
+  "research_family_key": "macro_economic_trend",
+  "schema": "canli.alphac-publication-trial-accounting-binding.v2",
+  "status": "COMPLETE_RECORDED_UNION_EXTRACTED_IDENTITY_PACKETS_MAY_BE_INCOMPLETE",
+  "trial_packet_manifest": {
+    "content_hash": "sha256:38758b89a1a5fa845487a640b1deab046fffcf61ede5ad3afb6371798b208371",
+    "path": "artifacts/research/trial_packet_manifest.json",
+    "sha256": "0147dd8e631ca24257e2db384bf01d4637a79371f1754b284f3f7e9637c1369c"
+  }
+}

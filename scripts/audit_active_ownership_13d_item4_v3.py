@@ -4,12 +4,13 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import re
 import sys
 import xml.etree.ElementTree as ET
 from pathlib import Path
-from typing import Final
+from typing import Any, Final, cast
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import audit_active_ownership_13d_item4 as v1
@@ -22,6 +23,16 @@ DOCUMENT_V3_PATTERN: Final = re.compile(
     rb"<FILENAME>\s*([^\r\n]+).*?<TEXT>(.*?)</TEXT>\s*</DOCUMENT>",
     re.IGNORECASE | re.DOTALL,
 )
+
+
+def sha256_file(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def content_hash(payload: dict[str, Any]) -> str:
+    body = {key: value for key, value in payload.items() if key != "content_hash"}
+    canonical = json.dumps(body, sort_keys=True, separators=(",", ":")).encode()
+    return "sha256:" + hashlib.sha256(canonical).hexdigest()
 
 
 def exact_primary_documents_v3(raw: bytes, form: str) -> list[tuple[str, bytes]]:
@@ -80,22 +91,37 @@ def schema_aware_text_v3(raw: bytes) -> str:
     return structured_item_text_v3(raw) or v2.html_to_text(raw)
 
 
-def run(args: argparse.Namespace) -> dict:
+def run(args: argparse.Namespace) -> dict[str, Any]:
     v1.PARSER_VERSION = "sec-13d-item4-v3"
     v1.PROTOCOL = PROTOCOL
     v1.exact_primary_documents = exact_primary_documents_v3
     v1.html_to_text = schema_aware_text_v3
     v1.extract_item4 = v2.extract_item4_v2
-    result = v1.run(args)
+    result = cast(dict[str, Any], v1.run(args))
     result.update(
         {
             "schema": "canli.feasibility.active-ownership-13d-item4.v3",
+            "author": "Arhan Canli",
             "protocol": PROTOCOL,
+            "source_lineage": {
+                "protocol_sha256": sha256_file(Path(PROTOCOL)),
+                "locked_sample_sha256": sha256_file(Path(args.source)),
+                "document_audit_sha256": sha256_file(Path(args.out) / "document_audit.parquet"),
+                "frozen_human_labels_sha256": sha256_file(
+                    Path(args.out) / "frozen_human_labels.csv"
+                ),
+            },
             "market_data_opened": False,
             "return_data_opened": False,
             "return_hypotheses_spent": 0,
+            "claim_boundary": (
+                "Machine extraction feasibility passed on the frozen corpus. Classification "
+                "accuracy, returns, Sharpe, drawdown, correlation, capacity and sleeve admission "
+                "remain unproven until their separate gates pass."
+            ),
         }
     )
+    result["content_hash"] = content_hash(result)
     result_path = Path(args.out) / "result.json"
     result_path.write_text(json.dumps(result, indent=2) + "\n")
     return result

@@ -1,0 +1,48 @@
+{
+  "archival_assets": {
+    "bibliography": {
+      "references.bib": {
+        "path": "references.bib",
+        "sha256": "fff0b2cdb036b8be22e5177c16da633186f2fd2faf5a642843b6f42fec139260"
+      },
+      "references.json": {
+        "path": "references.json",
+        "sha256": "681128932cdc45c9627c13573d80c2441282e84e5e664954aff0c851852e5896"
+      }
+    },
+    "html": {
+      "path": "paper.html",
+      "sha256": "78922b433eaf021c1b75d9dda2e89a2f9f2934801d21a456bdc019795ac088b3"
+    },
+    "latex": {
+      "path": "paper.tex",
+      "sha256": "b6308a715b94de53a5769137ad9e1354e2579914599391f6f397d6ff5666c81c"
+    },
+    "pdf": {
+      "machine_validation": "PASS",
+      "pages": 3,
+      "path": "paper.pdf",
+      "sha256": "7ad1865d7854be839c8b607b0106f7dafd50eb820af3fd4d77fa44b242e81d04",
+      "visual_inspection": {
+        "path": "archival_visual_inspection_receipt.json",
+        "sha256": "7a40b8c55de12ec4dd2f93143810266ac8854dc14fdd2ac1a336f64ff9dd8578",
+        "status": "PASS_INTERNAL_VISUAL_INSPECTION_NOT_INDEPENDENT_REVIEW"
+      }
+    }
+  },
+  "author": "Arhan Canli",
+  "doi_claimed": false,
+  "external_submission_claimed": false,
+  "independent_replication_claimed": false,
+  "peer_review_claimed": false,
+  "registry_key": "macro_economic_trend",
+  "remaining_blockers": [
+    "REDISTRIBUTION_SAFE_RAW_DATA_INVENTORY_INCOMPLETE",
+    "CLEAN_ENVIRONMENT_REPLAY_NOT_COMPLETED",
+    "INDEPENDENT_HUMAN_REPLICATION_MISSING"
+  ],
+  "schema": "canli.alphac-publication-bundle-manifest.v2",
+  "sleeve": "macro-economic-trend",
+  "status": "BUNDLE_INCOMPLETE",
+  "version": "0.1.0"
+}

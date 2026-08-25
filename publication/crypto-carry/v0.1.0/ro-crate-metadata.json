@@ -1,0 +1,272 @@
+{
+  "@context": "https://w3id.org/ro/crate/1.1/context",
+  "@graph": [
+    {
+      "@id": "ro-crate-metadata.json",
+      "@type": "CreativeWork",
+      "about": {
+        "@id": "./"
+      },
+      "conformsTo": {
+        "@id": "https://w3id.org/ro/crate/1.1"
+      }
+    },
+    {
+      "@id": "./",
+      "@type": "Dataset",
+      "author": {
+        "@id": "#arhan-canli"
+      },
+      "datePublished": "2026-08-23",
+      "hasPart": [
+        {
+          "@id": "CITATION.cff"
+        },
+        {
+          "@id": "CORRECTIONS.md"
+        },
+        {
+          "@id": "LICENSE"
+        },
+        {
+          "@id": "README.md"
+        },
+        {
+          "@id": "archival_visual_inspection_receipt.json"
+        },
+        {
+          "@id": "bundle_manifest.json"
+        },
+        {
+          "@id": "codemeta.json"
+        },
+        {
+          "@id": "data_manifest.json"
+        },
+        {
+          "@id": "evidence/current_state_replay.json"
+        },
+        {
+          "@id": "evidence/current_state_replay_receipt.json"
+        },
+        {
+          "@id": "evidence/first_rebalance_attribution.json"
+        },
+        {
+          "@id": "evidence/full_path_attribution.json"
+        },
+        {
+          "@id": "evidence/grand_matrix.json"
+        },
+        {
+          "@id": "evidence/open_replay_correction.json"
+        },
+        {
+          "@id": "evidence/prospective_input_snapshot_protocol.json"
+        },
+        {
+          "@id": "evidence/selected_walkforward.json"
+        },
+        {
+          "@id": "evidence/tail_stress_2022.json"
+        },
+        {
+          "@id": "internal_replay_receipt.json"
+        },
+        {
+          "@id": "isolated_replay_receipt.json"
+        },
+        {
+          "@id": "paper.html"
+        },
+        {
+          "@id": "paper.json"
+        },
+        {
+          "@id": "paper.md"
+        },
+        {
+          "@id": "paper.pdf"
+        },
+        {
+          "@id": "paper.tex"
+        },
+        {
+          "@id": "pdf_validation.json"
+        },
+        {
+          "@id": "references.bib"
+        },
+        {
+          "@id": "references.json"
+        },
+        {
+          "@id": "reproduction.json"
+        },
+        {
+          "@id": "sbom.spdx.json"
+        },
+        {
+          "@id": "trial_accounting.json"
+        }
+      ],
+      "name": "Crypto Perpetual Carry: Trial Lineage, Capacity Failure, and Live Evidence Boundary",
+      "version": "0.1.0"
+    },
+    {
+      "@id": "#arhan-canli",
+      "@type": "Person",
+      "name": "Arhan Canli"
+    },
+    {
+      "@id": "CITATION.cff",
+      "@type": "File",
+      "sha256": "ec3aaf1728180e3c35453387458b641447544a57aa7ddb3758f3db91cf639f6c"
+    },
+    {
+      "@id": "CORRECTIONS.md",
+      "@type": "File",
+      "sha256": "e9ee2440019c18153c6ad5b856adc0f5dc037116a991fa61bf476191ed926805"
+    },
+    {
+      "@id": "LICENSE",
+      "@type": "File",
+      "sha256": "e679ca02271c3b6ff38e197098b9260900656c23f06b787383624681f425fa26"
+    },
+    {
+      "@id": "README.md",
+      "@type": "File",
+      "sha256": "b2a36ffed976500ee15bdf328f8b2b6e7f063cc945252bd7df76020fe251ad1a"
+    },
+    {
+      "@id": "archival_visual_inspection_receipt.json",
+      "@type": "File",
+      "sha256": "7a40b8c55de12ec4dd2f93143810266ac8854dc14fdd2ac1a336f64ff9dd8578"
+    },
+    {
+      "@id": "bundle_manifest.json",
+      "@type": "File",
+      "sha256": "14f6271865ffc87d1a7f784a4b855c92e2eccd8bb16e523423d9e6e7cf6b226d"
+    },
+    {
+      "@id": "codemeta.json",
+      "@type": "File",
+      "sha256": "07393953711e8162537539043a82bfc4f43e3c10b66caaa7897372183f9c312d"
+    },
+    {
+      "@id": "data_manifest.json",
+      "@type": "File",
+      "sha256": "b93edd36902cd5b8e8c126b7fc65a15df1f9072c08ba00eead34c4c3e9753906"
+    },
+    {
+      "@id": "evidence/current_state_replay.json",
+      "@type": "File",
+      "sha256": "0bcaddbbd75e3ae818303a3e577d7c8c8654f9e51358b70edf9c040d49b5ab50"
+    },
+    {
+      "@id": "evidence/current_state_replay_receipt.json",
+      "@type": "File",
+      "sha256": "bad33660d9f783779cb2ad38017839e2c35ad2c83cf31ae620b30663741f0dd1"
+    },
+    {
+      "@id": "evidence/first_rebalance_attribution.json",
+      "@type": "File",
+      "sha256": "3beefed135322c4617ca5e547eea20423a90b2fb07e02b60a53b6dbacb3616b4"
+    },
+    {
+      "@id": "evidence/full_path_attribution.json",
+      "@type": "File",
+      "sha256": "f85ced2598b88241f1b8458ecc16cddc2c850c1dd815affa167dac94627d540a"
+    },
+    {
+      "@id": "evidence/grand_matrix.json",
+      "@type": "File",
+      "sha256": "786c580d478f7912aa61886e8b1271faa706fe723ff35423ef1c27d7018ba32c"
+    },
+    {
+      "@id": "evidence/open_replay_correction.json",
+      "@type": "File",
+      "sha256": "3ec388e9b09b9e3d37af3116830fef2ff51dd648ceb098ce83ece0e1764b25fc"
+    },
+    {
+      "@id": "evidence/prospective_input_snapshot_protocol.json",
+      "@type": "File",
+      "sha256": "44bf99842fb6097755b8c28e95e4431e80433b12a84c717b889957d49bada007"
+    },
+    {
+      "@id": "evidence/selected_walkforward.json",
+      "@type": "File",
+      "sha256": "a72c11172a730536336a079d26394cd926f88df06ce36cb3b5483159a99464ee"
+    },
+    {
+      "@id": "evidence/tail_stress_2022.json",
+      "@type": "File",
+      "sha256": "c4e2abced387e8b8c1934d3e70817bf551d28168d4c771575024cb494118a1ad"
+    },
+    {
+      "@id": "internal_replay_receipt.json",
+      "@type": "File",
+      "sha256": "70ac0c8d8542294e02c396085216646208a786295c747940f0eb0f576010ec95"
+    },
+    {
+      "@id": "isolated_replay_receipt.json",
+      "@type": "File",
+      "sha256": "d0df878375d415986fa639487e4ccffc9cad6396dca9bde5f3be4a7fdf50b2ad"
+    },
+    {
+      "@id": "paper.html",
+      "@type": "File",
+      "sha256": "ae6222fc60317a9948217bf60df10089354adaefd87664f817ccb21951638ee6"
+    },
+    {
+      "@id": "paper.json",
+      "@type": "File",
+      "sha256": "3f59101f153c4ecd54ce580d6d36d93c38af7afc0ae00853b621687135ac197e"
+    },
+    {
+      "@id": "paper.md",
+      "@type": "File",
+      "sha256": "10cef060051ebd54c9e79c292295370aa7b2c2ef9232292e07f7f992fa69679b"
+    },
+    {
+      "@id": "paper.pdf",
+      "@type": "File",
+      "sha256": "93c315aebf3262ae195f7475ce668ceed47290c62549ba707cf8544ab795e421"
+    },
+    {
+      "@id": "paper.tex",
+      "@type": "File",
+      "sha256": "c1f68e84a74f457e52c85952b00d4168c10173f3e7c84ef0506c0e41d49f01b5"
+    },
+    {
+      "@id": "pdf_validation.json",
+      "@type": "File",
+      "sha256": "48a603b78f9568b18c245f9a0c28286edb1277995e0eaa8e77ca8f89e08f77a8"
+    },
+    {
+      "@id": "references.bib",
+      "@type": "File",
+      "sha256": "a1265c9c71b936b55192d4f9503b8886716ca029087e7dec063feef8676fccfa"
+    },
+    {
+      "@id": "references.json",
+      "@type": "File",
+      "sha256": "bbef539bebad4d2d6b9f5eef49a4e9e3ffb5089dc480207eb42bb94d863c975b"
+    },
+    {
+      "@id": "reproduction.json",
+      "@type": "File",
+      "sha256": "05277dc1e76ac492a18c9a004d11e63f297862a5fb39f57a9ae303b4c16d0929"
+    },
+    {
+      "@id": "sbom.spdx.json",
+      "@type": "File",
+      "sha256": "a23288df5b4f62adc7064a8ebffec75a8f0a62887fe8afc39ccb2917bd4018a8"
+    },
+    {
+      "@id": "trial_accounting.json",
+      "@type": "File",
+      "sha256": "f06f545c6469066f1ac69689ed1a5e11c1a8b3f2b9de8e6f20e3d9bbc9382259"
+    }
+  ]
+}

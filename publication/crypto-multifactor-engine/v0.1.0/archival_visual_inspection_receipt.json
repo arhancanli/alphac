@@ -1,0 +1,190 @@
+{
+  "author_and_project_lead": "Arhan Canli",
+  "checks": {
+    "author_attribution": "PASS",
+    "blank_or_near_blank_pages": "PASS",
+    "body_text_clipping_or_overlap": "PASS",
+    "claim_boundary_and_not_peer_reviewed_disclosure": "PASS",
+    "consistent_a4_visual_system": "PASS",
+    "cover_title_and_metadata_overflow": "PASS",
+    "last_page_truncation": "PASS",
+    "tables_and_code_blocks": "PASS"
+  },
+  "claim_boundary": "This is internal presentation QA, not peer review, editorial acceptance, content validation, accessibility certification, independent replication, or proof that any strategy result is economically valid.",
+  "content_hash": "sha256:6c0da840ce605997d2ed54d51d120180708bfe54a194ae0b6470f63225b508bb",
+  "inspection_date": "2026-08-25",
+  "method": "The revised eight-page AlphaVintage PDF was rasterized with Apple PDFKit and every page was examined in order after its source-evidence correction. The other 15 PDFs are carried forward only because their PDF bytes and page counts exactly match the prior receipt. Every current PDF independently passes machine validation.",
+  "pages_carried_forward_unchanged": 72,
+  "pages_inspected": 80,
+  "pages_reinspected_in_this_revision": 8,
+  "papers": [
+    {
+      "bundle": "publication/crypto-carry/v0.1.0",
+      "inspection_basis": "CARRIED_FORWARD_BYTE_IDENTICAL_PDF_FROM_PRIOR_RECEIPT",
+      "pages_inspected": 10,
+      "pdf_sha256": "93c315aebf3262ae195f7475ce668ceed47290c62549ba707cf8544ab795e421",
+      "pdf_validation_sha256": "48a603b78f9568b18c245f9a0c28286edb1277995e0eaa8e77ca8f89e08f77a8",
+      "prior_pdf_validation_sha256": "f41be57dbcbd04f0e72568ccde561cfd4fe6ed06ba29e0c3e1c4d2cafc034c7f",
+      "registry_key": "alphaforge_crypto_carry",
+      "result": "PASS_INTERNAL_VISUAL_INSPECTION"
+    },
+    {
+      "bundle": "publication/alphamax/v0.1.0",
+      "inspection_basis": "CARRIED_FORWARD_BYTE_IDENTICAL_PDF_FROM_PRIOR_RECEIPT",
+      "pages_inspected": 8,
+      "pdf_sha256": "eed32d00c9ed1b3bab146f8a220bd46279f9f56b5db88cd7b22e7b0c81eeaa05",
+      "pdf_validation_sha256": "055ae6bbdc897cffeeca9f39d5b539e52179d01afade2f5f3a620c693fa483f7",
+      "prior_pdf_validation_sha256": "635ed23af6518e2c27782e61dde095e60b8b377dbba3471aa6bff1abcbb28e88",
+      "registry_key": "alphamax_equity_momentum",
+      "result": "PASS_INTERNAL_VISUAL_INSPECTION"
+    },
+    {
+      "bundle": "publication/alphatrend/v0.1.0",
+      "inspection_basis": "CARRIED_FORWARD_BYTE_IDENTICAL_PDF_FROM_PRIOR_RECEIPT",
+      "pages_inspected": 6,
+      "pdf_sha256": "029428552d4fed9e9ea2c79f655c9f239d3546c390f695c42176f4d53fe8ceac",
+      "pdf_validation_sha256": "08ff14b9fca6052f7402a572edd0a084d20bcca788bcdde6259af0f3bcbe57a2",
+      "prior_pdf_validation_sha256": "3e2565edb17422a60bd96c40969f0520866c79e2bc880405852c90cfc3907090",
+      "registry_key": "alphatrend_managed_futures",
+      "result": "PASS_INTERNAL_VISUAL_INSPECTION"
+    },
+    {
+      "bundle": "publication/alphavintage/v1.0.0",
+      "inspection_basis": "REINSPECTED_CURRENT_PDF_2026_08_25",
+      "pages_inspected": 8,
+      "pdf_sha256": "1a008c6c32b3b8fc313515f636d986be678187ef92a44c0a9d6651585c790f47",
+      "pdf_validation_sha256": "4badae5a9b4a1c6979217bb386c867b8c3eef165585aa5145e567f85db5f27d3",
+      "registry_key": "alphavintage_macro_surprise",
+      "result": "PASS_INTERNAL_VISUAL_INSPECTION"
+    },
+    {
+      "bundle": "publication/crypto-defensive/v0.1.0",
+      "inspection_basis": "CARRIED_FORWARD_BYTE_IDENTICAL_PDF_FROM_PRIOR_RECEIPT",
+      "pages_inspected": 4,
+      "pdf_sha256": "d2012cf059a5ed9e8089122575a1d65efd02d5d43fa96c8e47a492d84a0a96ce",
+      "pdf_validation_sha256": "32bb757611472fb685951955cc186269e4fab0088c637e4fb451b5894de80aa1",
+      "prior_pdf_validation_sha256": "4eece6b79e14b89af3f64f304b4c5e134d55a7f04aff77499d9087bc91e07be4",
+      "registry_key": "crypto_defensive",
+      "result": "PASS_INTERNAL_VISUAL_INSPECTION"
+    },
+    {
+      "bundle": "publication/crypto-momentum/v0.1.0",
+      "inspection_basis": "CARRIED_FORWARD_BYTE_IDENTICAL_PDF_FROM_PRIOR_RECEIPT",
+      "pages_inspected": 7,
+      "pdf_sha256": "170dff8bfbf47443ad39f8e9dda535a3fc1b85300b14df84682f48ce3650d0e9",
+      "pdf_validation_sha256": "94f3d31fd6fe29628e89a30d9786483339c7148ff802856ed7c3a919d0b6f190",
+      "prior_pdf_validation_sha256": "decb66153c8a00b517a3d305db489c12aacf24f6e36f6898b5b725d5dc7b6f43",
+      "registry_key": "crypto_momentum",
+      "result": "PASS_INTERNAL_VISUAL_INSPECTION"
+    },
+    {
+      "bundle": "publication/crypto-multifactor-engine/v0.1.0",
+      "inspection_basis": "CARRIED_FORWARD_BYTE_IDENTICAL_PDF_FROM_PRIOR_RECEIPT",
+      "pages_inspected": 5,
+      "pdf_sha256": "d472c102ac67d1259c8207ecc79b17bc0b2a6ce64c9b581c11cbb010e42391ae",
+      "pdf_validation_sha256": "f9940101485bbbec60b7ef40b3f658f0818bf593eb4684f4a886ba57d2271b53",
+      "prior_pdf_validation_sha256": "504200d5e68d5da9109f11343b3e185f8012c3ad2adc9d0d3fb1203836c72618",
+      "registry_key": "crypto_multifactor_engine",
+      "result": "PASS_INTERNAL_VISUAL_INSPECTION"
+    },
+    {
+      "bundle": "publication/crypto-reversal/v0.1.0",
+      "inspection_basis": "CARRIED_FORWARD_BYTE_IDENTICAL_PDF_FROM_PRIOR_RECEIPT",
+      "pages_inspected": 3,
+      "pdf_sha256": "4ce95d68b438bc529aff03eda61b6c11691cea28f927c667616f6b995af1123e",
+      "pdf_validation_sha256": "2c70fd8786c9a683c780589e44160a6100021edda78308da1c07537225cac796",
+      "prior_pdf_validation_sha256": "ec11a7d6b3cf797d5f309eec6f8723fddf38e1c9147f993afae25b9293e2e540",
+      "registry_key": "crypto_reversal",
+      "result": "PASS_INTERNAL_VISUAL_INSPECTION"
+    },
+    {
+      "bundle": "publication/crypto-vrp/v0.1.0",
+      "inspection_basis": "CARRIED_FORWARD_BYTE_IDENTICAL_PDF_FROM_PRIOR_RECEIPT",
+      "pages_inspected": 4,
+      "pdf_sha256": "a5aa2f50d89c01c4d415a895b62ec956ad187842895d397e58aba289e5bc5e73",
+      "pdf_validation_sha256": "42f675d51e24d977b1784d731bb64ac16f70785e91896b998de1210ff42aca68",
+      "prior_pdf_validation_sha256": "336f4b46df0a15fac13dc133f6c4418cdc8927e0fcb4a3e86a4eafb55bf13880",
+      "registry_key": "crypto_vrp",
+      "result": "PASS_INTERNAL_VISUAL_INSPECTION"
+    },
+    {
+      "bundle": "publication/energy-inventory/v0.1.0",
+      "inspection_basis": "CARRIED_FORWARD_BYTE_IDENTICAL_PDF_FROM_PRIOR_RECEIPT",
+      "pages_inspected": 4,
+      "pdf_sha256": "70e32c1d040c1ac58b07e1ee0d04b6ae924150873d6e43100a4c1a4982391b0a",
+      "pdf_validation_sha256": "f2870c327377c7b2fe8a3860f0582bd96df2fbc69e362a3a375637254b2a9fca",
+      "prior_pdf_validation_sha256": "d5b59ee6fdf1e1a85368d815260992a72b59f41b0241e80a18b334c00a158144",
+      "registry_key": "energy_inventory",
+      "result": "PASS_INTERNAL_VISUAL_INSPECTION"
+    },
+    {
+      "bundle": "publication/equity-insider-activity/v0.1.0",
+      "inspection_basis": "CARRIED_FORWARD_BYTE_IDENTICAL_PDF_FROM_PRIOR_RECEIPT",
+      "pages_inspected": 4,
+      "pdf_sha256": "f7361073dc107b7414b60e8cc50c77515dae71a8d280745582250e970aa653dc",
+      "pdf_validation_sha256": "4e24a5de5b830ca6685a4f9f4208498e65aa29818f871f067763c9275d2df37b",
+      "prior_pdf_validation_sha256": "da720d0425c37f7b7454d216bd3d80830bf1477003183e7116ef2e45f30bbe77",
+      "registry_key": "equity_insider_activity",
+      "result": "PASS_INTERNAL_VISUAL_INSPECTION"
+    },
+    {
+      "bundle": "publication/equity-low-beta/v0.1.0",
+      "inspection_basis": "CARRIED_FORWARD_BYTE_IDENTICAL_PDF_FROM_PRIOR_RECEIPT",
+      "pages_inspected": 4,
+      "pdf_sha256": "9044474480c24191f19bf8d2498cf0a452e0b5602c28116567739e6881340dcf",
+      "pdf_validation_sha256": "f499707074aadca72188eea36201be2751f14123689bd683e3544828d67e7738",
+      "prior_pdf_validation_sha256": "73fed760711eb544ab126f35dbd4f614c7c75bd39e70f6501fbec7bb65c7cefb",
+      "registry_key": "equity_low_beta",
+      "result": "PASS_INTERNAL_VISUAL_INSPECTION"
+    },
+    {
+      "bundle": "publication/equity-narrative-change/v0.1.0",
+      "inspection_basis": "CARRIED_FORWARD_BYTE_IDENTICAL_PDF_FROM_PRIOR_RECEIPT",
+      "pages_inspected": 3,
+      "pdf_sha256": "66e24f148b7b560328fc4495092d5ce81cbcc25a6fc0199ad1abb7521a2e2099",
+      "pdf_validation_sha256": "20292dba7af7ef0ec7bc63cbc039bb17ce81e5310174d9f40d2885ebdd24e9f5",
+      "prior_pdf_validation_sha256": "47744e9e396bf97d106b20538cd070a3954170fdac00fb7cc86db7500ef6f1e0",
+      "registry_key": "equity_narrative_change",
+      "result": "PASS_INTERNAL_VISUAL_INSPECTION"
+    },
+    {
+      "bundle": "publication/equity-quality/v0.1.0",
+      "inspection_basis": "CARRIED_FORWARD_BYTE_IDENTICAL_PDF_FROM_PRIOR_RECEIPT",
+      "pages_inspected": 3,
+      "pdf_sha256": "e0a33cf2cb3ca6869e57927f50dffc247aaf5dbb0bdce321567498b84aba1900",
+      "pdf_validation_sha256": "b73b5eea715641d6562604775d40fd57b54f8bd13e9171f514586f9d7130991a",
+      "prior_pdf_validation_sha256": "10914a9184cfc79b14e864f20663b84d4867924ae50255f31217a73b0b4a562c",
+      "registry_key": "equity_quality",
+      "result": "PASS_INTERNAL_VISUAL_INSPECTION"
+    },
+    {
+      "bundle": "publication/equity-value-investment/v0.1.0",
+      "inspection_basis": "CARRIED_FORWARD_BYTE_IDENTICAL_PDF_FROM_PRIOR_RECEIPT",
+      "pages_inspected": 4,
+      "pdf_sha256": "d9823935e464299588b9927869b10dad9cd7a211101986a2fa2b2fcea6eeaacf",
+      "pdf_validation_sha256": "65ba373153b5f6a2478b9c8aa3f642a4a53eda035fcd65c01f2a01a02cc338bd",
+      "prior_pdf_validation_sha256": "5814b70362a26b6d4f49a6360497f79b84b06c1d7e60df8f667c92d57a69edf9",
+      "registry_key": "equity_value_investment",
+      "result": "PASS_INTERNAL_VISUAL_INSPECTION"
+    },
+    {
+      "bundle": "publication/macro-economic-trend/v0.1.0",
+      "inspection_basis": "CARRIED_FORWARD_BYTE_IDENTICAL_PDF_FROM_PRIOR_RECEIPT",
+      "pages_inspected": 3,
+      "pdf_sha256": "7ad1865d7854be839c8b607b0106f7dafd50eb820af3fd4d77fa44b242e81d04",
+      "pdf_validation_sha256": "8c597701c7d36dca680d0254e2fe4effd852176f3ba94c68deaaf3fff5f092f5",
+      "prior_pdf_validation_sha256": "8a6a7b307cb5295f266b76e35a2cffd14a32dbab49ea7773ad6fd864e3a7cec6",
+      "registry_key": "macro_economic_trend",
+      "result": "PASS_INTERNAL_VISUAL_INSPECTION"
+    }
+  ],
+  "papers_inspected": 16,
+  "performed_by": "OpenAI Codex-assisted internal publication QA",
+  "prior_receipt": {
+    "content_hash": "sha256:45ed2294628bd0bb14fb3594e8e5b084047f7384daecc7c306812ba8dee8c739",
+    "path": "artifacts/audit/archive/archival_publication_visual_inspection_2026-08-24.json",
+    "sha256": "fa93a65cfbc7a3d97f75170c2a87fa2c81773bc324f10b392f7e39a885446bfa"
+  },
+  "schema": "canli.alphac-archival-pdf-visual-inspection.v2",
+  "status": "PASS_INTERNAL_VISUAL_INSPECTION_NOT_INDEPENDENT_REVIEW"
+}

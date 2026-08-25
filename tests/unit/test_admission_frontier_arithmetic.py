@@ -33,11 +33,16 @@ def _book_sharpe(s_bar: float, rho_bar: float, n: int) -> float:
     return s_bar * math.sqrt(n / (1.0 + (n - 1) * rho_bar))
 
 
-def test_block_is_present_and_scoped_to_the_gate_in_force(contract: dict) -> None:
+def test_block_is_present_and_scoped_to_the_incremental_gates(contract: dict) -> None:
     frontier = contract["frontier_arithmetic"]
-    assert frontier["correlation_gate_in_force"] == (
-        contract["thresholds"]["average_pairwise_correlation_max"]
-    ), "the published arithmetic must describe the gate that is actually enforced"
+    thresholds = contract["thresholds"]
+    assert frontier["incremental_candidate_average_correlation_gate"] == thresholds[
+        "candidate_average_correlation_to_existing_book_max"
+    ]
+    assert frontier["incremental_book_average_correlation_delta_gate_exclusive"] == thresholds[
+        "book_average_pairwise_correlation_delta_max_exclusive"
+    ]
+    assert "correlation_gate_in_force" not in frontier
     assert frontier["target_sleeve_count"] == contract["objective"]["target_total_sleeves"]
 
 
@@ -47,12 +52,12 @@ def test_psd_floor_matches_the_identity(contract: dict) -> None:
     assert frontier["psd_floor_at_target_n"] == pytest.approx(-1.0 / (n - 1), abs=TOLERANCE)
 
 
-def test_ceiling_at_the_gate_matches_the_identity(contract: dict) -> None:
+def test_zero_global_correlation_reference_matches_the_identity(contract: dict) -> None:
     frontier = contract["frontier_arithmetic"]
     n = frontier["target_sleeve_count"]
-    gate = frontier["correlation_gate_in_force"]
+    gate = frontier["legacy_global_zero_correlation_reference"]
     quality = frontier["quality_precondition_at_the_gate"]
-    ceiling = frontier["book_sharpe_ceiling_at_the_gate"]
+    ceiling = frontier["book_sharpe_ceiling_at_zero_global_correlation"]
 
     assert ceiling["s_bar_traded_basis"] == pytest.approx(
         _book_sharpe(quality["s_bar_measured_traded_basis"], gate, n), abs=TOLERANCE
@@ -62,28 +67,16 @@ def test_ceiling_at_the_gate_matches_the_identity(contract: dict) -> None:
     )
 
 
-def test_the_published_verdict_is_the_one_the_numbers_support(contract: dict) -> None:
-    """The honesty assertion: the boolean must follow from the figures beside it, either way.
-
-    Written as an invariant over the arithmetic rather than against today's answer, so it keeps
-    telling the truth when quality rises and the verdict flips to True.
-    """
+def test_incremental_gates_do_not_claim_to_establish_the_objective(contract: dict) -> None:
     frontier = contract["frontier_arithmetic"]
-    low, high = contract["objective"]["portfolio_sharpe_target"]
-    ceiling = frontier["book_sharpe_ceiling_at_the_gate"]["s_bar_traded_basis"]
-
-    assert frontier["gate_permits_objective_floor"] == (ceiling >= low)
-    assert frontier["gate_permits_objective_ceiling"] == (ceiling >= high)
-    assert not (
-        frontier["gate_permits_objective_ceiling"]
-        and not frontier["gate_permits_objective_floor"]
-    ), "the band's ceiling cannot be reachable while its floor is not"
+    assert frontier["incremental_gates_alone_establish_objective_floor"] is False
+    assert frontier["incremental_gates_alone_establish_objective_ceiling"] is False
 
 
 def test_quality_preconditions_invert_the_identity(contract: dict) -> None:
     frontier = contract["frontier_arithmetic"]
     n = frontier["target_sleeve_count"]
-    gate = frontier["correlation_gate_in_force"]
+    gate = frontier["legacy_global_zero_correlation_reference"]
     low, high = contract["objective"]["portfolio_sharpe_target"]
     quality = frontier["quality_precondition_at_the_gate"]
 

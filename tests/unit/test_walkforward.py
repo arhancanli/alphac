@@ -230,6 +230,7 @@ def test_save_writes_artifact_layout(world: World, tmp_path: Path) -> None:
     assert (out / "walkforward.json").exists()
     assert (out / "summary.txt").exists()
     assert (out / "tearsheet.png").exists()
+    assert (out / "input_snapshot" / "manifest.json").exists()
 
     # EVERY summary must state WHERE THE MONEY CAME FROM, unasked.
     # `eq_ilrev` cleared every aggregate this summary already renders — Sharpe, Sortino, Calmar,
@@ -253,6 +254,13 @@ def test_save_writes_artifact_layout(world: World, tmp_path: Path) -> None:
     # F-D / F-E: walkforward.json carries the per-leg risk counters AND the
     # aggregate (the operator's confession — how every bar was produced).
     meta = json.loads((out / "walkforward.json").read_text(encoding="utf-8"))
+    snapshot = meta["config"]["input_snapshot"]
+    assert snapshot["status"] == "SEALED_PRE_RUN_PRIVATE_INPUT_SNAPSHOT"
+    assert snapshot["public_release_allowed"] is False
+    from alphaforge.validation.input_snapshot import validate_input_snapshot
+
+    sealed = validate_input_snapshot(out / "input_snapshot")
+    assert snapshot["content_hash"] == sealed["content_hash"]
     expected_keys = {
         "n_rebalances",
         "n_fallback_used",

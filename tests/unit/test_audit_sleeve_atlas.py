@@ -20,24 +20,24 @@ def test_audit_evaluates_every_cell_without_opening_returns() -> None:
     assert summary["gate_evaluations"] == 2880
     assert summary["governance_rejections"] == 0
     assert summary["lineage_families"] == {
-        "ACTIVE_FEASIBILITY": 9,
+        "ACTIVE_FEASIBILITY": 10,
         "DUPLICATE_OVERLAP": 7,
         "IDENTITY_REDESIGN_REQUIRED": 2,
-        "NOVEL_ATLAS": 17,
+        "NOVEL_ATLAS": 16,
         "RETIRED_KILLED": 5,
     }
     assert summary["lineage_cells"] == {
-        "ACTIVE_FEASIBILITY": 54,
+        "ACTIVE_FEASIBILITY": 60,
         "DUPLICATE_OVERLAP": 42,
         "IDENTITY_REDESIGN_REQUIRED": 12,
-        "NOVEL_ATLAS": 102,
+        "NOVEL_ATLAS": 96,
         "RETIRED_KILLED": 30,
     }
     assert summary["retired_killed"] == 24
     assert summary["forward_only_monitoring"] == 6
     assert summary["overlap_review_required"] == 42
-    assert summary["literature_review_required"] == 102
-    assert summary["ready_for_key_free_feasibility"] == 54
+    assert summary["literature_review_required"] == 96
+    assert summary["ready_for_key_free_feasibility"] == 60
     assert summary["identity_redesign_required"] == 12
     assert summary["return_data_opened"] == 0
     assert summary["return_hypotheses_spent"] == 0

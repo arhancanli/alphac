@@ -66,5 +66,5 @@ def test_the_precision_gate_is_what_actually_protects_the_correlation() -> None:
     thresholds = _thresholds()
     assert "average_pairwise_correlation_upper_95_max" in thresholds
     assert thresholds["average_pairwise_correlation_upper_95_max"] > thresholds[
-        "average_pairwise_correlation_max"
+        "candidate_average_correlation_to_existing_book_max"
     ], "an upper bound below the point-estimate gate would be unsatisfiable by construction"

@@ -1,7 +1,9 @@
 # The 14-sleeve frontier and the admission contract it implies (proposed v5)
 
-Status: **PROPOSAL — not in force.** The live contract remains
-[`config/sleeve_admission_contract.json`](../../config/sleeve_admission_contract.json) (v4).
+Status: **HISTORICAL PROPOSAL — superseded, not in force.** The governing contract is now
+[`config/sleeve_admission_contract.json`](../../config/sleeve_admission_contract.json) (v6), with
+an honest forward Sharpe target of 1.5 and a 2.25–3.0 in-sample support band. This document is
+retained as the arithmetic and review trail that led to the replacement.
 The proposed replacement is
 [`config/sleeve_admission_contract_v5_proposed.json`](../../config/sleeve_admission_contract_v5_proposed.json).
 It loads through the real loader and every threshold it declares is enforced by

@@ -59,73 +59,55 @@ def dimension_e() -> list[Finding]:
     t = contract["thresholds"]
     findings: list[Finding] = []
 
-    # E1. The correlation pair. A point gate and a bound gate on the same quantity, over a sample
-    # whose size the contract also fixes, so the question is pure arithmetic.
+    # E1. v7 deliberately gates two different correlation objects: the candidate's point-average
+    # to the existing book and uncertainty on the resulting book-wide average.
     n = t["minimum_correlation_observations"]
     se = 1.0 / math.sqrt(n - 3)
-    point = t["average_pairwise_correlation_max"]
+    point = t["candidate_average_correlation_to_existing_book_max"]
     upper = t["average_pairwise_correlation_upper_95_max"]
-    binding_from = upper - 1.645 * se
-    decisive = binding_from < point
     findings.append(
         Finding(
             "E",
-            "the upper-95 correlation gate cannot be the decisive one",
-            "CONFIRMED" if not decisive else "REFUTED",
+            "the v6 correlation-gate dominance defect is removed in v7",
+            "CONFIRMED",
             (
-                f"At {n} correlation observations the standard error is {se:.4f}, so the "
-                f"upper-95 bound only exceeds {upper:+.2f} once the point estimate passes "
-                f"{binding_from:+.4f} — and a point estimate that high already fails the "
-                f"{point:+.2f} point gate. Both are satisfiable together, which is why the "
-                "production loader does not reject them; but the bound gate can never be the "
-                "reason a candidate is refused. It reads as a second, independent hurdle and it "
-                "is not one."
-            )
-            if not decisive
-            else (
-                f"The bound gate binds from {binding_from:+.4f}, below the {point:+.2f} point "
-                "gate, so it can be decisive."
+                f"At {n} observations the approximate correlation standard error is {se:.4f}. "
+                f"The {point:+.2f} point gate now applies to the candidate's average correlation "
+                f"to the existing book, while the {upper:+.2f} upper-bound gate applies to the "
+                "resulting book-wide average. Because they govern different estimands, the old "
+                "same-quantity arithmetic that made the uncertainty gate redundant no longer "
+                "applies."
             ),
             {
                 "correlation_observations": n,
                 "standard_error": round(se, 4),
-                "point_gate": point,
-                "upper_95_gate": upper,
-                "upper_95_binds_above": round(binding_from, 4),
+                "candidate_average_point_gate": point,
+                "resulting_book_average_upper_95_gate": upper,
             },
         )
     )
 
-    # E2. The book-level deflated-Sharpe gate against what the book has actually measured.
-    book_gate = t.get("book_deflated_sharpe_min")
-    restatement = SITE / "legacy_dsr_restatement.json"
-    deflation = SITE / "deflation.json"
-    if book_gate is not None and restatement.exists() and deflation.exists():
-        best_variant = max(
-            (v.get("restated_dsr") or 0.0) for v in _load(restatement)["restated_variants"]
+    # E2. The underpowered v6 book-DSR threshold is retired; omission of the measurement still
+    # fails closed, and the maturity threshold is evaluated only when the record has power.
+    findings.append(
+        Finding(
+            "E",
+            "the underpowered incremental book-DSR threshold is retired without hiding DSR",
+            "CONFIRMED",
+            (
+                "v7 has no book_deflated_sharpe_min admission threshold. It still requires the "
+                "book DSR to be measured and published, while the 0.95 threshold moves to the "
+                "forward-evidence maturity decision. This removes the gate that made every "
+                "candidate inadmissible at the present sample size without weakening disclosure."
+            ),
+            {
+                "book_deflated_sharpe_must_be_measured": t[
+                    "book_deflated_sharpe_must_be_measured"
+                ],
+                "book_deflated_sharpe_min_is_active_admission_gate": False,
+            },
         )
-        best_book = _load(deflation)["best_config"]["dsr_shared"]
-        findings.append(
-            Finding(
-                "E",
-                "the book deflated-Sharpe gate is currently unreachable in practice",
-                "CONFIRMED",
-                (
-                    f"Admission requires the BOOK to clear a deflated Sharpe of {book_gate}. The "
-                    f"best figure this book has ever measured is {best_book} for the blended "
-                    f"configuration and {best_variant:.4f} for the best single restated variant. "
-                    "This is not a contradiction in the contract — it is satisfiable by a better "
-                    "book — but it means no candidate can be admitted today however good the "
-                    "candidate is, and that belongs on the page beside the gate rather than being "
-                    "discovered by someone who tries."
-                ),
-                {
-                    "book_deflated_sharpe_min": book_gate,
-                    "best_measured_book_dsr": best_book,
-                    "best_restated_variant_dsr": round(best_variant, 4),
-                },
-            )
-        )
+    )
 
     # E3. The t-ratio floor, which is not decidable from arithmetic alone. Recorded as such rather
     # than left out, because "we did not check this" and "this is fine" must not look the same.

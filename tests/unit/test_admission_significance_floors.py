@@ -144,22 +144,21 @@ def test_average_correlation_upper_bound_is_gated() -> None:
     # The point estimate still passes; only the bound moves. A candidate whose correlation cannot
     # be resolved by its own sample must not be admitted on the strength of a point estimate.
     evidence["diversification"]["average_pairwise_correlation_upper_95"] = 0.4
-    assert evidence["diversification"]["average_pairwise_correlation"] <= (
-        contract["thresholds"]["average_pairwise_correlation_max"]
+    assert evidence["diversification"]["candidate_average_correlation_to_existing_book"] <= (
+        contract["thresholds"]["candidate_average_correlation_to_existing_book_max"]
     )
 
     failures = _failure_paths(evidence, contract)
     assert "diversification.average_pairwise_correlation_upper_95" in failures, failures
 
 
-def test_correlation_gate_is_not_merely_looser_than_it_was() -> None:
-    """The one gate in v6 that moved AGAINST the target being easier to reach."""
+def test_v7_correlation_gates_require_an_incremental_improvement() -> None:
+    """A final global target was replaced by two gates that both bite on the increment."""
     contract = _contract()
-    archived = ARCHIVE_DIR / "sleeve_admission_contract_v4_superseded.json"
-    superseded = json.loads(archived.read_text())
-    assert contract["thresholds"]["average_pairwise_correlation_max"] < (
-        superseded["thresholds"]["average_pairwise_correlation_max"]
-    )
+    thresholds = contract["thresholds"]
+    assert thresholds["candidate_average_correlation_to_existing_book_max"] == 0.0
+    assert thresholds["book_average_pairwise_correlation_delta_max_exclusive"] == 0.0
+    assert "average_pairwise_correlation_max" not in thresholds
 
 
 # --------------------------------------------------------------------------------------------
@@ -186,9 +185,9 @@ def test_per_sleeve_deflated_sharpe_is_measured_not_gated() -> None:
 
     assert "deflated_sharpe_min" not in thresholds
     assert thresholds["deflated_sharpe_must_be_measured"] is True
-    assert thresholds["book_deflated_sharpe_min"] == 0.95, (
-        "removing the per-sleeve gate is only defensible while the BOOK's deflation is gated"
-    )
+    assert thresholds["book_deflated_sharpe_must_be_measured"] is True
+    assert "book_deflated_sharpe_min" not in thresholds
+    assert contract["deflation_policy"]["book_maturity_threshold"] == 0.95
     assert (
         contract["deflation_policy"]["book_selection_unit"]
         == "complete_union_hypothesis_identities"

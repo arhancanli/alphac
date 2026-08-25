@@ -104,7 +104,11 @@ testpaths = ["tests"]
 # floor is set yet: an aspirational threshold would red CI without measuring
 # the true baseline first. Once a baseline is observed, pin a floor at or just
 # below it here, e.g.  # --cov-fail-under=85
-addopts = "-q --strict-markers -m 'not network' --cov=alphaforge --cov-branch -n auto --dist loadfile"
+# Correctness tests run in parallel; wall-clock performance guards do not. A
+# benchmark measured while 17 sibling workers contend for the same machine is a
+# scheduler benchmark, not an engine benchmark. CI runs the mandatory ``slow``
+# lane separately with ``-n0`` and preserves its original wall/memory budgets.
+addopts = "-q --strict-markers -m 'not network and not slow' --cov=alphaforge --cov-branch -n auto --dist loadfile"
 markers = [
     "network: tests that hit live exchange APIs (deselected in CI)",
     "workspace_evidence: offline integration checks that require git-ignored evidence or sibling site workspaces",

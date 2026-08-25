@@ -1,0 +1,30 @@
+{
+  "abstract": "ALPHAC preregistered one test of annual 10-K Item 1A narrative stability before opening the 2016–2025 return window. The locked strategy bought issuers with stable disclosures and sold issuers with changed disclosures after controlling for filing reaction, momentum, and filing-time industry. Across 2,514 observations, net Sharpe was -0.0074, DSR 0.0000114, Newey–West t-stat -0.0242, and maximum drawdown -28.47%. Twelve of 20 research gates passed, but the return, DSR, stress-cost, short-leg, capacity, mean-zero book-delta, and expected-shortfall gates failed. The sealed verdict is **KILL**. No sleeve was admitted.",
+  "authors": [
+    {
+      "affiliation": "Canli Capital / AlphaC Algorithms",
+      "full_name": "Arhan Canli",
+      "roles": [
+        "CONCEPTUALIZATION",
+        "METHODOLOGY",
+        "SOFTWARE",
+        "VALIDATION",
+        "INVESTIGATION",
+        "WRITING",
+        "PROJECT_ADMINISTRATION"
+      ]
+    }
+  ],
+  "capital_kind": "RESEARCH_SIMULATION_ONLY",
+  "claim_boundary": "This is an incomplete preparation bundle. It proves no external submission, DOI, peer review, independent replication, funded performance, or future return.",
+  "date": "2026-08-23",
+  "external_identifiers": [],
+  "language": "en",
+  "peer_reviewed": false,
+  "registry_key": "equity_narrative_change",
+  "result_release_complete": true,
+  "schema": "canli.alphac-sleeve-paper.v1",
+  "title": "Annual Risk-Factor Narrative Stability: A Preregistered Null",
+  "type": "WORKING_PAPER_PREPRINT_NOT_PEER_REVIEWED",
+  "version": "0.1.0"
+}

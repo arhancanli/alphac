@@ -75,3 +75,13 @@ thresholds, horizons, or portfolio statistics were opened, and zero return ident
 
 Machine-readable result:
 `artifacts/feasibility/bond_etf_nav_dislocation/result.json`.
+
+## Reachability classification — 2026-08-22
+
+These four failures are not extraction-engineering tasks. A crawler cannot manufacture the
+measured 0.8809546539379475 fractional issuer-coverage shortfall, 119 missing monthly holdings
+snapshots per fund, point-in-time evaluated bond marks, or synchronized executable ETF and bond records. The
+family is therefore `PAID_ARCHIVAL_AND_EXECUTABLE_DATA_REQUIRED`, not “nearest to passing.”
+
+The next action is an owner spending and licensing decision. Purchasing access would authorize
+collection only; it would not pass a gate, open returns, or admit a sleeve.

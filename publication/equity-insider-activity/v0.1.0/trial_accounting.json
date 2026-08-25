@@ -1,0 +1,138 @@
+{
+  "complete_recorded_union_extracted": true,
+  "distinct_recorded_hypothesis_identities": 2,
+  "every_identity_packet_complete": false,
+  "global_ledger": {
+    "path": "config/trial_accounting.json",
+    "sha256": "f15af7c989aded5da6c5259a7f7e5587377ab33977b5cd3c5b2395a84ea45043"
+  },
+  "identities": [
+    {
+      "candidate_match_is_verified": true,
+      "candidate_public_papers": [
+        "/research/kill-insider-purchase-clusters.md"
+      ],
+      "completion_assessment": {
+        "blockers": [
+          {
+            "code": "EXACT_PRELIMINARY_CURVE_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/probe/insider_purchase_clusters/result.json",
+                "sha256": "126ff81e3e47d96571095d7447d1f8fb9ce23737d8d6c4a7b7359a3a4982a97b"
+              }
+            ],
+            "finding": "The correction log preserves the first Sharpe and verdict, but no exact preliminary curve, weights, or executable snapshot was preserved.",
+            "required_section": "result_uncertainty_stress_capacity_and_diversification"
+          }
+        ],
+        "config_hash": "a18b907b9b8b4002",
+        "status": "AUDITED_NOT_CURRENTLY_COMPLETABLE"
+      },
+      "config_hash": "a18b907b9b8b4002",
+      "coverage_status": "VERIFIED_INCOMPLETE_IDENTITY_PACKET",
+      "family_paper_binding_status": "VERIFIED_TAXONOMY_BINDING",
+      "first_recorded_at": "2026-08-15T16:02:21.778000+00:00",
+      "hypothesis_key": "7c522581b35475e3",
+      "identity_packet_content_hash": "sha256:27536029260ba66085d7d14e844236d027b74eddbe7761c3ce7dc0ee34d42fe8",
+      "identity_packet_status": "INCOMPLETE_BACKFILL_REQUIRED",
+      "label": "insider_purchase_clusters",
+      "ledger_profile": "var",
+      "ledger_source_path": "var/experiments.jsonl",
+      "measurement": {
+        "annualized_sharpe": -0.9931387477992796,
+        "kurtosis": 16.467107498086687,
+        "observations": 2669,
+        "skew": -0.3087967709985932
+      },
+      "missing_sections": [
+        "preregistration_and_hashes",
+        "point_in_time_data_and_survivorship_controls",
+        "execution_and_cost_model",
+        "result_uncertainty_stress_capacity_and_diversification",
+        "admission_or_kill_decision",
+        "code_environment_and_reproduction"
+      ],
+      "research_family_key": "equity_insider_activity",
+      "research_family_title": "Equity insider activity",
+      "sleeve_context": "AlphaMax research",
+      "verified_family_paper_path": "/research/equity-insider-activity-lineage.md",
+      "verified_packet_path": "/glassbox/trial-packets/7c522581b35475e3.json",
+      "verified_sections": [
+        "identity_and_authorship",
+        "economic_mechanism_and_falsifiable_hypothesis",
+        "literature_and_overlap_decision",
+        "family_and_union_trial_accounting",
+        "machine_readable_packet_and_stable_public_paper"
+      ]
+    },
+    {
+      "candidate_match_is_verified": true,
+      "candidate_public_papers": [
+        "/research/kill-insider-purchase-clusters.md"
+      ],
+      "completion_assessment": {
+        "blockers": [
+          {
+            "code": "CURRENT_REPLAY_EXTENDS_IMMUTABLE_WINDOW",
+            "evidence": [
+              {
+                "path": "artifacts/probe/insider_purchase_clusters/result.json",
+                "sha256": "126ff81e3e47d96571095d7447d1f8fb9ce23737d8d6c4a7b7359a3a4982a97b"
+              }
+            ],
+            "finding": "The current replay has 5 additional sessions and explicitly refuses exact-first-measurement status.",
+            "required_section": "result_uncertainty_stress_capacity_and_diversification"
+          }
+        ],
+        "config_hash": "89b95c2e97f2b7f2",
+        "status": "AUDITED_NOT_CURRENTLY_COMPLETABLE"
+      },
+      "config_hash": "89b95c2e97f2b7f2",
+      "coverage_status": "VERIFIED_INCOMPLETE_IDENTITY_PACKET",
+      "family_paper_binding_status": "VERIFIED_TAXONOMY_BINDING",
+      "first_recorded_at": "2026-08-15T16:06:34.244000+00:00",
+      "hypothesis_key": "d614fdc1daa2906c",
+      "identity_packet_content_hash": "sha256:7ee3cbfaac748f8f122a53dd821415ac7f5ef62ed4c0a684f0bddb866c288437",
+      "identity_packet_status": "INCOMPLETE_BACKFILL_REQUIRED",
+      "label": "insider_purchase_clusters",
+      "ledger_profile": "var",
+      "ledger_source_path": "var/experiments.jsonl",
+      "measurement": {
+        "annualized_sharpe": -0.24327562849906975,
+        "kurtosis": 17.101003848389343,
+        "observations": 2669,
+        "skew": 0.2909259919436605
+      },
+      "missing_sections": [
+        "preregistration_and_hashes",
+        "point_in_time_data_and_survivorship_controls",
+        "execution_and_cost_model",
+        "result_uncertainty_stress_capacity_and_diversification",
+        "admission_or_kill_decision",
+        "code_environment_and_reproduction"
+      ],
+      "research_family_key": "equity_insider_activity",
+      "research_family_title": "Equity insider activity",
+      "sleeve_context": "AlphaMax research",
+      "verified_family_paper_path": "/research/equity-insider-activity-lineage.md",
+      "verified_packet_path": "/glassbox/trial-packets/d614fdc1daa2906c.json",
+      "verified_sections": [
+        "identity_and_authorship",
+        "economic_mechanism_and_falsifiable_hypothesis",
+        "literature_and_overlap_decision",
+        "family_and_union_trial_accounting",
+        "machine_readable_packet_and_stable_public_paper"
+      ]
+    }
+  ],
+  "registry_key": "equity_insider_activity",
+  "research_family_key": "equity_insider_activity",
+  "schema": "canli.alphac-publication-trial-accounting-binding.v2",
+  "status": "COMPLETE_RECORDED_UNION_EXTRACTED_IDENTITY_PACKETS_MAY_BE_INCOMPLETE",
+  "trial_packet_manifest": {
+    "content_hash": "sha256:38758b89a1a5fa845487a640b1deab046fffcf61ede5ad3afb6371798b208371",
+    "path": "artifacts/research/trial_packet_manifest.json",
+    "sha256": "0147dd8e631ca24257e2db384bf01d4637a79371f1754b284f3f7e9637c1369c"
+  }
+}

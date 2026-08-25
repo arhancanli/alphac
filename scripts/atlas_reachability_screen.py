@@ -5,9 +5,12 @@ by any amount of extraction work, because the shortfall is in what the documents
 asks the same question one step earlier and for the whole atlas: not "can the detector be fixed?"
 but "does the record this identity needs exist, and can we get it?"
 
-Twenty families are `NOVEL_ATLAS` with no return data opened. Writing a protocol against one of
-them without asking this first is how the three near-miss families happened — three times, by
-hand, each time discovering at the end what a screen would have said at the start.
+Twenty families formed the original no-return screen cohort. Three later moved from `NOVEL_ATLAS`
+to `ACTIVE_FEASIBILITY`, but remain in this cohort until a return outcome exists; active families
+that predated this screen retain their own feasibility audits and are not retroactively added.
+Writing a protocol against one of them without asking this first is how the three near-miss
+families happened — three times, by hand, each time discovering at the end what a screen would
+have said at the start.
 
 THE DECISIVE ARITHMETIC, and it needs no judgement at all. The admission contract in force
 requires `minimum_oos_observations` daily observations of a candidate's own return series. A
@@ -50,12 +53,15 @@ TRADING_DAYS_PER_YEAR = 252
 HELD = "OBTAINABLE_FROM_DATA_THIS_REPO_ALREADY_HOLDS"
 PUBLIC = "OBTAINABLE_PUBLICLY_NEEDS_A_NEW_PIPELINE"
 EXTRACTION = "HELD_BUT_BLOCKED_ON_EXTRACTION_QUALITY"
+CEILING = "HELD_BUT_REACHABILITY_CEILING_NOT_MEASURED"
+HUMAN = "HELD_MACHINE_GATES_PASS_HUMAN_ACCURACY_REQUIRED"
+REDESIGN = "RECORD_HELD_BUT_IDENTITY_REDESIGN_REQUIRED"
 VENDOR = "VENDOR_ONLY_AN_OWNER_SPENDING_DECISION"
 SHORT = "HISTORY_TOO_SHORT_FOR_THE_ADMISSION_CONTRACT"
 MARKS = "RECORD_OBTAINABLE_BUT_THE_MARKS_ARE_NOT_EXECUTABLE"
 NO_PIT = "NO_POINT_IN_TIME_RECORD_WAS_EVER_PRESERVED"
 
-RANK = [HELD, PUBLIC, EXTRACTION, VENDOR, SHORT, MARKS, NO_PIT]
+RANK = [HELD, PUBLIC, EXTRACTION, CEILING, HUMAN, REDESIGN, VENDOR, SHORT, MARKS, NO_PIT]
 
 MEANING = {
     HELD: (
@@ -69,6 +75,21 @@ MEANING = {
     EXTRACTION: (
         "The documents are held and the shortfall is in reading them. C1's harness applies "
         "directly here: ask what a PERFECT detector would reach BEFORE writing a protocol."
+    ),
+    CEILING: (
+        "The documents are held, but the frozen accuracy evidence needed to measure what a "
+        "perfect detector could reach is incomplete. Parser work is not yet justified because "
+        "the observed shortfall may be semantic rather than extractive."
+    ),
+    HUMAN: (
+        "The held corpus clears its frozen machine extraction gates, but the hash-bound human "
+        "accuracy audit is incomplete. No classifier, return preregistration or sleeve claim is "
+        "authorized until that independent evidence is complete."
+    ),
+    REDESIGN: (
+        "The underlying record is held, but the measured gate does not describe one coherent "
+        "population. Parser work cannot rescue it; a new identity and fresh preregistration are "
+        "required before any further measurement."
     ),
     VENDOR: (
         "The record exists and is licensed. This is not an engineering question and it is not "
@@ -252,7 +273,7 @@ SCREENS: tuple[Screen, ...] = (
         family="merger_arbitrage",
         required_record="deal terms, amendments and outcomes as known at each date",
         source="EDGAR",
-        status=EXTRACTION,
+        status=REDESIGN,
         reason=(
             "Already screened, and the answer is not an extraction one: the 0.80 prior-8-K gate "
             "blends two filing populations that do not share the obligation it tests. Do not "
@@ -265,14 +286,14 @@ SCREENS: tuple[Screen, ...] = (
         family="tender_offer_spread",
         required_record="SC TO and recommendation documents by acceptance time",
         source="EDGAR",
-        status=EXTRACTION,
+        status=CEILING,
         reason=(
-            "A feasibility probe already exists and returned DATA_GATED on extraction quality. "
-            "C1's harness applies before any protocol is written: compute what a perfect detector "
-            "would reach first."
+            "The parser failed three machine gates, but the 30-document frozen accuracy set has "
+            "zero completed labels. The perfect-detector ceiling is therefore unmeasured and "
+            "parser repair is not yet authorized."
         ),
         held_source="edgar_quarterly_indexes",
-        related_artifact="artifacts/feasibility/tender_offer_spread/result.json",
+        related_artifact="artifacts/analysis/tender_offer_reachability/result.json",
         extraction_gated=True,
     ),
     Screen(
@@ -281,27 +302,44 @@ SCREENS: tuple[Screen, ...] = (
         source="S&P, FTSE Russell or MSCI index services",
         status=VENDOR,
         reason=(
-            "The announcement archive and the float/weight vintages ARE the index provider's "
-            "product. Beyond the fee there is a redistribution restriction, which bears directly "
-            "on a programme whose whole asset is publishing what it measured."
+            "Recent additions/deletions and review calendars are publicly posted, but the "
+            "research-grade historical constituent/event record, float factors and weight "
+            "vintages are index-provider products. The public pages do not establish permission "
+            "to publish derived security-level research, so both data entitlement and publication "
+            "rights must be settled before this family can enter feasibility."
         ),
         how_to_verify=(
-            "Read one index provider's licence for whether derived research may be published."
+            "Obtain a written quote and licence schedule covering point-in-time history, research "
+            "use, and publication of derived aggregate and security-level results."
         ),
-        notes=["The licence question is unusual here: it constrains publication, not just cost."],
+        notes=[
+            "Official source checked 2026-08-23: MSCI's public review archive lists recent "
+            "additions/deletions, while its Constituent Event History and Index Deep History "
+            "products describe licensed historical security-level records.",
+            "https://www.msci.com/eqb/gimi/stdindex/index_review.html",
+            "https://www.msci.com/downloads/web/msci-com/indexes/data-model/"
+            "MSCI-Constituent-Event-History-Factsheet.pdf",
+            "https://dataexplorer.msci.com/ui/products/DM_Index_Deep_History",
+            "S&P and FTSE Russell likewise separate public announcements/methodologies from "
+            "licensed constituent, corporate-action or detailed review files.",
+            "https://www.spglobal.com/spdji/en/about-us/data-index-licensing/",
+            "https://www.lseg.com/en/ftse-russell/index-data-tools",
+            "No public page reviewed is treated as a legal conclusion about derived publication; "
+            "the signed licence schedule is the controlling evidence.",
+        ],
     ),
     Screen(
         family="active_ownership_escalation",
         required_record="13D and 13D/A state, and Item 4 language, at acceptance time",
         source="EDGAR",
-        status=EXTRACTION,
+        status=HUMAN,
         reason=(
-            "The filings are held. The existing 13D probes fail on extraction quality — header "
-            "completeness, contemporaneous ticker resolution and Item 4 extraction rate — not on "
-            "obtainability."
+            "The unchanged v3 corpus clears every machine extraction gate: 160/160 submissions "
+            "and 150/160 Item 4 sections. Its frozen 48-document human accuracy audit remains "
+            "0/48 complete, so no classifier or return work is authorized."
         ),
         held_source="edgar_quarterly_indexes",
-        related_artifact="artifacts/analysis/data_gate_unblocks/result.json",
+        related_artifact="artifacts/feasibility/active_ownership_13d_item4_v3/result.json",
         extraction_gated=True,
         notes=[
             "Atlas id and feasibility id differ (active_ownership_escalation vs "
@@ -329,18 +367,25 @@ SCREENS: tuple[Screen, ...] = (
     Screen(
         family="credit_equity_relative_value",
         required_record="point-in-time issuer mapping, bond prices and corporate actions",
-        source="TRACE plus a reference-data vendor",
-        status=PUBLIC,
+        source="FINRA Enhanced Historical TRACE plus licensed bond reference data",
+        status=VENDOR,
         reason=(
-            "TRACE is public, but disseminated sizes are CAPPED, so the public print record is "
-            "systematically the small trades. The issuer-to-equity mapping and terms are vendor. "
-            "Public enough to screen, truncated enough that the truncation must be modelled."
+            "The free FINRA portal exposes only limited per-security history and non-commercial "
+            "display access. The research-grade Enhanced Historical TRACE files require a FINRA "
+            "Historical Data Agreement and fees; CUSIP delivery requires a separate CUSIP licence. "
+            "The full-size historical files repair dissemination caps, but they are a licensed "
+            "product, and the point-in-time issuer-to-equity mapping and terms remain licensed "
+            "reference data. This is an owner spending decision, not a key-free pipeline."
         ),
         how_to_verify=(
-            "Confirm the current dissemination caps and whether the academic TRACE file lifts "
-            "them for history."
+            "Recheck FINRA Historic Data Information and TRACE Data & Licensing for the current "
+            "agreement, fee and identifier-licence terms."
         ),
-        notes=["The record exists and is biased by construction — model the cap or do not use it."],
+        notes=[
+            "Official source checked 2026-08-22: https://www.finra.org/filing-reporting/trace/"
+            "historic-academic-data and https://www.finra.org/filing-reporting/trace/data.",
+            "The displayed capped feed is not substituted for the full historical record.",
+        ],
     ),
     Screen(
         family="fallen_angel_flow",
@@ -356,15 +401,24 @@ SCREENS: tuple[Screen, ...] = (
     Screen(
         family="municipal_taxable_basis",
         required_record="MSRB trade prints, call schedules, tax status and reference data",
-        source="MSRB EMMA plus municipal reference data",
-        status=PUBLIC,
+        source="MSRB Historical Transaction Data plus licensed municipal reference data",
+        status=VENDOR,
         reason=(
-            "Trade prints are publicly disclosed. Call schedules and tax treatment — which is "
-            "where this identity's whole basis lives — are reference data and mostly vendor."
+            "EMMA makes security-by-security transaction information public, but the reproducible "
+            "bulk Historical Transaction Data Product is sold per twelve-month collection under "
+            "an agreement. It carries trade fields, not the complete call schedules and tax-status "
+            "history the basis calculation needs; those reference fields remain licensed. This is "
+            "an owner spending decision, not a key-free pipeline."
         ),
         how_to_verify=(
-            "Check whether EMMA's historical bulk file carries call and tax fields or only prints."
+            "Recheck the MSRB Trade Data Subscriptions page and Historical Data Layout for current "
+            "prices, agreement terms and fields."
         ),
+        notes=[
+            "Official source checked 2026-08-22: https://www.msrb.org/Market-Data-and-Research/"
+            "Trade-Data-Subscriptions.",
+            "Free EMMA search access is not treated as a bulk point-in-time research feed.",
+        ],
     ),
     Screen(
         family="dealer_gamma_pressure",
@@ -404,20 +458,30 @@ SCREENS: tuple[Screen, ...] = (
     ),
     Screen(
         family="inflation_breakeven_relative_value",
-        required_record="TIPS breakevens, inflation swaps, CPI vintages and carry, point-in-time",
-        source="FRED breakeven series already in this repo's vintage lake",
-        status=HELD,
+        required_record=(
+            "matched nominal/TIPS securities or inflation swaps, cashflows, index ratios, "
+            "executable quotes, financing, CPI vintages and carry, point-in-time"
+        ),
+        source="a security-level fixed-income or inflation-swap historical data vendor",
+        status=VENDOR,
         reason=(
-            "The breakeven leg is held daily and is an unrevised market quantity, so it is "
-            "point-in-time by construction rather than by careful handling. The inflation-SWAP "
-            "leg is vendor, so the swap-versus-breakeven formulation is not reachable — the "
-            "breakeven-versus-realised one is."
+            "The held FRED 5Y/10Y constant-maturity series support signal-source depth, not an "
+            "executable return identity. The atlas's 2Y leg is absent; historical signal vintages "
+            "are not preserved; and the repo has no security-level prices, quotes, cashflows, "
+            "index ratios, financing inputs or inflation-swap history. A complete historical "
+            "record therefore requires licensed data."
         ),
         held_source="fred_breakeven_10y",
+        how_to_verify=(
+            "Price and inspect a lawful point-in-time security-level nominal/TIPS or inflation-"
+            "swap history including executable quotes, cashflows, index ratios and financing."
+        ),
+        related_artifact=(
+            "artifacts/feasibility/inflation_breakeven_relative_value/result.json"
+        ),
         notes=[
-            "The best result in this screen, and it is narrower than it looks: what is held "
-            "supports one formulation of the identity and not the other. Saying which is the "
-            "difference between a screen and an encouragement.",
+            "The no-return feasibility audit supersedes the earlier broad 'already held' claim. "
+            "It spends zero return hypotheses and authorises no edge, sign or sleeve claim.",
         ],
     ),
     Screen(
@@ -527,11 +591,15 @@ SCREENS: tuple[Screen, ...] = (
 
 
 def _untouched_families(atlas: dict[str, Any]) -> list[str]:
-    """DERIVED, never listed. A family added to the atlas must appear here and fail the screen."""
+    """Derive new atlas families plus original-cohort rows promoted to feasibility."""
+    cohort = {screen.family for screen in SCREENS}
     return sorted(
         f["id"]
         for f in atlas["families"]
-        if f["lineage_classification"] == "NOVEL_ATLAS"
+        if (
+            f["lineage_classification"] == "NOVEL_ATLAS"
+            or (f["lineage_classification"] == "ACTIVE_FEASIBILITY" and f["id"] in cohort)
+        )
         and not (f.get("return_outcome") or {}).get("return_data_opened")
     )
 
@@ -593,6 +661,8 @@ def main() -> int:
                 "obtainability_evidence_status": (
                     "MEASURED_FROM_THIS_REPO"
                     if screen.held_source and screen.status in (HELD, EXTRACTION)
+                    else "MEASURED_FROM_RELATED_ARTIFACT"
+                    if screen.status in (CEILING, HUMAN, REDESIGN) and screen.related_artifact
                     else "JUDGEMENT_NOT_VERIFIED_THIS_RUN"
                 ),
                 "how_to_verify": screen.how_to_verify,
@@ -651,8 +721,10 @@ def main() -> int:
         "by_verdict": by_verdict,
         "headline": (
             f"{engineering} of {len(rows)} untouched families are blocked on engineering. The "
-            f"other {len(rows) - engineering} are blocked on money, on a record that was never "
-            "preserved, or on prices nobody could trade — none of which more work closes."
+            f"other {len(rows) - engineering} require a measured reachability ceiling, a human "
+            "accuracy audit, identity redesign, vendor spend, more history, a point-in-time "
+            "record that was never preserved, or executable marks — none is currently unlocked "
+            "by parser work."
         ),
         "verdict_meanings": MEANING,
         "ranking": RANK,

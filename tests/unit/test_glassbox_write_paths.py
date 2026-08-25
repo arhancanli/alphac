@@ -67,7 +67,9 @@ def test_the_parser_finds_the_writes_it_claims_to_compare(exporter: str) -> None
     assert len(_copies(exporter, "app_dir")) > 30
     assert len(_copies(exporter, "literature_dir")) > 20
     assert len(_copies(exporter, "app_literature_dir")) > 20
-    assert len(_copy_loops(exporter)) == 2
+    loops = _copy_loops(exporter)
+    assert len(loops) >= 2
+    assert len(loops) % 2 == 0
 
 
 @pytest.mark.parametrize(
@@ -86,10 +88,48 @@ def test_both_hosts_receive_the_same_copies(exporter: str, primary: str, app: st
 
 def test_the_loop_driven_copies_carry_the_same_list(exporter: str) -> None:
     loops = _copy_loops(exporter)
-    assert loops[0] == loops[1], (
+    midpoint = len(loops) // 2
+    assert loops[:midpoint] == loops[midpoint:], (
         "the two loop-driven copy lists differ, so one host publishes probe outputs the other "
         f"does not: {loops}"
     )
+
+
+def test_selected_fundamental_support_evidence_is_written_to_both_hosts(exporter: str) -> None:
+    """The pending replay's audit evidence must not exist on only one public host."""
+    assert exporter.count("for public_name, source in FUNDAMENTAL_SINGLE_SUPPORT_FILES:") == 2
+    assert '(out_dir / public_name).write_bytes(source.read_bytes())' in exporter
+    assert '(app_dir / public_name).write_bytes(source.read_bytes())' in exporter
+
+
+def test_prospective_packet_and_alias_are_written_to_both_hosts(exporter: str) -> None:
+    """The forward packet must be public without mutating the retired historical index."""
+    assert exporter.count('out_trial_packet_dir / "da5f5f47f99f9bd2.json"') == 1
+    assert exporter.count('app_trial_packet_dir / "da5f5f47f99f9bd2.json"') == 1
+    assert exporter.count('out_trial_packet_dir / "crypto_carry_portable_v1.json"') == 1
+    assert exporter.count('app_trial_packet_dir / "crypto_carry_portable_v1.json"') == 1
+    assert exporter.count("CRYPTO_CARRY_PORTABLE_PACKET_JSON.read_text()") == 4
+
+
+def test_replay_support_includes_success_and_infrastructure_outcomes(exporter: str) -> None:
+    """A replacement success must not erase the failed attempt that preceded it."""
+    assert '"result.json"' in exporter
+    assert '"replay_failure.json"' in exporter
+    assert '"replay_infrastructure_failure.json"' in exporter
+    assert '"replay_infrastructure_failure_environment.json"' in exporter
+    assert '"replay_infrastructure_failure_lake_manifest.json"' in exporter
+
+
+def test_both_blind_review_packets_publish_templates_to_both_hosts(exporter: str) -> None:
+    """External reviewers need the same blank, hash-bound handoff on either public host."""
+    assert exporter.count('"repurchase_item703_blind_label_packet.json"') == 2
+    assert exporter.count('"active_ownership_item4_v3_blind_label_packet.json"') == 2
+    assert exporter.count('"reviewer_attestation.json"') >= 4
+    assert "app_repurchase_blind_out" in exporter
+    assert "repurchase_blind_out" in exporter
+    assert exporter.count('"verify_review.py"') == 2
+    assert exporter.count("ACTIVE_OWNERSHIP_HANDOFF_ARCHIVE.read_bytes()") == 2
+    assert '"blind_review_packets": build_blind_review_packets()' in exporter
 
 
 def test_a_one_sided_write_is_detected() -> None:

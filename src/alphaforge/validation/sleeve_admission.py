@@ -19,6 +19,8 @@ SUPPORTED_SCHEMAS = frozenset(
         "canli.alphac-sleeve-admission-contract.v4",
         "canli.alphac-sleeve-admission-contract.v5-proposed",
         "canli.alphac-sleeve-admission-contract.v6",
+        "canli.alphac-sleeve-admission-contract.v7-proposed",
+        "canli.alphac-sleeve-admission-contract.v7",
     }
 )
 
@@ -37,6 +39,18 @@ _POOLED_CROSS_TRIAL_SHARPE_VARIANCE = 7.96e-04
 # `tests/unit/test_admission_contract_is_fully_enforced.py` pins that no declared threshold in
 # any contract goes unread by the evaluator.
 OPTIONAL_NUMERIC_GATES: dict[str, tuple[str, str]] = {
+    "average_pairwise_correlation_max": (
+        "diversification.average_pairwise_correlation",
+        "<=",
+    ),
+    "candidate_average_correlation_to_existing_book_max": (
+        "diversification.candidate_average_correlation_to_existing_book",
+        "<=",
+    ),
+    "book_average_pairwise_correlation_delta_max_exclusive": (
+        "diversification.book_average_pairwise_correlation_delta",
+        "<",
+    ),
     "book_deflated_sharpe_min": ("statistics.book_deflated_sharpe", ">="),
     "book_sharpe_delta_lower_95_min_exclusive": ("portfolio.book_sharpe_delta_lower_95", ">"),
     "book_expected_max_drawdown_max": ("portfolio.book_expected_max_drawdown", "<="),
@@ -62,6 +76,7 @@ OPTIONAL_NUMERIC_GATES: dict[str, tuple[str, str]] = {
 # otherwise is how a bar nobody can clear ends up in a contract.
 OPTIONAL_MEASUREMENT_GATES: dict[str, str] = {
     "deflated_sharpe_must_be_measured": "statistics.deflated_sharpe",
+    "book_deflated_sharpe_must_be_measured": "statistics.book_deflated_sharpe",
 }
 
 # Gates computed from several evidence fields rather than read from one path. They follow the same
@@ -75,7 +90,7 @@ OPTIONAL_BOOLEAN_GATES: dict[str, str] = {
 
 # Checks that are neither lineage, robustness, execution dimensions nor optional gates: the
 # always-present numeric gates plus the capacity-curve reconciliation.
-_BASE_CHECKS = 19
+_BASE_CHECKS = 18
 
 
 @dataclass(frozen=True, slots=True)
@@ -308,10 +323,6 @@ def evaluate_sleeve_evidence(
         "statistics.stressed_sharpe": (">=", thresholds["stressed_sharpe_min"]),
         "statistics.newey_west_t": (">=", thresholds["newey_west_t_min"]),
         "diversification.absolute_beta": ("<=", thresholds["absolute_beta_max"]),
-        "diversification.average_pairwise_correlation": (
-            "<=",
-            thresholds["average_pairwise_correlation_max"],
-        ),
         "diversification.max_pairwise_correlation": (
             "<=",
             thresholds["ordinary_pairwise_correlation_max"],
@@ -367,6 +378,8 @@ def evaluate_sleeve_evidence(
             failures.append(f"threshold:{path}:{value}>{threshold}")
         elif operator == ">" and value <= threshold:
             failures.append(f"threshold:{path}:{value}<={threshold}")
+        elif operator == "<" and value >= threshold:
+            failures.append(f"threshold:{path}:{value}>={threshold}")
 
     # Declare-to-enforce: see OPTIONAL_DERIVED_GATES at module level.
     #

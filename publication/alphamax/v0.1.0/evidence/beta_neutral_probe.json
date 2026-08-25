@@ -1,0 +1,1406 @@
+{
+  "probe": "alphamax_betaneutral",
+  "trials_burned": 0,
+  "note": "SCREEN ONLY \u2014 no experiments-ledger append; DSR read-only.",
+  "panels": {
+    "LIVE-REPLICA k30_dn_63": {
+      "results": {
+        "BASE": {
+          "net_sharpe_ann365": 0.9214116441426743,
+          "net_sharpe_ann252": 0.7656098890844949,
+          "gross_sharpe_ann365": 0.9537488496765906,
+          "vol_ann365": 0.16118726333955252,
+          "max_dd": 0.1581359185897826,
+          "skew": -0.32587856685608774,
+          "cagr": 0.09806646431371879,
+          "total_return": 0.3308926612867382,
+          "roll_beta_mean": 0.3189826130695303,
+          "roll_beta_median": 0.30848021227394296,
+          "roll_beta_p10": 0.006702912504179329,
+          "roll_beta_p90": 0.6557765259830695,
+          "roll_beta_frac_neg": 0.08344733242134063,
+          "roll_beta_n": 731,
+          "fullsample_beta": 0.29107223855422487,
+          "fullsample_beta_t": 4.061153268511808,
+          "alpha_ann365_bps": 674.1990537145288,
+          "alpha_t_nw": 0.6916337483094035,
+          "netdollar_mean": -0.00041627499524941777,
+          "netdollar_min": -0.004057198150854348,
+          "netdollar_max": 0.003698847101785717,
+          "episodes": {
+            "2009 mom crash Mar-May": {
+              "n_days": 0,
+              "total_return": NaN,
+              "max_dd": NaN,
+              "worst_day": NaN
+            },
+            "2009 H1 wider": {
+              "n_days": 0,
+              "total_return": NaN,
+              "max_dd": NaN,
+              "worst_day": NaN
+            },
+            "2020 Covid crash": {
+              "n_days": 0,
+              "total_return": NaN,
+              "max_dd": NaN,
+              "worst_day": NaN
+            },
+            "2020-11 vaccine rot.": {
+              "n_days": 0,
+              "total_return": NaN,
+              "max_dd": NaN,
+              "worst_day": NaN
+            },
+            "2021 meme squeeze Q1": {
+              "n_days": 0,
+              "total_return": NaN,
+              "max_dd": NaN,
+              "worst_day": NaN
+            },
+            "2022 bear": {
+              "n_days": 0,
+              "total_return": NaN,
+              "max_dd": NaN,
+              "worst_day": NaN
+            },
+            "2026-07 junk squeeze": {
+              "n_days": 21,
+              "total_return": -0.10531711723274062,
+              "max_dd": 0.11727003998990104,
+              "worst_day": -0.029553123476694552
+            }
+          },
+          "turnover_ann": 4.529195226040778,
+          "cost_drag_ann_bps": 27.175171356244665,
+          "borrow_drag_ann_bps": 24.934445518122196,
+          "n_reforms": 13,
+          "n_days": 770,
+          "avg_long_names": 30.0,
+          "avg_short_names": 30.0,
+          "legbeta_long": 1.9324627697400443,
+          "legbeta_short": 1.238456570537734,
+          "legbeta_spread_min": 0.07804126603819239,
+          "legbeta_spread_max": 1.2047706572797359,
+          "legbeta_spread_frac_neg": 0.0,
+          "hedge_mean": 0.0,
+          "hedge_min": 0.0,
+          "hedge_max": 0.0,
+          "exante_hedge_mean": -0.2380172146041949,
+          "dsr": {
+            "var": {
+              "N": 114,
+              "dsr": 0.18318518260818883,
+              "psr": 0.9074916922615688
+            },
+            "var_sharadar": {
+              "N": 12,
+              "dsr": 0.6151906920206774,
+              "psr": 0.9074916922615688
+            }
+          }
+        },
+        "V1_betaneutral": {
+          "net_sharpe_ann365": 0.570084310959889,
+          "net_sharpe_ann252": 0.47368859386286216,
+          "gross_sharpe_ann365": 0.6122416304203824,
+          "vol_ann365": 0.13631125513126277,
+          "max_dd": 0.14055518353753227,
+          "skew": -0.41282803256870493,
+          "cagr": 0.04836203801881389,
+          "total_return": 0.15524307855736308,
+          "roll_beta_mean": 0.0868709893052178,
+          "roll_beta_median": 0.0765282902107943,
+          "roll_beta_p10": -0.0877352794133758,
+          "roll_beta_p90": 0.24390779058825596,
+          "roll_beta_frac_neg": 0.35157318741450067,
+          "roll_beta_n": 731,
+          "fullsample_beta": 0.06539655373302476,
+          "fullsample_beta_t": 1.2189686682675631,
+          "alpha_ann365_bps": 594.8781261033896,
+          "alpha_t_nw": 0.6665572852033752,
+          "netdollar_mean": -0.14035291792350446,
+          "netdollar_min": -0.2306351973291177,
+          "netdollar_max": 0.0,
+          "episodes": {
+            "2009 mom crash Mar-May": {
+              "n_days": 0,
+              "total_return": NaN,
+              "max_dd": NaN,
+              "worst_day": NaN
+            },
+            "2009 H1 wider": {
+              "n_days": 0,
+              "total_return": NaN,
+              "max_dd": NaN,
+              "worst_day": NaN
+            },
+            "2020 Covid crash": {
+              "n_days": 0,
+              "total_return": NaN,
+              "max_dd": NaN,
+              "worst_day": NaN
+            },
+            "2020-11 vaccine rot.": {
+              "n_days": 0,
+              "total_return": NaN,
+              "max_dd": NaN,
+              "worst_day": NaN
+            },
+            "2021 meme squeeze Q1": {
+              "n_days": 0,
+              "total_return": NaN,
+              "max_dd": NaN,
+              "worst_day": NaN
+            },
+            "2022 bear": {
+              "n_days": 0,
+              "total_return": NaN,
+              "max_dd": NaN,
+              "worst_day": NaN
+            },
+            "2026-07 junk squeeze": {
+              "n_days": 21,
+              "total_return": -0.09764064261188965,
+              "max_dd": 0.0981593678122219,
+              "worst_day": -0.02670642645995985
+            }
+          },
+          "turnover_ann": 4.541800949882062,
+          "cost_drag_ann_bps": 27.25080569929236,
+          "borrow_drag_ann_bps": 30.04079167171161,
+          "n_reforms": 13,
+          "n_days": 770,
+          "avg_long_names": 30.0,
+          "avg_short_names": 30.0,
+          "legbeta_long": 1.9324627697400443,
+          "legbeta_short": 1.238456570537734,
+          "legbeta_spread_min": 0.07804126603819239,
+          "legbeta_spread_max": 1.2047706572797359,
+          "legbeta_spread_frac_neg": 0.0,
+          "hedge_mean": 0.0,
+          "hedge_min": 0.0,
+          "hedge_max": 0.0,
+          "exante_hedge_mean": -0.007096653185049548,
+          "bootstrap_dsharpe": {
+            "mean": -0.3870197935508869,
+            "p05": -0.7692554783212622,
+            "p95": 0.030742909651457144,
+            "frac_le_zero": 0.938,
+            "n_boot": 2000
+          },
+          "dsr": {
+            "var": {
+              "N": 114,
+              "dsr": 0.07894503348502518,
+              "psr": 0.7944971438212405
+            },
+            "var_sharadar": {
+              "N": 12,
+              "dsr": 0.41564495715495825,
+              "psr": 0.7944971438212405
+            }
+          }
+        },
+        "V2_betahedged": {
+          "net_sharpe_ann365": 0.6886959477261192,
+          "net_sharpe_ann252": 0.5722441554796444,
+          "gross_sharpe_ann365": 0.7388871392499399,
+          "vol_ann365": 0.1474641132277221,
+          "max_dd": 0.15079005538461343,
+          "skew": -0.37505651433825743,
+          "cagr": 0.06459947592695281,
+          "total_return": 0.21079074109152418,
+          "roll_beta_mean": 0.10342823862649672,
+          "roll_beta_median": 0.09621012399113549,
+          "roll_beta_p10": -0.0852986532864066,
+          "roll_beta_p90": 0.3011158077348157,
+          "roll_beta_frac_neg": 0.307797537619699,
+          "roll_beta_n": 731,
+          "fullsample_beta": 0.06885805413403996,
+          "fullsample_beta_t": 1.1028181475103032,
+          "alpha_ann365_bps": 823.7238234727889,
+          "alpha_t_nw": 0.8444704256527804,
+          "netdollar_mean": -0.22682387873861934,
+          "netdollar_min": -0.41263757606665263,
+          "netdollar_max": 0.0,
+          "episodes": {
+            "2009 mom crash Mar-May": {
+              "n_days": 0,
+              "total_return": NaN,
+              "max_dd": NaN,
+              "worst_day": NaN
+            },
+            "2009 H1 wider": {
+              "n_days": 0,
+              "total_return": NaN,
+              "max_dd": NaN,
+              "worst_day": NaN
+            },
+            "2020 Covid crash": {
+              "n_days": 0,
+              "total_return": NaN,
+              "max_dd": NaN,
+              "worst_day": NaN
+            },
+            "2020-11 vaccine rot.": {
+              "n_days": 0,
+              "total_return": NaN,
+              "max_dd": NaN,
+              "worst_day": NaN
+            },
+            "2021 meme squeeze Q1": {
+              "n_days": 0,
+              "total_return": NaN,
+              "max_dd": NaN,
+              "worst_day": NaN
+            },
+            "2022 bear": {
+              "n_days": 0,
+              "total_return": NaN,
+              "max_dd": NaN,
+              "worst_day": NaN
+            },
+            "2026-07 junk squeeze": {
+              "n_days": 21,
+              "total_return": -0.10257577045448119,
+              "max_dd": 0.10908360747366108,
+              "worst_day": -0.03054805607068405
+            }
+          },
+          "turnover_ann": 5.408638300015583,
+          "cost_drag_ann_bps": 32.4518298000935,
+          "borrow_drag_ann_bps": 41.33102793207671,
+          "n_reforms": 13,
+          "n_days": 770,
+          "avg_long_names": 30.0,
+          "avg_short_names": 30.0,
+          "legbeta_long": 1.9324627697400443,
+          "legbeta_short": 1.238456570537734,
+          "legbeta_spread_min": 0.07804126603819239,
+          "legbeta_spread_max": 1.2047706572797359,
+          "legbeta_spread_frac_neg": 0.0,
+          "hedge_mean": -0.2380172146041949,
+          "hedge_min": -0.4120448775688155,
+          "hedge_max": -0.0232798825467345,
+          "exante_hedge_mean": -0.2380172146041949,
+          "bootstrap_dsharpe": {
+            "mean": -0.26253191971949685,
+            "p05": -0.6168008082076758,
+            "p95": 0.13745219237421602,
+            "frac_le_zero": 0.86,
+            "n_boot": 2000
+          },
+          "dsr": {
+            "var": {
+              "N": 114,
+              "dsr": 0.10746522312237888,
+              "psr": 0.8394869523478339
+            },
+            "var_sharadar": {
+              "N": 12,
+              "dsr": 0.4832647227407316,
+              "psr": 0.8394869523478339
+            }
+          }
+        },
+        "V2m_hedge_21d": {
+          "net_sharpe_ann365": 0.7008392060579801,
+          "net_sharpe_ann252": 0.58233410683166,
+          "gross_sharpe_ann365": 0.75390261297661,
+          "vol_ann365": 0.14643834972881645,
+          "max_dd": 0.15203769498154973,
+          "skew": -0.34064414067022286,
+          "cagr": 0.06549977694315667,
+          "total_return": 0.21392213850466035,
+          "roll_beta_mean": 0.09331491489326567,
+          "roll_beta_median": 0.09214437340614724,
+          "roll_beta_p10": -0.09370793301829453,
+          "roll_beta_p90": 0.28292492588776597,
+          "roll_beta_frac_neg": 0.280437756497948,
+          "roll_beta_n": 731,
+          "fullsample_beta": 0.047990898399955885,
+          "fullsample_beta_t": 0.767842079521504,
+          "alpha_ann365_bps": 892.582869571524,
+          "alpha_t_nw": 0.9025816783212578,
+          "netdollar_mean": -0.24201552933639678,
+          "netdollar_min": -0.581043284252965,
+          "netdollar_max": 0.0013486456485047888,
+          "episodes": {
+            "2009 mom crash Mar-May": {
+              "n_days": 0,
+              "total_return": NaN,
+              "max_dd": NaN,
+              "worst_day": NaN
+            },
+            "2009 H1 wider": {
+              "n_days": 0,
+              "total_return": NaN,
+              "max_dd": NaN,
+              "worst_day": NaN
+            },
+            "2020 Covid crash": {
+              "n_days": 0,
+              "total_return": NaN,
+              "max_dd": NaN,
+              "worst_day": NaN
+            },
+            "2020-11 vaccine rot.": {
+              "n_days": 0,
+              "total_return": NaN,
+              "max_dd": NaN,
+              "worst_day": NaN
+            },
+            "2021 meme squeeze Q1": {
+              "n_days": 0,
+              "total_return": NaN,
+              "max_dd": NaN,
+              "worst_day": NaN
+            },
+            "2022 bear": {
+              "n_days": 0,
+              "total_return": NaN,
+              "max_dd": NaN,
+              "worst_day": NaN
+            },
+            "2026-07 junk squeeze": {
+              "n_days": 21,
+              "total_return": -0.10328035779291156,
+              "max_dd": 0.1100549028805674,
+              "worst_day": -0.03054805607068405
+            }
+          },
+          "turnover_ann": 5.835687480847418,
+          "cost_drag_ann_bps": 35.014124885084506,
+          "borrow_drag_ann_bps": 42.433880634973,
+          "n_reforms": 37,
+          "n_days": 770,
+          "avg_long_names": 30.0,
+          "avg_short_names": 30.0,
+          "legbeta_long": 1.9324627697400443,
+          "legbeta_short": 1.238456570537734,
+          "legbeta_spread_min": 0.07804126603819239,
+          "legbeta_spread_max": 1.2047706572797359,
+          "legbeta_spread_frac_neg": 0.0,
+          "hedge_mean": -0.24366510278408493,
+          "hedge_min": -0.5790318671193178,
+          "hedge_max": 0.0013486456485048877,
+          "exante_hedge_mean": -0.24366510278408493,
+          "bootstrap_dsharpe": {
+            "mean": -0.24074211295953302,
+            "p05": -0.6452100601168215,
+            "p95": 0.23084430408822895,
+            "frac_le_zero": 0.804,
+            "n_boot": 2000
+          },
+          "dsr": {
+            "var": {
+              "N": 114,
+              "dsr": 0.11062585594085239,
+              "psr": 0.8438313655612051
+            },
+            "var_sharadar": {
+              "N": 12,
+              "dsr": 0.4902365855764164,
+              "psr": 0.8438313655612051
+            }
+          }
+        },
+        "CTRL_NETLONG": {
+          "net_sharpe_ann365": 0.5218393191080981,
+          "net_sharpe_ann252": 0.4336013613047152,
+          "gross_sharpe_ann365": 0.567909684889238,
+          "vol_ann365": 0.15240251669039348,
+          "max_dd": 0.1540283638456721,
+          "skew": -0.37669275796970697,
+          "cagr": 0.047997129340665357,
+          "total_return": 0.15401484462913828,
+          "roll_beta_mean": 0.08118384939283595,
+          "roll_beta_median": 0.07046299766974766,
+          "roll_beta_p10": -0.23015848906388153,
+          "roll_beta_p90": 0.4177593113788729,
+          "roll_beta_frac_neg": 0.3447332421340629,
+          "roll_beta_n": 731,
+          "fullsample_beta": 0.053287182066806806,
+          "fullsample_beta_t": 0.7430329298123135,
+          "alpha_ann365_bps": 646.8250027428436,
+          "alpha_t_nw": 0.663329061566993,
+          "netdollar_mean": -0.2381243763337246,
+          "netdollar_min": -0.24207441275504923,
+          "netdollar_max": 0.0,
+          "episodes": {
+            "2009 mom crash Mar-May": {
+              "n_days": 0,
+              "total_return": NaN,
+              "max_dd": NaN,
+              "worst_day": NaN
+            },
+            "2009 H1 wider": {
+              "n_days": 0,
+              "total_return": NaN,
+              "max_dd": NaN,
+              "worst_day": NaN
+            },
+            "2020 Covid crash": {
+              "n_days": 0,
+              "total_return": NaN,
+              "max_dd": NaN,
+              "worst_day": NaN
+            },
+            "2020-11 vaccine rot.": {
+              "n_days": 0,
+              "total_return": NaN,
+              "max_dd": NaN,
+              "worst_day": NaN
+            },
+            "2021 meme squeeze Q1": {
+              "n_days": 0,
+              "total_return": NaN,
+              "max_dd": NaN,
+              "worst_day": NaN
+            },
+            "2022 bear": {
+              "n_days": 0,
+              "total_return": NaN,
+              "max_dd": NaN,
+              "worst_day": NaN
+            },
+            "2026-07 junk squeeze": {
+              "n_days": 21,
+              "total_return": -0.10378888247315698,
+              "max_dd": 0.1126482981085859,
+              "worst_day": -0.030127845060754912
+            }
+          },
+          "turnover_ann": 4.642021568028481,
+          "cost_drag_ann_bps": 27.85212940817088,
+          "borrow_drag_ann_bps": 42.14941714283308,
+          "n_reforms": 13,
+          "n_days": 770,
+          "avg_long_names": 30.0,
+          "avg_short_names": 30.0,
+          "legbeta_long": 1.9324627697400443,
+          "legbeta_short": 1.238456570537734,
+          "legbeta_spread_min": 0.07804126603819239,
+          "legbeta_spread_max": 1.2047706572797359,
+          "legbeta_spread_frac_neg": 0.0,
+          "hedge_mean": -0.23801721460419495,
+          "hedge_min": -0.2380172146041949,
+          "hedge_max": -0.2380172146041949,
+          "exante_hedge_mean": -0.2380172146041949,
+          "bootstrap_dsharpe": {
+            "mean": -0.45311323020243177,
+            "p05": -0.7288718956573998,
+            "p95": -0.17296075754977266,
+            "frac_le_zero": 0.997,
+            "n_boot": 2000
+          },
+          "dsr": {
+            "var": {
+              "N": 114,
+              "dsr": 0.06900091368211388,
+              "psr": 0.7743681055473242
+            },
+            "var_sharadar": {
+              "N": 12,
+              "dsr": 0.3886239400101171,
+              "psr": 0.7743681055473242
+            }
+          }
+        },
+        "BASE_asis": {
+          "net_sharpe_ann365": 0.7867830870272802,
+          "net_sharpe_ann252": 0.6537457127025842,
+          "gross_sharpe_ann365": 0.8203219176317136,
+          "vol_ann365": 0.15393328837464582,
+          "max_dd": 0.15387779489765252,
+          "skew": -0.1169377309763479,
+          "cagr": 0.07835082562671691,
+          "total_return": 0.2592159895097046,
+          "roll_beta_mean": 0.30977738368570823,
+          "roll_beta_median": 0.3014229452742218,
+          "roll_beta_p10": 0.004359588191685694,
+          "roll_beta_p90": 0.6602438770367216,
+          "roll_beta_frac_neg": 0.09165526675786594,
+          "roll_beta_n": 731,
+          "fullsample_beta": 0.27796044187265295,
+          "fullsample_beta_t": 3.9070243951267996,
+          "alpha_ann365_bps": 436.65462319985954,
+          "alpha_t_nw": 0.4801428435438405,
+          "netdollar_mean": -0.00043610969566274606,
+          "netdollar_min": -0.0024890479210329178,
+          "netdollar_max": 0.0018781334103247643,
+          "episodes": {
+            "2009 mom crash Mar-May": {
+              "n_days": 0,
+              "total_return": NaN,
+              "max_dd": NaN,
+              "worst_day": NaN
+            },
+            "2009 H1 wider": {
+              "n_days": 0,
+              "total_return": NaN,
+              "max_dd": NaN,
+              "worst_day": NaN
+            },
+            "2020 Covid crash": {
+              "n_days": 0,
+              "total_return": NaN,
+              "max_dd": NaN,
+              "worst_day": NaN
+            },
+            "2020-11 vaccine rot.": {
+              "n_days": 0,
+              "total_return": NaN,
+              "max_dd": NaN,
+              "worst_day": NaN
+            },
+            "2021 meme squeeze Q1": {
+              "n_days": 0,
+              "total_return": NaN,
+              "max_dd": NaN,
+              "worst_day": NaN
+            },
+            "2022 bear": {
+              "n_days": 0,
+              "total_return": NaN,
+              "max_dd": NaN,
+              "worst_day": NaN
+            },
+            "2026-07 junk squeeze": {
+              "n_days": 21,
+              "total_return": -0.10013991014591761,
+              "max_dd": 0.11677678942775727,
+              "worst_day": -0.02876806621877328
+            }
+          },
+          "turnover_ann": 4.444219030056428,
+          "cost_drag_ann_bps": 26.665314180338566,
+          "borrow_drag_ann_bps": 24.96633911587061,
+          "n_reforms": 13,
+          "n_days": 770,
+          "avg_long_names": 30.0,
+          "avg_short_names": 30.0,
+          "legbeta_long": 1.9178362958181765,
+          "legbeta_short": 1.2381607257969347,
+          "legbeta_spread_min": 0.13674178952842508,
+          "legbeta_spread_max": 1.530593564612971,
+          "legbeta_spread_frac_neg": 0.0,
+          "hedge_mean": 0.0,
+          "hedge_min": 0.0,
+          "hedge_max": 0.0,
+          "exante_hedge_mean": -0.2324215556104017,
+          "bootstrap_dsharpe": {
+            "mean": -0.17756704996491954,
+            "p05": -0.3782504786867311,
+            "p95": 0.02451213140345342,
+            "frac_le_zero": 0.9315,
+            "n_boot": 2000
+          },
+          "dsr": {
+            "var": {
+              "N": 114,
+              "dsr": 0.13499322501616817,
+              "psr": 0.872467055515878
+            },
+            "var_sharadar": {
+              "N": 12,
+              "dsr": 0.5397338518183166,
+              "psr": 0.872467055515878
+            }
+          }
+        }
+      },
+      "h_static": -0.2380172146041949,
+      "first": "2021-01-04",
+      "last": "2026-07-30",
+      "n_names": 358,
+      "book_start": "2023-07-06",
+      "K": 30,
+      "gross_leg": 0.345,
+      "split_bug_mom_cells_pct": 0.01923988511836712,
+      "split_bug_mom_cells_n": 8970,
+      "artefact_cells_fix": 5,
+      "artefact_cells_asis": 6,
+      "market_nan_sessions": 1,
+      "gate": {
+        "premise_holds": false,
+        "base_roll_beta_mean": 0.3189826130695303,
+        "base_roll_beta_frac_neg": 0.08344733242134063,
+        "worst_episode_base": "2026-07 junk squeeze",
+        "active_episodes": [
+          "2026-07 junk squeeze"
+        ],
+        "gate_evaluable": false,
+        "arms": {
+          "V1_betaneutral": {
+            "A_beta": false,
+            "B_sharpe": false,
+            "C_tail": false,
+            "D_notfitted": false,
+            "E_cost": true,
+            "F_beatsctrl": true,
+            "episodes_improved": [
+              "2026-07 junk squeeze"
+            ],
+            "n_improved": 1,
+            "n_improved_ex_july26": 0,
+            "worst_ep_dd_base": 0.11727003998990104,
+            "worst_ep_dd_arm": 0.0981593678122219,
+            "worst_ep_dd_ctrl": 0.1126482981085859,
+            "PASS": false
+          },
+          "V2_betahedged": {
+            "A_beta": false,
+            "B_sharpe": false,
+            "C_tail": false,
+            "D_notfitted": false,
+            "E_cost": false,
+            "F_beatsctrl": true,
+            "episodes_improved": [
+              "2026-07 junk squeeze"
+            ],
+            "n_improved": 1,
+            "n_improved_ex_july26": 0,
+            "worst_ep_dd_base": 0.11727003998990104,
+            "worst_ep_dd_arm": 0.10908360747366108,
+            "worst_ep_dd_ctrl": 0.1126482981085859,
+            "PASS": false
+          },
+          "V2m_hedge_21d": {
+            "A_beta": false,
+            "B_sharpe": false,
+            "C_tail": false,
+            "D_notfitted": false,
+            "E_cost": false,
+            "F_beatsctrl": true,
+            "episodes_improved": [
+              "2026-07 junk squeeze"
+            ],
+            "n_improved": 1,
+            "n_improved_ex_july26": 0,
+            "worst_ep_dd_base": 0.11727003998990104,
+            "worst_ep_dd_arm": 0.1100549028805674,
+            "worst_ep_dd_ctrl": 0.1126482981085859,
+            "PASS": false
+          }
+        }
+      }
+    },
+    "RESEARCH top-2000 K=100": {
+      "results": {
+        "BASE": {
+          "net_sharpe_ann365": 0.15971502716846916,
+          "net_sharpe_ann252": 0.13270876813083193,
+          "gross_sharpe_ann365": 0.20229183266043127,
+          "vol_ann365": 0.1828970782769821,
+          "max_dd": 0.5992357083458999,
+          "skew": -0.9609800951646333,
+          "cagr": 0.008583202600347839,
+          "total_return": 0.20208389079532663,
+          "roll_beta_mean": -0.014084834108613838,
+          "roll_beta_median": 0.053846015993060097,
+          "roll_beta_p10": -0.5696467994699439,
+          "roll_beta_p90": 0.4108486624388335,
+          "roll_beta_frac_neg": 0.4478470675575353,
+          "roll_beta_n": 5388,
+          "fullsample_beta": -0.12128912909931008,
+          "fullsample_beta_t": -5.3448416076319845,
+          "alpha_ann365_bps": 503.74271955627756,
+          "alpha_t_nw": 1.095045573094372,
+          "netdollar_mean": -0.0021995796385691534,
+          "netdollar_min": -0.013068982844441954,
+          "netdollar_max": 0.010408724757163146,
+          "episodes": {
+            "2009 mom crash Mar-May": {
+              "n_days": 63,
+              "total_return": -0.373894017888022,
+              "max_dd": 0.4306337627275576,
+              "worst_day": -0.05845134813494526
+            },
+            "2009 H1 wider": {
+              "n_days": 124,
+              "total_return": -0.2998117598884943,
+              "max_dd": 0.43354646118016205,
+              "worst_day": -0.05845134813494526
+            },
+            "2020 Covid crash": {
+              "n_days": 52,
+              "total_return": -0.04334287854458385,
+              "max_dd": 0.1464760326423471,
+              "worst_day": -0.045924806954179546
+            },
+            "2020-11 vaccine rot.": {
+              "n_days": 20,
+              "total_return": -0.10761698828438893,
+              "max_dd": 0.16475547631361265,
+              "worst_day": -0.1099551362521665
+            },
+            "2021 meme squeeze Q1": {
+              "n_days": 61,
+              "total_return": -0.08913475162111273,
+              "max_dd": 0.16823100191637697,
+              "worst_day": -0.035709209567122036
+            },
+            "2022 bear": {
+              "n_days": 251,
+              "total_return": 0.2488141684579046,
+              "max_dd": 0.18896801078412284,
+              "worst_day": -0.06907810918374271
+            },
+            "2026-07 junk squeeze": {
+              "n_days": 21,
+              "total_return": -0.09516484683169424,
+              "max_dd": 0.1192587223350201,
+              "worst_day": -0.04081815022666279
+            }
+          },
+          "turnover_ann": 6.91794514496643,
+          "cost_drag_ann_bps": 41.50767086979856,
+          "borrow_drag_ann_bps": 36.319201185890755,
+          "n_reforms": 87,
+          "n_days": 5427,
+          "avg_long_names": 100.0,
+          "avg_short_names": 100.0,
+          "legbeta_long": 1.335566936202997,
+          "legbeta_short": 1.3727331153478193,
+          "legbeta_spread_min": -1.1903010988279266,
+          "legbeta_spread_max": 1.237952241300157,
+          "legbeta_spread_frac_neg": 0.4942528735632184,
+          "hedge_mean": 0.0,
+          "hedge_min": 0.0,
+          "hedge_max": 0.0,
+          "exante_hedge_mean": 0.021081649393716147,
+          "dsr": {
+            "var": {
+              "N": 114,
+              "dsr": 4.7503766763392075e-08,
+              "psr": 0.7301569007035208
+            },
+            "var_sharadar": {
+              "N": 12,
+              "dsr": 0.016054557271363172,
+              "psr": 0.7301569007035208
+            }
+          }
+        },
+        "V1_betaneutral": {
+          "net_sharpe_ann365": 0.36065957587942127,
+          "net_sharpe_ann252": 0.299675546365842,
+          "gross_sharpe_ann365": 0.40920955381904667,
+          "vol_ann365": 0.16007705103535172,
+          "max_dd": 0.5172492094273284,
+          "skew": -0.8769221680907499,
+          "cagr": 0.03145333544289963,
+          "total_return": 0.9482577436301389,
+          "roll_beta_mean": 0.012042415006388106,
+          "roll_beta_median": 0.002591222277278107,
+          "roll_beta_p10": -0.24455006980518565,
+          "roll_beta_p90": 0.27280004352828263,
+          "roll_beta_frac_neg": 0.4974016332590943,
+          "roll_beta_n": 5388,
+          "fullsample_beta": -0.009533821252545508,
+          "fullsample_beta_t": -0.47880790537687284,
+          "alpha_ann365_bps": 593.968086326521,
+          "alpha_t_nw": 1.449802011541762,
+          "netdollar_mean": 0.012577373412564758,
+          "netdollar_min": -0.3389111652806746,
+          "netdollar_max": 0.33559704003409335,
+          "episodes": {
+            "2009 mom crash Mar-May": {
+              "n_days": 63,
+              "total_return": -0.23486413593525557,
+              "max_dd": 0.2754386112215489,
+              "worst_day": -0.03211038722453942
+            },
+            "2009 H1 wider": {
+              "n_days": 124,
+              "total_return": -0.2028986253109234,
+              "max_dd": 0.27580475212792943,
+              "worst_day": -0.03802796543635456
+            },
+            "2020 Covid crash": {
+              "n_days": 52,
+              "total_return": -0.02956809017688744,
+              "max_dd": 0.11819720327319583,
+              "worst_day": -0.0344639790951993
+            },
+            "2020-11 vaccine rot.": {
+              "n_days": 20,
+              "total_return": -0.025939387772613842,
+              "max_dd": 0.10834208615462926,
+              "worst_day": -0.09112043461962926
+            },
+            "2021 meme squeeze Q1": {
+              "n_days": 61,
+              "total_return": -0.05660080778684862,
+              "max_dd": 0.1812740047658622,
+              "worst_day": -0.039915339193592796
+            },
+            "2022 bear": {
+              "n_days": 251,
+              "total_return": 0.22015183387743886,
+              "max_dd": 0.12534716894069997,
+              "worst_day": -0.04377885505001577
+            },
+            "2026-07 junk squeeze": {
+              "n_days": 21,
+              "total_return": -0.09261415453651156,
+              "max_dd": 0.10830824184021892,
+              "worst_day": -0.03671571591303877
+            }
+          },
+          "turnover_ann": 6.952018395040531,
+          "cost_drag_ann_bps": 41.71211037024319,
+          "borrow_drag_ann_bps": 35.86242772718947,
+          "n_reforms": 87,
+          "n_days": 5427,
+          "avg_long_names": 100.0,
+          "avg_short_names": 100.0,
+          "legbeta_long": 1.335566936202997,
+          "legbeta_short": 1.3727331153478193,
+          "legbeta_spread_min": -1.1903010988279266,
+          "legbeta_spread_max": 1.237952241300157,
+          "legbeta_spread_frac_neg": 0.4942528735632184,
+          "hedge_mean": 0.0,
+          "hedge_min": 0.0,
+          "hedge_max": 0.0,
+          "exante_hedge_mean": 0.006746899424863936,
+          "bootstrap_dsharpe": {
+            "mean": 0.21445836370378185,
+            "p05": 0.04548902729253584,
+            "p95": 0.3786208202696159,
+            "frac_le_zero": 0.0225,
+            "n_boot": 2000
+          },
+          "dsr": {
+            "var": {
+              "N": 114,
+              "dsr": 2.7610207012570956e-06,
+              "psr": 0.9160016161717004
+            },
+            "var_sharadar": {
+              "N": 12,
+              "dsr": 0.08608204366379385,
+              "psr": 0.9160016161717004
+            }
+          }
+        },
+        "V2_betahedged": {
+          "net_sharpe_ann365": 0.21734307968310373,
+          "net_sharpe_ann252": 0.18059247697514194,
+          "gross_sharpe_ann365": 0.2692266612815766,
+          "vol_ann365": 0.1698633828960618,
+          "max_dd": 0.5692331267544218,
+          "skew": -0.9242616080671067,
+          "cagr": 0.015592525319179762,
+          "total_return": 0.3954334927360659,
+          "roll_beta_mean": 0.013269237624919517,
+          "roll_beta_median": 0.0021676714550258928,
+          "roll_beta_p10": -0.25350251646840943,
+          "roll_beta_p90": 0.2911472678217448,
+          "roll_beta_frac_neg": 0.4974016332590943,
+          "roll_beta_n": 5388,
+          "fullsample_beta": -0.00867382868372265,
+          "fullsample_beta_t": -0.3764637781267688,
+          "alpha_ann365_bps": 384.32064198531185,
+          "alpha_t_nw": 0.8847628650336907,
+          "netdollar_mean": 0.025256510702404873,
+          "netdollar_min": -0.6115016632094056,
+          "netdollar_max": 0.6006180012868165,
+          "episodes": {
+            "2009 mom crash Mar-May": {
+              "n_days": 63,
+              "total_return": -0.29842149228532044,
+              "max_dd": 0.34646462723824045,
+              "worst_day": -0.03847122816553588
+            },
+            "2009 H1 wider": {
+              "n_days": 124,
+              "total_return": -0.2659065798507635,
+              "max_dd": 0.34646462723824056,
+              "worst_day": -0.048488969159405544
+            },
+            "2020 Covid crash": {
+              "n_days": 52,
+              "total_return": -0.050845140137722344,
+              "max_dd": 0.13987349502795865,
+              "worst_day": -0.041246824076928666
+            },
+            "2020-11 vaccine rot.": {
+              "n_days": 20,
+              "total_return": -0.07480969980442953,
+              "max_dd": 0.1534102143997974,
+              "worst_day": -0.10569778918064272
+            },
+            "2021 meme squeeze Q1": {
+              "n_days": 61,
+              "total_return": -0.07566342624424927,
+              "max_dd": 0.17191718528556776,
+              "worst_day": -0.03829647148168722
+            },
+            "2022 bear": {
+              "n_days": 251,
+              "total_return": 0.19305944937111774,
+              "max_dd": 0.15750218267111427,
+              "worst_day": -0.04255944321860651
+            },
+            "2026-07 junk squeeze": {
+              "n_days": 21,
+              "total_return": -0.09248695319880174,
+              "max_dd": 0.1128707220781836,
+              "worst_day": -0.04228692882741261
+            }
+          },
+          "turnover_ann": 7.639793643360707,
+          "cost_drag_ann_bps": 45.838761860164226,
+          "borrow_drag_ann_bps": 42.18134481316755,
+          "n_reforms": 87,
+          "n_days": 5427,
+          "avg_long_names": 100.0,
+          "avg_short_names": 100.0,
+          "legbeta_long": 1.335566936202997,
+          "legbeta_short": 1.3727331153478193,
+          "legbeta_spread_min": -1.1903010988279266,
+          "legbeta_spread_max": 1.237952241300157,
+          "legbeta_spread_frac_neg": 0.4942528735632184,
+          "hedge_mean": 0.021081649393716147,
+          "hedge_min": -0.6082851264274141,
+          "hedge_max": 0.5942910235740709,
+          "exante_hedge_mean": 0.021081649393716147,
+          "bootstrap_dsharpe": {
+            "mean": 0.06029164163741213,
+            "p05": -0.06409953092820891,
+            "p95": 0.1799227222975968,
+            "frac_le_zero": 0.204,
+            "n_boot": 2000
+          },
+          "dsr": {
+            "var": {
+              "N": 114,
+              "dsr": 1.627080365266942e-07,
+              "psr": 0.7977156637807301
+            },
+            "var_sharadar": {
+              "N": 12,
+              "dsr": 0.027475075717917387,
+              "psr": 0.7977156637807301
+            }
+          }
+        },
+        "V2m_hedge_21d": {
+          "net_sharpe_ann365": 0.20916415738676078,
+          "net_sharpe_ann252": 0.1737965309591133,
+          "gross_sharpe_ann365": 0.26246879911131665,
+          "vol_ann365": 0.16971379630484842,
+          "max_dd": 0.5760291653944729,
+          "skew": -0.9348408617739449,
+          "cagr": 0.014614241906712122,
+          "total_return": 0.3667703458951186,
+          "roll_beta_mean": 0.015246971526332392,
+          "roll_beta_median": 0.009792423373352635,
+          "roll_beta_p10": -0.2340673599588529,
+          "roll_beta_p90": 0.2825431373493528,
+          "roll_beta_frac_neg": 0.48700816629547145,
+          "roll_beta_n": 5388,
+          "fullsample_beta": -0.009659292921537875,
+          "fullsample_beta_t": -0.4114499208307933,
+          "alpha_ann365_bps": 371.83423140394905,
+          "alpha_t_nw": 0.8529103442190422,
+          "netdollar_mean": 0.026087122239020367,
+          "netdollar_min": -0.6115016632094056,
+          "netdollar_max": 0.6484952504181812,
+          "episodes": {
+            "2009 mom crash Mar-May": {
+              "n_days": 63,
+              "total_return": -0.2929484075375617,
+              "max_dd": 0.34027753260708526,
+              "worst_day": -0.03847122816553588
+            },
+            "2009 H1 wider": {
+              "n_days": 124,
+              "total_return": -0.26546909918573747,
+              "max_dd": 0.34027753260708504,
+              "worst_day": -0.04857305256106873
+            },
+            "2020 Covid crash": {
+              "n_days": 52,
+              "total_return": -0.05275465661739143,
+              "max_dd": 0.1398734950279591,
+              "worst_day": -0.041246824076928666
+            },
+            "2020-11 vaccine rot.": {
+              "n_days": 20,
+              "total_return": -0.07507813660026141,
+              "max_dd": 0.15367665537994268,
+              "worst_day": -0.10580066180661661
+            },
+            "2021 meme squeeze Q1": {
+              "n_days": 61,
+              "total_return": -0.07582746011843178,
+              "max_dd": 0.17185013997644338,
+              "worst_day": -0.038248474748632674
+            },
+            "2022 bear": {
+              "n_days": 251,
+              "total_return": 0.17394205927961548,
+              "max_dd": 0.15882291478848298,
+              "worst_day": -0.04253483157211468
+            },
+            "2026-07 junk squeeze": {
+              "n_days": 21,
+              "total_return": -0.09173560507698408,
+              "max_dd": 0.1128707220781836,
+              "worst_day": -0.04228692882741261
+            }
+          },
+          "turnover_ann": 7.970904605668331,
+          "cost_drag_ann_bps": 47.825427634009976,
+          "borrow_drag_ann_bps": 42.526009587512114,
+          "n_reforms": 259,
+          "n_days": 5427,
+          "avg_long_names": 100.0,
+          "avg_short_names": 100.0,
+          "legbeta_long": 1.335566936202997,
+          "legbeta_short": 1.3727331153478193,
+          "legbeta_spread_min": -1.1903010988279266,
+          "legbeta_spread_max": 1.237952241300157,
+          "legbeta_spread_frac_neg": 0.4942528735632184,
+          "hedge_mean": 0.026770403464997598,
+          "hedge_min": -0.6082851264274141,
+          "hedge_max": 0.6421682727054356,
+          "exante_hedge_mean": 0.026770403464997598,
+          "bootstrap_dsharpe": {
+            "mean": 0.05190653090819808,
+            "p05": -0.08190149759861143,
+            "p95": 0.18234291661378593,
+            "frac_le_zero": 0.2535,
+            "n_boot": 2000
+          },
+          "dsr": {
+            "var": {
+              "N": 114,
+              "dsr": 1.372002418123303e-07,
+              "psr": 0.7887940552105417
+            },
+            "var_sharadar": {
+              "N": 12,
+              "dsr": 0.025532888943566482,
+              "psr": 0.7887940552105417
+            }
+          }
+        },
+        "CTRL_NETLONG": {
+          "net_sharpe_ann365": 0.18051413199249156,
+          "net_sharpe_ann252": 0.14999094644776975,
+          "gross_sharpe_ann365": 0.22325352572586094,
+          "vol_ann365": 0.1822329952649873,
+          "max_dd": 0.598573683430508,
+          "skew": -0.9553597570689725,
+          "cagr": 0.01123788482864252,
+          "total_return": 0.2720962197719383,
+          "roll_beta_mean": 0.006996176246170197,
+          "roll_beta_median": 0.0749276653867764,
+          "roll_beta_p10": -0.5485651500762277,
+          "roll_beta_p90": 0.43193031183255,
+          "roll_beta_frac_neg": 0.43021529324424646,
+          "roll_beta_n": 5388,
+          "fullsample_beta": -0.1002079404665199,
+          "fullsample_beta_t": -4.415855090095343,
+          "alpha_ann365_bps": 503.80187439166406,
+          "alpha_t_nw": 1.0951715547740473,
+          "netdollar_mean": 0.018878185168931087,
+          "netdollar_min": 0.0,
+          "netdollar_max": 0.0314903741508793,
+          "episodes": {
+            "2009 mom crash Mar-May": {
+              "n_days": 63,
+              "total_return": -0.37024883566360667,
+              "max_dd": 0.4265386135795409,
+              "worst_day": -0.05761349892363967
+            },
+            "2009 H1 wider": {
+              "n_days": 124,
+              "total_return": -0.29829933750043724,
+              "max_dd": 0.42916114439772823,
+              "worst_day": -0.05761349892363967
+            },
+            "2020 Covid crash": {
+              "n_days": 52,
+              "total_return": -0.045369873831126006,
+              "max_dd": 0.14569437683573572,
+              "worst_day": -0.045372923215438156
+            },
+            "2020-11 vaccine rot.": {
+              "n_days": 20,
+              "total_return": -0.10560222927223228,
+              "max_dd": 0.16405046346268026,
+              "worst_day": -0.10969022523992483
+            },
+            "2021 meme squeeze Q1": {
+              "n_days": 61,
+              "total_return": -0.08795036627679853,
+              "max_dd": 0.168626266650878,
+              "worst_day": -0.03598845209602939
+            },
+            "2022 bear": {
+              "n_days": 251,
+              "total_return": 0.24514513352513978,
+              "max_dd": 0.18708016569214592,
+              "worst_day": -0.06791958509322579
+            },
+            "2026-07 junk squeeze": {
+              "n_days": 21,
+              "total_return": -0.0953188076955308,
+              "max_dd": 0.11948229914420638,
+              "worst_day": -0.0407676643005912
+            }
+          },
+          "turnover_ann": 6.919363018935236,
+          "cost_drag_ann_bps": 41.516178113611396,
+          "borrow_drag_ann_bps": 36.319201185890755,
+          "n_reforms": 87,
+          "n_days": 5427,
+          "avg_long_names": 100.0,
+          "avg_short_names": 100.0,
+          "legbeta_long": 1.335566936202997,
+          "legbeta_short": 1.3727331153478193,
+          "legbeta_spread_min": -1.1903010988279266,
+          "legbeta_spread_max": 1.237952241300157,
+          "legbeta_spread_frac_neg": 0.4942528735632184,
+          "hedge_mean": 0.02108164939371614,
+          "hedge_min": 0.021081649393716147,
+          "hedge_max": 0.021081649393716147,
+          "exante_hedge_mean": 0.021081649393716147,
+          "bootstrap_dsharpe": {
+            "mean": 0.02147109544817711,
+            "p05": 0.01200304575139004,
+            "p95": 0.03056758065489386,
+            "frac_le_zero": 0.0,
+            "n_boot": 2000
+          },
+          "dsr": {
+            "var": {
+              "N": 114,
+              "dsr": 7.46388626630024e-08,
+              "psr": 0.7557814072384476
+            },
+            "var_sharadar": {
+              "N": 12,
+              "dsr": 0.019598140946863362,
+              "psr": 0.7557814072384476
+            }
+          }
+        },
+        "BASE_asis": {
+          "net_sharpe_ann365": -0.12456070181848672,
+          "net_sharpe_ann252": -0.1034986975797018,
+          "gross_sharpe_ann365": -0.07519727327953112,
+          "vol_ann365": 0.15358470820459938,
+          "max_dd": 0.5716064561035932,
+          "skew": -0.927567388448932,
+          "cagr": -0.02116713743950427,
+          "total_return": -0.3691852985027865,
+          "roll_beta_mean": 0.034291048881214925,
+          "roll_beta_median": 0.08435693835089803,
+          "roll_beta_p10": -0.44358425908455795,
+          "roll_beta_p90": 0.39765135858176326,
+          "roll_beta_frac_neg": 0.40682999257609503,
+          "roll_beta_n": 5388,
+          "fullsample_beta": -0.0714605518442307,
+          "fullsample_beta_t": -3.8836109752620622,
+          "alpha_ann365_bps": -66.61985829560653,
+          "alpha_t_nw": -0.1718539702800548,
+          "netdollar_mean": -0.0005552645968919158,
+          "netdollar_min": -0.013404178713413133,
+          "netdollar_max": 0.012282169487017575,
+          "episodes": {
+            "2009 mom crash Mar-May": {
+              "n_days": 63,
+              "total_return": -0.3502408787611463,
+              "max_dd": 0.3975014065774616,
+              "worst_day": -0.05308268173146266
+            },
+            "2009 H1 wider": {
+              "n_days": 124,
+              "total_return": -0.2877394494454397,
+              "max_dd": 0.40704211256569545,
+              "worst_day": -0.05308268173146266
+            },
+            "2020 Covid crash": {
+              "n_days": 52,
+              "total_return": -0.03954666213582447,
+              "max_dd": 0.12881738390869557,
+              "worst_day": -0.04351417206243537
+            },
+            "2020-11 vaccine rot.": {
+              "n_days": 20,
+              "total_return": -0.09724261337590057,
+              "max_dd": 0.15048249643184208,
+              "worst_day": -0.09873796729947351
+            },
+            "2021 meme squeeze Q1": {
+              "n_days": 61,
+              "total_return": -0.06574419577918789,
+              "max_dd": 0.15527401157505982,
+              "worst_day": -0.03202347950281581
+            },
+            "2022 bear": {
+              "n_days": 251,
+              "total_return": 0.24023667819061534,
+              "max_dd": 0.16702446995116393,
+              "worst_day": -0.06414710222523545
+            },
+            "2026-07 junk squeeze": {
+              "n_days": 21,
+              "total_return": -0.08219315854418918,
+              "max_dd": 0.10778179579021763,
+              "worst_day": -0.03583228262969873
+            }
+          },
+          "turnover_ann": 6.598981734459406,
+          "cost_drag_ann_bps": 39.593890406756444,
+          "borrow_drag_ann_bps": 36.23293038568667,
+          "n_reforms": 87,
+          "n_days": 5427,
+          "avg_long_names": 100.0,
+          "avg_short_names": 100.0,
+          "legbeta_long": 1.3244895785357707,
+          "legbeta_short": 1.2681101230748861,
+          "legbeta_spread_min": -1.1158448469884172,
+          "legbeta_spread_max": 1.2304184293594933,
+          "legbeta_spread_frac_neg": 0.39080459770114945,
+          "hedge_mean": 0.0,
+          "hedge_min": 0.0,
+          "hedge_max": 0.0,
+          "exante_hedge_mean": -0.02778698731449238,
+          "bootstrap_dsharpe": {
+            "mean": -0.274206807659912,
+            "p05": -0.3951841148489538,
+            "p95": -0.16093519145482849,
+            "frac_le_zero": 1.0,
+            "n_boot": 2000
+          },
+          "dsr": {
+            "var": {
+              "N": 114,
+              "dsr": 4.799554029703357e-11,
+              "psr": 0.3150143079184563
+            },
+            "var_sharadar": {
+              "N": 12,
+              "dsr": 0.0005619005168545621,
+              "psr": 0.3150143079184563
+            }
+          }
+        }
+      },
+      "h_static": 0.021081649393716147,
+      "first": "2004-01-02",
+      "last": "2026-07-30",
+      "n_names": 6835,
+      "book_start": "2005-01-03",
+      "K": 100,
+      "gross_leg": 0.5,
+      "split_bug_mom_cells_pct": 0.029574756156623014,
+      "split_bug_mom_cells_n": 478024,
+      "artefact_cells_fix": 162,
+      "artefact_cells_asis": 931,
+      "market_nan_sessions": 1,
+      "gate": {
+        "premise_holds": false,
+        "base_roll_beta_mean": -0.014084834108613838,
+        "base_roll_beta_frac_neg": 0.4478470675575353,
+        "worst_episode_base": "2009 H1 wider",
+        "active_episodes": [
+          "2009 mom crash Mar-May",
+          "2009 H1 wider",
+          "2020 Covid crash",
+          "2020-11 vaccine rot.",
+          "2021 meme squeeze Q1",
+          "2022 bear",
+          "2026-07 junk squeeze"
+        ],
+        "gate_evaluable": true,
+        "arms": {
+          "V1_betaneutral": {
+            "A_beta": false,
+            "B_sharpe": true,
+            "C_tail": true,
+            "D_notfitted": true,
+            "E_cost": true,
+            "F_beatsctrl": true,
+            "episodes_improved": [
+              "2009 mom crash Mar-May",
+              "2009 H1 wider",
+              "2020 Covid crash",
+              "2020-11 vaccine rot.",
+              "2022 bear",
+              "2026-07 junk squeeze"
+            ],
+            "n_improved": 6,
+            "n_improved_ex_july26": 5,
+            "worst_ep_dd_base": 0.43354646118016205,
+            "worst_ep_dd_arm": 0.27580475212792943,
+            "worst_ep_dd_ctrl": 0.42916114439772823,
+            "PASS": false
+          },
+          "V2_betahedged": {
+            "A_beta": false,
+            "B_sharpe": true,
+            "C_tail": false,
+            "D_notfitted": true,
+            "E_cost": true,
+            "F_beatsctrl": true,
+            "episodes_improved": [
+              "2009 mom crash Mar-May",
+              "2009 H1 wider",
+              "2020 Covid crash",
+              "2020-11 vaccine rot.",
+              "2022 bear",
+              "2026-07 junk squeeze"
+            ],
+            "n_improved": 6,
+            "n_improved_ex_july26": 5,
+            "worst_ep_dd_base": 0.43354646118016205,
+            "worst_ep_dd_arm": 0.34646462723824056,
+            "worst_ep_dd_ctrl": 0.42916114439772823,
+            "PASS": false
+          },
+          "V2m_hedge_21d": {
+            "A_beta": false,
+            "B_sharpe": true,
+            "C_tail": false,
+            "D_notfitted": true,
+            "E_cost": true,
+            "F_beatsctrl": true,
+            "episodes_improved": [
+              "2009 mom crash Mar-May",
+              "2009 H1 wider",
+              "2020 Covid crash",
+              "2020-11 vaccine rot.",
+              "2022 bear",
+              "2026-07 junk squeeze"
+            ],
+            "n_improved": 6,
+            "n_improved_ex_july26": 5,
+            "worst_ep_dd_base": 0.43354646118016205,
+            "worst_ep_dd_arm": 0.34027753260708504,
+            "worst_ep_dd_ctrl": 0.42916114439772823,
+            "PASS": false
+          }
+        }
+      }
+    }
+  },
+  "ledgers": {
+    "var": {
+      "N": 114,
+      "var_sr": 0.000990806942793132
+    },
+    "var_sharadar": {
+      "N": 12,
+      "var_sr": 0.0005093366903682773
+    }
+  }
+}

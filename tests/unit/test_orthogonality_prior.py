@@ -117,7 +117,10 @@ def test_the_gate_is_shown_to_be_insufficient_by_arithmetic_not_assertion() -> N
     """The claim 'the gate does not reach the objective' must be recomputed, never transcribed."""
     result = json.loads(prior.OUTPUT.read_text())
     a = result["what_the_ordering_is_for"]
-    assert a["rho_bar_if_every_new_pair_sits_exactly_at_the_gate"] > a["objective_rho_bar"]
+    assert (
+        a["rho_bar_if_the_aggregate_new_edges_sit_at_the_incremental_boundary"]
+        > a["objective_rho_bar"]
+    )
     assert a["forward_sharpe_at_that_rho_bar_optimistic_haircut"] < 1.5
     assert a["forward_sharpe_at_the_objective_optimistic_haircut"] == pytest.approx(1.5, abs=0.01)
 

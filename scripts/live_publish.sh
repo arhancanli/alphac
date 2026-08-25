@@ -17,6 +17,7 @@ cd "$HOME/alphaforge" || exit 1
 mkdir -p var/log
 . "$HOME/alphaforge/scripts/lib/bounded.sh"
 . "$HOME/alphaforge/scripts/lib/indexnow.sh"
+. "$HOME/alphaforge/scripts/lib/site_snapshot.sh"
 
 FAIL=0
 
@@ -66,6 +67,11 @@ deploy_prod() {
   "$HOME/alphaforge/scripts/rotate_logs.sh" || echo "  log rotation skipped (non-fatal)"
 
   # 1) regenerate the published artifacts from the realized NAV
+  # Refresh each dedicated Alpaca paper curve via GET only before state.json reads it. This is
+  # deliberately separate from the order path, so a closed-market calendar gate cannot leave the
+  # public track record one finalized broker mark behind.
+  uv run python scripts/export_alpaca_broker_reconciliation.py \
+    || echo "WARN: Alpaca broker reconciliation FAIL_CLOSED — local curves were preserved"
   # ORDER IS LOAD-BEARING (fixed 2026-08-19). paper_trading_state.py WRITES data/paper/state.json;
   # glassbox_export.py READS it. Both jobs used to call glassbox FIRST, so every glass-box artifact
   # derived from that state -- track_record.json above all, the site's headline "Proven in the
@@ -111,8 +117,14 @@ deploy_prod() {
     || echo "WARN: record-continuity audit failed — the published report will be stale"
   uv run python scripts/export_lint_debt_contract.py >/dev/null \
     || echo "WARNING: lint debt contract NOT rebuilt — publishing one bound to older source hashes"
-  uv run python scripts/research_export.py || { echo "research_export FAILED"; FAIL=1; }
-  # sign the day's record into the tamper-evident transparency chain before deploying it
+  uv run python scripts/build_identity_trial_packets.py \
+    || { echo "build_identity_trial_packets FAILED"; FAIL=1; }
+  uv run python scripts/build_trial_packet_manifest.py \
+    || { echo "build_trial_packet_manifest FAILED"; FAIL=1; }
+  uv run python scripts/seal_legacy_research_epoch.py \
+    || { echo "seal_legacy_research_epoch FAILED"; FAIL=1; }
+  # Disclose and sign this exact paper-state payload before maturity is evaluated. A maturity
+  # report bound to the previous chain head is now a provenance failure, not a one-cycle lag.
   uv run python scripts/transparency_log.py || { echo "transparency_log FAILED"; FAIL=1; }
   # externally anchor the signed chain head into Bitcoin via OpenTimestamps (un-forgeable timestamp).
   # Soft-fail: a slow calendar / no network must never block the publish — the head anchors next run.
@@ -124,6 +136,25 @@ deploy_prod() {
   _AWD=$!
   uv run python scripts/anchor_transparency.py || echo "anchor_transparency soft-failed (calendars/network) — non-fatal"
   kill "$_AWD" 2>/dev/null; wait "$_AWD" 2>/dev/null
+  uv run python scripts/export_crypto_position_attribution.py \
+    || { echo "export_crypto_position_attribution FAILED"; FAIL=1; }
+  uv run python scripts/verify_crypto_position_attribution_rollout.py \
+    || { echo "verify_crypto_position_attribution_rollout FAILED"; FAIL=1; }
+  uv run python scripts/analyze_current_book_drawdown.py \
+    || { echo "analyze_current_book_drawdown FAILED"; FAIL=1; }
+  uv run python scripts/analyze_current_book_diversification.py \
+    || { echo "analyze_current_book_diversification FAILED"; FAIL=1; }
+  uv run python scripts/seal_forward_drawdown_evidence.py \
+    || { echo "seal_forward_drawdown_evidence FAILED"; FAIL=1; }
+  uv run python scripts/evaluate_forward_evidence_maturity.py \
+    || { echo "evaluate_forward_evidence_maturity FAILED"; FAIL=1; }
+  uv run python scripts/sync_readme_forward_evidence.py \
+    || { echo "sync_readme_forward_evidence FAILED"; FAIL=1; }
+  uv run python scripts/analyze_forward_sleeve_contribution.py \
+    || { echo "analyze_forward_sleeve_contribution FAILED"; FAIL=1; }
+  uv run python scripts/audit_crypto_lab_carry_crash.py \
+    || { echo "audit_crypto_lab_carry_crash FAILED"; FAIL=1; }
+  uv run python scripts/research_export.py || { echo "research_export FAILED"; FAIL=1; }
   # publish the downloadable verifier, then SELF-CHECK that our own published record reproduces
   # (content hashes + signatures + golden master) before we ship it. A failure here means we'd be
   # publishing a record that doesn't reproduce -- warn loudly, do not silently deploy a broken claim.
@@ -166,7 +197,15 @@ deploy_prod() {
   # If it is STILL held after 10 min, skip the deploy legs only — the artifacts above are already
   # written and signed, and the next hourly deploy publishes exactly this data.
   if deploy_lock_wait 600; then
-    trap 'deploy_lock_release' EXIT
+    SNAPSHOT_TEMP=$(mktemp -d "${TMPDIR:-/tmp}/canli-publish.XXXXXX") || {
+      echo "  SKIP DEPLOY: could not create a temporary publication snapshot"
+      exit 1
+    }
+    trap 'site_snapshot_cleanup "$SNAPSHOT_TEMP"; deploy_lock_release' EXIT
+    if ! site_snapshot_create "$SNAPSHOT_TEMP"; then
+      echo "  SKIP DEPLOY: site source changed continuously while taking a publication snapshot"
+      exit 1
+    fi
   else
     echo "  SKIP DEPLOY: hourly deploy still holds the lock after 10m — it publishes this same data"
     if [ "$FAIL" -eq 0 ]; then
@@ -177,16 +216,16 @@ deploy_prod() {
     exit $FAIL
   fi
   echo "--- deploy landing ---"
-  deploy_prod "$HOME/meridian" landing ac-capital.vercel.app meridian-pearl-mu.vercel.app
+  deploy_prod "$SITE_SNAPSHOT_ROOT/meridian" landing ac-capital.vercel.app meridian-pearl-mu.vercel.app
   LANDING_OK=$?
 
   echo "--- deploy app ---"
-  deploy_prod "$HOME/meridian-app" app ac-capital-app.vercel.app
+  deploy_prod "$SITE_SNAPSHOT_ROOT/meridian-app" app ac-capital-app.vercel.app
 
   echo "--- indexnow ---"
   # Same rule as the hourly job, from the same shared file rather than a second copy of it.
   if [ "$LANDING_OK" = "0" ]; then
-    indexnow_submit "$HOME/meridian"
+    indexnow_submit "$SITE_SNAPSHOT_ROOT/meridian"
   else
     echo "  [indexnow] skipped: the landing deploy failed, so there is nothing new to announce"
   fi

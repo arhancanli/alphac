@@ -124,3 +124,23 @@ def test_a_bare_assertion_is_caught_and_a_disclosed_one_is_not(tmp_path: Path) -
         "a withdrawn number quoted inside its own retraction must PASS — the check is satisfied "
         "by disclosure, not by deletion"
     )
+
+
+def test_local_nonclaim_collision_cannot_launder_a_sharpe_assertion(tmp_path: Path) -> None:
+    """A same-digit metric may pass, but it cannot exempt another field nearby."""
+    rules = GATE.load_rules()
+
+    unrelated = tmp_path / "unrelated.json"
+    unrelated.write_text('{"gross_mean": 0.3403301010612419, "sharpe": 2.5034942434773373}')
+    assert not GATE.scan(tmp_path, rules), (
+        "the K30 gross-mean observation is not the withdrawn AlphaVintage Sharpe claim"
+    )
+
+    unrelated.write_text(
+        '{"gross_mean": 0.3403301010612419, "net_sharpe": 0.3403, '
+        '"claim": "validated sleeve"}'
+    )
+    violations = GATE.scan(tmp_path, rules)
+    assert violations, "a local gross_mean exclusion must not excuse a nearby net Sharpe claim"
+    assert len(violations) == 1, "only the net Sharpe use should remain a violation"
+    assert violations[0][1].pattern.pattern == r"0\.3403"

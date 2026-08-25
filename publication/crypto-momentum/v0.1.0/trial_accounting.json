@@ -1,0 +1,1658 @@
+{
+  "complete_recorded_union_extracted": true,
+  "distinct_recorded_hypothesis_identities": 18,
+  "every_identity_packet_complete": false,
+  "global_ledger": {
+    "path": "config/trial_accounting.json",
+    "sha256": "f15af7c989aded5da6c5259a7f7e5587377ab33977b5cd3c5b2395a84ea45043"
+  },
+  "identities": [
+    {
+      "candidate_match_is_verified": true,
+      "candidate_public_papers": [
+        "/research/crypto-momentum-lineage.md"
+      ],
+      "completion_assessment": {
+        "blockers": [
+          {
+            "code": "IDENTITY_PREREGISTRATION_AND_ORIGINAL_ENVIRONMENT_NOT_BOUND",
+            "evidence": [
+              {
+                "path": "artifacts/research/crypto_momentum_family.json",
+                "sha256": "51b3718bbfeef0dfa570e7bed1e8863045eb68da033547afb1e5d33068f90e3c"
+              },
+              {
+                "path": "var/experiments.jsonl",
+                "sha256": "b5a318c0997d980575f758451f509e0154eecbbb50d734e49a587d473062bd08"
+              },
+              {
+                "path": "artifacts/walkforward/crypto_mom_base/walkforward.json",
+                "sha256": "d6c91d0cb238887b1263a1ca92cbd709ef060ce15a95f716770cc5025f06b112"
+              }
+            ],
+            "finding": "The canonical family audit binds this identity to its immutable ledger measurement, but does not bind an identity-level preregistration, original code commit, runner hash, lockfile, and input snapshot. Those missing historical fields cannot be reconstructed from the family summary.",
+            "required_section": "preregistration_and_hashes"
+          },
+          {
+            "code": "IDENTITY_LEVEL_DECISION_PACKET_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/research/crypto_momentum_family.json",
+                "sha256": "51b3718bbfeef0dfa570e7bed1e8863045eb68da033547afb1e5d33068f90e3c"
+              }
+            ],
+            "finding": "The family-level admission status is FAIL_RESEARCH_ONLY; it is not a preserved identity-level gate decision under the complete packet contract.",
+            "required_section": "admission_or_kill_decision"
+          },
+          {
+            "code": "IDENTITY_CAPACITY_NOT_MEASURED",
+            "evidence": [
+              {
+                "path": "artifacts/research/crypto_momentum_family.json",
+                "sha256": "51b3718bbfeef0dfa570e7bed1e8863045eb68da033547afb1e5d33068f90e3c"
+              }
+            ],
+            "finding": "The canonical family audit records capacity as UNMEASURED_NO_PERSISTED_MOMENTUM_CAPACITY_SWEEP; no identity-level capacity evidence can be credited.",
+            "required_section": "result_uncertainty_stress_capacity_and_diversification"
+          }
+        ],
+        "config_hash": "98185811f024897a",
+        "evidence_grade": "artifact_bound",
+        "family_audit": "artifacts/research/crypto_momentum_family.json",
+        "status": "AUDITED_NOT_CURRENTLY_COMPLETABLE"
+      },
+      "config_hash": "98185811f024897a",
+      "coverage_status": "VERIFIED_INCOMPLETE_IDENTITY_PACKET",
+      "family_paper_binding_status": "VERIFIED_TAXONOMY_BINDING",
+      "first_recorded_at": "2026-06-20T13:04:21.380000+00:00",
+      "hypothesis_key": "fb1358c08d36d128",
+      "identity_packet_content_hash": "sha256:630200573ec1fb9fcd12ce377f0e4debf42ea00a1337a5eca34c54e158d9fef9",
+      "identity_packet_status": "INCOMPLETE_BACKFILL_REQUIRED",
+      "label": "mom_xs_2160_168",
+      "ledger_profile": "var",
+      "ledger_source_path": "var/experiments.jsonl",
+      "measurement": {
+        "annualized_sharpe": -0.2761982378971514,
+        "kurtosis": 7.049706791287928,
+        "observations": 1574,
+        "skew": -0.5265477702567987
+      },
+      "missing_sections": [
+        "preregistration_and_hashes",
+        "point_in_time_data_and_survivorship_controls",
+        "execution_and_cost_model",
+        "result_uncertainty_stress_capacity_and_diversification",
+        "admission_or_kill_decision",
+        "code_environment_and_reproduction"
+      ],
+      "research_family_key": "crypto_momentum",
+      "research_family_title": "Crypto time-series and cross-sectional momentum",
+      "sleeve_context": "AlphaForge research",
+      "verified_family_paper_path": "/research/crypto-momentum-lineage.md",
+      "verified_packet_path": "/glassbox/trial-packets/fb1358c08d36d128.json",
+      "verified_sections": [
+        "identity_and_authorship",
+        "economic_mechanism_and_falsifiable_hypothesis",
+        "literature_and_overlap_decision",
+        "family_and_union_trial_accounting",
+        "machine_readable_packet_and_stable_public_paper"
+      ]
+    },
+    {
+      "candidate_match_is_verified": true,
+      "candidate_public_papers": [
+        "/research/crypto-momentum-lineage.md"
+      ],
+      "completion_assessment": {
+        "blockers": [
+          {
+            "code": "IDENTITY_PREREGISTRATION_AND_ORIGINAL_ENVIRONMENT_NOT_BOUND",
+            "evidence": [
+              {
+                "path": "artifacts/research/crypto_momentum_family.json",
+                "sha256": "51b3718bbfeef0dfa570e7bed1e8863045eb68da033547afb1e5d33068f90e3c"
+              },
+              {
+                "path": "var/experiments.jsonl",
+                "sha256": "b5a318c0997d980575f758451f509e0154eecbbb50d734e49a587d473062bd08"
+              },
+              {
+                "path": "artifacts/cpanel/L4_xs168_d/walkforward.json",
+                "sha256": "6c4c2d8c175a6765985a57993479f6201aa9efd742bc43b67e7c2a91f56528b8"
+              }
+            ],
+            "finding": "The canonical family audit binds this identity to its immutable ledger measurement, but does not bind an identity-level preregistration, original code commit, runner hash, lockfile, and input snapshot. Those missing historical fields cannot be reconstructed from the family summary.",
+            "required_section": "preregistration_and_hashes"
+          },
+          {
+            "code": "IDENTITY_LEVEL_DECISION_PACKET_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/research/crypto_momentum_family.json",
+                "sha256": "51b3718bbfeef0dfa570e7bed1e8863045eb68da033547afb1e5d33068f90e3c"
+              }
+            ],
+            "finding": "The family-level admission status is FAIL_RESEARCH_ONLY; it is not a preserved identity-level gate decision under the complete packet contract.",
+            "required_section": "admission_or_kill_decision"
+          },
+          {
+            "code": "IDENTITY_CAPACITY_NOT_MEASURED",
+            "evidence": [
+              {
+                "path": "artifacts/research/crypto_momentum_family.json",
+                "sha256": "51b3718bbfeef0dfa570e7bed1e8863045eb68da033547afb1e5d33068f90e3c"
+              }
+            ],
+            "finding": "The canonical family audit records capacity as UNMEASURED_NO_PERSISTED_MOMENTUM_CAPACITY_SWEEP; no identity-level capacity evidence can be credited.",
+            "required_section": "result_uncertainty_stress_capacity_and_diversification"
+          }
+        ],
+        "config_hash": "34f1100df83f093d",
+        "evidence_grade": "artifact_bound",
+        "family_audit": "artifacts/research/crypto_momentum_family.json",
+        "status": "AUDITED_NOT_CURRENTLY_COMPLETABLE"
+      },
+      "config_hash": "34f1100df83f093d",
+      "coverage_status": "VERIFIED_INCOMPLETE_IDENTITY_PACKET",
+      "family_paper_binding_status": "VERIFIED_TAXONOMY_BINDING",
+      "first_recorded_at": "2026-06-20T13:12:10.183000+00:00",
+      "hypothesis_key": "bee03ca77096bf76",
+      "identity_packet_content_hash": "sha256:9c8cd7ee00c9659e0411e661cc90db9b0faa79bd5f209cc6579a48f18fbe1fb3",
+      "identity_packet_status": "INCOMPLETE_BACKFILL_REQUIRED",
+      "label": "mom_xs_168_24",
+      "ledger_profile": "var",
+      "ledger_source_path": "var/experiments.jsonl",
+      "measurement": {
+        "annualized_sharpe": -1.1689936678238069,
+        "kurtosis": 7.351938362179594,
+        "observations": 1574,
+        "skew": -0.16659772237124923
+      },
+      "missing_sections": [
+        "preregistration_and_hashes",
+        "point_in_time_data_and_survivorship_controls",
+        "execution_and_cost_model",
+        "result_uncertainty_stress_capacity_and_diversification",
+        "admission_or_kill_decision",
+        "code_environment_and_reproduction"
+      ],
+      "research_family_key": "crypto_momentum",
+      "research_family_title": "Crypto time-series and cross-sectional momentum",
+      "sleeve_context": "AlphaForge research",
+      "verified_family_paper_path": "/research/crypto-momentum-lineage.md",
+      "verified_packet_path": "/glassbox/trial-packets/bee03ca77096bf76.json",
+      "verified_sections": [
+        "identity_and_authorship",
+        "economic_mechanism_and_falsifiable_hypothesis",
+        "literature_and_overlap_decision",
+        "family_and_union_trial_accounting",
+        "machine_readable_packet_and_stable_public_paper"
+      ]
+    },
+    {
+      "candidate_match_is_verified": true,
+      "candidate_public_papers": [
+        "/research/crypto-momentum-lineage.md"
+      ],
+      "completion_assessment": {
+        "blockers": [
+          {
+            "code": "IDENTITY_PREREGISTRATION_AND_ORIGINAL_ENVIRONMENT_NOT_BOUND",
+            "evidence": [
+              {
+                "path": "artifacts/research/crypto_momentum_family.json",
+                "sha256": "51b3718bbfeef0dfa570e7bed1e8863045eb68da033547afb1e5d33068f90e3c"
+              },
+              {
+                "path": "var/experiments.jsonl",
+                "sha256": "b5a318c0997d980575f758451f509e0154eecbbb50d734e49a587d473062bd08"
+              },
+              {
+                "path": "artifacts/cpanel/L4_xs504_d/walkforward.json",
+                "sha256": "b0d4229988b628cb4870c44066304060ead4c50250d173ec19a70924ef4f41ae"
+              }
+            ],
+            "finding": "The canonical family audit binds this identity to its immutable ledger measurement, but does not bind an identity-level preregistration, original code commit, runner hash, lockfile, and input snapshot. Those missing historical fields cannot be reconstructed from the family summary.",
+            "required_section": "preregistration_and_hashes"
+          },
+          {
+            "code": "IDENTITY_LEVEL_DECISION_PACKET_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/research/crypto_momentum_family.json",
+                "sha256": "51b3718bbfeef0dfa570e7bed1e8863045eb68da033547afb1e5d33068f90e3c"
+              }
+            ],
+            "finding": "The family-level admission status is FAIL_RESEARCH_ONLY; it is not a preserved identity-level gate decision under the complete packet contract.",
+            "required_section": "admission_or_kill_decision"
+          },
+          {
+            "code": "IDENTITY_CAPACITY_NOT_MEASURED",
+            "evidence": [
+              {
+                "path": "artifacts/research/crypto_momentum_family.json",
+                "sha256": "51b3718bbfeef0dfa570e7bed1e8863045eb68da033547afb1e5d33068f90e3c"
+              }
+            ],
+            "finding": "The canonical family audit records capacity as UNMEASURED_NO_PERSISTED_MOMENTUM_CAPACITY_SWEEP; no identity-level capacity evidence can be credited.",
+            "required_section": "result_uncertainty_stress_capacity_and_diversification"
+          }
+        ],
+        "config_hash": "71b39bedb3cc69a0",
+        "evidence_grade": "artifact_bound",
+        "family_audit": "artifacts/research/crypto_momentum_family.json",
+        "status": "AUDITED_NOT_CURRENTLY_COMPLETABLE"
+      },
+      "config_hash": "71b39bedb3cc69a0",
+      "coverage_status": "VERIFIED_INCOMPLETE_IDENTITY_PACKET",
+      "family_paper_binding_status": "VERIFIED_TAXONOMY_BINDING",
+      "first_recorded_at": "2026-06-20T13:14:16.957000+00:00",
+      "hypothesis_key": "f781fc9dac3d783d",
+      "identity_packet_content_hash": "sha256:531c489f407abd8517cfa0b129963478b1ed9d583ae4f3e38573ffebd56bbd2e",
+      "identity_packet_status": "INCOMPLETE_BACKFILL_REQUIRED",
+      "label": "mom_xs_504_48",
+      "ledger_profile": "var",
+      "ledger_source_path": "var/experiments.jsonl",
+      "measurement": {
+        "annualized_sharpe": -0.22450700069997623,
+        "kurtosis": 7.29321784101218,
+        "observations": 1574,
+        "skew": -0.15681909316429968
+      },
+      "missing_sections": [
+        "preregistration_and_hashes",
+        "point_in_time_data_and_survivorship_controls",
+        "execution_and_cost_model",
+        "result_uncertainty_stress_capacity_and_diversification",
+        "admission_or_kill_decision",
+        "code_environment_and_reproduction"
+      ],
+      "research_family_key": "crypto_momentum",
+      "research_family_title": "Crypto time-series and cross-sectional momentum",
+      "sleeve_context": "AlphaForge research",
+      "verified_family_paper_path": "/research/crypto-momentum-lineage.md",
+      "verified_packet_path": "/glassbox/trial-packets/f781fc9dac3d783d.json",
+      "verified_sections": [
+        "identity_and_authorship",
+        "economic_mechanism_and_falsifiable_hypothesis",
+        "literature_and_overlap_decision",
+        "family_and_union_trial_accounting",
+        "machine_readable_packet_and_stable_public_paper"
+      ]
+    },
+    {
+      "candidate_match_is_verified": true,
+      "candidate_public_papers": [
+        "/research/crypto-momentum-lineage.md"
+      ],
+      "completion_assessment": {
+        "blockers": [
+          {
+            "code": "IDENTITY_PREREGISTRATION_AND_ORIGINAL_ENVIRONMENT_NOT_BOUND",
+            "evidence": [
+              {
+                "path": "artifacts/research/crypto_momentum_family.json",
+                "sha256": "51b3718bbfeef0dfa570e7bed1e8863045eb68da033547afb1e5d33068f90e3c"
+              },
+              {
+                "path": "var/experiments.jsonl",
+                "sha256": "b5a318c0997d980575f758451f509e0154eecbbb50d734e49a587d473062bd08"
+              },
+              {
+                "path": "artifacts/cpanel/L4_ts504_d/walkforward.json",
+                "sha256": "43040964530ace6fa4a416043004fe76685e901718f15f12534cb60780272d5f"
+              }
+            ],
+            "finding": "The canonical family audit binds this identity to its immutable ledger measurement, but does not bind an identity-level preregistration, original code commit, runner hash, lockfile, and input snapshot. Those missing historical fields cannot be reconstructed from the family summary.",
+            "required_section": "preregistration_and_hashes"
+          },
+          {
+            "code": "IDENTITY_LEVEL_DECISION_PACKET_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/research/crypto_momentum_family.json",
+                "sha256": "51b3718bbfeef0dfa570e7bed1e8863045eb68da033547afb1e5d33068f90e3c"
+              }
+            ],
+            "finding": "The family-level admission status is FAIL_RESEARCH_ONLY; it is not a preserved identity-level gate decision under the complete packet contract.",
+            "required_section": "admission_or_kill_decision"
+          },
+          {
+            "code": "IDENTITY_CAPACITY_NOT_MEASURED",
+            "evidence": [
+              {
+                "path": "artifacts/research/crypto_momentum_family.json",
+                "sha256": "51b3718bbfeef0dfa570e7bed1e8863045eb68da033547afb1e5d33068f90e3c"
+              }
+            ],
+            "finding": "The canonical family audit records capacity as UNMEASURED_NO_PERSISTED_MOMENTUM_CAPACITY_SWEEP; no identity-level capacity evidence can be credited.",
+            "required_section": "result_uncertainty_stress_capacity_and_diversification"
+          }
+        ],
+        "config_hash": "b8e9996aadf2189f",
+        "evidence_grade": "artifact_bound",
+        "family_audit": "artifacts/research/crypto_momentum_family.json",
+        "status": "AUDITED_NOT_CURRENTLY_COMPLETABLE"
+      },
+      "config_hash": "b8e9996aadf2189f",
+      "coverage_status": "VERIFIED_INCOMPLETE_IDENTITY_PACKET",
+      "family_paper_binding_status": "VERIFIED_TAXONOMY_BINDING",
+      "first_recorded_at": "2026-06-20T13:15:29.748000+00:00",
+      "hypothesis_key": "757781cf1d69e68f",
+      "identity_packet_content_hash": "sha256:5f79f875066183d300fdf86d3e39a41ac5bf01da16122b8f160954af570f5ce6",
+      "identity_packet_status": "INCOMPLETE_BACKFILL_REQUIRED",
+      "label": "mom_ts_504",
+      "ledger_profile": "var",
+      "ledger_source_path": "var/experiments.jsonl",
+      "measurement": {
+        "annualized_sharpe": 0.1930966232923673,
+        "kurtosis": 8.65250929759951,
+        "observations": 1574,
+        "skew": 0.044645416665261596
+      },
+      "missing_sections": [
+        "preregistration_and_hashes",
+        "point_in_time_data_and_survivorship_controls",
+        "execution_and_cost_model",
+        "result_uncertainty_stress_capacity_and_diversification",
+        "admission_or_kill_decision",
+        "code_environment_and_reproduction"
+      ],
+      "research_family_key": "crypto_momentum",
+      "research_family_title": "Crypto time-series and cross-sectional momentum",
+      "sleeve_context": "AlphaForge research",
+      "verified_family_paper_path": "/research/crypto-momentum-lineage.md",
+      "verified_packet_path": "/glassbox/trial-packets/757781cf1d69e68f.json",
+      "verified_sections": [
+        "identity_and_authorship",
+        "economic_mechanism_and_falsifiable_hypothesis",
+        "literature_and_overlap_decision",
+        "family_and_union_trial_accounting",
+        "machine_readable_packet_and_stable_public_paper"
+      ]
+    },
+    {
+      "candidate_match_is_verified": true,
+      "candidate_public_papers": [
+        "/research/crypto-momentum-lineage.md"
+      ],
+      "completion_assessment": {
+        "blockers": [
+          {
+            "code": "IDENTITY_PREREGISTRATION_AND_ORIGINAL_ENVIRONMENT_NOT_BOUND",
+            "evidence": [
+              {
+                "path": "artifacts/research/crypto_momentum_family.json",
+                "sha256": "51b3718bbfeef0dfa570e7bed1e8863045eb68da033547afb1e5d33068f90e3c"
+              },
+              {
+                "path": "var/experiments.jsonl",
+                "sha256": "b5a318c0997d980575f758451f509e0154eecbbb50d734e49a587d473062bd08"
+              },
+              {
+                "path": "artifacts/cpanel/L4_ts168_d/walkforward.json",
+                "sha256": "139867e04ce7fc8ed129affe3b96d09437ff445958c78c8dfb3bcaae758bac2d"
+              }
+            ],
+            "finding": "The canonical family audit binds this identity to its immutable ledger measurement, but does not bind an identity-level preregistration, original code commit, runner hash, lockfile, and input snapshot. Those missing historical fields cannot be reconstructed from the family summary.",
+            "required_section": "preregistration_and_hashes"
+          },
+          {
+            "code": "IDENTITY_LEVEL_DECISION_PACKET_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/research/crypto_momentum_family.json",
+                "sha256": "51b3718bbfeef0dfa570e7bed1e8863045eb68da033547afb1e5d33068f90e3c"
+              }
+            ],
+            "finding": "The family-level admission status is FAIL_RESEARCH_ONLY; it is not a preserved identity-level gate decision under the complete packet contract.",
+            "required_section": "admission_or_kill_decision"
+          },
+          {
+            "code": "IDENTITY_CAPACITY_NOT_MEASURED",
+            "evidence": [
+              {
+                "path": "artifacts/research/crypto_momentum_family.json",
+                "sha256": "51b3718bbfeef0dfa570e7bed1e8863045eb68da033547afb1e5d33068f90e3c"
+              }
+            ],
+            "finding": "The canonical family audit records capacity as UNMEASURED_NO_PERSISTED_MOMENTUM_CAPACITY_SWEEP; no identity-level capacity evidence can be credited.",
+            "required_section": "result_uncertainty_stress_capacity_and_diversification"
+          }
+        ],
+        "config_hash": "04596e410e6518b3",
+        "evidence_grade": "artifact_bound",
+        "family_audit": "artifacts/research/crypto_momentum_family.json",
+        "status": "AUDITED_NOT_CURRENTLY_COMPLETABLE"
+      },
+      "config_hash": "04596e410e6518b3",
+      "coverage_status": "VERIFIED_INCOMPLETE_IDENTITY_PACKET",
+      "family_paper_binding_status": "VERIFIED_TAXONOMY_BINDING",
+      "first_recorded_at": "2026-06-20T13:16:42.452000+00:00",
+      "hypothesis_key": "54b0a73551057e63",
+      "identity_packet_content_hash": "sha256:697b3daa978315380e6bc28cc6ce57e804ccba3d6fecc68ef143a9f8ce5b80c7",
+      "identity_packet_status": "INCOMPLETE_BACKFILL_REQUIRED",
+      "label": "mom_ts_168",
+      "ledger_profile": "var",
+      "ledger_source_path": "var/experiments.jsonl",
+      "measurement": {
+        "annualized_sharpe": -0.8366462679529766,
+        "kurtosis": 6.8846962353415355,
+        "observations": 1574,
+        "skew": 0.31378798473719327
+      },
+      "missing_sections": [
+        "preregistration_and_hashes",
+        "point_in_time_data_and_survivorship_controls",
+        "execution_and_cost_model",
+        "result_uncertainty_stress_capacity_and_diversification",
+        "admission_or_kill_decision",
+        "code_environment_and_reproduction"
+      ],
+      "research_family_key": "crypto_momentum",
+      "research_family_title": "Crypto time-series and cross-sectional momentum",
+      "sleeve_context": "AlphaForge research",
+      "verified_family_paper_path": "/research/crypto-momentum-lineage.md",
+      "verified_packet_path": "/glassbox/trial-packets/54b0a73551057e63.json",
+      "verified_sections": [
+        "identity_and_authorship",
+        "economic_mechanism_and_falsifiable_hypothesis",
+        "literature_and_overlap_decision",
+        "family_and_union_trial_accounting",
+        "machine_readable_packet_and_stable_public_paper"
+      ]
+    },
+    {
+      "candidate_match_is_verified": true,
+      "candidate_public_papers": [
+        "/research/crypto-momentum-lineage.md"
+      ],
+      "completion_assessment": {
+        "blockers": [
+          {
+            "code": "IDENTITY_PREREGISTRATION_AND_ORIGINAL_ENVIRONMENT_NOT_BOUND",
+            "evidence": [
+              {
+                "path": "artifacts/research/crypto_momentum_family.json",
+                "sha256": "51b3718bbfeef0dfa570e7bed1e8863045eb68da033547afb1e5d33068f90e3c"
+              },
+              {
+                "path": "var/experiments.jsonl",
+                "sha256": "b5a318c0997d980575f758451f509e0154eecbbb50d734e49a587d473062bd08"
+              },
+              {
+                "path": "artifacts/cpanel/L9_tsmom/walkforward.json",
+                "sha256": "dd871ef7e5694547e4fd7b25dfe27be5f6ee2772237fb6b5fdd0c49ccefffcbf"
+              }
+            ],
+            "finding": "The canonical family audit binds this identity to its immutable ledger measurement, but does not bind an identity-level preregistration, original code commit, runner hash, lockfile, and input snapshot. Those missing historical fields cannot be reconstructed from the family summary.",
+            "required_section": "preregistration_and_hashes"
+          },
+          {
+            "code": "IDENTITY_LEVEL_DECISION_PACKET_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/research/crypto_momentum_family.json",
+                "sha256": "51b3718bbfeef0dfa570e7bed1e8863045eb68da033547afb1e5d33068f90e3c"
+              }
+            ],
+            "finding": "The family-level admission status is FAIL_RESEARCH_ONLY; it is not a preserved identity-level gate decision under the complete packet contract.",
+            "required_section": "admission_or_kill_decision"
+          },
+          {
+            "code": "IDENTITY_CAPACITY_NOT_MEASURED",
+            "evidence": [
+              {
+                "path": "artifacts/research/crypto_momentum_family.json",
+                "sha256": "51b3718bbfeef0dfa570e7bed1e8863045eb68da033547afb1e5d33068f90e3c"
+              }
+            ],
+            "finding": "The canonical family audit records capacity as UNMEASURED_NO_PERSISTED_MOMENTUM_CAPACITY_SWEEP; no identity-level capacity evidence can be credited.",
+            "required_section": "result_uncertainty_stress_capacity_and_diversification"
+          }
+        ],
+        "config_hash": "fac5643c9bee20fd",
+        "evidence_grade": "artifact_bound",
+        "family_audit": "artifacts/research/crypto_momentum_family.json",
+        "status": "AUDITED_NOT_CURRENTLY_COMPLETABLE"
+      },
+      "config_hash": "fac5643c9bee20fd",
+      "coverage_status": "VERIFIED_INCOMPLETE_IDENTITY_PACKET",
+      "family_paper_binding_status": "VERIFIED_TAXONOMY_BINDING",
+      "first_recorded_at": "2026-06-20T13:18:27.392000+00:00",
+      "hypothesis_key": "b08b7841ef8beb6e",
+      "identity_packet_content_hash": "sha256:2baf0efb96d22d675946b73ff69cab163c4b57848d7daa01296cf297fbfa897d",
+      "identity_packet_status": "INCOMPLETE_BACKFILL_REQUIRED",
+      "label": "mom_ts_168 + mom_ts_504 + mom_ts_2160",
+      "ledger_profile": "var",
+      "ledger_source_path": "var/experiments.jsonl",
+      "measurement": {
+        "annualized_sharpe": -0.23823627402806,
+        "kurtosis": 7.223844643389583,
+        "observations": 1574,
+        "skew": -0.31503419463265075
+      },
+      "missing_sections": [
+        "preregistration_and_hashes",
+        "point_in_time_data_and_survivorship_controls",
+        "execution_and_cost_model",
+        "result_uncertainty_stress_capacity_and_diversification",
+        "admission_or_kill_decision",
+        "code_environment_and_reproduction"
+      ],
+      "research_family_key": "crypto_momentum",
+      "research_family_title": "Crypto time-series and cross-sectional momentum",
+      "sleeve_context": "AlphaForge research",
+      "verified_family_paper_path": "/research/crypto-momentum-lineage.md",
+      "verified_packet_path": "/glassbox/trial-packets/b08b7841ef8beb6e.json",
+      "verified_sections": [
+        "identity_and_authorship",
+        "economic_mechanism_and_falsifiable_hypothesis",
+        "literature_and_overlap_decision",
+        "family_and_union_trial_accounting",
+        "machine_readable_packet_and_stable_public_paper"
+      ]
+    },
+    {
+      "candidate_match_is_verified": true,
+      "candidate_public_papers": [
+        "/research/crypto-momentum-lineage.md"
+      ],
+      "completion_assessment": {
+        "blockers": [
+          {
+            "code": "IDENTITY_PREREGISTRATION_AND_ORIGINAL_ENVIRONMENT_NOT_BOUND",
+            "evidence": [
+              {
+                "path": "artifacts/research/crypto_momentum_family.json",
+                "sha256": "51b3718bbfeef0dfa570e7bed1e8863045eb68da033547afb1e5d33068f90e3c"
+              },
+              {
+                "path": "var/experiments.jsonl",
+                "sha256": "b5a318c0997d980575f758451f509e0154eecbbb50d734e49a587d473062bd08"
+              },
+              {
+                "path": "artifacts/cpanel/ts504_long_d/walkforward.json",
+                "sha256": "9e45b0316345de9e99e15dc37f8b7c3d0b1e51f52d145af53976c93ff4645998"
+              }
+            ],
+            "finding": "The canonical family audit binds this identity to its immutable ledger measurement, but does not bind an identity-level preregistration, original code commit, runner hash, lockfile, and input snapshot. Those missing historical fields cannot be reconstructed from the family summary.",
+            "required_section": "preregistration_and_hashes"
+          },
+          {
+            "code": "IDENTITY_LEVEL_DECISION_PACKET_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/research/crypto_momentum_family.json",
+                "sha256": "51b3718bbfeef0dfa570e7bed1e8863045eb68da033547afb1e5d33068f90e3c"
+              }
+            ],
+            "finding": "The family-level admission status is FAIL_RESEARCH_ONLY; it is not a preserved identity-level gate decision under the complete packet contract.",
+            "required_section": "admission_or_kill_decision"
+          },
+          {
+            "code": "IDENTITY_CAPACITY_NOT_MEASURED",
+            "evidence": [
+              {
+                "path": "artifacts/research/crypto_momentum_family.json",
+                "sha256": "51b3718bbfeef0dfa570e7bed1e8863045eb68da033547afb1e5d33068f90e3c"
+              }
+            ],
+            "finding": "The canonical family audit records capacity as UNMEASURED_NO_PERSISTED_MOMENTUM_CAPACITY_SWEEP; no identity-level capacity evidence can be credited.",
+            "required_section": "result_uncertainty_stress_capacity_and_diversification"
+          }
+        ],
+        "config_hash": "599bf14bdc7f6616",
+        "evidence_grade": "artifact_bound",
+        "family_audit": "artifacts/research/crypto_momentum_family.json",
+        "status": "AUDITED_NOT_CURRENTLY_COMPLETABLE"
+      },
+      "config_hash": "599bf14bdc7f6616",
+      "coverage_status": "VERIFIED_INCOMPLETE_IDENTITY_PACKET",
+      "family_paper_binding_status": "VERIFIED_TAXONOMY_BINDING",
+      "first_recorded_at": "2026-06-20T13:18:36.640000+00:00",
+      "hypothesis_key": "73aa637baa2b554d",
+      "identity_packet_content_hash": "sha256:3faa7a1e105e3bf0642b5bc206d93de6503fd83ccf402cc361d6edb0aab5ecb8",
+      "identity_packet_status": "INCOMPLETE_BACKFILL_REQUIRED",
+      "label": "mom_ts_504",
+      "ledger_profile": "var",
+      "ledger_source_path": "var/experiments.jsonl",
+      "measurement": {
+        "annualized_sharpe": 0.08209135319529275,
+        "kurtosis": 12.130549664749328,
+        "observations": 1574,
+        "skew": -0.9335928163873582
+      },
+      "missing_sections": [
+        "preregistration_and_hashes",
+        "point_in_time_data_and_survivorship_controls",
+        "execution_and_cost_model",
+        "result_uncertainty_stress_capacity_and_diversification",
+        "admission_or_kill_decision",
+        "code_environment_and_reproduction"
+      ],
+      "research_family_key": "crypto_momentum",
+      "research_family_title": "Crypto time-series and cross-sectional momentum",
+      "sleeve_context": "AlphaForge research",
+      "verified_family_paper_path": "/research/crypto-momentum-lineage.md",
+      "verified_packet_path": "/glassbox/trial-packets/73aa637baa2b554d.json",
+      "verified_sections": [
+        "identity_and_authorship",
+        "economic_mechanism_and_falsifiable_hypothesis",
+        "literature_and_overlap_decision",
+        "family_and_union_trial_accounting",
+        "machine_readable_packet_and_stable_public_paper"
+      ]
+    },
+    {
+      "candidate_match_is_verified": true,
+      "candidate_public_papers": [
+        "/research/crypto-momentum-lineage.md"
+      ],
+      "completion_assessment": {
+        "blockers": [
+          {
+            "code": "IDENTITY_PREREGISTRATION_AND_ORIGINAL_ENVIRONMENT_NOT_BOUND",
+            "evidence": [
+              {
+                "path": "artifacts/research/crypto_momentum_family.json",
+                "sha256": "51b3718bbfeef0dfa570e7bed1e8863045eb68da033547afb1e5d33068f90e3c"
+              },
+              {
+                "path": "var/experiments.jsonl",
+                "sha256": "b5a318c0997d980575f758451f509e0154eecbbb50d734e49a587d473062bd08"
+              },
+              {
+                "path": "artifacts/cpanel/ts504_long_w/walkforward.json",
+                "sha256": "e998c9c670eba1a2ca8119f7a01da4cd891cf23d346d6cbbaea564605d509c53"
+              }
+            ],
+            "finding": "The canonical family audit binds this identity to its immutable ledger measurement, but does not bind an identity-level preregistration, original code commit, runner hash, lockfile, and input snapshot. Those missing historical fields cannot be reconstructed from the family summary.",
+            "required_section": "preregistration_and_hashes"
+          },
+          {
+            "code": "IDENTITY_LEVEL_DECISION_PACKET_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/research/crypto_momentum_family.json",
+                "sha256": "51b3718bbfeef0dfa570e7bed1e8863045eb68da033547afb1e5d33068f90e3c"
+              }
+            ],
+            "finding": "The family-level admission status is FAIL_RESEARCH_ONLY; it is not a preserved identity-level gate decision under the complete packet contract.",
+            "required_section": "admission_or_kill_decision"
+          },
+          {
+            "code": "IDENTITY_CAPACITY_NOT_MEASURED",
+            "evidence": [
+              {
+                "path": "artifacts/research/crypto_momentum_family.json",
+                "sha256": "51b3718bbfeef0dfa570e7bed1e8863045eb68da033547afb1e5d33068f90e3c"
+              }
+            ],
+            "finding": "The canonical family audit records capacity as UNMEASURED_NO_PERSISTED_MOMENTUM_CAPACITY_SWEEP; no identity-level capacity evidence can be credited.",
+            "required_section": "result_uncertainty_stress_capacity_and_diversification"
+          }
+        ],
+        "config_hash": "208f81cb34ef245c",
+        "evidence_grade": "artifact_bound",
+        "family_audit": "artifacts/research/crypto_momentum_family.json",
+        "status": "AUDITED_NOT_CURRENTLY_COMPLETABLE"
+      },
+      "config_hash": "208f81cb34ef245c",
+      "coverage_status": "VERIFIED_INCOMPLETE_IDENTITY_PACKET",
+      "family_paper_binding_status": "VERIFIED_TAXONOMY_BINDING",
+      "first_recorded_at": "2026-06-20T13:18:46.200000+00:00",
+      "hypothesis_key": "94a8bafd2d6af076",
+      "identity_packet_content_hash": "sha256:0c868faf22dc69cdd0fc63d4797a8de25301a54d2335e542cc05351db6e2a35e",
+      "identity_packet_status": "INCOMPLETE_BACKFILL_REQUIRED",
+      "label": "mom_ts_504",
+      "ledger_profile": "var",
+      "ledger_source_path": "var/experiments.jsonl",
+      "measurement": {
+        "annualized_sharpe": 0.09789574575150448,
+        "kurtosis": 6.75784612946477,
+        "observations": 1574,
+        "skew": -0.13079887282400046
+      },
+      "missing_sections": [
+        "preregistration_and_hashes",
+        "point_in_time_data_and_survivorship_controls",
+        "execution_and_cost_model",
+        "result_uncertainty_stress_capacity_and_diversification",
+        "admission_or_kill_decision",
+        "code_environment_and_reproduction"
+      ],
+      "research_family_key": "crypto_momentum",
+      "research_family_title": "Crypto time-series and cross-sectional momentum",
+      "sleeve_context": "AlphaForge research",
+      "verified_family_paper_path": "/research/crypto-momentum-lineage.md",
+      "verified_packet_path": "/glassbox/trial-packets/94a8bafd2d6af076.json",
+      "verified_sections": [
+        "identity_and_authorship",
+        "economic_mechanism_and_falsifiable_hypothesis",
+        "literature_and_overlap_decision",
+        "family_and_union_trial_accounting",
+        "machine_readable_packet_and_stable_public_paper"
+      ]
+    },
+    {
+      "candidate_match_is_verified": true,
+      "candidate_public_papers": [
+        "/research/crypto-momentum-lineage.md"
+      ],
+      "completion_assessment": {
+        "blockers": [
+          {
+            "code": "IDENTITY_PREREGISTRATION_AND_ORIGINAL_ENVIRONMENT_NOT_BOUND",
+            "evidence": [
+              {
+                "path": "artifacts/research/crypto_momentum_family.json",
+                "sha256": "51b3718bbfeef0dfa570e7bed1e8863045eb68da033547afb1e5d33068f90e3c"
+              },
+              {
+                "path": "var/experiments.jsonl",
+                "sha256": "b5a318c0997d980575f758451f509e0154eecbbb50d734e49a587d473062bd08"
+              },
+              {
+                "path": "artifacts/cpanel/ts2160_long_d/walkforward.json",
+                "sha256": "bc854eebfcd7661cbcd9f55f408f962587941f5a43b9e0011e2c7872fc41200d"
+              }
+            ],
+            "finding": "The canonical family audit binds this identity to its immutable ledger measurement, but does not bind an identity-level preregistration, original code commit, runner hash, lockfile, and input snapshot. Those missing historical fields cannot be reconstructed from the family summary.",
+            "required_section": "preregistration_and_hashes"
+          },
+          {
+            "code": "IDENTITY_LEVEL_DECISION_PACKET_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/research/crypto_momentum_family.json",
+                "sha256": "51b3718bbfeef0dfa570e7bed1e8863045eb68da033547afb1e5d33068f90e3c"
+              }
+            ],
+            "finding": "The family-level admission status is FAIL_RESEARCH_ONLY; it is not a preserved identity-level gate decision under the complete packet contract.",
+            "required_section": "admission_or_kill_decision"
+          },
+          {
+            "code": "IDENTITY_CAPACITY_NOT_MEASURED",
+            "evidence": [
+              {
+                "path": "artifacts/research/crypto_momentum_family.json",
+                "sha256": "51b3718bbfeef0dfa570e7bed1e8863045eb68da033547afb1e5d33068f90e3c"
+              }
+            ],
+            "finding": "The canonical family audit records capacity as UNMEASURED_NO_PERSISTED_MOMENTUM_CAPACITY_SWEEP; no identity-level capacity evidence can be credited.",
+            "required_section": "result_uncertainty_stress_capacity_and_diversification"
+          }
+        ],
+        "config_hash": "2c24d159ae76d638",
+        "evidence_grade": "artifact_bound",
+        "family_audit": "artifacts/research/crypto_momentum_family.json",
+        "status": "AUDITED_NOT_CURRENTLY_COMPLETABLE"
+      },
+      "config_hash": "2c24d159ae76d638",
+      "coverage_status": "VERIFIED_INCOMPLETE_IDENTITY_PACKET",
+      "family_paper_binding_status": "VERIFIED_TAXONOMY_BINDING",
+      "first_recorded_at": "2026-06-20T13:18:48.680000+00:00",
+      "hypothesis_key": "5b5a71b086289f8d",
+      "identity_packet_content_hash": "sha256:2be983224aec4f0c874b1a87b1335b08a7fec1a8c503db42f8172a23398625cb",
+      "identity_packet_status": "INCOMPLETE_BACKFILL_REQUIRED",
+      "label": "mom_ts_2160",
+      "ledger_profile": "var",
+      "ledger_source_path": "var/experiments.jsonl",
+      "measurement": {
+        "annualized_sharpe": -0.038404176008285405,
+        "kurtosis": 12.30739095406245,
+        "observations": 1574,
+        "skew": -0.9598814665443722
+      },
+      "missing_sections": [
+        "preregistration_and_hashes",
+        "point_in_time_data_and_survivorship_controls",
+        "execution_and_cost_model",
+        "result_uncertainty_stress_capacity_and_diversification",
+        "admission_or_kill_decision",
+        "code_environment_and_reproduction"
+      ],
+      "research_family_key": "crypto_momentum",
+      "research_family_title": "Crypto time-series and cross-sectional momentum",
+      "sleeve_context": "AlphaForge research",
+      "verified_family_paper_path": "/research/crypto-momentum-lineage.md",
+      "verified_packet_path": "/glassbox/trial-packets/5b5a71b086289f8d.json",
+      "verified_sections": [
+        "identity_and_authorship",
+        "economic_mechanism_and_falsifiable_hypothesis",
+        "literature_and_overlap_decision",
+        "family_and_union_trial_accounting",
+        "machine_readable_packet_and_stable_public_paper"
+      ]
+    },
+    {
+      "candidate_match_is_verified": true,
+      "candidate_public_papers": [
+        "/research/crypto-momentum-lineage.md"
+      ],
+      "completion_assessment": {
+        "blockers": [
+          {
+            "code": "IDENTITY_PREREGISTRATION_AND_ORIGINAL_ENVIRONMENT_NOT_BOUND",
+            "evidence": [
+              {
+                "path": "artifacts/research/crypto_momentum_family.json",
+                "sha256": "51b3718bbfeef0dfa570e7bed1e8863045eb68da033547afb1e5d33068f90e3c"
+              },
+              {
+                "path": "var/experiments.jsonl",
+                "sha256": "b5a318c0997d980575f758451f509e0154eecbbb50d734e49a587d473062bd08"
+              },
+              {
+                "path": "artifacts/cpanel/L4_xs504_w/walkforward.json",
+                "sha256": "27abe4fd96a01eaaa41cee80afba89deb78d20b40314fb876d2fd97ce2afd986"
+              }
+            ],
+            "finding": "The canonical family audit binds this identity to its immutable ledger measurement, but does not bind an identity-level preregistration, original code commit, runner hash, lockfile, and input snapshot. Those missing historical fields cannot be reconstructed from the family summary.",
+            "required_section": "preregistration_and_hashes"
+          },
+          {
+            "code": "IDENTITY_LEVEL_DECISION_PACKET_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/research/crypto_momentum_family.json",
+                "sha256": "51b3718bbfeef0dfa570e7bed1e8863045eb68da033547afb1e5d33068f90e3c"
+              }
+            ],
+            "finding": "The family-level admission status is FAIL_RESEARCH_ONLY; it is not a preserved identity-level gate decision under the complete packet contract.",
+            "required_section": "admission_or_kill_decision"
+          },
+          {
+            "code": "IDENTITY_CAPACITY_NOT_MEASURED",
+            "evidence": [
+              {
+                "path": "artifacts/research/crypto_momentum_family.json",
+                "sha256": "51b3718bbfeef0dfa570e7bed1e8863045eb68da033547afb1e5d33068f90e3c"
+              }
+            ],
+            "finding": "The canonical family audit records capacity as UNMEASURED_NO_PERSISTED_MOMENTUM_CAPACITY_SWEEP; no identity-level capacity evidence can be credited.",
+            "required_section": "result_uncertainty_stress_capacity_and_diversification"
+          }
+        ],
+        "config_hash": "87cd67bd2f14fe25",
+        "evidence_grade": "artifact_bound",
+        "family_audit": "artifacts/research/crypto_momentum_family.json",
+        "status": "AUDITED_NOT_CURRENTLY_COMPLETABLE"
+      },
+      "config_hash": "87cd67bd2f14fe25",
+      "coverage_status": "VERIFIED_INCOMPLETE_IDENTITY_PACKET",
+      "family_paper_binding_status": "VERIFIED_TAXONOMY_BINDING",
+      "first_recorded_at": "2026-06-20T13:21:58.384000+00:00",
+      "hypothesis_key": "abc2f98882a8cb5d",
+      "identity_packet_content_hash": "sha256:8a26a0332d66592e08716938a07c69efe38269496c0dd6e20321fb4e6bd14e43",
+      "identity_packet_status": "INCOMPLETE_BACKFILL_REQUIRED",
+      "label": "mom_xs_504_48",
+      "ledger_profile": "var",
+      "ledger_source_path": "var/experiments.jsonl",
+      "measurement": {
+        "annualized_sharpe": 0.21785810590605312,
+        "kurtosis": 7.317175330026698,
+        "observations": 1574,
+        "skew": -0.231192645416877
+      },
+      "missing_sections": [
+        "preregistration_and_hashes",
+        "point_in_time_data_and_survivorship_controls",
+        "execution_and_cost_model",
+        "result_uncertainty_stress_capacity_and_diversification",
+        "admission_or_kill_decision",
+        "code_environment_and_reproduction"
+      ],
+      "research_family_key": "crypto_momentum",
+      "research_family_title": "Crypto time-series and cross-sectional momentum",
+      "sleeve_context": "AlphaForge research",
+      "verified_family_paper_path": "/research/crypto-momentum-lineage.md",
+      "verified_packet_path": "/glassbox/trial-packets/abc2f98882a8cb5d.json",
+      "verified_sections": [
+        "identity_and_authorship",
+        "economic_mechanism_and_falsifiable_hypothesis",
+        "literature_and_overlap_decision",
+        "family_and_union_trial_accounting",
+        "machine_readable_packet_and_stable_public_paper"
+      ]
+    },
+    {
+      "candidate_match_is_verified": true,
+      "candidate_public_papers": [
+        "/research/crypto-momentum-lineage.md"
+      ],
+      "completion_assessment": {
+        "blockers": [
+          {
+            "code": "IDENTITY_PREREGISTRATION_AND_ORIGINAL_ENVIRONMENT_NOT_BOUND",
+            "evidence": [
+              {
+                "path": "artifacts/research/crypto_momentum_family.json",
+                "sha256": "51b3718bbfeef0dfa570e7bed1e8863045eb68da033547afb1e5d33068f90e3c"
+              },
+              {
+                "path": "var/experiments.jsonl",
+                "sha256": "b5a318c0997d980575f758451f509e0154eecbbb50d734e49a587d473062bd08"
+              },
+              {
+                "path": "artifacts/cpanel/L4_ts2160_w/walkforward.json",
+                "sha256": "ec0c35106b514a24b687a5d800ee9e753eec45cbbf29d76c1746808ec9d3b1ee"
+              }
+            ],
+            "finding": "The canonical family audit binds this identity to its immutable ledger measurement, but does not bind an identity-level preregistration, original code commit, runner hash, lockfile, and input snapshot. Those missing historical fields cannot be reconstructed from the family summary.",
+            "required_section": "preregistration_and_hashes"
+          },
+          {
+            "code": "IDENTITY_LEVEL_DECISION_PACKET_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/research/crypto_momentum_family.json",
+                "sha256": "51b3718bbfeef0dfa570e7bed1e8863045eb68da033547afb1e5d33068f90e3c"
+              }
+            ],
+            "finding": "The family-level admission status is FAIL_RESEARCH_ONLY; it is not a preserved identity-level gate decision under the complete packet contract.",
+            "required_section": "admission_or_kill_decision"
+          },
+          {
+            "code": "IDENTITY_CAPACITY_NOT_MEASURED",
+            "evidence": [
+              {
+                "path": "artifacts/research/crypto_momentum_family.json",
+                "sha256": "51b3718bbfeef0dfa570e7bed1e8863045eb68da033547afb1e5d33068f90e3c"
+              }
+            ],
+            "finding": "The canonical family audit records capacity as UNMEASURED_NO_PERSISTED_MOMENTUM_CAPACITY_SWEEP; no identity-level capacity evidence can be credited.",
+            "required_section": "result_uncertainty_stress_capacity_and_diversification"
+          }
+        ],
+        "config_hash": "e53422547e5f126e",
+        "evidence_grade": "artifact_bound",
+        "family_audit": "artifacts/research/crypto_momentum_family.json",
+        "status": "AUDITED_NOT_CURRENTLY_COMPLETABLE"
+      },
+      "config_hash": "e53422547e5f126e",
+      "coverage_status": "VERIFIED_INCOMPLETE_IDENTITY_PACKET",
+      "family_paper_binding_status": "VERIFIED_TAXONOMY_BINDING",
+      "first_recorded_at": "2026-06-20T13:23:58.983000+00:00",
+      "hypothesis_key": "131745bc21f41d5f",
+      "identity_packet_content_hash": "sha256:6b44b7370b62118e7c5ff13819229980cef8d7751851e1715ffeff3338baafe7",
+      "identity_packet_status": "INCOMPLETE_BACKFILL_REQUIRED",
+      "label": "mom_ts_2160",
+      "ledger_profile": "var",
+      "ledger_source_path": "var/experiments.jsonl",
+      "measurement": {
+        "annualized_sharpe": -0.1318479455037707,
+        "kurtosis": 10.708109019028438,
+        "observations": 1574,
+        "skew": -0.9219205324162157
+      },
+      "missing_sections": [
+        "preregistration_and_hashes",
+        "point_in_time_data_and_survivorship_controls",
+        "execution_and_cost_model",
+        "result_uncertainty_stress_capacity_and_diversification",
+        "admission_or_kill_decision",
+        "code_environment_and_reproduction"
+      ],
+      "research_family_key": "crypto_momentum",
+      "research_family_title": "Crypto time-series and cross-sectional momentum",
+      "sleeve_context": "AlphaForge research",
+      "verified_family_paper_path": "/research/crypto-momentum-lineage.md",
+      "verified_packet_path": "/glassbox/trial-packets/131745bc21f41d5f.json",
+      "verified_sections": [
+        "identity_and_authorship",
+        "economic_mechanism_and_falsifiable_hypothesis",
+        "literature_and_overlap_decision",
+        "family_and_union_trial_accounting",
+        "machine_readable_packet_and_stable_public_paper"
+      ]
+    },
+    {
+      "candidate_match_is_verified": true,
+      "candidate_public_papers": [
+        "/research/crypto-momentum-lineage.md"
+      ],
+      "completion_assessment": {
+        "blockers": [
+          {
+            "code": "IDENTITY_PREREGISTRATION_AND_ORIGINAL_ENVIRONMENT_NOT_BOUND",
+            "evidence": [
+              {
+                "path": "artifacts/research/crypto_momentum_family.json",
+                "sha256": "51b3718bbfeef0dfa570e7bed1e8863045eb68da033547afb1e5d33068f90e3c"
+              },
+              {
+                "path": "var/experiments.jsonl",
+                "sha256": "b5a318c0997d980575f758451f509e0154eecbbb50d734e49a587d473062bd08"
+              },
+              {
+                "path": "artifacts/cpanel/L4_ts504_w/walkforward.json",
+                "sha256": "fa95a06720a22b76a1a99af2f115866149479215af3c1248768d7fe04df533cc"
+              }
+            ],
+            "finding": "The canonical family audit binds this identity to its immutable ledger measurement, but does not bind an identity-level preregistration, original code commit, runner hash, lockfile, and input snapshot. Those missing historical fields cannot be reconstructed from the family summary.",
+            "required_section": "preregistration_and_hashes"
+          },
+          {
+            "code": "IDENTITY_LEVEL_DECISION_PACKET_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/research/crypto_momentum_family.json",
+                "sha256": "51b3718bbfeef0dfa570e7bed1e8863045eb68da033547afb1e5d33068f90e3c"
+              }
+            ],
+            "finding": "The family-level admission status is FAIL_RESEARCH_ONLY; it is not a preserved identity-level gate decision under the complete packet contract.",
+            "required_section": "admission_or_kill_decision"
+          },
+          {
+            "code": "IDENTITY_CAPACITY_NOT_MEASURED",
+            "evidence": [
+              {
+                "path": "artifacts/research/crypto_momentum_family.json",
+                "sha256": "51b3718bbfeef0dfa570e7bed1e8863045eb68da033547afb1e5d33068f90e3c"
+              }
+            ],
+            "finding": "The canonical family audit records capacity as UNMEASURED_NO_PERSISTED_MOMENTUM_CAPACITY_SWEEP; no identity-level capacity evidence can be credited.",
+            "required_section": "result_uncertainty_stress_capacity_and_diversification"
+          }
+        ],
+        "config_hash": "98cd0ca8949495c1",
+        "evidence_grade": "artifact_bound",
+        "family_audit": "artifacts/research/crypto_momentum_family.json",
+        "status": "AUDITED_NOT_CURRENTLY_COMPLETABLE"
+      },
+      "config_hash": "98cd0ca8949495c1",
+      "coverage_status": "VERIFIED_INCOMPLETE_IDENTITY_PACKET",
+      "family_paper_binding_status": "VERIFIED_TAXONOMY_BINDING",
+      "first_recorded_at": "2026-06-20T13:26:10.318000+00:00",
+      "hypothesis_key": "63812ba59fb509bd",
+      "identity_packet_content_hash": "sha256:14ec4d6479f67ed6a4b10c0f8313a4f498a9fd6112fb08989a87c2e1160429af",
+      "identity_packet_status": "INCOMPLETE_BACKFILL_REQUIRED",
+      "label": "mom_ts_504",
+      "ledger_profile": "var",
+      "ledger_source_path": "var/experiments.jsonl",
+      "measurement": {
+        "annualized_sharpe": 0.4863178100386738,
+        "kurtosis": 8.022483719557389,
+        "observations": 1574,
+        "skew": -0.5471734816707291
+      },
+      "missing_sections": [
+        "preregistration_and_hashes",
+        "point_in_time_data_and_survivorship_controls",
+        "execution_and_cost_model",
+        "result_uncertainty_stress_capacity_and_diversification",
+        "admission_or_kill_decision",
+        "code_environment_and_reproduction"
+      ],
+      "research_family_key": "crypto_momentum",
+      "research_family_title": "Crypto time-series and cross-sectional momentum",
+      "sleeve_context": "AlphaForge research",
+      "verified_family_paper_path": "/research/crypto-momentum-lineage.md",
+      "verified_packet_path": "/glassbox/trial-packets/63812ba59fb509bd.json",
+      "verified_sections": [
+        "identity_and_authorship",
+        "economic_mechanism_and_falsifiable_hypothesis",
+        "literature_and_overlap_decision",
+        "family_and_union_trial_accounting",
+        "machine_readable_packet_and_stable_public_paper"
+      ]
+    },
+    {
+      "candidate_match_is_verified": true,
+      "candidate_public_papers": [
+        "/research/crypto-momentum-lineage.md"
+      ],
+      "completion_assessment": {
+        "blockers": [
+          {
+            "code": "IDENTITY_PREREGISTRATION_AND_ORIGINAL_ENVIRONMENT_NOT_BOUND",
+            "evidence": [
+              {
+                "path": "artifacts/research/crypto_momentum_family.json",
+                "sha256": "51b3718bbfeef0dfa570e7bed1e8863045eb68da033547afb1e5d33068f90e3c"
+              },
+              {
+                "path": "var/experiments.jsonl",
+                "sha256": "b5a318c0997d980575f758451f509e0154eecbbb50d734e49a587d473062bd08"
+              },
+              {
+                "path": "artifacts/cpanel/L4_ts504_3d/walkforward.json",
+                "sha256": "0871190e3d4d641373644664a15505436de43353c4092ff94f442dea04e52818"
+              }
+            ],
+            "finding": "The canonical family audit binds this identity to its immutable ledger measurement, but does not bind an identity-level preregistration, original code commit, runner hash, lockfile, and input snapshot. Those missing historical fields cannot be reconstructed from the family summary.",
+            "required_section": "preregistration_and_hashes"
+          },
+          {
+            "code": "IDENTITY_LEVEL_DECISION_PACKET_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/research/crypto_momentum_family.json",
+                "sha256": "51b3718bbfeef0dfa570e7bed1e8863045eb68da033547afb1e5d33068f90e3c"
+              }
+            ],
+            "finding": "The family-level admission status is FAIL_RESEARCH_ONLY; it is not a preserved identity-level gate decision under the complete packet contract.",
+            "required_section": "admission_or_kill_decision"
+          },
+          {
+            "code": "IDENTITY_CAPACITY_NOT_MEASURED",
+            "evidence": [
+              {
+                "path": "artifacts/research/crypto_momentum_family.json",
+                "sha256": "51b3718bbfeef0dfa570e7bed1e8863045eb68da033547afb1e5d33068f90e3c"
+              }
+            ],
+            "finding": "The canonical family audit records capacity as UNMEASURED_NO_PERSISTED_MOMENTUM_CAPACITY_SWEEP; no identity-level capacity evidence can be credited.",
+            "required_section": "result_uncertainty_stress_capacity_and_diversification"
+          }
+        ],
+        "config_hash": "dfaa7583d5d6ad64",
+        "evidence_grade": "artifact_bound",
+        "family_audit": "artifacts/research/crypto_momentum_family.json",
+        "status": "AUDITED_NOT_CURRENTLY_COMPLETABLE"
+      },
+      "config_hash": "dfaa7583d5d6ad64",
+      "coverage_status": "VERIFIED_INCOMPLETE_IDENTITY_PACKET",
+      "family_paper_binding_status": "VERIFIED_TAXONOMY_BINDING",
+      "first_recorded_at": "2026-06-20T13:30:50.525000+00:00",
+      "hypothesis_key": "3854903ae853daf8",
+      "identity_packet_content_hash": "sha256:c7bd1c79441bbc6db20e52254c86182aec491307f681f8b9dcfaf7b3a45325dc",
+      "identity_packet_status": "INCOMPLETE_BACKFILL_REQUIRED",
+      "label": "mom_ts_504",
+      "ledger_profile": "var",
+      "ledger_source_path": "var/experiments.jsonl",
+      "measurement": {
+        "annualized_sharpe": 0.2648482227762874,
+        "kurtosis": 8.493993781645244,
+        "observations": 1574,
+        "skew": -0.4374549887069318
+      },
+      "missing_sections": [
+        "preregistration_and_hashes",
+        "point_in_time_data_and_survivorship_controls",
+        "execution_and_cost_model",
+        "result_uncertainty_stress_capacity_and_diversification",
+        "admission_or_kill_decision",
+        "code_environment_and_reproduction"
+      ],
+      "research_family_key": "crypto_momentum",
+      "research_family_title": "Crypto time-series and cross-sectional momentum",
+      "sleeve_context": "AlphaForge research",
+      "verified_family_paper_path": "/research/crypto-momentum-lineage.md",
+      "verified_packet_path": "/glassbox/trial-packets/3854903ae853daf8.json",
+      "verified_sections": [
+        "identity_and_authorship",
+        "economic_mechanism_and_falsifiable_hypothesis",
+        "literature_and_overlap_decision",
+        "family_and_union_trial_accounting",
+        "machine_readable_packet_and_stable_public_paper"
+      ]
+    },
+    {
+      "candidate_match_is_verified": true,
+      "candidate_public_papers": [
+        "/research/crypto-momentum-lineage.md"
+      ],
+      "completion_assessment": {
+        "blockers": [
+          {
+            "code": "IDENTITY_PREREGISTRATION_AND_ORIGINAL_ENVIRONMENT_NOT_BOUND",
+            "evidence": [
+              {
+                "path": "artifacts/research/crypto_momentum_family.json",
+                "sha256": "51b3718bbfeef0dfa570e7bed1e8863045eb68da033547afb1e5d33068f90e3c"
+              },
+              {
+                "path": "var/experiments.jsonl",
+                "sha256": "b5a318c0997d980575f758451f509e0154eecbbb50d734e49a587d473062bd08"
+              },
+              {
+                "path": "artifacts/cpanel/L4_ts504_2w/walkforward.json",
+                "sha256": "193b2bfe40050b7d8f416af6c21c5ca1c5fb1eca6a27b6297dfb5f0629493b00"
+              }
+            ],
+            "finding": "The canonical family audit binds this identity to its immutable ledger measurement, but does not bind an identity-level preregistration, original code commit, runner hash, lockfile, and input snapshot. Those missing historical fields cannot be reconstructed from the family summary.",
+            "required_section": "preregistration_and_hashes"
+          },
+          {
+            "code": "IDENTITY_LEVEL_DECISION_PACKET_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/research/crypto_momentum_family.json",
+                "sha256": "51b3718bbfeef0dfa570e7bed1e8863045eb68da033547afb1e5d33068f90e3c"
+              }
+            ],
+            "finding": "The family-level admission status is FAIL_RESEARCH_ONLY; it is not a preserved identity-level gate decision under the complete packet contract.",
+            "required_section": "admission_or_kill_decision"
+          },
+          {
+            "code": "IDENTITY_CAPACITY_NOT_MEASURED",
+            "evidence": [
+              {
+                "path": "artifacts/research/crypto_momentum_family.json",
+                "sha256": "51b3718bbfeef0dfa570e7bed1e8863045eb68da033547afb1e5d33068f90e3c"
+              }
+            ],
+            "finding": "The canonical family audit records capacity as UNMEASURED_NO_PERSISTED_MOMENTUM_CAPACITY_SWEEP; no identity-level capacity evidence can be credited.",
+            "required_section": "result_uncertainty_stress_capacity_and_diversification"
+          }
+        ],
+        "config_hash": "5d10a366e984764b",
+        "evidence_grade": "artifact_bound",
+        "family_audit": "artifacts/research/crypto_momentum_family.json",
+        "status": "AUDITED_NOT_CURRENTLY_COMPLETABLE"
+      },
+      "config_hash": "5d10a366e984764b",
+      "coverage_status": "VERIFIED_INCOMPLETE_IDENTITY_PACKET",
+      "family_paper_binding_status": "VERIFIED_TAXONOMY_BINDING",
+      "first_recorded_at": "2026-06-20T13:32:18.431000+00:00",
+      "hypothesis_key": "581babb3419fc331",
+      "identity_packet_content_hash": "sha256:695dd80dd6ce4a4b17b51424e151d37452e54079857d4717bf601668f9d84794",
+      "identity_packet_status": "INCOMPLETE_BACKFILL_REQUIRED",
+      "label": "mom_ts_504",
+      "ledger_profile": "var",
+      "ledger_source_path": "var/experiments.jsonl",
+      "measurement": {
+        "annualized_sharpe": 0.17330970264015091,
+        "kurtosis": 9.690423209502308,
+        "observations": 1574,
+        "skew": -0.5884457319520351
+      },
+      "missing_sections": [
+        "preregistration_and_hashes",
+        "point_in_time_data_and_survivorship_controls",
+        "execution_and_cost_model",
+        "result_uncertainty_stress_capacity_and_diversification",
+        "admission_or_kill_decision",
+        "code_environment_and_reproduction"
+      ],
+      "research_family_key": "crypto_momentum",
+      "research_family_title": "Crypto time-series and cross-sectional momentum",
+      "sleeve_context": "AlphaForge research",
+      "verified_family_paper_path": "/research/crypto-momentum-lineage.md",
+      "verified_packet_path": "/glassbox/trial-packets/581babb3419fc331.json",
+      "verified_sections": [
+        "identity_and_authorship",
+        "economic_mechanism_and_falsifiable_hypothesis",
+        "literature_and_overlap_decision",
+        "family_and_union_trial_accounting",
+        "machine_readable_packet_and_stable_public_paper"
+      ]
+    },
+    {
+      "candidate_match_is_verified": true,
+      "candidate_public_papers": [
+        "/research/crypto-momentum-lineage.md"
+      ],
+      "completion_assessment": {
+        "blockers": [
+          {
+            "code": "IDENTITY_PREREGISTRATION_AND_ORIGINAL_ENVIRONMENT_NOT_BOUND",
+            "evidence": [
+              {
+                "path": "artifacts/research/crypto_momentum_family.json",
+                "sha256": "51b3718bbfeef0dfa570e7bed1e8863045eb68da033547afb1e5d33068f90e3c"
+              },
+              {
+                "path": "var/experiments.jsonl",
+                "sha256": "b5a318c0997d980575f758451f509e0154eecbbb50d734e49a587d473062bd08"
+              },
+              {
+                "path": "artifacts/cpanel/L4_blend21_w/walkforward.json",
+                "sha256": "6b5c368ca988cd84088ab8d944979d101c49bc6320d6008267e5b4aa34b8a6af"
+              }
+            ],
+            "finding": "The canonical family audit binds this identity to its immutable ledger measurement, but does not bind an identity-level preregistration, original code commit, runner hash, lockfile, and input snapshot. Those missing historical fields cannot be reconstructed from the family summary.",
+            "required_section": "preregistration_and_hashes"
+          },
+          {
+            "code": "IDENTITY_LEVEL_DECISION_PACKET_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/research/crypto_momentum_family.json",
+                "sha256": "51b3718bbfeef0dfa570e7bed1e8863045eb68da033547afb1e5d33068f90e3c"
+              }
+            ],
+            "finding": "The family-level admission status is FAIL_RESEARCH_ONLY; it is not a preserved identity-level gate decision under the complete packet contract.",
+            "required_section": "admission_or_kill_decision"
+          },
+          {
+            "code": "IDENTITY_CAPACITY_NOT_MEASURED",
+            "evidence": [
+              {
+                "path": "artifacts/research/crypto_momentum_family.json",
+                "sha256": "51b3718bbfeef0dfa570e7bed1e8863045eb68da033547afb1e5d33068f90e3c"
+              }
+            ],
+            "finding": "The canonical family audit records capacity as UNMEASURED_NO_PERSISTED_MOMENTUM_CAPACITY_SWEEP; no identity-level capacity evidence can be credited.",
+            "required_section": "result_uncertainty_stress_capacity_and_diversification"
+          }
+        ],
+        "config_hash": "f1242127bf94971c",
+        "evidence_grade": "artifact_bound",
+        "family_audit": "artifacts/research/crypto_momentum_family.json",
+        "status": "AUDITED_NOT_CURRENTLY_COMPLETABLE"
+      },
+      "config_hash": "f1242127bf94971c",
+      "coverage_status": "VERIFIED_INCOMPLETE_IDENTITY_PACKET",
+      "family_paper_binding_status": "VERIFIED_TAXONOMY_BINDING",
+      "first_recorded_at": "2026-06-20T13:33:35.545000+00:00",
+      "hypothesis_key": "29233f5e0132b584",
+      "identity_packet_content_hash": "sha256:25c322405314404db4008c21d80111eefb6bb1ad6884a5d2353914b6854b2d15",
+      "identity_packet_status": "INCOMPLETE_BACKFILL_REQUIRED",
+      "label": "mom_ts_504 + mom_xs_504_48",
+      "ledger_profile": "var",
+      "ledger_source_path": "var/experiments.jsonl",
+      "measurement": {
+        "annualized_sharpe": 0.3296412947323435,
+        "kurtosis": 8.036950684163514,
+        "observations": 1574,
+        "skew": -0.5850217220942745
+      },
+      "missing_sections": [
+        "preregistration_and_hashes",
+        "point_in_time_data_and_survivorship_controls",
+        "execution_and_cost_model",
+        "result_uncertainty_stress_capacity_and_diversification",
+        "admission_or_kill_decision",
+        "code_environment_and_reproduction"
+      ],
+      "research_family_key": "crypto_momentum",
+      "research_family_title": "Crypto time-series and cross-sectional momentum",
+      "sleeve_context": "AlphaForge research",
+      "verified_family_paper_path": "/research/crypto-momentum-lineage.md",
+      "verified_packet_path": "/glassbox/trial-packets/29233f5e0132b584.json",
+      "verified_sections": [
+        "identity_and_authorship",
+        "economic_mechanism_and_falsifiable_hypothesis",
+        "literature_and_overlap_decision",
+        "family_and_union_trial_accounting",
+        "machine_readable_packet_and_stable_public_paper"
+      ]
+    },
+    {
+      "candidate_match_is_verified": true,
+      "candidate_public_papers": [
+        "/research/crypto-momentum-lineage.md"
+      ],
+      "completion_assessment": {
+        "blockers": [
+          {
+            "code": "IDENTITY_PREREGISTRATION_AND_ORIGINAL_ENVIRONMENT_NOT_BOUND",
+            "evidence": [
+              {
+                "path": "artifacts/research/crypto_momentum_family.json",
+                "sha256": "51b3718bbfeef0dfa570e7bed1e8863045eb68da033547afb1e5d33068f90e3c"
+              },
+              {
+                "path": "var/experiments.jsonl",
+                "sha256": "b5a318c0997d980575f758451f509e0154eecbbb50d734e49a587d473062bd08"
+              },
+              {
+                "path": "artifacts/cpanel/L4_ts504_h1/walkforward.json",
+                "sha256": "1e10ef933616adaff2ebd91a6cbd359fc04a07b3619faaa85f73232c37f261e4"
+              }
+            ],
+            "finding": "The canonical family audit binds this identity to its immutable ledger measurement, but does not bind an identity-level preregistration, original code commit, runner hash, lockfile, and input snapshot. Those missing historical fields cannot be reconstructed from the family summary.",
+            "required_section": "preregistration_and_hashes"
+          },
+          {
+            "code": "IDENTITY_LEVEL_DECISION_PACKET_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/research/crypto_momentum_family.json",
+                "sha256": "51b3718bbfeef0dfa570e7bed1e8863045eb68da033547afb1e5d33068f90e3c"
+              }
+            ],
+            "finding": "The family-level admission status is FAIL_RESEARCH_ONLY; it is not a preserved identity-level gate decision under the complete packet contract.",
+            "required_section": "admission_or_kill_decision"
+          },
+          {
+            "code": "IDENTITY_CAPACITY_NOT_MEASURED",
+            "evidence": [
+              {
+                "path": "artifacts/research/crypto_momentum_family.json",
+                "sha256": "51b3718bbfeef0dfa570e7bed1e8863045eb68da033547afb1e5d33068f90e3c"
+              }
+            ],
+            "finding": "The canonical family audit records capacity as UNMEASURED_NO_PERSISTED_MOMENTUM_CAPACITY_SWEEP; no identity-level capacity evidence can be credited.",
+            "required_section": "result_uncertainty_stress_capacity_and_diversification"
+          }
+        ],
+        "config_hash": "76b93741bbe510c7",
+        "evidence_grade": "artifact_bound",
+        "family_audit": "artifacts/research/crypto_momentum_family.json",
+        "status": "AUDITED_NOT_CURRENTLY_COMPLETABLE"
+      },
+      "config_hash": "76b93741bbe510c7",
+      "coverage_status": "VERIFIED_INCOMPLETE_IDENTITY_PACKET",
+      "family_paper_binding_status": "VERIFIED_TAXONOMY_BINDING",
+      "first_recorded_at": "2026-06-20T13:38:58.548000+00:00",
+      "hypothesis_key": "949d33468f11327a",
+      "identity_packet_content_hash": "sha256:9d15024f4129db29004348dfa2b0b90bec10beae81c054b3f3da425585e85dd7",
+      "identity_packet_status": "INCOMPLETE_BACKFILL_REQUIRED",
+      "label": "mom_ts_504",
+      "ledger_profile": "var",
+      "ledger_source_path": "var/experiments.jsonl",
+      "measurement": {
+        "annualized_sharpe": -0.1316725865821086,
+        "kurtosis": 8.172310283506834,
+        "observations": 661,
+        "skew": -0.2406667744880402
+      },
+      "missing_sections": [
+        "preregistration_and_hashes",
+        "point_in_time_data_and_survivorship_controls",
+        "execution_and_cost_model",
+        "result_uncertainty_stress_capacity_and_diversification",
+        "admission_or_kill_decision",
+        "code_environment_and_reproduction"
+      ],
+      "research_family_key": "crypto_momentum",
+      "research_family_title": "Crypto time-series and cross-sectional momentum",
+      "sleeve_context": "AlphaForge research",
+      "verified_family_paper_path": "/research/crypto-momentum-lineage.md",
+      "verified_packet_path": "/glassbox/trial-packets/949d33468f11327a.json",
+      "verified_sections": [
+        "identity_and_authorship",
+        "economic_mechanism_and_falsifiable_hypothesis",
+        "literature_and_overlap_decision",
+        "family_and_union_trial_accounting",
+        "machine_readable_packet_and_stable_public_paper"
+      ]
+    },
+    {
+      "candidate_match_is_verified": true,
+      "candidate_public_papers": [
+        "/research/crypto-momentum-lineage.md"
+      ],
+      "completion_assessment": {
+        "blockers": [
+          {
+            "code": "IDENTITY_PREREGISTRATION_AND_ORIGINAL_ENVIRONMENT_NOT_BOUND",
+            "evidence": [
+              {
+                "path": "artifacts/research/crypto_momentum_family.json",
+                "sha256": "51b3718bbfeef0dfa570e7bed1e8863045eb68da033547afb1e5d33068f90e3c"
+              },
+              {
+                "path": "var/experiments.jsonl",
+                "sha256": "b5a318c0997d980575f758451f509e0154eecbbb50d734e49a587d473062bd08"
+              },
+              {
+                "path": "artifacts/cpanel/L4_ts504_h2/walkforward.json",
+                "sha256": "d5a40e23567cde9c45e6087219eee9ce64d6e13ca32ad9c6ff36998b18df9c20"
+              }
+            ],
+            "finding": "The canonical family audit binds this identity to its immutable ledger measurement, but does not bind an identity-level preregistration, original code commit, runner hash, lockfile, and input snapshot. Those missing historical fields cannot be reconstructed from the family summary.",
+            "required_section": "preregistration_and_hashes"
+          },
+          {
+            "code": "IDENTITY_LEVEL_DECISION_PACKET_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/research/crypto_momentum_family.json",
+                "sha256": "51b3718bbfeef0dfa570e7bed1e8863045eb68da033547afb1e5d33068f90e3c"
+              }
+            ],
+            "finding": "The family-level admission status is FAIL_RESEARCH_ONLY; it is not a preserved identity-level gate decision under the complete packet contract.",
+            "required_section": "admission_or_kill_decision"
+          },
+          {
+            "code": "IDENTITY_CAPACITY_NOT_MEASURED",
+            "evidence": [
+              {
+                "path": "artifacts/research/crypto_momentum_family.json",
+                "sha256": "51b3718bbfeef0dfa570e7bed1e8863045eb68da033547afb1e5d33068f90e3c"
+              }
+            ],
+            "finding": "The canonical family audit records capacity as UNMEASURED_NO_PERSISTED_MOMENTUM_CAPACITY_SWEEP; no identity-level capacity evidence can be credited.",
+            "required_section": "result_uncertainty_stress_capacity_and_diversification"
+          }
+        ],
+        "config_hash": "c12d56041e36b861",
+        "evidence_grade": "artifact_bound",
+        "family_audit": "artifacts/research/crypto_momentum_family.json",
+        "status": "AUDITED_NOT_CURRENTLY_COMPLETABLE"
+      },
+      "config_hash": "c12d56041e36b861",
+      "coverage_status": "VERIFIED_INCOMPLETE_IDENTITY_PACKET",
+      "family_paper_binding_status": "VERIFIED_TAXONOMY_BINDING",
+      "first_recorded_at": "2026-06-20T13:39:40.491000+00:00",
+      "hypothesis_key": "5d3e879373e9a0b8",
+      "identity_packet_content_hash": "sha256:024179f177c94e860f737160f9c7fe163a90aba338fa8567956d874192a7df62",
+      "identity_packet_status": "INCOMPLETE_BACKFILL_REQUIRED",
+      "label": "mom_ts_504",
+      "ledger_profile": "var",
+      "ledger_source_path": "var/experiments.jsonl",
+      "measurement": {
+        "annualized_sharpe": -0.5879039726812368,
+        "kurtosis": 11.533899780507348,
+        "observations": 844,
+        "skew": -1.2774175062587285
+      },
+      "missing_sections": [
+        "preregistration_and_hashes",
+        "point_in_time_data_and_survivorship_controls",
+        "execution_and_cost_model",
+        "result_uncertainty_stress_capacity_and_diversification",
+        "admission_or_kill_decision",
+        "code_environment_and_reproduction"
+      ],
+      "research_family_key": "crypto_momentum",
+      "research_family_title": "Crypto time-series and cross-sectional momentum",
+      "sleeve_context": "AlphaForge research",
+      "verified_family_paper_path": "/research/crypto-momentum-lineage.md",
+      "verified_packet_path": "/glassbox/trial-packets/5d3e879373e9a0b8.json",
+      "verified_sections": [
+        "identity_and_authorship",
+        "economic_mechanism_and_falsifiable_hypothesis",
+        "literature_and_overlap_decision",
+        "family_and_union_trial_accounting",
+        "machine_readable_packet_and_stable_public_paper"
+      ]
+    },
+    {
+      "candidate_match_is_verified": true,
+      "candidate_public_papers": [
+        "/research/crypto-momentum-lineage.md"
+      ],
+      "completion_assessment": {
+        "blockers": [
+          {
+            "code": "IDENTITY_PREREGISTRATION_AND_ORIGINAL_ENVIRONMENT_NOT_BOUND",
+            "evidence": [
+              {
+                "path": "artifacts/research/crypto_momentum_family.json",
+                "sha256": "51b3718bbfeef0dfa570e7bed1e8863045eb68da033547afb1e5d33068f90e3c"
+              },
+              {
+                "path": "artifacts/exp1/20260625T075446Z/experiments.jsonl",
+                "sha256": "b5b8a68fe07d19581050e7adfd6ec7f61521e2267ca7306b44c8db9997cfb976"
+              },
+              {
+                "path": "artifacts/exp1/20260625T075446Z/momentum/walkforward.json",
+                "sha256": "43e42651d655c9eaa1a32f068ee3ab1ff21d05d88b2b73196ee51090c8c16459"
+              }
+            ],
+            "finding": "The canonical family audit binds this identity to its immutable ledger measurement, but does not bind an identity-level preregistration, original code commit, runner hash, lockfile, and input snapshot. Those missing historical fields cannot be reconstructed from the family summary.",
+            "required_section": "preregistration_and_hashes"
+          },
+          {
+            "code": "IDENTITY_LEVEL_DECISION_PACKET_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/research/crypto_momentum_family.json",
+                "sha256": "51b3718bbfeef0dfa570e7bed1e8863045eb68da033547afb1e5d33068f90e3c"
+              }
+            ],
+            "finding": "The family-level admission status is FAIL_RESEARCH_ONLY; it is not a preserved identity-level gate decision under the complete packet contract.",
+            "required_section": "admission_or_kill_decision"
+          },
+          {
+            "code": "IDENTITY_CAPACITY_NOT_MEASURED",
+            "evidence": [
+              {
+                "path": "artifacts/research/crypto_momentum_family.json",
+                "sha256": "51b3718bbfeef0dfa570e7bed1e8863045eb68da033547afb1e5d33068f90e3c"
+              }
+            ],
+            "finding": "The canonical family audit records capacity as UNMEASURED_NO_PERSISTED_MOMENTUM_CAPACITY_SWEEP; no identity-level capacity evidence can be credited.",
+            "required_section": "result_uncertainty_stress_capacity_and_diversification"
+          }
+        ],
+        "config_hash": "6165a159cad95a71",
+        "evidence_grade": "artifact_bound",
+        "family_audit": "artifacts/research/crypto_momentum_family.json",
+        "status": "AUDITED_NOT_CURRENTLY_COMPLETABLE"
+      },
+      "config_hash": "6165a159cad95a71",
+      "coverage_status": "VERIFIED_INCOMPLETE_IDENTITY_PACKET",
+      "family_paper_binding_status": "VERIFIED_TAXONOMY_BINDING",
+      "first_recorded_at": "2026-06-25T07:54:46.297000+00:00",
+      "hypothesis_key": "827861e57050f162",
+      "identity_packet_content_hash": "sha256:ab0c0a7038c1111b31463e56a5d8454f7d5e10fd6ff7660a89799db93419fc1d",
+      "identity_packet_status": "INCOMPLETE_BACKFILL_REQUIRED",
+      "label": "mom_xs_504_48 + mom_xs_2160_168 + mom_ts_504",
+      "ledger_profile": "20260625T075446Z",
+      "ledger_source_path": "artifacts/exp1/20260625T075446Z/experiments.jsonl",
+      "measurement": {
+        "annualized_sharpe": 0.07797445933347988,
+        "kurtosis": 6.119053110864763,
+        "observations": 1612,
+        "skew": -0.3401147969297599
+      },
+      "missing_sections": [
+        "preregistration_and_hashes",
+        "point_in_time_data_and_survivorship_controls",
+        "execution_and_cost_model",
+        "result_uncertainty_stress_capacity_and_diversification",
+        "admission_or_kill_decision",
+        "code_environment_and_reproduction"
+      ],
+      "research_family_key": "crypto_momentum",
+      "research_family_title": "Crypto time-series and cross-sectional momentum",
+      "sleeve_context": "AlphaForge research",
+      "verified_family_paper_path": "/research/crypto-momentum-lineage.md",
+      "verified_packet_path": "/glassbox/trial-packets/827861e57050f162.json",
+      "verified_sections": [
+        "identity_and_authorship",
+        "economic_mechanism_and_falsifiable_hypothesis",
+        "literature_and_overlap_decision",
+        "family_and_union_trial_accounting",
+        "machine_readable_packet_and_stable_public_paper"
+      ]
+    }
+  ],
+  "registry_key": "crypto_momentum",
+  "research_family_key": "crypto_momentum",
+  "schema": "canli.alphac-publication-trial-accounting-binding.v2",
+  "status": "COMPLETE_RECORDED_UNION_EXTRACTED_IDENTITY_PACKETS_MAY_BE_INCOMPLETE",
+  "trial_packet_manifest": {
+    "content_hash": "sha256:38758b89a1a5fa845487a640b1deab046fffcf61ede5ad3afb6371798b208371",
+    "path": "artifacts/research/trial_packet_manifest.json",
+    "sha256": "0147dd8e631ca24257e2db384bf01d4637a79371f1754b284f3f7e9637c1369c"
+  }
+}

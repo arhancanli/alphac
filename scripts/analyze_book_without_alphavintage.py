@@ -32,7 +32,11 @@ CURVES = {
 }
 TRADING_DAYS = 252.0
 TARGET_N = 14
-TARGETS = (2.0, 2.5)
+TARGETS = tuple(
+    json.loads((REPO / "config/sleeve_admission_contract.json").read_text())["objective"][
+        "portfolio_sharpe_target"
+    ]
+)
 
 
 def _curve(name: str, path: Path) -> SleeveCurve:

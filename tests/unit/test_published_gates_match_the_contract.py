@@ -100,14 +100,27 @@ def test_a_retired_gate_is_not_still_published_as_a_live_one() -> None:
 
 @pytest.mark.workspace_evidence
 def test_the_objective_is_published_with_the_arithmetic_that_bounds_it() -> None:
+    contract_objective = json.loads(CONTRACT.read_text())["objective"]
     for path, discovery in _published():
+        for key, value in contract_objective.items():
+            assert discovery["objective"][key] == value, (
+                f"{path} publishes objective.{key}={discovery['objective'][key]!r} while the "
+                f"contract in force declares {value!r}"
+            )
+        assert (
+            discovery["objective"]["target_sleeve_count"]
+            == (contract_objective["target_total_sleeves"])
+        )
         assert "frontier_arithmetic" in discovery, (
             f"{path} publishes a portfolio objective and an admission gate with nothing stating "
             "the relationship between them"
         )
         frontier = discovery["frontier_arithmetic"]
-        assert frontier["correlation_gate_in_force"] == (
-            discovery["admission_gates"]["average_pairwise_correlation_max"]
-        )
-        assert isinstance(frontier["gate_permits_objective_floor"], bool)
+        assert frontier["incremental_candidate_average_correlation_gate"] == discovery[
+            "admission_gates"
+        ]["candidate_average_correlation_to_existing_book_max"]
+        assert frontier["incremental_book_average_correlation_delta_gate_exclusive"] == discovery[
+            "admission_gates"
+        ]["book_average_pairwise_correlation_delta_max_exclusive"]
+        assert frontier["incremental_gates_alone_establish_objective_floor"] is False
         assert frontier["target_sleeve_count"] == discovery["objective"]["target_sleeve_count"]

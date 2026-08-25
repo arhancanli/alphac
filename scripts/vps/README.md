@@ -52,6 +52,20 @@ The Mac pull **merges at row level and never copies files**: the VPS holds recen
 holds years, and a file-level copy would replace history with the recent slice and silently destroy
 the difference. That bug was caught before it ever ran; see `scripts/vps_crypto_sync.sh`.
 
+## Prospective position-attribution rollout
+
+The crypto sleeve's exact position marks are deployed only through
+`scripts/deploy_crypto_position_attribution_vps.py`. Its default mode is a read-only Frankfurt
+preflight: it verifies the exact three source hashes, the idle service, active timer, authoritative
+database, and pre-migration schema. It cannot stage or replace a file in this mode.
+
+An authorized rollout requires both `--apply` and the exact
+`ALPHAC_CRYPTO_ATTRIBUTION_DEPLOY_APPROVAL` phrase printed by the tool. It stages and hash-checks
+three files, stops the timer, refuses an active or failed service, creates source and SQLite-online
+backups, atomically replaces only the declared files, applies four nullable columns, and restarts
+the timer. It never invokes `af paper run --once`; evidence begins with the next natural `:10`
+cycle. Any rollout failure restores the source files and database through the retained backup.
+
 ## The positioning archive
 
 `collect_positioning.py` captures five Binance endpoints that carry **positioning and order flow**

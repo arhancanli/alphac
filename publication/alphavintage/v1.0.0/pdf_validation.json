@@ -1,0 +1,66 @@
+{
+  "author": "Arhan Canli",
+  "claim_boundary": "Machine validation proves page geometry, extractable text, metadata, font resources, and required disclosures. Visual inspection is separate and is not peer review, content validation, accessibility certification, or independent replication.",
+  "extractable_characters": 19394,
+  "failures": [],
+  "font_resources": [
+    "AAAAAA+Arial-BoldMT",
+    "BAAAAA+Georgia",
+    "CAAAAA+Georgia",
+    "DAAAAA+ArialMT",
+    "EAAAAA+Arial-BoldMT",
+    "FAAAAA+ArialMT",
+    "GAAAAA+ArialMT",
+    "HAAAAA+Georgia",
+    "IAAAAA+Georgia-Bold",
+    "JAAAAA+Georgia",
+    "KAAAAA+Menlo-Regular",
+    "LAAAAA+Arial-BoldMT",
+    "MAAAAA+ArialMT",
+    "NAAAAA+Georgia-Bold",
+    "OAAAAA+Georgia-Italic"
+  ],
+  "metadata": {
+    "author": "Arhan Canli",
+    "title": "Point-in-Time Inflation Surprise and the Equity Size Spread: A Corrected Null, a Deployment-Governance Failure, and a Frozen Forward Experiment"
+  },
+  "minimum_extractable_characters_on_page": 594,
+  "page_height_points": [
+    841.92
+  ],
+  "page_width_points": [
+    594.96
+  ],
+  "pages": 8,
+  "passes": true,
+  "registry_key": "alphavintage_macro_surprise",
+  "render_environment": {
+    "latex_compilation_validated": false,
+    "pdf_engine": "Google Chrome 151.0.7922.174",
+    "pdf_normalizer": "pypdf 6.16.1"
+  },
+  "schema": "canli.alphac-archival-pdf-validation.v1",
+  "source_bindings": {
+    "bibliography": {
+      "references.bib": {
+        "path": "references.bib",
+        "sha256": "a5fd6c102bdc19437173044d5ce563e0a81f3576b2966acd38b23bb9560b980c"
+      }
+    },
+    "paper_markdown": {
+      "path": "publication/alphavintage/v1.0.0/paper.md",
+      "sha256": "7d932502929797af79146da7100d204a1a4965b528f43df38f4b3bba788e78ae"
+    },
+    "renderer": {
+      "path": "scripts/build_archival_publication_papers.py",
+      "sha256": "d36584c93e00be6f75bc50da079d25a46d1da4e0d1b2d58b73661e3f527c9f3e"
+    },
+    "static_site_paper_html": {
+      "declared_markdown_sha256": "7d932502929797af79146da7100d204a1a4965b528f43df38f4b3bba788e78ae",
+      "matches_paper_markdown": true,
+      "path": "/Users/arhancanli/meridian/research/alphavintage-macro-surprise-lineage.html",
+      "sha256": "e63c6ec9437f8bcc191488c3a2eb00fa04f4da48b38ea3ea78ecff0bd09f78f5"
+    }
+  },
+  "status": "PASS_MACHINE_PDF_VALIDATION"
+}

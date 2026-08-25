@@ -83,14 +83,30 @@ def test_discovery_excludes_archives_and_requires_verified_root(tmp_path: Path) 
     root = _root(tmp_path)
     _record(ExperimentLog(root / "var" / "experiments.jsonl"), {"idea": "live"}, 0.1, 1)
     _record(
+        ExperimentLog(root / "artifacts" / "campaign" / "experiments.jsonl"),
+        {"idea": "durable-artifact"},
+        0.15,
+        2,
+    )
+    _record(
         ExperimentLog(root / "var_archive" / "experiments.jsonl"),
         {"idea": "archived"},
         0.2,
-        2,
+        3,
+    )
+    _record(
+        ExperimentLog(root / "artifacts" / "archive_broken_prices" / "experiments.jsonl"),
+        {"idea": "archived-artifact"},
+        0.25,
+        4,
     )
     union = ExperimentUnion.discover(root / "var" / "experiments.jsonl", root)
-    assert union.n_hypotheses() == 1
-    assert all("archive" not in path.parts for path in union.paths)
+    assert union.n_hypotheses() == 2
+    relative_paths = {path.relative_to(root) for path in union.paths}
+    assert "artifacts/campaign/experiments.jsonl" in {str(path) for path in relative_paths}
+    assert all(
+        not any("archive" in part.casefold() for part in path.parts) for path in relative_paths
+    )
 
     with pytest.raises(ValueError, match=r"configs/base\.yaml"):
         ExperimentUnion.discover(tmp_path / "bad" / "var" / "experiments.jsonl", tmp_path / "bad")

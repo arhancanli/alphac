@@ -1,8 +1,8 @@
 # ALPHAC sleeve-admission contract v6
 
-**Status:** in force. Supersedes v4 (`config/archive/sleeve_admission_contract_v4_superseded.json`)
-and the never-promoted v5 proposal (`..._v5_superseded.json`), both of which are kept so the
-defect recorded below stays checkable rather than becoming a story in a commit message.
+**Status:** superseded by v7 on 2026-08-23. Its exact bytes remain at
+`config/archive/sleeve_admission_contract_v6_superseded.json`; it governed the 228-identity legacy
+epoch, which was retired without regrading. This document is historical evidence, not current law.
 
 **Builder:** `scripts/build_admission_contract_v6.py` — every figure in `frontier_arithmetic` is
 derived from the governing identity at build time, not typed. Reads no data, runs no backtest,
@@ -135,16 +135,22 @@ of the book, and a floor that outruns the book costs edge for nothing.
 
 ---
 
-## 5. Deflation, unchanged in level and corrected in scope
+## 5. Deflation, corrected in scope
 
-`deflated_sharpe_min` stays **0.95** and is now explicitly scoped, via `deflation_policy`, to the
-candidate's **family trial account** rather than the 162-identity union. A pre-registered,
-direction-locked candidate in a new family was not selected from other families' trials — that
-mis-specification is why all 33 restated legacy variants failed at once.
+The per-sleeve `deflated_sharpe_min` gate is **removed** (`null`), while
+`deflated_sharpe_must_be_measured` is mandatory. A 0.95 DSR gate at the 756-observation minimum
+requires annualized Sharpe 1.184 even with only two family trials—about eight times the declared
+0.15 net-Sharpe screen. It made that screen decorative and demanded of a diversifying increment a
+standalone result that none of the 33 restated legacy variants achieved. Family-scoped DSR remains
+public evidence; omission fails closed.
 
 `book_deflated_sharpe_min` **0.95** is new and strictly additional: the published claim is the
 book's, so the **book** carries the full union. This is a correction, not a loosening; it is also
 the only change here that makes something harder at the level where the public claim is made.
+
+The v7 power audit subsequently showed that this threshold was a portfolio-maturity standard
+misapplied to every incremental decision. V7 preserves mandatory public book DSR measurement and
+moves the 0.95 threshold to forward-evidence maturity. Historical v6 verdicts are unchanged.
 
 ---
 
@@ -152,18 +158,20 @@ the only change here that makes something harder at the level where the public c
 
 `frontier_arithmetic` is derived at build time and states plainly:
 
-- At the gate in force (ρ̄ = 0.00), fourteen sleeves at measured quality (s̄ = 0.529) reach
-  **1.979**.
+- At the gate in force (ρ̄ = 0.00), fourteen sleeves at measured traded-basis quality
+  (s̄ = 0.529) reach **1.979**.
 - `gate_permits_objective_floor` = **false**.
 
 Tightening the ceiling removed a ceiling that sat below the objective. It did not, on its own,
 deliver the objective. The remaining distance must be bought with per-sleeve quality, genuinely
 negative correlation, or both:
 
-- at the gate exactly, 2.0 needs **s̄ ≥ 0.535** and 2.5 needs **s̄ ≥ 0.668**;
-- at today's quality, 2.0 needs **ρ̄ ≤ −0.0016** and 2.5 needs **ρ̄ ≤ −0.0287**;
-- the PSD floor at fourteen sleeves is **−0.0769**, so both remain arithmetically available — 2.5
-  consumes about 37% of the available headroom.
+- at the gate exactly, the current 2.25–3.0 in-sample objective band needs
+  **s̄ ≥ 0.601–0.802**;
+- at today's traded-basis quality, 2.25 needs **ρ̄ ≤ −0.0174** and 3.0 needs
+  **ρ̄ ≤ −0.0434**; and
+- the PSD floor at fourteen sleeves is **−0.0769**, so both endpoints remain arithmetically
+  available, but neither is delivered by the gate alone.
 
 `tests/unit/test_admission_frontier_arithmetic.py` re-derives every one of those figures from the
 identity independently of the builder, and asserts the published verdict follows from the figures

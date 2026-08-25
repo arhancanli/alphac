@@ -1,0 +1,357 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="author" content="Arhan Canli">
+<meta name="description" content="Archival preprint bundle by Arhan Canli. AlphaMax is ALPHAC&#x27;s US-equity long/short momentum program. Its canonical signal is 12-minus-1 cross-sectional…">
+<meta name="generator" content="ALPHAC archival paper renderer">
+<link rel="canonical" href="https://canlicapital.com/publication/alphamax/v0.1.0/paper">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Equity Momentum Under Complete Trial Accounting: A Selected Survivor and Failed Deep-History Replication">
+<meta property="og:description" content="Archival preprint bundle by Arhan Canli. AlphaMax is ALPHAC&#x27;s US-equity long/short momentum program. Its canonical signal is 12-minus-1 cross-sectional…">
+<meta property="og:url" content="https://canlicapital.com/publication/alphamax/v0.1.0/paper">
+<title>AlphaMax equity momentum: complete trial lineage — archival paper</title><style>
+@page { size: A4; margin: 19mm 20mm 21mm; }
+* { box-sizing: border-box; }
+html { font-size: 10.6pt; }
+body { color: #17202a; font-family: Georgia, "Times New Roman", serif;
+       line-height: 1.46; margin: 0; }
+.cover { min-height: 247mm; display: flex; flex-direction: column;
+         justify-content: space-between; page-break-after: always; }
+.rule { width: 62px; height: 4px; background: #9a6b2f; margin: 8mm 0 14mm; }
+.kicker, .meta, .boundary { font-family: Arial, Helvetica, sans-serif; }
+.kicker { color: #6f532d; font-size: 8.4pt; font-weight: 700;
+          letter-spacing: .13em; text-transform: uppercase; }
+h1 { color: #111923; font-size: 29pt; font-weight: 500; line-height: 1.08;
+     margin: 0; max-width: 155mm; }
+.author { font-size: 14pt; margin-top: 13mm; }
+.affiliation { color: #53606d; font-family: Arial, Helvetica, sans-serif;
+               font-size: 9.4pt; }
+.meta { border-top: 1px solid #c8c1b5; color: #4b5661; display: grid;
+        font-size: 8.5pt; gap: 2mm; grid-template-columns: 34mm 1fr; padding-top: 6mm; }
+.meta strong { color: #202b36; letter-spacing: .04em; text-transform: uppercase; }
+.boundary { background: #f1eee8; border-left: 3px solid #9a6b2f; color: #35414c;
+            font-size: 8.7pt; margin-top: 8mm; padding: 4mm 5mm; }
+.paper { max-width: 170mm; }
+.paper > p:first-child { background: #f4f2ed; border: 1px solid #ddd7cc;
+                         font-family: Arial, Helvetica, sans-serif;
+                         font-size: 8.2pt; padding: 4mm; }
+h2 { border-bottom: .6pt solid #cfc8bc; color: #17202a; font-size: 16pt;
+     font-weight: 500; margin: 9mm 0 3mm; padding-bottom: 1.5mm;
+     page-break-after: avoid; }
+h3 { color: #263746; font-size: 12.5pt; margin: 6mm 0 2mm;
+     page-break-after: avoid; }
+p { margin: 0 0 3.2mm; orphans: 3; widows: 3; }
+ul, ol { margin: 2mm 0 4mm 6mm; padding-left: 5mm; }
+li { margin-bottom: 1.3mm; }
+.bibliography li { margin-bottom: 2.2mm; }
+.bibliography a { overflow-wrap: anywhere; word-break: break-word; }
+table { border-collapse: collapse; font-family: Arial, Helvetica, sans-serif;
+        font-size: 7.4pt; margin: 4mm 0 6mm; page-break-inside: avoid; width: 100%; }
+th { background: #e8e3da; color: #222d37; font-weight: 700; }
+th, td { border: .5pt solid #c8c1b5; padding: 1.5mm 1.8mm;
+         text-align: left; vertical-align: top; }
+code { background: #f0eee9; border-radius: 2px;
+       font-family: "SFMono-Regular", Consolas, monospace; font-size: 8.1pt;
+       padding: .2mm .7mm; }
+pre { background: #18222c; color: #edf1f4; font-size: 7.4pt; line-height: 1.35;
+      overflow-wrap: anywhere; padding: 4mm; white-space: pre-wrap; }
+a { color: #5f4828; text-decoration: underline; text-decoration-thickness: .5pt; }
+blockquote { border-left: 2pt solid #b48a50; color: #465461;
+             margin-left: 0; padding-left: 5mm; }
+</style></head><body>
+<section class="cover"><div><div class="kicker">Canli Capital Research / ALPHAC</div>
+<div class="rule"></div><h1>Equity Momentum Under Complete Trial Accounting: A Selected Survivor and Failed Deep-History Replication</h1><div class="author">Arhan Canli</div>
+<div class="affiliation">Founder, System Architect, and Quantitative Researcher<br>
+Canli Capital / AlphaC Algorithms</div></div><div><div class="meta">
+<strong>Version</strong><span>0.1.0</span>
+<strong>Released</strong><span>23 August 2026</span>
+<strong>Registry key</strong><span>alphamax_equity_momentum</span>
+<strong>Status</strong><span>Working paper preprint / not peer reviewed</span></div>
+<div class="boundary">Research simulation and, where explicitly identified, Alpaca paper
+evidence. No funded performance, peer review, independent replication, external acceptance, or
+future return is claimed.</div></div></section><article class="paper"><p><strong>Short title:</strong> AlphaMax equity momentum: complete trial lineage</p>
+<p><strong>Author:</strong> Arhan Canli, Founder, System Architect, and Quantitative Researcher, Canli Capital<br><strong>Research system:</strong> ALPHAC / AlphaForge<br><strong>Family key:</strong> <code>alphamax_equity_momentum</code><br><strong>Status:</strong> public research record; not peer reviewed; not an investment solicitation<br><strong>Evidence date:</strong> 2026-08-24</p>
+<h2>Abstract</h2>
+<p>AlphaMax is ALPHAC&#39;s US-equity long/short momentum program. Its canonical signal is 12-minus-1
+cross-sectional momentum: rank securities by split-adjusted return from approximately twelve
+months ago through one month ago, then hold a dollar-neutral long/short portfolio. This paper
+does not present a single favourable backtest as proof. It reconciles the entire charged family:
+115 distinct hypothesis identities recorded from 2026-06-20 through 2026-08-17 across the primary
+and Sharadar research ledgers.</p>
+<p>The evidence is deliberately uncomfortable. A frozen 2023–2026 construction reported net Sharpe
+0.91 and maximum drawdown 8.68% in the persisted deployed-path artifact. The later, preregistered
+2005–2026 replication reported net Sharpe approximately -0.05 and a drawdown exceeding one third, failing
+its DSR and return gates. Construction studies did not rescue the family: a 4-by-4 weighting and
+breadth grid failed its family-wise Reality Check, and beta-neutral, volatility-scaling, and
+short-tail modifications were not adopted. The correct claim is therefore not “momentum is
+proven.” It is that AlphaMax is a live paper research sleeve with a plausible mechanism, a selected
+short-window survivor, a failed deep-history replication, and an explicit forward burden of proof.</p>
+<h2>Claim boundary</h2>
+<p>This paper supports four claims only:</p>
+<ol>
+<li>The economic hypothesis and implementation can be stated precisely.</li>
+<li>Every charged identity in this family is enumerated in the public machine-readable manifest.</li>
+<li>Positive, null, and negative results are preserved together, including later corrections.</li>
+<li>Current paper trading is forward evidence collection, not external attestation and not proof of
+the governing Sharpe or drawdown objectives.</li>
+</ol>
+<p>It does <strong>not</strong> establish a forward Sharpe, expected maximum drawdown, future return, investment
+capacity, or live-money performance. The program remains paper-only and not externally attested.</p>
+<h2>Economic mechanism and falsifiable hypothesis</h2>
+<p>The hypothesis is delayed cross-sectional price adjustment: stocks with high intermediate-horizon
+returns continue to outperform recent losers for a limited horizon. ALPHAC excludes the most recent
+month because short-horizon reversal can contaminate the continuation signal. The mechanism is
+falsified for this implementation if a point-in-time, survivorship-aware, net-of-cost walk-forward
+cannot produce positive and statistically defensible returns after the complete family-wide search
+is charged.</p>
+<p>The literature motivates a prior, not a result:</p>
+<ul>
+<li>Jegadeesh and Titman document intermediate-horizon return continuation and later partial
+reversal in US equities (<a href="https://doi.org/10.1111/j.1540-6261.1993.tb04702.x">Journal of Finance, 1993</a>).</li>
+<li>Asness, Moskowitz, and Pedersen find common momentum structure across asset classes and connect
+it to funding-liquidity risk (<a href="https://doi.org/10.1111/jofi.12021">Journal of Finance, 2013</a>).</li>
+<li>Daniel and Moskowitz show that momentum can crash during panic-state rebounds, making tail and
+regime tests load-bearing rather than decorative
+(<a href="https://doi.org/10.1016/j.jfineco.2015.12.002">Journal of Financial Economics, 2016</a>).</li>
+<li>Barroso and Santa-Clara study volatility management as a response to momentum&#39;s time-varying
+risk (<a href="https://doi.org/10.1016/j.jfineco.2014.11.010">Journal of Financial Economics, 2015</a>).</li>
+<li>Korajczyk and Sadka demonstrate that trading costs and capacity materially constrain momentum
+implementations (<a href="https://doi.org/10.1111/j.1540-6261.2004.00656.x">Journal of Finance, 2004</a>).</li>
+<li>Novy-Marx isolates the intermediate horizon as the principal source of the effect
+(<a href="https://doi.org/10.1016/j.jfineco.2011.05.003">Journal of Financial Economics, 2012</a>).</li>
+</ul>
+<p>These papers do not validate ALPHAC&#39;s data, universe, execution, or selected configuration.</p>
+<h2>Literature and overlap decision</h2>
+<p>The literature supports treating intermediate-horizon momentum as one economic family. It does not
+support counting each allocator, universe, cadence, quality overlay, volatility forecast, or breadth
+choice as an independent sleeve. ALPHAC therefore assigns all 115 identities below to one family,
+charges every implementation to the union trial denominator, and grants the family at most one
+portfolio-sleeve slot. Residual momentum, reversal overlays, and quality-conditioned momentum are
+not credited as diversification unless future evidence demonstrates both an independent mechanism
+and sufficiently low out-of-sample return correlation. None does so here.</p>
+<h2>Exact ALPHAC implementation</h2>
+<p>The canonical feature is <code>eq_mom_252_21</code>:</p>
+<pre><code class="language-text">signal(i,t) = ln(adjusted_close(i,t-21) / adjusted_close(i,t-252))
+</code></pre>
+<p>The factor is computed on the equity session grid and cross-sectionally standardized inside the
+point-in-time eligible universe. Corporate actions must be knowable by the decision timestamp;
+universe membership is applied before cross-sectional transforms. Portfolio weights decided using
+information through session <code>t</code> become effective on <code>t+1</code>, preventing same-close execution.</p>
+<p>The pre-registered deep-history specification fixed a top-200 liquidity universe with hysteresis,
+30 names per side, dollar neutrality, quarterly rebalancing, a trailing-126-session 12% volatility
+target, 2.0-times gross cap, purged anchored-expanding walk-forward, and explicit equity costs. A
+later operational construction used a wider top-2000 universe, 100 names per side, inverse-volatility
+leg weights, quarterly signal horizon, and explicit commission, spread, latency, and borrow costs.
+Those are different hypotheses. The ledger correctly charges changes in universe, breadth, cadence,
+allocator, or signal; only <code>start</code>/<code>end</code> rolling-window changes are exempt from the hypothesis count.</p>
+<h2>Trial lineage</h2>
+<p>The public manifest binds this family key to 115 distinct identities. The grouping below is an
+accounting view, not permission to collapse the denominator.</p>
+<table>
+<thead>
+<tr>
+<th>Identity group</th>
+<th align="right">Charged identities</th>
+<th>Research question</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Canonical <code>eq_mom_252_21</code></td>
+<td align="right">23</td>
+<td>Universe, cadence, horizon, and walk-forward implementations</td>
+</tr>
+<tr>
+<td>Weighting × breadth forensic grids</td>
+<td align="right">48</td>
+<td>The 16-cell primary grid plus 16 no-drift and 16 volatility-guard return configurations</td>
+</tr>
+<tr>
+<td>Construction forensic arms</td>
+<td align="right">8</td>
+<td>Cadence, breadth, universe, and train/test attribution</td>
+</tr>
+<tr>
+<td>Live-window hysteresis arms</td>
+<td align="right">6</td>
+<td>Exit-band and minimum-hold settings on the selected K=30 construction</td>
+</tr>
+<tr>
+<td>Deep-history turnover arms</td>
+<td align="right">8</td>
+<td>Monthly/quarterly cadence crossed with baseline, hysteresis, hold, and combined settings</td>
+</tr>
+<tr>
+<td>Volatility-scaling overlays</td>
+<td align="right">5</td>
+<td>Whether alternative ex-ante risk forecasts improve the sleeve</td>
+</tr>
+<tr>
+<td>Momentum + short reversal</td>
+<td align="right">5</td>
+<td>Whether recent reversal repairs the core signal</td>
+</tr>
+<tr>
+<td>Momentum + operating margin</td>
+<td align="right">5</td>
+<td>Whether quality conditions the momentum exposure</td>
+</tr>
+<tr>
+<td>Momentum + earnings yield</td>
+<td align="right">3</td>
+<td>Whether value conditions the momentum exposure</td>
+</tr>
+<tr>
+<td>Residual reversal</td>
+<td align="right">1</td>
+<td>Whether residualized reversal adds independent information</td>
+</tr>
+<tr>
+<td>Signal-to-noise momentum</td>
+<td align="right">1</td>
+<td>Whether volatility normalization improves ranking</td>
+</tr>
+<tr>
+<td>Momentum ensemble</td>
+<td align="right">1</td>
+<td>Whether fixed horizon blending improves robustness</td>
+</tr>
+<tr>
+<td>Short-horizon equity momentum</td>
+<td align="right">1</td>
+<td>Whether a 63/42-session definition generalizes</td>
+</tr>
+<tr>
+<td><strong>Total</strong></td>
+<td align="right"><strong>115</strong></td>
+<td>Every row remains in the family-wide search burden</td>
+</tr>
+</tbody></table>
+<p>Machine labels covered by this family are <code>eq_mom_252_21</code>, <code>eq_rev_21</code>,
+<code>eq_operating_margin</code>, <code>eq_earnings_yield</code>, <code>eq_rev_resid_21</code>, <code>eq_mom_sn_252_21</code>,
+<code>eq_mom_ens</code>, <code>eq_mom_63_42</code>, <code>forensic_alphamax_construction</code>,
+<code>forensic_alphamax_weighting</code>, <code>alphamax_hyst_live</code>, <code>alphamax_turnover</code>, and
+<code>alphamax_volscale</code>. Variant identifiers remain attached to
+their exact hypothesis keys in the manifest rather than being treated as independent economic
+families.</p>
+<p>The machine-readable source of truth is
+<a href="/glassbox/trial_packet_manifest.json"><code>/glassbox/trial_packet_manifest.json</code></a>. Select identities
+where <code>research_family_key</code> equals <code>alphamax_equity_momentum</code>; each row provides the exact
+<code>hypothesis_key</code>, immutable first measurement, source ledger, candidate papers, and missing packet
+sections.</p>
+<h2>Results and decisions</h2>
+<h3>Selected short-window artifact</h3>
+<p>The persisted <code>k30_dn_63</code> deployed-path artifact covers 2023-07-06 through 2026-06-01 and reports
+net Sharpe 0.9071, cumulative return 24.54%, annualized volatility 13.07%, maximum drawdown 8.68%,
+and annual turnover 4.11. It is the historical survivor that motivated paper deployment. These are
+backtest statistics from a selected configuration, not forward performance.</p>
+<h3>Fresh-vendor clean-workspace replay</h3>
+<p>On 2026-08-24, I reacquired the available Polygon stock data under the owner&#39;s current licensed
+access, reconstructed the exact 375-identifier strategy-window universe union, sealed a private
+input inventory, and ran the historical command at pinned source commit
+<code>fd3e930f41b0a62b222ecda4ab83bae21a4ce9f2</code> in a temporary workspace outside the repository. The
+current entitlement begins on 2021-08-23. It excludes 58 requested sessions from 2021-06-01
+through 2021-08-20, so the manifest does not claim a complete historical universe lookback. The
+gap precedes the first leg&#39;s training and test periods but intersects the global feature warm-up.</p>
+<p>The replay did not reproduce the historical result exactly. Timestamps and configuration matched,
+but the equity frame and log returns differed. The largest absolute equity-path difference was
+$574.69. Historical annualized Sharpe was 0.9071; the fresh-vendor replay produced 0.9213. The
+historical final equity was $124,536.21; the replay produced $124,987.26. Historical maximum
+drawdown was 8.68%; the replay reported 8.60%. The 27-trial validation context was retained rather
+than recomputed from a smaller search: historical DSR was 0.3406 and replay DSR was 0.3479. Both
+failed the 0.95 portfolio-maturity threshold.</p>
+<p>This is a failed exact reproduction even though the headline metrics are close and the fresh
+result is slightly more favourable. The surviving 2026-06-20 artifact remains the historical
+record and is not regraded. The divergence is consistent with at least one unrecovered historical
+input difference, including revised vendor rows, exact per-date membership, corporate-action
+state, or the unavailable warm-up interval. The available evidence does not identify a unique
+cause. A reviewer must therefore treat the short-window result as version-sensitive and not as a
+portable strategy reproduction.</p>
+<h3>Deep-history preregistered replication</h3>
+<p>The 2005-01-04 through 2026-06-01 preregistered momentum run reports net Sharpe -0.0493, cumulative
+return -15.07%, annualized volatility 10.66%, a maximum drawdown exceeding one third, and DSR below
+the 0.95 gate.
+It was killed under its preregistered rule. This contradiction dominates any honest interpretation:
+the short-window survivor does not establish durable historical replication.</p>
+<h3>Construction attribution</h3>
+<p>The eight-arm construction study showed that universe and cadence decisions materially changed the
+measured result. On its common 2022–2026 basis, arm Sharpes ranged from 0.172 to 1.613 and DSR values
+from 0.025 to 0.529. None met the complete admission standard. This dispersion is evidence of
+specification sensitivity, not a menu from which to select the largest number.</p>
+<p>The later 4-by-4 weighting/breadth grid used the 2005–2026 research panel. Challenger net Sharpes
+ranged from -0.293 to +0.066 against -0.062 for the incumbent cell. Although individual cells could
+look better, the preregistered White Reality Check returned p=0.315. Zero cells were adopted.</p>
+<p>That report also generated two complete 16-cell robustness surfaces that were initially omitted
+from the ledger. The no-drift modelling convention produced net Sharpes from -0.564 to -0.077;
+the volatility-eligibility guard produced -0.245 to +0.081. They were explicitly labelled
+robustness views, but they still changed portfolio returns and therefore still consume selection
+identities. All 32 are now charged. Their persisted summaries do not preserve exact daily curves or
+higher moments, so this correction cannot manufacture current-union DSR values for them.</p>
+<p>Two turnover studies account for another 14 identities. The selected-window K=30 hysteresis screen
+reported net Sharpes from 1.282 to 1.630 over only 728 sessions and large turnover reductions for
+several exit bands. The deep-history broad-universe study, however, reported net Sharpes from
+-0.192 to -0.134 across all eight cadence/hold settings. These are parameter screens, not new
+sleeves; identical ex-post results under some minimum-hold settings are still charged because the
+settings were separately tried. No short-window improvement is presented as a deep-history or
+forward Sharpe result.</p>
+<p>The beta-neutral study rejected its own premise: estimated market beta was approximately -0.014 on
+the research panel but +0.319 on the live-book sample, and the treatment had opposite effects across
+the two contexts. Volatility-scaling and short-tail controls likewise failed their adoption gates.
+No failed construction is silently promoted into the paper program.</p>
+<h2>Uncertainty, selection, and forward burden</h2>
+<p>The family-level annualized Sharpe observations in the identity manifest range from approximately
+-0.744 to +1.813. That range is not a confidence interval; it is a warning about configuration and
+sample sensitivity. ALPHAC applies its Deflated Sharpe Ratio against the union of every return
+hypothesis across all research profiles, not only the variants displayed in this paper. As of this
+evidence date that union contains 228 identities, and no current legacy restatement clears DSR
+0.95.</p>
+<p>The governing program objective is an honest forward Sharpe of 1.5 with expected maximum drawdown
+near 11%, pursued across a diversified book of up to 14 sleeves. AlphaMax has not established those
+targets. The only acceptable path is a sufficiently long, continuous, broker-reconciled paper record
+followed by external replication or scrutiny. Targets are design objectives, never guaranteed
+outcomes and never reasons to weaken a gate.</p>
+<h2>Execution, costs, and capacity boundary</h2>
+<p>The research path models one-way equity costs including commission, half-spread, latency, realized
+turnover, and short borrow. The strategy is dollar-neutral and positions drift between rebalances.
+The backtester replays point-in-time corporate actions and applies next-session execution semantics.</p>
+<p>Capacity claims remain conditional. Breadth and liquidity screens can support a modelled estimate,
+but borrow availability, market impact, locates, crowding, and crisis liquidity require security-level
+forward evidence. The website must therefore distinguish modelled capacity from broker-observed
+execution and must not describe either as live-money proof.</p>
+<h2>Reproduction map</h2>
+<p>Primary implementation and evidence paths:</p>
+<ul>
+<li><code>src/alphaforge/features/library/equity_price.py</code>: canonical feature implementation.</li>
+<li><code>docs/design/EQUITIES_SLEEVE.md</code>: point-in-time equity data and feature contract.</li>
+<li><code>docs/design/PRE_REGISTRATION.md</code>: deep-history gate and fixed momentum specification.</li>
+<li><code>var/experiments.jsonl</code> and <code>var_sharadar/experiments.jsonl</code>: immutable charged identities.</li>
+<li><code>artifacts/walkforward/k30_dn_63/</code>: selected short-window backtest artifact.</li>
+<li><code>artifacts/publication/alphamax_upstream_replay_manifest.json</code>: public hash-only binding to the
+private fresh-input packet, source reconstruction, rights boundary, and disclosed entitlement
+gap.</li>
+<li><code>artifacts/publication/alphamax_upstream_clean_workspace.json</code>: author-run clean-workspace replay
+receipt and failed exact comparison.</li>
+<li><code>artifacts/walkforward/prereg_momentum/</code>: preregistered deep-history result.</li>
+<li><code>artifacts/sweep/alphamax_construction/</code>: eight-arm attribution study.</li>
+<li><code>artifacts/probe/alphamax_weighting/</code>: family-wise weighting/breadth grid.</li>
+<li><code>scripts/probe_alphamax_betaneutral.py</code>, <code>scripts/probe_alphamax_shorttail.py</code>, and
+<code>scripts/probe_alphamax_volscale.py</code>: rejected construction probes.</li>
+<li><code>artifacts/research/trial_packet_manifest.json</code>: exact family/identity join and packet debt.</li>
+</ul>
+<p>Reproduction requires the pinned project environment and licensed/source datasets represented by
+the artifacts. Public artifacts permit claim auditing; they do not imply that every underlying
+licensed market-data row can be redistributed.</p>
+<h2>Packet completeness and legacy limitations</h2>
+<p>This family paper materially improves lineage coverage but does not retroactively create evidence
+that did not exist. At publication time, the manifest still marks every identity packet incomplete.
+In particular, some legacy identities lack a contemporaneous preregistration, complete return
+series, or independently rerunnable data bundle. Those absences must remain explicit. A later
+validator may bind this paper to exact identities and credit only sections it can prove; it must not
+convert “documented legacy absence” into “verified preregistration.”</p>
+<h2>Decision</h2>
+<p><strong>Research decision:</strong> retain AlphaMax as a paper-only forward experiment; do not claim the
+historical edge is established; do not adopt any failed construction enhancement; continue
+broker-reconciled observation under the frozen operational specification.</p>
+<p><strong>Publication decision:</strong> publish the positive survivor, failed deep-history replication, complete
+family trial count, and unresolved evidence debt together. Any future promotion requires new
+forward evidence under unchanged gates, not a more flattering retrospective window.</p><section class="bibliography"><h2>References</h2><ol><li>NARASIMHAN JEGADEESH, SHERIDAN TITMAN (1993). <em>Returns to Buying Winners and Selling Losers: Implications for Stock Market Efficiency</em>. The Journal of Finance. <a href="https://doi.org/10.1111/j.1540-6261.1993.tb04702.x">https://doi.org/10.1111/j.1540-6261.1993.tb04702.x</a></li><li>CLIFFORD S. ASNESS, TOBIAS J. MOSKOWITZ, LASSE HEJE PEDERSEN (2013). <em>Value and Momentum Everywhere</em>. The Journal of Finance. <a href="https://doi.org/10.1111/jofi.12021">https://doi.org/10.1111/jofi.12021</a></li><li>Kent Daniel, Tobias J. Moskowitz (2016). <em>Momentum crashes</em>. Journal of Financial Economics. <a href="https://doi.org/10.1016/j.jfineco.2015.12.002">https://doi.org/10.1016/j.jfineco.2015.12.002</a></li><li>Pedro Barroso, Pedro Santa-Clara (2015). <em>Momentum has its moments</em>. Journal of Financial Economics. <a href="https://doi.org/10.1016/j.jfineco.2014.11.010">https://doi.org/10.1016/j.jfineco.2014.11.010</a></li><li>Robert A. Korajczyk, Ronnie Sadka (2004). <em>Are Momentum Profits Robust to Trading Costs?</em>. The Journal of Finance. <a href="https://doi.org/10.1111/j.1540-6261.2004.00656.x">https://doi.org/10.1111/j.1540-6261.2004.00656.x</a></li><li>Robert Novy-Marx (2012). <em>Is momentum really momentum?</em>. Journal of Financial Economics. <a href="https://doi.org/10.1016/j.jfineco.2011.05.003">https://doi.org/10.1016/j.jfineco.2011.05.003</a></li></ol></section></article>
+</body></html>

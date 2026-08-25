@@ -9,8 +9,8 @@ Emitted files (to the Meridian public dir, default <meridian>/public/glassbox/):
   - kill_log.json         killed + survived strategies, real net Sharpes + kill/keep reasons
   - pre_registration.json the committed trial budget, slots, gates, commit date
   - deflation.json        real DSR / PBO / gate thresholds + the honest C+ NO-DEPLOY verdict
-  - track_record.json     the live curve (from trading.sqlite if it has rows, else the
-                          go-live seed) + the LABELLED research/simulation curve
+  - track_record.json     the canonical paper-state composite live curve + the LABELLED
+                          research/simulation curve
   - reproducibility.json  the golden-master / byte-identity basis + the 50-factor parity claim
 
 Each file carries a sha256 content-hash (over the payload, hash field excluded) and a
@@ -32,7 +32,6 @@ from __future__ import annotations
 import datetime as dt
 import hashlib
 import json
-import sqlite3
 from pathlib import Path
 from typing import Any, Final
 
@@ -44,6 +43,9 @@ WALKFORWARD: Final[Path] = REPO / "artifacts" / "walkforward"
 GRAND_BACKTEST_DIR: Final[Path] = REPO / "artifacts" / "grand_backtest" / "20260616T143620Z"
 STATE_JSON: Final[Path] = REPO / "data" / "paper" / "state.json"
 TRADING_SQLITE: Final[Path] = REPO / "var" / "trading.sqlite"
+ALPACA_RECONCILIATION_JSON: Final[Path] = (
+    REPO / "artifacts" / "engineering" / "alpaca_broker_reconciliation.json"
+)
 GOLDEN_MASTER: Final[Path] = REPO / "tests" / "integration" / "test_golden_master.py"
 PRE_REGISTRATION_MD: Final[Path] = REPO / "docs" / "design" / "PRE_REGISTRATION.md"
 
@@ -281,48 +283,102 @@ ScreenKill = (
     tuple[str, str, float | None, str] | tuple[str, str, float | None, str, str]
 )
 
-SCREEN_KILLS: Final[list[ScreenKill]] = [
-    (
+
+def eia_petroleum_inventory_kill() -> ScreenKill:
+    """Render the EIA verdict from its replay artifact so public prose cannot drift."""
+    path = REPO / "artifacts" / "probe" / "eia_petroleum_inventory" / "result.json"
+    result = json.loads(path.read_text())
+    metrics = result["metrics"]
+    correlation = result["correlation"]
+    book = result["book"]
+    data = result["data"]
+    failed_leave_one_out = sum(
+        float(value) <= 0 for value in book["leave_one_year_out_delta"].values()
+    )
+    capacity = float(metrics["capacity"]["p05_usd_at_1pct_adv"])
+    reason = (
+        f"One pre-registered configuration on {data['accepted_releases']} accepted official EIA "
+        "WPSR first-release Table 4 vintages, 2016-2026 OOS: commercial crude excluding SPR "
+        "mapped to USO and total gasoline mapped to UGA, five-year same-week seasonal "
+        "expectation, trailing 52-release surprise scale, next-session-open entry, DBC beta hedge "
+        f"and explicit one-way costs. One of {data['discovered_releases']} discovered releases "
+        "was quarantined for a published arithmetic contradiction. The sleeve was exceptionally "
+        f"orthogonal (average correlation {correlation['average']:+.4f}, maximum pair "
+        f"{correlation['max_pair']:+.4f}) and controlled DBC beta "
+        f"({metrics['realized_dbc_beta']:+.3f}), but there was no return edge: net Sharpe "
+        f"{metrics['net_sharpe']:.3f}, Newey-West t {metrics['newey_west_t']:.2f}, DSR "
+        f"{metrics['dsr']:.2e}, max drawdown {metrics['max_drawdown']:.1%}, and Sharpe at 2x costs "
+        f"{metrics['net_sharpe_at_2x_costs']:.3f}. USO and UGA standalone Sharpes were both "
+        f"negative. The fixed 10% book check improved by {book['delta_sharpe']:.3f} over its "
+        f"{book['common_days']}-session common window, but failed after mean-centering and failed "
+        f"{failed_leave_one_out} of {len(book['leave_one_year_out_delta'])} leave-one-year-out "
+        "checks. UGA constrained fifth-percentile proxy capacity to about "
+        f"${capacity / 1_000:.1f}k at 1% ADV. The sign is not inverted and no threshold is "
+        "retuned. Full curve, scores, "
+        "weights, input lineage and result are preserved in "
+        "artifacts/probe/eia_petroleum_inventory/. KILLED."
+    )
+    return (
         "commodity_inventory_seasonal",
         "EIA Petroleum Inventory Scarcity",
-        -0.5892034349114502,
-        "One pre-registered configuration on 782 accepted official EIA WPSR first-release "
-        "Table 4 vintages, 2016-2026 OOS: commercial crude excluding SPR mapped to USO and total "
-        "gasoline mapped to UGA, five-year same-week seasonal expectation, trailing 52-release "
-        "surprise scale, next-session-open entry, DBC beta hedge and explicit one-way costs. One "
-        "of 783 discovered releases was quarantined for a published arithmetic contradiction. "
-        "The sleeve was exceptionally orthogonal (average correlation +0.0002, maximum pair "
-        "+0.0321) and controlled DBC beta (-0.014), but there was no return edge: net Sharpe "
-        "-0.589, Newey-West t -1.84, DSR effectively zero, max drawdown -41.1%, and Sharpe at "
-        "2x costs -0.998. USO and UGA standalone Sharpes were both negative. The fixed 10% book "
-        "check improved by 0.058 only on the short common window, but failed after mean-centering "
-        "and failed one of four leave-one-year-out checks. UGA constrained fifth-percentile proxy "
-        "capacity to about $14.9k at 1% ADV. The sign is not inverted and no threshold is retuned. "
-        "Full curve, scores, weights and result are preserved in "
-        "artifacts/probe/eia_petroleum_inventory/. KILLED.",
+        float(metrics["net_sharpe"]),
+        reason,
         "research_gauntlet",
-    ),
-    (
+    )
+
+
+def insider_purchase_clusters_kill() -> ScreenKill:
+    """Render the current insider KILL and its replay boundary from one artifact."""
+    path = REPO / "artifacts" / "probe" / "insider_purchase_clusters" / "result.json"
+    result = json.loads(path.read_text())
+    metrics = result["metrics"]
+    correlation = result["correlation"]
+    book = result["book"]
+    data = result["data"]
+    correction = result["implementation_correction"]
+    reconciliation = result["ledger_reconciliation"]
+    failed_leave_one_out = sum(
+        float(value) <= 0 for value in book["leave_one_year_out_delta"].values()
+    )
+    capacity = float(metrics["capacity"]["p05_usd_at_1pct_adv"])
+    first = reconciliation["immutable_first_measurement"]
+    reason = (
+        f"One pre-registered configuration on official SEC Form 4 purchases, 2016-2026: at "
+        "least two officers/directors and $100k purchased inside 30 calendar days, filing date "
+        "plus two sessions, next-open entry, full 63-session hold, trailing-ADV eligibility, SPY "
+        f"beta hedge and explicit one-way costs. The current replay scheduled "
+        f"{data['scheduled_nonoverlapping_events']:,} non-overlapping events and was genuinely "
+        f"orthogonal (average correlation {correlation['average']:+.3f}, maximum pair "
+        f"{correlation['max_pair']:+.3f}), controlled beta ({metrics['realized_spy_beta']:+.3f}), "
+        f"and cleared the $5M capacity gate (${capacity / 1_000_000:.2f}M fifth-percentile AUM "
+        f"at 1% ADV). But there was no return edge: net Sharpe {metrics['net_sharpe']:.3f}, "
+        f"Newey-West t {metrics['newey_west_t']:.2f}, DSR {metrics['dsr']:.2e}, max drawdown "
+        f"{metrics['max_drawdown']:.1%}, and Sharpe at 2x costs "
+        f"{metrics['net_sharpe_at_2x_costs']:.3f}. A fixed 10% sleeve changed combined-book "
+        f"Sharpe by {book['delta_sharpe']:.3f} and failed {failed_leave_one_out} of "
+        f"{len(book['leave_one_year_out_delta'])} leave-one-year-out checks. A pre-publication "
+        "audit corrected weighted log-return aggregation to the canonical simple-return "
+        f"contract; preliminary Sharpe was {correction['preliminary_net_sharpe']:.3f} and the "
+        "corrected verdict remained KILL. The immutable first corrected measurement has "
+        f"{first['observations']:,} observations and population-std Sharpe "
+        f"{first['annualized_sharpe_population_std']:.3f}; the current lake adds "
+        f"{reconciliation['observation_delta']} sessions, so it is explicitly an OOS extension, "
+        "not an exact reproduction, and the identity packet remains incomplete. The sign is "
+        "not inverted and no threshold is retuned. Full curve, event ledger, weights, input "
+        "lineage and result are preserved in artifacts/probe/insider_purchase_clusters/. KILLED."
+    )
+    return (
         "insider_purchase_clusters",
         "Clustered Insider Open-Market Purchases",
-        -0.2432300499265856,
-        "One pre-registered configuration on official SEC Form 4 purchases, 2016-2026: at least "
-        "two officers/directors and $100k purchased inside 30 calendar days, filing date plus two "
-        "sessions, next-open entry, full 63-session hold, trailing-ADV eligibility, SPY beta hedge "
-        "and explicit one-way costs. The full PIT probe scheduled 3,508 non-overlapping events. "
-        "It was genuinely orthogonal (average correlation -0.064, maximum pair +0.057), controlled "
-        "beta (+0.048), and just cleared the hard $5M capacity gate ($5.17M fifth-percentile AUM "
-        "at 1% ADV). But there was no return edge: net Sharpe -0.243, Newey-West t -0.79, DSR "
-        "effectively zero, max drawdown -24.8%, and Sharpe at 2x costs -0.297. A fixed 10% sleeve "
-        "reduced combined-book Sharpe by 0.072 and failed three of four leave-one-year-out checks. "
-        "A pre-publication audit corrected weighted log-return aggregation to the canonical simple-"
-        "return contract; preliminary Sharpe was -0.993 and the corrected verdict remained KILL. "
-        "Immutable execution records rose from 200 to 201; distinct hypothesis identities rose "
-        "from 135 to 136 because the correction remains conservatively charged. The sign "
-        "is not inverted and no threshold is retuned. Full curve, event ledger, weights and result "
-        "are preserved in artifacts/probe/insider_purchase_clusters/. KILLED.",
+        float(metrics["net_sharpe"]),
+        reason,
         "research_gauntlet",
-    ),
+    )
+
+
+SCREEN_KILLS: Final[list[ScreenKill]] = [
+    eia_petroleum_inventory_kill(),
+    insider_purchase_clusters_kill(),
     (
         "eq_net_issuance",
         "Corporate Equity Supply (Net Issuance)",
@@ -898,9 +954,16 @@ def build_kill_log() -> dict[str, Any]:
         + [
             "docs/design/PREREG_INSIDER_CLUSTERS.md",
             "artifacts/probe/insider_purchase_clusters/result.json",
+            "artifacts/probe/insider_purchase_clusters/input_data_manifest.json",
             "artifacts/probe/insider_purchase_clusters/equity.parquet",
+            "artifacts/probe/insider_purchase_clusters/events.parquet",
+            "artifacts/probe/insider_purchase_clusters/weights.parquet",
             "artifacts/probe/eia_petroleum_inventory/result.json",
+            "artifacts/probe/eia_petroleum_inventory/input_data_manifest.json",
             "artifacts/probe/eia_petroleum_inventory/equity.parquet",
+            "artifacts/probe/eia_petroleum_inventory/scores.parquet",
+            "artifacts/probe/eia_petroleum_inventory/weights.parquet",
+            "docs/design/PREREG_EIA_PETROLEUM_INVENTORY.md",
             "artifacts/sweep/gauntlet_eq_net_issuance/walkforward.json",
             "artifacts/analysis/null_fundamentals_rerun/result.json",
             "artifacts/feasibility/repurchase_issuance_flow/identity_overlap_audit.json",
@@ -1106,59 +1169,34 @@ def build_deflation() -> dict[str, Any]:
 
 
 # ---------------------------------------------------------------------------
-# Feature 4 — track_record.json (live curve + labelled research/simulation curve)
+# Feature 4 — track_record.json (canonical composite + labelled research/simulation curve)
 # ---------------------------------------------------------------------------
-def read_live_curve_from_sqlite() -> list[dict[str, Any]] | None:
-    """Read the realized live equity curve from trading.sqlite, or None if no rows exist.
-
-    The live track record genuinely starts at day zero; until the daily cycle has written
-    rows to equity_curve, this returns None and the caller falls back to the go-live seed.
-    """
-    if not TRADING_SQLITE.exists():
-        return None
-    con = sqlite3.connect(f"file:{TRADING_SQLITE}?mode=ro", uri=True)
-    try:
-        cur = con.execute(
-            "SELECT ts, equity_quote FROM equity_curve WHERE ts IS NOT NULL ORDER BY ts ASC"
-        )
-        rows = cur.fetchall()
-    except sqlite3.Error:
-        return None
-    finally:
-        con.close()
-    if not rows:
-        return None
-    curve: list[dict[str, Any]] = []
-    for ts_ms, equity in rows:
-        curve.append(
-            {
-                "date": epoch_ms_to_iso_date(float(ts_ms)),
-                "nav_usd": round(float(equity), 2),
-            }
-        )
-    return curve
-
-
 def build_track_record() -> dict[str, Any]:
-    """track_record.json: realized live curve (sqlite) or the honest go-live seed, plus the
-    explicitly-labelled research/simulation curve from the paper state."""
+    """Build the public record from the sole canonical ALPHAC composite authority.
+
+    ``data/paper/state.json`` is assembled from the three broker-reconciled Alpaca sleeves and
+    local AlphaForge PaperBroker crypto.  A legacy single-engine trading.sqlite must never
+    replace that composite.
+    """
     state = json.loads(STATE_JSON.read_text())
     go_live = str(state["go_live_date"])
-
-    live_from_db = read_live_curve_from_sqlite()
-    if live_from_db is not None:
-        live_curve = live_from_db
-        live_source = "trading.sqlite equity_curve (realized paper marks)"
-    else:
-        # Honest seed: the day the live record begins, at the $100k baseline. No fake history.
-        seed = state.get("live_curve") or [{"date": go_live, "equity": INITIAL_EQUITY}]
-        live_curve = [
-            {"date": str(p["date"]), "nav_usd": round(float(p["equity"]), 2)} for p in seed
-        ]
-        live_source = "go-live seed (no realized marks have accrued yet)"
+    state_curve = state.get("live_curve") or [{"date": go_live, "equity": INITIAL_EQUITY}]
+    live_curve = [
+        {"date": str(p["date"]), "nav_usd": round(float(p["equity"]), 2)}
+        for p in state_curve
+    ]
 
     baseline = live_curve[0]["nav_usd"]
     current = live_curve[-1]["nav_usd"]
+    is_seed_only = len(live_curve) == 1 and current == baseline
+    live_source = (
+        "go-live seed (no realized marks have accrued yet)"
+        if is_seed_only
+        else (
+            "paper-state.json broker-derived composite marks "
+            "(three Alpaca paper accounts + local AlphaForge PaperBroker crypto)"
+        )
+    )
     today = dt.datetime.now(tz=dt.UTC).date()
     go_live_date = dt.date.fromisoformat(go_live)
     live_days = max(0, (today - go_live_date).days)
@@ -1179,6 +1217,12 @@ def build_track_record() -> dict[str, Any]:
         "live_days_accrued": live_days,
         "live_status": "ACCRUING" if current == baseline else "LIVE",
         "live_source": live_source,
+        "live_provenance": {
+            "composite_authority": str(STATE_JSON.relative_to(REPO)),
+            "alpaca_reconciliation": str(ALPACA_RECONCILIATION_JSON.relative_to(REPO)),
+            "alpaca_reconciliation_present": ALPACA_RECONCILIATION_JSON.is_file(),
+            "legacy_sqlite_authoritative": False,
+        },
         "live_nav_baseline_usd": baseline,
         "live_nav_current_usd": current,
         "live_return_pct": round((current - baseline) / baseline * 100.0, 4),
@@ -1191,7 +1235,11 @@ def build_track_record() -> dict[str, Any]:
         "honesty_policy": list(state["transparency"]),
         "source_paths": [
             str(STATE_JSON.relative_to(REPO)),
-            str(TRADING_SQLITE.relative_to(REPO)) if TRADING_SQLITE.exists() else None,
+            (
+                str(ALPACA_RECONCILIATION_JSON.relative_to(REPO))
+                if ALPACA_RECONCILIATION_JSON.is_file()
+                else None
+            ),
         ],
     }
 
@@ -1224,10 +1272,11 @@ def build_reproducibility() -> dict[str, Any]:
         "summary": (
             "The backtest is content-hashed and byte-reproducible. A golden-master test asserts "
             "every fill price, fee, funding payment and the final equity from hand-written "
-            "arithmetic to 1e-9 precision. We do not claim blockchain anchoring; we do not need it."
+            "arithmetic to 1e-9 precision. The backtest itself is not timestamp-anchored; the "
+            "separate live track-record chain has selected OpenTimestamps checkpoints."
         ),
         "reproducibility_claim": "content-hashed + byte-reproducible backtest",
-        "not_claimed": "NOT blockchain-anchored; no chain-of-custody proofs",
+        "not_claimed": "No blockchain timestamp or chain-of-custody claim for the backtest itself",
         "registered_factors": n_factors,
         "golden_master_test": {
             "file": str(GOLDEN_MASTER.relative_to(REPO)),
@@ -1281,7 +1330,10 @@ def build_red_team() -> dict[str, Any]:
     findings = [
         {"severity": "critical", "status": "FIXED",
          "weakness": "A future-dated (2026-06-29) paper loss leaked into the public record and was sealed into seq 0 of the signed transparency chain (read_fwd_curve had no <= today guard).",
-         "fix": "clamp_live() drops any mark dated after today (UTC) before publish + anchor; a fail-closed guard was added; the corrected state was anchored as seq 1. The append-only chain shows BOTH seq 0 and seq 1 — we don't delete mistakes."},
+         "fix": "clamp_live() drops any mark dated after today (UTC) before publish + anchor; "
+         "a fail-closed guard was added; the signed chain retains BOTH seq 0 and seq 1 as opaque "
+         "historical commitments. Their underlying payloads were not published, so no "
+         "content-reconstruction claim is made."},
         {"severity": "critical", "status": "FIXED",
          "weakness": "The headline -4.7% max drawdown excluded every crisis (the book curve starts 2023-07, no 2020/2022). It understated risk badly.",
          "fix": "Crisis-inclusive worst case (-15 to -18%) is now the headline; -4.7% is labeled 'live-overlap only, not a risk estimate'."},

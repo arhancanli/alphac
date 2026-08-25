@@ -75,6 +75,7 @@ def _replace(old: str, new: str) -> Callable[[str], str]:
         if old not in text:
             raise AssertionError(f"mutation anchor not found: {old[:60]!r}")
         return text.replace(old, new, 1)
+
     return apply
 
 
@@ -113,6 +114,23 @@ def _bump_json(path_in_doc: tuple[str, ...], delta: float) -> Callable[[str], st
         if not isinstance(node.get(leaf), (int, float)):
             raise AssertionError(f"{'.'.join(path_in_doc)} is not a number")
         node[leaf] = node[leaf] + delta
+        return json.dumps(doc, indent=2, sort_keys=True) + "\n"
+
+    return apply
+
+
+def _corrupt_json_string(path_in_doc: tuple[str, ...]) -> Callable[[str], str]:
+    """Prefix one JSON string while preserving a valid document."""
+
+    def apply(text: str) -> str:
+        doc = json.loads(text)
+        node: Any = doc
+        for key in path_in_doc[:-1]:
+            node = node[key]
+        leaf = path_in_doc[-1]
+        if not isinstance(node.get(leaf), str):
+            raise AssertionError(f"{'.'.join(path_in_doc)} is not a string")
+        node[leaf] = "MUTATED" + node[leaf]
         return json.dumps(doc, indent=2, sort_keys=True) + "\n"
 
     return apply
@@ -168,7 +186,7 @@ MUTATIONS: tuple[Mutation, ...] = (
         "test_published_gates_match_the_contract.py",
         "change the contract the site derives its published gate summary from",
         CONTRACT,
-        _bump_json(("thresholds", "average_pairwise_correlation_max"), 0.25),
+        _bump_json(("thresholds", "candidate_average_correlation_to_existing_book_max"), 0.25),
     ),
     Mutation(
         "test_live_change_is_declared.py",
@@ -188,7 +206,17 @@ MUTATIONS: tuple[Mutation, ...] = (
         "test_indexnow_is_in_the_deploy_path.py",
         "stop the hourly deploy announcing what it published",
         REPO / "scripts" / "live_deploy_hourly.sh",
-        _replace('    indexnow_submit "$HOME/meridian"', "    :"),
+        _replace('    indexnow_submit "$SITE_SNAPSHOT_ROOT/meridian"', "    :"),
+    ),
+    Mutation(
+        "test_site_deploy_snapshot.py",
+        "deploy the landing site from the mutable working tree instead of the frozen snapshot",
+        REPO / "scripts" / "live_deploy_hourly.sh",
+        _replace(
+            'deploy_prod "$SITE_SNAPSHOT_ROOT/meridian"',
+            'deploy_prod "$HOME/meridian"',
+        ),
+        notes=["The two-domain mixed-publication race, reproduced."],
     ),
     Mutation(
         "test_publish_pipeline_order.py",
@@ -252,6 +280,16 @@ MUTATIONS: tuple[Mutation, ...] = (
             "Two earlier attempts moved NUMBERS in the artifacts; this guard watches DISCLOSURE "
             "LANGUAGE — that a killed sleeve is described as killed — so a number is the wrong "
             "thing to move.",
+        ],
+    ),
+    Mutation(
+        "test_expanded_sleeve_paper_claims.py",
+        "move a published crypto-defensive Sharpe away from the family artifact",
+        REPO / "artifacts/research/crypto_defensive_family.json",
+        _first_json_number(r'"annualized_sharpe":\s*(-?\d+(?:\.\d+)?)', 1.0),
+        notes=[
+            "The expanded papers quote artifact values directly; moving one artifact value "
+            "without rewriting the manuscript must be caught."
         ],
     ),
     # THE FIVE THE RULE CAUGHT THAT GUARD THE ENGINE RATHER THAN A PUBLISHED CLAIM. The
@@ -323,6 +361,185 @@ MUTATIONS: tuple[Mutation, ...] = (
             "watches the audit's LOGIC. A gate that always passes is the thing to break.",
         ],
     ),
+    Mutation(
+        "test_alpaca_broker_reconciliation_export.py",
+        "corrupt the persisted broker-reconciliation content hash",
+        REPO / "artifacts/engineering/alpaca_broker_reconciliation.json",
+        _replace('"content_hash": "sha256:', '"content_hash": "sha256:0'),
+    ),
+    Mutation(
+        "test_atlas_reachability_screen.py",
+        "move the published minimum-history arithmetic away from the active contract",
+        REPO / "artifacts/analysis/atlas_reachability_screen/result.json",
+        _bump_json(("contract", "minimum_history_years"), 1.0),
+    ),
+    Mutation(
+        "test_experiment_union.py",
+        "invert cross-profile identity deduplication",
+        REPO / "src/alphaforge/validation/experiments.py",
+        _replace("if hypothesis not in known_hypotheses:", "if hypothesis in known_hypotheses:"),
+    ),
+    Mutation(
+        "test_forward_sleeve_contribution.py",
+        "corrupt the state hash bound into forward sleeve attribution",
+        REPO / "artifacts/engineering/forward_sleeve_contribution.json",
+        _corrupt_json_string(("source_bindings", "paper_state", "sha256")),
+    ),
+    Mutation(
+        "test_forward_trial_ledger_gate.py",
+        "break the active contract binding used by the forward reservation gate",
+        CONTRACT,
+        _replace(
+            "canli.alphac-sleeve-admission-contract.v7",
+            "canli.alphac-sleeve-admission-contract.v70",
+        ),
+    ),
+    Mutation(
+        "test_glassbox_eia_kill.py",
+        "make the EIA kill renderer round correlation more coarsely than its guard",
+        REPO / "scripts/glassbox_export.py",
+        _replace("correlation['average']:+.4f", "correlation['average']:+.2f"),
+    ),
+    Mutation(
+        "test_glassbox_insider_kill.py",
+        "insert a false marker into the insider correlation sentence",
+        REPO / "scripts/glassbox_export.py",
+        _replace(
+            "f\"orthogonal (average correlation {correlation['average']:+.3f}, maximum pair \"",
+            'f"orthogonal (average correlation MUTATED '
+            "{correlation['average']:+.3f}, maximum pair \"",
+        ),
+        notes=[
+            "The prior same-size format-specifier mutation could reuse timestamp-based Python "
+            "bytecode. This source-size-changing mutation proves the rendered sentence is read."
+        ],
+    ),
+    Mutation(
+        "test_historical_curve_evidence.py",
+        "make the historical-curve index claim zero exact bindings",
+        REPO / "artifacts/research/historical_curve_evidence/index.json",
+        _replace('"unique_exact_artifact_bindings": 37', '"unique_exact_artifact_bindings": 0'),
+    ),
+    Mutation(
+        "test_identity_packet_recoverability.py",
+        "make the recoverability audit claim zero audited identities",
+        REPO / "artifacts/research/identity_packet_recoverability.json",
+        _replace('"audited_identities": 226', '"audited_identities": 0'),
+    ),
+    Mutation(
+        "test_identity_trial_packets.py",
+        "make the identity-packet index claim zero published packets",
+        REPO / "artifacts/research/trial_packets/index.json",
+        _replace('"published_identity_packets": 228', '"published_identity_packets": 0'),
+    ),
+    Mutation(
+        "test_legacy_research_epoch.py",
+        "change the sealed legacy identity count",
+        REPO / "scripts/seal_legacy_research_epoch.py",
+        _replace('"distinct_hypothesis_identities": 228', '"distinct_hypothesis_identities": 0'),
+    ),
+    Mutation(
+        "test_next_sleeve_selection.py",
+        "change the selected candidate after the blind selection was sealed",
+        REPO / "scripts/seal_next_sleeve_selection.py",
+        _replace('"id": "active_ownership_escalation"', '"id": "mutated_candidate"'),
+    ),
+    Mutation(
+        "test_track_record_provenance.py",
+        "remove the broker-derived provenance wording from the research export",
+        REPO / "scripts/research_export.py",
+        _replace("paper-state.json broker-derived composite marks", "mutated provenance"),
+    ),
+    Mutation(
+        "test_transparency_payload_disclosure.py",
+        "change the public transparency-log schema on one host",
+        MERIDIAN / "public/glassbox/transparency_log.json",
+        _replace("glassbox.transparency_log/2", "glassbox.transparency_log/MUTATED"),
+    ),
+    Mutation(
+        "test_trial_packet_manifest.py",
+        "make the trial manifest claim zero published identity packets",
+        REPO / "artifacts/research/trial_packet_manifest.json",
+        _replace('"published_identity_packets": 228', '"published_identity_packets": 0'),
+    ),
+    Mutation(
+        "test_validate_forward_trial_reservation.py",
+        "break the active contract schema bound into prospective reservations",
+        CONTRACT,
+        _replace(
+            "canli.alphac-sleeve-admission-contract.v7",
+            "canli.alphac-sleeve-admission-contract.v70",
+        ),
+    ),
+    Mutation(
+        "test_public_support_artifact_sources.py",
+        "change one public support artifact away from its authoritative source",
+        MERIDIAN / "public/glassbox/alphavintage_corrected_result.json",
+        _replace('"verdict": "KILLED"', '"verdict": "MUTATED"'),
+    ),
+    Mutation(
+        "test_publication_bundle_public_parity.py",
+        "change one public sleeve-bundle byte away from its authoritative source",
+        MERIDIAN / "public/publication/crypto-momentum/v0.1.0/paper.json",
+        _replace('"registry_key": "crypto_momentum"', '"registry_key": "MUTATED"'),
+    ),
+    Mutation(
+        "test_sleeve_publication_bundles.py",
+        "break a sleeve's evidence catalog binding to its recorded trial family",
+        REPO / "config/sleeve_publication_evidence.json",
+        _replace(
+            '"trial_family_key": "crypto_momentum"',
+            '"trial_family_key": "MUTATED_FAMILY"',
+        ),
+    ),
+    Mutation(
+        "test_sleeve_publication_replay_verification.py",
+        "make the isolated frozen-dependency replay receipt claim its own audit failed",
+        REPO / "artifacts/audit/sleeve_publication_isolated_replay_verification.json",
+        _replace('"passes": true', '"passes": false'),
+    ),
+    Mutation(
+        "test_crypto_carry_portable_lake_readiness.py",
+        "make the sealed zero-return readiness receipt claim one return trial",
+        REPO / "artifacts/audit/crypto_carry_portable_lake_readiness.json",
+        _replace('"new_return_trials_executed": 0', '"new_return_trials_executed": 1'),
+    ),
+    Mutation(
+        "test_crypto_carry_portable_prerun_readiness.py",
+        "change the zero-return preregistration-readiness decision",
+        REPO / "scripts/audit_crypto_carry_portable_prerun_readiness.py",
+        _replace(
+            '"PASS_DATA_ELIGIBILITY_LOCKED_READY_FOR_PORTABLE_LAKE_BUILD_RETURN_BLOCKED"',
+            '"MUTATED_READINESS_DECISION"',
+        ),
+    ),
+    Mutation(
+        "test_crypto_carry_portable_v1_result.py",
+        "change the sealed trial disposition away from incomplete",
+        REPO / "scripts/seal_crypto_carry_portable_v1_result.py",
+        _replace(
+            '"SEALED_PRIMARY_RESULT_ADMISSION_INCOMPLETE"',
+            '"MUTATED_PRIMARY_RESULT_STATUS"',
+        ),
+    ),
+    Mutation(
+        "test_crypto_carry_portable_v1_run.py",
+        "change the reservation validator success status",
+        REPO / "src/alphaforge/validation/trial_reservation.py",
+        _replace('"VALIDATED_BEFORE_RETURN_COMPUTE"', '"MUTATED_RESERVATION_STATUS"'),
+    ),
+    Mutation(
+        "test_wave1_data_rights.py",
+        "make the data-rights audit report raw vendor rows as released",
+        REPO / "scripts/audit_wave1_data_rights.py",
+        _replace('"raw_vendor_rows_released": False', '"raw_vendor_rows_released": True'),
+    ),
+    Mutation(
+        "test_alphavintage_full_decision_reproduction.py",
+        "restore an unsupported stale replay difference in the AlphaVintage manuscript",
+        REPO / "docs/research/ALPHAVINTAGE_MACRO_SURPRISE_LINEAGE.md",
+        _replace("0.0000006327801884142836", "0.000001735861554830187"),
+    ),
 )
 
 
@@ -342,8 +559,8 @@ def main() -> int:
     if unknown:
         raise AssertionError(f"mutations registered for tests that do not exist: {unknown}")
 
-    rows = []
-    survived = []
+    rows: list[dict[str, Any]] = []
+    survived: list[str] = []
     for mutation in MUTATIONS:
         target = mutation.target
         if not target.exists():

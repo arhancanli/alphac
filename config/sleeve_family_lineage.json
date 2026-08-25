@@ -96,7 +96,7 @@
     "treasury_auction_concession": {"classification": "IDENTITY_REDESIGN_REQUIRED", "aliases": [], "evidence": ["docs/design/FEASIBILITY_TREASURY_AUCTION_CONCESSION.md", "docs/design/FEASIBILITY_TREASURY_AUCTION_IDENTITY_TIMING.md", "artifacts/feasibility/treasury_auction_concession/calendar_revision_audit.json"], "reason": "The exact-date T-10 identity is not point-in-time observable across the locked panel. Any revision-aware replacement is a materially new identity and must be sealed before returns."},
     "pre_fomc_announcement_drift": {"classification": "ACTIVE_FEASIBILITY", "aliases": [], "evidence": ["config/sleeve_discovery.json#candidates:pre_fomc_announcement_drift"]},
     "swap_spread_dislocation": {"classification": "NOVEL_ATLAS", "aliases": [], "evidence": []},
-    "inflation_breakeven_relative_value": {"classification": "NOVEL_ATLAS", "aliases": [], "evidence": []},
+    "inflation_breakeven_relative_value": {"classification": "ACTIVE_FEASIBILITY", "aliases": [], "evidence": ["docs/design/LITERATURE_INFLATION_BREAKEVEN_RELATIVE_VALUE.md", "docs/design/FEASIBILITY_INFLATION_BREAKEVEN_RELATIVE_VALUE.md", "artifacts/feasibility/inflation_breakeven_relative_value/result.json"]},
     "mortgage_convexity_pressure": {"classification": "NOVEL_ATLAS", "aliases": [], "evidence": []},
     "cross_currency_basis": {"classification": "NOVEL_ATLAS", "aliases": [], "evidence": []},
     "fx_option_risk_reversal": {"classification": "NOVEL_ATLAS", "aliases": [], "evidence": []},
