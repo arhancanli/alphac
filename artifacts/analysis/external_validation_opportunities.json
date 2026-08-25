@@ -1,0 +1,197 @@
+{
+  "claim_boundary": "This is a dated official-source opportunity audit. It proves no personal eligibility, registration, submission, judging, advancement, award, review, publication, or Stanford admissions outcome. Rules and deadlines must be rechecked immediately before any authorized external action.",
+  "content_hash": "sha256:16b2ef7490e0ce0c8cd500018c33fcca28a4615b041618b2ac03afd9ac008294",
+  "counts": {
+    "awarded": 0,
+    "exact_future_deadlines": 1,
+    "opportunities": 6,
+    "registered": 0,
+    "registration_authorized": 0,
+    "submitted": 0
+  },
+  "decision": "NO_EXTERNAL_ACTION_AUTHORIZED_ELIGIBILITY_FACTS_REMAIN",
+  "opportunities": [
+    {
+      "ai_boundary": "AI may be used only as a cited project resource. Generative AI may not write the research plan, abstract, poster, or citations.",
+      "eligibility": {
+        "age": "must not have reached 20 on or before May 1 preceding ISEF",
+        "grade": "9-12 or equivalent",
+        "qualification": "selection by one ISEF-affiliated fair",
+        "research_window": "no more than 12 continuous months; no work before 2026-01-01",
+        "team_size": "1-3"
+      },
+      "entry_claimed": false,
+      "exact_deadline": null,
+      "fit": "A new, narrow experiment on provenance, overfitting control, or quantitative-research methodology.",
+      "id": "regeneron_isef_2027",
+      "kind": "SCIENTIFIC_COMPETITION",
+      "name": "Regeneron ISEF 2027 through an affiliated fair",
+      "next_action": "Resolve the affiliated fair and adult sponsor before freezing or beginning the competition-specific experiment.",
+      "official_sources": [
+        "https://www.societyforscience.org/isef/international-rules/rules-for-all-projects/",
+        "https://www.societyforscience.org/isef/forms/",
+        "https://findafair.societyforscience.org/"
+      ],
+      "priority": 1,
+      "registration_authorized": false,
+      "state": "POTENTIAL_ELIGIBILITY_LOCAL_FAIR_UNRESOLVED",
+      "unknowns": [
+        "Arhan's grade and age on the governing dates",
+        "the affiliated fair serving Arhan's school or UAE territory",
+        "the affiliated fair deadline and preapproval procedure",
+        "adult sponsor assignment"
+      ]
+    },
+    {
+      "eligibility": {
+        "advisor": "one teacher or educator at the team's high school",
+        "grade": "9-12; no secondary-school diploma before competition begins",
+        "registration_actor": "advisor, not student",
+        "team_size": "4-6 students from the same school"
+      },
+      "entry_claimed": false,
+      "exact_deadline": null,
+      "fit": "A client-centered team portfolio thesis using ALPHAC's evidence discipline.",
+      "id": "wharton_investment_2026_2027",
+      "kind": "INVESTMENT_COMPETITION",
+      "name": "Wharton Global High School Investment Competition 2026-2027",
+      "next_action": "Form the same-school team and have the teacher-advisor independently verify the live registration calendar before the advisor registers.",
+      "official_sources": [
+        "https://globalyouth.wharton.upenn.edu/competitions/investment-competition/",
+        "https://globalyouth.wharton.upenn.edu/competitions/investment-competition/rules-roles/"
+      ],
+      "priority": 2,
+      "registration_authorized": false,
+      "state": "OPEN_BUT_TEAM_AND_ADVISOR_UNRESOLVED",
+      "unknowns": [
+        "Arhan's grade and school status",
+        "three to five eligible same-school teammates",
+        "teacher-advisor assignment",
+        "the current cycle's exact registration close and deliverable calendar"
+      ],
+      "window_opens": "2026-08-10"
+    },
+    {
+      "eligibility": {
+        "advisor": "one adult aged 21 or older",
+        "age": "14-18 at submission deadline",
+        "team_size": "2-4 high-school students",
+        "tracks": "business innovation or social innovation"
+      },
+      "entry_claimed": false,
+      "exact_deadline": "2027-01-14T17:00:00-05:00",
+      "fit": "ALPHAC as research-verification software only if interviews establish a real customer problem.",
+      "id": "diamond_challenge_2027",
+      "kind": "VENTURE_COMPETITION",
+      "name": "Diamond Challenge 2027",
+      "next_action": "Run problem interviews before selecting a track or drafting an entry.",
+      "official_sources": [
+        "https://diamondchallenge.org/competition/"
+      ],
+      "priority": 3,
+      "registration_authorized": false,
+      "state": "WINDOW_NOT_YET_OPEN_TEAM_AND_ADVISOR_UNRESOLVED",
+      "unknowns": [
+        "Arhan's age and high-school status at the deadline",
+        "one to three eligible teammates",
+        "adult-advisor assignment",
+        "customer interviews supporting track and problem selection"
+      ],
+      "window_opens": "2026-09-16"
+    },
+    {
+      "eligibility": {
+        "advisor": "designated teacher or project supervisor",
+        "grade": "5-12 in a UAE public, private, or vocational institute",
+        "group": "up to three students; at most one non-UAE national",
+        "individual": "UAE nationals only"
+      },
+      "entry_claimed": false,
+      "exact_deadline": null,
+      "fit": "A UAE-facing version of a new scientific or computing experiment.",
+      "id": "emirates_young_scientist_next_cycle",
+      "kind": "SCIENTIFIC_COMPETITION",
+      "name": "Emirates Young Scientist Competition, next announced cycle",
+      "next_action": "Resolve nationality and team composition, then wait for a dated next-cycle Ministry announcement before registration.",
+      "official_sources": [
+        "https://e.moe.gov.ae/ords/moe/r/nsti/eysc"
+      ],
+      "priority": 4,
+      "registration_authorized": false,
+      "state": "CURRENT_RULES_FOUND_NEXT_CYCLE_DATES_UNRESOLVED",
+      "unknowns": [
+        "Arhan's grade, school type, and nationality",
+        "whether an individual or eligible group route exists for Arhan",
+        "next-cycle dates and category rules",
+        "teacher or supervisor assignment"
+      ]
+    },
+    {
+      "eligibility": {
+        "age": "13-18",
+        "cycle": "annual, August through April"
+      },
+      "entry_claimed": false,
+      "exact_deadline": null,
+      "fit": "A genuine STEM product innovation, not a repackaged trading-performance story.",
+      "id": "conrad_challenge_2026_2027",
+      "kind": "STEM_VENTURE_COMPETITION",
+      "name": "Conrad Challenge 2026-2027",
+      "next_action": "Do not reuse the 2025-2026 calendar; wait for the official 2026-2027 guide and rules before committing work.",
+      "official_sources": [
+        "https://conrad.spacecenter.org/about-challenge/",
+        "https://conrad.spacecenter.org/participate/student-innovators/"
+      ],
+      "priority": 5,
+      "registration_authorized": false,
+      "state": "CURRENT_CYCLE_CONFIRMED_EXACT_PHASE_DATES_UNRESOLVED",
+      "unknowns": [
+        "Arhan's age",
+        "current team, coach, fee, category, and phase rules",
+        "exact 2026-2027 phase deadlines",
+        "product and category fit"
+      ]
+    },
+    {
+      "eligibility": {
+        "age": "13-17 and must remain under 18 during the challenge",
+        "cost": "free",
+        "location": "global virtual",
+        "time_commitment": "3-4 hours per week during challenge periods"
+      },
+      "entry_claimed": false,
+      "exact_deadline": null,
+      "fall_2026_window": {
+        "closed": "2026-07-09",
+        "opened": "2026-04-01"
+      },
+      "fit": "External teamwork and mentor feedback on a challenge chosen by the program.",
+      "id": "nyas_junior_academy_next_window",
+      "kind": "MENTORED_STEM_PROGRAM",
+      "name": "New York Academy of Sciences Junior Academy, next open cohort",
+      "next_action": "Monitor the official page for the next dated application window.",
+      "official_sources": [
+        "https://www.nyas.org/learning/high-school-research-programs/the-junior-academy/"
+      ],
+      "priority": 6,
+      "registration_authorized": false,
+      "state": "FALL_2026_CLOSED_NEXT_EXACT_WINDOW_UNRESOLVED",
+      "unknowns": [
+        "Arhan's age during the next challenge",
+        "the next exact application window",
+        "whether a program challenge fits Arhan's intended contribution"
+      ]
+    }
+  ],
+  "owner_and_applicant": "Arhan Canli",
+  "owner_facts_required": [
+    "date of birth and age on each governing date",
+    "current grade and expected graduation date",
+    "school name, school type, and school-country status",
+    "nationality where a competition uses nationality rules",
+    "available same-school teammates",
+    "available teacher, adult sponsor, or advisor"
+  ],
+  "schema": "canli.alphac-external-validation-opportunities.v1",
+  "verified_on": "2026-08-25"
+}
