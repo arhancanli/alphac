@@ -1,0 +1,26 @@
+{
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "creationInfo": {
+    "created": "2026-08-23T00:00:00Z",
+    "creators": [
+      "Person: Arhan Canli",
+      "Tool: ALPHAC sleeve bundle builder"
+    ]
+  },
+  "dataLicense": "CC0-1.0",
+  "documentNamespace": "https://canlicapital.com/spdx/crypto-multifactor-engine-v0.1.0",
+  "name": "crypto-multifactor-engine-publication-preparation-v0.1.0",
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-Package",
+      "copyrightText": "Copyright 2026 Arhan Canli",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "MIT",
+      "name": "crypto-multifactor-engine-publication-preparation",
+      "versionInfo": "0.1.0"
+    }
+  ],
+  "spdxVersion": "SPDX-2.3"
+}

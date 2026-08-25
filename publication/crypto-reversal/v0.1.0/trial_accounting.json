@@ -1,0 +1,222 @@
+{
+  "complete_recorded_union_extracted": true,
+  "distinct_recorded_hypothesis_identities": 2,
+  "every_identity_packet_complete": false,
+  "global_ledger": {
+    "path": "config/trial_accounting.json",
+    "sha256": "f15af7c989aded5da6c5259a7f7e5587377ab33977b5cd3c5b2395a84ea45043"
+  },
+  "identities": [
+    {
+      "candidate_match_is_verified": true,
+      "candidate_public_papers": [
+        "/research/crypto-carry-lineage.md"
+      ],
+      "completion_assessment": {
+        "blockers": [
+          {
+            "code": "IDENTITY_PREREGISTRATION_AND_ORIGINAL_ENVIRONMENT_NOT_BOUND",
+            "evidence": [
+              {
+                "path": "artifacts/research/crypto_reversal_family.json",
+                "sha256": "dfdccb113b86b8126446a3c67eb9247892a492bc4de80c5634ad9227153b30fd"
+              },
+              {
+                "path": "var/experiments.jsonl",
+                "sha256": "b5a318c0997d980575f758451f509e0154eecbbb50d734e49a587d473062bd08"
+              }
+            ],
+            "finding": "The canonical family audit binds this identity to its immutable ledger measurement, but does not bind an identity-level preregistration, original code commit, runner hash, lockfile, and input snapshot. Those missing historical fields cannot be reconstructed from the family summary.",
+            "required_section": "preregistration_and_hashes"
+          },
+          {
+            "code": "IDENTITY_LEVEL_DECISION_PACKET_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/research/crypto_reversal_family.json",
+                "sha256": "dfdccb113b86b8126446a3c67eb9247892a492bc4de80c5634ad9227153b30fd"
+              }
+            ],
+            "finding": "The family-level admission status is NOT_ESTABLISHED_RESEARCH_ONLY; it is not a preserved identity-level gate decision under the complete packet contract.",
+            "required_section": "admission_or_kill_decision"
+          },
+          {
+            "code": "IMMUTABLE_SUMMARY_LACKS_COMPLETE_IDENTITY_CURVE",
+            "evidence": [
+              {
+                "path": "artifacts/research/crypto_reversal_family.json",
+                "sha256": "dfdccb113b86b8126446a3c67eb9247892a492bc4de80c5634ad9227153b30fd"
+              },
+              {
+                "path": "var/experiments.jsonl",
+                "sha256": "b5a318c0997d980575f758451f509e0154eecbbb50d734e49a587d473062bd08"
+              }
+            ],
+            "finding": "The immutable ledger summary preserves the first measurement but not the complete identity-level curve, uncertainty, stress, capacity, and diversification evidence required for packet completion.",
+            "required_section": "result_uncertainty_stress_capacity_and_diversification"
+          },
+          {
+            "code": "IDENTITY_CAPACITY_NOT_MEASURED",
+            "evidence": [
+              {
+                "path": "artifacts/research/crypto_reversal_family.json",
+                "sha256": "dfdccb113b86b8126446a3c67eb9247892a492bc4de80c5634ad9227153b30fd"
+              }
+            ],
+            "finding": "The canonical family audit records capacity as UNMEASURED_OR_NOT_FAMILY_WIDE; no identity-level capacity evidence can be credited.",
+            "required_section": "result_uncertainty_stress_capacity_and_diversification"
+          }
+        ],
+        "config_hash": "398b55a8534ebea6",
+        "evidence_grade": "immutable_ledger_summary_with_optional_family_artifact",
+        "family_audit": "artifacts/research/crypto_reversal_family.json",
+        "status": "AUDITED_NOT_CURRENTLY_COMPLETABLE"
+      },
+      "config_hash": "398b55a8534ebea6",
+      "coverage_status": "VERIFIED_INCOMPLETE_IDENTITY_PACKET",
+      "family_paper_binding_status": "VERIFIED_TAXONOMY_BINDING",
+      "first_recorded_at": "2026-06-20T13:41:09.767000+00:00",
+      "hypothesis_key": "9d39062d6525fdbb",
+      "identity_packet_content_hash": "sha256:6772b1298abfde314febe85b0cd5aeca8c012722d73ca8d719c5d2ebad184407",
+      "identity_packet_status": "INCOMPLETE_BACKFILL_REQUIRED",
+      "label": "mr_res_24 + mr_res_72",
+      "ledger_profile": "var",
+      "ledger_source_path": "var/experiments.jsonl",
+      "measurement": {
+        "annualized_sharpe": -2.1139763153711484,
+        "kurtosis": 8.819544231972829,
+        "observations": 1574,
+        "skew": -0.6293841607948282
+      },
+      "missing_sections": [
+        "preregistration_and_hashes",
+        "point_in_time_data_and_survivorship_controls",
+        "execution_and_cost_model",
+        "result_uncertainty_stress_capacity_and_diversification",
+        "admission_or_kill_decision",
+        "code_environment_and_reproduction"
+      ],
+      "research_family_key": "crypto_short_horizon_reversal",
+      "research_family_title": "Crypto short-horizon residual reversal",
+      "sleeve_context": "AlphaVintage research",
+      "verified_family_paper_path": "/research/crypto-reversal-lineage.md",
+      "verified_packet_path": "/glassbox/trial-packets/9d39062d6525fdbb.json",
+      "verified_sections": [
+        "identity_and_authorship",
+        "economic_mechanism_and_falsifiable_hypothesis",
+        "literature_and_overlap_decision",
+        "family_and_union_trial_accounting",
+        "machine_readable_packet_and_stable_public_paper"
+      ]
+    },
+    {
+      "candidate_match_is_verified": true,
+      "candidate_public_papers": [],
+      "completion_assessment": {
+        "blockers": [
+          {
+            "code": "IDENTITY_PREREGISTRATION_AND_ORIGINAL_ENVIRONMENT_NOT_BOUND",
+            "evidence": [
+              {
+                "path": "artifacts/research/crypto_reversal_family.json",
+                "sha256": "dfdccb113b86b8126446a3c67eb9247892a492bc4de80c5634ad9227153b30fd"
+              },
+              {
+                "path": "var/experiments.jsonl",
+                "sha256": "b5a318c0997d980575f758451f509e0154eecbbb50d734e49a587d473062bd08"
+              }
+            ],
+            "finding": "The canonical family audit binds this identity to its immutable ledger measurement, but does not bind an identity-level preregistration, original code commit, runner hash, lockfile, and input snapshot. Those missing historical fields cannot be reconstructed from the family summary.",
+            "required_section": "preregistration_and_hashes"
+          },
+          {
+            "code": "IDENTITY_LEVEL_DECISION_PACKET_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/research/crypto_reversal_family.json",
+                "sha256": "dfdccb113b86b8126446a3c67eb9247892a492bc4de80c5634ad9227153b30fd"
+              }
+            ],
+            "finding": "The family-level admission status is NOT_ESTABLISHED_RESEARCH_ONLY; it is not a preserved identity-level gate decision under the complete packet contract.",
+            "required_section": "admission_or_kill_decision"
+          },
+          {
+            "code": "IMMUTABLE_SUMMARY_LACKS_COMPLETE_IDENTITY_CURVE",
+            "evidence": [
+              {
+                "path": "artifacts/research/crypto_reversal_family.json",
+                "sha256": "dfdccb113b86b8126446a3c67eb9247892a492bc4de80c5634ad9227153b30fd"
+              },
+              {
+                "path": "var/experiments.jsonl",
+                "sha256": "b5a318c0997d980575f758451f509e0154eecbbb50d734e49a587d473062bd08"
+              }
+            ],
+            "finding": "The immutable ledger summary preserves the first measurement but not the complete identity-level curve, uncertainty, stress, capacity, and diversification evidence required for packet completion.",
+            "required_section": "result_uncertainty_stress_capacity_and_diversification"
+          },
+          {
+            "code": "IDENTITY_CAPACITY_NOT_MEASURED",
+            "evidence": [
+              {
+                "path": "artifacts/research/crypto_reversal_family.json",
+                "sha256": "dfdccb113b86b8126446a3c67eb9247892a492bc4de80c5634ad9227153b30fd"
+              }
+            ],
+            "finding": "The canonical family audit records capacity as UNMEASURED_OR_NOT_FAMILY_WIDE; no identity-level capacity evidence can be credited.",
+            "required_section": "result_uncertainty_stress_capacity_and_diversification"
+          }
+        ],
+        "config_hash": "0f0a1dd24ce859d8",
+        "evidence_grade": "immutable_ledger_summary_with_optional_family_artifact",
+        "family_audit": "artifacts/research/crypto_reversal_family.json",
+        "status": "AUDITED_NOT_CURRENTLY_COMPLETABLE"
+      },
+      "config_hash": "0f0a1dd24ce859d8",
+      "coverage_status": "VERIFIED_INCOMPLETE_IDENTITY_PACKET",
+      "family_paper_binding_status": "VERIFIED_TAXONOMY_BINDING",
+      "first_recorded_at": "2026-06-20T14:30:41.583000+00:00",
+      "hypothesis_key": "7d65785e1ea4789e",
+      "identity_packet_content_hash": "sha256:d3f4ae0f180c1e9e1c000078d1a470eab626b2be6419c8d6acca99e854a49b7b",
+      "identity_packet_status": "INCOMPLETE_BACKFILL_REQUIRED",
+      "label": "mr_res_24",
+      "ledger_profile": "var",
+      "ledger_source_path": "var/experiments.jsonl",
+      "measurement": {
+        "annualized_sharpe": -2.1527437857593825,
+        "kurtosis": 7.095581491677011,
+        "observations": 1574,
+        "skew": -0.08751066693133312
+      },
+      "missing_sections": [
+        "preregistration_and_hashes",
+        "point_in_time_data_and_survivorship_controls",
+        "execution_and_cost_model",
+        "result_uncertainty_stress_capacity_and_diversification",
+        "admission_or_kill_decision",
+        "code_environment_and_reproduction"
+      ],
+      "research_family_key": "crypto_short_horizon_reversal",
+      "research_family_title": "Crypto short-horizon residual reversal",
+      "sleeve_context": "AlphaVintage research",
+      "verified_family_paper_path": "/research/crypto-reversal-lineage.md",
+      "verified_packet_path": "/glassbox/trial-packets/7d65785e1ea4789e.json",
+      "verified_sections": [
+        "identity_and_authorship",
+        "economic_mechanism_and_falsifiable_hypothesis",
+        "literature_and_overlap_decision",
+        "family_and_union_trial_accounting",
+        "machine_readable_packet_and_stable_public_paper"
+      ]
+    }
+  ],
+  "registry_key": "crypto_reversal",
+  "research_family_key": "crypto_short_horizon_reversal",
+  "schema": "canli.alphac-publication-trial-accounting-binding.v2",
+  "status": "COMPLETE_RECORDED_UNION_EXTRACTED_IDENTITY_PACKETS_MAY_BE_INCOMPLETE",
+  "trial_packet_manifest": {
+    "content_hash": "sha256:38758b89a1a5fa845487a640b1deab046fffcf61ede5ad3afb6371798b208371",
+    "path": "artifacts/research/trial_packet_manifest.json",
+    "sha256": "0147dd8e631ca24257e2db384bf01d4637a79371f1754b284f3f7e9637c1369c"
+  }
+}

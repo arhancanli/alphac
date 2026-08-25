@@ -48,7 +48,11 @@ indexnow_submit() {
       echo "    [indexnow:err] PATH for this job; the deploy scripts export it, a bare shell does not"
     fi
   else
-    outcome="OK"
+    if printf '%s\n' "$out" | grep -q '^IndexNow skipped:'; then
+      outcome="SKIPPED"
+    else
+      outcome="OK"
+    fi
     echo "  [indexnow] $out"
   fi
   count=$(printf '%s\n' "$out" | grep -oE 'accepted [0-9]+' | grep -oE '[0-9]+' | tail -1)
@@ -58,6 +62,8 @@ indexnow_submit() {
   # question the file can answer rather than one that needs the log.
   printf '{\n  "attempted_at": "%s",\n  "status": "%s",\n  "urls_submitted": %s\n}\n' \
     "$now" "$outcome" "$count" > "$INDEXNOW_MARKER"
+  # Only a real accepted submission refreshes the success clock. A cooldown skip is healthy but
+  # it is not a network acceptance and must not make the last successful push look newer.
   [ "$outcome" = "OK" ] && printf '%s\n' "$now" > "${INDEXNOW_MARKER%.json}.ok"
   return 0
 }

@@ -103,26 +103,46 @@ def book_composition() -> dict[str, Any]:
     }
 
 
+def book_aggregation_settings(override: dict[str, Any] | None = None) -> dict[str, Any]:
+    """The flagship layer above the constituent strategies, read from published state.
+
+    The 15% ``Settings.portfolio.vol_target_ann`` belongs to constituents using
+    ``BlendStrategy``. Treating it as an ALPHAC-level target invents a risk layer the composite
+    does not run. ``paper_trading_state.py`` now publishes the actual aggregation policy and the
+    unit guard binds it back to the code constants that drive the real combine path.
+    """
+    if override is not None:
+        return dict(override)
+    if not STATE.exists():
+        return {}
+    book = json.loads(STATE.read_text()).get("book", {})
+    return dict(book.get("aggregation", {}) or {})
+
+
 def canonical_fingerprint(surface: dict[str, Any]) -> str:
     """The one place a surface becomes a hash, so tests and the exporter cannot disagree."""
     canonical = json.dumps(surface, sort_keys=True, separators=(",", ":")).encode()
     return f"sha256:{hashlib.sha256(canonical).hexdigest()}"
 
 
-def build_fingerprint() -> dict[str, Any]:
+def build_fingerprint(
+    *, book_aggregation: dict[str, Any] | None = None
+) -> dict[str, Any]:
     surface = {
         "strategy_settings": strategy_settings(),
         "risk_path_settings": risk_path_settings(),
         "book_composition": book_composition(),
+        "book_aggregation_settings": book_aggregation_settings(book_aggregation),
     }
     return {
         "schema": "canli.alphac-live-config-fingerprint.v1",
         "what_this_covers": (
             "Every setting that decides how the live book trades: the BlendStrategy defaults "
-            "that reach production because no call site overrides them; the overlay, drawdown "
-            "ladder and per-name clip that the strategy reads off Settings; and the book's "
-            "sleeve composition, weights and disclosed tilt. Derived from inspect.signature, "
-            "Settings and the published state, never from a hand-maintained list."
+            "that reach production because no call site overrides them; the constituent overlay, "
+            "drawdown ladder and per-name clip read from Settings; and the flagship's sleeve "
+            "composition, weights, disclosed tilt and separate aggregation policy. Derived from "
+            "inspect.signature, Settings and the published state, never from a hand-maintained "
+            "list."
         ),
         "what_this_deliberately_excludes": (
             "Anything that moves because the book is running -- equity, marks, dates, live days. "

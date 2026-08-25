@@ -9,7 +9,7 @@ after an adversarial audit found it, not after a test did.
 
 WHY IT MATTERS MORE THAN IT LOOKS. The forward record is the only evidence that can defeat
 deflation — a pre-registered book run forward is N=1, hurdle 0.88 at five years against 2.44 for a
-backtest selected from 162 identities. That record is fourteen days old. A silent live change does
+backtest selected from 228 identities. A silent live change does
 not just alter the book, it contaminates the one asset that cannot be bought later.
 
 This is a declare-to-change gate, not a freeze: changing the live book is allowed, changing it
@@ -185,6 +185,44 @@ def test_the_risk_path_is_inside_the_surface() -> None:
         "w_max",
     ):
         assert field in surface["risk_path_settings"], f"{field} is outside the live-config guard"
+
+
+def test_the_flagship_aggregation_policy_is_inside_the_surface() -> None:
+    """A constituent vol target must never be laundered into a flagship-level claim."""
+    import importlib.util
+
+    path = REPO / "scripts" / "paper_trading_state.py"
+    spec = importlib.util.spec_from_file_location("paper_state_aggregation_guard", path)
+    assert spec is not None and spec.loader is not None
+    paper_state = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(paper_state)
+
+    aggregation = fingerprinter.build_fingerprint()["surface"][
+        "book_aggregation_settings"
+    ]
+    assert aggregation["scheme"] == paper_state.BOOK_AGGREGATION_SCHEME == "fixed"
+    assert aggregation["book_level_vol_target_ann"] is paper_state.BOOK_LEVEL_VOL_TARGET_ANN
+    assert aggregation["book_level_vol_target_ann"] is None
+    assert aggregation["book_level_drawdown_ladder"] is None
+    assert aggregation["strategic_overlay_is_book_vol_scaled"] is False
+    assert aggregation["missing_mark_policy"] == paper_state.BOOK_MISSING_MARK_POLICY
+
+
+def test_a_flagship_aggregation_mutation_moves_the_fingerprint(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Mutation proof for the newly covered layer, independent of the generic field loop."""
+    real = fingerprinter.book_aggregation_settings
+
+    def mutated(override: dict | None = None) -> dict:
+        settings = dict(real(override))
+        settings["book_level_vol_target_ann"] = 0.10
+        return settings
+
+    monkeypatch.setattr(fingerprinter, "book_aggregation_settings", mutated)
+    assert fingerprinter.build_fingerprint()["fingerprint"] != _contract()[
+        "declared_fingerprint"
+    ]
 
 
 # --------------------------------------------------------------------------------------------

@@ -86,10 +86,23 @@ def _bootstrap_upper(
     block_count = int(np.ceil(left.size / block_size))
     offsets = np.arange(block_size, dtype=np.int64)
     estimates = np.empty(samples, dtype=np.float64)
-    for sample in range(samples):
+    accepted = 0
+    attempts = 0
+    max_attempts = samples * 20
+    while accepted < samples:
+        attempts += 1
+        if attempts > max_attempts:
+            raise ValueError(
+                "bootstrap could not draw enough non-constant paired resamples"
+            )
         starts = rng.integers(0, left.size, size=block_count)
         indices = ((starts[:, None] + offsets) % left.size).reshape(-1)[: left.size]
-        estimates[sample] = _correlation(left[indices], right[indices])
+        try:
+            estimate = _correlation(left[indices], right[indices])
+        except ValueError:
+            continue
+        estimates[accepted] = estimate
+        accepted += 1
     return float(np.quantile(estimates, 0.95))
 
 
@@ -130,13 +143,26 @@ def _bootstrap_average_upper(
     block_count = int(np.ceil(size / block_size))
     offsets = np.arange(block_size, dtype=np.int64)
     estimates = np.empty(samples, dtype=np.float64)
-    for sample in range(samples):
+    accepted = 0
+    attempts = 0
+    max_attempts = samples * 20
+    while accepted < samples:
+        attempts += 1
+        if attempts > max_attempts:
+            raise ValueError(
+                "average bootstrap could not draw enough non-constant resamples"
+            )
         starts = rng.integers(0, size, size=block_count)
         indices = ((starts[:, None] + offsets) % size).reshape(-1)[:size]
         drawn = candidate[indices]
-        estimates[sample] = float(
-            np.mean([_correlation(drawn, sleeve[indices]) for sleeve in sleeves])
-        )
+        try:
+            estimate = float(
+                np.mean([_correlation(drawn, sleeve[indices]) for sleeve in sleeves])
+            )
+        except ValueError:
+            continue
+        estimates[accepted] = estimate
+        accepted += 1
     return float(np.quantile(estimates, 0.95))
 
 
@@ -277,4 +303,3 @@ def diversification_report(
         bootstrap_block_size=bootstrap_block_size,
         bootstrap_seed=bootstrap_seed,
     )
-

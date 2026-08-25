@@ -1,0 +1,71 @@
+{
+  "author": "Arhan Canli",
+  "claim_boundary": "Machine validation proves page geometry, extractable text, metadata, font resources, and required disclosures. Visual inspection is separate and is not peer review, content validation, accessibility certification, or independent replication.",
+  "extractable_characters": 5050,
+  "failures": [],
+  "font_resources": [
+    "AAAAAA+Arial-BoldMT",
+    "BAAAAA+Georgia",
+    "CAAAAA+Georgia",
+    "DAAAAA+ArialMT",
+    "EAAAAA+Arial-BoldMT",
+    "FAAAAA+ArialMT",
+    "GAAAAA+ArialMT",
+    "HAAAAA+Arial-BoldMT",
+    "IAAAAA+ArialMT",
+    "JAAAAA+Menlo-Regular",
+    "KAAAAA+Georgia",
+    "LAAAAA+Georgia",
+    "MAAAAA+Arial-BoldMT",
+    "NAAAAA+ArialMT",
+    "OAAAAA+Georgia-Bold",
+    "PAAAAA+Georgia-Italic"
+  ],
+  "metadata": {
+    "author": "Arhan Canli",
+    "title": "Equity Fundamental Quality: Eleven Identities and No Validated Sleeve"
+  },
+  "minimum_extractable_characters_on_page": 506,
+  "page_height_points": [
+    841.92
+  ],
+  "page_width_points": [
+    594.96
+  ],
+  "pages": 3,
+  "passes": true,
+  "registry_key": "equity_quality",
+  "render_environment": {
+    "latex_compilation_validated": false,
+    "pdf_engine": "Google Chrome 151.0.7922.174",
+    "pdf_normalizer": "pypdf 6.16.1"
+  },
+  "schema": "canli.alphac-archival-pdf-validation.v1",
+  "source_bindings": {
+    "bibliography": {
+      "references.bib": {
+        "path": "references.bib",
+        "sha256": "bfce8a037b04614680e774704456b1735efdfc6b7a66b873f2842f50c5718055"
+      },
+      "references.json": {
+        "path": "references.json",
+        "sha256": "1939d6fe0b32e5757cfd2b1d9bc8faf1fe3407e919c600cc490cb3a07f1887c3"
+      }
+    },
+    "paper_markdown": {
+      "path": "publication/equity-quality/v0.1.0/paper.md",
+      "sha256": "ad8c7420167251eae69fb9991b222043a03c2c873b43e2b89d21cd76b269297b"
+    },
+    "renderer": {
+      "path": "scripts/build_archival_publication_papers.py",
+      "sha256": "d36584c93e00be6f75bc50da079d25a46d1da4e0d1b2d58b73661e3f527c9f3e"
+    },
+    "static_site_paper_html": {
+      "declared_markdown_sha256": "ad8c7420167251eae69fb9991b222043a03c2c873b43e2b89d21cd76b269297b",
+      "matches_paper_markdown": true,
+      "path": "/Users/arhancanli/meridian/research/equity-quality-lineage.html",
+      "sha256": "7ecfb4c1b3ac3fbccf15ed4ea81f54a74570871f72f1936d481a7c56e6bc10b8"
+    }
+  },
+  "status": "PASS_MACHINE_PDF_VALIDATION"
+}

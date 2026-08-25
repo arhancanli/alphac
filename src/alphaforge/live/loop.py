@@ -1538,7 +1538,11 @@ class LiveLoop:
 
     def _persist_book(self, cycle_ts: Ms, account: AccountState, *, now: Ms) -> None:
         """Snapshot positions + equity + the paper_state blob for ``cycle_ts``."""
-        self._store.snapshot_positions(cycle_ts, account.positions)
+        self._store.snapshot_positions(
+            cycle_ts,
+            account.positions,
+            marks=self._broker.position_marks_at(cycle_ts),
+        )
         self._store.snapshot_equity(cycle_ts, account)
         self._store.save_paper_state(
             cycle_ts, encode_paper_state(self._broker.snapshot_state()), now=now

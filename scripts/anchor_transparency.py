@@ -139,12 +139,17 @@ def main() -> int:
 
     manifest = {
         "schema": "glassbox.ots_anchors/1",
-        "method": "OpenTimestamps — each transparency-chain head is committed to the Bitcoin blockchain.",
+        "method": "OpenTimestamps checkpoints for selected transparency-chain heads.",
         "what_it_proves": (
-            "An independent, un-forgeable timestamp. The signed chain proves the record was not edited "
-            "since publication; this proves it was not BACKDATED either. We hold the Ed25519 key, but we "
-            "do not control Bitcoin, so we cannot regenerate or pre-date the record without these anchors "
-            "disagreeing. Pending anchors are calendar-attested and harden into a Bitcoin block over a few hours."
+            "A Bitcoin-confirmed OpenTimestamps proof shows that the exact checkpoint file digest "
+            "existed no later than the attesting block. A pending proof is calendar-attested only "
+            "and is not yet a Bitcoin confirmation. The checkpoint binds a chain head, not the truth "
+            "or completeness of the underlying broker record."
+        ),
+        "does_not_prove": (
+            "It does not establish when an unanchored entry was first published, make opaque payload "
+            "hashes reconstructable, prove that the data came from Alpaca, or rule out an unpublished "
+            "alternative chain."
         ),
         "how_to_verify": [
             "pip install opentimestamps-client",
@@ -157,6 +162,8 @@ def main() -> int:
         ],
         "head_anchor": anchors[0] if anchors else None,
         "anchor_count": len(anchors),
+        "bitcoin_confirmed_count": sum(a["status"] == "bitcoin" for a in anchors),
+        "calendar_pending_count": sum(a["status"] == "pending" for a in anchors),
         "anchors": anchors,
     }
 

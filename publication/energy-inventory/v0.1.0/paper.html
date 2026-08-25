@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="author" content="Arhan Canli">
+<meta name="description" content="Archival preprint bundle by Arhan Canli. This study tests one preregistered implementation of petroleum-inventory scarcity using EIA first-release data…">
+<meta name="generator" content="ALPHAC archival paper renderer">
+<link rel="canonical" href="https://canlicapital.com/publication/energy-inventory/v0.1.0/paper">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Petroleum Inventory Scarcity: One Negative Macro-Commodity Identity">
+<meta property="og:description" content="Archival preprint bundle by Arhan Canli. This study tests one preregistered implementation of petroleum-inventory scarcity using EIA first-release data…">
+<meta property="og:url" content="https://canlicapital.com/publication/energy-inventory/v0.1.0/paper">
+<title>Petroleum inventory scarcity — archival paper</title><style>
+@page { size: A4; margin: 19mm 20mm 21mm; }
+* { box-sizing: border-box; }
+html { font-size: 10.6pt; }
+body { color: #17202a; font-family: Georgia, "Times New Roman", serif;
+       line-height: 1.46; margin: 0; }
+.cover { min-height: 247mm; display: flex; flex-direction: column;
+         justify-content: space-between; page-break-after: always; }
+.rule { width: 62px; height: 4px; background: #9a6b2f; margin: 8mm 0 14mm; }
+.kicker, .meta, .boundary { font-family: Arial, Helvetica, sans-serif; }
+.kicker { color: #6f532d; font-size: 8.4pt; font-weight: 700;
+          letter-spacing: .13em; text-transform: uppercase; }
+h1 { color: #111923; font-size: 29pt; font-weight: 500; line-height: 1.08;
+     margin: 0; max-width: 155mm; }
+.author { font-size: 14pt; margin-top: 13mm; }
+.affiliation { color: #53606d; font-family: Arial, Helvetica, sans-serif;
+               font-size: 9.4pt; }
+.meta { border-top: 1px solid #c8c1b5; color: #4b5661; display: grid;
+        font-size: 8.5pt; gap: 2mm; grid-template-columns: 34mm 1fr; padding-top: 6mm; }
+.meta strong { color: #202b36; letter-spacing: .04em; text-transform: uppercase; }
+.boundary { background: #f1eee8; border-left: 3px solid #9a6b2f; color: #35414c;
+            font-size: 8.7pt; margin-top: 8mm; padding: 4mm 5mm; }
+.paper { max-width: 170mm; }
+.paper > p:first-child { background: #f4f2ed; border: 1px solid #ddd7cc;
+                         font-family: Arial, Helvetica, sans-serif;
+                         font-size: 8.2pt; padding: 4mm; }
+h2 { border-bottom: .6pt solid #cfc8bc; color: #17202a; font-size: 16pt;
+     font-weight: 500; margin: 9mm 0 3mm; padding-bottom: 1.5mm;
+     page-break-after: avoid; }
+h3 { color: #263746; font-size: 12.5pt; margin: 6mm 0 2mm;
+     page-break-after: avoid; }
+p { margin: 0 0 3.2mm; orphans: 3; widows: 3; }
+ul, ol { margin: 2mm 0 4mm 6mm; padding-left: 5mm; }
+li { margin-bottom: 1.3mm; }
+.bibliography li { margin-bottom: 2.2mm; }
+.bibliography a { overflow-wrap: anywhere; word-break: break-word; }
+table { border-collapse: collapse; font-family: Arial, Helvetica, sans-serif;
+        font-size: 7.4pt; margin: 4mm 0 6mm; page-break-inside: avoid; width: 100%; }
+th { background: #e8e3da; color: #222d37; font-weight: 700; }
+th, td { border: .5pt solid #c8c1b5; padding: 1.5mm 1.8mm;
+         text-align: left; vertical-align: top; }
+code { background: #f0eee9; border-radius: 2px;
+       font-family: "SFMono-Regular", Consolas, monospace; font-size: 8.1pt;
+       padding: .2mm .7mm; }
+pre { background: #18222c; color: #edf1f4; font-size: 7.4pt; line-height: 1.35;
+      overflow-wrap: anywhere; padding: 4mm; white-space: pre-wrap; }
+a { color: #5f4828; text-decoration: underline; text-decoration-thickness: .5pt; }
+blockquote { border-left: 2pt solid #b48a50; color: #465461;
+             margin-left: 0; padding-left: 5mm; }
+</style></head><body>
+<section class="cover"><div><div class="kicker">Canli Capital Research / ALPHAC</div>
+<div class="rule"></div><h1>Petroleum Inventory Scarcity: One Negative Macro-Commodity Identity</h1><div class="author">Arhan Canli</div>
+<div class="affiliation">Founder, System Architect, and Quantitative Researcher<br>
+Canli Capital / AlphaC Algorithms</div></div><div><div class="meta">
+<strong>Version</strong><span>0.1.0</span>
+<strong>Released</strong><span>23 August 2026</span>
+<strong>Registry key</strong><span>energy_inventory</span>
+<strong>Status</strong><span>Working paper preprint / not peer reviewed</span></div>
+<div class="boundary">Research simulation and, where explicitly identified, Alpaca paper
+evidence. No funded performance, peer review, independent replication, external acceptance, or
+future return is claimed.</div></div></section><article class="paper"><p><strong>Short title:</strong> Petroleum inventory scarcity<br><strong>Author:</strong> Arhan Canli, Founder and Quantitative Researcher, Canli Capital<br><strong>Family key:</strong> <code>energy_inventory</code> · <strong>System:</strong> ALPHAC / AlphaForge<br><strong>Status:</strong> public research record; not peer reviewed; not an investment solicitation<br><strong>Evidence date:</strong> 2026-08-22</p>
+<h2>Abstract</h2>
+<p>This study tests one preregistered implementation of petroleum-inventory scarcity using EIA
+first-release data and liquid exchange-traded energy proxies. The signal enters on the next market
+open after release, normalizes inventory surprises against five years of seasonal history, and
+hedges trailing DBC beta. Over 2,669 immutable ledger observations, annualized Sharpe was -0.5893,
+skew was -1.5157, and kurtosis was 30.2245. The fuller probe measured net Sharpe -0.5892, Newey-West
+t-statistic -1.8450, DSR effectively zero, and maximum drawdown of 41.05%. It passed exposure and
+correlation checks but failed the return, robustness, product-consistency, portfolio, and capacity
+gates. The verdict is KILL and the family contributes zero sleeves.</p>
+<h2>Economic hypothesis</h2>
+<p>Petroleum inventories connect physical scarcity to spot and futures prices. Low inventories can
+raise convenience yield because holding the physical commodity protects production and delivery
+needs. Gorton, Hayashi, and Rouwenhorst document broad relationships between commodity inventories,
+the basis, and risk premia
+(<a href="https://doi.org/10.1093/rof/rfs019">Review of Finance</a>).</p>
+<p>The ALPHAC hypothesis is narrower. It asks whether the first public EIA petroleum release contains
+incremental information that can be traded after publication, once normal seasonality and broad
+commodity beta are controlled. This timing distinction is essential. A relation visible in
+revised inventory history or contemporaneous prices is not necessarily available to a trader at
+the next session open.</p>
+<h2>Preregistered implementation</h2>
+<p>The single charged probe uses USO and UGA as energy return proxies and DBC as the hedge instrument.
+The inventory score is normalized using five seasonal years, scaled over 52 weeks, and clipped to
+the interval [-3, 3]. Positions enter at the next session open after the EIA release. DBC hedge
+beta is estimated over 252 trailing sessions and clamped to [-3, 3]. One-way costs are 6 basis
+points for USO, 10 for UGA, and 3 for DBC. The out-of-sample period begins in 2016.</p>
+<p>This is one configuration. PBO is not defined because no selection surface exists inside the
+probe. The identity is still charged to the 228-trial global union for selection-adjusted
+inference.</p>
+<h2>Result</h2>
+<table>
+<thead>
+<tr>
+<th>Measure</th>
+<th align="right">Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Net annualized Sharpe</td>
+<td align="right">-0.5892</td>
+</tr>
+<tr>
+<td>Newey-West t-statistic</td>
+<td align="right">-1.8450</td>
+</tr>
+<tr>
+<td>Probabilistic Sharpe ratio</td>
+<td align="right">0.0248</td>
+</tr>
+<tr>
+<td>Deflated Sharpe ratio, 228-trial union</td>
+<td align="right">7.37e-11</td>
+</tr>
+<tr>
+<td>Maximum drawdown</td>
+<td align="right">41.05%</td>
+</tr>
+<tr>
+<td>Annualized turnover</td>
+<td align="right">52.30x</td>
+</tr>
+<tr>
+<td>Net Sharpe at twice costs</td>
+<td align="right">-0.9977</td>
+</tr>
+<tr>
+<td>Realized DBC beta</td>
+<td align="right">-0.0137</td>
+</tr>
+</tbody></table>
+<p>Both standalone products were negative: USO Sharpe was -0.4603 and UGA Sharpe was -0.7426. The
+twice-cost result moved farther below zero. The negative left tail and high turnover make the
+failure economically stronger than a marginally insignificant mean.</p>
+<h2>Diversification did not rescue the return</h2>
+<p>The candidate had low ordinary correlation with the four comparison sleeves. Average correlation
+was 0.0012 and the largest pair was 0.0323. The largest stressed correlation was 0.0790. Those
+figures clear the probe&#39;s overlap thresholds, but low correlation is not a sufficient admission
+criterion.</p>
+<p>At a 10% test weight, the candidate increased common-window book Sharpe by 0.0132 before the
+mean-zero control. Under the mean-zero control the change was -0.0139, and the leave-one-year-out
+change was negative for 2023. The observed standalone loss therefore cannot be defended as a
+stable diversification premium.</p>
+<p>The proxy capacity calculation was also poor. At 1% of ADV, the fifth-percentile estimate was only
+$14,919. This model is not a market-capacity certification, but it decisively fails the
+preregistered $5 million floor.</p>
+<h2>Gate decision and provenance</h2>
+<p>Five of thirteen preregistered research checks passed. Exposure and correlation limits passed;
+minimum Sharpe, DSR, Newey-West significance, twice-cost Sharpe, product consistency, mean-zero
+book contribution, leave-one-year-out stability, and capacity did not. The machine verdict is
+<code>KILL</code>.</p>
+<p>The ETF input source is locally mapped to Yahoo adjusted market data. A sanitized execution
+receipt records 5,119 USO bars, 4,645 UGA bars, and 5,163 DBC bars, with persisted partition hashes
+and an ingestion timestamp inside the execution window. This establishes local source identity,
+not redistribution rights, exact historical loader bytes, or independent replication. Raw rows
+remain withheld.</p>
+<h2>Reproduction and decision</h2>
+<p>The governed probe command is:</p>
+<pre><code class="language-text">uv run python scripts/probe_eia_petroleum_inventory.py
+</code></pre>
+<p>The result is bound by its preregistration, input manifest, runner hash, environment lock, and
+admission-contract hash. The family packet is
+<a href="/glassbox/energy_inventory_family.json"><code>energy_inventory_family.json</code></a>.</p>
+<p><strong>Decision: FAIL / zero sleeves.</strong> First-release discipline, low beta, and low correlation do not
+offset a negative, left-tailed, cost-sensitive return. Research and implementation were directed
+by <strong>Arhan Canli</strong>; no historical result is relabeled as Alpaca or live performance.</p><section class="bibliography"><h2>References</h2><ol><li>Gary B. Gorton, Fumio Hayashi, K. Geert Rouwenhorst (2013). <em>The Fundamentals of Commodity Futures Returns</em>. Review of Finance. <a href="https://doi.org/10.1093/rof/rfs019">https://doi.org/10.1093/rof/rfs019</a></li></ol></section></article>
+</body></html>

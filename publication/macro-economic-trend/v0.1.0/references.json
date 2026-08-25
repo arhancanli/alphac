@@ -1,0 +1,38 @@
+{
+  "author": "Arhan Canli",
+  "metadata_cache": {
+    "content_hash": "sha256:a2b17534e33c4c361cd515387b566cd1c2e352a1b970159e66c329c3519b99c4",
+    "path": "artifacts/research/publication_reference_metadata.json",
+    "sha256": "cc011d355b2613f1514889fe8076752c3de1c54e158e561db60da559d3f1469c"
+  },
+  "reference_count": 1,
+  "references": [
+    {
+      "authors": [
+        {
+          "family": "Moskowitz",
+          "given": "Tobias J."
+        },
+        {
+          "family": "Ooi",
+          "given": "Yao Hua"
+        },
+        {
+          "family": "Pedersen",
+          "given": "Lasse Heje"
+        }
+      ],
+      "citation_key": "moskowitz2012time_f920fb",
+      "container_title": "Journal of Financial Economics",
+      "doi": "10.1016/j.jfineco.2011.11.003",
+      "metadata_authority": "CROSSREF_REST_API",
+      "title": "Time series momentum",
+      "url": "https://doi.org/10.1016/j.jfineco.2011.11.003",
+      "year": 2012
+    }
+  ],
+  "registry_key": "macro_economic_trend",
+  "schema": "canli.alphac-sleeve-bibliography.v1",
+  "status": "COMPLETE_NORMALIZED_BIBLIOGRAPHY",
+  "unresolved_references": []
+}

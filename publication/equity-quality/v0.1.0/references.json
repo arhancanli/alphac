@@ -1,0 +1,49 @@
+{
+  "author": "Arhan Canli",
+  "metadata_cache": {
+    "content_hash": "sha256:a2b17534e33c4c361cd515387b566cd1c2e352a1b970159e66c329c3519b99c4",
+    "path": "artifacts/research/publication_reference_metadata.json",
+    "sha256": "cc011d355b2613f1514889fe8076752c3de1c54e158e561db60da559d3f1469c"
+  },
+  "reference_count": 2,
+  "references": [
+    {
+      "authors": [
+        {
+          "family": "Novy-Marx",
+          "given": "Robert"
+        }
+      ],
+      "citation_key": "novymarx2013other_5a6ea1",
+      "container_title": "Journal of Financial Economics",
+      "doi": "10.1016/j.jfineco.2013.01.003",
+      "metadata_authority": "CROSSREF_REST_API",
+      "title": "The other side of value: The gross profitability premium",
+      "url": "https://doi.org/10.1016/j.jfineco.2013.01.003",
+      "year": 2013
+    },
+    {
+      "authors": [
+        {
+          "family": "Fama",
+          "given": "Eugene F."
+        },
+        {
+          "family": "French",
+          "given": "Kenneth R."
+        }
+      ],
+      "citation_key": "fama2015five_aea3e1",
+      "container_title": "Journal of Financial Economics",
+      "doi": "10.1016/j.jfineco.2014.10.010",
+      "metadata_authority": "CROSSREF_REST_API",
+      "title": "A five-factor asset pricing model",
+      "url": "https://doi.org/10.1016/j.jfineco.2014.10.010",
+      "year": 2015
+    }
+  ],
+  "registry_key": "equity_quality",
+  "schema": "canli.alphac-sleeve-bibliography.v1",
+  "status": "COMPLETE_NORMALIZED_BIBLIOGRAPHY",
+  "unresolved_references": []
+}

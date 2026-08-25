@@ -1,0 +1,62 @@
+{
+  "license_review_complete": false,
+  "registry_key": "alphamax_equity_momentum",
+  "released_data_objects": [],
+  "released_result_objects": [
+    {
+      "bundle_path": "evidence/construction_arms.json",
+      "byte_identical_to_source": true,
+      "role": "preregistered construction comparison",
+      "sha256": "17884a560fc913b8e5b387b283074914d476f84314eeaea987fca28d55558124",
+      "source_path": "artifacts/sweep/alphamax_construction/arms.json"
+    },
+    {
+      "bundle_path": "evidence/selected_walkforward.json",
+      "byte_identical_to_source": true,
+      "role": "selected historical walk-forward",
+      "sha256": "229afe7244b582cd538252e8e2ab77a2c77effef82a8fbe19e366c6dcbea87e7",
+      "source_path": "artifacts/walkforward/k30_dn_63/walkforward.json"
+    },
+    {
+      "bundle_path": "evidence/upstream_replay_manifest.json",
+      "byte_identical_to_source": true,
+      "role": "rights-withheld fresh-input acquisition and source binding",
+      "sha256": "46f5e79ebd6ec40952871faa2616499cda26a1a48905676b3fd57a978d32f1fc",
+      "source_path": "artifacts/publication/alphamax_upstream_replay_manifest.json"
+    },
+    {
+      "bundle_path": "evidence/upstream_clean_workspace.json",
+      "byte_identical_to_source": true,
+      "role": "author-run failed exact fresh-vendor strategy reproduction",
+      "sha256": "ba3a2d2d005401276d6c3ee864a0c9f341cfe6f217f3c95efc0288ec20b1e41f",
+      "source_path": "artifacts/publication/alphamax_upstream_clean_workspace.json"
+    },
+    {
+      "bundle_path": "evidence/weighting_probe.json",
+      "byte_identical_to_source": true,
+      "role": "weighting sensitivity",
+      "sha256": "4eb3a9dc4ad8e991679d2409c29c17925d52ddd7a97c4a36fb43e8ace2646f50",
+      "source_path": "artifacts/probe/alphamax_weighting/report.json"
+    },
+    {
+      "bundle_path": "evidence/beta_neutral_probe.json",
+      "byte_identical_to_source": true,
+      "role": "beta-neutral sensitivity",
+      "sha256": "4368fd9e70a6c0788286005d877bd6a6f8da6bceeac6804d8a87e307369a36b1",
+      "source_path": "artifacts/probe/alphamax_betaneutral/report.json"
+    },
+    {
+      "bundle_path": "evidence/short_tail_probe.json",
+      "byte_identical_to_source": true,
+      "role": "short-tail sensitivity",
+      "sha256": "022d843a1295f3cbae2fc3054e3618388184a86114efa561296855867ed9b436",
+      "source_path": "artifacts/probe/alphamax_shorttail/report.json"
+    }
+  ],
+  "schema": "canli.alphac-publication-data-manifest.v1",
+  "source_paper": {
+    "path": "docs/research/ALPHAMAX_EQUITY_MOMENTUM_LINEAGE.md",
+    "sha256": "b2ccb4db05766124a984eb3ebb6c42930542a596e0491363b899ff06feea375f"
+  },
+  "status": "RESULT_OBJECTS_RELEASED_RAW_INPUT_INVENTORY_INCOMPLETE"
+}

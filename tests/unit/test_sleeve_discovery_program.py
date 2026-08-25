@@ -489,9 +489,11 @@ def test_admission_gates_preserve_statistical_honesty() -> None:
     assert gates["point_in_time_data"] is True
     assert gates["net_of_costs"] is True
     assert gates["walk_forward_only"] is True
-    assert gates["deflated_sharpe_min"] >= 0.95
+    assert gates["deflated_sharpe_must_be_measured"] is True
+    assert gates["book_deflated_sharpe_must_be_measured"] is True
     assert gates["pbo_max"] <= 0.20
-    assert gates["average_pairwise_correlation_max"] <= 0.15
+    assert gates["candidate_average_correlation_to_existing_book_max"] <= 0.0
+    assert gates["book_average_pairwise_correlation_delta_max_exclusive"] == 0.0
     assert gates["stressed_pairwise_correlation_max"] <= 0.50
 
 
@@ -505,7 +507,7 @@ def test_retired_insider_metrics_match_the_preserved_result() -> None:
         if candidate["id"] == "insider_purchase_clusters"
     )
 
-    assert result["schema"] == "canli.insider-cluster-probe.v2"
+    assert result["schema"] == "canli.insider-cluster-probe.v3"
     assert result["verdict"] == "KILL"
     assert retired["net_sharpe"] == result["metrics"]["net_sharpe"]
     assert retired["dsr"] == result["metrics"]["dsr"]

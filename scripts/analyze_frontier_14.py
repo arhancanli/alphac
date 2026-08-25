@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""The 14-sleeve frontier: what the admission contract must require to reach 2.0-2.5 at 11% DD.
+"""The 14-sleeve frontier for the 2.25-3.0 in-sample support band and 11% expected DD.
 
 WHY THIS EXISTS
 ---------------
@@ -16,11 +16,11 @@ objective, which the earlier analyses treated only in the calm regime.
 
 THE THREE FINDINGS
 ------------------
-1. **The live contract cannot reach the target at any sleeve count.** ``average_pairwise_
-   correlation_max`` is +0.15, and the N -> infinity ceiling is s_bar / sqrt(rho_bar). At the
-   measured s_bar that ceiling sits far below 2.0, so a book that merely *passes* the current
-   diversification gate is arithmetically barred from the objective. The ceiling is not a
-   preference; it binds before sleeve count, before deflation and before execution quality.
+1. **Incremental gates do not imply a terminal book correlation.** v7 requires a candidate's
+   average correlation to the existing book to be non-positive and the book-wide average to
+   improve strictly. Those are meaningful admission hurdles, but they cannot prove the final
+   objective by themselves. The zero-global-correlation frontier is retained as an analytical
+   reference, not mislabeled as a live point gate.
 
 2. **The drawdown objective is set by stressed correlation, not by calm correlation.** A book
    levered to a calm-regime vol target runs at a multiple of that vol when correlations converge,
@@ -79,13 +79,14 @@ S_BAR_BOOK_3 = 0.529  # artifacts/analysis/sleeve_scaling/result.json (3-sleeve 
 RHO_BAR_MEASURED = 0.07226371531067356  # sleeve_scaling, 3-sleeve common window
 RHO_BAR_FOUR_SLEEVE = 0.0274  # docs/SLEEVE_DISCOVERY_PROGRAM.md, 4-sleeve common window
 HIT_RATE = 0.06521739130434782  # sleeve_scaling: 3 survivors / 46 tested
-IDENTITIES_SPENT = 162  # config/trial_accounting.json
+TRIAL_POLICY = json.loads(Path("config/trial_accounting.json").read_text(encoding="utf-8"))
+IDENTITIES_SPENT = int(TRIAL_POLICY["observed_hypothesis_identities"])
 
 # --- live contract, read rather than retyped, so a contract edit cannot silently
 # --- invalidate this analysis.
 CONTRACT = Path("config/sleeve_admission_contract.json")
 
-TARGETS = (2.0, 2.5)
+TARGETS = (2.25, 3.0)
 DRAWDOWN_OBJECTIVE = 0.11
 VOL_TARGET = 0.10
 
@@ -413,8 +414,12 @@ def main() -> None:
         0.15,
     ]
 
-    live_rho_max = live["average_pairwise_correlation_max"]
-    live_ceiling = {f"{s:.3f}": infinite_n_ceiling(s, live_rho_max) for s in s_grid}
+    candidate_rho_max = live["candidate_average_correlation_to_existing_book_max"]
+    book_rho_delta_max = live["book_average_pairwise_correlation_delta_max_exclusive"]
+    zero_global_reference = 0.0
+    zero_reference_at_14 = {
+        f"{s:.3f}": book_sharpe(s, zero_global_reference, SLEEVES) for s in s_grid
+    }
 
     result: dict[str, Any] = {
         "schema": "alphac.frontier-14.v1",
@@ -433,20 +438,24 @@ def main() -> None:
         },
         "psd_floor_at_14": psd_floor(SLEEVES),
         "live_contract_thresholds": {
-            "average_pairwise_correlation_max": live_rho_max,
+            "candidate_average_correlation_to_existing_book_max": candidate_rho_max,
+            "book_average_pairwise_correlation_delta_max_exclusive": book_rho_delta_max,
             "stressed_pairwise_correlation_max": live["stressed_pairwise_correlation_max"],
             "net_sharpe_min": live["net_sharpe_min"],
-            "deflated_sharpe_min": live["deflated_sharpe_min"],
+            "deflated_sharpe_must_be_measured": live["deflated_sharpe_must_be_measured"],
+            "book_deflated_sharpe_must_be_measured": live[
+                "book_deflated_sharpe_must_be_measured"
+            ],
         },
-        "finding_1_live_contract_ceiling": {
+        "finding_1_incremental_gate_boundary": {
             "statement": (
-                "s_bar / sqrt(rho_bar) bounds book Sharpe at every sleeve count. A book sitting "
-                "exactly at the live average-correlation ceiling cannot reach the objective."
+                "The v7 incremental correlation gates force each admitted sleeve to improve "
+                "diversification, but do not establish a terminal global average correlation. "
+                "The zero-global-correlation calculation is an analytical reference, not a gate."
             ),
-            "infinite_n_ceiling_at_live_rho_max": live_ceiling,
-            "reaches_2_0_at_live_rho_max": {
-                f"{s:.3f}": infinite_n_ceiling(s, live_rho_max) >= 2.0 for s in s_grid
-            },
+            "incremental_gates_alone_establish_objective": False,
+            "zero_global_correlation_reference": zero_global_reference,
+            "book_sharpe_at_14_at_zero_global_correlation": zero_reference_at_14,
         },
         "rho_required_at_14": {
             f"{s:.3f}": {f"{t:.1f}": rho_required(s, SLEEVES, t) for t in TARGETS} for s in s_grid
@@ -620,15 +629,18 @@ def main() -> None:
 
     # --- console summary ----------------------------------------------------
     print(f"\nPSD floor at N=14: {psd_floor(SLEEVES):+.4f}")
-    print(f"\nLive contract rho_bar ceiling = {live_rho_max}. Book Sharpe ceiling at that rho:")
+    print("\nZero global correlation reference (not a live gate):")
     for s in s_grid:
-        c = infinite_n_ceiling(s, live_rho_max)
-        print(f"  s_bar={s:.3f} -> ceiling {c:5.2f}   reaches 2.0? {'YES' if c >= 2.0 else 'NO'}")
+        value = book_sharpe(s, zero_global_reference, SLEEVES)
+        print(f"  s_bar={s:.3f} -> N=14 book Sharpe {value:5.2f}")
 
     print("\nrho_bar REQUIRED at N=14:")
     for s in s_grid:
-        r20, r25 = rho_required(s, SLEEVES, 2.0), rho_required(s, SLEEVES, 2.5)
-        print(f"  s_bar={s:.3f} -> S=2.0 needs {r20:+.4f} | S=2.5 needs {r25:+.4f}")
+        required = [rho_required(s, SLEEVES, target) for target in TARGETS]
+        print(
+            f"  s_bar={s:.3f} -> S={TARGETS[0]} needs {required[0]:+.4f} | "
+            f"S={TARGETS[1]} needs {required[1]:+.4f}"
+        )
 
     print(f"\nDrawdown (5y, equal-weight, {VOL_TARGET:.0%} vol target, calm rho=-0.03):")
     for key in sorted(sweep):

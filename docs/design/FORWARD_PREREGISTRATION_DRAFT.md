@@ -11,7 +11,8 @@
 
 Every backtest this book has produced is deflated to nothing. Per-sleeve DSR is 0.213, 0.052 and
 0.000 against a 0.95 gate; **zero of thirty-three restated variants clear it**. That is not a
-statement about the strategies — it is a statement about what a backtest selected from 162
+statement about the strategies — it is a statement about what a backtest selected from the
+current 228-identity union of
 hypothesis identities can ever prove. It cannot.
 
 There is exactly one instrument that escapes deflation: a specification **fixed in advance** and
@@ -64,7 +65,7 @@ restarts** — see §6.
 
 ### 2.2 The sizing configuration
 
-Bound to fingerprint `sha256:e79dd975…4368901`
+Bound to fingerprint `sha256:fe82c4ee…553706d`
 (`artifacts/engineering/live_config_fingerprint.json`, declared in
 `config/live_change_contract.json`):
 
@@ -79,10 +80,16 @@ realized_vol_halflife_bars   240
 cost_frac_oneway             0.001
 ```
 
-### 2.3 The overlay
+The 15% annualized target, 1.5× scale ceiling, 1.0× gross cap and 10%/15% drawdown ladder are
+constituent `BlendStrategy` settings. They are not a second ALPHAC-level sizing layer.
 
-Mandatory vol-target overlay (`alphaforge.portfolio.overlay.vol_target`), annualised target
-**10%**, `sigma_hat = max(ex_ante, realized)`, realized leg de-levered per bar before comparison.
+### 2.3 Flagship aggregation and strategic overlay
+
+ALPHAC combines the realized constituent returns at the committed fixed-weight schedule. It has
+**no book-level volatility target and no book-level drawdown ladder**. A missing daily sleeve mark
+contributes zero for that sleeve on that day. The disclosed **+10% strategic net-long overlay** is
+a fixed 50/50 BTC/SPY exposure added after the neutral-core aggregation; it is not scaled by a
+book-level volatility target.
 
 ⚠️ Two known and deliberately unresolved facts, recorded so a later reader is not surprised:
 the **covariance halflife is inert above ~14 days on the crypto sleeve** because the 720-bar
@@ -187,7 +194,7 @@ UNSIGNED — REQUIRES OWNER
 
 signed_by:
 signed_at:
-config_fingerprint:  sha256:e79dd9751715c6adc63c7642c18c0b1d075c9d2ca4b2b034f8e2da5764368901
+config_fingerprint:  sha256:fe82c4eeed742289bfcfee5d39856ee2bb8ca9cfe209bcc7e34abff98553706d
 record_start:        2026-08-07
 first_judgement:     2027-08-07  (1 year)
 ```

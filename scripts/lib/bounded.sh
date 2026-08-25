@@ -15,9 +15,9 @@
 #   2. Jobs that touch the same external resource take a shared lock instead of racing.
 
 # run_bounded <seconds> <cmd> [args...]
-# Runs cmd under a hard wall-clock cap. Kills ONLY this invocation's own child (by PID), never
-# another job's identically-named process. Returns the child's exit code (143/137 if it was
-# killed), so callers keep their existing `|| echo ...` soft-fail handling unchanged.
+# Runs cmd under a hard wall-clock cap. Kills ONLY this invocation's own process group, never
+# another job's identically-named process. Returns the child's exit code (normally 137 when the
+# hard cap fires), so callers keep their existing `|| echo ...` soft-fail handling unchanged.
 # stdout/stderr pass through untouched, so `url=$(run_bounded 600 vercel deploy ...)` still works
 # (the watchdog's own output is discarded so it never holds the capture pipe open).
 run_bounded() {
@@ -31,11 +31,14 @@ run_bounded() {
   perl -e 'setpgrp(0,0); exec {$ARGV[0]} @ARGV
            or print STDERR "run_bounded: cannot exec $ARGV[0]: $!\n" and exit 127' -- "$@" &
   local _pid=$!
-  # Kill the GROUP (-pid). If setpgrp somehow failed, -pid matches no group and the kill is a
-  # no-op, so we fall back to the pid — never to our own group, since our pgid != _pid.
+  # KILL the GROUP (-pid) at the hard deadline. A prior TERM-then-15-second-grace implementation
+  # was not a hard cap: macOS /bin/sh can defer TERM while waiting for a child, observe that child
+  # die, and execute the next shell command (including writing to the captured pipe) before the
+  # later KILL. That race reproduced under the parallel suite as `sleep 600; echo never` actually
+  # printing `never`. SIGKILL at the declared deadline prevents any post-timeout command from
+  # executing. If setpgrp somehow failed, -pid matches no group and the kill is a no-op, so fall
+  # back to the pid — never to our own group, since our pgid != _pid.
   ( sleep "$_secs"
-    kill -TERM -"$_pid" 2>/dev/null || kill -TERM "$_pid" 2>/dev/null
-    sleep 15
     kill -KILL -"$_pid" 2>/dev/null || kill -KILL "$_pid" 2>/dev/null ) >/dev/null 2>&1 &
   local _wd=$!
   wait "$_pid"; local _rc=$?

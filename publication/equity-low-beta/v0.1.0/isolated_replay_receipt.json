@@ -1,0 +1,187 @@
+{
+  "author": "Arhan Canli",
+  "claim_boundary": "This proves that 13 audit-only commands completed in a fresh uv isolated, frozen dependency environment while using the current repository workspace, all 33 unique released result objects remained byte-identical, and no experiment ledger changed. It is not a portable clean-workspace replay, does not prove raw data portability, does not execute the deferred AlphaMax return-level probes, opens no new hypothesis, and is not independent replication.",
+  "command_receipts": [
+    {
+      "command": "uv run python scripts/audit_alphatrend_family.py",
+      "execution_command": "uv run --isolated --frozen python scripts/audit_alphatrend_family.py",
+      "returncode": 0,
+      "stderr_sha256": "0cd69ba3d5ba26f74485d4a3ebe56ed49ce1f18e9e1b28e26147844a52f5ca6c",
+      "stdout_sha256": "5cd6b2726e3e4c3145294323c33b42b21da7a8885296865fd7146eff0d5c2e0f"
+    },
+    {
+      "command": "uv run python scripts/audit_crypto_carry_2022_tail.py",
+      "execution_command": "uv run --isolated --frozen python scripts/audit_crypto_carry_2022_tail.py",
+      "returncode": 0,
+      "stderr_sha256": "6d4330e8f13a6ee02745b8174e5a3636674c9fbda5b03e8a646e99e8dff563ab",
+      "stdout_sha256": "59b3a9685e3c75db613097976dd9bd75ba56e708b78e0cbacecfa3bb5a0af052"
+    },
+    {
+      "command": "uv run python scripts/audit_crypto_carry_first_rebalance_drift.py",
+      "execution_command": "uv run --isolated --frozen python scripts/audit_crypto_carry_first_rebalance_drift.py",
+      "returncode": 0,
+      "stderr_sha256": "bc5c4acfd457caee07dbeece812dbee8914818d1926cb261f47985ab02e5ddd6",
+      "stdout_sha256": "3beefed135322c4617ca5e547eea20423a90b2fb07e02b60a53b6dbacb3616b4"
+    },
+    {
+      "command": "uv run python scripts/audit_crypto_carry_full_path_drift.py",
+      "execution_command": "uv run --isolated --frozen python scripts/audit_crypto_carry_full_path_drift.py",
+      "returncode": 0,
+      "stderr_sha256": "50e4df2e3f109399f912fa6a1173fd0e563a08a1deb2af711daf079b5e328d5d",
+      "stdout_sha256": "f85ced2598b88241f1b8458ecc16cddc2c850c1dd815affa167dac94627d540a"
+    },
+    {
+      "command": "uv run python scripts/audit_crypto_momentum_family.py",
+      "execution_command": "uv run --isolated --frozen python scripts/audit_crypto_momentum_family.py",
+      "returncode": 0,
+      "stderr_sha256": "d3b31bd51ca10f21b5ca543c078dbfba73664054df413d81403da37fafd019b3",
+      "stdout_sha256": "3cc6c7df9c2056f3b29e496214845e671e592fb8f40cf1ca2134b300e7a62bb0"
+    },
+    {
+      "command": "uv run python scripts/audit_crypto_multifactor_family.py",
+      "execution_command": "uv run --isolated --frozen python scripts/audit_crypto_multifactor_family.py",
+      "returncode": 0,
+      "stderr_sha256": "cc6cfd1027ffc8665c524be9c168ffd72269820b722ba477a85f43e262245667",
+      "stdout_sha256": "71d4e6b602defe752907117b3361d86dd5c828e4aa8ec267f71800795bad2f4d"
+    },
+    {
+      "command": "uv run python scripts/audit_crypto_vrp_family.py",
+      "execution_command": "uv run --isolated --frozen python scripts/audit_crypto_vrp_family.py",
+      "returncode": 0,
+      "stderr_sha256": "50e4df2e3f109399f912fa6a1173fd0e563a08a1deb2af711daf079b5e328d5d",
+      "stdout_sha256": "9b7b9f28dfc674d2b992f3e4864695f17c1375206b1d2e0882c9e74e61766e75"
+    },
+    {
+      "command": "uv run python scripts/audit_equity_fundamental_families.py",
+      "execution_command": "uv run --isolated --frozen python scripts/audit_equity_fundamental_families.py",
+      "returncode": 0,
+      "stderr_sha256": "ce1bfaa2dace764feb8fb27e0d9c3faa2477956c8986fa5f057b93692a6307f3",
+      "stdout_sha256": "6e82bc67cb0522aa380ee63b2fac51061fb57aaec97104ac95c78eee2541b191"
+    },
+    {
+      "command": "uv run python scripts/audit_equity_narrative_family.py",
+      "execution_command": "uv run --isolated --frozen python scripts/audit_equity_narrative_family.py",
+      "returncode": 0,
+      "stderr_sha256": "93667dc268bb924228291d15a3b8b8aff44e833814101ab723dc5c09fa6088a0",
+      "stdout_sha256": "dd97aa2391755a95c69a1cad73d9b30ab42eff34dedd2cd18e3aff1e9bf0723d"
+    },
+    {
+      "command": "uv run python scripts/audit_remaining_research_families.py",
+      "execution_command": "uv run --isolated --frozen python scripts/audit_remaining_research_families.py",
+      "returncode": 0,
+      "stderr_sha256": "255b5e32c462cdfb192138ec64752c844f98d36fbf043475bb2a9100dd32e740",
+      "stdout_sha256": "fb5b210a22c0d89c047ca7f0c8b783e67d78f3a07c4efc75b029a288e0e205f3"
+    },
+    {
+      "command": "uv run python scripts/replay_crypto_carry_frozen_inputs.py --seal-existing",
+      "execution_command": "uv run --isolated --frozen python scripts/replay_crypto_carry_frozen_inputs.py --seal-existing",
+      "returncode": 0,
+      "stderr_sha256": "13e693f5a4a2cc7cb52d35f16abcda23af08302718fc8c5e1ee297ee4e38973f",
+      "stdout_sha256": "bad33660d9f783779cb2ad38017839e2c35ad2c83cf31ae620b30663741f0dd1"
+    },
+    {
+      "command": "uv run python scripts/seal_crypto_carry_replay_correction.py",
+      "execution_command": "uv run --isolated --frozen python scripts/seal_crypto_carry_replay_correction.py",
+      "returncode": 0,
+      "stderr_sha256": "a3f490e85714821d0078672f8a7ee00e447b798de64e4a174ad6c1d0a2c31714",
+      "stdout_sha256": "3ec388e9b09b9e3d37af3116830fef2ff51dd648ceb098ce83ece0e1764b25fc"
+    },
+    {
+      "command": "uv run python scripts/seal_walkforward_input_snapshot_protocol.py",
+      "execution_command": "uv run --isolated --frozen python scripts/seal_walkforward_input_snapshot_protocol.py",
+      "returncode": 0,
+      "stderr_sha256": "51e243cff4aaee564b195039857b3dcb722aebb8c59b68b0bffad81fab22a166",
+      "stdout_sha256": "44bf99842fb6097755b8c28e95e4431e80433b12a84c717b889957d49bada007"
+    }
+  ],
+  "commands_executed": 13,
+  "content_hash": "sha256:cf5e340ae7a23fb8dc168b47af77055b981e2e9ef8a1bc467b523fb7e445a2ac",
+  "dependency_environment": "UV_ISOLATED_FROZEN",
+  "experiment_ledger_hash_changes": [],
+  "experiment_ledgers_verified_unchanged": 8,
+  "independent_replication": false,
+  "isolated_dependency_environment_completed": true,
+  "passes": true,
+  "portable_clean_workspace_replay_completed": false,
+  "raw_input_portability_established": false,
+  "result_hash_changes": [],
+  "schema": "canli.alphac-sleeve-publication-replay-verification.v2",
+  "sleeve_status": {
+    "alphaforge_crypto_carry": "ISOLATED_FROZEN_DEPENDENCY_AUDIT_EXECUTED_ALL_RELEASED_RESULT_HASHES_STABLE",
+    "alphamax_equity_momentum": "MAPPED_NOT_EXECUTED_RETURN_LEVEL_REPLAY_DEFERRED",
+    "alphatrend_managed_futures": "ISOLATED_FROZEN_DEPENDENCY_AUDIT_EXECUTED_ALL_RELEASED_RESULT_HASHES_STABLE",
+    "crypto_defensive": "ISOLATED_FROZEN_DEPENDENCY_AUDIT_EXECUTED_ALL_RELEASED_RESULT_HASHES_STABLE",
+    "crypto_momentum": "ISOLATED_FROZEN_DEPENDENCY_AUDIT_EXECUTED_ALL_RELEASED_RESULT_HASHES_STABLE",
+    "crypto_multifactor_engine": "ISOLATED_FROZEN_DEPENDENCY_AUDIT_EXECUTED_ALL_RELEASED_RESULT_HASHES_STABLE",
+    "crypto_reversal": "ISOLATED_FROZEN_DEPENDENCY_AUDIT_EXECUTED_ALL_RELEASED_RESULT_HASHES_STABLE",
+    "crypto_vrp": "ISOLATED_FROZEN_DEPENDENCY_AUDIT_EXECUTED_ALL_RELEASED_RESULT_HASHES_STABLE",
+    "energy_inventory": "ISOLATED_FROZEN_DEPENDENCY_AUDIT_EXECUTED_ALL_RELEASED_RESULT_HASHES_STABLE",
+    "equity_insider_activity": "ISOLATED_FROZEN_DEPENDENCY_AUDIT_EXECUTED_ALL_RELEASED_RESULT_HASHES_STABLE",
+    "equity_low_beta": "ISOLATED_FROZEN_DEPENDENCY_AUDIT_EXECUTED_ALL_RELEASED_RESULT_HASHES_STABLE",
+    "equity_narrative_change": "ISOLATED_FROZEN_DEPENDENCY_AUDIT_EXECUTED_ALL_RELEASED_RESULT_HASHES_STABLE",
+    "equity_quality": "ISOLATED_FROZEN_DEPENDENCY_AUDIT_EXECUTED_ALL_RELEASED_RESULT_HASHES_STABLE",
+    "equity_value_investment": "ISOLATED_FROZEN_DEPENDENCY_AUDIT_EXECUTED_ALL_RELEASED_RESULT_HASHES_STABLE",
+    "macro_economic_trend": "ISOLATED_FROZEN_DEPENDENCY_AUDIT_EXECUTED_ALL_RELEASED_RESULT_HASHES_STABLE"
+  },
+  "sleeves_deferred": [
+    "alphamax_equity_momentum"
+  ],
+  "sleeves_with_audit_command_executed": 14,
+  "source_bindings": {
+    "evidence_catalog": {
+      "path": "config/sleeve_publication_evidence.json",
+      "sha256": "3f5fe2a09fcff9c62a146cc8dd33e09149d01af4509da94f0bce1f69479752a5"
+    },
+    "experiment_ledgers": {
+      "artifacts/exp1/20260625T075446Z/experiments.jsonl": "b5b8a68fe07d19581050e7adfd6ec7f61521e2267ca7306b44c8db9997cfb976",
+      "artifacts/exp4/20260625T103226Z/experiments.jsonl": "e5fbe266fc033ba80e237e22629642f51c86c19830f1a5bdc97519708423e755",
+      "artifacts/exp4/smoke_20260625T102142Z/experiments.jsonl": "593715ec3abb5c58d17dfde1cd96177dd64a72eb74a8571c2f10935af81107ef",
+      "artifacts/grand_backtest/20260616T143620Z/experiments.jsonl": "04f997da63092be453c339e0bf25b5ea700f11f79eeadb8d2c48d312ac3dae8f",
+      "var/experiments.jsonl": "ce419a5b65f1fbcd4efde3739be13e4e79aa3f679dec92d8978856815f464eff",
+      "var_fut_real/experiments.jsonl": "847a2f504b87d3885135a4c2f147038c87d624160e896bf3a5ff77186bd1c7ee",
+      "var_mf/experiments.jsonl": "d1b5cbea52fee08a87bafcbf7b23b11eb3da58683079954f68bcb667c90594a6",
+      "var_sharadar/experiments.jsonl": "69db2f32ea0aa16b47f7315139760312bb65ac03e480060deb91a1320bc18ae2"
+    },
+    "result_objects": {
+      "artifacts/audit/walkforward_input_snapshot_protocol.json": "44bf99842fb6097755b8c28e95e4431e80433b12a84c717b889957d49bada007",
+      "artifacts/exp2/20260625T094710Z/exp2_metrics.json": "f39839b1e05b33e718563984228ee4dba64e94bdbf10c1b174426c0bd880d3a4",
+      "artifacts/grand_backtest/20260616T143620Z/matrix.json": "786c580d478f7912aa61886e8b1271faa706fe723ff35423ef1c27d7018ba32c",
+      "artifacts/probe/alphamax_betaneutral/report.json": "4368fd9e70a6c0788286005d877bd6a6f8da6bceeac6804d8a87e307369a36b1",
+      "artifacts/probe/alphamax_shorttail/report.json": "022d843a1295f3cbae2fc3054e3618388184a86114efa561296855867ed9b436",
+      "artifacts/probe/alphamax_weighting/report.json": "4eb3a9dc4ad8e991679d2409c29c17925d52ddd7a97c4a36fb43e8ace2646f50",
+      "artifacts/probe/crypto_carry_frozen_current_code_replay/replay_receipt.json": "bad33660d9f783779cb2ad38017839e2c35ad2c83cf31ae620b30663741f0dd1",
+      "artifacts/probe/crypto_carry_frozen_current_code_replay/walkforward.json": "0bcaddbbd75e3ae818303a3e577d7c8c8654f9e51358b70edf9c040d49b5ab50",
+      "artifacts/probe/crypto_carry_replay_drift/first_rebalance_attribution.json": "3beefed135322c4617ca5e547eea20423a90b2fb07e02b60a53b6dbacb3616b4",
+      "artifacts/probe/crypto_carry_replay_drift/full_path_attribution.json": "f85ced2598b88241f1b8458ecc16cddc2c850c1dd815affa167dac94627d540a",
+      "artifacts/probe/earnings_narrative_change/result.json": "8e416ba075894a67eb74e262d74f467127a6274ae9e78d59d66b35822068a091",
+      "artifacts/probe/eia_petroleum_inventory/result.json": "949f2b073b96fd8068519dca06ff9a54ed79778535b67ad66da4b23e06ae8694",
+      "artifacts/probe/insider_purchase_clusters/result.json": "126ff81e3e47d96571095d7447d1f8fb9ce23737d8d6c4a7b7359a3a4982a97b",
+      "artifacts/publication/alphamax_upstream_clean_workspace.json": "ba3a2d2d005401276d6c3ee864a0c9f341cfe6f217f3c95efc0288ec20b1e41f",
+      "artifacts/publication/alphamax_upstream_replay_manifest.json": "46f5e79ebd6ec40952871faa2616499cda26a1a48905676b3fd57a978d32f1fc",
+      "artifacts/publication/crypto_carry_replay_correction.json": "3ec388e9b09b9e3d37af3116830fef2ff51dd648ceb098ce83ece0e1764b25fc",
+      "artifacts/research/alphatrend_family.json": "59bc39da95d216241213e5bfd2cccae1fdd3932ea7bcdc67b81d95c203a7cfbb",
+      "artifacts/research/crypto_carry_2022_tail.json": "c4e2abced387e8b8c1934d3e70817bf551d28168d4c771575024cb494118a1ad",
+      "artifacts/research/crypto_defensive_family.json": "5bf4fef10142747c084d97f39b67674f3be74aa47ccc6405ab44c64a29bb70df",
+      "artifacts/research/crypto_momentum_family.json": "51b3718bbfeef0dfa570e7bed1e8863045eb68da033547afb1e5d33068f90e3c",
+      "artifacts/research/crypto_multifactor_family.json": "3c6e476d4aa25f1730ffa9eeba880bebc65571121aed83069dd3a0342c1accab",
+      "artifacts/research/crypto_reversal_family.json": "dfdccb113b86b8126446a3c67eb9247892a492bc4de80c5634ad9227153b30fd",
+      "artifacts/research/crypto_vrp_family.json": "9d77dc80850826988eab1f320a883b843a85f90b2ecf4cd642561b1304c7e05b",
+      "artifacts/research/energy_inventory_family.json": "08c6f4a10208a27d019ffeb98254f5fe35367f87986585785488a50372052ff9",
+      "artifacts/research/equity_insider_family.json": "ae6965124a71f5b58a294e0f023b8b573fd5d98f25ee8009036bec60e69857c7",
+      "artifacts/research/equity_low_beta_family.json": "b51f32d5be62b777b27e3687c96c27fbe988a7d709b548b6ae850fd8d13c57cc",
+      "artifacts/research/equity_narrative_family.json": "8866ac188a6613e0b8d9b7abb21433d1a8e6a218b28464b709b664c3c33a6102",
+      "artifacts/research/equity_quality_family.json": "340015469ffde06ddab3b45a0d4d1f33ac539299779aa8dfb433aaf5f6a78c6c",
+      "artifacts/research/equity_value_investment_family.json": "98f702f2f804b2267c54e4697ab54a75586b97dda61213eef1985bd84a128c5b",
+      "artifacts/research/macro_economic_trend_family.json": "db6cb64852e242ce696bc090c11ceec6ad10561e7c8529b2348e418f5572300c",
+      "artifacts/sweep/alphamax_construction/arms.json": "17884a560fc913b8e5b387b283074914d476f84314eeaea987fca28d55558124",
+      "artifacts/walkforward/crypto_carry_wk/walkforward.json": "a72c11172a730536336a079d26394cd926f88df06ce36cb3b5483159a99464ee",
+      "artifacts/walkforward/k30_dn_63/walkforward.json": "229afe7244b582cd538252e8e2ab77a2c77effef82a8fbe19e366c6dcbea87e7"
+    },
+    "verification_script": {
+      "path": "scripts/verify_sleeve_publication_replays.py",
+      "sha256": "15b266e3a3e6dcb466591876b16e15bb1f3f2df8ff93aa27d1ae7679e1b0d314"
+    }
+  },
+  "status": "PASS_ISOLATED_FROZEN_DEPENDENCY_REPLAY_NOT_PORTABLE_WORKSPACE",
+  "unique_released_result_objects_verified": 33
+}

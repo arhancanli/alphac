@@ -1,0 +1,127 @@
+{
+  "author": "Arhan Canli",
+  "claim_boundary": "This manifest binds freshly reacquired private Polygon inputs from 2021-08-23, the reconstructed historical instrument and 27-trial DSR state, an exact 375-id rebuilt universe union over the strategy window, the disclosed 58-session full-lookback entitlement gap, and the surviving five-file historical reference output. It does not by itself establish strategy sufficiency, an exact full 2021-06 universe rebuild, unchanged vendor rows, exact per-date memberships, an exact strategy curve, full historical source recovery, redistribution rights, or independent reproduction. The clean-workspace comparison adjudicates the output claims without regrading the stored historical result.",
+  "content_hash": "sha256:a9f5cf59f270244030662e3ce334362e0dc91518885653e2b30ad17ec8a3ae97",
+  "evidence_date": "2026-08-24",
+  "historical_run": {
+    "command": "uv run af research walkforward --profile equity --start 2022-07-01 --end 2026-06-01 --train-days 252 --test-days 63 --rebalance-bars 63 --allocator rank --alphas eq_mom_252_21 --out artifacts/walkforward/k30_dn_63",
+    "run_started_utc": "2026-06-20T10:13:55.046000+00:00",
+    "source_commit": "fd3e930f41b0a62b222ecda4ab83bae21a4ce9f2"
+  },
+  "private_input_snapshot": {
+    "bytes": 917586924,
+    "experiment_ledger": {
+      "cutoff_utc": "2026-06-20T10:13:55.046000+00:00",
+      "path": "var/experiments.jsonl",
+      "per_period_sharpe_sample_variance": 0.000958173989813561,
+      "sha256": "dab7406a23aefd2ebfede57cb05c03632453e8f96566ca278ad05b1b986e5ebf",
+      "stored_historical_variance": 0.0009581739898135611,
+      "trials": 27,
+      "variance_absolute_difference": 1.0842021724855044e-19,
+      "variance_validation_absolute_tolerance": 1e-18
+    },
+    "files": 79915,
+    "instrument_store": {
+      "delisted_instrument_ids": 6601,
+      "historical_as_of_utc": "2026-06-20T10:13:55.046000+00:00",
+      "instrument_ids": 12481,
+      "path": "var/ops.sqlite",
+      "sha256": "8920c9c5d17c39e85b18cb408c2f28a0026dc9ffb2033a163a04428ff1b711e1"
+    },
+    "path": "data/reproduction/alphamax_k30_dn_63_polygon_reacquired_20260824",
+    "private_inventory_receipt": {
+      "content_hash": "sha256:10c5e4d29de23243e275fd34af259ec2ba712b2cd04a5cf17d1e574aa86529ae",
+      "path": "data/reproduction/alphamax_k30_dn_63_polygon_reacquired_20260824/acquisition_complete.json",
+      "sha256": "11929efc21c76a6dd54320606b474bec0cc7d405a3b05810c502b25a3e5053be"
+    },
+    "tree_content_hash": "bf06d2820d37913cd95b05e136a481f599e22ae0bc0e41e5c4bffa4e7bcdea35",
+    "universe": {
+      "closed_intervals": 347,
+      "files": 531,
+      "full_rebuild_instrument_ids": 400,
+      "historical_full_2021_06_rebuild_exact": false,
+      "intervals": 556,
+      "missing_from_strategy_window": [],
+      "open_intervals": 209,
+      "strategy_window_instrument_id_set_exact": true,
+      "strategy_window_instrument_ids": 375,
+      "strategy_window_membership_records_hash": "c2e432cc68e4dcf646e5315b068f28124def0bdfe9a17158156b24847f0da6d7",
+      "unexpected_in_strategy_window": []
+    },
+    "vendor_reacquisition": {
+      "available_window_fresh_vendor_reacquisition_completed": true,
+      "bars_start": "2021-08-23",
+      "bars_until_exclusive": "2026-06-02",
+      "corporate_actions_scope": "375 strategy-universe instrument ids",
+      "entitlement_gap": {
+        "acquisition_alone_establishes_strategy_sufficiency": false,
+        "failed_sessions": 58,
+        "first_available_session": "2021-08-23",
+        "first_failed_session": "2021-06-01",
+        "first_leg_test_start": "2023-07-05",
+        "first_leg_train_start": "2022-10-26",
+        "full_historical_universe_rebuild_available": false,
+        "gap_intersects_global_feature_context": true,
+        "global_feature_context_requested_start": "2021-06-30",
+        "http_status": 403,
+        "initial_private_log_path": "logs/polygon_bars.log",
+        "initial_private_log_sha256": "b273f65a44b808af8735ecceffc28267b7a90f75f9e9c06282539d773f1cb0c2",
+        "last_failed_session": "2021-08-20",
+        "requested_full_lookback_start": "2021-06-01",
+        "strategy_sufficiency_replay_pending": true
+      },
+      "full_historical_universe_lookback_reacquired": false,
+      "preserved_historical_raw_input_snapshot": false,
+      "provider": "Polygon.io Stocks Flat Files and reference API",
+      "strategy_sufficiency_established": false,
+      "vendor_rows_may_have_been_revised_since_historical_run": true
+    }
+  },
+  "private_reference_output": {
+    "equity_parquet_sha256": "76f82c8df3726f049144d7699c0f13069db6a1e0d1f1e4570babd8d82a85cfc9",
+    "files": 5,
+    "path": "artifacts/reproduction_private/alphamax_k30_dn_63_20260620/reference_output",
+    "records": [
+      {
+        "bytes": 13732,
+        "path": "equity.parquet",
+        "sha256": "76f82c8df3726f049144d7699c0f13069db6a1e0d1f1e4570babd8d82a85cfc9"
+      },
+      {
+        "bytes": 951,
+        "path": "summary.txt",
+        "sha256": "d8d6032b76ac190cb3b7a1b16b68e125f6c4435526790d18df4ba3b0cd244fa9"
+      },
+      {
+        "bytes": 322428,
+        "path": "tearsheet.png",
+        "sha256": "0b0e14a72207dff655c087f03a87736fd716a90d21d548f91448412a4cc84255"
+      },
+      {
+        "bytes": 951,
+        "path": "tearsheet.txt",
+        "sha256": "d8d6032b76ac190cb3b7a1b16b68e125f6c4435526790d18df4ba3b0cd244fa9"
+      },
+      {
+        "bytes": 31011,
+        "path": "walkforward.json",
+        "sha256": "229afe7244b582cd538252e8e2ab77a2c77effef82a8fbe19e366c6dcbea87e7"
+      }
+    ]
+  },
+  "rights_and_release": {
+    "hash_manifest_may_be_published": true,
+    "private_snapshot_may_be_published": false,
+    "public_bundle_must_withhold_vendor_rows": true,
+    "raw_or_normalized_vendor_rows_publication_authorized": false
+  },
+  "schema": "canli.alphac-alphamax-upstream-replay-manifest.v1",
+  "source_reconstruction": {
+    "basis": "The exact run command appears in the 2026-06-20 author/Claude transcript. The run completed immediately before the dollar-neutral implementation was committed; no intervening tracked-source edit appears in that transcript. The clean replay, not chronology alone, determines strategy equivalence.",
+    "commit": "fd3e930f41b0a62b222ecda4ab83bae21a4ce9f2",
+    "full_dirty_historical_source_tree_recovered": false,
+    "git_archive_sha256": "266346cdccaa5fe1162fd7a7109e6276222e050fcefcbf661e8e225878a74790",
+    "tracked_source_reconstruction": "POST_RUN_COMMIT_OF_PRECOMMIT_CONTENT"
+  },
+  "status": "SEALED_AVAILABLE_VENDOR_REACQUISITION_FULL_LOOKBACK_GAP_DISCLOSED_REPLAY_PENDING_RIGHTS_WITHHELD"
+}

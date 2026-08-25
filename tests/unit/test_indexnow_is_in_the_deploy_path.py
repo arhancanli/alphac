@@ -15,6 +15,7 @@ copy of the submission.
 
 from __future__ import annotations
 
+import json
 import re
 import shutil
 import subprocess
@@ -163,3 +164,47 @@ def test_a_failure_never_fails_the_deploy_but_is_always_recorded() -> None:
         "the log"
     )
     assert "FAILED" in body, "a failed submission is not recorded as failed"
+
+
+@pytest.mark.parametrize("shell", ["sh", "zsh", "bash"])
+def test_cooldown_skip_is_distinct_and_does_not_refresh_success(
+    shell: str, tmp_path: Path
+) -> None:
+    if shutil.which(shell) is None:
+        pytest.skip(f"{shell} is not installed on this machine")
+    marker = tmp_path / "marker.json"
+    ok_file = tmp_path / "marker.ok"
+    prior_success = "2026-08-22T00:00:00Z"
+    ok_file.write_text(prior_success + "\n")
+    fake = tmp_path / "site"
+    fake.mkdir()
+    (fake / "package.json").write_text(
+        json.dumps(
+            {
+                "name": "fake",
+                "scripts": {
+                    "indexnow": "node -e \"console.log('IndexNow skipped: unchanged URL set')\""
+                },
+            }
+        )
+    )
+    script = (
+        f'. {REPO}/scripts/lib/bounded.sh\n'
+        f'. {REPO}/scripts/lib/indexnow.sh\n'
+        f'INDEXNOW_MARKER={marker} indexnow_submit {fake}\n'
+    )
+    result = subprocess.run([shell, "-c", script], capture_output=True, text=True, cwd=REPO)
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(marker.read_text())
+    assert payload["status"] == "SKIPPED"
+    assert payload["urls_submitted"] == 0
+    assert ok_file.read_text().strip() == prior_success
+
+
+def test_hourly_hash_excludes_only_unserved_root_receipt_directories() -> None:
+    source = (REPO / "scripts" / "lib" / "site_snapshot.sh").read_text()
+    assert '-path "$SITE_LANDING_SOURCE/artifacts"' in source
+    assert '-path "$SITE_APP_SOURCE/artifacts"' in source
+    assert "-name artifacts" not in source, (
+        "a blanket artifacts exclusion could hide a future served public/artifacts tree"
+    )

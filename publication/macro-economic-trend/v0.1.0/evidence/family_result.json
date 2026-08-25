@@ -1,0 +1,431 @@
+{
+  "author": "Arhan Canli",
+  "claim_boundary": "Immutable historical evidence only; no forward performance, admitted sleeve, live execution, or future-return claim.",
+  "evidence_date": "2026-08-22",
+  "family_key": "macro_economic_trend",
+  "identities": [
+    {
+      "config_hash": "83bde907f0562fc4",
+      "configuration": {
+        "cost_oneway_bp": 5.999999999999999,
+        "prereg": "docs/design/PREREG_MACRO_VINTAGE_FAMILY.md (commit fb1ab88)",
+        "probe": "macro_vintage_family",
+        "series": "EMPLOY",
+        "sign": 1,
+        "spread": "IWM-SPY"
+      },
+      "evidence_grade": "immutable_ledger_summary_with_optional_family_artifact",
+      "hypothesis_key": "396ff291d893e2b4",
+      "ledger_source_path": "var/experiments.jsonl",
+      "ledger_source_sha256": "b5a318c0997d980575f758451f509e0154eecbbb50d734e49a587d473062bd08",
+      "result": {
+        "annualized_sharpe": -0.2980670369523188,
+        "artifact_era_dsr": null,
+        "kurtosis": 23.322149406218408,
+        "maximum_drawdown": null,
+        "observations": 5977,
+        "skew": -0.08269825663033786
+      }
+    },
+    {
+      "config_hash": "7d4aeb6f6cdfbdda",
+      "configuration": {
+        "cost_oneway_bp": 5.999999999999999,
+        "prereg": "docs/design/PREREG_MACRO_VINTAGE_FAMILY.md (commit fb1ab88)",
+        "probe": "macro_vintage_family",
+        "series": "RUC",
+        "sign": -1,
+        "spread": "IWM-SPY"
+      },
+      "evidence_grade": "immutable_ledger_summary_with_optional_family_artifact",
+      "hypothesis_key": "3c11c45eb8f40024",
+      "ledger_source_path": "var/experiments.jsonl",
+      "ledger_source_sha256": "b5a318c0997d980575f758451f509e0154eecbbb50d734e49a587d473062bd08",
+      "result": {
+        "annualized_sharpe": 0.11261133663417566,
+        "artifact_era_dsr": null,
+        "kurtosis": 9.327705462007483,
+        "maximum_drawdown": null,
+        "observations": 6157,
+        "skew": 0.09949589213034486
+      }
+    },
+    {
+      "config_hash": "62b87e56c400faa4",
+      "configuration": {
+        "cost_oneway_bp": 5.999999999999999,
+        "prereg": "docs/design/PREREG_MACRO_VINTAGE_FAMILY.md (commit fb1ab88)",
+        "probe": "macro_vintage_family",
+        "series": "IPT",
+        "sign": 1,
+        "spread": "IWM-SPY"
+      },
+      "evidence_grade": "immutable_ledger_summary_with_optional_family_artifact",
+      "hypothesis_key": "5facc6dd331d80aa",
+      "ledger_source_path": "var/experiments.jsonl",
+      "ledger_source_sha256": "b5a318c0997d980575f758451f509e0154eecbbb50d734e49a587d473062bd08",
+      "result": {
+        "annualized_sharpe": -0.20229872435347265,
+        "artifact_era_dsr": null,
+        "kurtosis": 27.077269837924334,
+        "maximum_drawdown": null,
+        "observations": 5977,
+        "skew": -0.39138799333622076
+      }
+    },
+    {
+      "config_hash": "105a4b361cabec32",
+      "configuration": {
+        "cost_oneway_bp": 5.999999999999999,
+        "prereg": "docs/design/PREREG_MACRO_VINTAGE_FAMILY.md (commit fb1ab88)",
+        "probe": "macro_vintage_family",
+        "series": "RCONM",
+        "sign": 1,
+        "spread": "IWM-SPY"
+      },
+      "evidence_grade": "immutable_ledger_summary_with_optional_family_artifact",
+      "hypothesis_key": "7b64d1bcb48d1706",
+      "ledger_source_path": "var/experiments.jsonl",
+      "ledger_source_sha256": "b5a318c0997d980575f758451f509e0154eecbbb50d734e49a587d473062bd08",
+      "result": {
+        "annualized_sharpe": -0.07470973857914942,
+        "artifact_era_dsr": null,
+        "kurtosis": 30.377502756743706,
+        "maximum_drawdown": null,
+        "observations": 5996,
+        "skew": -0.5167850000733164
+      }
+    },
+    {
+      "config_hash": "aeea431164594fe5",
+      "configuration": {
+        "blend": "mean of per-month-normalized 3/6/12m changes; all three required",
+        "costs": {
+          "borrow_bps_ann_short": 50.0,
+          "one_way_bps": 6.0,
+          "overlay_relever_charged": true
+        },
+        "crisis_windows": {
+          "BEAR_2022": [
+            "2022-01-01",
+            "2022-12-31"
+          ],
+          "COVID_2020": [
+            "2020-02-15",
+            "2020-04-30"
+          ],
+          "GFC_2008": [
+            "2007-10-01",
+            "2009-03-31"
+          ]
+        },
+        "gates": {
+          "adopt_max_corr_alphatrend": 0.5,
+          "adopt_min_net_sharpe": 0.4,
+          "crisis_max_window_loss": -0.225,
+          "crisis_pooled_beat_spy": true
+        },
+        "history_start": "1980-01-31",
+        "lookbacks_m": [
+          3,
+          6,
+          12
+        ],
+        "probe": "econtrend",
+        "rebalance": "monthly last trading day; close signal -> next-open fill; old book earns the gap",
+        "score": "plain sum over themes of sign * theme_z",
+        "sign_matrix": {
+          "DBA": [
+            0,
+            1,
+            0,
+            -1
+          ],
+          "DBC": [
+            1,
+            1,
+            0,
+            -1
+          ],
+          "EEM": [
+            1,
+            0,
+            -1,
+            -1
+          ],
+          "EFA": [
+            1,
+            0,
+            0,
+            -1
+          ],
+          "FXE": [
+            0,
+            0,
+            -1,
+            -1
+          ],
+          "FXY": [
+            -1,
+            0,
+            -1,
+            -1
+          ],
+          "GLD": [
+            0,
+            1,
+            -1,
+            -1
+          ],
+          "IEF": [
+            -1,
+            -1,
+            -1,
+            0
+          ],
+          "IWM": [
+            1,
+            -1,
+            -1,
+            0
+          ],
+          "QQQ": [
+            1,
+            -1,
+            -1,
+            0
+          ],
+          "SHY": [
+            0,
+            -1,
+            -1,
+            0
+          ],
+          "SLV": [
+            0,
+            1,
+            -1,
+            -1
+          ],
+          "SPY": [
+            1,
+            -1,
+            -1,
+            0
+          ],
+          "TLT": [
+            -1,
+            -1,
+            -1,
+            0
+          ],
+          "UNG": [
+            0,
+            1,
+            0,
+            0
+          ],
+          "USO": [
+            1,
+            1,
+            0,
+            -1
+          ],
+          "UUP": [
+            0,
+            0,
+            1,
+            1
+          ]
+        },
+        "sizing": {
+          "ann_days": 252.0,
+          "gross": 1.0,
+          "min_breadth": 8,
+          "name_cap": 0.34,
+          "net": "unconstrained",
+          "vol_floor_ann": 0.05,
+          "vol_lookback_d": 63
+        },
+        "themes": {
+          "dollar": [
+            [
+              "USD_TW",
+              "splice",
+              "log",
+              1
+            ]
+          ],
+          "growth": [
+            [
+              "EMPLOY",
+              "t2",
+              "log",
+              1
+            ],
+            [
+              "IPT",
+              "t2",
+              "log",
+              1
+            ],
+            [
+              "RUC",
+              "t2",
+              "level",
+              -1
+            ],
+            [
+              "HSTARTS",
+              "t2",
+              "log",
+              1
+            ],
+            [
+              "RCONM",
+              "t2",
+              "log",
+              1
+            ],
+            [
+              "BAA10Y",
+              "t1",
+              "level",
+              -1
+            ]
+          ],
+          "inflation": [
+            [
+              "PCPI",
+              "t2",
+              "log",
+              1
+            ],
+            [
+              "PCPIX",
+              "t2",
+              "log",
+              1
+            ],
+            [
+              "T10YIE",
+              "t1",
+              "level",
+              1
+            ]
+          ],
+          "policy": [
+            [
+              "DFF",
+              "t1",
+              "level",
+              1
+            ],
+            [
+              "DGS2",
+              "t1",
+              "level",
+              1
+            ]
+          ]
+        },
+        "version": "1.0",
+        "wf": {
+          "embargo": 21,
+          "note": "no fitted params; train = vol estimation only",
+          "test": 126,
+          "train": 504,
+          "vol_target_ann": 0.15
+        },
+        "window": [
+          "2003-01-01",
+          "2026-06-01"
+        ],
+        "z": {
+          "clip": 2.0,
+          "ddof": 0,
+          "min_obs": 36,
+          "window": "expanding incl current"
+        }
+      },
+      "evidence_grade": "immutable_ledger_summary_with_optional_family_artifact",
+      "hypothesis_key": "c2d99e83ff3ec57a",
+      "ledger_source_path": "var/experiments.jsonl",
+      "ledger_source_sha256": "b5a318c0997d980575f758451f509e0154eecbbb50d734e49a587d473062bd08",
+      "result": {
+        "annualized_sharpe": 0.21093885031168313,
+        "artifact_era_dsr": null,
+        "kurtosis": 18.924529121318805,
+        "maximum_drawdown": null,
+        "observations": 5165,
+        "skew": -0.55728366524265
+      }
+    },
+    {
+      "config_hash": "db95275a78e25ab1",
+      "configuration": {
+        "ar_lags": 3,
+        "clip": 3.0,
+        "cost_oneway_bp": 5.999999999999999,
+        "prereg": "docs/design/PREREG_SLEEVE4_INVESTMENT.md / spec locked 2026-08-05",
+        "probe": "cpi_surprise_size",
+        "series": [
+          "PCPI",
+          "PCPIX"
+        ],
+        "sign": -1,
+        "spread": "IWM-SPY"
+      },
+      "evidence_grade": "immutable_ledger_summary_with_optional_family_artifact",
+      "hypothesis_key": "df2ff29afd9fcdb8",
+      "ledger_source_path": "var/experiments.jsonl",
+      "ledger_source_sha256": "b5a318c0997d980575f758451f509e0154eecbbb50d734e49a587d473062bd08",
+      "result": {
+        "annualized_sharpe": 0.34027975889222084,
+        "artifact_era_dsr": null,
+        "kurtosis": 26.783649295947033,
+        "maximum_drawdown": null,
+        "observations": 5977,
+        "skew": 0.43280667449863913
+      }
+    },
+    {
+      "config_hash": "528ebf7ffb456aea",
+      "configuration": {
+        "cost_oneway_bp": 5.999999999999999,
+        "prereg": "docs/design/PREREG_MACRO_VINTAGE_FAMILY.md (commit fb1ab88)",
+        "probe": "macro_vintage_family",
+        "series": "HSTARTS",
+        "sign": 1,
+        "spread": "IWM-SPY"
+      },
+      "evidence_grade": "immutable_ledger_summary_with_optional_family_artifact",
+      "hypothesis_key": "f552797a038b9cc5",
+      "ledger_source_path": "var/experiments.jsonl",
+      "ledger_source_sha256": "b5a318c0997d980575f758451f509e0154eecbbb50d734e49a587d473062bd08",
+      "result": {
+        "annualized_sharpe": 0.0697693449374498,
+        "artifact_era_dsr": null,
+        "kurtosis": 17.077360169237842,
+        "maximum_drawdown": null,
+        "observations": 5977,
+        "skew": -0.2376038638819288
+      }
+    }
+  ],
+  "related_family_artifact": {
+    "path": "artifacts/probe/macro_vintage_family/result.json",
+    "sha256": "09b0aee8a7da0f0f86f0ed84f9028c6c9bb19cda3220fc22d8da5c6771ea91bb"
+  },
+  "schema": "canli.alphac-macro-economic-trend-family.v1",
+  "summary": {
+    "admission_status": "NOT_ESTABLISHED_RESEARCH_ONLY",
+    "broker_reconciled_forward_status": "NOT_ESTABLISHED",
+    "capacity_status": "UNMEASURED_OR_NOT_FAMILY_WIDE",
+    "distinct_hypothesis_identities": 7,
+    "finite_sharpe_identities": 7,
+    "maximum_annualized_sharpe": 0.34027975889222084,
+    "minimum_annualized_sharpe": -0.2980670369523188,
+    "positive_sharpe_identities": 4
+  }
+}

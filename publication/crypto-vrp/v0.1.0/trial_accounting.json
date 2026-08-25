@@ -1,0 +1,115 @@
+{
+  "complete_recorded_union_extracted": true,
+  "distinct_recorded_hypothesis_identities": 1,
+  "every_identity_packet_complete": false,
+  "global_ledger": {
+    "path": "config/trial_accounting.json",
+    "sha256": "f15af7c989aded5da6c5259a7f7e5587377ab33977b5cd3c5b2395a84ea45043"
+  },
+  "identities": [
+    {
+      "candidate_match_is_verified": true,
+      "candidate_public_papers": [
+        "/research/crypto-vrp-lineage.md"
+      ],
+      "completion_assessment": {
+        "blockers": [
+          {
+            "code": "FORENSIC_ACCOUNTING_POSTDATES_ORIGINAL_MEASUREMENT",
+            "evidence": [
+              {
+                "path": "artifacts/audit/trial_debt_reconciliation.json",
+                "sha256": "2aea898ff82658f46ca08b8ee71f3198010c0f4252c7799830aeeca436ec577b"
+              },
+              {
+                "path": "artifacts/exp2/20260625T094710Z/exp2_metrics.json",
+                "sha256": "f39839b1e05b33e718563984228ee4dba64e94bdbf10c1b174426c0bd880d3a4"
+              }
+            ],
+            "finding": "This identity was recovered by the 2026-08-17 forensic accounting correction. The receipt charges the historical configuration but cannot retroactively prove an identity-level preregistration or original environment stamp.",
+            "required_section": "preregistration_and_hashes"
+          },
+          {
+            "code": "ORIGINAL_IDENTITY_GATE_DECISION_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/audit/trial_debt_reconciliation.json",
+                "sha256": "2aea898ff82658f46ca08b8ee71f3198010c0f4252c7799830aeeca436ec577b"
+              },
+              {
+                "path": "artifacts/exp2/20260625T094710Z/exp2_metrics.json",
+                "sha256": "f39839b1e05b33e718563984228ee4dba64e94bdbf10c1b174426c0bd880d3a4"
+              }
+            ],
+            "finding": "The source preserves a historical measurement, not a complete identity-level admission or kill packet under the current contract.",
+            "required_section": "admission_or_kill_decision"
+          },
+          {
+            "code": "FORENSIC_SOURCE_IS_SUMMARY_ONLY",
+            "evidence": [
+              {
+                "path": "artifacts/audit/trial_debt_reconciliation.json",
+                "sha256": "2aea898ff82658f46ca08b8ee71f3198010c0f4252c7799830aeeca436ec577b"
+              },
+              {
+                "path": "artifacts/exp2/20260625T094710Z/exp2_metrics.json",
+                "sha256": "f39839b1e05b33e718563984228ee4dba64e94bdbf10c1b174426c0bd880d3a4"
+              }
+            ],
+            "finding": "The declared evidence grade is persisted_summary_with_higher_moments. The exact daily curve and complete uncertainty, stress, capacity, and diversification evidence are not preserved by this source.",
+            "required_section": "result_uncertainty_stress_capacity_and_diversification"
+          }
+        ],
+        "config_hash": "99596bbb5b6f8e38",
+        "evidence_grade": "persisted_summary_with_higher_moments",
+        "forensic_reconciliation": "artifacts/audit/trial_debt_reconciliation.json",
+        "status": "AUDITED_NOT_CURRENTLY_COMPLETABLE"
+      },
+      "config_hash": "99596bbb5b6f8e38",
+      "coverage_status": "VERIFIED_INCOMPLETE_IDENTITY_PACKET",
+      "family_paper_binding_status": "VERIFIED_TAXONOMY_BINDING",
+      "first_recorded_at": "2026-08-17T00:00:00.056000+00:00",
+      "hypothesis_key": "bd4688c240711a16",
+      "identity_packet_content_hash": "sha256:bb2ecb740546bb66281473e2b3d9e114aab58397f0c0d1ed8c74b0293d498ed1",
+      "identity_packet_status": "INCOMPLETE_BACKFILL_REQUIRED",
+      "label": "crypto_vrp_proxy",
+      "ledger_profile": "var",
+      "ledger_source_path": "var/experiments.jsonl",
+      "measurement": {
+        "annualized_sharpe": -0.633,
+        "kurtosis": 132.65,
+        "observations": 1492,
+        "skew": -9.517
+      },
+      "missing_sections": [
+        "preregistration_and_hashes",
+        "point_in_time_data_and_survivorship_controls",
+        "execution_and_cost_model",
+        "result_uncertainty_stress_capacity_and_diversification",
+        "admission_or_kill_decision",
+        "code_environment_and_reproduction"
+      ],
+      "research_family_key": "crypto_volatility_risk_premium",
+      "research_family_title": "Crypto volatility risk-premium proxy",
+      "sleeve_context": "AlphaForge research",
+      "verified_family_paper_path": "/research/crypto-vrp-lineage.md",
+      "verified_packet_path": "/glassbox/trial-packets/bd4688c240711a16.json",
+      "verified_sections": [
+        "identity_and_authorship",
+        "economic_mechanism_and_falsifiable_hypothesis",
+        "literature_and_overlap_decision",
+        "family_and_union_trial_accounting",
+        "machine_readable_packet_and_stable_public_paper"
+      ]
+    }
+  ],
+  "registry_key": "crypto_vrp",
+  "research_family_key": "crypto_volatility_risk_premium",
+  "schema": "canli.alphac-publication-trial-accounting-binding.v2",
+  "status": "COMPLETE_RECORDED_UNION_EXTRACTED_IDENTITY_PACKETS_MAY_BE_INCOMPLETE",
+  "trial_packet_manifest": {
+    "content_hash": "sha256:38758b89a1a5fa845487a640b1deab046fffcf61ede5ad3afb6371798b208371",
+    "path": "artifacts/research/trial_packet_manifest.json",
+    "sha256": "0147dd8e631ca24257e2db384bf01d4637a79371f1754b284f3f7e9637c1369c"
+  }
+}

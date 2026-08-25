@@ -1,0 +1,89 @@
+{
+  "schema": "canli.alphac-data-source-rights-policy.v1",
+  "owner": "Arhan Canli",
+  "review_date": "2026-08-24",
+  "review_boundary": "Operational publication policy, not legal advice. Absence of a clear redistribution grant is treated as no permission to redistribute raw records.",
+  "sources": {
+    "ALPACA_PRIVATE_ACCOUNT": {
+      "access_kind": "authenticated private paper-broker account",
+      "official_terms": "https://alpaca.markets/disclosures",
+      "raw_redistribution": "PROHIBITED_BY_PROJECT_POLICY",
+      "permitted_release": "sanitized aggregate reconciliation with account identifiers and credentials removed",
+      "portable_reproduction_route": "reviewer supplies a separate paper account or verifies released aggregates"
+    },
+    "BINANCE_EXCHANGE_MARKET_DATA": {
+      "access_kind": "exchange API accessed through CCXT",
+      "official_terms": "https://www.binance.com/en/terms",
+      "raw_redistribution": "WITHHELD_PENDING_EXPLICIT_RIGHTS_CONFIRMATION",
+      "permitted_release": "code, query specification, symbols, timestamps, hashes and derived non-row-level results",
+      "portable_reproduction_route": "fresh API acquisition under the reviewer's own access and then hash/coverage comparison"
+    },
+    "DERIBIT_MARKET_DATA": {
+      "access_kind": "exchange market data including the DVOL index",
+      "official_terms": "https://statics.deribit.com/files/TermsofServiceDeribit.pdf",
+      "raw_redistribution": "PROHIBITED_WITHOUT_EXPLICIT_DERIBIT_APPROVAL",
+      "permitted_release": "code, query specification, coverage manifest, hashes and non-row-level research results only",
+      "portable_reproduction_route": "reviewer independently acquires the data under applicable Deribit terms",
+      "terms_observed_on": "2026-08-24",
+      "terms_evidence": "Article 4.6 restricts non-personal processing, publishing and forwarding of Market Data and Derived Data without explicit approval."
+    },
+    "EIA_PUBLIC_DATA": {
+      "access_kind": "U.S. Energy Information Administration public government data",
+      "official_terms": "https://www.eia.gov/about/copyrights_reuse.php",
+      "raw_redistribution": "PERMITTED_WITH_SOURCE_AND_PUBLICATION_DATE_ACKNOWLEDGMENT_SUBJECT_TO_PROTECTED_MATERIAL_EXCEPTIONS",
+      "permitted_release": "EIA data and files with source/date acknowledgment; protected third-party materials and logos remain excluded",
+      "portable_reproduction_route": "fresh download from the official dated WPSR archive",
+      "terms_observed_on": "2026-08-24",
+      "terms_evidence": "EIA states that its U.S. government publications and website data may be used or distributed with acknowledgment, while separately protected materials remain excluded."
+    },
+    "FRED_ECONOMIC_DATA": {
+      "access_kind": "Federal Reserve Bank of St. Louis FRED services with series-specific ownership",
+      "official_terms": "https://fred.stlouisfed.org/legal/",
+      "raw_redistribution": "WITHHELD_PENDING_SERIES_BY_SERIES_COPYRIGHT_AND_USE_REVIEW",
+      "permitted_release": "series identifiers, retrieval code, timestamps, hashes, attribution and non-row-level derived results",
+      "portable_reproduction_route": "reviewer independently retrieves each series subject to its current source-specific notices",
+      "terms_observed_on": "2026-08-24",
+      "terms_evidence": "FRED requires attribution and preserves third-party series restrictions; access through FRED does not override the underlying owner's rights."
+    },
+    "MASSIVE_POLYGON_MARKET_DATA": {
+      "access_kind": "licensed vendor market data",
+      "official_terms": "https://massive.com/legal/terms",
+      "raw_redistribution": "PROHIBITED_WITHOUT_SEPARATE_PERMISSION",
+      "permitted_release": "code, field specification, coverage manifest, hashes and derived non-row-level results",
+      "portable_reproduction_route": "reviewer supplies separately licensed Massive/Polygon access"
+    },
+    "NASDAQ_SHARADAR": {
+      "access_kind": "licensed Nasdaq Data Link dataset",
+      "official_terms": "https://data.nasdaq.com/terms",
+      "raw_redistribution": "PROHIBITED_WITHOUT_SEPARATE_PERMISSION",
+      "permitted_release": "code, table/field specification, coverage manifest, hashes and derived non-row-level results",
+      "portable_reproduction_route": "reviewer supplies a separately licensed Sharadar dataset"
+    },
+    "PHILADELPHIA_FED_RTDSM": {
+      "access_kind": "public institutional macro-vintage dataset",
+      "official_documentation": "https://www.philadelphiafed.org/surveys-and-data/real-time-data-research/real-time-data-set-for-macroeconomists",
+      "official_terms": "https://www.philadelphiafed.org/-/media/frbp/assets/institutional/about-us/terms-of-use.pdf",
+      "raw_redistribution": "WITHHELD_PENDING_EXPLICIT_RIGHTS_CONFIRMATION",
+      "permitted_release": "download recipe, series names, vintage semantics, coverage manifest, hashes and derived results",
+      "portable_reproduction_route": "fresh download from the official source"
+    },
+    "SEC_PUBLIC_DATA_AND_FILINGS": {
+      "access_kind": "SEC government-created datasets and public EDGAR filings",
+      "official_terms": "https://www.sec.gov/about/webmaster-frequently-asked-questions",
+      "raw_redistribution": "PERMITTED_FOR_GOVERNMENT_CREATED_AND_EDGAR_PUBLIC_CONTENT_SUBJECT_TO_IDENTIFIED_EXCEPTIONS",
+      "permitted_release": "source excerpts and public filing/data records with provenance, while third-party protected exceptions remain excluded",
+      "portable_reproduction_route": "fresh retrieval from SEC official datasets and EDGAR accession URLs",
+      "terms_observed_on": "2026-08-24",
+      "terms_evidence": "The SEC states that government-created sec.gov content and EDGAR public filing content are free to access and reuse, while limited exceptions exist."
+    },
+    "YAHOO_FINANCE_MARKET_DATA": {
+      "access_kind": "third-party market-data service",
+      "official_terms": "https://legal.yahoo.com/us/en/yahoo/terms/otos/index.html",
+      "raw_redistribution": "PROHIBITED_WITHOUT_EXPLICIT_PERMISSION",
+      "permitted_release": "instrument/date specification, code, hashes and derived non-row-level results",
+      "portable_reproduction_route": "reviewer independently acquires equivalent licensed benchmark data"
+    }
+  },
+  "project_default": "DO_NOT_BUNDLE_RAW_THIRD_PARTY_ROWS_UNLESS_A SOURCE-SPECIFIC WRITTEN GRANT IS RECORDED",
+  "claim_boundary": "This policy establishes a conservative release decision. It does not interpret contracts, grant rights, or prove that a third party will continue to provide data."
+}

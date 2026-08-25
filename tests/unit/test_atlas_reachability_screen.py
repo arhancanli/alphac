@@ -67,6 +67,24 @@ def test_a_family_that_opens_return_data_leaves_the_screen(
         screen.main()
 
 
+def test_original_cohort_promotions_remain_in_scope_until_returns_open() -> None:
+    atlas = json.loads(screen.ATLAS.read_text())
+    expected = {
+        f["id"]
+        for f in atlas["families"]
+        if f["lineage_classification"] == "ACTIVE_FEASIBILITY"
+        and f["id"] in {row.family for row in screen.SCREENS}
+        and not (f.get("return_outcome") or {}).get("return_data_opened")
+    }
+    assert expected == {
+        "active_ownership_escalation",
+        "inflation_breakeven_relative_value",
+        "merger_arbitrage",
+        "tender_offer_spread",
+    }
+    assert expected <= set(screen._untouched_families(atlas))
+
+
 def test_the_history_minimum_comes_from_the_contract_in_force() -> None:
     contract = json.loads(screen.CONTRACT.read_text())
     expected = contract["thresholds"]["minimum_oos_observations"] / screen.TRADING_DAYS_PER_YEAR
@@ -150,6 +168,47 @@ def test_no_row_claims_measurement_it_did_not_make() -> None:
             ), row["family"]
 
 
+def test_merger_population_failure_is_not_counted_as_parser_work() -> None:
+    """Its own harness says the gate blends populations; engineering cannot repair semantics."""
+    source = {row.family: row for row in screen.SCREENS}["merger_arbitrage"]
+    assert source.status == screen.REDESIGN
+    assert source.related_artifact == "artifacts/analysis/reachability_harness/result.json"
+
+    result = json.loads(screen.OUTPUT.read_text())
+    published = {row["family"]: row for row in result["families"]}["merger_arbitrage"]
+    assert published["verdict"] == screen.REDESIGN
+    assert published["obtainability_evidence_status"] == "MEASURED_FROM_RELATED_ARTIFACT"
+    assert "not an extraction one" in published["reason"]
+
+
+def test_tender_parser_work_waits_for_the_frozen_accuracy_ceiling() -> None:
+    source = {row.family: row for row in screen.SCREENS}["tender_offer_spread"]
+    assert source.status == screen.CEILING
+    assert source.related_artifact == "artifacts/analysis/tender_offer_reachability/result.json"
+
+    result = json.loads(screen.OUTPUT.read_text())
+    published = {row["family"]: row for row in result["families"]}["tender_offer_spread"]
+    assert published["verdict"] == screen.CEILING
+    assert published["obtainability_evidence_status"] == "MEASURED_FROM_RELATED_ARTIFACT"
+    assert "zero completed labels" in published["reason"]
+
+
+def test_active_ownership_stops_after_machine_gates_until_human_accuracy() -> None:
+    source = {row.family: row for row in screen.SCREENS}["active_ownership_escalation"]
+    assert source.status == screen.HUMAN
+    assert source.related_artifact == (
+        "artifacts/feasibility/active_ownership_13d_item4_v3/result.json"
+    )
+
+    result = json.loads(screen.OUTPUT.read_text())
+    published = {row["family"]: row for row in result["families"]}[
+        "active_ownership_escalation"
+    ]
+    assert published["verdict"] == screen.HUMAN
+    assert published["obtainability_evidence_status"] == "MEASURED_FROM_RELATED_ARTIFACT"
+    assert "0/48 complete" in published["reason"]
+
+
 def test_a_source_that_is_not_there_measures_as_absent_rather_than_as_zero(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -176,3 +235,46 @@ def test_the_published_headline_counts_what_it_says_it_counts() -> None:
     engineering = {screen.HELD, screen.PUBLIC, screen.EXTRACTION}
     n = sum(1 for r in result["families"] if r["verdict"] in engineering)
     assert result["headline"].startswith(f"{n} of {len(result['families'])} ")
+    assert "identity redesign" in result["headline"]
+
+
+def test_paid_bulk_records_are_not_mislabeled_as_key_free_engineering() -> None:
+    """A free web display does not make the research-grade historical product free."""
+    rows = {row.family: row for row in screen.SCREENS}
+    for family in ("credit_equity_relative_value", "municipal_taxable_basis"):
+        row = rows[family]
+        assert row.status == screen.VENDOR
+        assert row.how_to_verify
+        assert any("Official source checked" in note for note in row.notes)
+
+
+def test_index_reconstitution_separates_public_notices_from_licensed_history() -> None:
+    """Public review PDFs do not supply the full point-in-time research record or its rights."""
+    row = {item.family: item for item in screen.SCREENS}["index_reconstitution_flow"]
+    assert row.status == screen.VENDOR
+    assert "Recent additions/deletions" in row.reason
+    assert "publication rights" in row.reason
+    assert "written quote and licence schedule" in (row.how_to_verify or "")
+    assert any("MSCI" in note and "2026-08-23" in note for note in row.notes)
+    assert any("data-index-licensing" in note for note in row.notes)
+
+
+def test_inflation_breakeven_signal_depth_is_not_called_an_executable_identity() -> None:
+    """Constant-maturity signal estimates cannot stand in for tradable return records."""
+    source = {row.family: row for row in screen.SCREENS}[
+        "inflation_breakeven_relative_value"
+    ]
+    assert source.status == screen.VENDOR
+    assert source.related_artifact == (
+        "artifacts/feasibility/inflation_breakeven_relative_value/result.json"
+    )
+    assert source.how_to_verify
+
+    result = json.loads(screen.OUTPUT.read_text())
+    published = {row["family"]: row for row in result["families"]}[
+        "inflation_breakeven_relative_value"
+    ]
+    assert published["verdict"] == screen.VENDOR
+    assert published["obtainability_evidence_status"] == "JUDGEMENT_NOT_VERIFIED_THIS_RUN"
+    assert "constant-maturity" in published["reason"]
+    assert published["related_artifact"] == source.related_artifact

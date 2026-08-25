@@ -1,0 +1,208 @@
+{
+  "@context": "https://w3id.org/ro/crate/1.1/context",
+  "@graph": [
+    {
+      "@id": "ro-crate-metadata.json",
+      "@type": "CreativeWork",
+      "about": {
+        "@id": "./"
+      },
+      "conformsTo": {
+        "@id": "https://w3id.org/ro/crate/1.1"
+      }
+    },
+    {
+      "@id": "./",
+      "@type": "Dataset",
+      "author": {
+        "@id": "#arhan-canli"
+      },
+      "datePublished": "2026-08-23",
+      "hasPart": [
+        {
+          "@id": "CITATION.cff"
+        },
+        {
+          "@id": "CORRECTIONS.md"
+        },
+        {
+          "@id": "LICENSE"
+        },
+        {
+          "@id": "README.md"
+        },
+        {
+          "@id": "archival_visual_inspection_receipt.json"
+        },
+        {
+          "@id": "bundle_manifest.json"
+        },
+        {
+          "@id": "codemeta.json"
+        },
+        {
+          "@id": "data_manifest.json"
+        },
+        {
+          "@id": "evidence/family_result.json"
+        },
+        {
+          "@id": "internal_replay_receipt.json"
+        },
+        {
+          "@id": "isolated_replay_receipt.json"
+        },
+        {
+          "@id": "paper.html"
+        },
+        {
+          "@id": "paper.json"
+        },
+        {
+          "@id": "paper.md"
+        },
+        {
+          "@id": "paper.pdf"
+        },
+        {
+          "@id": "paper.tex"
+        },
+        {
+          "@id": "pdf_validation.json"
+        },
+        {
+          "@id": "references.bib"
+        },
+        {
+          "@id": "references.json"
+        },
+        {
+          "@id": "reproduction.json"
+        },
+        {
+          "@id": "sbom.spdx.json"
+        },
+        {
+          "@id": "trial_accounting.json"
+        }
+      ],
+      "name": "Point-in-Time Macroeconomic Trend: Seven Identities Without a Validated Sleeve",
+      "version": "0.1.0"
+    },
+    {
+      "@id": "#arhan-canli",
+      "@type": "Person",
+      "name": "Arhan Canli"
+    },
+    {
+      "@id": "CITATION.cff",
+      "@type": "File",
+      "sha256": "9de581c18e6ed0553728e5de0567a5ddd03d2d6ccd1ba16e3164fd38bb873eff"
+    },
+    {
+      "@id": "CORRECTIONS.md",
+      "@type": "File",
+      "sha256": "1113979555af6ad2c8d85717b15616a876ac9d2edfbe1a928d46f37195b6fcd1"
+    },
+    {
+      "@id": "LICENSE",
+      "@type": "File",
+      "sha256": "e679ca02271c3b6ff38e197098b9260900656c23f06b787383624681f425fa26"
+    },
+    {
+      "@id": "README.md",
+      "@type": "File",
+      "sha256": "66fcc63e79a11b09800f0bd0da313d645a5b3ab3b479a2d9c7d923b149c3c6e7"
+    },
+    {
+      "@id": "archival_visual_inspection_receipt.json",
+      "@type": "File",
+      "sha256": "7a40b8c55de12ec4dd2f93143810266ac8854dc14fdd2ac1a336f64ff9dd8578"
+    },
+    {
+      "@id": "bundle_manifest.json",
+      "@type": "File",
+      "sha256": "4958bdae34459bed2e1b12b0605bcf43611bfb2a7b23fac7e68b24216b91f6cd"
+    },
+    {
+      "@id": "codemeta.json",
+      "@type": "File",
+      "sha256": "18140fbc3a36c12f5ca1172ab747e6394be58d95acffff6506dd8d76fe11ad8d"
+    },
+    {
+      "@id": "data_manifest.json",
+      "@type": "File",
+      "sha256": "b4368b475cf54f414bd82094f3b5b92d9c72728a60a2481541fd607d02bdf750"
+    },
+    {
+      "@id": "evidence/family_result.json",
+      "@type": "File",
+      "sha256": "db6cb64852e242ce696bc090c11ceec6ad10561e7c8529b2348e418f5572300c"
+    },
+    {
+      "@id": "internal_replay_receipt.json",
+      "@type": "File",
+      "sha256": "70ac0c8d8542294e02c396085216646208a786295c747940f0eb0f576010ec95"
+    },
+    {
+      "@id": "isolated_replay_receipt.json",
+      "@type": "File",
+      "sha256": "d0df878375d415986fa639487e4ccffc9cad6396dca9bde5f3be4a7fdf50b2ad"
+    },
+    {
+      "@id": "paper.html",
+      "@type": "File",
+      "sha256": "78922b433eaf021c1b75d9dda2e89a2f9f2934801d21a456bdc019795ac088b3"
+    },
+    {
+      "@id": "paper.json",
+      "@type": "File",
+      "sha256": "fc69d41fe79d9bb263cce31530f7469e0a5b313af77f45bad2be8cc088237197"
+    },
+    {
+      "@id": "paper.md",
+      "@type": "File",
+      "sha256": "ff5892cb61f591dde50ee2da25dfe9e7eba51b125b2be57af97dca88f0dcbd8a"
+    },
+    {
+      "@id": "paper.pdf",
+      "@type": "File",
+      "sha256": "7ad1865d7854be839c8b607b0106f7dafd50eb820af3fd4d77fa44b242e81d04"
+    },
+    {
+      "@id": "paper.tex",
+      "@type": "File",
+      "sha256": "b6308a715b94de53a5769137ad9e1354e2579914599391f6f397d6ff5666c81c"
+    },
+    {
+      "@id": "pdf_validation.json",
+      "@type": "File",
+      "sha256": "8c597701c7d36dca680d0254e2fe4effd852176f3ba94c68deaaf3fff5f092f5"
+    },
+    {
+      "@id": "references.bib",
+      "@type": "File",
+      "sha256": "fff0b2cdb036b8be22e5177c16da633186f2fd2faf5a642843b6f42fec139260"
+    },
+    {
+      "@id": "references.json",
+      "@type": "File",
+      "sha256": "681128932cdc45c9627c13573d80c2441282e84e5e664954aff0c851852e5896"
+    },
+    {
+      "@id": "reproduction.json",
+      "@type": "File",
+      "sha256": "2a3af1706c9ed93deccde9858ce8a49becdf5caf2788261bbcbdcffddb83d8a6"
+    },
+    {
+      "@id": "sbom.spdx.json",
+      "@type": "File",
+      "sha256": "cd36363de5f054c68ef771c49a33bc6ff61263b02caaa21213710122fc383e7e"
+    },
+    {
+      "@id": "trial_accounting.json",
+      "@type": "File",
+      "sha256": "3eb941413f8a65e9ecdbcefaba1b3f104a267562e60e7329ad0f5c4527778ceb"
+    }
+  ]
+}

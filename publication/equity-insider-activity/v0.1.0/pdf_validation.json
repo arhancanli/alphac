@@ -1,0 +1,71 @@
+{
+  "author": "Arhan Canli",
+  "claim_boundary": "Machine validation proves page geometry, extractable text, metadata, font resources, and required disclosures. Visual inspection is separate and is not peer review, content validation, accessibility certification, or independent replication.",
+  "extractable_characters": 6404,
+  "failures": [],
+  "font_resources": [
+    "AAAAAA+Arial-BoldMT",
+    "BAAAAA+Georgia",
+    "CAAAAA+Georgia",
+    "DAAAAA+ArialMT",
+    "EAAAAA+Arial-BoldMT",
+    "FAAAAA+ArialMT",
+    "GAAAAA+ArialMT",
+    "HAAAAA+Arial-BoldMT",
+    "IAAAAA+ArialMT",
+    "JAAAAA+Menlo-Regular",
+    "KAAAAA+Georgia",
+    "LAAAAA+Georgia",
+    "MAAAAA+Arial-BoldMT",
+    "NAAAAA+ArialMT",
+    "OAAAAA+Georgia-Bold",
+    "PAAAAA+Georgia-Italic"
+  ],
+  "metadata": {
+    "author": "Arhan Canli",
+    "title": "Clustered Insider Purchases: Two Negative Event-Information Trials"
+  },
+  "minimum_extractable_characters_on_page": 512,
+  "page_height_points": [
+    841.92
+  ],
+  "page_width_points": [
+    594.96
+  ],
+  "pages": 4,
+  "passes": true,
+  "registry_key": "equity_insider_activity",
+  "render_environment": {
+    "latex_compilation_validated": false,
+    "pdf_engine": "Google Chrome 151.0.7922.174",
+    "pdf_normalizer": "pypdf 6.16.1"
+  },
+  "schema": "canli.alphac-archival-pdf-validation.v1",
+  "source_bindings": {
+    "bibliography": {
+      "references.bib": {
+        "path": "references.bib",
+        "sha256": "e0956f60cb7afb1c881df2d1e2d806ec2ff9bc8f08844680662e0848d40645f4"
+      },
+      "references.json": {
+        "path": "references.json",
+        "sha256": "5f1a310fecb14e5f5635db2676282acae8b585211d648170faf5d333ea9da725"
+      }
+    },
+    "paper_markdown": {
+      "path": "publication/equity-insider-activity/v0.1.0/paper.md",
+      "sha256": "23b78849957d7c2cc99b86cbb8f15acf42e01d28a6205aad5e3d1e82b48ed945"
+    },
+    "renderer": {
+      "path": "scripts/build_archival_publication_papers.py",
+      "sha256": "d36584c93e00be6f75bc50da079d25a46d1da4e0d1b2d58b73661e3f527c9f3e"
+    },
+    "static_site_paper_html": {
+      "declared_markdown_sha256": "23b78849957d7c2cc99b86cbb8f15acf42e01d28a6205aad5e3d1e82b48ed945",
+      "matches_paper_markdown": true,
+      "path": "/Users/arhancanli/meridian/research/equity-insider-activity-lineage.html",
+      "sha256": "374d4a61154a2f0a7ffd387b93a37e213b8941422e679c105a6b1578f9bf35c3"
+    }
+  },
+  "status": "PASS_MACHINE_PDF_VALIDATION"
+}

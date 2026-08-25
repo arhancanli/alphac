@@ -37,6 +37,7 @@ from __future__ import annotations
 import math
 import sqlite3
 import time
+from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
 from types import TracebackType
@@ -60,6 +61,7 @@ __all__ = [
     "FillRecord",
     "LadderSnapshot",
     "OrderRecord",
+    "PositionSnapshot",
     "TradingStore",
 ]
 
@@ -85,6 +87,21 @@ class CycleRecord:
     finished_ms: Ms | None
     status: str
     detail: str
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
+class PositionSnapshot:
+    """One durable position mark used in a cycle's account equity."""
+
+    cycle_ts: Ms
+    instrument_id: str
+    qty: float
+    avg_entry_price: float
+    opened_ts: Ms
+    mark_price: float | None
+    mark_source: str | None
+    market_value_quote: float | None
+    unrealized_pnl_quote: float | None
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
@@ -190,6 +207,10 @@ CREATE TABLE IF NOT EXISTS positions_snapshots (
     qty             REAL    NOT NULL,
     avg_entry_price REAL    NOT NULL,
     opened_ts       INTEGER NOT NULL,
+    mark_price      REAL,
+    mark_source     TEXT,
+    market_value_quote REAL,
+    unrealized_pnl_quote REAL,
     PRIMARY KEY (cycle_ts, instrument_id)
 ) WITHOUT ROWID;
 
@@ -315,6 +336,25 @@ class TradingStore:
         self._conn.execute("PRAGMA foreign_keys=ON")
         with self._conn:
             self._conn.executescript(_CREATE_SQL)
+            self._ensure_position_mark_columns()
+
+    def _ensure_position_mark_columns(self) -> None:
+        """Add prospective attribution columns to legacy live databases in place."""
+        present = {
+            str(row["name"])
+            for row in self._conn.execute("PRAGMA table_info(positions_snapshots)").fetchall()
+        }
+        columns = {
+            "mark_price": "REAL",
+            "mark_source": "TEXT",
+            "market_value_quote": "REAL",
+            "unrealized_pnl_quote": "REAL",
+        }
+        for name, sql_type in columns.items():
+            if name not in present:
+                self._conn.execute(
+                    f"ALTER TABLE positions_snapshots ADD COLUMN {name} {sql_type}"
+                )
 
     def __enter__(self) -> Self:
         return self
@@ -593,24 +633,75 @@ class TradingStore:
     # snapshots: positions + equity + paper_state                        #
     # ------------------------------------------------------------------ #
 
-    def snapshot_positions(self, cycle_ts: Ms, positions: tuple[Position, ...]) -> None:
+    def snapshot_positions(
+        self,
+        cycle_ts: Ms,
+        positions: tuple[Position, ...],
+        *,
+        marks: Mapping[str, tuple[float, str]] | None = None,
+    ) -> None:
         """Replace the position snapshot for ``cycle_ts`` (idempotent per cycle).
 
         The full position set is written under the cycle key so the live
         tearsheet has a per-bar book and recovery can rebuild the in-memory
         ledger from the last snapshot plus subsequent fills.
         """
+        def row_for(position: Position) -> tuple[object, ...]:
+            mark = None if marks is None else marks.get(position.instrument_id)
+            mark_price = None if mark is None else mark[0]
+            mark_source = None if mark is None else mark[1]
+            return (
+                cycle_ts,
+                position.instrument_id,
+                position.qty,
+                position.avg_entry_price,
+                position.opened_ts,
+                mark_price,
+                mark_source,
+                None if mark_price is None else position.qty * mark_price,
+                None
+                if mark_price is None
+                else position.qty * (mark_price - position.avg_entry_price),
+            )
+
         with self._conn:
             self._conn.execute("DELETE FROM positions_snapshots WHERE cycle_ts = ?", (cycle_ts,))
             self._conn.executemany(
                 "INSERT INTO positions_snapshots ("
-                "cycle_ts, instrument_id, qty, avg_entry_price, opened_ts"
-                ") VALUES (?, ?, ?, ?, ?)",
-                [
-                    (cycle_ts, p.instrument_id, p.qty, p.avg_entry_price, p.opened_ts)
-                    for p in positions
-                ],
+                "cycle_ts, instrument_id, qty, avg_entry_price, opened_ts, "
+                "mark_price, mark_source, market_value_quote, unrealized_pnl_quote"
+                ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                [row_for(position) for position in positions],
             )
+
+    def position_snapshots_at(self, cycle_ts: Ms) -> tuple[PositionSnapshot, ...]:
+        """Return durable position marks and P&L attribution for one cycle."""
+        rows = self._conn.execute(
+            "SELECT * FROM positions_snapshots WHERE cycle_ts = ? ORDER BY instrument_id",
+            (cycle_ts,),
+        ).fetchall()
+        return tuple(
+            PositionSnapshot(
+                cycle_ts=int(row["cycle_ts"]),
+                instrument_id=str(row["instrument_id"]),
+                qty=float(row["qty"]),
+                avg_entry_price=float(row["avg_entry_price"]),
+                opened_ts=int(row["opened_ts"]),
+                mark_price=None if row["mark_price"] is None else float(row["mark_price"]),
+                mark_source=None if row["mark_source"] is None else str(row["mark_source"]),
+                market_value_quote=(
+                    None
+                    if row["market_value_quote"] is None
+                    else float(row["market_value_quote"])
+                ),
+                unrealized_pnl_quote=(
+                    None
+                    if row["unrealized_pnl_quote"] is None
+                    else float(row["unrealized_pnl_quote"])
+                ),
+            )
+            for row in rows
+        )
 
     def positions_at(self, cycle_ts: Ms) -> tuple[Position, ...]:
         """Return the position snapshot recorded at ``cycle_ts`` (empty if none)."""

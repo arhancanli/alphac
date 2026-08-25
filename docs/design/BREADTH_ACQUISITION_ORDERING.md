@@ -1,5 +1,11 @@
 # Breadth acquisition ordering — which data to buy first, and whether it moves the constraint
 
+> **Historical analysis, superseded 2026-08-21.** This document diagnoses the v4 target/gate
+> mismatch that led to the v6 contract. Its 2.0–2.5 target and 0.15 correlation gate are not in
+> force. The governing target is forward Sharpe 1.5; v7 uses a non-positive candidate-average
+> gate plus strict improvement in book-wide average correlation, while the portfolio objective is
+> -0.03.
+
 Reproducible at `scripts/analyze_breadth_acquisition.py` →
 `artifacts/analysis/breadth_acquisition/result.json`. Zero hypotheses consumed, no data read,
 no backtest run, ledger asserted unmoved before and after.
@@ -47,15 +53,18 @@ therefore admissible at this count in a way it is not at 250 (floor −0.004), w
 | 0.529 (measured, 3-sleeve) | **−0.0016** | **−0.0287** |
 | 0.565 (mean of 4 published standalone Sharpes) | **+0.0090** | **−0.0219** |
 
-**Today's measured ρ̄ is +0.0274.** So even on the more generous quality estimate, reaching the
+**The legacy snapshot used by this superseded analysis measured ρ̄ at +0.0274.** The later exact
+current-composition study uses a 1,061-row common window and measures +0.0248; both miss the
+-0.03 objective, and both would have failed v6's retired ≤0.00 global point gate. On the historical
+snapshot, reaching the
 *bottom* of the target range requires cutting current average correlation by about a third of its
 value again — and reaching the top requires going negative. This is the program. Sleeve count is
 not the program.
 
 Two consequences that follow directly and are easy to get backwards:
 
-- **"Find uncorrelated sleeves" is not sufficient.** A sleeve at ρ̄ = 0 to the book does not lower
-  a book already at +0.0274; it dilutes toward zero at best. The requirement is *anti-correlated
+- **"Find uncorrelated sleeves" is not sufficient.** A sleeve at ρ̄ = 0 to a positively correlated
+  book does not lower its average below zero; it dilutes toward zero at best. The requirement is *anti-correlated
   or convex* return sources.
 - **Quality relaxes the correlation requirement faster than count does.** Moving s̄ from 0.529 to
   0.565 moves the 2.0 requirement from −0.0016 to +0.0090 — from impossible-today to nearly

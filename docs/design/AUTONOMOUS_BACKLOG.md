@@ -669,6 +669,16 @@ where it is.*
   held and useless, and must not read as held) and that it does NOT rescue a vendor or marks
   verdict, and proves an absent lake measures as absent rather than as a span of zero.
   Full unit suite green, ruff clean, retracted-claim gate PASS, reproduce kit 23/23. Deployed.
+- `2026-08-22 20:40` — **C2 SOURCE-TERMS CORRECTION.** A current primary-source check found that
+  the two rows previously labelled `OBTAINABLE_PUBLICLY_NEEDS_A_NEW_PIPELINE` were too generous.
+  FINRA's research-grade Enhanced Historical TRACE files require an agreement and fees (and CUSIP
+  delivery requires a separate identifier licence). MSRB's bulk Historical Transaction Data is
+  sold per twelve-month collection under an agreement, while the call and tax histories required
+  by the municipal-basis identity remain reference data. Free security-by-security web display is
+  not a reproducible bulk research feed. Both `credit_equity_relative_value` and
+  `municipal_taxable_basis` are therefore corrected to
+  `VENDOR_ONLY_AN_OWNER_SPENDING_DECISION`. This opens no returns, registers no identity and makes
+  no edge claim; it removes two false autonomous work paths before they consume engineering time.
 - `2026-08-22 02:05` — **C3 DONE.** `scripts/orthogonality_prior.py`, published at
   `/glassbox/orthogonality_prior.json`. A rule stated before scoring and applied by code, never
   case by case: shares a factor family with a live sleeve → LIKELY_CORRELATED; else shares a

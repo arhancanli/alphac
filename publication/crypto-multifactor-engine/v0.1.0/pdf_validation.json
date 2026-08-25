@@ -1,0 +1,71 @@
+{
+  "author": "Arhan Canli",
+  "claim_boundary": "Machine validation proves page geometry, extractable text, metadata, font resources, and required disclosures. Visual inspection is separate and is not peer review, content validation, accessibility certification, or independent replication.",
+  "extractable_characters": 9024,
+  "failures": [],
+  "font_resources": [
+    "AAAAAA+Arial-BoldMT",
+    "BAAAAA+Georgia",
+    "CAAAAA+Georgia",
+    "DAAAAA+ArialMT",
+    "EAAAAA+Arial-BoldMT",
+    "FAAAAA+ArialMT",
+    "GAAAAA+ArialMT",
+    "HAAAAA+Arial-BoldMT",
+    "IAAAAA+ArialMT",
+    "JAAAAA+Menlo-Regular",
+    "KAAAAA+Georgia",
+    "LAAAAA+Georgia",
+    "MAAAAA+Georgia-Bold",
+    "NAAAAA+Arial-BoldMT",
+    "OAAAAA+ArialMT",
+    "PAAAAA+Georgia-Italic"
+  ],
+  "metadata": {
+    "author": "Arhan Canli",
+    "title": "Crypto Multi-Factor Engine: Seven Trials, Capacity Decay, and No-Deploy Verdict"
+  },
+  "minimum_extractable_characters_on_page": 527,
+  "page_height_points": [
+    841.92
+  ],
+  "page_width_points": [
+    594.96
+  ],
+  "pages": 5,
+  "passes": true,
+  "registry_key": "crypto_multifactor_engine",
+  "render_environment": {
+    "latex_compilation_validated": false,
+    "pdf_engine": "Google Chrome 151.0.7922.174",
+    "pdf_normalizer": "pypdf 6.16.1"
+  },
+  "schema": "canli.alphac-archival-pdf-validation.v1",
+  "source_bindings": {
+    "bibliography": {
+      "references.bib": {
+        "path": "references.bib",
+        "sha256": "c5f36aa5b0aefbf784f7577f8c0309afe92efc459766e2a1fa5aac04e2624f3a"
+      },
+      "references.json": {
+        "path": "references.json",
+        "sha256": "cbf3bbf7bc11a6cc1f78ed4597e578ae07b723865ced6d9a02133af4e4e4f0b8"
+      }
+    },
+    "paper_markdown": {
+      "path": "publication/crypto-multifactor-engine/v0.1.0/paper.md",
+      "sha256": "73e40af49f0e55e09f706dde37473781d5cc22104d86cd6bc031fe77e080b53c"
+    },
+    "renderer": {
+      "path": "scripts/build_archival_publication_papers.py",
+      "sha256": "d36584c93e00be6f75bc50da079d25a46d1da4e0d1b2d58b73661e3f527c9f3e"
+    },
+    "static_site_paper_html": {
+      "declared_markdown_sha256": "73e40af49f0e55e09f706dde37473781d5cc22104d86cd6bc031fe77e080b53c",
+      "matches_paper_markdown": true,
+      "path": "/Users/arhancanli/meridian/research/crypto-multifactor-engine-lineage.html",
+      "sha256": "ae74b8477d9dea84518e6dde7da0be6efbd970a9d7ad7ca715eb91b92d24e6e6"
+    }
+  },
+  "status": "PASS_MACHINE_PDF_VALIDATION"
+}

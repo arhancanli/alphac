@@ -88,10 +88,12 @@ jobs:
         run: uv python install
       - name: Sync the frozen environment
         run: uv sync --frozen --dev
-      # Network tests and workspace-evidence integration tests are excluded from
-      # this portable clean-checkout gate. The latter cannot run without the
-      # deliberately unversioned evidence corpus and sibling website workspaces;
-      # each such test is explicitly marked instead of failing accidentally.
+      # Network, workspace-evidence and wall-clock performance tests are excluded
+      # from this parallel correctness lane. Workspace evidence cannot run without
+      # the deliberately unversioned corpus and sibling website workspaces. Slow
+      # performance guards run serially in the next mandatory step: measuring an
+      # 8-second wall budget while 17 sibling workers contend for the host measures
+      # pytest scheduling rather than engine performance.
       # Branch coverage of the alphaforge package is collected by pyproject
       # (--cov=alphaforge --cov-branch) on every run; -p no:randomly is not used
       # because nothing here is order-dependent. We emit an XML report and a
@@ -100,8 +102,12 @@ jobs:
       # rather than redding CI aspirationally.
       - name: pytest (portable offline suite with branch coverage)
         run: >-
-          uv run pytest -m 'not network and not workspace_evidence'
+          uv run pytest -m 'not network and not workspace_evidence and not slow'
           --cov-report=xml --cov-report=term
+      - name: pytest (serial performance guards)
+        run: >-
+          uv run pytest -n0 --no-cov
+          -m 'slow and not network and not workspace_evidence'
       - name: Upload coverage report
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -109,3 +115,39 @@ jobs:
           name: coverage-xml
           path: coverage.xml
           if-no-files-found: warn
+
+  browser-interface:
+    name: browser interface (synthetic clean-checkout fixture)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install uv
+        uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
+        with:
+          enable-cache: true
+      - name: Pin Python from .python-version
+        run: uv python install
+      - name: Sync the frozen environment
+        run: uv sync --frozen --dev
+      - name: Install the ephemeral Chromium QA runtime
+        run: uv run --with playwright playwright install --with-deps chromium
+      - name: Build and exercise the synthetic blind-review interface fixture
+        shell: bash
+        run: |
+          fixture_dir=/tmp/alphac-active-ownership-browser-fixture
+          uv run python tests/browser/build_active_ownership_browser_fixture.py --out "$fixture_dir"
+          uv run python -m http.server 8765 --bind 127.0.0.1 --directory "$fixture_dir" \
+            >/tmp/alphac-browser-server.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+          for attempt in {1..20}; do
+            if curl --fail --silent http://127.0.0.1:8765/review.html >/dev/null; then
+              break
+            fi
+            sleep 0.25
+          done
+          curl --fail --silent http://127.0.0.1:8765/review.html >/dev/null
+          uv run --with playwright python \
+            tests/browser/test_active_ownership_review_workspace.py \
+            --packet-dir "$fixture_dir" \
+            --url http://127.0.0.1:8765/review.html

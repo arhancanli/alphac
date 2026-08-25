@@ -1,0 +1,30 @@
+{
+  "abstract": "Two historical identities test whether crypto perpetual-futures returns reverse after common movement is removed. One uses a 24-hour residual signal; the other combines 24- and 72-hour residuals. Both are strongly negative in the implemented direction. Their immutable annualized Sharpe summaries are -2.1527 and -2.1140 across 1,574 observations. The result rejects the tested reversal rule, but it does not automatically establish the opposite momentum trade. Exact curves, maximum drawdowns, costs, funding attribution, and current-union DSR are not preserved at the family level. The family contributes zero sleeves and remains in the trial union as a negative result.",
+  "authors": [
+    {
+      "affiliation": "Canli Capital / AlphaC Algorithms",
+      "full_name": "Arhan Canli",
+      "roles": [
+        "CONCEPTUALIZATION",
+        "METHODOLOGY",
+        "SOFTWARE",
+        "VALIDATION",
+        "INVESTIGATION",
+        "WRITING",
+        "PROJECT_ADMINISTRATION"
+      ]
+    }
+  ],
+  "capital_kind": "RESEARCH_SIMULATION_ONLY",
+  "claim_boundary": "This is an incomplete preparation bundle. It proves no external submission, DOI, peer review, independent replication, funded performance, or future return.",
+  "date": "2026-08-23",
+  "external_identifiers": [],
+  "language": "en",
+  "peer_reviewed": false,
+  "registry_key": "crypto_reversal",
+  "result_release_complete": true,
+  "schema": "canli.alphac-sleeve-paper.v1",
+  "title": "Crypto Short-Horizon Reversal: Two Decisive Negative Trials",
+  "type": "WORKING_PAPER_PREPRINT_NOT_PEER_REVIEWED",
+  "version": "0.1.0"
+}

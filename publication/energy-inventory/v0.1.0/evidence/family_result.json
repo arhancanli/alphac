@@ -1,0 +1,61 @@
+{
+  "author": "Arhan Canli",
+  "claim_boundary": "Immutable historical evidence only; no forward performance, admitted sleeve, live execution, or future-return claim.",
+  "evidence_date": "2026-08-22",
+  "family_key": "energy_inventory",
+  "identities": [
+    {
+      "config_hash": "ccde1e9dc1523998",
+      "configuration": {
+        "costs": {
+          "DBC": 0.0003,
+          "UGA": 0.001,
+          "USO": 0.0006
+        },
+        "entry": "next_session_open_after_release",
+        "hedge": "trailing_252_session_dbc_beta_clamped_-3_3",
+        "mechanism": "eia_first_release_petroleum_inventory_scarcity",
+        "oos_start": "2016-01-01",
+        "prereg": "docs/design/PREREG_EIA_PETROLEUM_INVENTORY.md",
+        "probe": "eia_petroleum_inventory",
+        "products": [
+          "USO",
+          "UGA"
+        ],
+        "scale_weeks": 52,
+        "score_clip": [
+          -3.0,
+          3.0
+        ],
+        "seasonal_years": 5
+      },
+      "evidence_grade": "immutable_ledger_summary_with_optional_family_artifact",
+      "hypothesis_key": "8446702cb8dd1768",
+      "ledger_source_path": "var/experiments.jsonl",
+      "ledger_source_sha256": "b5a318c0997d980575f758451f509e0154eecbbb50d734e49a587d473062bd08",
+      "result": {
+        "annualized_sharpe": -0.5893138450004753,
+        "artifact_era_dsr": null,
+        "kurtosis": 30.224506678313656,
+        "maximum_drawdown": null,
+        "observations": 2669,
+        "skew": -1.5156582682335131
+      }
+    }
+  ],
+  "related_family_artifact": {
+    "path": "artifacts/probe/eia_petroleum_inventory/result.json",
+    "sha256": "949f2b073b96fd8068519dca06ff9a54ed79778535b67ad66da4b23e06ae8694"
+  },
+  "schema": "canli.alphac-energy-inventory-family.v1",
+  "summary": {
+    "admission_status": "NOT_ESTABLISHED_RESEARCH_ONLY",
+    "broker_reconciled_forward_status": "NOT_ESTABLISHED",
+    "capacity_status": "UNMEASURED_OR_NOT_FAMILY_WIDE",
+    "distinct_hypothesis_identities": 1,
+    "finite_sharpe_identities": 1,
+    "maximum_annualized_sharpe": -0.5893138450004753,
+    "minimum_annualized_sharpe": -0.5893138450004753,
+    "positive_sharpe_identities": 0
+  }
+}

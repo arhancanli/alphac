@@ -47,6 +47,8 @@ PAIRS_RESULT: Final = Path("artifacts/ingest/earnings_narrative_change/pairs_res
 CORPUS_RESULT: Final = Path("artifacts/ingest/earnings_narrative_change/corpus_result.json")
 MANIFEST: Final = Path("artifacts/ingest/earnings_narrative_change/filings_manifest.parquet")
 ADMISSION_CONTRACT: Final = Path("config/sleeve_admission_contract.json")
+PYPROJECT: Final = Path("pyproject.toml")
+UV_LOCK: Final = Path("uv.lock")
 TICKER_HISTORY: Final = Path(
     "artifacts/ingest/earnings_narrative_change/issuer_ticker_history.parquet"
 )
@@ -103,16 +105,32 @@ def file_sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
+def reproduction_environment() -> dict[str, object]:
+    """Bind the executable environment used for an exact deterministic replay."""
+    return {
+        "command": "uv run python scripts/probe_earnings_narrative_change.py",
+        "python": sys.version,
+        "numpy": np.__version__,
+        "pandas": pd.__version__,
+        "pyproject_path": str(PYPROJECT),
+        "pyproject_sha256": file_sha256(PYPROJECT),
+        "uv_lock_path": str(UV_LOCK),
+        "uv_lock_sha256": file_sha256(UV_LOCK),
+        "runner_path": str(RUNNER.relative_to(ROOT)),
+        "runner_sha256": file_sha256(RUNNER),
+    }
+
+
 def admission_review(
     gates: dict[str, bool], diversification_report_sha256: str
 ) -> dict[str, object]:
     """Describe the research subset without implying full technical eligibility."""
     contract = json.loads(ADMISSION_CONTRACT.read_text())
-    if contract.get("schema") != "canli.alphac-sleeve-admission-contract.v4":
+    if contract.get("schema") != "canli.alphac-sleeve-admission-contract.v6":
         raise RuntimeError("unexpected sleeve admission contract schema")
     required = int(contract.get("evidence_checks_per_candidate", 0))
-    if required != 75:
-        raise RuntimeError("sleeve admission contract must retain exactly 75 checks")
+    if required != 85:
+        raise RuntimeError("v6 sleeve admission contract must retain exactly 85 checks")
     passed = sum(bool(value) for value in gates.values())
     research_pass = passed == len(gates)
     return {
@@ -124,7 +142,7 @@ def admission_review(
         "research_subset_passed": passed,
         "canonical_diversification_report_sha256": diversification_report_sha256,
         "status": (
-            "PENDING_FULL_75_CHECK_REVIEW"
+            f"PENDING_FULL_{required}_CHECK_REVIEW"
             if research_pass
             else "RESEARCH_SUBSET_FAILED"
         ),
@@ -935,7 +953,9 @@ def main() -> None:
         "content_hash": diversification_payload["content_hash"],
     }
     book = marginal_book_report(aligned_simple, diversification)
-    spy_frame = pd.concat({"candidate": net, "spy": simple_open[SPY]}, axis=1).dropna()
+    spy_frame = pd.concat(
+        {"candidate": net, "spy": simple_open[SPY]}, axis=1, sort=True
+    ).dropna()
     realized_beta = float(spy_frame["candidate"].cov(spy_frame["spy"]) / spy_frame["spy"].var())
     capacity = capacity_report(selected, weights)
     metrics = {
@@ -1004,6 +1024,7 @@ def main() -> None:
         "preregistration": str(PREREG),
         "hypotheses_spent": 1,
         "return_identity_reservation": reservation,
+        "reproduction": reproduction_environment(),
         "pbo": {
             "status": "NOT_DEFINED_SINGLE_IDENTITY",
             "value": None,

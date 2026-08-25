@@ -2,7 +2,7 @@
 
 WHY. The forward record is the only evidence that can defeat deflation — a pre-registered book
 run forward is N=1, so its hurdle is 0.877 at five years against 2.44 for a backtest selected from
-162 hypothesis identities. Its entire value is being ONE continuous test of ONE specification.
+228 hypothesis identities. Its entire value is being ONE continuous test of ONE specification.
 
 A configuration change is now guarded three ways. A GAP was guarded nowhere, and a gap breaks
 continuity just as surely: a sleeve that quietly stops marking produces a shorter record, which
@@ -14,13 +14,22 @@ Reads the artifact produced by scripts/audit_record_continuity.py.
 from __future__ import annotations
 
 import datetime as dt
+import hashlib
+import importlib.util
 import json
+import sys
 from pathlib import Path
 
 import pytest
 
 REPO = Path(__file__).parents[2]
 ARTIFACT = REPO / "artifacts" / "engineering" / "record_continuity.json"
+SCRIPT = REPO / "scripts" / "audit_record_continuity.py"
+SPEC = importlib.util.spec_from_file_location("audit_record_continuity", SCRIPT)
+assert SPEC and SPEC.loader
+MOD = importlib.util.module_from_spec(SPEC)
+sys.modules[SPEC.name] = MOD
+SPEC.loader.exec_module(MOD)
 
 
 def _audit() -> dict:
@@ -43,6 +52,14 @@ def test_no_sleeve_exceeds_the_declared_gap_rate() -> None:
         "record's value is its continuity — a sleeve that stops marking produces a record that "
         "looks younger rather than broken. Find out why the marks stopped before extending it."
     )
+
+
+def test_continuity_artifact_is_authored_and_hash_bound() -> None:
+    audit = _audit()
+    content_hash = audit.pop("content_hash")
+    canonical = json.dumps(audit, sort_keys=True, separators=(",", ":")).encode()
+    assert content_hash == "sha256:" + hashlib.sha256(canonical).hexdigest()
+    assert audit["author"] == "Arhan Canli"
 
 
 def test_the_audit_covers_every_sleeve_in_the_published_book() -> None:
@@ -117,3 +134,30 @@ def test_the_threshold_is_declared_not_fitted() -> None:
             "the threshold equals the worst observed rate to floating precision, which is what a "
             "fitted bar looks like"
         )
+
+
+def test_alpaca_midnight_rows_map_to_the_preceding_xnys_session() -> None:
+    monday_close_stamp = int(
+        dt.datetime(2026, 8, 11, tzinfo=dt.UTC).timestamp() * 1000
+    )
+    friday_close_stamp = int(
+        dt.datetime(2026, 8, 8, tzinfo=dt.UTC).timestamp() * 1000
+    )
+
+    assert MOD.mark_session_date(monday_close_stamp, trades_24_7=False) == "2026-08-10"
+    assert MOD.mark_session_date(friday_close_stamp, trades_24_7=False) == "2026-08-07"
+    assert MOD.mark_session_date(monday_close_stamp, trades_24_7=True) == "2026-08-11"
+
+
+def test_weekend_current_snapshot_does_not_manufacture_an_equity_mark() -> None:
+    saturday_snapshot = int(
+        dt.datetime(2026, 8, 22, 22, 17, tzinfo=dt.UTC).timestamp() * 1000
+    )
+    assert MOD.mark_session_date(saturday_snapshot, trades_24_7=False) is None
+
+
+def test_equity_expectations_use_xnys_sessions_not_weekdays() -> None:
+    days = MOD.expected_days(
+        dt.date(2021, 1, 1), dt.date(2021, 1, 5), trades_24_7=False
+    )
+    assert days == ["2021-01-04", "2021-01-05"]  # New Year's Day is not a session.

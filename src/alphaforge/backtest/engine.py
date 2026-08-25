@@ -82,6 +82,8 @@ report rendering); all timestamps are epoch-ms UTC (:data:`Ms`).
 
 from __future__ import annotations
 
+import hashlib
+import json
 import logging
 import math
 from collections.abc import Mapping, Sequence
@@ -149,9 +151,17 @@ _DAY_MS: Final[int] = 86_400_000
 # (post-split price ≈ pre-split price / ratio, so the product is ≈ 1 for a genuine
 # record). 0.30 tolerates a ±~35% genuine same-day move stacked on the split while
 # still rejecting a bogus 2:1 / 1:2 record whose price did not move (|log 2| ≈ 0.69 —
-# the HON ratio-0.5 ghost row). A record that fails is LOGGED + SKIPPED, never applied
-# and never edited in the lake.
+# the HON ratio-0.5 ghost row). An exposed record that fails aborts the run. Continuing
+# with an unconverted position would treat the mechanical price discontinuity as return.
 _SPLIT_SANITY_MAX_ABS_LOG: Final[float] = 0.30
+
+# A plain cash dividend cannot economically exceed the security's observable pre-ex value per
+# share. Rows above that boundary require a different lifecycle model (liquidation, redemption,
+# rights, mixed consideration, or a vendor-unit correction), none of which can be represented by
+# `cash_amount` alone. Fail closed instead of minting cash from a malformed vendor value. The
+# 1.0 ceiling intentionally permits a full-value liquidating distribution only when the source has
+# already classified it as a cash dividend; anything larger needs independently bound semantics.
+_DIVIDEND_SANITY_MAX_PRE_CLOSE_MULTIPLE: Final[float] = 1.0
 
 #: Engine bookkeeping counter names (all always present in the result, 0 if unused).
 COUNTER_NAMES: Final[tuple[str, ...]] = (
@@ -613,6 +623,10 @@ class EventDrivenBacktester:
             (callers pass cost parameters etc. for full reproducibility — the
             engine cannot introspect the cost model's internals and will not
             guess).
+        verified_split_events: Optional exact-event verification map keyed by
+            ``(instrument_id, ex_date_ms)`` with the issuer-confirmed ratio. A
+            matching tuple may bypass only the price-gap heuristic; every other
+            split retains the fail-closed sanity guard.
     """
 
     __slots__ = (
@@ -631,6 +645,7 @@ class EventDrivenBacktester:
         "_no_trade_band_frac",
         "_reader",
         "_tf",
+        "_verified_split_events",
     )
 
     def __init__(
@@ -651,6 +666,7 @@ class EventDrivenBacktester:
         max_order_adv_frac: float = 0.01,
         clamp_reduce_only_adv: bool = False,
         config_echo: Mapping[str, object] | None = None,
+        verified_split_events: Mapping[tuple[str, Ms], float] | None = None,
     ) -> None:
         if not math.isfinite(no_trade_band_frac) or no_trade_band_frac < 0.0:
             raise ValueError(
@@ -689,6 +705,29 @@ class EventDrivenBacktester:
         # at the 5%-ADV validity edge and closes the remainder over the next bars.
         self._clamp_reduce_only_adv = clamp_reduce_only_adv
         self._config_echo: dict[str, object] = dict(config_echo or {})
+        self._verified_split_events: dict[tuple[str, Ms], float] = dict(
+            verified_split_events or {}
+        )
+        for (iid, ex_date), ratio in self._verified_split_events.items():
+            if not iid or not isinstance(ex_date, int) or not _finite_positive(float(ratio)):
+                raise ValueError(
+                    "verified_split_events requires non-empty instrument ids, integer ex-date "
+                    "milliseconds, and finite positive ratios"
+                )
+        if self._verified_split_events:
+            canonical = json.dumps(
+                sorted(
+                    (iid, ex_date, float(ratio))
+                    for (iid, ex_date), ratio in self._verified_split_events.items()
+                ),
+                separators=(",", ":"),
+            ).encode()
+            self._config_echo["verified_split_events_count"] = len(
+                self._verified_split_events
+            )
+            self._config_echo["verified_split_events_sha256"] = hashlib.sha256(
+                canonical
+            ).hexdigest()
 
     # ------------------------------------------------------------------- run
 
@@ -1698,33 +1737,58 @@ class EventDrivenBacktester:
                             f"split for {iid!r} at {ex_date} has no verifiable price boundary"
                         )
                     log_err = abs(math.log((bar.open / pre_close) * ratio))
+                    verified_ratio = self._verified_split_events.get((iid, ex_date))
+                    exact_event_verified = verified_ratio is not None and math.isclose(
+                        ratio,
+                        verified_ratio,
+                        rel_tol=0.0,
+                        abs_tol=1e-12,
+                    )
+                    if log_err > _SPLIT_SANITY_MAX_ABS_LOG and not exact_event_verified:
+                        raise ValueError(
+                            f"split record(s) for {iid} at ex={ex_date} failed the sanity "
+                            f"guard: stored ratio {ratio:.6g} disagrees with the actual price "
+                            f"move {pre_close:.6g} -> {bar.open:.6g} (|log err| {log_err:.3f} "
+                            f"> {_SPLIT_SANITY_MAX_ABS_LOG:.2f}); refusing to continue with "
+                            "an unconverted exposed position or order"
+                        )
                     if log_err > _SPLIT_SANITY_MAX_ABS_LOG:
-                        _LOG.warning(
-                            "split record(s) for %s at ex=%d SKIPPED by sanity guard: stored "
-                            "ratio %.6g disagrees with the actual price move %.6g -> %.6g "
-                            "(|log err| %.3f > %.2f); position and orders remain unconverted",
+                        _LOG.info(
+                            "issuer-verified split bypassed price-gap heuristic: "
+                            "instrument=%s ex_date=%s ratio=%.12g log_error=%.6f",
                             iid,
                             ex_date,
                             ratio,
-                            pre_close,
-                            bar.open,
                             log_err,
-                            _SPLIT_SANITY_MAX_ABS_LOG,
                         )
-                    else:
-                        if pos is not None:
-                            ledger.apply_split(iid, t, ratio)
-                        last_close[iid] = pre_close / ratio
-                        converted: list[OrderRequest] = []
-                        for order in pending:
-                            if order.instrument_id == iid:
-                                order = replace(order, qty=order.qty * ratio)
-                                record = record_by_order.get(order.client_order_id)
-                                if record is not None:
-                                    record["qty"] = order.qty
-                            converted.append(order)
-                        pending = converted
-                        counters["corporate_actions_applied"] += len(split_events)
+                    if pos is not None:
+                        ledger.apply_split(iid, t, ratio)
+                    last_close[iid] = pre_close / ratio
+                    converted: list[OrderRequest] = []
+                    for order in pending:
+                        if order.instrument_id == iid:
+                            order = replace(order, qty=order.qty * ratio)
+                            record = record_by_order.get(order.client_order_id)
+                            if record is not None:
+                                record["qty"] = order.qty
+                        converted.append(order)
+                    pending = converted
+                    counters["corporate_actions_applied"] += len(split_events)
+                if dividends and pos is not None:
+                    pre_close = last_close.get(iid)
+                    if pre_close is None or not _finite_positive(pre_close):
+                        raise ValueError(
+                            f"cash dividend for {iid!r} at {ex_date} has no verifiable "
+                            "pre-ex close"
+                        )
+                    total_cash = sum(event.cash_amount or 0.0 for event in dividends)
+                    multiple = total_cash / pre_close
+                    if multiple > _DIVIDEND_SANITY_MAX_PRE_CLOSE_MULTIPLE:
+                        raise ValueError(
+                            f"cash dividend for {iid!r} at {ex_date} is {total_cash:.12g} "
+                            f"per share, {multiple:.6g}x the pre-ex close {pre_close:.12g}; "
+                            "refusing unverified dividend units/lifecycle semantics"
+                        )
                 for dividend in dividends:
                     if ledger.apply_cash_dividend(iid, t, dividend.cash_amount or 0.0) != 0.0:
                         counters["corporate_actions_applied"] += 1

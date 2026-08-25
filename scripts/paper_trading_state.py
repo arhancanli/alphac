@@ -22,6 +22,7 @@ C+, deflated forward Sharpe 0.3 to 0.9), never an in-sample headline (currently 
 back-compat top-level block (= ALPHAC) keeps the current dashboard rendering until it migrates
 to the algorithms[] array.
 """
+
 # ruff: noqa: E501  (this file is intentionally full of long, exact honest-disclosure prose strings)
 from __future__ import annotations
 
@@ -45,7 +46,8 @@ _TOP_N = 15  # holdings shown per side (the book is ~100/side; show the largest 
 # On 2026-06-29 the flagship gained a DISCLOSED +20% strategic net-long overlay (STRATEGIC_TILT_PCT)
 # and all four tracks were restarted clean. v1 (2026-06-21..06-29) ran market-neutral and FLAT
 # ($100k -> $100k, $0 realized) and is SUPERSEDED, NOT deleted: it stays in the signed transparency
-# chain (seq 0..4, Bitcoin-anchored). We re-baseline in the open; we never silently rewrite "live since".
+# chain (seq 0..4) as opaque historical commitments; later heads have Bitcoin-confirmed
+# OpenTimestamps checkpoints. We re-baseline in the open; we never silently rewrite "live since".
 V1_GO_LIVE = "2026-06-21"
 V1_ENDED = "2026-06-29"
 V2_GO_LIVE = "2026-06-29"
@@ -142,23 +144,25 @@ def clamp_live(curve: list[dict] | None) -> list[dict]:
     """Drop any mark dated after today (UTC) from a REALIZED live curve — no future returns."""
     return [p for p in (curve or []) if p["date"] <= TODAY]
 
+
 # The two validated, walk-forward, net-of-cost sleeves (the artifact dirs under
 # artifacts/walkforward/) + their per-sleeve LIVE trading DB (None = derived, not a loop).
 EQUITY_WF = "k30_dn_63"
 CRYPTO_WF = "crypto_carry_wk"
 CRYPTO_LIVE_DB = Path("var/trading_crypto_perp.sqlite")
-EQUITY_LIVE_DB = Path("var/trading_equity.sqlite")  # AlphaMax REALIZED broker equity (live_cycle.py --profile equity)
+EQUITY_LIVE_DB = Path(
+    "var/trading_equity.sqlite"
+)  # AlphaMax REALIZED broker equity (live_cycle.py --profile equity)
 # AlphaMax went GENUINELY broker-executed on its own Alpaca paper account (2026-06-27). Its record
 # is RE-BASELINED to the v2 restart date (2026-06-29) — the pre-restart days were flat at baseline.
 EQ_GO_LIVE = V3_GO_LIVE  # v3: fresh $1M account PA3ECIF9O942 (was PA397834GG9R)
 # AlphaMax forward curve (realized, post-go-live) if the daily forward engine has written one.
 EQUITY_FWD_CURVE = Path("artifacts/walkforward/equity_live_fwd/equity.parquet")
 
-# Managed-futures trend (built 2026-06-27). As of the v2 restart (2026-06-29) it is FOLDED INTO the
-# flagship ALPHAC book at a deliberate modest 20% sleeve weight (see BOOK_WEIGHTS): it is the ONLY
-# sleeve to clear deflation (DSR 0.83) and is ~0-correlated to the other two, so a small allocation
-# keeps the book Sharpe flat AND lowers drawdown (crisis-robust trend). Equal-risk would over-weight
-# it (low vol -> 60% of the book, which tanks the Sharpe), so the book uses FIXED weights.
+# Managed-futures trend (built 2026-06-27). It entered at 20% in v2 and moved to an equal quarter
+# in v3. It did not clear deflation: the later full-union re-derivation records DSR 0.000. The
+# current allocation is justified only by measured drawdown reduction under the frozen equal-weight
+# rule. Equal-risk was measured and rejected because it over-weights AlphaTrend's low volatility.
 MF_WF = "managed_futures"
 MF_GO_LIVE = V3_GO_LIVE  # v3: fresh $1M account PA31FJRJQK69 (was PA3IQC5B7BC2)
 MF_FWD_CURVE = Path("artifacts/walkforward/mf_live_fwd/equity.parquet")
@@ -191,13 +195,39 @@ MF_LIVE_DB = Path("var/trading_managed_futures.sqlite")
 VINTAGE_WF = "alphavintage_live"
 VINTAGE_GO_LIVE = "2026-08-10"
 VINTAGE_LIVE_DB = Path("var/trading_alphavintage.sqlite")
+ALPACA_RECONCILIATION = Path("artifacts/engineering/alpaca_broker_reconciliation.json")
 
-# The flagship ALPHAC is now a THREE-sleeve book at deliberate FIXED weights: the two proven sleeves
-# keep ~equal weight, the new deflation-cleared trend sleeve enters as a modest 20% satellite. Fixed
-# (not equal-risk) because equal-risk over-weights AlphaTrend's low vol and dilutes the book.
-# v3 (2026-08-07): equal thirds, matching WEIGHT_SCHEDULE and the equal $1M accounts. See the note
-# on WEIGHT_SCHEDULE for why equal beats both the old 40/40/20 and a measured equal-RISK scheme.
+# The flagship ALPHAC is now a FOUR-sleeve book at deliberate fixed equal weights. No constituent
+# has selection-adjusted evidence that justifies a larger allocation. v3 began at equal thirds on
+# 2026-08-07; AlphaVintage joined on 2026-08-10 and the schedule then moved to equal quarters.
+# See WEIGHT_SCHEDULE for the dated transition and the rejection of measured equal-risk weights.
 BOOK_WEIGHTS = {EQUITY_WF: 1 / 4, CRYPTO_WF: 1 / 4, MF_WF: 1 / 4, VINTAGE_WF: 1 / 4}
+
+# ALPHAC aggregation is a separate layer from each constituent strategy's own risk sizing.
+# The constituents that use BlendStrategy target 15% internally; the flagship does NOT apply a
+# second book-level volatility target or a book-level drawdown ladder. Keeping these as explicit
+# constants prevents a constituent setting from being misreported as a composite setting.
+BOOK_AGGREGATION_SCHEME = "fixed"
+BOOK_LEVEL_VOL_TARGET_ANN = None
+BOOK_LEVEL_DRAWDOWN_LADDER = None
+BOOK_MISSING_MARK_POLICY = "ZERO_CONTRIBUTION_ON_MISSING_DAILY_SLEEVE_MARK"
+
+
+def book_aggregation_metadata() -> dict:
+    """One object used by the live-config stamp and the published book."""
+    return {
+        "scheme": BOOK_AGGREGATION_SCHEME,
+        "book_level_vol_target_ann": BOOK_LEVEL_VOL_TARGET_ANN,
+        "book_level_drawdown_ladder": BOOK_LEVEL_DRAWDOWN_LADDER,
+        "missing_mark_policy": BOOK_MISSING_MARK_POLICY,
+        "strategic_overlay_is_book_vol_scaled": False,
+        "claim_boundary": (
+            "Constituent strategies own their internal sizing. ALPHAC combines their realized "
+            "returns at the committed fixed-weight schedule and adds the separately disclosed "
+            "strategic overlay. It does not apply a second book-level volatility target or "
+            "drawdown ladder."
+        ),
+    }
 
 
 def _weights_prose() -> str:
@@ -223,7 +253,9 @@ WEIGHTS_PROSE = _weights_prose()
 #: listed four. Hand-typed prose about a constant is a second source of truth, and a second source
 #: of truth is a defect waiting for someone to change the first one.
 N_SLEEVES = len(BOOK_WEIGHTS)
-N_SLEEVES_WORD = {2: "two", 3: "three", 4: "four", 5: "five", 6: "six"}.get(N_SLEEVES, str(N_SLEEVES))
+N_SLEEVES_WORD = {2: "two", 3: "three", 4: "four", 5: "five", 6: "six"}.get(
+    N_SLEEVES, str(N_SLEEVES)
+)
 
 #: Average pairwise correlation of the LIVE sleeves, re-measured 2026-08-11 on the 693-day window
 #: where all four overlap (2023-07-07..2026-06-01), each sleeve annualised on its own calendar.
@@ -425,8 +457,11 @@ def read_equity_holdings(fwd_dir: str = EQUITY_FWD_DIR) -> dict | None:
         past = [r for r in rows if r[0] <= now_ms]
         rows = past if past else rows
         last_ts = max(r[0] for r in rows)
-        hold = [(_ticker(iid), float(q), float(w)) for ts, iid, q, w in rows
-                if ts == last_ts and abs(float(q)) > 1e-9]
+        hold = [
+            (_ticker(iid), float(q), float(w))
+            for ts, iid, q, w in rows
+            if ts == last_ts and abs(float(q)) > 1e-9
+        ]
         longs = sorted([h for h in hold if h[1] > 0], key=lambda x: -abs(x[2]))
         shorts = sorted([h for h in hold if h[1] < 0], key=lambda x: -abs(x[2]))
         gross = sum(abs(w) for _, _, w in hold)
@@ -437,10 +472,12 @@ def read_equity_holdings(fwd_dir: str = EQUITY_FWD_DIR) -> dict | None:
             "short_count": len(shorts),
             "gross_pct": round(gross * 100, 1),
             "net_pct": round(net * 100, 2),
-            "long": [{"ticker": tk, "weight_pct": round(abs(w) * 100, 2)}
-                     for tk, _, w in longs[:_TOP_N]],
-            "short": [{"ticker": tk, "weight_pct": round(abs(w) * 100, 2)}
-                      for tk, _, w in shorts[:_TOP_N]],
+            "long": [
+                {"ticker": tk, "weight_pct": round(abs(w) * 100, 2)} for tk, _, w in longs[:_TOP_N]
+            ],
+            "short": [
+                {"ticker": tk, "weight_pct": round(abs(w) * 100, 2)} for tk, _, w in shorts[:_TOP_N]
+            ],
         }
     except Exception:
         return None
@@ -450,14 +487,25 @@ def read_crypto_holdings() -> dict | None:
     """AlphaForge's current crypto perp positions from the live trading DB, or flat (it has
     been deciding HOLD; an honest empty book, never invented)."""
     if not CRYPTO_LIVE_DB.exists():
-        return {"as_of": None, "long_count": 0, "short_count": 0,
-                "long": [], "short": [], "flat": True}
+        return {
+            "as_of": None,
+            "long_count": 0,
+            "short_count": 0,
+            "long": [],
+            "short": [],
+            "flat": True,
+        }
     try:
         con = sqlite3.connect(f"file:{CRYPTO_LIVE_DB}?mode=ro", uri=True)
         last = con.execute("SELECT max(cycle_ts) FROM positions_snapshots").fetchone()[0]
-        rows = (con.execute(
-            "SELECT instrument_id, qty FROM positions_snapshots WHERE cycle_ts=? AND qty != 0",
-            (last,)).fetchall() if last is not None else [])
+        rows = (
+            con.execute(
+                "SELECT instrument_id, qty FROM positions_snapshots WHERE cycle_ts=? AND qty != 0",
+                (last,),
+            ).fetchall()
+            if last is not None
+            else []
+        )
         con.close()
     except sqlite3.Error:
         return None
@@ -465,11 +513,33 @@ def read_crypto_holdings() -> dict | None:
     shorts = sorted([(_ticker(i), q) for i, q in rows if q < 0])
     return {
         "as_of": _epoch_to_date(last) if last else None,
-        "long_count": len(longs), "short_count": len(shorts),
+        "long_count": len(longs),
+        "short_count": len(shorts),
         "long": [{"ticker": tk} for tk, _ in longs[:_TOP_N]],
         "short": [{"ticker": tk} for tk, _ in shorts[:_TOP_N]],
         "flat": not rows,
     }
+
+
+def read_alpaca_reconciled_holdings() -> dict[str, dict]:
+    """Current holdings fetched from the three dedicated Alpaca paper accounts.
+
+    Falls back to an empty mapping when the GET-only ceremony is absent or failed; callers then
+    use the strategy target snapshots but must not mistake that fallback for broker truth.
+    """
+    if not ALPACA_RECONCILIATION.exists():
+        return {}
+    try:
+        payload = json.loads(ALPACA_RECONCILIATION.read_text())
+        if payload.get("summary", {}).get("status") != "PASS":
+            return {}
+        return {
+            key: row["holdings"]
+            for key, row in payload.get("sleeves", {}).items()
+            if row.get("passes") is True and isinstance(row.get("holdings"), dict)
+        }
+    except (json.JSONDecodeError, OSError, TypeError, KeyError):
+        return {}
 
 
 def _daily_returns(curve: list[dict]) -> dict[str, float]:
@@ -545,7 +615,8 @@ def _weights_on(date: str, schedule: list[tuple[str, dict[str, float]]]) -> dict
 
 def combined_live(
     sleeves: dict[str, list[dict]],
-    market: dict[str, float] | None = None, tilt: float = 0.0,
+    market: dict[str, float] | None = None,
+    tilt: float = 0.0,
     schedule: list[tuple[str, dict[str, float]]] | None = None,
 ) -> list[dict]:
     """ALPHAC live = the REALIZED live sleeve curves combined at the weights COMMITTED ON EACH DAY,
@@ -572,7 +643,9 @@ def combined_live(
     for i, d in enumerate(dates):
         if i:
             w = _weights_on(d, sched)
-            step = sum(w.get(k, 0.0) * r.get(d, 0.0) for k, r in rets.items()) + tilt * mkt.get(d, 0.0)
+            step = sum(w.get(k, 0.0) * r.get(d, 0.0) for k, r in rets.items()) + tilt * mkt.get(
+                d, 0.0
+            )
             val *= 1.0 + step
         out.append({"date": d, "equity": round(val, 2)})
     return out
@@ -592,88 +665,131 @@ def combined_live(
 # to match so anything that sorts by rank and anything that renders the array agree.
 ALGOS = [
     {
-        "key": "alphac", "name": "ALPHAC", "rank": 1, "flagship": True,
+        "key": "alphac",
+        "name": "ALPHAC",
+        "rank": 1,
+        "flagship": True,
         # "decorrelated" -> "near-uncorrelated" 2026-08-07: the measured average pairwise
         # correlation is +0.072, POSITIVE. Near-uncorrelated is a real and useful property and it
         # is what we have; decorrelated is what we claimed, and the site had built its headline on
         # the stronger word.
         "asset": f"Cross-asset book ({N_SLEEVES} near-uncorrelated sleeves, measured pairwise "
-                 f"{RHO_BAR:+.4f}, + disclosed strategic long)",
+        f"{RHO_BAR:+.4f}, + disclosed strategic long)",
         "desc": f"AlphaForge + AlphaMax + AlphaTrend + AlphaVintage combined at {WEIGHTS_PROSE} — "
-                "carry / equity momentum / managed-futures trend / PIT macro surprise. We used to "
-                "call these 'near-uncorrelated' and call that decorrelation 'the edge'. Their "
-                f"average pairwise correlation is {RHO_BAR:+.4f} — POSITIVE. The diversification is "
-                "real but smaller than we said. AlphaVintage joined 2026-08-10 and is the reason "
-                f"that number improved from {RHO_BAR_PRIOR_3_SLEEVE:+.4f}: it is the only sleeve "
-                "reading a revision-aware macro release rather than price, funding or a balance "
-                "sheet, and it earns its share by being uncorrelated, NOT by being better — its own "
-                "net Sharpe is 0.2298 (Newey-West t 1.267) and does not clear our 0.95 deflation gate "
-                "either. CORRECTION 2026-08-19: we published 0.34 / t 1.82 here; a calendar-"
-                "corrected re-run on 2026-08-16 withdrew both and its own artifact records "
-                "verdict KILLED on a FAILED pre-registered t>=1.5 gate. "
-                "AlphaTrend's re-derived DSR is 0.000, not the 0.83 we published: it is "
-                "the WORST of them on the deflation measure, not the best. We keep it for "
-                "measured drawdown reduction (removing it makes the book's max DD 22.7% worse: "
-                "-3.68% -> -4.51% on the current four-sleeve book; we previously published 69% "
-                "and that figure does not reproduce under any configuration we can find), not "
-                "for a demonstrated edge. PLUS a "
-                f"DISCLOSED {TILT_PROSE} strategic net-long overlay (0.5 BTC + 0.5 SPY) held as a SEPARATE "
-                "labelled line — commoditized beta that adds bull-market participation but DILUTES "
-                "risk-adjusted return and adds crash tail-risk; never blended into the neutral sleeves.",
+        "carry / equity momentum / managed-futures trend / PIT macro surprise. We used to "
+        "call these 'near-uncorrelated' and call that decorrelation 'the edge'. Their "
+        f"average pairwise correlation is {RHO_BAR:+.4f} — POSITIVE. The diversification is "
+        "real but smaller than we said. AlphaVintage joined 2026-08-10 and is the reason "
+        f"that number improved from {RHO_BAR_PRIOR_3_SLEEVE:+.4f}: it is the only sleeve "
+        "reading a revision-aware macro release rather than price, funding or a balance "
+        "sheet, and it earns its share by being uncorrelated, NOT by being better — its own "
+        "net Sharpe is 0.2298 (Newey-West t 1.267) and does not clear our 0.95 deflation gate "
+        "either. CORRECTION 2026-08-19: we published 0.34 / t 1.82 here; a calendar-"
+        "corrected re-run on 2026-08-16 withdrew both and its own artifact records "
+        "verdict KILLED on a FAILED pre-registered t>=1.5 gate. "
+        "AlphaTrend's re-derived DSR is 0.000, not the 0.83 we published: it is "
+        "the WORST of them on the deflation measure, not the best. We keep it for "
+        "measured drawdown reduction (removing it makes the book's max DD 22.7% worse: "
+        "-3.68% -> -4.51% on the current four-sleeve book; we previously published 69% "
+        "and that figure does not reproduce under any configuration we can find), not "
+        "for a demonstrated edge. PLUS a "
+        f"DISCLOSED {TILT_PROSE} strategic net-long overlay (0.5 BTC + 0.5 SPY) held as a SEPARATE "
+        "labelled line — commoditized beta that adds bull-market participation but DILUTES "
+        "risk-adjusted return and adds crash tail-risk; never blended into the neutral sleeves.",
         "standalone_sharpe": None,
         "live_kind": f"Derived: {WEIGHTS_PROSE} combination of the {N_SLEEVES} live sleeves + the disclosed {TILT_PROSE} beta overlay.",
-        "wf": None, "live_db": None,
+        "execution": {
+            "record_kind": "DERIVED_PAPER_BOOK",
+            "capital_kind": "PAPER_ONLY",
+            "broker": "MULTI_SOURCE",
+            "account_scope": "NO_DIRECT_BROKER_ACCOUNT",
+            "mark_source": "COMBINED_FROM_CONSTITUENT_PAPER_CURVES_AND_DISCLOSED_OVERLAY",
+            "external_attestation": False,
+        },
+        "wf": None,
+        "live_db": None,
     },
     {
-        "key": "alphamax", "name": "AlphaMax", "rank": 2,
+        "key": "alphamax",
+        "name": "AlphaMax",
+        "rank": 2,
         "asset": "US-equity 12-1 momentum",
         "desc": "12-1 cross-sectional momentum, dollar-neutral long/short, "
-                "split-adjusted, survivorship-free.",
+        "split-adjusted, survivorship-free.",
         "standalone_sharpe": 0.91,
         "live_kind": "LIVE broker-executed — its long/short book (the ~170 of 176 Alpaca-tradable "
-                     "names) is submitted to a dedicated Alpaca paper account daily, fills at the US open.",
-        "caveat": "Genuinely broker-executed as of " + EQ_GO_LIVE + " on its own Alpaca account, but the "
-                  "live record is only days old. 0.91 is the TOP of a 0.07-1.17 construction band; the "
-                  "deep-history forward is ~0.08 with DSR 0.34 (does NOT clear the deflation gate). The "
-                  "honest central estimate is ~0.5-0.6, not 0.91 — the live book will settle it. A few "
-                  "unshortable / non-fractionable small-caps are skipped, so the live book is a close "
-                  "tradable proxy of the research strategy, not an exact replica.",
-        "wf": EQUITY_WF, "live_db": EQUITY_LIVE_DB,
+        "names) is submitted to a dedicated Alpaca paper account daily, fills at the US open.",
+        "execution": {
+            "record_kind": "BROKER_EXECUTED_PAPER",
+            "capital_kind": "PAPER_ONLY",
+            "broker": "ALPACA",
+            "account_scope": "DEDICATED_SLEEVE_ACCOUNT",
+            "mark_source": "ALPACA_PORTFOLIO_HISTORY_AND_LOCAL_EXECUTION_LEDGER",
+            "external_attestation": False,
+        },
+        "caveat": "Genuinely broker-executed as of "
+        + EQ_GO_LIVE
+        + " on its own Alpaca account, but the "
+        "live record is only days old. 0.91 is the TOP of a 0.07-1.17 construction band; the "
+        "deep-history forward is ~0.08 with DSR 0.34 (does NOT clear the deflation gate). The "
+        "honest central estimate is ~0.5-0.6, not 0.91 — the live book will settle it. A few "
+        "unshortable / non-fractionable small-caps are skipped, so the live book is a close "
+        "tradable proxy of the research strategy, not an exact replica.",
+        "wf": EQUITY_WF,
+        "live_db": EQUITY_LIVE_DB,
     },
     {
-        "key": "managed_futures", "name": "AlphaTrend", "rank": 3,
+        "key": "managed_futures",
+        "name": "AlphaTrend",
+        "rank": 3,
         "asset": "Managed-futures trend",
         "desc": "Time-series momentum across a 17-market basket (equity-index, rates, "
-                "commodities, FX via liquid ETFs), long/short on each market's own trend, "
-                "inverse-vol weighted. THE RE-DERIVATION IS DONE (2026-08-07) AND IT WENT AGAINST "
-                "US: at the honest trial count (N=133) and the pooled trial variance, its DSR is "
-                f"0.000 — not the 0.83 we published, and the WORST of the {N_SLEEVES} sleeves rather than "
-                "the best. The old 0.83 rested on a V[SR] input ~80x too small and n_trials=5 while "
-                "AlphaMax was graded at N=101; it was marked on an easier exam and then called the "
-                "soundest. Net Sharpe 0.25 over its full 5,179-day history. Positive skew, "
-                "two-decade stable, near-uncorrelated to equities. We keep it because removing it "
-                "measurably worsens book drawdown, not because its edge is established.",
+        "commodities, FX via liquid ETFs), long/short on each market's own trend, "
+        "inverse-vol weighted. THE RE-DERIVATION IS DONE (2026-08-07) AND IT WENT AGAINST "
+        "US: at the honest trial count (N=133) and the pooled trial variance, its DSR is "
+        f"0.000 — not the 0.83 we published, and the WORST of the {N_SLEEVES} sleeves rather than "
+        "the best. The old 0.83 rested on a V[SR] input ~80x too small and n_trials=5 while "
+        "AlphaMax was graded at N=101; it was marked on an easier exam and then called the "
+        "soundest. The selected 5,133-day walk-forward artifact used for this card has net "
+        "Sharpe 0.3307. A separate family-wide re-derivation has net Sharpe 0.25 over 5,179 "
+        "days. Both are historical simulations, and neither clears selection adjustment. "
+        "Positive skew, "
+        "two-decade stable, near-uncorrelated to equities. We keep it because removing it "
+        "measurably worsens book drawdown, not because its edge is established.",
         "standalone_sharpe": 0.33,
         "live_kind": "LIVE broker-executed — its 17-ETF book is submitted to Alpaca paper daily "
-                     "(fills at the US open). Genuine fills, not a simulation.",
+        "(fills at the US open). Genuine fills, not a simulation.",
+        "execution": {
+            "record_kind": "BROKER_EXECUTED_PAPER",
+            "capital_kind": "PAPER_ONLY",
+            "broker": "ALPACA",
+            "account_scope": "DEDICATED_SLEEVE_ACCOUNT",
+            "mark_source": "ALPACA_PORTFOLIO_HISTORY_AND_LOCAL_EXECUTION_LEDGER",
+            "external_attestation": False,
+        },
         "caveat": "We called this 'the soundest sleeve'. On the re-derived numbers that was wrong: "
-                  "its DSR is 0.000 at honest N=133, the lowest of the three. It IS genuinely "
-                  "broker-executed on Alpaca paper and it does survive 2008/2020/2022 with ~0 "
-                  "equity correlation. As of the v2 restart "
-                  "(" + MF_GO_LIVE + ") it is FOLDED INTO the flagship ALPHAC book at a 20% weight. "
-                  "The case for keeping it is measured drawdown reduction, plus the fact that its "
-                  "recent 3 years (-0.23) are a small and unrepresentative slice of a 20.6-year "
-                  "record (+0.25 full, +0.28 over 15y) — judging a trend sleeve on its worst window "
-                  "is the most documented allocator error there is. The case against it is that "
-                  "0.000 is 0.000. Both are stated because both are true.",
-        "wf": MF_WF, "live_db": str(MF_LIVE_DB),
+        f"its DSR is 0.000 at honest N=133, the lowest of the {N_SLEEVES}. It IS genuinely "
+        "broker-executed on Alpaca paper and it does survive 2008/2020/2022 with ~0 "
+        "equity correlation. As of the v2 restart "
+        "(" + MF_GO_LIVE + ") it is FOLDED INTO the flagship ALPHAC book at a 20% weight. "
+        "The 0.33 headline is the selected walk-forward artifact; the 0.25 figure below is the "
+        "separate full-history family re-derivation. The case for keeping it is measured "
+        "drawdown reduction, plus the fact that its "
+        "recent 3 years (-0.23) are a small and unrepresentative slice of a 20.6-year "
+        "record (+0.25 full, +0.28 over 15y) — judging a trend sleeve on its worst window "
+        "is the most documented allocator error there is. The case against it is that "
+        "0.000 is 0.000. Both are stated because both are true.",
+        "wf": MF_WF,
+        "live_db": str(MF_LIVE_DB),
     },
     {
-        "key": "alphavintage", "name": "AlphaVintage", "rank": 4,
+        "key": "alphavintage",
+        "name": "AlphaVintage",
+        "rank": 4,
         "asset": "PIT macro-surprise size spread (IWM/SPY)",
         "desc": "Point-in-time CPI surprise — the standardized AR(3) residual of headline (PCPI) "
-                "and core (PCPIX) inflation, differenced WITHIN a single ALFRED vintage — traded "
-                "as a dollar-neutral IWM-minus-SPY size spread, monthly.",
+        "and core (PCPIX) inflation, differenced WITHIN a single ALFRED vintage — traded "
+        "as a dollar-neutral IWM-minus-SPY size spread, monthly.",
         # CORRECTED 2026-08-19. This block published 0.3403 / NW t 1.82 / 5,996 days. Every one of
         # those figures is SUPERSEDED and the sleeve's own artifact
         # (artifacts/probe/cpi_surprise_size/result.json) records `verdict: KILLED`. The probe was
@@ -684,44 +800,64 @@ ALGOS = [
         # BEFORE that correction existed, and the published block was never updated.
         "standalone_sharpe": 0.23,
         "live_kind": "LIVE broker-executed — the two-leg spread is submitted to a dedicated Alpaca "
-                     "paper account (PA39G6N49JRY); first fills 2026-08-10 at the US open.",
+        "paper account; first fills 2026-08-10 at the US open.",
+        "execution": {
+            "record_kind": "BROKER_EXECUTED_PAPER",
+            "capital_kind": "PAPER_ONLY",
+            "broker": "ALPACA",
+            "account_scope": "DEDICATED_SLEEVE_ACCOUNT",
+            "mark_source": "ALPACA_PORTFOLIO_HISTORY_AND_LOCAL_EXECUTION_LEDGER",
+            "external_attestation": False,
+        },
         "caveat": "CORRECTION 2026-08-19 — we published this sleeve at net Sharpe 0.3403 with "
-                  "Newey-West t 1.82 over 5,996 days. Those numbers are WITHDRAWN. Re-run on "
-                  "2026-08-16 with a calendar correction that retains zero-exposure sessions, its "
-                  "net Sharpe is 0.2298 and its Newey-West t is 1.267 over 6,296 portfolio days "
-                  "(5,998 active). That t FAILS the 1.5 bar this candidate pre-registered, so its "
-                  "own result artifact records verdict KILLED — and we deployed it on 2026-08-10, "
-                  "six days before the corrected run existed, then left the old figures on this "
-                  "page. It is still carrying a quarter of the book while we decide whether to "
-                  "withdraw it; that decision is open and we are not going to describe a killed "
-                  "candidate as a validated one in the meantime. It never cleared the 0.95 "
-                  "deflation gate on any version of the numbers. Two further disclosures stand: it "
-                  "runs at HALF the researched notional (gross 1.0x not 2.0x) because 2.0x "
-                  "breaches our own runaway brake and this account's Reg T limit — Sharpe is "
-                  "unchanged by scaling, dollar return is halved; and the research modelled NO "
-                  "short-borrow cost while the live sleeve is short SPY ~95% of days, a drag we "
-                  "charge at 50bp/yr.",
-        "wf": VINTAGE_WF, "live_db": str(VINTAGE_LIVE_DB),
+        "Newey-West t 1.82 over 5,996 days. Those numbers are WITHDRAWN. Re-run on "
+        "2026-08-16 with a calendar correction that retains zero-exposure sessions, its "
+        "net Sharpe is 0.2298 and its Newey-West t is 1.267 over 6,296 portfolio days "
+        "(5,998 active). That t FAILS the 1.5 bar this candidate pre-registered, so its "
+        "own result artifact records verdict KILLED — and we deployed it on 2026-08-10, "
+        "six days before the corrected run existed, then left the old figures on this "
+        "page. It is still carrying a quarter of the book while we decide whether to "
+        "withdraw it; that decision is open and we are not going to describe a killed "
+        "candidate as a validated one in the meantime. It never cleared the 0.95 "
+        "deflation gate on any version of the numbers. Two further disclosures stand: it "
+        "runs at HALF the researched notional (gross 1.0x not 2.0x) because 2.0x "
+        "breaches our own runaway brake and this account's Reg T limit — Sharpe is "
+        "unchanged by scaling, dollar return is halved; and the research modelled NO "
+        "short-borrow cost while the live sleeve is short SPY ~95% of days, a drag we "
+        "charge at 50bp/yr.",
+        "wf": VINTAGE_WF,
+        "live_db": str(VINTAGE_LIVE_DB),
     },
     {
-        "key": "alphaforge", "name": "AlphaForge", "rank": 5,
+        "key": "alphaforge",
+        "name": "AlphaForge",
+        "rank": 5,
         "asset": "Crypto funding carry",
         "desc": "Funding-rate carry on Binance USDT-M perpetuals, market-neutral.",
         "standalone_sharpe": 0.68,
         "live_kind": "Live broker-loop (hourly, paper). Trading since 2026-07-05, when a "
-                     "signal-wiring bug was found and fixed (see the dated correction).",
+        "signal-wiring bug was found and fixed (see the dated correction).",
+        "execution": {
+            "record_kind": "LOCALLY_SIMULATED_PAPER_FILLS",
+            "capital_kind": "PAPER_ONLY",
+            "broker": "ALPHAFORGE_PAPERBROKER",
+            "account_scope": "LOCAL_DEDICATED_SLEEVE_STATE",
+            "mark_source": "LIVE_EXCHANGE_ORDER_BOOKS_AND_LOCAL_EXECUTION_LEDGER",
+            "external_attestation": False,
+        },
         "caveat": "0.68 is the FULL-HISTORY figure and hides the tail: -1.63 Sharpe / -19.6% "
-                  "drawdown in 2022 (FTX). Carry compresses with size/crowding. CORRECTION "
-                  "(2026-07-05): from go-live to 07-05 this sleeve was flat and we published "
-                  "'funding carry compressed, holding cash' — that explanation was WRONG. The "
-                  "real cause was a signal-wiring bug: the live blend included equity-fundamental "
-                  "alphas that are undefined on crypto, which invalidated every signal; the "
-                  "validated carry-only configuration was not what was deployed. Found in an "
-                  "internal audit and fixed the same day — the loop now runs the exact blessed "
-                  "walk-forward configuration (carry_fund_21, weekly rebalance). No money was "
-                  "misreported (the sleeve genuinely held cash at $100k); the published "
-                  "explanation was wrong, and we correct it here rather than rewrite it.",
-        "wf": CRYPTO_WF, "live_db": CRYPTO_LIVE_DB,
+        "drawdown in 2022 (FTX). Carry compresses with size/crowding. CORRECTION "
+        "(2026-07-05): from go-live to 07-05 this sleeve was flat and we published "
+        "'funding carry compressed, holding cash' — that explanation was WRONG. The "
+        "real cause was a signal-wiring bug: the live blend included equity-fundamental "
+        "alphas that are undefined on crypto, which invalidated every signal; the "
+        "validated carry-only configuration was not what was deployed. Found in an "
+        "internal audit and fixed the same day — the loop now runs the exact blessed "
+        "walk-forward configuration (carry_fund_21, weekly rebalance). No money was "
+        "misreported (the sleeve genuinely held cash at $100k); the published "
+        "explanation was wrong, and we correct it here rather than rewrite it.",
+        "wf": CRYPTO_WF,
+        "live_db": CRYPTO_LIVE_DB,
     },
 ]
 
@@ -745,8 +881,9 @@ def crypto_uptime() -> dict:
     try:
         con = sqlite3.connect(f"file:{CRYPTO_LIVE_DB}?mode=ro", uri=True)
         try:
-            ts = [r[0] / 1000.0 for r in con.execute(
-                "SELECT cycle_ts FROM cycles ORDER BY cycle_ts")]
+            ts = [
+                r[0] / 1000.0 for r in con.execute("SELECT cycle_ts FROM cycles ORDER BY cycle_ts")
+            ]
         finally:
             con.close()
     except sqlite3.Error:
@@ -754,7 +891,7 @@ def crypto_uptime() -> dict:
     if len(ts) < 2:
         return {}
     now = dt.datetime.now(dt.UTC).timestamp()
-    expected = max((now - ts[0]) / 3600.0, 1.0)          # the loop is hourly by design
+    expected = max((now - ts[0]) / 3600.0, 1.0)  # the loop is hourly by design
     gaps = [(ts[i + 1] - ts[i]) / 3600.0 for i in range(len(ts) - 1)]
     dark = sum(g - 1 for g in gaps if g > 1.5) + (now - ts[-1]) / 3600.0
     return {
@@ -785,7 +922,8 @@ def transparency_entries() -> list[str]:
         "SPY); all four tracks were restarted clean. v1 (2026-06-21..06-29) ran market-neutral and "
         "FLAT ($100k -> $100k, $0 realized — "
         "crypto held cash, equity/MF were days-old at baseline) and is SUPERSEDED, not deleted: it "
-        "stays in the signed transparency chain (seq 0..4, Bitcoin-anchored). We re-baseline in the "
+        "stays in the signed transparency chain (seq 0..4) as opaque historical commitments; "
+        "later heads have Bitcoin-confirmed OpenTimestamps checkpoints. We re-baseline in the "
         "open and never silently rewrite 'live since'. The change is sealed into the chain itself.",
         "About the +20% tilt — said plainly: it is COMMODITIZED BETA (you could buy 0.5 BTC + 0.5 "
         "SPY yourself for ~free), so it DILUTES risk-adjusted return (~-0.2 Sharpe vs the neutral "
@@ -921,8 +1059,9 @@ def transparency_entries() -> list[str]:
         "We red-team our own record. On 2026-06-27 our publishing pipeline emitted a future-dated "
         "(2026-06-29) paper mark that briefly reached the public sites and was anchored into seq 0 "
         "of the signed transparency chain. We caught it the same day, added a fail-closed guard, "
-        "and appended the corrected seq 1 — the append-only chain shows BOTH, because we don't get "
-        "to delete our mistakes. That is the trust system working, not failing.",
+        "and appended the corrected seq 1. The signed chain retains BOTH opaque commitments; their "
+        "underlying historical payloads were not published and cannot now be reconstructed from "
+        "the chain. We preserve that limitation instead of deleting or fabricating a backfill.",
         "AlphaTrend (managed-futures trend) was the FIRST sleeve we took genuinely live: its 17-ETF "
         "book transacts on Alpaca paper, not in a simulator. We published DSR 0.83 for it and called "
         "it the first sleeve to CLEAR multiple-testing deflation, statistically real rather than a "
@@ -1271,6 +1410,14 @@ def transparency_entries() -> list[str]:
         "in-sample argmax is the selection trap our deflation discipline exists to prevent. Equal "
         "weights remain what the evidence supports: no sleeve's deflated Sharpe justifies more "
         "capital than any other's, which is exactly why they are equal.",
+        "CURRENT EXECUTION PROVENANCE 2026-08-22 — the earlier entry saying TWO dedicated "
+        "Alpaca paper sleeves is historical and is superseded on count, not deleted. There are "
+        "now THREE: AlphaMax, AlphaTrend and AlphaVintage, each on a distinct dedicated paper "
+        "account. A GET-only ceremony now refreshes each local public curve from Alpaca's complete "
+        "portfolio history even when the US market is closed, verifies every common broker/local "
+        "mark to the cent, checks fill-reconciliation health and publishes hashed account identity "
+        "at /glassbox/alpaca_broker_reconciliation.json. This is self-published broker-derived "
+        "evidence, not independent third-party attestation and not real capital.",
     ]
 
 
@@ -1285,10 +1432,12 @@ def _crypto_uptime_verdict() -> str:
     """
     u = crypto_uptime()
     if not u:
-        return ("STRUCTURAL VERDICT 2026-08-05 — the crypto sleeve's venue access is a standing "
-                "structural problem, not a run of bad luck. Uptime could not be measured at this "
-                "publish (the sleeve's cycle database was unreadable), which is itself reported "
-                "rather than quietly omitted.")
+        return (
+            "STRUCTURAL VERDICT 2026-08-05 — the crypto sleeve's venue access is a standing "
+            "structural problem, not a run of bad luck. Uptime could not be measured at this "
+            "publish (the sleeve's cycle database was unreadable), which is itself reported "
+            "rather than quietly omitted."
+        )
     return (
         "STRUCTURAL VERDICT 2026-08-05 — the crypto sleeve's venue unreachability is STRUCTURAL, "
         "and we said we would say so. The 2026-07-20 note above promised: 'if it proves persistent "
@@ -1338,7 +1487,7 @@ def _live_config_provenance() -> dict:
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
 
-    measured = module.build_fingerprint()
+    measured = module.build_fingerprint(book_aggregation=book_aggregation_metadata())
     contract_path = Path(__file__).resolve().parents[1] / "config" / "live_change_contract.json"
     declared = (
         json.loads(contract_path.read_text()).get("declared_fingerprint")
@@ -1373,10 +1522,23 @@ def main():
     # AlphaVintage's evidence is a pre-registered PROBE, not a walk-forward — see load_probe_curve.
     vintage_wf = load_probe_curve(VINTAGE_WF, "artifacts/probe/cpi_surprise_size/equity.parquet")
     sleeves = [equity_wf, crypto_wf, mf_wf, vintage_wf]
-    book = combine_book(sleeves, scheme="fixed", fixed_weights=BOOK_WEIGHTS, trading_days=365,
-                        strategic_tilt_pct=STRATEGIC_TILT_PCT, strategic_tilt_market=mkt_epochday)
+    book = combine_book(
+        sleeves,
+        scheme=BOOK_AGGREGATION_SCHEME,
+        fixed_weights=BOOK_WEIGHTS,
+        vol_target_ann=BOOK_LEVEL_VOL_TARGET_ANN,
+        trading_days=365,
+        strategic_tilt_pct=STRATEGIC_TILT_PCT,
+        strategic_tilt_market=mkt_epochday,
+    )
     # the NEUTRAL core (pre-overlay) for honest side-by-side disclosure of what the tilt costs/adds
-    book_neutral = combine_book(sleeves, scheme="fixed", fixed_weights=BOOK_WEIGHTS, trading_days=365)
+    book_neutral = combine_book(
+        sleeves,
+        scheme=BOOK_AGGREGATION_SCHEME,
+        fixed_weights=BOOK_WEIGHTS,
+        vol_target_ann=BOOK_LEVEL_VOL_TARGET_ANN,
+        trading_days=365,
+    )
 
     # research (simulation) curves, downsampled. Sleeve WF curves are already dollar-based
     # (100k-start), so scale=1.0; the combined book curve is normalised (~1.0), so scale=100k.
@@ -1389,7 +1551,9 @@ def main():
     }
     # live (realized) curves - honest, no fabricated history
     crypto_live = read_live_db(CRYPTO_LIVE_DB)
-    equity_live = read_live_db(EQUITY_LIVE_DB, go_live=EQ_GO_LIVE)  # realized broker fills, $100k-rebased
+    equity_live = read_live_db(
+        EQUITY_LIVE_DB, go_live=EQ_GO_LIVE
+    )  # realized broker fills, $100k-rebased
     # AlphaTrend: the REALIZED Alpaca-paper account equity (genuine broker fills), seeded from its
     # own go-live. live_cycle.py writes a mark each daily run; the curve accrues real marks as the
     # ETF book fills and marks to market. No simulation, no backdating.
@@ -1420,26 +1584,46 @@ def main():
         # A sleeve with no mark on a day contributes nothing that day (see combined_live), so the
         # flagship accrues correctly across sleeves that came online on different dates — which is
         # exactly the case here: vintage has no marks before 2026-08-10 and must not invent any.
-        "alphac": clamp_live(combined_live(
-            {"crypto": crypto_live, "equity": equity_live, "mf": mf_live, "vintage": vintage_live},
-            mkt_by_date, STRATEGIC_TILT_PCT,
-        )),
+        "alphac": clamp_live(
+            combined_live(
+                {
+                    "crypto": crypto_live,
+                    "equity": equity_live,
+                    "mf": mf_live,
+                    "vintage": vintage_live,
+                },
+                mkt_by_date,
+                STRATEGIC_TILT_PCT,
+            )
+        ),
     }
     # current holdings (the real names each algorithm is buying/holding)
-    eq_hold = read_equity_holdings()
+    broker_holdings = read_alpaca_reconciled_holdings()
+    eq_hold = broker_holdings.get("alphamax") or read_equity_holdings()
     cr_hold = read_crypto_holdings()
     # AlphaTrend's current ETF book: prefer the daily-regenerated live forward (the book
     # live_cycle actually submits to Alpaca — same preference order as live_cycle._WF),
     # falling back to the blessed research artifact only if the tick has never run.
-    mf_hold = (read_equity_holdings("artifacts/walkforward/mf_live_fwd")
-               or read_equity_holdings(f"artifacts/walkforward/{MF_WF}"))
+    mf_hold = (
+        broker_holdings.get("managed_futures")
+        or read_equity_holdings("artifacts/walkforward/mf_live_fwd")
+        or read_equity_holdings(f"artifacts/walkforward/{MF_WF}")
+    )
     # AlphaVintage's book is the two-leg spread written by scripts/alphavintage_target.py. Read
     # from the SAME artifact live_cycle submits from, so the published holdings cannot drift from
     # the ones actually sent to the broker.
-    vintage_hold = read_equity_holdings(f"artifacts/walkforward/{VINTAGE_WF}")
+    vintage_hold = broker_holdings.get("alphavintage") or read_equity_holdings(
+        f"artifacts/walkforward/{VINTAGE_WF}"
+    )
     holdings = {
-        "alphaforge": cr_hold, "alphamax": eq_hold,
-        "managed_futures": mf_hold, "alphavintage": vintage_hold, "alphac": eq_hold,
+        "alphaforge": cr_hold,
+        "alphamax": eq_hold,
+        "managed_futures": mf_hold,
+        "alphavintage": vintage_hold,
+        # ALPHAC is a derived multi-source composite and has no direct broker account. Reusing
+        # AlphaMax's holdings here made the flagship look broker-reconciled while silently omitting
+        # its other three sleeves and overlay. No aggregate is more honest than a false one.
+        "alphac": None,
     }
 
     algorithms = []
@@ -1447,27 +1631,38 @@ def main():
         sleeve_weight = (
             round(float(book.weights[a["wf"]].mean()), 3) if a["wf"] in book.weights else None
         )
-        algorithms.append({
-            "key": a["key"], "name": a["name"], "rank": a["rank"],
-            "flagship": a.get("flagship", False),
-            "asset": a["asset"], "desc": a["desc"],
-            "standalone_sharpe": a["standalone_sharpe"],
-            "sharpe_caveat": a.get("caveat"),
-            "book_weight": sleeve_weight,
-            "live_kind": a["live_kind"],
-            "go_live": (algo_go_live := MF_GO_LIVE if a["key"] == "managed_futures"
-                        else EQ_GO_LIVE if a["key"] == "alphamax" else GO_LIVE),
-            "live_days": live_days_elapsed(live[a["key"]], algo_go_live),
-            "research_curve": research[a["key"]],
-            "live_curve": live[a["key"]],
-            "holdings": holdings[a["key"]],
-            # Machine-readable uptime for the one sleeve that runs its own hourly loop. A reader
-            # comparing "live_days" against reality deserves the denominator too: elapsed days
-            # say how long we have CLAIMED to be live, uptime says how much of it we actually
-            # traded. Emitted as data, not only prose, so the site cannot show one without the
-            # other and a verifier can check it without parsing English.
-            **({"cycle_uptime": crypto_uptime()} if a["key"] == "alphaforge" else {}),
-        })
+        algorithms.append(
+            {
+                "key": a["key"],
+                "name": a["name"],
+                "rank": a["rank"],
+                "flagship": a.get("flagship", False),
+                "asset": a["asset"],
+                "desc": a["desc"],
+                "standalone_sharpe": a["standalone_sharpe"],
+                "sharpe_caveat": a.get("caveat"),
+                "book_weight": sleeve_weight,
+                "live_kind": a["live_kind"],
+                "execution": a["execution"],
+                "go_live": (
+                    algo_go_live := MF_GO_LIVE
+                    if a["key"] == "managed_futures"
+                    else EQ_GO_LIVE
+                    if a["key"] == "alphamax"
+                    else GO_LIVE
+                ),
+                "live_days": live_days_elapsed(live[a["key"]], algo_go_live),
+                "research_curve": research[a["key"]],
+                "live_curve": live[a["key"]],
+                "holdings": holdings[a["key"]],
+                # Machine-readable uptime for the one sleeve that runs its own hourly loop. A reader
+                # comparing "live_days" against reality deserves the denominator too: elapsed days
+                # say how long we have CLAIMED to be live, uptime says how much of it we actually
+                # traded. Emitted as data, not only prose, so the site cannot show one without the
+                # other and a verifier can check it without parsing English.
+                **({"cycle_uptime": crypto_uptime()} if a["key"] == "alphaforge" else {}),
+            }
+        )
 
     metrics = {
         "in_sample_sharpe": round(float(book.sharpe), 2),
@@ -1547,38 +1742,47 @@ def main():
         # a disagreement is visible in the published artifact rather than only in a test.
         "live_config": _live_config_provenance(),
         "rebaseline": {
-            "v1": {"go_live": V1_GO_LIVE, "ended": V1_ENDED,
-                   "result": "flat, $0 realized ($100k -> $100k); crypto carry held cash, "
-                             "equity/MF days-old at baseline",
-                   "config": "market-neutral, net beta ~0, no strategic tilt"},
-            "v2": {"go_live": V2_GO_LIVE, "ended": V2_ENDED,
-                   "config": "3-sleeve market-neutral core (AlphaForge + AlphaMax + AlphaTrend, "
-                             f"{WEIGHTS_PROSE}) + DISCLOSED +20% strategic net-long overlay "
-                             "(0.5 BTC + 0.5 SPY), held as a separate labelled line",
-                   "result": "39 days. AlphaMax $1,000,000 -> $932,338 on its own account; "
-                             "AlphaTrend $100,000 -> $100,603. Both accounts still EXIST at the "
-                             "broker (PA397834GG9R, PA3IQC5B7BC2) and remain independently "
-                             "checkable; the full record is frozen read-only in artifacts/archive/."},
-            "v3": {"go_live": V3_GO_LIVE,
-                   "config": "every sleeve moved to its OWN fresh $1,000,000 Alpaca paper account "
-                             "(AlphaMax PA3ECIF9O942, AlphaTrend PA31FJRJQK69, AlphaLedger "
-                             "PA3DYIG9B4AL), so equal book weights are a real dollar allocation "
-                             "rather than a reporting convention",
-                   "why": "the v2 seeds were mismatched ($932k / $100k), which made the published "
-                          "40/40/20 weights describe a dollar split that was really ~9:1, and "
-                          "$100k is too small for a wide dollar-neutral book: whole-share "
-                          "truncation on shorts cost AlphaMax 8.79% of its short notional and "
-                          "pushed it +2.40% NET LONG. At $1M that is 0.37% and +0.10%."},
+            "v1": {
+                "go_live": V1_GO_LIVE,
+                "ended": V1_ENDED,
+                "result": "flat, $0 realized ($100k -> $100k); crypto carry held cash, "
+                "equity/MF days-old at baseline",
+                "config": "market-neutral, net beta ~0, no strategic tilt",
+            },
+            "v2": {
+                "go_live": V2_GO_LIVE,
+                "ended": V2_ENDED,
+                "config": "3-sleeve market-neutral core (AlphaForge + AlphaMax + AlphaTrend, "
+                f"{WEIGHTS_PROSE}) + DISCLOSED +20% strategic net-long overlay "
+                "(0.5 BTC + 0.5 SPY), held as a separate labelled line",
+                "result": "39 days. AlphaMax $1,000,000 -> $932,338 on its own account; "
+                "AlphaTrend $100,000 -> $100,603. Both accounts still EXIST at the "
+                "broker (PA397834GG9R, PA3IQC5B7BC2) and remain independently "
+                "checkable; the full record is frozen read-only in artifacts/archive/.",
+            },
+            "v3": {
+                "go_live": V3_GO_LIVE,
+                "config": "every sleeve moved to its OWN fresh $1,000,000 Alpaca paper account "
+                "(AlphaMax PA3ECIF9O942, AlphaTrend PA31FJRJQK69, AlphaLedger "
+                "PA3DYIG9B4AL), so equal book weights are a real dollar allocation "
+                "rather than a reporting convention",
+                "why": "the v2 seeds were mismatched ($932k / $100k), which made the published "
+                "40/40/20 weights describe a dollar split that was really ~9:1, and "
+                "$100k is too small for a wide dollar-neutral book: whole-share "
+                "truncation on shorts cost AlphaMax 8.79% of its short notional and "
+                "pushed it +2.40% NET LONG. At $1M that is 0.37% and +0.10%.",
+            },
             "disclosure": "v1 (2026-06-21..06-29) ran flat at the $100k baseline and is SUPERSEDED, "
-                          "NOT deleted: it remains in the signed transparency chain (seq 0..4, "
-                          "Bitcoin-anchored). v2 (2026-06-29..08-07) ran 39 days and is likewise "
-                          "superseded, not deleted: its accounts are still open at the broker and "
-                          "its full record is frozen with a published manifest digest. v3 restarts "
-                          "the forward record on 2026-08-07 on equal $1M accounts. Each re-baseline "
-                          "RESETS the forward record rather than splicing it: v2's last mark and "
-                          "v3's first mark are NOT one day's return, and reporting them as such "
-                          "would have invented +7.26% for AlphaMax and +894% for AlphaTrend. "
-                          "We re-baseline in the open; we never silently rewrite 'live since'.",
+            "NOT deleted: it remains in the signed transparency chain (seq 0..4) as opaque "
+            "historical commitments; later heads have Bitcoin-confirmed OpenTimestamps "
+            "checkpoints. v2 (2026-06-29..08-07) ran 39 days and is likewise "
+            "superseded, not deleted: its accounts are still open at the broker and "
+            "its full record is frozen with a published manifest digest. v3 restarts "
+            "the forward record on 2026-08-07 on equal $1M accounts. Each re-baseline "
+            "RESETS the forward record rather than splicing it: v2's last mark and "
+            "v3's first mark are NOT one day's return, and reporting them as such "
+            "would have invented +7.26% for AlphaMax and +894% for AlphaTrend. "
+            "We re-baseline in the open; we never silently rewrite 'live since'.",
         },
         "algorithms": algorithms,
         "metrics": metrics,
@@ -1589,6 +1793,7 @@ def main():
         # keeps rendering until it migrates to algorithms[] ----
         "book": {
             "name": "ALPHAC Cross-Asset Book",
+            "aggregation": book_aggregation_metadata(),
             # "three decorrelated sleeves" was removed 2026-08-07: their average pairwise
             # correlation measures +0.072, POSITIVE. They are near-uncorrelated, which is a real
             # and useful property, but "decorrelated" overstated it and the site had built its
@@ -1606,23 +1811,35 @@ def main():
                 "pct": STRATEGIC_TILT_PCT,
                 "mix": TILT_MIX,
                 "kind": "disclosed net-long market beta (commoditized), separate labelled line, "
-                        "NOT blended into the neutral sleeves",
+                "NOT blended into the neutral sleeves",
                 "honest_note": "beta dilutes risk-adjusted return and adds crash tail-risk; it buys "
-                               "bull-market participation, not quality. The pure-neutral core is the "
-                               "institutional franchise; the tilt is for near-term/family capital.",
+                "bull-market participation, not quality. The pure-neutral core is the "
+                "institutional franchise; the tilt is for near-term/family capital.",
             },
             # COMPOSITION order (what the book is made of), not presentation rank — left exactly
             # as it was so the signed transparency chain's book_sleeves payload does not churn.
             "sleeves": [
-                {"key": "alphaforge", "name": "AlphaForge", "desc": ALGO_BY_KEY["alphaforge"]["desc"],
-                 "standalone_sharpe": 0.68,
-                 "weight": round(float(book.weights[CRYPTO_WF].mean()), 3)},
-                {"key": "alphamax", "name": "AlphaMax", "desc": ALGO_BY_KEY["alphamax"]["desc"],
-                 "standalone_sharpe": 0.91,
-                 "weight": round(float(book.weights[EQUITY_WF].mean()), 3)},
-                {"key": "managed_futures", "name": "AlphaTrend", "desc": ALGO_BY_KEY["managed_futures"]["desc"],
-                 "standalone_sharpe": 0.33,
-                 "weight": round(float(book.weights[MF_WF].mean()), 3)},
+                {
+                    "key": "alphaforge",
+                    "name": "AlphaForge",
+                    "desc": ALGO_BY_KEY["alphaforge"]["desc"],
+                    "standalone_sharpe": 0.68,
+                    "weight": round(float(book.weights[CRYPTO_WF].mean()), 3),
+                },
+                {
+                    "key": "alphamax",
+                    "name": "AlphaMax",
+                    "desc": ALGO_BY_KEY["alphamax"]["desc"],
+                    "standalone_sharpe": 0.91,
+                    "weight": round(float(book.weights[EQUITY_WF].mean()), 3),
+                },
+                {
+                    "key": "managed_futures",
+                    "name": "AlphaTrend",
+                    "desc": ALGO_BY_KEY["managed_futures"]["desc"],
+                    "standalone_sharpe": 0.33,
+                    "weight": round(float(book.weights[MF_WF].mean()), 3),
+                },
                 # APPENDED 2026-08-12, and it should have been appended on 2026-08-10 when the
                 # sleeve went live. It was added to `algorithms` but not here, so for two days the
                 # published artifact said the book had FOUR algorithms in one field and THREE
@@ -1634,9 +1851,13 @@ def main():
                 # here and in the algorithms block above. That duplication is how it survived the
                 # 2026-08-16 calendar correction untouched. Corrected to the artifact's value; the
                 # verdict is disclosed in the sleeve caveat and in the transparency log.
-                {"key": "alphavintage", "name": "AlphaVintage", "desc": ALGO_BY_KEY["alphavintage"]["desc"],
-                 "standalone_sharpe": 0.23,
-                 "weight": round(float(book.weights[VINTAGE_WF].mean()), 3)},
+                {
+                    "key": "alphavintage",
+                    "name": "AlphaVintage",
+                    "desc": ALGO_BY_KEY["alphavintage"]["desc"],
+                    "standalone_sharpe": 0.23,
+                    "weight": round(float(book.weights[VINTAGE_WF].mean()), 3),
+                },
             ],
         },
         "research_curve": research["alphac"],
@@ -1663,8 +1884,10 @@ def main():
     out = Path("data/paper/state.json")
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(state, indent=2))
-    print(f"wrote {out}  ({len(algorithms)} algorithms; in-sample SR {book.sharpe:.2f}; "
-          f"crypto live pts {len(crypto_live)}, equity live pts {len(equity_live)})")
+    print(
+        f"wrote {out}  ({len(algorithms)} algorithms; in-sample SR {book.sharpe:.2f}; "
+        f"crypto live pts {len(crypto_live)}, equity live pts {len(equity_live)})"
+    )
     # A curve that silently dropped days is exactly the thing that must be loud. A broker account
     # changed and the published record moved with it; if that was not intended, someone has to see
     # it on the run that did it, not discover it later from a chart that looks wrong.

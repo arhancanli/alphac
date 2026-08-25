@@ -155,15 +155,6 @@ PRIORS: tuple[Prior, ...] = (
         "what the price is already drifting on. Shares AlphaMax's factor outright.",
     ),
     Prior(
-        "merger_arbitrage", EVENT, TIMETABLE, SHORT_LIQUIDITY,
-        "The deal timetable is not a price, but the position is paid to hold spread risk and it "
-        "gaps when financing dries up — the same event AlphaForge's funding carry is short.",
-    ),
-    Prior(
-        "tender_offer_spread", EVENT, TIMETABLE, SHORT_LIQUIDITY,
-        "Same shape as merger arbitrage and the same crisis exposure.",
-    ),
-    Prior(
         "index_reconstitution_flow", FLOW, ORDER_FLOW, NEUTRAL,
         "The trade is against a mandated, pre-announced order flow. What creates the opportunity "
         "is a rulebook rather than a market state, so it shares neither a factor nor an event.",
@@ -172,11 +163,6 @@ PRIORS: tuple[Prior, ...] = (
             "licence-restricted ones. The most orthogonal thing left is the thing we may not be "
             "permitted to publish research on.",
         ],
-    ),
-    Prior(
-        "active_ownership_escalation", EVENT, TIMETABLE, DIRECTIONAL,
-        "The 13D timetable drives entry, but the names are small and the position carries beta, "
-        "which is AlphaMax's and AlphaVintage's crisis direction.",
     ),
     Prior(
         "securities_lending_supply", CARRY, PRICE, SHORT_LIQUIDITY,
@@ -207,17 +193,6 @@ PRIORS: tuple[Prior, ...] = (
         "swap_spread_dislocation", BASIS, PRICE, SHORT_LIQUIDITY,
         "A basis between a swap and its deliverable, funded. Its historical blow-ups are funding "
         "events.",
-    ),
-    Prior(
-        "inflation_breakeven_relative_value", MACRO_SURPRISE, PRICE, DIRECTIONAL,
-        "Priced off CPI, which is precisely what AlphaVintage trades. Same factor family, and the "
-        "same release drives both.",
-        notes=[
-            "The collision that matters most. This is the ONE family the obtainability screen "
-            "found reachable today on data already held, and it is also the one sharing a factor "
-            "with a live sleeve. The cheapest family to work on is not the most diversifying, and "
-            "an ordering that only looked at obtainability would have put it first.",
-        ],
     ),
     Prior(
         "mortgage_convexity_pressure", FLOW, ORDER_FLOW, SHORT_LIQUIDITY,
@@ -346,7 +321,7 @@ def _arithmetic(contract: dict[str, Any], rho_bar_now: float) -> dict[str, Any]:
     """What the new pairs must average — the number an ordering is only useful against."""
     objective = contract["objective"]
     target_rho = objective["average_pairwise_correlation_objective"]
-    gate = contract["thresholds"]["average_pairwise_correlation_max"]
+    gate = contract["thresholds"]["candidate_average_correlation_to_existing_book_max"]
     n_target = objective["target_total_sleeves"]
     n_now = 4
     haircut_low = objective["backtest_to_forward_haircut"]["range"][0]
@@ -368,8 +343,10 @@ def _arithmetic(contract: dict[str, Any], rho_bar_now: float) -> dict[str, Any]:
         "rho_bar_now": rho_bar_now,
         "objective_rho_bar": target_rho,
         "required_average_over_the_new_pairs": round(required_new, 5),
-        "contract_correlation_gate": gate,
-        "rho_bar_if_every_new_pair_sits_exactly_at_the_gate": round(at_gate, 6),
+        "candidate_average_correlation_gate": gate,
+        "rho_bar_if_the_aggregate_new_edges_sit_at_the_incremental_boundary": round(
+            at_gate, 6
+        ),
         "in_sample_sharpe_at_that_rho_bar": round(_book_sharpe(n_target, at_gate), 3),
         "forward_sharpe_at_that_rho_bar_optimistic_haircut": round(
             _book_sharpe(n_target, at_gate) / haircut_low, 3
@@ -379,13 +356,14 @@ def _arithmetic(contract: dict[str, Any], rho_bar_now: float) -> dict[str, Any]:
             _book_sharpe(n_target, target_rho) / haircut_low, 3
         ),
         "the_gap": (
-            f"Every new pair landing exactly on the {gate:+.2f} gate gives a book average of "
+            f"The aggregate new edges landing exactly on the {gate:+.2f} incremental boundary "
+            f"gives a book average of "
             f"{at_gate:+.4f} and a forward Sharpe of "
             f"{forward_at_gate:.2f} on this book's own optimistic "
             f"haircut. The gate is necessary and it is not sufficient, and the shortfall is "
             f"{shortfall:.2f} "
             "of forward Sharpe. Ordering by expected orthogonality is the only lever that acts on "
-            "the difference, because the gate cannot."
+            "the difference, because the incremental boundary cannot."
         ),
         "extends": "artifacts/analysis/breadth_acquisition/result.json, which reached the same "
         "conclusion against the superseded 0.15 gate.",
@@ -493,8 +471,11 @@ def main() -> int:
         )
     print()
     print(f"  new pairs must average {arithmetic['required_average_over_the_new_pairs']:+.5f} "
-          f"against a gate of {arithmetic['contract_correlation_gate']:+.2f}")
-    at_gate_rho = arithmetic["rho_bar_if_every_new_pair_sits_exactly_at_the_gate"]
+          f"against an incremental boundary of "
+          f"{arithmetic['candidate_average_correlation_gate']:+.2f}")
+    at_gate_rho = arithmetic[
+        "rho_bar_if_the_aggregate_new_edges_sit_at_the_incremental_boundary"
+    ]
     at_gate_fwd = arithmetic["forward_sharpe_at_that_rho_bar_optimistic_haircut"]
     print(f"  at the gate: rho_bar {at_gate_rho:+.4f} -> forward {at_gate_fwd:.2f}")
     print()

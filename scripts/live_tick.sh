@@ -61,6 +61,11 @@ WATCHDOG_S=2400   # 40 min cap: hourly cache-hit cycles are ~3 min; the once-dai
     || echo "WARN: VPS sync returned non-zero — state below is regenerated from the LAST GOOD pull"
   kill "$WD" 2>/dev/null; wait "$WD" 2>/dev/null
   echo "--- regenerate published state from realized NAV ---"
+  # GET-ONLY broker refresh. Closed-market days must remain order-free, but Alpaca finalizes the
+  # prior session's portfolio-history mark after the pre-open trading tick. Without this separate
+  # read path, Saturday's calendar skip also skipped the only chance to publish Friday's close.
+  uv run python scripts/export_alpaca_broker_reconciliation.py \
+    || echo "WARN: Alpaca broker reconciliation FAIL_CLOSED — local curves were preserved"
   # ORDER IS LOAD-BEARING (fixed 2026-08-19). paper_trading_state.py WRITES data/paper/state.json;
   # glassbox_export.py READS it. Both jobs used to call glassbox FIRST, so every glass-box artifact
   # derived from that state -- track_record.json above all, the site's headline "Proven in the
@@ -108,10 +113,23 @@ WATCHDOG_S=2400   # 40 min cap: hourly cache-hit cycles are ~3 min; the once-dai
     || echo "WARN: record-continuity audit failed — the published report will be stale"
   uv run python scripts/export_lint_debt_contract.py >/dev/null \
     || echo "WARNING: lint debt contract NOT rebuilt — publishing one bound to older source hashes"
-  uv run python scripts/research_export.py
-  # anchor the day's track record into the signed append-only transparency chain (no-op if
-  # nothing changed since the last entry) — the tamper-evident proof the record isn't rewritten
+  uv run python scripts/build_identity_trial_packets.py
+  uv run python scripts/build_trial_packet_manifest.py
+  uv run python scripts/seal_legacy_research_epoch.py
+  # Publish the exact canonical payload into the signed chain BEFORE evaluating maturity. The
+  # evaluator requires the chain head to equal this cycle's paper state byte-for-byte in canonical
+  # form; reversing these calls would certify the previous cycle's payload.
   uv run python scripts/transparency_log.py
+  uv run python scripts/export_crypto_position_attribution.py
+  uv run python scripts/verify_crypto_position_attribution_rollout.py
+  uv run python scripts/analyze_current_book_drawdown.py
+  uv run python scripts/analyze_current_book_diversification.py
+  uv run python scripts/seal_forward_drawdown_evidence.py
+  uv run python scripts/evaluate_forward_evidence_maturity.py
+  uv run python scripts/sync_readme_forward_evidence.py
+  uv run python scripts/analyze_forward_sleeve_contribution.py
+  uv run python scripts/audit_crypto_lab_carry_crash.py
+  uv run python scripts/research_export.py
   # RETRACTED-CLAIM GATE. Runs after regeneration and BEFORE the deploy below, because a signed
   # retraction that only appends to the log is a footnote, not a retraction: AlphaTrend's DSR 0.83
   # was withdrawn on 2026-08-06 in entry [24] and was still on the homepage, still in the /progress

@@ -73,6 +73,8 @@ def passing_evidence() -> dict:
         "diversification": {
             "absolute_beta": 0.04,
             "average_pairwise_correlation": -0.03,
+            "candidate_average_correlation_to_existing_book": -0.02,
+            "book_average_pairwise_correlation_delta": -0.005,
             "average_pairwise_correlation_upper_95": 0.04,
             "max_pairwise_correlation": 0.22,
             "max_stressed_pairwise_correlation": 0.38,

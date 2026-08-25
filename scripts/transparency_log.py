@@ -1,15 +1,15 @@
-"""Tamper-evident transparency log for the live track record — the S-tier trust primitive.
+"""Tamper-evident transparency log for the live track record.
 
-Every published track record gets anchored into a SIGNED, APPEND-ONLY HASH CHAIN. Each entry hashes
-the day's record AND the previous entry's hash, then signs the link with Ed25519. Changing any
-past day breaks that entry's chain hash and every signature after it — so our entire history is
-provably un-rewritten. This is the cryptographic backbone of "don't trust us, VERIFY us": the one
-thing no black-box fund can offer, because they can (and do) quietly re-pick "since inception".
+Every published track-record state enters a signed hash chain. Each entry hashes the canonical
+daily payload and the previous link, then signs the link with Ed25519. From the payload-disclosure
+boundary onward the canonical payload is included in the entry, so an outsider can independently
+rehash the exact snapshot as well as verify the link and signature.
 
-What it proves: the published track record is APPEND-ONLY and has not been edited since it was first
-published. (It does NOT, on its own, prove the data is true — that is what the reproducible engine,
-the published method, and the live broker loop are for. This closes the "silently rewrite history"
-hole specifically, which is the one every fund exploits.)
+Historical v1 entries contain only opaque payload digests. Their linkage, signatures and external
+OpenTimestamps checkpoints remain verifiable, but their underlying snapshots cannot be recovered
+from the public chain and must not be described as independently content-verifiable. No historical
+payload is reconstructed or fabricated. The chain also does not prove that broker data is true;
+broker reconciliation and continuity evidence are separate gates.
 
 Design:
   - Anchors the DAILY-resolution realized track record (live curves collapsed to one point per UTC
@@ -26,7 +26,6 @@ Run (in the publish pipeline):  uv run python scripts/transparency_log.py
 from __future__ import annotations
 
 import datetime as dt
-import hashlib
 import json
 import stat
 from pathlib import Path
@@ -40,12 +39,19 @@ from cryptography.hazmat.primitives.serialization import (
     PublicFormat,
 )
 
+from alphaforge.validation.transparency import (
+    GENESIS,
+    PAYLOAD_SCHEMA,
+    canonical_json,
+    daily_track_record_payload,
+    sha256_hex,
+)
+
 REPO: Final[Path] = Path(__file__).resolve().parent.parent
 STATE_JSON: Final[Path] = REPO / "data" / "paper" / "state.json"
 LOG_JSONL: Final[Path] = REPO / "var" / "transparency_log.jsonl"
 KEY_PATH: Final[Path] = Path.home() / ".config" / "alphaforge" / "transparency_ed25519.key"
 PUBLIC_OUT: Final[Path] = REPO.parent / "meridian" / "public" / "glassbox" / "transparency_log.json"
-GENESIS: Final[str] = "0" * 64
 
 
 # --------------------------------------------------------------------------- keys
@@ -72,47 +78,14 @@ def _public_hex(key: Ed25519PrivateKey) -> str:
 
 # ----------------------------------------------------------------- payload digest
 def _canon(obj: Any) -> bytes:
-    return json.dumps(obj, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    return canonical_json(obj)
 
 
 def _sha256(data: bytes) -> str:
-    return hashlib.sha256(data).hexdigest()
+    return sha256_hex(data)
 
 
-def _daily_digest(state: dict[str, Any]) -> dict[str, Any]:
-    """The substantive realized record at DAILY resolution — what must stay tamper-evident.
-
-    Collapses each live curve to the last equity per UTC day (so hourly crypto marks don't churn
-    the hash sub-daily) and pins each algorithm's standalone Sharpe + its own go-live."""
-    def daily(curve: list[dict[str, Any]] | None) -> list[dict[str, Any]]:
-        by_day: dict[str, float] = {}
-        for p in curve or []:
-            by_day[p["date"]] = round(float(p["equity"]), 2)
-        return [{"date": d, "equity": by_day[d]} for d in sorted(by_day)]
-
-    algos = [
-        {
-            "key": a["key"],
-            "standalone_sharpe": a.get("standalone_sharpe"),
-            "go_live": a.get("go_live"),
-            "live": daily(a.get("live_curve")),
-        }
-        for a in state.get("algorithms", [])
-    ]
-    return {
-        "go_live_date": state.get("go_live_date"),
-        # Seal the re-baseline disclosure + disclosed strategic tilt INTO the signed payload, so a
-        # config change (v1->v2, the +20% overlay) is itself tamper-evident and anchored — not just
-        # cosmetic. A verifier diffing seq N vs N+1 sees the documented reason.
-        "rebaseline": state.get("rebaseline"),
-        "strategic_tilt": (state.get("book") or {}).get("strategic_tilt"),
-        "book_sleeves": [
-            {"key": s.get("key"), "weight": s.get("weight")}
-            for s in (state.get("book") or {}).get("sleeves", [])
-        ],
-        "algorithms": algos,
-        "book_live": daily(state.get("live_curve")),
-    }
+_daily_digest = daily_track_record_payload
 
 
 # ------------------------------------------------------------------- the chain
@@ -134,7 +107,8 @@ def main() -> int:
     payload_sha256 = _sha256(_canon(digest))
 
     chain = _read_log()
-    if chain and chain[-1]["payload_sha256"] == payload_sha256:
+    disclosure_upgrade = bool(chain and "payload" not in chain[-1])
+    if chain and chain[-1]["payload_sha256"] == payload_sha256 and not disclosure_upgrade:
         print(f"transparency log: no change (head seq {chain[-1]['seq']}, "
               f"{chain[-1]['date']}). chain intact, {len(chain)} entries.")
         _publish(chain, pub_hex)  # still refresh the public copy (idempotent)
@@ -154,6 +128,13 @@ def main() -> int:
         "prev_chain_hash": prev,
         "chain_hash": chain_hash,
         "signature": signature,
+        "payload_schema": PAYLOAD_SCHEMA,
+        "payload": digest,
+        "event": (
+            "PAYLOAD_DISCLOSURE_UPGRADE"
+            if disclosure_upgrade
+            else "TRACK_RECORD_STATE"
+        ),
     }
     LOG_JSONL.parent.mkdir(parents=True, exist_ok=True)
     with LOG_JSONL.open("a") as fh:
@@ -167,19 +148,34 @@ def main() -> int:
 
 def _publish(chain: list[dict[str, Any]], pub_hex: str) -> None:
     """Emit the full signed chain + public key + verify instructions to the public glass-box dir."""
+    disclosed = [entry for entry in chain if "payload" in entry]
+    first_disclosed = disclosed[0]["seq"] if disclosed else None
+    opaque_entries = len(chain) - len(disclosed)
     payload = {
-        "schema": "glassbox.transparency_log/1",
+        "schema": "glassbox.transparency_log/2",
         "title": "The Transparency Log",
         "summary": (
-            "Every published state of our track record is hashed, chained to the one before, and "
-            "signed. Change any past entry and every signature after it breaks. Our history is "
-            "provably append-only — verify it yourself."
+            "Every published state is linked and signed. From the declared disclosure boundary, "
+            "the full canonical payload is also published and independently rehashable. Earlier "
+            "entries remain signed opaque commitments, not reconstructable snapshots."
         ),
         "what_it_proves": (
-            "The published track record has not been edited since it was published (no silent "
-            "'since-inception' rewrites). It does not by itself prove the data is true — the "
-            "reproducible engine, the published method, and the live broker loop do that."
+            "The verifier checks link continuity, Ed25519 signatures, and every disclosed payload "
+            "hash. OpenTimestamps separately timestamps selected chain heads. This makes disclosed "
+            "snapshots tamper-evident; it does not prove broker truth, completeness before the "
+            "disclosure boundary, or the absence of an unpublished alternative history."
         ),
+        "payload_disclosure": {
+            "payload_schema": PAYLOAD_SCHEMA,
+            "first_disclosed_seq": first_disclosed,
+            "disclosed_entries": len(disclosed),
+            "opaque_historical_entries": opaque_entries,
+            "historical_limitation": (
+                "Entries before first_disclosed_seq contain signed payload hashes but not their "
+                "canonical payloads. Their contents cannot be independently reconstructed from "
+                "this public chain; no backfill is claimed."
+            ),
+        },
         "algorithm": "Ed25519 over sha256(prev_chain_hash | payload_sha256 | date | seq)",
         "public_key_ed25519_hex": pub_hex,
         "verify": "uv run python scripts/verify_transparency.py  (re-checks each chain hash + sig)",
@@ -210,7 +206,15 @@ def _publish(chain: list[dict[str, Any]], pub_hex: str) -> None:
 
 # expose for the verifier
 _PUBLIC_KEY_FROM_HEX = Ed25519PublicKey.from_public_bytes
-__all__ = ["GENESIS", "_PUBLIC_KEY_FROM_HEX", "_canon", "_daily_digest", "_sha256", "main"]
+__all__ = [
+    "GENESIS",
+    "PAYLOAD_SCHEMA",
+    "_PUBLIC_KEY_FROM_HEX",
+    "_canon",
+    "_daily_digest",
+    "_sha256",
+    "main",
+]
 
 
 if __name__ == "__main__":

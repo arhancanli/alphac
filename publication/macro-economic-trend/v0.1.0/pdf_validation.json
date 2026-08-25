@@ -1,0 +1,69 @@
+{
+  "author": "Arhan Canli",
+  "claim_boundary": "Machine validation proves page geometry, extractable text, metadata, font resources, and required disclosures. Visual inspection is separate and is not peer review, content validation, accessibility certification, or independent replication.",
+  "extractable_characters": 4452,
+  "failures": [],
+  "font_resources": [
+    "AAAAAA+Arial-BoldMT",
+    "BAAAAA+Georgia",
+    "CAAAAA+Georgia",
+    "DAAAAA+ArialMT",
+    "EAAAAA+Arial-BoldMT",
+    "FAAAAA+ArialMT",
+    "GAAAAA+ArialMT",
+    "HAAAAA+Arial-BoldMT",
+    "IAAAAA+ArialMT",
+    "JAAAAA+Menlo-Regular",
+    "KAAAAA+Georgia",
+    "LAAAAA+Georgia",
+    "MAAAAA+Georgia-Bold",
+    "NAAAAA+Georgia-Italic"
+  ],
+  "metadata": {
+    "author": "Arhan Canli",
+    "title": "Point-in-Time Macroeconomic Trend: Seven Identities Without a Validated Sleeve"
+  },
+  "minimum_extractable_characters_on_page": 521,
+  "page_height_points": [
+    841.92
+  ],
+  "page_width_points": [
+    594.96
+  ],
+  "pages": 3,
+  "passes": true,
+  "registry_key": "macro_economic_trend",
+  "render_environment": {
+    "latex_compilation_validated": false,
+    "pdf_engine": "Google Chrome 151.0.7922.174",
+    "pdf_normalizer": "pypdf 6.16.1"
+  },
+  "schema": "canli.alphac-archival-pdf-validation.v1",
+  "source_bindings": {
+    "bibliography": {
+      "references.bib": {
+        "path": "references.bib",
+        "sha256": "fff0b2cdb036b8be22e5177c16da633186f2fd2faf5a642843b6f42fec139260"
+      },
+      "references.json": {
+        "path": "references.json",
+        "sha256": "681128932cdc45c9627c13573d80c2441282e84e5e664954aff0c851852e5896"
+      }
+    },
+    "paper_markdown": {
+      "path": "publication/macro-economic-trend/v0.1.0/paper.md",
+      "sha256": "ff5892cb61f591dde50ee2da25dfe9e7eba51b125b2be57af97dca88f0dcbd8a"
+    },
+    "renderer": {
+      "path": "scripts/build_archival_publication_papers.py",
+      "sha256": "d36584c93e00be6f75bc50da079d25a46d1da4e0d1b2d58b73661e3f527c9f3e"
+    },
+    "static_site_paper_html": {
+      "declared_markdown_sha256": "ff5892cb61f591dde50ee2da25dfe9e7eba51b125b2be57af97dca88f0dcbd8a",
+      "matches_paper_markdown": true,
+      "path": "/Users/arhancanli/meridian/research/macro-economic-trend-lineage.html",
+      "sha256": "cc798149f6596d1e8388966d92ea975fc225e81e3374ec04ed7fcd2ffff2c39d"
+    }
+  },
+  "status": "PASS_MACHINE_PDF_VALIDATION"
+}

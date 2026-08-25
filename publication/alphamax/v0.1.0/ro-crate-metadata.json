@@ -1,0 +1,256 @@
+{
+  "@context": "https://w3id.org/ro/crate/1.1/context",
+  "@graph": [
+    {
+      "@id": "ro-crate-metadata.json",
+      "@type": "CreativeWork",
+      "about": {
+        "@id": "./"
+      },
+      "conformsTo": {
+        "@id": "https://w3id.org/ro/crate/1.1"
+      }
+    },
+    {
+      "@id": "./",
+      "@type": "Dataset",
+      "author": {
+        "@id": "#arhan-canli"
+      },
+      "datePublished": "2026-08-23",
+      "hasPart": [
+        {
+          "@id": "CITATION.cff"
+        },
+        {
+          "@id": "CORRECTIONS.md"
+        },
+        {
+          "@id": "LICENSE"
+        },
+        {
+          "@id": "README.md"
+        },
+        {
+          "@id": "archival_visual_inspection_receipt.json"
+        },
+        {
+          "@id": "bundle_manifest.json"
+        },
+        {
+          "@id": "codemeta.json"
+        },
+        {
+          "@id": "data_manifest.json"
+        },
+        {
+          "@id": "evidence/beta_neutral_probe.json"
+        },
+        {
+          "@id": "evidence/construction_arms.json"
+        },
+        {
+          "@id": "evidence/selected_walkforward.json"
+        },
+        {
+          "@id": "evidence/short_tail_probe.json"
+        },
+        {
+          "@id": "evidence/upstream_clean_workspace.json"
+        },
+        {
+          "@id": "evidence/upstream_replay_manifest.json"
+        },
+        {
+          "@id": "evidence/weighting_probe.json"
+        },
+        {
+          "@id": "internal_replay_receipt.json"
+        },
+        {
+          "@id": "isolated_replay_receipt.json"
+        },
+        {
+          "@id": "paper.html"
+        },
+        {
+          "@id": "paper.json"
+        },
+        {
+          "@id": "paper.md"
+        },
+        {
+          "@id": "paper.pdf"
+        },
+        {
+          "@id": "paper.tex"
+        },
+        {
+          "@id": "pdf_validation.json"
+        },
+        {
+          "@id": "references.bib"
+        },
+        {
+          "@id": "references.json"
+        },
+        {
+          "@id": "reproduction.json"
+        },
+        {
+          "@id": "sbom.spdx.json"
+        },
+        {
+          "@id": "trial_accounting.json"
+        }
+      ],
+      "name": "Equity Momentum Under Complete Trial Accounting: A Selected Survivor and Failed Deep-History Replication",
+      "version": "0.1.0"
+    },
+    {
+      "@id": "#arhan-canli",
+      "@type": "Person",
+      "name": "Arhan Canli"
+    },
+    {
+      "@id": "CITATION.cff",
+      "@type": "File",
+      "sha256": "4d0bd02ed7bbd4aee693012417ce70f0f3bf9ba8e4cf5b8c378ed2664efa6dac"
+    },
+    {
+      "@id": "CORRECTIONS.md",
+      "@type": "File",
+      "sha256": "b5b0060b2d67e6361da6587deac4de92c7a93d70f01ca52575a15ffbaaf48ac1"
+    },
+    {
+      "@id": "LICENSE",
+      "@type": "File",
+      "sha256": "e679ca02271c3b6ff38e197098b9260900656c23f06b787383624681f425fa26"
+    },
+    {
+      "@id": "README.md",
+      "@type": "File",
+      "sha256": "f406a94e97968947c2d6a76c983e2af47d887b970c206811ea989de79cbf178b"
+    },
+    {
+      "@id": "archival_visual_inspection_receipt.json",
+      "@type": "File",
+      "sha256": "7a40b8c55de12ec4dd2f93143810266ac8854dc14fdd2ac1a336f64ff9dd8578"
+    },
+    {
+      "@id": "bundle_manifest.json",
+      "@type": "File",
+      "sha256": "dde48f36f5d22d2bcd6d6f7d23f05f3c094d2e319d1f68e0e0ce855c4eefd3b8"
+    },
+    {
+      "@id": "codemeta.json",
+      "@type": "File",
+      "sha256": "43ea287906a8fc914da3fb4c9f870df72c7773950c153d67b159462968231dbd"
+    },
+    {
+      "@id": "data_manifest.json",
+      "@type": "File",
+      "sha256": "08f78b2b3600027886ca6e4e19f235000840ef39fe35873d72b836bef4964073"
+    },
+    {
+      "@id": "evidence/beta_neutral_probe.json",
+      "@type": "File",
+      "sha256": "4368fd9e70a6c0788286005d877bd6a6f8da6bceeac6804d8a87e307369a36b1"
+    },
+    {
+      "@id": "evidence/construction_arms.json",
+      "@type": "File",
+      "sha256": "17884a560fc913b8e5b387b283074914d476f84314eeaea987fca28d55558124"
+    },
+    {
+      "@id": "evidence/selected_walkforward.json",
+      "@type": "File",
+      "sha256": "229afe7244b582cd538252e8e2ab77a2c77effef82a8fbe19e366c6dcbea87e7"
+    },
+    {
+      "@id": "evidence/short_tail_probe.json",
+      "@type": "File",
+      "sha256": "022d843a1295f3cbae2fc3054e3618388184a86114efa561296855867ed9b436"
+    },
+    {
+      "@id": "evidence/upstream_clean_workspace.json",
+      "@type": "File",
+      "sha256": "ba3a2d2d005401276d6c3ee864a0c9f341cfe6f217f3c95efc0288ec20b1e41f"
+    },
+    {
+      "@id": "evidence/upstream_replay_manifest.json",
+      "@type": "File",
+      "sha256": "46f5e79ebd6ec40952871faa2616499cda26a1a48905676b3fd57a978d32f1fc"
+    },
+    {
+      "@id": "evidence/weighting_probe.json",
+      "@type": "File",
+      "sha256": "4eb3a9dc4ad8e991679d2409c29c17925d52ddd7a97c4a36fb43e8ace2646f50"
+    },
+    {
+      "@id": "internal_replay_receipt.json",
+      "@type": "File",
+      "sha256": "70ac0c8d8542294e02c396085216646208a786295c747940f0eb0f576010ec95"
+    },
+    {
+      "@id": "isolated_replay_receipt.json",
+      "@type": "File",
+      "sha256": "d0df878375d415986fa639487e4ccffc9cad6396dca9bde5f3be4a7fdf50b2ad"
+    },
+    {
+      "@id": "paper.html",
+      "@type": "File",
+      "sha256": "411ed6346dd8164e71f99e92cf18ac406ab63aecc7b6359e7f97b2922dfc09bf"
+    },
+    {
+      "@id": "paper.json",
+      "@type": "File",
+      "sha256": "2b51001980adfe3b72a17464c5aa89bae9a452fd3d85597101f56a2cc472aa90"
+    },
+    {
+      "@id": "paper.md",
+      "@type": "File",
+      "sha256": "b2ccb4db05766124a984eb3ebb6c42930542a596e0491363b899ff06feea375f"
+    },
+    {
+      "@id": "paper.pdf",
+      "@type": "File",
+      "sha256": "eed32d00c9ed1b3bab146f8a220bd46279f9f56b5db88cd7b22e7b0c81eeaa05"
+    },
+    {
+      "@id": "paper.tex",
+      "@type": "File",
+      "sha256": "edf13cbbe6ce8e05106ef84558e1ce4cf74e1f1583ac02ae339ed4091fb5371f"
+    },
+    {
+      "@id": "pdf_validation.json",
+      "@type": "File",
+      "sha256": "055ae6bbdc897cffeeca9f39d5b539e52179d01afade2f5f3a620c693fa483f7"
+    },
+    {
+      "@id": "references.bib",
+      "@type": "File",
+      "sha256": "f93a842ab0da6608d632af980a23693bccde40e3cf5282bb46f4af2831a438b8"
+    },
+    {
+      "@id": "references.json",
+      "@type": "File",
+      "sha256": "6a8dd290d102071306c78bb949ecd56cc9793ec7ac93a3c560325a734007898f"
+    },
+    {
+      "@id": "reproduction.json",
+      "@type": "File",
+      "sha256": "22935bb6982383286e3ed1ad5398ca727124e234feeafd5a7d4ff8d2e21735d7"
+    },
+    {
+      "@id": "sbom.spdx.json",
+      "@type": "File",
+      "sha256": "f5e8cb2bfb4cfe897fa8d301d34036ee904c1d6f87da58c7cec63c0e390f33f1"
+    },
+    {
+      "@id": "trial_accounting.json",
+      "@type": "File",
+      "sha256": "015763470aef0c2e3982bc494766f14d4a145f7045a140d4987c07bfe122f39f"
+    }
+  ]
+}
