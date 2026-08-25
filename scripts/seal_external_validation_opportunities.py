@@ -31,6 +31,7 @@ def build() -> dict[str, Any]:
                 "quantitative-research methodology."
             ),
             "state": "POTENTIAL_ELIGIBILITY_LOCAL_FAIR_UNRESOLVED",
+            "public_status": "Eligibility and the local affiliated fair are unresolved.",
             "registration_authorized": False,
             "entry_claimed": False,
             "eligibility": {
@@ -68,6 +69,7 @@ def build() -> dict[str, Any]:
             "kind": "INVESTMENT_COMPETITION",
             "fit": "A client-centered team portfolio thesis using ALPHAC's evidence discipline.",
             "state": "OPEN_BUT_TEAM_AND_ADVISOR_UNRESOLVED",
+            "public_status": "Registration is open; the team and school advisor are unresolved.",
             "registration_authorized": False,
             "entry_claimed": False,
             "eligibility": {
@@ -103,6 +105,7 @@ def build() -> dict[str, Any]:
                 "customer problem."
             ),
             "state": "WINDOW_NOT_YET_OPEN_TEAM_AND_ADVISOR_UNRESOLVED",
+            "public_status": "The window opens September 16; the team and advisor are unresolved.",
             "registration_authorized": False,
             "entry_claimed": False,
             "eligibility": {
@@ -129,6 +132,7 @@ def build() -> dict[str, Any]:
             "kind": "SCIENTIFIC_COMPETITION",
             "fit": "A UAE-facing version of a new scientific or computing experiment.",
             "state": "CURRENT_RULES_FOUND_NEXT_CYCLE_DATES_UNRESOLVED",
+            "public_status": "The next cycle date and Arhan's eligible entry route are unresolved.",
             "registration_authorized": False,
             "entry_claimed": False,
             "eligibility": {
@@ -157,6 +161,7 @@ def build() -> dict[str, Any]:
             "kind": "STEM_VENTURE_COMPETITION",
             "fit": "A genuine STEM product innovation, not a repackaged trading-performance story.",
             "state": "CURRENT_CYCLE_CONFIRMED_EXACT_PHASE_DATES_UNRESOLVED",
+            "public_status": "The current cycle is confirmed; exact phase dates are unresolved.",
             "registration_authorized": False,
             "entry_claimed": False,
             "eligibility": {"age": "13-18", "cycle": "annual, August through April"},
@@ -183,6 +188,7 @@ def build() -> dict[str, Any]:
             "kind": "MENTORED_STEM_PROGRAM",
             "fit": "External teamwork and mentor feedback on a challenge chosen by the program.",
             "state": "FALL_2026_CLOSED_NEXT_EXACT_WINDOW_UNRESOLVED",
+            "public_status": "Fall 2026 is closed; the next application window is unresolved.",
             "registration_authorized": False,
             "entry_claimed": False,
             "eligibility": {
@@ -227,6 +233,9 @@ def build() -> dict[str, Any]:
                 row.get("exact_deadline") is not None for row in opportunities
             ),
         },
+        "opportunity_shortlist": [
+            f"{row['priority']}. {row['name']}: {row['public_status']}" for row in opportunities
+        ],
         "opportunities": opportunities,
         "claim_boundary": (
             "This is a dated official-source opportunity audit. It proves no personal eligibility, "

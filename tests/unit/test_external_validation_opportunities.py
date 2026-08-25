@@ -33,6 +33,10 @@ def test_external_validation_audit_fails_closed() -> None:
         "exact_future_deadlines": 1,
     }
     assert len(payload["owner_facts_required"]) == 6
+    assert len(payload["opportunity_shortlist"]) == 6
+    assert payload["opportunity_shortlist"][0].startswith(
+        "1. Regeneron ISEF 2027 through an affiliated fair"
+    )
     assert all(row["registration_authorized"] is False for row in payload["opportunities"])
     assert all(row["entry_claimed"] is False for row in payload["opportunities"])
     assert all(row["unknowns"] for row in payload["opportunities"])
