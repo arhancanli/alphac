@@ -31,6 +31,9 @@ SOURCES = {
     "eia_petroleum_inventory_result.json": EXPORT.EIA_PROBE_DIR / "result.json",
     "energy_inventory_family.json": FAMILY_SOURCES["energy_inventory_family.json"],
     "external_publication_readiness.json": EXPORT.EXTERNAL_PUBLICATION_READINESS_JSON,
+    "publication_clean_checkout_integrity.json": (
+        EXPORT.PUBLICATION_CLEAN_CHECKOUT_INTEGRITY_JSON
+    ),
     "archival_publication_visual_inspection.json": (
         EXPORT.ARCHIVAL_PUBLICATION_VISUAL_INSPECTION_JSON
     ),

@@ -458,6 +458,9 @@ SLEEVE_PUBLICATION_EVIDENCE_JSON: Final[Path] = REPO / "config" / "sleeve_public
 EXTERNAL_PUBLICATION_READINESS_JSON: Final[Path] = (
     REPO / "artifacts" / "audit" / "external_publication_readiness.json"
 )
+PUBLICATION_CLEAN_CHECKOUT_INTEGRITY_JSON: Final[Path] = (
+    REPO / "artifacts" / "audit" / "publication_clean_checkout_integrity.json"
+)
 EXTERNAL_SUBMISSION_PLAN_JSON: Final[Path] = (
     REPO / "artifacts" / "publication" / "external_submission_plan.json"
 )
@@ -3158,6 +3161,9 @@ def build_research_export() -> dict[str, Any]:
             "registry": json.loads(EXTERNAL_PUBLICATION_REGISTRY_JSON.read_text()),
             "evidence_catalog": json.loads(SLEEVE_PUBLICATION_EVIDENCE_JSON.read_text()),
             "readiness_audit": json.loads(EXTERNAL_PUBLICATION_READINESS_JSON.read_text()),
+            "clean_checkout_integrity": json.loads(
+                PUBLICATION_CLEAN_CHECKOUT_INTEGRITY_JSON.read_text()
+            ),
             "submission_plan": json.loads(EXTERNAL_SUBMISSION_PLAN_JSON.read_text()),
             "wave1_data_rights_audit": json.loads(WAVE1_DATA_RIGHTS_AUDIT_JSON.read_text()),
             "wave1_release_candidates": json.loads(WAVE1_RELEASE_CANDIDATES_JSON.read_text()),
@@ -3201,6 +3207,9 @@ def build_research_export() -> dict[str, Any]:
             "registry_public_path": "/glassbox/external_publication_registry.json",
             "evidence_catalog_public_path": "/glassbox/sleeve_publication_evidence.json",
             "readiness_public_path": "/glassbox/external_publication_readiness.json",
+            "clean_checkout_integrity_public_path": (
+                "/glassbox/publication_clean_checkout_integrity.json"
+            ),
             "submission_plan_public_path": "/glassbox/external_submission_plan.json",
             "wave1_data_rights_public_path": "/glassbox/wave1_data_rights_audit.json",
             "wave1_release_candidates_public_path": ("/glassbox/wave1_release_candidates.json"),
@@ -3261,6 +3270,12 @@ def build_research_export() -> dict[str, Any]:
                     "path": rel(EXTERNAL_PUBLICATION_READINESS_JSON),
                     "sha256": hashlib.sha256(
                         EXTERNAL_PUBLICATION_READINESS_JSON.read_bytes()
+                    ).hexdigest(),
+                },
+                "clean_checkout_integrity": {
+                    "path": rel(PUBLICATION_CLEAN_CHECKOUT_INTEGRITY_JSON),
+                    "sha256": hashlib.sha256(
+                        PUBLICATION_CLEAN_CHECKOUT_INTEGRITY_JSON.read_bytes()
                     ).hexdigest(),
                 },
                 "submission_plan": {
@@ -3522,6 +3537,9 @@ def main(out_dir: Path = OUT_DIR) -> Path:
     )
     (out_dir / "external_publication_readiness.json").write_text(
         EXTERNAL_PUBLICATION_READINESS_JSON.read_text()
+    )
+    (out_dir / "publication_clean_checkout_integrity.json").write_text(
+        PUBLICATION_CLEAN_CHECKOUT_INTEGRITY_JSON.read_text()
     )
     (out_dir / "external_submission_plan.json").write_text(
         EXTERNAL_SUBMISSION_PLAN_JSON.read_text()
@@ -4335,6 +4353,9 @@ def main(out_dir: Path = OUT_DIR) -> Path:
         )
         (app_dir / "external_publication_readiness.json").write_text(
             EXTERNAL_PUBLICATION_READINESS_JSON.read_text()
+        )
+        (app_dir / "publication_clean_checkout_integrity.json").write_text(
+            PUBLICATION_CLEAN_CHECKOUT_INTEGRITY_JSON.read_text()
         )
         (app_dir / "external_submission_plan.json").write_text(
             EXTERNAL_SUBMISSION_PLAN_JSON.read_text()
