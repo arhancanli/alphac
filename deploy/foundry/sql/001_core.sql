@@ -31,12 +31,12 @@ CREATE TABLE foundry.lifecycle_transition (
     source_state TEXT NOT NULL REFERENCES foundry.lifecycle_state(name),
     target_state TEXT NOT NULL REFERENCES foundry.lifecycle_state(name),
     action TEXT NOT NULL,
-    authorization TEXT NOT NULL CHECK (authorization IN ('human', 'system')),
+    authorization_kind TEXT NOT NULL CHECK (authorization_kind IN ('human', 'system')),
     allowed_roles TEXT[] NOT NULL DEFAULT '{}',
     PRIMARY KEY (source_state, target_state, action),
     CHECK (
-        (authorization = 'human' AND cardinality(allowed_roles) > 0)
-        OR (authorization = 'system' AND cardinality(allowed_roles) = 0)
+        (authorization_kind = 'human' AND cardinality(allowed_roles) > 0)
+        OR (authorization_kind = 'system' AND cardinality(allowed_roles) = 0)
     )
 );
 
@@ -219,9 +219,9 @@ BEGIN
        AND target_state = p_target_state
        AND action = p_action;
 
-    IF permitted.authorization <> p_actor_kind THEN
+    IF permitted.authorization_kind <> p_actor_kind THEN
         RAISE EXCEPTION 'transition % requires % authorization',
-            p_action, permitted.authorization;
+            p_action, permitted.authorization_kind;
     END IF;
     IF p_actor_kind = 'human' AND NOT (p_actor_role = ANY(permitted.allowed_roles)) THEN
         RAISE EXCEPTION 'actor role is not authorized for transition %', p_action;

@@ -140,7 +140,7 @@ class FoundryDatabase:
             cursor.executemany(
                 """
                 INSERT INTO foundry.lifecycle_transition (
-                    source_state, target_state, action, authorization, allowed_roles
+                    source_state, target_state, action, authorization_kind, allowed_roles
                 ) VALUES (%s, %s, %s, %s, %s)
                 """,
                 contract.database_transitions(),
