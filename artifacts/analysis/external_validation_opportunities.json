@@ -1,10 +1,10 @@
 {
   "claim_boundary": "This is a dated official-source opportunity audit. It proves no personal eligibility, registration, submission, judging, advancement, award, review, publication, or Stanford admissions outcome. Rules and deadlines must be rechecked immediately before any authorized external action.",
-  "content_hash": "sha256:9a5ef9eed1406fd32d3fb0f2b93ff58a102b1a3794263e870dc6bb90b4a4cf4a",
+  "content_hash": "sha256:4976c04c5b5afce09a141b41383699d35ffc08de22e341f7189eb1cbad69e99d",
   "counts": {
     "awarded": 0,
-    "exact_future_deadlines": 2,
-    "opportunities": 6,
+    "exact_future_deadlines": 3,
+    "opportunities": 7,
     "registered": 0,
     "registration_authorized": 0,
     "submitted": 0
@@ -143,6 +143,48 @@
       "window_opens": "2026-09-16"
     },
     {
+      "competition_calendar": {
+        "top_100_announced": "2027-04-05",
+        "top_10_announced": "2027-05-04",
+        "top_30_announced": "2027-04-22",
+        "winners_announced": "2027-05-13"
+      },
+      "eligibility": {
+        "age": "14-18 at registration",
+        "language": "English",
+        "location": "worldwide and virtual",
+        "school_status": "high-school student",
+        "team_size": "1-5 students"
+      },
+      "entry_claimed": false,
+      "entry_requirements": {
+        "course": "complete the official Blue Ocean mini-course",
+        "pitch": "English video under five minutes and under 1 GB",
+        "playback": "normal speed; artificially accelerated video is prohibited"
+      },
+      "exact_deadline": "2027-02-21_LOCAL_MIDNIGHT",
+      "fit": "A concise evidence-first product pitch that defines the research-verification problem, intended user, alternatives, and tested value proposition.",
+      "id": "blue_ocean_student_competition_2027",
+      "kind": "VENTURE_PITCH_COMPETITION",
+      "name": "Blue Ocean Student Entrepreneur Competition 2027",
+      "next_action": "Use this only as a solo-capable fallback after customer interviews. Recheck the official rules and AI policy before any authorized submission, and keep the pitch separate from scientific-validation claims.",
+      "official_sources": [
+        "https://blueoceancompetition.org/compete/"
+      ],
+      "priority": 4,
+      "public_status": "Registration is open and the pitch deadline is February 21, 2027 at midnight in the participant's local time; personal eligibility remains unresolved.",
+      "registration_authorized": false,
+      "source_checked_on": "2026-08-26",
+      "state": "REGISTRATION_OPEN_PERSONAL_ELIGIBILITY_UNRESOLVED",
+      "unknowns": [
+        "Arhan's age and high-school status at registration",
+        "whether a solo or team entry best reflects actual contribution",
+        "whether customer evidence supports a distinct market rather than a technology demo",
+        "the current competition's AI-assistance and disclosure policy"
+      ],
+      "validation_boundary": "Judging a venture pitch does not validate ALPHAC's software correctness, research claims, strategy returns, or forward objectives."
+    },
+    {
       "eligibility": {
         "advisor": "designated teacher or project supervisor",
         "grade": "5-12 in a UAE public, private, or vocational institute",
@@ -159,7 +201,7 @@
       "official_sources": [
         "https://e.moe.gov.ae/ords/moe/r/nsti/eysc"
       ],
-      "priority": 4,
+      "priority": 5,
       "public_status": "The next cycle date and Arhan's eligible entry route are unresolved.",
       "registration_authorized": false,
       "source_checked_on": "2026-08-26",
@@ -187,7 +229,7 @@
         "https://conrad.spacecenter.org/about-challenge/",
         "https://conrad.spacecenter.org/participate/student-innovators/"
       ],
-      "priority": 5,
+      "priority": 6,
       "public_status": "The current cycle is confirmed; exact phase dates are unresolved.",
       "registration_authorized": false,
       "source_checked_on": "2026-08-26",
@@ -224,7 +266,7 @@
       "official_sources": [
         "https://www.nyas.org/learning/high-school-research-programs/the-junior-academy/"
       ],
-      "priority": 6,
+      "priority": 7,
       "public_status": "Fall 2026 is closed; the next application window is unresolved.",
       "registration_authorized": false,
       "source_checked_on": "2026-08-26",
@@ -240,9 +282,10 @@
     "1. Regeneron ISEF 2027 through an affiliated fair: The official 2025-2026 directory returns no UAE fair; the 2026-2027 directory and personal eligibility remain unresolved.",
     "2. Wharton Global High School Investment Competition 2026-2027: Registration closes September 11 at 5:00 p.m. ET; the team and school advisor are unresolved.",
     "3. Diamond Challenge 2027: The window opens September 16; the team and advisor are unresolved.",
-    "4. Emirates Young Scientist Competition, next announced cycle: The next cycle date and Arhan's eligible entry route are unresolved.",
-    "5. Conrad Challenge 2026-2027: The current cycle is confirmed; exact phase dates are unresolved.",
-    "6. New York Academy of Sciences Junior Academy, next open cohort: Fall 2026 is closed; the next application window is unresolved."
+    "4. Blue Ocean Student Entrepreneur Competition 2027: Registration is open and the pitch deadline is February 21, 2027 at midnight in the participant's local time; personal eligibility remains unresolved.",
+    "5. Emirates Young Scientist Competition, next announced cycle: The next cycle date and Arhan's eligible entry route are unresolved.",
+    "6. Conrad Challenge 2026-2027: The current cycle is confirmed; exact phase dates are unresolved.",
+    "7. New York Academy of Sciences Junior Academy, next open cohort: Fall 2026 is closed; the next application window is unresolved."
   ],
   "owner_and_applicant": "Arhan Canli",
   "owner_facts_required": [

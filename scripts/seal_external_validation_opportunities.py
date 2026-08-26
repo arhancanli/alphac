@@ -178,6 +178,62 @@ def build() -> dict[str, Any]:
         },
         {
             "priority": 4,
+            "id": "blue_ocean_student_competition_2027",
+            "name": "Blue Ocean Student Entrepreneur Competition 2027",
+            "kind": "VENTURE_PITCH_COMPETITION",
+            "fit": (
+                "A concise evidence-first product pitch that defines the research-verification "
+                "problem, intended user, alternatives, and tested value proposition."
+            ),
+            "validation_boundary": (
+                "Judging a venture pitch does not validate ALPHAC's software correctness, "
+                "research claims, strategy returns, or forward objectives."
+            ),
+            "state": "REGISTRATION_OPEN_PERSONAL_ELIGIBILITY_UNRESOLVED",
+            "public_status": (
+                "Registration is open and the pitch deadline is February 21, 2027 at midnight "
+                "in the participant's local time; personal eligibility remains unresolved."
+            ),
+            "registration_authorized": False,
+            "entry_claimed": False,
+            "source_checked_on": "2026-08-26",
+            "eligibility": {
+                "age": "14-18 at registration",
+                "school_status": "high-school student",
+                "location": "worldwide and virtual",
+                "team_size": "1-5 students",
+                "language": "English",
+            },
+            "entry_requirements": {
+                "course": "complete the official Blue Ocean mini-course",
+                "pitch": "English video under five minutes and under 1 GB",
+                "playback": "normal speed; artificially accelerated video is prohibited",
+            },
+            "exact_deadline": "2027-02-21_LOCAL_MIDNIGHT",
+            "competition_calendar": {
+                "top_100_announced": "2027-04-05",
+                "top_30_announced": "2027-04-22",
+                "top_10_announced": "2027-05-04",
+                "winners_announced": "2027-05-13",
+            },
+            "unknowns": [
+                "Arhan's age and high-school status at registration",
+                "whether a solo or team entry best reflects actual contribution",
+                (
+                    "whether customer evidence supports a distinct market rather than a "
+                    "technology demo"
+                ),
+                "the current competition's AI-assistance and disclosure policy",
+            ],
+            "next_action": (
+                "Use this only as a solo-capable fallback after customer interviews. Recheck "
+                "the official rules and AI policy before any authorized submission, and keep "
+                "the pitch separate from scientific-validation claims."
+            ),
+            "official_sources": ["https://blueoceancompetition.org/compete/"],
+        },
+        {
+            "priority": 5,
             "id": "emirates_young_scientist_next_cycle",
             "name": "Emirates Young Scientist Competition, next announced cycle",
             "kind": "SCIENTIFIC_COMPETITION",
@@ -207,7 +263,7 @@ def build() -> dict[str, Any]:
             "official_sources": ["https://e.moe.gov.ae/ords/moe/r/nsti/eysc"],
         },
         {
-            "priority": 5,
+            "priority": 6,
             "id": "conrad_challenge_2026_2027",
             "name": "Conrad Challenge 2026-2027",
             "kind": "STEM_VENTURE_COMPETITION",
@@ -235,7 +291,7 @@ def build() -> dict[str, Any]:
             ],
         },
         {
-            "priority": 6,
+            "priority": 7,
             "id": "nyas_junior_academy_next_window",
             "name": "New York Academy of Sciences Junior Academy, next open cohort",
             "kind": "MENTORED_STEM_PROGRAM",
