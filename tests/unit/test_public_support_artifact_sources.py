@@ -21,6 +21,9 @@ FAMILY_SOURCES = {name: source for name, source, _, _ in EXPORT.FINAL_FAMILY_FIL
 
 SOURCES = {
     "alphamax_construction_arms.json": EXPORT.ALPHAMAX_CONSTRUCTION_ARMS_JSON,
+    "active_ownership_human_gate_audit.json": (
+        EXPORT.ACTIVE_OWNERSHIP_HUMAN_GATE_AUDIT_JSON
+    ),
     "alphavintage_corrected_result.json": EXPORT.ALPHAVINTAGE_RESULT_JSON,
     "crypto_carry_2022_tail.json": EXPORT.CRYPTO_CARRY_2022_TAIL_JSON,
     "crypto_carry_grand_matrix.json": EXPORT.CRYPTO_CARRY_GRAND_MATRIX_JSON,
