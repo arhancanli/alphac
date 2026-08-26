@@ -50,6 +50,12 @@ def test_external_publication_registry_is_honest_and_source_bound() -> None:
     assert report["external_review"]["author_audit_worksheets"] == 16
     assert report["external_review"]["author_audits_completed"] == 0
     assert report["external_review"]["author_approvals"] == 0
+    assert report["external_review"]["author_approval_workflow"] == {
+        "status": "AVAILABLE_ZERO_SELF_ATTESTED_APPROVALS",
+        "approval_receipts_imported": 0,
+        "software_proves_author_identity": False,
+        "automation_may_complete_response": False,
+    }
     assert report["external_review"]["fresh_context_reader_packets"] == 16
     assert report["external_review"]["fresh_context_readers_assigned"] == 0
     assert report["external_review"]["fresh_context_reader_reviews_completed"] == 0
@@ -77,6 +83,12 @@ def test_external_publication_registry_is_honest_and_source_bound() -> None:
     assert report["submission_blockers"] > 0
     assert report["source_bindings"]["bundles"]["alphavintage_macro_surprise"]["path"] == (
         "publication/alphavintage/v1.0.0/bundle_manifest.json"
+    )
+    assert report["source_bindings"]["author_technical_approval_protocol"]["path"] == (
+        "docs/design/AUTHOR_TECHNICAL_APPROVAL_PROTOCOL.md"
+    )
+    assert report["source_bindings"]["author_technical_approval_verifier"]["path"] == (
+        "scripts/verify_author_technical_approval.py"
     )
     assert report["content_hash"] == module._content_hash(report)
 

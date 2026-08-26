@@ -22,6 +22,10 @@ REVIEWER_PACKETS: Final = ROOT / "artifacts" / "publication" / "external_reviewe
 AUTHOR_AUDIT_WORKSHEETS: Final = (
     ROOT / "artifacts" / "publication" / "author_technical_audits.json"
 )
+AUTHOR_APPROVAL_PROTOCOL: Final = (
+    ROOT / "docs" / "design" / "AUTHOR_TECHNICAL_APPROVAL_PROTOCOL.md"
+)
+AUTHOR_APPROVAL_VERIFIER: Final = ROOT / "scripts" / "verify_author_technical_approval.py"
 FRESH_CONTEXT_READER_PACKETS: Final = (
     ROOT / "artifacts" / "publication" / "fresh_context_reader_packets.json"
 )
@@ -510,6 +514,12 @@ def build() -> dict[str, Any]:
             "author_audit_worksheets": author_audits.get("worksheets"),
             "author_audits_completed": author_audits.get("author_audits_completed"),
             "author_approvals": author_audits.get("author_approvals"),
+            "author_approval_workflow": {
+                "status": "AVAILABLE_ZERO_SELF_ATTESTED_APPROVALS",
+                "approval_receipts_imported": author_audits.get("author_approvals"),
+                "software_proves_author_identity": False,
+                "automation_may_complete_response": False,
+            },
             "fresh_context_reader_packets": fresh_context_readers.get("papers"),
             "fresh_context_readers_assigned": fresh_context_readers.get("readers_assigned"),
             "fresh_context_reader_reviews_completed": fresh_context_readers.get(
@@ -564,6 +574,14 @@ def build() -> dict[str, Any]:
                 "path": str(AUTHOR_AUDIT_WORKSHEETS.relative_to(ROOT)),
                 "sha256": _sha256(AUTHOR_AUDIT_WORKSHEETS),
                 "content_hash": author_audits.get("content_hash"),
+            },
+            "author_technical_approval_protocol": {
+                "path": str(AUTHOR_APPROVAL_PROTOCOL.relative_to(ROOT)),
+                "sha256": _sha256(AUTHOR_APPROVAL_PROTOCOL),
+            },
+            "author_technical_approval_verifier": {
+                "path": str(AUTHOR_APPROVAL_VERIFIER.relative_to(ROOT)),
+                "sha256": _sha256(AUTHOR_APPROVAL_VERIFIER),
             },
             "fresh_context_reader_packets": {
                 "path": str(FRESH_CONTEXT_READER_PACKETS.relative_to(ROOT)),
