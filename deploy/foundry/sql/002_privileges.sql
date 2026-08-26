@@ -14,7 +14,7 @@ GRANT EXECUTE ON FUNCTION foundry.transition_trial(
 ) TO foundry_researchd;
 GRANT EXECUTE ON FUNCTION foundry.enqueue_job(
     UUID, UUID, TEXT, TEXT, TEXT, TEXT, INTEGER, INTEGER, INTEGER, INTEGER,
-    INTEGER, TEXT, SMALLINT
+    INTEGER, TEXT, INTEGER
 ) TO foundry_researchd;
 
 GRANT EXECUTE ON FUNCTION foundry.claim_job(TEXT, INTEGER) TO foundry_worker;
