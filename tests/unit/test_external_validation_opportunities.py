@@ -75,7 +75,11 @@ def test_high_priority_rules_preserve_verified_constraints() -> None:
 
     wharton = rows["wharton_investment_2026_2027"]
     assert wharton["eligibility"]["team_size"] == "4-6 students from the same school"
+    assert wharton["eligibility"]["team_leader"] == (
+        "at least 16 years old at the start of the competition"
+    )
     assert wharton["eligibility"]["registration_actor"] == "advisor, not student"
+    assert "may not submit AI-generated work as their own" in wharton["ai_boundary"]
     assert wharton["exact_deadline"] is None
 
     diamond = rows["diamond_challenge_2027"]
