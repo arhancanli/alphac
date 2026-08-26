@@ -43,6 +43,17 @@ def _sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def _canonical_hash(value: object) -> str:
+    encoded = json.dumps(
+        value,
+        sort_keys=True,
+        separators=(",", ":"),
+        ensure_ascii=True,
+        allow_nan=False,
+    ).encode("ascii")
+    return f"sha256:{hashlib.sha256(encoded).hexdigest()}"
+
+
 def verify() -> dict[str, Any]:
     missing = [str(path) for path in FILES if not (ROOT / path).is_file()]
     if missing:
@@ -160,6 +171,76 @@ def verify() -> dict[str, Any]:
             "This receipt verifies committed local contracts. It is not a Terraform plan, cloud "
             "inventory, deployment, network probe, database integration test or restore receipt."
         ),
+        "design_status": {
+            "deployment": deployment["status"],
+            "runtime": runtime["status"],
+            "lifecycle": lifecycle["status"],
+            "acceptance": "INCOMPLETE_NOT_OPERATIONAL",
+        },
+        "architecture": {
+            "provider": deployment["provider"]["name"],
+            "research_services": deployment["compute"]["research_node"][
+                "rootless_services"
+            ],
+            "research_and_holdout_separate": (
+                deployment["networks"]["holdout"]["peered_with_research"] is False
+            ),
+            "execution_managed_by_foundry": deployment["networks"]["execution"][
+                "managed_by_this_manifest"
+            ],
+            "execution_reachable_from_research": deployment["networks"]["execution"][
+                "reachable_from_research"
+            ],
+            "broker_write_access": any(
+                component["broker_write_access"]
+                for component in runtime["components"].values()
+            ),
+            "database": {
+                "engine": deployment["database"]["engine"],
+                "version": deployment["database"]["version"],
+                "queue_mechanism": deployment["database"]["queue_mechanism"],
+            },
+        },
+        "lifecycle": {
+            "states": len(lifecycle["states"]),
+            "transitions": len(lifecycle["transitions"]),
+            "holdout_max_consumptions_per_identity": lifecycle["invariants"][
+                "holdout_max_consumptions_per_identity"
+            ],
+            "terminal_states_have_no_outbound_transitions": lifecycle["invariants"][
+                "terminal_states_have_no_outbound_transitions"
+            ],
+            "gate_failure_can_be_overridden": not lifecycle["invariants"][
+                "gate_failure_cannot_be_overridden_by_human_approval"
+            ],
+        },
+        "acceptance": {
+            "contract_status": receipt_contract["status"],
+            "required_receipts": len(deployment["acceptance_receipts_required"]),
+            "public_receipts_attached": 0,
+            "missing_receipts": sorted(deployment["acceptance_receipts_required"]),
+            "accepted_status": receipt_contract["accepted_status"],
+            "current_status": receipt_contract["incomplete_status"],
+        },
+        "first_migration": {
+            "status": migration["status"],
+            "public_trial_id": migration["trial"]["public_trial_id"],
+            "historical_identity_key": migration["trial"]["historical_identity_key"],
+            "preserved_state": migration["trial"]["state"],
+            "replay_status": migration["replay"]["status"],
+            "network_policy": migration["replay"]["network_policy"],
+            "max_attempts": migration["replay"]["max_attempts"],
+            "new_identity_spend_allowed": migration["security"][
+                "new_identity_spend_allowed"
+            ],
+        },
+        "contract_hashes": {
+            "deployment_manifest": _canonical_hash(deployment),
+            "runtime_contract": _canonical_hash(runtime),
+            "lifecycle_contract": _canonical_hash(lifecycle),
+            "acceptance_contract": _canonical_hash(receipt_contract),
+            "migration_packet": _canonical_hash(migration),
+        },
         "checks": {
             "files_present": not missing,
             "honest_statuses": not any("overclaims" in item for item in failures),
@@ -192,6 +273,7 @@ def verify() -> dict[str, Any]:
             {"path": str(path), "sha256": _sha256(ROOT / path)} for path in sorted(FILES)
         ],
     }
+    receipt["content_hash"] = _canonical_hash(receipt)
     return receipt
 
 
