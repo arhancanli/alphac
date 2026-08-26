@@ -19,13 +19,17 @@ def _module():
 def test_all_sleeves_exclude_raw_rows_without_claiming_rights_clearance() -> None:
     module = _module()
     report = module.build()
-    assert report["status"] == "PASS_RAW_ROW_EXCLUSION_RIGHTS_REVIEW_INCOMPLETE"
+    assert report["status"] == (
+        "PASS_RAW_ROW_EXCLUSION_PUBLIC_TERMS_REVIEW_COMPLETE_CLEARANCE_INCOMPLETE"
+    )
     assert report["counts"] == {
         "planned_sleeves": 16,
         "audited_sleeves": 16,
         "raw_row_free_bundles": 16,
         "source_mapping_complete": 16,
         "data_license_reviews_complete": 0,
+        "public_terms_reviews_complete": 16,
+        "external_publication_clearances_complete": 0,
         "policy_source_classes": 10,
     }
     assert report["raw_third_party_rows_released"] is False
@@ -33,6 +37,10 @@ def test_all_sleeves_exclude_raw_rows_without_claiming_rights_clearance() -> Non
     assert report["failures"] == []
     assert all(not record["bundle_raw_input_files"] for record in report["records"])
     assert all(record["source_dependencies"] for record in report["records"])
+    assert all(record["source_public_terms_review_complete"] for record in report["records"])
+    assert not any(
+        record["external_publication_clearance_complete"] for record in report["records"]
+    )
     assert not any(record["unresolved_source_dependencies"] for record in report["records"])
     assert report["content_hash"] == module._content_hash(report)
 

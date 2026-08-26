@@ -70,6 +70,8 @@ Boundary: Publishing an incomplete packet does not make it complete or reproduci
 - `raw_input_archive_members`: 0
 - `source_mappings_complete`: 16
 - `data_license_reviews_complete`: 0
+- `public_terms_reviews_complete`: 16
+- `external_publication_clearances_complete`: 0
 - `full_clean_workspace_reproductions`: 0
 - `portable_core_only_reproductions`: 0
 - `portable_full_decision_reproductions`: 1
@@ -80,12 +82,12 @@ Boundary: Archive integrity is not result replay or rights clearance; no DOI, ex
 
 ### The project refuses to infer success from an immature forward record.
 
-- `daily_return_observations`: 16
-- `cumulative_return`: -0.022914700000000066
+- `daily_return_observations`: 17
+- `cumulative_return`: -0.022751999999999994
 - `sharpe_status`: IMMATURE_RECORD_TOO_SHORT
 - `current_sleeves`: 4
 - `target_sleeves`: 14
-- `provenance_passes`: True
+- `provenance_passes`: False
 
 Boundary: The forward Sharpe, drawdown and diversification objectives are not established.
 

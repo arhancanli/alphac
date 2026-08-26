@@ -324,6 +324,17 @@ def build() -> dict[str, Any]:
             )
 
         unresolved = dependency.get("unresolved_source_dependencies", [])
+        public_terms_review_complete = bool(source_records) and all(
+            source.get("public_terms_review_status")
+            == "COMPLETE_CONSERVATIVE_DECISION_RECORDED"
+            and bool(source.get("terms_observed_on"))
+            and bool(source.get("terms_evidence"))
+            for source in source_records
+        )
+        external_publication_clearance_complete = bool(source_records) and all(
+            source.get("external_publication_clearance_recorded") is True
+            for source in source_records
+        )
         records.append(
             {
                 "registry_key": key,
@@ -340,19 +351,31 @@ def build() -> dict[str, Any]:
                 "data_manifest_license_review_complete": (
                     data_manifest.get("license_review_complete") is True
                 ),
+                "source_public_terms_review_complete": public_terms_review_complete,
+                "external_publication_clearance_complete": (
+                    external_publication_clearance_complete
+                ),
                 "release_decision": "RESULTS_MANIFESTS_AND_PAPERS_ONLY_RAW_INPUT_ROWS_EXCLUDED",
             }
         )
 
     raw_row_free = sum(not record["bundle_raw_input_files"] for record in records)
     rights_complete = sum(record["data_manifest_license_review_complete"] for record in records)
+    public_terms_complete = sum(
+        record["source_public_terms_review_complete"] for record in records
+    )
+    external_clearance_complete = sum(
+        record["external_publication_clearance_complete"] for record in records
+    )
     mapping_complete = sum(record["source_mapping_complete"] for record in records)
     document: dict[str, Any] = {
         "schema": "canli.alphac-all-sleeve-data-rights-audit.v1",
         "author": "Arhan Canli",
-        "review_date": "2026-08-24",
+        "review_date": policy["review_date"],
         "status": (
-            "PASS_RAW_ROW_EXCLUSION_RIGHTS_REVIEW_INCOMPLETE" if not failures else "FAIL"
+            "PASS_RAW_ROW_EXCLUSION_PUBLIC_TERMS_REVIEW_COMPLETE_CLEARANCE_INCOMPLETE"
+            if not failures and public_terms_complete == len(records)
+            else "FAIL"
         ),
         "counts": {
             "planned_sleeves": len(sleeves),
@@ -360,6 +383,8 @@ def build() -> dict[str, Any]:
             "raw_row_free_bundles": raw_row_free,
             "source_mapping_complete": mapping_complete,
             "data_license_reviews_complete": rights_complete,
+            "public_terms_reviews_complete": public_terms_complete,
+            "external_publication_clearances_complete": external_clearance_complete,
             "policy_source_classes": len(policy["sources"]),
         },
         "raw_third_party_rows_released": False,
@@ -367,7 +392,10 @@ def build() -> dict[str, Any]:
         "records": records,
         "failures": failures,
         "remaining_blockers": [
-            "ALL_DATA_MANIFESTS_REQUIRE_SOURCE_BY_SOURCE_LICENSE_REVIEW",
+            "ACCOUNT_SPECIFIC_LICENSE_OR_WRITTEN_PUBLICATION_PERMISSION_REQUIRED",
+            "MASSIVE_AND_NASDAQ_DERIVED_OUTPUT_PERMISSION_NOT_RECORDED",
+            "YAHOO_AND_BINANCE_DERIVED_OUTPUT_PUBLICATION_NOT_CLEARED",
+            "QUALIFIED_RIGHTS_REVIEW_REQUIRED_BEFORE_EXTERNAL_SUBMISSION",
             "LEGACY_EXACT_HISTORICAL_INPUT_ROW_RECEIPTS_NOT_AVAILABLE_FOR_ALL_IDENTITIES",
             "CLEAN_ENVIRONMENT_REPLAY_NOT_COMPLETED",
             "INDEPENDENT_REPLICATION_NOT_COMPLETED",
@@ -381,9 +409,11 @@ def build() -> dict[str, Any]:
         },
         "claim_boundary": (
             "This audit proves only that all audited publication bundles exclude files with the "
-            "declared raw-input extensions and records a conservative source map. It is not legal "
-            "advice, does not grant redistribution rights, does not establish complete run-level "
-            "provenance, and does not constitute result reproduction or independent review."
+            "declared raw-input extensions, records a conservative source map, and binds every "
+            "source class to a dated public-terms decision. It is not legal advice, does not grant "
+            "account-specific or external-publication rights, does not establish complete "
+            "run-level provenance, and does not constitute result reproduction or independent "
+            "review."
         ),
     }
     if len(records) != len(sleeves) or raw_row_free != len(sleeves):

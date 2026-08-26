@@ -19,9 +19,14 @@ def _module():
 def test_wave1_raw_vendor_rows_are_excluded_and_sources_are_mapped() -> None:
     module = _module()
     report = module.build()
-    assert report["status"] == "PASS_CONSERVATIVE_EXCLUSION"
+    assert report["status"] == "PASS_PUBLIC_TERMS_REVIEW_COMPLETE_CLEARANCE_REQUIRED"
     assert report["wave1_papers"] == 5
     assert report["source_classes"] == 10
+    assert report["wave1_source_classes"] == 6
+    assert report["public_terms_reviews_complete"] == 6
+    assert report["external_publication_clearances_recorded"] == 0
+    assert report["source_public_terms_review_complete"] is True
+    assert report["external_publication_clearance_complete"] is False
     assert report["raw_vendor_rows_released"] is False
     assert report["failures"] == []
     assert all(not record["bundle_raw_tabular_files"] for record in report["records"])

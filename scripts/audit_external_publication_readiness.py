@@ -236,11 +236,18 @@ def build() -> dict[str, Any]:
     data_rights_hash = f"sha256:{hashlib.sha256(_canonical(data_rights_body)).hexdigest()}"
     if (
         data_rights.get("content_hash") != data_rights_hash
-        or data_rights.get("status") != "PASS_RAW_ROW_EXCLUSION_RIGHTS_REVIEW_INCOMPLETE"
+        or data_rights.get("status")
+        != "PASS_RAW_ROW_EXCLUSION_PUBLIC_TERMS_REVIEW_COMPLETE_CLEARANCE_INCOMPLETE"
         or data_rights.get("counts", {}).get("audited_sleeves") != len(sleeves)
         or data_rights.get("counts", {}).get("raw_row_free_bundles") != len(sleeves)
         or data_rights.get("counts", {}).get("source_mapping_complete") != len(sleeves)
         or data_rights.get("counts", {}).get("data_license_reviews_complete") != 0
+        or data_rights.get("counts", {}).get("public_terms_reviews_complete")
+        != len(sleeves)
+        or data_rights.get("counts", {}).get(
+            "external_publication_clearances_complete"
+        )
+        != 0
         or data_rights.get("redistribution_rights_cleared_for_all_sleeves") is not False
     ):
         failures.append("ALL_SLEEVE_DATA_RIGHTS_AUDIT_INVALID")
@@ -473,6 +480,12 @@ def build() -> dict[str, Any]:
             "data_license_reviews_complete": data_rights.get("counts", {}).get(
                 "data_license_reviews_complete"
             ),
+            "public_terms_reviews_complete": data_rights.get("counts", {}).get(
+                "public_terms_reviews_complete"
+            ),
+            "external_publication_clearances_complete": data_rights.get(
+                "counts", {}
+            ).get("external_publication_clearances_complete"),
             "redistribution_rights_cleared_for_all_sleeves": False,
         },
         "manuscript_style": {
