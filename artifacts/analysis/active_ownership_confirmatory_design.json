@@ -26,7 +26,7 @@
       "point_threshold": 0.8
     }
   },
-  "content_hash": "sha256:daa7acaf8815357d947206917975655a755397fb749513c66caf40d94fa41a06",
+  "content_hash": "sha256:e3d59019b4e470b024e46cf38cca2dbc3ddd17775bf8adad8c4300695704fad0",
   "corpus_acquired": false,
   "corpus_frozen": false,
   "current_cache": {
@@ -108,6 +108,11 @@
     "target_rows": 640
   },
   "source_bindings": {
+    "compact_input_receipt": {
+      "content_hash": "sha256:5bc7c9bc6087d05aa28e1a00431355c9a68b12013e5cc25cedf27ece9824faf3",
+      "path": "config/active_ownership_confirmatory_design_inputs.json",
+      "sha256": "e2523a2621f73a2284fa9a40954d2b5a76ac17a5e359b8e59f6bbf05be380650"
+    },
     "feasibility_result": {
       "path": "artifacts/feasibility/active_ownership_13d_item4_v3/result.json",
       "sha256": "6443ae40f358330bf9ca4512d09aebc834b962385de703483a2c2f2e795901c5"

@@ -9,8 +9,6 @@ import sys
 from pathlib import Path
 from typing import Any, Final
 
-import pandas as pd
-
 ROOT: Final = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
@@ -18,28 +16,8 @@ from audit_active_ownership_human_gate import (  # noqa: E402
     exact_one_sided_lower_bound,
 )
 
-METADATA_RESULT: Final = (
-    ROOT / "artifacts" / "feasibility" / "active_ownership_13d_schema_v2" / "result.json"
-)
-HEADER_AUDIT: Final = (
-    ROOT
-    / "artifacts"
-    / "feasibility"
-    / "active_ownership_13d_schema_v2"
-    / "header_audit.parquet"
-)
-ORIGINAL_SAMPLE: Final = (
-    ROOT
-    / "artifacts"
-    / "feasibility"
-    / "active_ownership_13d_item4_v3"
-    / "locked_document_sample.csv"
-)
-FEASIBILITY_RESULT: Final = (
-    ROOT / "artifacts" / "feasibility" / "active_ownership_13d_item4_v3" / "result.json"
-)
-POINT_GATE_AUDIT: Final = (
-    ROOT / "artifacts" / "analysis" / "active_ownership_human_gate_audit.json"
+INPUT_SNAPSHOT: Final = (
+    ROOT / "config" / "active_ownership_confirmatory_design_inputs.json"
 )
 PROTOCOL: Final = ROOT / "docs" / "design" / "ACTIVE_OWNERSHIP_CONFIRMATORY_CORPUS_PROTOCOL.md"
 OUTPUT: Final = ROOT / "artifacts" / "analysis" / "active_ownership_confirmatory_design.json"
@@ -77,20 +55,32 @@ def _maximum_failures_that_pass(success_denominator: int, threshold: float) -> i
 
 
 def build() -> dict[str, Any]:
-    metadata = json.loads(METADATA_RESULT.read_text(encoding="utf-8"))
-    feasibility = json.loads(FEASIBILITY_RESULT.read_text(encoding="utf-8"))
-    point_audit = json.loads(POINT_GATE_AUDIT.read_text(encoding="utf-8"))
-    headers = pd.read_parquet(HEADER_AUDIT)
-    original = pd.read_csv(ORIGINAL_SAMPLE, dtype={"accession": str})
+    snapshot = json.loads(INPUT_SNAPSHOT.read_text(encoding="utf-8"))
+    if (
+        snapshot.get("schema")
+        != "canli.alphac-active-ownership-confirmatory-design-inputs.v1"
+        or snapshot.get("status")
+        != "SEALED_COMPACT_INPUT_RECEIPT_RAW_WORKSPACE_SOURCES_NOT_INCLUDED"
+        or snapshot.get("content_hash") != content_hash(snapshot)
+    ):
+        raise ValueError("confirmatory-design input receipt is invalid")
+    values = snapshot["governed_values"]
+    metadata = values["metadata"]
+    headers = values["header_audit"]
+    original = values["original_document_sample"]
+    feasibility = values["feasibility"]
+    point_audit = values["point_gate_audit"]
 
     if metadata.get("decision") != "PASS_TO_DOCUMENT_FEASIBILITY":
         raise ValueError("Schedule 13D metadata feasibility is not in the governed pass state")
-    if metadata.get("unique_initial_accessions") != 22_353 or len(headers) != 800:
+    if metadata.get("unique_initial_accessions") != 22_353 or headers.get("rows") != 800:
         raise ValueError("Schedule 13D metadata universe or cached header sample changed")
-    if len(original) != 160 or set(original["year"].astype(int)) != set(YEARS):
+    if (
+        original.get("rows") != 160
+        or original.get("unique_accessions") != 160
+        or original.get("rows_by_year") != {str(year): 10 for year in YEARS}
+    ):
         raise ValueError("original document corpus is not the governed 160-row design")
-    if not original.groupby("year").size().eq(10).all():
-        raise ValueError("original document corpus must contain ten rows per year")
     if (
         point_audit.get("stage") != "PROSPECTIVE_PRE_LABEL_PRE_RETURN_GATE_AUDIT"
         or point_audit.get("governance", {}).get("labels_opened") is not False
@@ -100,26 +90,19 @@ def build() -> dict[str, Any]:
     if feasibility.get("return_data_opened") is not False:
         raise ValueError("return boundary is already open")
 
-    original_accessions = set(original["accession"].astype(str))
-    cached_eligible = headers[
-        headers["error"].isna()
-        & headers["acceptance_datetime"].notna()
-        & headers["subject_cik"].notna()
-        & headers["filed_by_cik"].notna()
-        & headers["ticker_match_count"].eq(1)
-        & ~headers["accession"].astype(str).isin(original_accessions)
-    ].copy()
-    cached_by_year = {
-        str(year): int((cached_eligible["year"].astype(int) == year).sum()) for year in YEARS
-    }
-    if len(cached_eligible) != 218 or min(cached_by_year.values()) != 5:
+    cached_by_year = headers["eligible_disjoint_by_year"]
+    if (
+        set(cached_by_year) != {str(year) for year in YEARS}
+        or headers.get("eligible_disjoint_rows") != 218
+        or sum(cached_by_year.values()) != 218
+        or headers.get("minimum_year_count") != 5
+        or min(cached_by_year.values()) != 5
+    ):
         raise ValueError("cached disjoint eligibility inventory changed; re-audit the design")
 
     observed_positive_rate = float(feasibility["specific_active_intent_rate"])
     expected_predicted_positives = round(TARGET_ROWS * observed_positive_rate)
-    minimum_denominators = point_audit["statistical_establishment_audit"][
-        "minimum_all_success_denominators"
-    ]
+    minimum_denominators = point_audit["minimum_all_success_denominators"]
     expected_precision_failures = _maximum_failures_that_pass(
         expected_predicted_positives, PRECISION_THRESHOLD
     )
@@ -158,7 +141,7 @@ def build() -> dict[str, Any]:
                 "exactly one contemporaneous ticker mapping",
                 "accession absent from the original 160-document feasibility corpus",
             ],
-            "original_accessions_excluded": len(original_accessions),
+            "original_accessions_excluded": original["unique_accessions"],
         },
         "selection": {
             "namespace": SELECTION_NAMESPACE,
@@ -177,8 +160,8 @@ def build() -> dict[str, Any]:
             "selection_uses_prices_or_returns": False,
         },
         "current_cache": {
-            "headers": len(headers),
-            "eligible_disjoint_rows": len(cached_eligible),
+            "headers": headers["rows"],
+            "eligible_disjoint_rows": headers["eligible_disjoint_rows"],
             "eligible_disjoint_by_year": cached_by_year,
             "minimum_year_count": min(cached_by_year.values()),
             "sufficient_for_design": False,
@@ -227,27 +210,12 @@ def build() -> dict[str, Any]:
         "decision": "PROTOCOL_FROZEN_EXECUTION_CONDITIONAL_ON_ORIGINAL_POINT_GATE_PASS",
         "source_bindings": {
             "protocol": {"path": str(PROTOCOL.relative_to(ROOT)), "sha256": sha256_file(PROTOCOL)},
-            "metadata_result": {
-                "path": str(METADATA_RESULT.relative_to(ROOT)),
-                "sha256": sha256_file(METADATA_RESULT),
+            "compact_input_receipt": {
+                "path": str(INPUT_SNAPSHOT.relative_to(ROOT)),
+                "sha256": sha256_file(INPUT_SNAPSHOT),
+                "content_hash": snapshot["content_hash"],
             },
-            "header_audit": {
-                "path": str(HEADER_AUDIT.relative_to(ROOT)),
-                "sha256": sha256_file(HEADER_AUDIT),
-            },
-            "original_document_sample": {
-                "path": str(ORIGINAL_SAMPLE.relative_to(ROOT)),
-                "sha256": sha256_file(ORIGINAL_SAMPLE),
-            },
-            "feasibility_result": {
-                "path": str(FEASIBILITY_RESULT.relative_to(ROOT)),
-                "sha256": sha256_file(FEASIBILITY_RESULT),
-            },
-            "point_gate_audit": {
-                "path": str(POINT_GATE_AUDIT.relative_to(ROOT)),
-                "sha256": sha256_file(POINT_GATE_AUDIT),
-                "content_hash": point_audit["content_hash"],
-            },
+            **snapshot["raw_source_bindings"],
         },
         "claim_boundary": (
             "This receipt freezes a future disjoint classifier-confirmation design. It proves no "
