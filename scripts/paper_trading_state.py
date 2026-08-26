@@ -915,7 +915,8 @@ def transparency_entries() -> list[str]:
     Append-only in spirit — corrections are ADDED, never swapped in over an old claim.
     """
     return [
-        "Research curves are simulations. No real capital has been deployed.",
+        "Research curves are simulations. No funded performance is included in the published "
+        "ALPHAC strategy record.",
         "2026-06-29 RE-BASELINE (v1 -> v2): on this date the flagship ALPHAC (a) folded AlphaTrend "
         "(managed-futures trend) into the book as a 3rd decorrelated sleeve at a modest 20% weight "
         f"({WEIGHTS_PROSE}), and (b) gained a DISCLOSED +20% strategic net-long overlay (0.5 BTC + 0.5 "
