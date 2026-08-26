@@ -26,6 +26,9 @@ def test_persisted_packet_is_complete_prediction_blind_and_hash_bound() -> None:
     assert len(list((out / "documents").glob("*.txt"))) == 48
     attestation = json.loads((out / "reviewer_attestation.json").read_text())
     assert not any(value is True for value in attestation.values())
+    assert attestation["no_automated_or_ai_labeling_assistance"] is False
+    assert attestation["no_outcome_contingent_compensation"] is False
+    assert attestation["conflicts_disclosed_completely"] is False
     assert manifest["packet_files"]["reviewer_attestation_template_sha256"] == (
         MODULE.sha256_file(out / "reviewer_attestation.json")
     )

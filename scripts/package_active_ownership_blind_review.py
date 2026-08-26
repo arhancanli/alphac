@@ -80,6 +80,10 @@ def build_archive() -> tuple[bytes, dict[str, Any]]:
     blank_fields = (
         "reviewer_name",
         "reviewer_role",
+        "reviewer_affiliation",
+        "relationship_to_researcher",
+        "compensation_or_incentive",
+        "conflicts_of_interest",
         "completed_at",
         "packet_manifest_content_hash",
     )

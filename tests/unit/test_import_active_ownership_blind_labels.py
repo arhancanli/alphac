@@ -18,7 +18,16 @@ SPEC.loader.exec_module(MODULE)
 def _complete(template: Path, destination: Path) -> None:
     labels = pd.read_csv(template, dtype=str, keep_default_na=False)
     labels["human_specific_active_intent"] = "false"
-    labels["human_representative_sentence"] = "Representative source sentence."
+    documents = template.parent / "documents"
+    labels["human_representative_sentence"] = [
+        " ".join(
+            (documents / f"{packet_id}.txt")
+            .read_text(encoding="utf-8")
+            .partition("\n\n")[2]
+            .split()
+        )[:120]
+        for packet_id in labels["packet_id"]
+    ]
     labels["human_aggregate_ownership_pct_or_unresolved"] = "unresolved"
     labels.to_csv(destination, index=False)
 
@@ -51,11 +60,19 @@ def test_attestation_requires_all_independence_flags(tmp_path: Path) -> None:
             {
                 "reviewer_name": "Reviewer",
                 "reviewer_role": "Independent annotator",
+                "reviewer_affiliation": "Independent",
+                "relationship_to_researcher": "none",
+                "compensation_or_incentive": "none",
+                "conflicts_of_interest": "none",
                 "completed_at": "2026-08-22T00:00:00Z",
                 "packet_manifest_content_hash": "sha256:packet",
                 "independent_of_parser_development": True,
+                "independent_of_research_design": True,
                 "machine_outputs_not_consulted": False,
                 "prices_and_returns_not_consulted": True,
+                "no_automated_or_ai_labeling_assistance": True,
+                "no_outcome_contingent_compensation": True,
+                "conflicts_disclosed_completely": True,
                 "all_labels_are_personally_reviewed": True,
             }
         )
@@ -129,11 +146,19 @@ def test_valid_import_is_hash_bound_and_cannot_be_overwritten(tmp_path: Path) ->
             {
                 "reviewer_name": "Independent Reviewer",
                 "reviewer_role": "External source annotator",
+                "reviewer_affiliation": "Independent",
+                "relationship_to_researcher": "none",
+                "compensation_or_incentive": "none",
+                "conflicts_of_interest": "none",
                 "completed_at": "2026-08-23T12:00:00+04:00",
                 "packet_manifest_content_hash": manifest["content_hash"],
                 "independent_of_parser_development": True,
+                "independent_of_research_design": True,
                 "machine_outputs_not_consulted": True,
                 "prices_and_returns_not_consulted": True,
+                "no_automated_or_ai_labeling_assistance": True,
+                "no_outcome_contingent_compensation": True,
+                "conflicts_disclosed_completely": True,
                 "all_labels_are_personally_reviewed": True,
             }
         )
