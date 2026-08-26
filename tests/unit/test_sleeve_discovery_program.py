@@ -57,6 +57,13 @@ TREASURY_STATE_MACHINE_RESULT = (
     / "treasury_auction_concession"
     / "schedule_state_machine_audit.json"
 )
+MERGER_ANNOUNCEMENT_DESIGN_RESULT = (
+    Path(__file__).resolve().parents[2]
+    / "artifacts"
+    / "feasibility"
+    / "merger_arbitrage"
+    / "announcement_confirmatory_design.json"
+)
 PRE_FOMC_RESULT = (
     Path(__file__).resolve().parents[2]
     / "artifacts"
@@ -351,6 +358,29 @@ def test_retired_candidates_are_not_relisted_as_fresh_research() -> None:
     assert len(retired) >= 9
     assert active.isdisjoint(retired)
     assert all(candidate["verdict"] == "KILLED" for candidate in data["retired_candidates"])
+
+
+def test_merger_v2_is_a_disjoint_unopened_identity_redesign() -> None:
+    program = json.loads(PROGRAM.read_text())
+    result = json.loads(MERGER_ANNOUNCEMENT_DESIGN_RESULT.read_text())
+    candidate = next(
+        item for item in program["candidates"] if item["id"] == "merger_arbitrage"
+    )
+    redesign = candidate["announcement_identity_v2"]
+
+    assert candidate["status"] == "identity-redesign-required"
+    assert redesign["technical_decision"] == result["technical_decision"]
+    assert redesign["governance_decision"] == result["governance_decision"]
+    assert redesign["exploration_period"] == result["exploration_period"]
+    assert redesign["confirmation_period"] == result["confirmation_period"]
+    assert redesign["confirmation_target_rows"] == result["selection"]["target_rows"] == 400
+    assert redesign["rows_per_stratum"] == result["selection"]["rows_per_stratum"] == 200
+    assert redesign["strata"] == result["strata"]["values"] == ["DEFM14A", "SC 14D9"]
+    assert redesign["technical_authorship_approved"] is False
+    assert redesign["confirmation_corpus_opened"] is False
+    assert redesign["return_data_opened"] is False
+    assert redesign["return_hypotheses_spent"] == 0
+    assert redesign["content_hash"] == result["content_hash"]
 
 
 @pytest.mark.workspace_evidence

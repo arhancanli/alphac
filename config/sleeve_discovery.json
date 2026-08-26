@@ -288,7 +288,7 @@
       "production_data": "Point-in-time deal terms, revisions, breaks, votes, close dates and borrow costs",
       "provider_options": ["SEC EDGAR", "LSEG Deals", "FactSet Mergerstat"],
       "execution": ["Alpaca", "Interactive Brokers"],
-      "status": "data-gated",
+      "status": "identity-redesign-required",
       "feasibility": {
         "protocol": "docs/design/FEASIBILITY_MERGER_ARBITRAGE.md",
         "result": "artifacts/feasibility/merger_arbitrage/result.json",
@@ -297,6 +297,24 @@
         "target_anchors": 1965,
         "prior_8k_60d_rate": 0.6702290076335878,
         "later_outcome_540d_rate": 0.917557251908397
+      },
+      "announcement_identity_v2": {
+        "protocol": "docs/design/FEASIBILITY_MERGER_ANNOUNCEMENT_IDENTITY_V2.md",
+        "protocol_public": "/research/merger-announcement-identity-v2.md",
+        "result": "artifacts/feasibility/merger_arbitrage/announcement_confirmatory_design.json",
+        "result_public": "/glassbox/merger_announcement_confirmatory_design.json",
+        "technical_decision": "PASS_PROSPECTIVE_NO_RETURN_CONFIRMATORY_DESIGN",
+        "governance_decision": "AUTHOR_APPROVAL_REQUIRED",
+        "exploration_period": {"start": "2016-01-01", "end": "2025-12-31"},
+        "confirmation_period": {"start": "2006-01-01", "end": "2015-12-31"},
+        "confirmation_target_rows": 400,
+        "rows_per_stratum": 200,
+        "strata": ["DEFM14A", "SC 14D9"],
+        "technical_authorship_approved": false,
+        "confirmation_corpus_opened": false,
+        "return_data_opened": false,
+        "return_hypotheses_spent": 0,
+        "content_hash": "sha256:e2d294361c96994931849cef2e44faa464e3f2ab6a9ba1e05e9c4d6742f82b74"
       },
       "tender_only_document_feasibility": {
         "protocol": "docs/design/FEASIBILITY_TENDER_OFFER_SPREAD.md",

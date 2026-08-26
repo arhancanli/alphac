@@ -1,8 +1,9 @@
 """The redesign notes are a published document, so every number in them must trace to an artifact.
 
 WHY IT EXISTS. `IDENTITY_REDESIGN_NOTES.md` is prose, and prose is where a measured number turns
-back into a remembered one. It quotes counts from three artifacts: the spin-off language
-measurement, the two-family reachability measurement, and the form-universe audit. This file pins
+back into a remembered one. It quotes counts from four artifacts: the spin-off language
+measurement, the two-family reachability measurement, the form-universe audit, and the prospective
+merger confirmation design. This file pins
 each quoted figure to the artifact that produced it, so editing the note without re-running the
 measurement fails a test rather than shipping a confident sentence.
 
@@ -22,6 +23,13 @@ NOTES = REPO / "docs" / "design" / "IDENTITY_REDESIGN_NOTES.md"
 SPINOFF_LANGUAGE = REPO / "artifacts" / "analysis" / "spinoff_prorata_gate" / "result.json"
 REACHABILITY = REPO / "artifacts" / "analysis" / "feasibility_gate_reachability" / "result.json"
 FORM_UNIVERSE = REPO / "artifacts" / "analysis" / "spinoff_form_universe" / "result.json"
+MERGER_DESIGN = (
+    REPO
+    / "artifacts"
+    / "feasibility"
+    / "merger_arbitrage"
+    / "announcement_confirmatory_design.json"
+)
 
 
 def _notes() -> str:
@@ -117,7 +125,7 @@ def test_every_measurement_shaped_number_in_the_note_traces_to_an_artifact() -> 
     way — every measurement-shaped token in the note must be derivable from an artifact.
     """
     allowed = set(NON_MEASUREMENTS)
-    for artifact in (SPINOFF_LANGUAGE, REACHABILITY, FORM_UNIVERSE):
+    for artifact in (SPINOFF_LANGUAGE, REACHABILITY, FORM_UNIVERSE, MERGER_DESIGN):
         allowed |= _walk(json.loads(artifact.read_text()))
 
     tokens = set(re.findall(r"\d+(?:\.\d+)?%|\d+\.\d+|\b\d{3,}\b", _notes()))

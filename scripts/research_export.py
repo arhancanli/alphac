@@ -224,6 +224,13 @@ ACTIVE_OWNERSHIP_HUMAN_GATE_AUDIT_JSON: Final[Path] = (
 ACTIVE_OWNERSHIP_CONFIRMATORY_DESIGN_JSON: Final[Path] = (
     REPO / "artifacts" / "analysis" / "active_ownership_confirmatory_design.json"
 )
+MERGER_ANNOUNCEMENT_CONFIRMATORY_DESIGN_JSON: Final[Path] = (
+    REPO
+    / "artifacts"
+    / "feasibility"
+    / "merger_arbitrage"
+    / "announcement_confirmatory_design.json"
+)
 EXTERNAL_VALIDATION_OPPORTUNITIES_JSON: Final[Path] = (
     REPO / "artifacts" / "analysis" / "external_validation_opportunities.json"
 )
@@ -836,6 +843,16 @@ TREASURY_STATE_MACHINE_RESULT: Final[Path] = (
     / "feasibility"
     / "treasury_auction_concession"
     / "schedule_state_machine_audit.json"
+)
+MERGER_ANNOUNCEMENT_IDENTITY_V2_MD: Final[Path] = (
+    REPO / "docs" / "design" / "FEASIBILITY_MERGER_ANNOUNCEMENT_IDENTITY_V2.md"
+)
+MERGER_ANNOUNCEMENT_IDENTITY_V2_RESULT: Final[Path] = (
+    REPO
+    / "artifacts"
+    / "feasibility"
+    / "merger_arbitrage"
+    / "announcement_confirmatory_design.json"
 )
 CFTC_FEASIBILITY_MD: Final[Path] = REPO / "docs" / "design" / "FEASIBILITY_CFTC_HEDGING_PRESSURE.md"
 CFTC_FEASIBILITY_RESULT: Final[Path] = (
@@ -2162,6 +2179,8 @@ def build_program_status(state: dict[str, Any]) -> dict[str, Any]:
     # program_status agrees with the files that the first pass just wrote.
     paper_names.add("alphavintage-macro-surprise-lineage.md")
     paper_names.add("crypto-carry-portable-v1.md")
+    paper_names.add("treasury-auction-state-machine.md")
+    paper_names.add("merger-announcement-identity-v2.md")
     prospective_trial = build_prospective_trial_record()
     packet_manifest = (
         json.loads(TRIAL_PACKET_MANIFEST_JSON.read_text())
@@ -3027,6 +3046,11 @@ def build_research_export() -> dict[str, Any]:
             if ACTIVE_OWNERSHIP_CONFIRMATORY_DESIGN_JSON.exists()
             else None
         ),
+        "merger_announcement_confirmatory_design": (
+            json.loads(MERGER_ANNOUNCEMENT_CONFIRMATORY_DESIGN_JSON.read_text())
+            if MERGER_ANNOUNCEMENT_CONFIRMATORY_DESIGN_JSON.exists()
+            else None
+        ),
         "external_validation_opportunities": json.loads(
             EXTERNAL_VALIDATION_OPPORTUNITIES_JSON.read_text()
         ),
@@ -3677,6 +3701,10 @@ def main(out_dir: Path = OUT_DIR) -> Path:
         (out_dir / "reachability_harness.json").write_text(REACHABILITY_HARNESS_JSON.read_text())
     if DATA_GATE_UNBLOCKS_JSON.exists():
         (out_dir / "data_gate_unblocks.json").write_text(DATA_GATE_UNBLOCKS_JSON.read_text())
+    if MERGER_ANNOUNCEMENT_CONFIRMATORY_DESIGN_JSON.exists():
+        (out_dir / "merger_announcement_confirmatory_design.json").write_text(
+            MERGER_ANNOUNCEMENT_CONFIRMATORY_DESIGN_JSON.read_text()
+        )
     if TENDER_REACHABILITY_JSON.exists():
         (out_dir / "tender_offer_reachability.json").write_text(
             TENDER_REACHABILITY_JSON.read_text()
@@ -4011,6 +4039,12 @@ def main(out_dir: Path = OUT_DIR) -> Path:
     (out_dir / "treasury_schedule_state_machine_audit.json").write_text(
         TREASURY_STATE_MACHINE_RESULT.read_text()
     )
+    (literature_dir / "merger-announcement-identity-v2.md").write_text(
+        MERGER_ANNOUNCEMENT_IDENTITY_V2_MD.read_text()
+    )
+    (out_dir / "merger_announcement_confirmatory_design.json").write_text(
+        MERGER_ANNOUNCEMENT_IDENTITY_V2_RESULT.read_text()
+    )
     (literature_dir / "cftc-hedging-pressure-feasibility.md").write_text(
         CFTC_FEASIBILITY_MD.read_text()
     )
@@ -4249,6 +4283,10 @@ def main(out_dir: Path = OUT_DIR) -> Path:
             )
         if DATA_GATE_UNBLOCKS_JSON.exists():
             (app_dir / "data_gate_unblocks.json").write_text(DATA_GATE_UNBLOCKS_JSON.read_text())
+        if MERGER_ANNOUNCEMENT_CONFIRMATORY_DESIGN_JSON.exists():
+            (app_dir / "merger_announcement_confirmatory_design.json").write_text(
+                MERGER_ANNOUNCEMENT_CONFIRMATORY_DESIGN_JSON.read_text()
+            )
         if TENDER_REACHABILITY_JSON.exists():
             (app_dir / "tender_offer_reachability.json").write_text(
                 TENDER_REACHABILITY_JSON.read_text()
@@ -4681,6 +4719,12 @@ def main(out_dir: Path = OUT_DIR) -> Path:
         )
         (app_dir / "treasury_schedule_state_machine_audit.json").write_text(
             TREASURY_STATE_MACHINE_RESULT.read_text()
+        )
+        (app_literature_dir / "merger-announcement-identity-v2.md").write_text(
+            MERGER_ANNOUNCEMENT_IDENTITY_V2_MD.read_text()
+        )
+        (app_dir / "merger_announcement_confirmatory_design.json").write_text(
+            MERGER_ANNOUNCEMENT_IDENTITY_V2_RESULT.read_text()
         )
         (app_literature_dir / "cftc-hedging-pressure-feasibility.md").write_text(
             CFTC_FEASIBILITY_MD.read_text()

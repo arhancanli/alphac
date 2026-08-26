@@ -8,9 +8,9 @@ line of its own docstring, each pipeline's steps are the scripts it actually inv
 contract's boundary is the boundary it states about itself. A script with no docstring appears as
 having none.
 
-At a glance: **337 Python scripts**, **17 shell entry points**,
-**21 configuration contracts**, **27 engineering artifacts**,
-**382 unit test files**, **22 data directories**, **9 scheduled jobs**.
+At a glance: **339 Python scripts**, **17 shell entry points**,
+**22 configuration contracts**, **27 engineering artifacts**,
+**383 unit test files**, **22 data directories**, **9 scheduled jobs**.
 
 
 ## What runs on a timer
@@ -188,6 +188,7 @@ are the ones a reader has to know about; everything else is derived from them.
 | `config/identity_trial_evidence_bindings.json` | A binding credits only the named packet sections after every listed byte hash and semantic relation validates. |
 | `config/legacy_dsr_exceptions.json` | No executable raw-row DSR implementation remains. |
 | `config/live_change_contract.json` | _(no stated boundary)_ |
+| `config/merger_announcement_confirmatory_design_inputs.json` | Binds already published no-return exploratory metadata and reserves a disjoint confirmation period. |
 | `config/scholarly_repository_requirements.json` | This dated snapshot records requirements observed on official repository pages. |
 | `config/sleeve_admission_contract.json` | This in-force contract applies only to return identities reserved at ordinal 229 or later under its exact effective hash. |
 | `config/sleeve_admission_contract_v7_proposed.json` | This is a prospective proposal, not an in-force gate change. |
@@ -497,7 +498,7 @@ and is worth more than a hand-made taxonomy that would drift.
 | `verify_sleeve_publication_replays.py` | Replay audit-only sleeve evidence builders and prove no result or trial ledger changed. |
 | `verify_transparency.py` | Verify the public track-record chain, signatures and disclosed payloads. |
 
-### everything else (120)
+### everything else (122)
 
 | script | first line of its docstring |
 |---|---|
@@ -592,6 +593,8 @@ and is worth more than a hand-made taxonomy that would drift.
 | `seal_fundamental_single_replay_divergence.py` | Seal a completed fundamental replay that failed exact reproduction. |
 | `seal_legacy_research_epoch.py` | Retire the legacy return-identity epoch without forgiving its evidence debt. |
 | `seal_lighthouse_accessibility_audit.py` | Seal current multi-route Lighthouse accessibility evidence without overstating WCAG scope. |
+| `seal_merger_announcement_confirmatory_design.py` | Seal the no-return merger-announcement v2 confirmatory design. |
+| `seal_merger_announcement_confirmatory_inputs.py` | Seal compact inputs for the merger-announcement v2 confirmatory design. |
 | `seal_next_sleeve_selection.py` | Select the next sleeve feasibility candidate without opening returns. |
 | `seal_operating_margin_corrected_replay_authorization.py` | Seal the narrow, fail-closed authorization for one corrected operating-margin replay. |
 | `seal_operating_margin_corrected_reproduction.py` | Seal the completed corrected-data reproduction without changing its immutable files. |
