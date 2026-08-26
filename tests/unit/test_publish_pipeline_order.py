@@ -141,6 +141,11 @@ EDGES: tuple[tuple[str, str, tuple[str, ...]], ...] = (
         "artifacts/research/legacy_research_epoch_closure.json",
         ("research_export.py",),
     ),
+    (
+        "seal_next_sleeve_selection.py",
+        "artifacts/analysis/next_sleeve_selection.json",
+        ("research_export.py",),
+    ),
 )
 
 PIPELINES = ("scripts/live_tick.sh", "scripts/live_publish.sh")

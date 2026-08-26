@@ -123,6 +123,11 @@ deploy_prod() {
     || { echo "build_trial_packet_manifest FAILED"; FAIL=1; }
   uv run python scripts/seal_legacy_research_epoch.py \
     || { echo "seal_legacy_research_epoch FAILED"; FAIL=1; }
+  # Rebind the selected next-sleeve receipt to the current frozen blind packet. The packet is
+  # intentionally not rebuilt here, but its verifier/instructions may be hardened while labels
+  # remain unopened; publishing the previous manifest hash would make the selection lineage stale.
+  uv run python scripts/seal_next_sleeve_selection.py \
+    || { echo "seal_next_sleeve_selection FAILED"; FAIL=1; }
   # Disclose and sign this exact paper-state payload before maturity is evaluated. A maturity
   # report bound to the previous chain head is now a provenance failure, not a one-cycle lag.
   uv run python scripts/transparency_log.py || { echo "transparency_log FAILED"; FAIL=1; }
