@@ -26,13 +26,13 @@ artifact-bound publication pipeline; this is not a real-time broker display.
 | | |
 |---|---|
 | Paper sleeves | **4 / 14 planned** — funding carry, equity momentum, managed-futures trend, PIT macro surprise |
-| Forward record | **17 daily returns** from 2026-08-07 through 2026-08-26; cumulative return **−2.27520%**; provenance currently fails closed on incomplete crypto position attribution |
+| Forward record | **17 daily returns** from 2026-08-07 through 2026-08-26; cumulative return **−2.27520%**; provenance fails closed because crypto attribution does not cover the latest mark |
 | Forward Sharpe | **Not reportable** — 252 observations are required for an estimate and 756 for the project's establishment test |
 | Drawdown | Realized **2.47372%** to date, descriptive only; the current-composition model estimates **9.318% expected / 16.451% p95**, neither established by live evidence |
 | Diversification | Research-curve average pairwise correlation **+0.02483** across 4 sleeves; live-forward diversification is not established |
 | DSR policy | Mandatory to measure and publish; **0.95 is a full-union portfolio-maturity threshold, not a per-sleeve or incremental-admission gate** |
 
-No forward Sharpe or expected maximum drawdown is established. The 17-return record is too short, and its provenance gate remains closed until crypto position attribution is deployed and verified.
+No forward Sharpe or expected maximum drawdown is established. The 17-return record is too short, and its provenance gate remains closed because the latest composite mark is newer than the last attributed crypto cycle.
 Historical simulations, modeled risk and broker-derived paper marks remain separately labelled;
 none is a promise about future returns.
 
