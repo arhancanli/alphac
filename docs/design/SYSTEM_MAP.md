@@ -8,9 +8,9 @@ line of its own docstring, each pipeline's steps are the scripts it actually inv
 contract's boundary is the boundary it states about itself. A script with no docstring appears as
 having none.
 
-At a glance: **342 Python scripts**, **17 shell entry points**,
-**27 configuration contracts**, **28 engineering artifacts**,
-**395 unit test files**, **22 data directories**, **9 scheduled jobs**.
+At a glance: **343 Python scripts**, **17 shell entry points**,
+**27 configuration contracts**, **29 engineering artifacts**,
+**396 unit test files**, **22 data directories**, **9 scheduled jobs**.
 
 
 ## What runs on a timer
@@ -216,6 +216,7 @@ are the ones a reader has to know about; everything else is derived from them.
 | `artifacts/engineering/crypto_position_attribution_vps_preflight_observation.json` | This receipt proves only a successful read-only preflight at the stated instant. |
 | `artifacts/engineering/crypto_position_attribution_vps_receipt.json` | Deployment and migration are verified; attribution remains incomplete until the next natural cycle reconciles exact position marks to account equity. |
 | `artifacts/engineering/data_lake_scale.json` | Counts what is on disk and what pytest collects. |
+| `artifacts/engineering/deflated_sharpe_calculator_contract.json` | This contract reproduces ALPHAC's PSR and DSR arithmetic for supplied inputs. |
 | `artifacts/engineering/financing_contract.json` | The event-driven engine can replay fully covered financing schedules and persist their cash effects. |
 | `artifacts/engineering/forward_drawdown_evidence.json` | The sealed study cell is a 96-path, two-year, fourteen-sleeve, daily simulation at a 10% book-level volatility target. |
 | `artifacts/engineering/forward_evidence_maturity.json` | Paper-only, self-published evidence. |
@@ -346,7 +347,7 @@ and is worth more than a hand-made taxonomy that would drift.
 | `audit_vate_2020_dividend_vendor_resolution.py` | Resolve the unsupported VATE/HCHC 2020 dividend row without opening returns. |
 | `audit_wave1_data_rights.py` | Audit Wave 1 publication bundles against the conservative data-rights policy. |
 
-### `build_*` (36)
+### `build_*` (37)
 
 | script | first line of its docstring |
 |---|---|
@@ -361,6 +362,7 @@ and is worth more than a hand-made taxonomy that would drift.
 | `build_crypto_carry_metadata_manifest.py` | Seal the full frozen instrument metadata required by a portable crypto-carry replay. |
 | `build_crypto_carry_portability_manifest.py` | Inventory every frozen input needed before attempting crypto-carry reacquisition. |
 | `build_crypto_carry_portable_lake.py` | Build an isolated, deterministic, return-free lake for crypto_carry_portable_v1. |
+| `build_dsr_calculator_contract.py` | Build the public, implementation-bound Deflated Sharpe calculator contract. |
 | `build_external_reviewer_packets.py` | Build hash-bound, preparation-only reviewer packets for flagship papers. |
 | `build_external_submission_plan.py` | Build a fail-closed, repository-specific release queue for every sleeve paper. |
 | `build_fresh_context_reader_packets.py` | Build blank, hash-bound fresh-context reader packets for every manuscript. |
