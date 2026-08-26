@@ -34,6 +34,7 @@ def build() -> dict[str, Any]:
             "public_status": "Eligibility and the local affiliated fair are unresolved.",
             "registration_authorized": False,
             "entry_claimed": False,
+            "source_checked_on": "2026-08-26",
             "eligibility": {
                 "grade": "9-12 or equivalent",
                 "age": "must not have reached 20 on or before May 1 preceding ISEF",
@@ -42,9 +43,16 @@ def build() -> dict[str, Any]:
                 "research_window": "no more than 12 continuous months; no work before 2026-01-01",
             },
             "ai_boundary": (
-                "AI may be used only as a cited project resource. Generative AI may not write "
-                "the research plan, abstract, poster, or citations."
+                "Generative AI may help develop ideas and may produce initial code or identify "
+                "statistical tools only under the official logging and citation conditions. It "
+                "may not initially write the research plan, abstract, paper, or poster; add "
+                "substantive points or conclusions; or generate citations."
             ),
+            "global_calendar": {
+                "last_affiliated_fair_date": "2027-04-12",
+                "abstract_rewrite_deadline": "2027-04-16",
+                "isef_event": {"starts": "2027-05-08", "ends": "2027-05-14"},
+            },
             "exact_deadline": None,
             "unknowns": [
                 "Arhan's grade and age on the governing dates",
@@ -57,7 +65,9 @@ def build() -> dict[str, Any]:
                 "competition-specific experiment."
             ),
             "official_sources": [
-                "https://www.societyforscience.org/isef/international-rules/rules-for-all-projects/",
+                "https://www.societyforscience.org/isef/international-rules/",
+                "https://www.societyforscience.org/isef/affiliated-fair-network/",
+                "https://www.societyforscience.org/isef/affiliated-fair-guidelines/requirements/",
                 "https://www.societyforscience.org/isef/forms/",
                 "https://findafair.societyforscience.org/",
             ],
@@ -72,6 +82,7 @@ def build() -> dict[str, Any]:
             "public_status": "Registration is open; the team and school advisor are unresolved.",
             "registration_authorized": False,
             "entry_claimed": False,
+            "source_checked_on": "2026-08-26",
             "eligibility": {
                 "grade": "9-12; no secondary-school diploma before competition begins",
                 "team_size": "4-6 students from the same school",
@@ -108,6 +119,7 @@ def build() -> dict[str, Any]:
             "public_status": "The window opens September 16; the team and advisor are unresolved.",
             "registration_authorized": False,
             "entry_claimed": False,
+            "source_checked_on": "2026-08-26",
             "eligibility": {
                 "age": "14-18 at submission deadline",
                 "team_size": "2-4 high-school students",
@@ -116,6 +128,11 @@ def build() -> dict[str, Any]:
             },
             "window_opens": "2026-09-16",
             "exact_deadline": "2027-01-14T17:00:00-05:00",
+            "competition_calendar": {
+                "advancing_teams_notified": "2027-02-10T23:59:00-05:00",
+                "finalists_announced": "2027-03-09",
+                "summit": {"starts": "2027-04-29", "ends": "2027-04-30"},
+            },
             "unknowns": [
                 "Arhan's age and high-school status at the deadline",
                 "one to three eligible teammates",
@@ -135,6 +152,7 @@ def build() -> dict[str, Any]:
             "public_status": "The next cycle date and Arhan's eligible entry route are unresolved.",
             "registration_authorized": False,
             "entry_claimed": False,
+            "source_checked_on": "2026-08-26",
             "eligibility": {
                 "grade": "5-12 in a UAE public, private, or vocational institute",
                 "individual": "UAE nationals only",
@@ -164,6 +182,7 @@ def build() -> dict[str, Any]:
             "public_status": "The current cycle is confirmed; exact phase dates are unresolved.",
             "registration_authorized": False,
             "entry_claimed": False,
+            "source_checked_on": "2026-08-26",
             "eligibility": {"age": "13-18", "cycle": "annual, August through April"},
             "exact_deadline": None,
             "unknowns": [
@@ -191,13 +210,18 @@ def build() -> dict[str, Any]:
             "public_status": "Fall 2026 is closed; the next application window is unresolved.",
             "registration_authorized": False,
             "entry_claimed": False,
+            "source_checked_on": "2026-08-26",
             "eligibility": {
                 "age": "13-17 and must remain under 18 during the challenge",
                 "location": "global virtual",
                 "time_commitment": "3-4 hours per week during challenge periods",
                 "cost": "free",
             },
-            "fall_2026_window": {"opened": "2026-04-01", "closed": "2026-07-09"},
+            "fall_2026_window": {
+                "opened": "2026-04-01",
+                "status": "CLOSED",
+                "conflicting_close_dates_on_official_page": ["2026-07-02", "2026-07-09"],
+            },
             "exact_deadline": None,
             "unknowns": [
                 "Arhan's age during the next challenge",
@@ -213,7 +237,7 @@ def build() -> dict[str, Any]:
     payload: dict[str, Any] = {
         "schema": SCHEMA,
         "owner_and_applicant": "Arhan Canli",
-        "verified_on": "2026-08-25",
+        "verified_on": "2026-08-26",
         "decision": "NO_EXTERNAL_ACTION_AUTHORIZED_ELIGIBILITY_FACTS_REMAIN",
         "owner_facts_required": [
             "date of birth and age on each governing date",
