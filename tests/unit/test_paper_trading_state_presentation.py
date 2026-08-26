@@ -138,6 +138,13 @@ def test_transparency_entries_are_non_empty_strings(pts):
     assert entries and all(isinstance(e, str) and e.strip() for e in entries)
 
 
+def test_capital_boundary_is_scoped_to_the_published_strategy_record(pts):
+    """A separate account must not make a project-wide zero-capital sentence false."""
+    first = pts.transparency_entries()[0]
+    assert "published ALPHAC strategy record" in first
+    assert "No real capital has been deployed" not in first
+
+
 def test_evidence_base_disclosure_is_published(pts):
     """The dated entry must state ALL THREE facts, or it is a half-disclosure."""
     entry = next(
