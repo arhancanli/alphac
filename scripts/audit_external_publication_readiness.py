@@ -456,12 +456,15 @@ def build() -> dict[str, Any]:
         failures.append("ARCHIVAL_VISUAL_INSPECTION_PAGE_COUNT_MISMATCH")
 
     document: dict[str, Any] = {
-        "schema": "canli.alphac-external-publication-readiness-audit.v1",
+        "schema": "canli.alphac-external-publication-readiness-audit.v2",
         "author": "Arhan Canli",
         "status": "PASS_FAIL_CLOSED_PREPARATION_LEDGER" if not failures else "FAIL",
         "passes": not failures,
         "external_submissions_claimed": False,
-        "current_sleeves": len(sleeves),
+        "publication_record_count": len(sleeves),
+        "publication_record_count_unit": (
+            "PREPARED_SLEEVE_RESEARCH_RECORDS_NOT_ADMITTED_LIVE_SLEEVES"
+        ),
         "lineage_monographs": len(lineage_sources),
         "registry_coverage_fraction": (
             len(registered_sources & lineage_sources) / len(lineage_sources)
