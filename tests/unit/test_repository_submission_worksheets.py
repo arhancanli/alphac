@@ -43,6 +43,8 @@ def test_worksheets_cover_the_plan_and_fail_closed() -> None:
     rights = report["source_bindings"]["all_sleeve_data_rights_audit"]
     assert rights["source_mappings_complete"] == 16
     assert rights["data_license_reviews_complete"] == 0
+    assert rights["public_terms_reviews_complete"] == 16
+    assert rights["external_publication_clearances_complete"] == 0
     replay = report["source_bindings"]["clean_workspace_reproduction_audit"]
     assert replay["full_clean_workspace_reproductions_completed"] == 0
     assert replay["independent_human_reproductions_completed"] == 0

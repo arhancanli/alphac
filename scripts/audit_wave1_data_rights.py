@@ -101,6 +101,9 @@ def build() -> dict[str, Any]:
     wave1 = [record for record in plan["records"] if record["wave"] == 1]
     failures: list[str] = []
     records: list[dict[str, Any]] = []
+    wave1_source_keys = sorted(
+        {source for dependency in DEPENDENCIES.values() for source in dependency["sources"]}
+    )
 
     if {record["registry_key"] for record in wave1} != set(DEPENDENCIES):
         failures.append("WAVE1_DEPENDENCY_MAP_DOES_NOT_MATCH_SUBMISSION_PLAN")
@@ -156,12 +159,40 @@ def build() -> dict[str, Any]:
             }
         )
 
+    public_terms_reviewed = sum(
+        policy["sources"][source_key].get("public_terms_review_status")
+        == "COMPLETE_CONSERVATIVE_DECISION_RECORDED"
+        and policy["sources"][source_key].get("terms_observed_on") == policy["review_date"]
+        and bool(policy["sources"][source_key].get("terms_evidence"))
+        for source_key in wave1_source_keys
+    )
+    external_clearances = sum(
+        policy["sources"][source_key].get("external_publication_clearance_recorded") is True
+        for source_key in wave1_source_keys
+    )
+    if public_terms_reviewed != len(wave1_source_keys):
+        failures.append("WAVE1_PUBLIC_TERMS_REVIEW_INCOMPLETE")
+
     document: dict[str, Any] = {
-        "schema": "canli.alphac-wave1-data-rights-audit.v1",
+        "schema": "canli.alphac-wave1-data-rights-audit.v2",
         "author": "Arhan Canli",
-        "status": "PASS_CONSERVATIVE_EXCLUSION" if not failures else "FAIL",
+        "review_date": policy["review_date"],
+        "status": (
+            "PASS_PUBLIC_TERMS_REVIEW_COMPLETE_CLEARANCE_REQUIRED"
+            if not failures
+            else "FAIL"
+        ),
         "wave1_papers": len(records),
         "source_classes": len(policy["sources"]),
+        "wave1_source_classes": len(wave1_source_keys),
+        "public_terms_reviews_complete": public_terms_reviewed,
+        "external_publication_clearances_recorded": external_clearances,
+        "source_public_terms_review_complete": (
+            public_terms_reviewed == len(wave1_source_keys)
+        ),
+        "external_publication_clearance_complete": (
+            external_clearances == len(wave1_source_keys)
+        ),
         "raw_vendor_rows_released": False,
         "policy_binding": {"path": str(POLICY.relative_to(ROOT)), "sha256": _sha256(POLICY)},
         "submission_plan_binding": {
@@ -172,14 +203,20 @@ def build() -> dict[str, Any]:
         "records": records,
         "failures": failures,
         "remaining_blockers": [
-            "SOURCE_SPECIFIC_WRITTEN_REDISTRIBUTION_PERMISSION_NOT_RECORDED",
+            "MASSIVE_APPLICABLE_ORDER_FORM_OR_EXPRESS_WRITTEN_CONSENT_REQUIRED",
+            "NASDAQ_APPLICABLE_ORDER_FORM_PERMISSION_OR_PRIOR_WRITTEN_APPROVAL_REQUIRED",
+            "YAHOO_FINANCE_DERIVED_RESULT_PUBLICATION_NOT_CLEARED",
+            "BINANCE_DERIVED_RESULT_PUBLICATION_NOT_EXPLICITLY_CLEARED",
+            "ALPACA_ACCOUNT_AGGREGATE_OWNER_AND_CURRENT_TERMS_REVIEW_REQUIRED",
+            "QUALIFIED_RIGHTS_REVIEW_REQUIRED_BEFORE_EXTERNAL_SUBMISSION",
             "PORTABLE_FETCH_RECIPES_AND_COVERAGE_MANIFESTS_NOT_COMPLETE",
             "FRESH_REVIEWER_ACQUISITION_NOT_EXECUTED",
         ],
         "claim_boundary": (
             "This audit proves that no raw tabular input file is inside a Wave 1 publication "
-            "bundle and records the conservative source policy. It is not legal advice and does "
-            "not establish portable reproduction, redistribution permission, or independent review."
+            "bundle and that a dated public-terms decision is recorded for each Wave 1 source "
+            "class. It is not legal advice and does not establish account-specific permission, "
+            "external-publication clearance, portable reproduction, or independent review."
         ),
     }
     document["content_hash"] = _content_hash(document)

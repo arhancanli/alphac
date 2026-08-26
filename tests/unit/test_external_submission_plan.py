@@ -66,6 +66,19 @@ def test_plan_covers_every_sleeve_and_fails_closed() -> None:
         for record in plan["records"]
     )
     assert all(
+        record["data_rights"]["source_public_terms_review_complete"] is True
+        for record in plan["records"]
+    )
+    assert all(
+        record["data_rights"]["external_publication_clearance_complete"] is False
+        for record in plan["records"]
+    )
+    assert all(
+        "ACCOUNT_SPECIFIC_LICENSE_OR_WRITTEN_PUBLICATION_PERMISSION_REQUIRED"
+        in record["blockers"]
+        for record in plan["records"]
+    )
+    assert not any(
         "SOURCE_SPECIFIC_LICENSE_AND_REDISTRIBUTION_REVIEW_INCOMPLETE" in record["blockers"]
         for record in plan["records"]
     )
@@ -101,6 +114,8 @@ def test_plan_covers_every_sleeve_and_fails_closed() -> None:
     rights = plan["source_bindings"]["all_sleeve_data_rights_audit"]
     assert rights["source_mappings_complete"] == 16
     assert rights["data_license_reviews_complete"] == 0
+    assert rights["public_terms_reviews_complete"] == 16
+    assert rights["external_publication_clearances_complete"] == 0
     review = plan["source_bindings"]["external_review_protocol"]
     assert review["status"] == "PREPARATION_ONLY_ZERO_EXTERNAL_REVIEWS"
     assert all(value == 0 for value in review["current_counts"].values())

@@ -171,9 +171,12 @@ def build() -> dict[str, Any]:
     ):
         raise RuntimeError("External-review protocol is not in the expected fail-closed state")
     if (
-        data_rights.get("status") != "PASS_RAW_ROW_EXCLUSION_RIGHTS_REVIEW_INCOMPLETE"
+        data_rights.get("status")
+        != "PASS_RAW_ROW_EXCLUSION_PUBLIC_TERMS_REVIEW_COMPLETE_CLEARANCE_INCOMPLETE"
         or data_rights.get("counts", {}).get("source_mapping_complete") != 16
         or data_rights.get("counts", {}).get("data_license_reviews_complete") != 0
+        or data_rights.get("counts", {}).get("public_terms_reviews_complete") != 16
+        or data_rights.get("counts", {}).get("external_publication_clearances_complete") != 0
     ):
         raise RuntimeError("All-sleeve data-rights audit is not in the expected fail-closed state")
     if (
@@ -269,13 +272,16 @@ def build() -> dict[str, Any]:
         ]
         inherited_blockers = [
             (
-                "SOURCE_SPECIFIC_LICENSE_AND_REDISTRIBUTION_REVIEW_INCOMPLETE"
+                "ACCOUNT_SPECIFIC_LICENSE_OR_WRITTEN_PUBLICATION_PERMISSION_REQUIRED"
                 if blocker == "REDISTRIBUTION_SAFE_RAW_DATA_INVENTORY_INCOMPLETE"
                 else blocker
             )
             for blocker in sleeve["submission_blockers"]
         ]
-        inherited_blockers.append("SOURCE_SPECIFIC_LICENSE_AND_REDISTRIBUTION_REVIEW_INCOMPLETE")
+        if rights["external_publication_clearance_complete"] is not True:
+            inherited_blockers.append(
+                "ACCOUNT_SPECIFIC_LICENSE_OR_WRITTEN_PUBLICATION_PERMISSION_REQUIRED"
+            )
         blockers = list(dict.fromkeys([*inherited_blockers, *metadata_blockers, *review_blockers]))
         records.append(
             {
@@ -333,6 +339,12 @@ def build() -> dict[str, Any]:
                     "raw_third_party_rows_released": rights["raw_third_party_rows_released"],
                     "data_manifest_license_review_complete": rights[
                         "data_manifest_license_review_complete"
+                    ],
+                    "source_public_terms_review_complete": rights[
+                        "source_public_terms_review_complete"
+                    ],
+                    "external_publication_clearance_complete": rights[
+                        "external_publication_clearance_complete"
                     ],
                     "source_classes": [
                         source["source_key"] for source in rights["source_dependencies"]
@@ -414,6 +426,12 @@ def build() -> dict[str, Any]:
                 "source_mappings_complete": data_rights["counts"]["source_mapping_complete"],
                 "data_license_reviews_complete": data_rights["counts"][
                     "data_license_reviews_complete"
+                ],
+                "public_terms_reviews_complete": data_rights["counts"][
+                    "public_terms_reviews_complete"
+                ],
+                "external_publication_clearances_complete": data_rights["counts"][
+                    "external_publication_clearances_complete"
                 ],
             },
             "external_review_protocol": {

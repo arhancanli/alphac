@@ -63,6 +63,8 @@ def test_external_publication_registry_is_honest_and_source_bound() -> None:
         "raw_row_free_bundles": 16,
         "source_mappings_complete": 16,
         "data_license_reviews_complete": 0,
+        "public_terms_reviews_complete": 16,
+        "external_publication_clearances_complete": 0,
         "redistribution_rights_cleared_for_all_sleeves": False,
     }
     assert report["isolated_frozen_dependency_replay"]["commands_executed"] == 13

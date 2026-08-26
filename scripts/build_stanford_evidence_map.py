@@ -181,6 +181,12 @@ def build() -> dict[str, Any]:
                     "data_license_reviews_complete": source_rights["counts"][
                         "data_license_reviews_complete"
                     ],
+                    "public_terms_reviews_complete": source_rights["counts"][
+                        "public_terms_reviews_complete"
+                    ],
+                    "external_publication_clearances_complete": source_rights["counts"][
+                        "external_publication_clearances_complete"
+                    ],
                     "full_clean_workspace_reproductions": clean_reproduction["counts"][
                         "full_clean_workspace_reproductions_completed"
                     ],

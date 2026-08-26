@@ -137,7 +137,9 @@ def _verify_archive(archive_path: Path, archive_root: str) -> dict[str, Any]:
 def build() -> dict[str, Any]:
     registry = json.loads(REGISTRY.read_text())
     rights = json.loads(RIGHTS_AUDIT.read_text())
-    expected_rights_status = "PASS_RAW_ROW_EXCLUSION_RIGHTS_REVIEW_INCOMPLETE"
+    expected_rights_status = (
+        "PASS_RAW_ROW_EXCLUSION_PUBLIC_TERMS_REVIEW_COMPLETE_CLEARANCE_INCOMPLETE"
+    )
     if rights.get("status") != expected_rights_status:
         raise RuntimeError("All-sleeve raw-row exclusion audit must pass")
     if rights["counts"]["raw_row_free_bundles"] != len(registry["sleeves"]):

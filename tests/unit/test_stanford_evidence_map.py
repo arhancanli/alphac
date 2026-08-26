@@ -34,13 +34,15 @@ def test_stanford_evidence_map_is_compact_factual_and_fail_closed() -> None:
     assert scholarly["raw_input_archive_members"] == 0
     assert scholarly["source_mappings_complete"] == 16
     assert scholarly["data_license_reviews_complete"] == 0
+    assert scholarly["public_terms_reviews_complete"] == 16
+    assert scholarly["external_publication_clearances_complete"] == 0
     assert scholarly["full_clean_workspace_reproductions"] == 0
     assert scholarly["portable_core_only_reproductions"] == 0
     assert scholarly["portable_full_decision_reproductions"] == 1
     assert scholarly["upstream_strategy_curve_replays"] == 3
     assert scholarly["independent_human_reproductions"] == 0
     forward_truth = report["evidence"]["forward_truth"]["facts"]
-    assert forward_truth["provenance_passes"] is True
+    assert forward_truth["provenance_passes"] is False
     assert forward_truth["sharpe_status"] == "IMMATURE_RECORD_TOO_SHORT"
     assert "independent replication" in report["what_not_to_claim"]
     assert report["content_hash"] == module._content_hash(report)

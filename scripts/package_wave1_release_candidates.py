@@ -92,7 +92,7 @@ def _verify_archive(archive_path: Path, bundle_name: str) -> dict[str, Any]:
 def build() -> dict[str, Any]:
     plan = json.loads(PLAN.read_text())
     rights = json.loads(RIGHTS_AUDIT.read_text())
-    if rights.get("status") != "PASS_CONSERVATIVE_EXCLUSION":
+    if rights.get("status") != "PASS_PUBLIC_TERMS_REVIEW_COMPLETE_CLEARANCE_REQUIRED":
         raise RuntimeError("Wave 1 data-rights exclusion audit must pass")
 
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)

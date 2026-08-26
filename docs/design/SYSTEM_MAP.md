@@ -9,8 +9,8 @@ contract's boundary is the boundary it states about itself. A script with no doc
 having none.
 
 At a glance: **331 Python scripts**, **17 shell entry points**,
-**19 configuration contracts**, **27 engineering artifacts**,
-**375 unit test files**, **22 data directories**, **9 scheduled jobs**.
+**20 configuration contracts**, **27 engineering artifacts**,
+**376 unit test files**, **22 data directories**, **9 scheduled jobs**.
 
 
 ## What runs on a timer
@@ -174,6 +174,7 @@ are the ones a reader has to know about; everything else is derived from them.
 | file | what it governs, in its own words |
 |---|---|
 | `config/admission_v7_promotion.json` | _(no stated boundary)_ |
+| `config/clean_checkout_workspace_evidence_policy.json` | This policy classifies test modules by input availability only. |
 | `config/crypto_carry_portable_v1_prerun.json` | This contract freezes a source-availability decision before any portable-v1 return is computed. |
 | `config/crypto_carry_portable_v1_run.json` | FROZEN_BEFORE_RETURN_COMPUTE. |
 | `config/data_source_rights_policy.json` | This policy establishes a conservative release decision. |

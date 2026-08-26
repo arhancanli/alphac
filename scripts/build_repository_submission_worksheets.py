@@ -350,6 +350,12 @@ def build() -> dict[str, Any]:
                 "data_license_reviews_complete": data_rights["counts"][
                     "data_license_reviews_complete"
                 ],
+                "public_terms_reviews_complete": data_rights["counts"][
+                    "public_terms_reviews_complete"
+                ],
+                "external_publication_clearances_complete": data_rights["counts"][
+                    "external_publication_clearances_complete"
+                ],
             },
             "clean_workspace_reproduction_audit": {
                 "path": str(CLEAN_REPRODUCTION.relative_to(ROOT)),
