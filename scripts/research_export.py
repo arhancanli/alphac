@@ -221,6 +221,9 @@ NEXT_SLEEVE_SELECTION_JSON: Final[Path] = (
 ACTIVE_OWNERSHIP_HUMAN_GATE_AUDIT_JSON: Final[Path] = (
     REPO / "artifacts" / "analysis" / "active_ownership_human_gate_audit.json"
 )
+ACTIVE_OWNERSHIP_CONFIRMATORY_DESIGN_JSON: Final[Path] = (
+    REPO / "artifacts" / "analysis" / "active_ownership_confirmatory_design.json"
+)
 EXTERNAL_VALIDATION_OPPORTUNITIES_JSON: Final[Path] = (
     REPO / "artifacts" / "analysis" / "external_validation_opportunities.json"
 )
@@ -3009,6 +3012,11 @@ def build_research_export() -> dict[str, Any]:
             if ACTIVE_OWNERSHIP_HUMAN_GATE_AUDIT_JSON.exists()
             else None
         ),
+        "active_ownership_confirmatory_design": (
+            json.loads(ACTIVE_OWNERSHIP_CONFIRMATORY_DESIGN_JSON.read_text())
+            if ACTIVE_OWNERSHIP_CONFIRMATORY_DESIGN_JSON.exists()
+            else None
+        ),
         "external_validation_opportunities": json.loads(
             EXTERNAL_VALIDATION_OPPORTUNITIES_JSON.read_text()
         ),
@@ -3717,6 +3725,7 @@ def main(out_dir: Path = OUT_DIR) -> Path:
         SPLIT_LIFECYCLE_DISCONTINUITY_RESOLUTION_JSON,
         NEXT_SLEEVE_SELECTION_JSON,
         ACTIVE_OWNERSHIP_HUMAN_GATE_AUDIT_JSON,
+        ACTIVE_OWNERSHIP_CONFIRMATORY_DESIGN_JSON,
         ACTIVE_OWNERSHIP_HANDOFF_RECEIPT_JSON,
     ):
         if audit_path.exists():
@@ -4282,6 +4291,7 @@ def main(out_dir: Path = OUT_DIR) -> Path:
             SPLIT_LIFECYCLE_DISCONTINUITY_RESOLUTION_JSON,
             NEXT_SLEEVE_SELECTION_JSON,
             ACTIVE_OWNERSHIP_HUMAN_GATE_AUDIT_JSON,
+            ACTIVE_OWNERSHIP_CONFIRMATORY_DESIGN_JSON,
             ACTIVE_OWNERSHIP_HANDOFF_RECEIPT_JSON,
         ):
             if audit_path.exists():

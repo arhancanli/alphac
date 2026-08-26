@@ -8,9 +8,9 @@ line of its own docstring, each pipeline's steps are the scripts it actually inv
 contract's boundary is the boundary it states about itself. A script with no docstring appears as
 having none.
 
-At a glance: **333 Python scripts**, **17 shell entry points**,
+At a glance: **334 Python scripts**, **17 shell entry points**,
 **20 configuration contracts**, **27 engineering artifacts**,
-**379 unit test files**, **22 data directories**, **9 scheduled jobs**.
+**380 unit test files**, **22 data directories**, **9 scheduled jobs**.
 
 
 ## What runs on a timer
@@ -494,7 +494,7 @@ and is worth more than a hand-made taxonomy that would drift.
 | `verify_sleeve_publication_replays.py` | Replay audit-only sleeve evidence builders and prove no result or trial ledger changed. |
 | `verify_transparency.py` | Verify the public track-record chain, signatures and disclosed payloads. |
 
-### everything else (118)
+### everything else (119)
 
 | script | first line of its docstring |
 |---|---|
@@ -571,6 +571,7 @@ and is worth more than a hand-made taxonomy that would drift.
 | `research_export.py` | Research data layer: emit research.json — the FULL honest gauntlet — from REAL artifacts. |
 | `restate_legacy_dsr.py` | Restate reproducible legacy DSR outputs against the current selection union. |
 | `reviewer_verify_active_ownership.py` | Dependency-free verifier shipped inside the Active Ownership blind-review packet. |
+| `seal_active_ownership_confirmatory_design.py` | Seal the pre-outcome Active Ownership confirmatory-corpus design. |
 | `seal_alphamax_upstream_replay_inputs.py` | Seal a public hash manifest for AlphaMax's private reacquired replay inputs. |
 | `seal_alphatrend_upstream_replay_inputs.py` | Seal the private inputs and reference output for AlphaTrend's 2026-08-23 replay. |
 | `seal_alphavintage_core_portable_reproduction.py` | Seal a fresh AlphaVintage core replay without overstating independence or scope. |
