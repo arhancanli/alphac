@@ -34,7 +34,7 @@ def install_error_capture(page: Page, errors: list[str]) -> None:
 def complete_row(page: Page, index: int) -> None:
     page.locator(".docket-tab").nth(index).click()
     page.locator("label.choice").nth(1).click()
-    page.locator("#sentence").fill("No specific current action is stated in this source excerpt.")
+    page.locator("#sentence").fill(f"Synthetic browser-QA source excerpt {index + 1}.")
     page.locator("#ownership").fill("unresolved")
 
 
@@ -66,7 +66,7 @@ def desktop_flow(
     assert page.locator("#sentence").input_value().strip()
 
     page.locator("label.choice").nth(0).click()
-    page.locator("#sentence").fill("A specific governance action is stated in this source excerpt.")
+    page.locator("#sentence").fill("Synthetic browser-QA source excerpt 1.")
     page.locator("#ownership").fill("7.5")
     page.locator("#notes").fill("Browser QA record; not a research label.")
     assert page.locator("#progressCount").inner_text() == "1 / 48"
@@ -96,8 +96,21 @@ def desktop_flow(
     manifest = json.loads((packet_dir / "manifest.json").read_text(encoding="utf-8"))
     page.locator("#reviewerName").fill("Independent Browser QA Reviewer")
     page.locator("#reviewerRole").fill("Source document reviewer")
+    page.locator("#reviewerAffiliation").fill("Independent")
+    page.locator("#reviewerRelationship").fill("none")
+    page.locator("#reviewerCompensation").fill("none")
+    page.locator("#reviewerConflicts").fill("none")
     page.locator("#packetHash").fill(manifest["content_hash"])
-    for selector in ("#flagIndependent", "#flagMachine", "#flagReturns", "#flagPersonal"):
+    for selector in (
+        "#flagIndependent",
+        "#flagResearchIndependent",
+        "#flagMachine",
+        "#flagReturns",
+        "#flagNoAutomation",
+        "#flagNoOutcomePay",
+        "#flagConflicts",
+        "#flagPersonal",
+    ):
         page.locator(selector).check()
 
     temp = Path(tempfile.mkdtemp(prefix="alphac-review-browser-"))

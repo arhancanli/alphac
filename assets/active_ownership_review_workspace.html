@@ -253,10 +253,18 @@
             <p>Complete this only after personally reviewing all 48 records. The packet hash is copied from <code>manifest.json</code>.</p>
             <div class="form-group"><label class="field-label" for="reviewerName">Reviewer name</label><input class="text-input" id="reviewerName" autocomplete="name"></div>
             <div class="form-group"><label class="field-label" for="reviewerRole">Reviewer role</label><input class="text-input" id="reviewerRole" placeholder="Source document reviewer"></div>
+            <div class="form-group"><label class="field-label" for="reviewerAffiliation">Reviewer affiliation</label><input class="text-input" id="reviewerAffiliation" placeholder="Organization, school, independent, or none"></div>
+            <div class="form-group"><label class="field-label" for="reviewerRelationship">Relationship to Arhan Canli</label><input class="text-input" id="reviewerRelationship" placeholder="State the relationship, or none"></div>
+            <div class="form-group"><label class="field-label" for="reviewerCompensation">Compensation or incentive</label><input class="text-input" id="reviewerCompensation" placeholder="State fixed compensation, or none"></div>
+            <div class="form-group"><label class="field-label" for="reviewerConflicts">Conflicts of interest</label><input class="text-input" id="reviewerConflicts" placeholder="Disclose any conflict, or none"></div>
             <div class="form-group"><label class="field-label" for="packetHash">Packet manifest content hash</label><input class="text-input" id="packetHash" placeholder="sha256:…" spellcheck="false"></div>
             <label class="check"><input id="flagIndependent" type="checkbox"><span>I was independent of parser development.</span></label>
+            <label class="check"><input id="flagResearchIndependent" type="checkbox"><span>I was independent of the research design and frozen hypotheses.</span></label>
             <label class="check"><input id="flagMachine" type="checkbox"><span>I did not consult machine outputs.</span></label>
             <label class="check"><input id="flagReturns" type="checkbox"><span>I did not consult prices or returns.</span></label>
+            <label class="check"><input id="flagNoAutomation" type="checkbox"><span>I used no generative AI, classifier, script, or other automated assistance to make or draft labels.</span></label>
+            <label class="check"><input id="flagNoOutcomePay" type="checkbox"><span>I received no outcome-contingent compensation or incentive.</span></label>
+            <label class="check"><input id="flagConflicts" type="checkbox"><span>I completely disclosed my relationship, compensation, incentives, and conflicts above.</span></label>
             <label class="check"><input id="flagPersonal" type="checkbox"><span>I personally reviewed every label.</span></label>
             <div class="export-row">
               <button class="primary-button" id="exportLabels" type="button">Download completed_labels.csv</button>
@@ -285,8 +293,12 @@
       sourceMeta: $("sourceMeta"), filingText: $("filingText"), reviewPacketId: $("reviewPacketId"),
       sentence: $("sentence"), ownership: $("ownership"), notes: $("notes"), progressCount: $("progressCount"),
       progressFill: $("progressFill"), status: $("statusBox"), reviewerName: $("reviewerName"),
-      reviewerRole: $("reviewerRole"), packetHash: $("packetHash"), flagIndependent: $("flagIndependent"),
-      flagMachine: $("flagMachine"), flagReturns: $("flagReturns"), flagPersonal: $("flagPersonal")
+      reviewerRole: $("reviewerRole"), reviewerAffiliation: $("reviewerAffiliation"),
+      reviewerRelationship: $("reviewerRelationship"), reviewerCompensation: $("reviewerCompensation"),
+      reviewerConflicts: $("reviewerConflicts"), packetHash: $("packetHash"),
+      flagIndependent: $("flagIndependent"), flagResearchIndependent: $("flagResearchIndependent"),
+      flagMachine: $("flagMachine"), flagReturns: $("flagReturns"), flagNoAutomation: $("flagNoAutomation"),
+      flagNoOutcomePay: $("flagNoOutcomePay"), flagConflicts: $("flagConflicts"), flagPersonal: $("flagPersonal")
     };
     function ownershipValid(value) {
       const clean = value.trim().toLowerCase();
@@ -295,19 +307,32 @@
       const numeric = Number(clean);
       return Number.isFinite(numeric) && numeric > 0 && numeric < 100;
     }
-    function complete(label) {
+    function sentenceInFrozenSource(label, row) {
+      const sentence = label.human_representative_sentence.replace(/\s+/g, " ").trim();
+      const source = row.document_text.replace(/\s+/g, " ").trim();
+      return sentence !== "" && source.includes(sentence);
+    }
+    function complete(label, row) {
       return ["true", "false"].includes(label.human_specific_active_intent)
-        && label.human_representative_sentence.trim() !== ""
+        && sentenceInFrozenSource(label, row)
         && ownershipValid(label.human_aggregate_ownership_pct_or_unresolved);
     }
     function started(label) { return HUMAN_FIELDS.some((field) => String(label[field] || "").trim() !== ""); }
     function save() {
       state.reviewer = {
         reviewer_name: controls.reviewerName.value, reviewer_role: controls.reviewerRole.value,
+        reviewer_affiliation: controls.reviewerAffiliation.value,
+        relationship_to_researcher: controls.reviewerRelationship.value,
+        compensation_or_incentive: controls.reviewerCompensation.value,
+        conflicts_of_interest: controls.reviewerConflicts.value,
         packet_manifest_content_hash: controls.packetHash.value,
         independent_of_parser_development: controls.flagIndependent.checked,
+        independent_of_research_design: controls.flagResearchIndependent.checked,
         machine_outputs_not_consulted: controls.flagMachine.checked,
         prices_and_returns_not_consulted: controls.flagReturns.checked,
+        no_automated_or_ai_labeling_assistance: controls.flagNoAutomation.checked,
+        no_outcome_contingent_compensation: controls.flagNoOutcomePay.checked,
+        conflicts_disclosed_completely: controls.flagConflicts.checked,
         all_labels_are_personally_reviewed: controls.flagPersonal.checked
       };
       localStorage.setItem(STORAGE_KEY, JSON.stringify({labels: state.labels, reviewer: state.reviewer}));
@@ -335,9 +360,9 @@
         const label = state.labels[row.packet_id];
         const button = document.createElement("button");
         button.type = "button";
-        button.className = `docket-tab ${complete(label) ? "is-complete" : started(label) ? "is-started" : ""}`;
+        button.className = `docket-tab ${complete(label, row) ? "is-complete" : started(label) ? "is-started" : ""}`;
         button.setAttribute("aria-current", index === state.index ? "true" : "false");
-        button.innerHTML = `<span class="status-stroke"></span><span><span class="tab-id">${row.packet_id}</span><span class="tab-meta">${row.ticker} · ${row.year}</span></span><span class="tab-mark">${complete(label) ? "✓" : ""}</span>`;
+        button.innerHTML = `<span class="status-stroke"></span><span><span class="tab-id">${row.packet_id}</span><span class="tab-meta">${row.ticker} · ${row.year}</span></span><span class="tab-mark">${complete(label, row) ? "✓" : ""}</span>`;
         button.addEventListener("click", () => go(index));
         controls.list.appendChild(button);
       });
@@ -364,7 +389,7 @@
     }
     function go(index) { updateCurrentFromForm(); state.index = (index + PACKET.rows.length) % PACKET.rows.length; renderRecord(); }
     function updateProgress() {
-      const count = PACKET.rows.filter((row) => complete(state.labels[row.packet_id])).length;
+      const count = PACKET.rows.filter((row) => complete(state.labels[row.packet_id], row)).length;
       controls.progressCount.textContent = `${count} / ${PACKET.rows.length}`;
       controls.progressFill.style.width = `${count / PACKET.rows.length * 100}%`;
       renderList();
@@ -375,9 +400,12 @@
     function validateCurrent(show) {
       const row = PACKET.rows[state.index];
       const label = state.labels[row.packet_id];
+      const normalizedSource = row.document_text.replace(/\s+/g, " ").trim();
+      const normalizedSentence = label.human_representative_sentence.replace(/\s+/g, " ").trim();
       const errors = {
         intent: ["true", "false"].includes(label.human_specific_active_intent) ? "" : "Choose yes or no.",
-        sentence: label.human_representative_sentence.trim() ? "" : "A representative source sentence is required.",
+        sentence: !normalizedSentence ? "A representative source sentence is required."
+          : normalizedSource.includes(normalizedSentence) ? "" : "Copy a verbatim sentence from the frozen source excerpt.",
         ownership: ownershipValid(label.human_aggregate_ownership_pct_or_unresolved) ? "" : "Enter unresolved or a number strictly between 0 and 100."
       };
       $("intentError").textContent = show ? errors.intent : "";
@@ -391,7 +419,7 @@
       validateCurrent(true);
       for (let offset = 1; offset <= PACKET.rows.length; offset += 1) {
         const candidate = (state.index + offset) % PACKET.rows.length;
-        if (!complete(state.labels[PACKET.rows[candidate].packet_id])) { state.index = candidate; renderRecord(); return; }
+        if (!complete(state.labels[PACKET.rows[candidate].packet_id], PACKET.rows[candidate])) { state.index = candidate; renderRecord(); return; }
       }
       setStatus("Every source decision is complete. Finish the attestation and export both files.", "good");
     }
@@ -409,7 +437,7 @@
       const url = URL.createObjectURL(new Blob([content], {type}));
       const anchor = document.createElement("a"); anchor.href = url; anchor.download = name; document.body.appendChild(anchor); anchor.click(); anchor.remove(); URL.revokeObjectURL(url);
     }
-    function allComplete() { return PACKET.rows.every((row) => complete(state.labels[row.packet_id])); }
+    function allComplete() { return PACKET.rows.every((row) => complete(state.labels[row.packet_id], row)); }
     function exportLabels() {
       updateCurrentFromForm();
       if (!allComplete()) { setStatus("Complete all 48 decisions before exporting the governed label file.", "bad"); return; }
@@ -419,17 +447,26 @@
     function attestationValid() {
       const hash = controls.packetHash.value.trim();
       return controls.reviewerName.value.trim() && controls.reviewerRole.value.trim()
+        && controls.reviewerAffiliation.value.trim() && controls.reviewerRelationship.value.trim()
+        && controls.reviewerCompensation.value.trim() && controls.reviewerConflicts.value.trim()
         && /^sha256:[0-9a-f]{64}$/.test(hash)
-        && controls.flagIndependent.checked && controls.flagMachine.checked && controls.flagReturns.checked && controls.flagPersonal.checked;
+        && controls.flagIndependent.checked && controls.flagResearchIndependent.checked
+        && controls.flagMachine.checked && controls.flagReturns.checked && controls.flagNoAutomation.checked
+        && controls.flagNoOutcomePay.checked && controls.flagConflicts.checked && controls.flagPersonal.checked;
     }
     function exportAttestation() {
       save();
       if (!allComplete()) { setStatus("Complete all 48 source decisions before exporting the attestation.", "bad"); return; }
-      if (!attestationValid()) { setStatus("Complete the reviewer identity, exact packet hash, and all four attestations.", "bad"); return; }
+      if (!attestationValid()) { setStatus("Complete every reviewer disclosure, the exact packet hash, and all eight attestations.", "bad"); return; }
       const attestation = {
         reviewer_name: controls.reviewerName.value.trim(), reviewer_role: controls.reviewerRole.value.trim(), completed_at: new Date().toISOString(),
+        reviewer_affiliation: controls.reviewerAffiliation.value.trim(), relationship_to_researcher: controls.reviewerRelationship.value.trim(),
+        compensation_or_incentive: controls.reviewerCompensation.value.trim(), conflicts_of_interest: controls.reviewerConflicts.value.trim(),
         packet_manifest_content_hash: controls.packetHash.value.trim(), independent_of_parser_development: true,
-        machine_outputs_not_consulted: true, prices_and_returns_not_consulted: true, all_labels_are_personally_reviewed: true
+        independent_of_research_design: true, machine_outputs_not_consulted: true,
+        prices_and_returns_not_consulted: true, no_automated_or_ai_labeling_assistance: true,
+        no_outcome_contingent_compensation: true, conflicts_disclosed_completely: true,
+        all_labels_are_personally_reviewed: true
       };
       download("completed_attestation.json", "application/json", `${JSON.stringify(attestation, null, 2)}\n`);
       setStatus("Downloaded completed_attestation.json. Run verify_review.py before returning both files.", "good");
@@ -443,15 +480,23 @@
     function restoreReviewer() {
       controls.reviewerName.value = state.reviewer.reviewer_name || "";
       controls.reviewerRole.value = state.reviewer.reviewer_role || "";
+      controls.reviewerAffiliation.value = state.reviewer.reviewer_affiliation || "";
+      controls.reviewerRelationship.value = state.reviewer.relationship_to_researcher || "";
+      controls.reviewerCompensation.value = state.reviewer.compensation_or_incentive || "";
+      controls.reviewerConflicts.value = state.reviewer.conflicts_of_interest || "";
       controls.packetHash.value = state.reviewer.packet_manifest_content_hash || "";
       controls.flagIndependent.checked = !!state.reviewer.independent_of_parser_development;
+      controls.flagResearchIndependent.checked = !!state.reviewer.independent_of_research_design;
       controls.flagMachine.checked = !!state.reviewer.machine_outputs_not_consulted;
       controls.flagReturns.checked = !!state.reviewer.prices_and_returns_not_consulted;
+      controls.flagNoAutomation.checked = !!state.reviewer.no_automated_or_ai_labeling_assistance;
+      controls.flagNoOutcomePay.checked = !!state.reviewer.no_outcome_contingent_compensation;
+      controls.flagConflicts.checked = !!state.reviewer.conflicts_disclosed_completely;
       controls.flagPersonal.checked = !!state.reviewer.all_labels_are_personally_reviewed;
     }
     controls.search.addEventListener("input", renderList);
     document.querySelectorAll('input[name="intent"]').forEach((input) => input.addEventListener("change", updateCurrentFromForm));
-    for (const control of [controls.sentence, controls.ownership, controls.notes, controls.reviewerName, controls.reviewerRole, controls.packetHash, controls.flagIndependent, controls.flagMachine, controls.flagReturns, controls.flagPersonal]) control.addEventListener("input", updateCurrentFromForm);
+    for (const control of [controls.sentence, controls.ownership, controls.notes, controls.reviewerName, controls.reviewerRole, controls.reviewerAffiliation, controls.reviewerRelationship, controls.reviewerCompensation, controls.reviewerConflicts, controls.packetHash, controls.flagIndependent, controls.flagResearchIndependent, controls.flagMachine, controls.flagReturns, controls.flagNoAutomation, controls.flagNoOutcomePay, controls.flagConflicts, controls.flagPersonal]) control.addEventListener("input", updateCurrentFromForm);
     $("captureSelection").addEventListener("click", captureSelection);
     $("previous").addEventListener("click", () => go(state.index - 1));
     $("nextIncomplete").addEventListener("click", nextIncomplete);

@@ -11,7 +11,7 @@ import math
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 SCHEMA = "canli.labeling.active-ownership-13d-item4-blind-packet.v3"
 HUMAN_COLUMNS = {
@@ -22,9 +22,22 @@ HUMAN_COLUMNS = {
 }
 ATTESTATION_TRUE_FIELDS = (
     "independent_of_parser_development",
+    "independent_of_research_design",
     "machine_outputs_not_consulted",
     "prices_and_returns_not_consulted",
+    "no_automated_or_ai_labeling_assistance",
+    "no_outcome_contingent_compensation",
+    "conflicts_disclosed_completely",
     "all_labels_are_personally_reviewed",
+)
+ATTESTATION_TEXT_FIELDS = (
+    "reviewer_name",
+    "reviewer_role",
+    "reviewer_affiliation",
+    "relationship_to_researcher",
+    "compensation_or_incentive",
+    "conflicts_of_interest",
+    "completed_at",
 )
 
 
@@ -51,7 +64,7 @@ def _read_csv(path: Path) -> tuple[list[str], list[dict[str, str]]]:
 
 def validate_packet(packet_dir: Path) -> dict[str, Any]:
     manifest_path = packet_dir / "manifest.json"
-    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest = cast(dict[str, Any], json.loads(manifest_path.read_text(encoding="utf-8")))
     if manifest.get("schema") != SCHEMA:
         raise ValueError(f"expected {SCHEMA}")
     if manifest.get("content_hash") != content_hash(manifest):
@@ -82,7 +95,17 @@ def validate_packet(packet_dir: Path) -> dict[str, Any]:
     return manifest
 
 
-def validate_completed_labels(completed: Path, template: Path) -> None:
+def _normalized_source_text(value: str) -> str:
+    return " ".join(value.split())
+
+
+def _document_body(path: Path) -> str:
+    document = path.read_text(encoding="utf-8")
+    _header, separator, body = document.partition("\n\n")
+    return body if separator else document
+
+
+def validate_completed_labels(completed: Path, template: Path, packet_dir: Path) -> None:
     completed_columns, completed_rows = _read_csv(completed)
     template_columns, template_rows = _read_csv(template)
     if completed_columns != template_columns:
@@ -102,6 +125,14 @@ def validate_completed_labels(completed: Path, template: Path) -> None:
             raise ValueError(f"row {index} active-intent label must be exactly true or false")
         if not row["human_representative_sentence"].strip():
             raise ValueError(f"row {index} requires a representative source sentence")
+        source = _normalized_source_text(
+            _document_body(packet_dir / "documents" / f"{row['packet_id']}.txt")
+        )
+        sentence = _normalized_source_text(row["human_representative_sentence"])
+        if sentence not in source:
+            raise ValueError(
+                f"row {index} representative sentence is not verbatim in the frozen source"
+            )
         ownership = row["human_aggregate_ownership_pct_or_unresolved"].strip().lower()
         if ownership == "unresolved":
             continue
@@ -115,7 +146,7 @@ def validate_completed_labels(completed: Path, template: Path) -> None:
 
 def validate_attestation(path: Path, packet_hash: str) -> None:
     attestation = json.loads(path.read_text(encoding="utf-8"))
-    for field in ("reviewer_name", "reviewer_role", "completed_at"):
+    for field in ATTESTATION_TEXT_FIELDS:
         if not str(attestation.get(field, "")).strip():
             raise ValueError(f"reviewer attestation requires {field}")
     completed_at = str(attestation["completed_at"]).strip().replace("Z", "+00:00")
@@ -149,7 +180,7 @@ def verify(
         "return_data_opened": False,
     }
     if completed is not None and attestation is not None:
-        validate_completed_labels(completed, packet_dir / "reviewer_labels.csv")
+        validate_completed_labels(completed, packet_dir / "reviewer_labels.csv", packet_dir)
         validate_attestation(attestation, str(manifest["content_hash"]))
         result.update(
             {

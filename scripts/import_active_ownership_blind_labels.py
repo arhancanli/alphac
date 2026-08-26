@@ -24,9 +24,22 @@ HUMAN_COLUMNS: Final = [
 ]
 ATTESTATION_TRUE_FIELDS: Final = [
     "independent_of_parser_development",
+    "independent_of_research_design",
     "machine_outputs_not_consulted",
     "prices_and_returns_not_consulted",
+    "no_automated_or_ai_labeling_assistance",
+    "no_outcome_contingent_compensation",
+    "conflicts_disclosed_completely",
     "all_labels_are_personally_reviewed",
+]
+ATTESTATION_TEXT_FIELDS: Final = [
+    "reviewer_name",
+    "reviewer_role",
+    "reviewer_affiliation",
+    "relationship_to_researcher",
+    "compensation_or_incentive",
+    "conflicts_of_interest",
+    "completed_at",
 ]
 
 
@@ -91,7 +104,7 @@ def validate_source_lineage(manifest: dict[str, Any], source_dir: Path) -> None:
 
 def validate_attestation(path: Path, packet_content_hash: str) -> dict[str, Any]:
     attestation = cast(dict[str, Any], json.loads(path.read_text()))
-    for field in ("reviewer_name", "reviewer_role", "completed_at"):
+    for field in ATTESTATION_TEXT_FIELDS:
         if not str(attestation.get(field, "")).strip():
             raise ValueError(f"reviewer attestation requires {field}")
     completed_at = str(attestation["completed_at"]).strip().replace("Z", "+00:00")
@@ -123,7 +136,19 @@ def _atomic_write(path: Path, data: bytes) -> None:
         temporary.unlink(missing_ok=True)
 
 
-def validate_labels(completed: Path, template: Path) -> pd.DataFrame:
+def _normalized_source_text(value: str) -> str:
+    return " ".join(value.split())
+
+
+def _document_body(path: Path) -> str:
+    document = path.read_text(encoding="utf-8")
+    _header, separator, body = document.partition("\n\n")
+    return body if separator else document
+
+
+def validate_labels(
+    completed: Path, template: Path, documents_dir: Path | None = None
+) -> pd.DataFrame:
     labels = pd.read_csv(completed, dtype=str, keep_default_na=False)
     frozen = pd.read_csv(template, dtype=str, keep_default_na=False)
     if list(labels.columns) != list(frozen.columns):
@@ -137,6 +162,16 @@ def validate_labels(completed: Path, template: Path) -> pd.DataFrame:
         raise ValueError("every active-intent label must be exactly true or false")
     if not labels["human_representative_sentence"].str.strip().ne("").all():
         raise ValueError("every row requires a representative source sentence")
+    if documents_dir is not None:
+        for index, row in enumerate(labels.to_dict("records"), start=1):
+            source = _normalized_source_text(
+                _document_body(documents_dir / f"{row['packet_id']}.txt")
+            )
+            sentence = _normalized_source_text(str(row["human_representative_sentence"]))
+            if sentence not in source:
+                raise ValueError(
+                    f"row {index} representative sentence is not verbatim in the frozen source"
+                )
     ownership = labels["human_aggregate_ownership_pct_or_unresolved"].str.strip().str.lower()
     numeric = pd.to_numeric(ownership, errors="coerce")
     valid_ownership = ownership.eq("unresolved") | numeric.between(0, 100, inclusive="neither")
@@ -160,11 +195,11 @@ def import_labels(
         raise ValueError("human labels already have an import receipt; refusing to overwrite")
     validate_source_lineage(manifest, source_dir)
     existing = pd.read_csv(canonical, dtype=str, keep_default_na=False)
-    human_columns = [column for column in existing if column.startswith("human_")]
-    if not human_columns or not existing[human_columns].eq("").all().all():
+    human_columns = [str(column) for column in existing if str(column).startswith("human_")]
+    if not human_columns or not all(existing[column].eq("").all() for column in human_columns):
         raise ValueError("canonical human labels are no longer blank; refusing to overwrite")
     attestation = validate_attestation(attestation_path, str(manifest["content_hash"]))
-    labels = validate_labels(completed, template)
+    labels = validate_labels(completed, template, packet_dir / "documents")
 
     canonical_before_sha256 = sha256_file(canonical)
     canonical_bytes = labels.to_csv(index=False).encode()
@@ -174,6 +209,10 @@ def import_labels(
         "reviewer": {
             "name": attestation["reviewer_name"],
             "role": attestation["reviewer_role"],
+            "affiliation": attestation["reviewer_affiliation"],
+            "relationship_to_researcher": attestation["relationship_to_researcher"],
+            "compensation_or_incentive": attestation["compensation_or_incentive"],
+            "conflicts_of_interest": attestation["conflicts_of_interest"],
             "completed_at": attestation["completed_at"],
         },
         "attestation_sha256": sha256_file(attestation_path),

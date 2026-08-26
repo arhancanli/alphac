@@ -40,8 +40,10 @@ def _blind_rank(accession: str) -> str:
 
 
 def _labels_are_unopened(labels: pd.DataFrame) -> bool:
-    human = [column for column in labels.columns if column.startswith("human_")]
-    return bool(human) and bool(labels[human].fillna("").eq("").all().all())
+    human = [str(column) for column in labels.columns if str(column).startswith("human_")]
+    return bool(human) and all(
+        labels[column].fillna("").astype(str).eq("").all() for column in human
+    )
 
 
 def build(source_dir: Path, out: Path) -> dict[str, Any]:
@@ -148,11 +150,19 @@ def build(source_dir: Path, out: Path) -> dict[str, Any]:
     attestation = {
         "reviewer_name": "",
         "reviewer_role": "",
+        "reviewer_affiliation": "",
+        "relationship_to_researcher": "",
+        "compensation_or_incentive": "",
+        "conflicts_of_interest": "",
         "completed_at": "",
         "packet_manifest_content_hash": "",
         "independent_of_parser_development": False,
+        "independent_of_research_design": False,
         "machine_outputs_not_consulted": False,
         "prices_and_returns_not_consulted": False,
+        "no_automated_or_ai_labeling_assistance": False,
+        "no_outcome_contingent_compensation": False,
+        "conflicts_disclosed_completely": False,
         "all_labels_are_personally_reviewed": False,
     }
     attestation_path = out / "reviewer_attestation.json"
@@ -189,6 +199,8 @@ Review all 48 rows without consulting parser outputs, aggregate results, prices,
   submission. Do not search for outcomes, prices, returns, parser results, or later filings.
 - Copy one representative source sentence verbatim. For a negative row, copy the sentence most
   relevant to the negative decision. Use `[ITEM 4 UNRESOLVED]` only when extraction is unresolved.
+  The verifier normalizes whitespace and rejects a sentence that is not present in the frozen
+  source excerpt; do not paraphrase it.
 - Record one unambiguous aggregate ownership percentage explicitly reported for the reporting
   person or group as a plain number without a percent sign. Do not infer, sum, average, or choose
   among conflicting percentages. Enter exactly `unresolved` when one aggregate percentage cannot
@@ -201,10 +213,12 @@ Review all 48 rows without consulting parser outputs, aggregate results, prices,
   official SEC submission.
 - Complete all 48 rows in `completed_labels.csv`. Do not reorder, add, or remove rows and do not
   change the frozen identity or source columns.
-- Fill `reviewer_name`, `reviewer_role`, and timezone-aware ISO 8601 `completed_at` in
-  `completed_attestation.json`; copy `content_hash` from `manifest.json` into
-  `packet_manifest_content_hash`; and set every independence boolean to `true`. Preserve the blank
-  template.
+- Fill every reviewer/disclosure field and the timezone-aware ISO 8601 `completed_at` in
+  `completed_attestation.json`. Use `none` when a relationship, payment, or conflict field truly
+  has nothing to disclose. Copy `content_hash` from `manifest.json` into
+  `packet_manifest_content_hash`; set every independence boolean to `true` only when truthful.
+  No generative-AI, classifier, scripted, or other automated assistance may be used to make or
+  draft any label, sentence, ownership value, or note. Preserve the blank template.
 - Run `python3 verify_review.py --completed completed_labels.csv --attestation
   completed_attestation.json`. Return the two completed files only if it prints
   `REVIEW_RETURN_VALID`; the output also gives both file hashes.
