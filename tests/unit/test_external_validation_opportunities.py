@@ -31,7 +31,7 @@ def test_external_validation_audit_fails_closed() -> None:
         "submitted": 0,
         "awarded": 0,
         "registration_authorized": 0,
-        "exact_future_deadlines": 1,
+        "exact_future_deadlines": 2,
     }
     assert len(payload["owner_facts_required"]) == 6
     assert len(payload["opportunity_shortlist"]) == 6
@@ -80,7 +80,14 @@ def test_high_priority_rules_preserve_verified_constraints() -> None:
     )
     assert wharton["eligibility"]["registration_actor"] == "advisor, not student"
     assert "may not submit AI-generated work as their own" in wharton["ai_boundary"]
-    assert wharton["exact_deadline"] is None
+    assert wharton["exact_deadline"] == "2026-09-11T17:00:00-04:00"
+    assert wharton["competition_calendar"] == {
+        "registered_team_instructions": "2026-09-15",
+        "competition_begins": "2026-09-28",
+        "official_team_roster": "2026-10-09T17:00:00-04:00",
+        "investment_policy_statement": "2026-11-06T17:00:00-05:00",
+        "final_report_and_school_documentation": "2026-12-04T17:00:00-05:00",
+    }
 
     diamond = rows["diamond_challenge_2027"]
     assert diamond["window_opens"] == "2026-09-16"

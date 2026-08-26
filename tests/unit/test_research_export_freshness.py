@@ -777,11 +777,11 @@ def test_external_validation_audit_is_public_and_fail_closed(modules) -> None:
     legacy = REPO.parent / "meridian" / "public" / "glassbox" / source.name
     app = REPO.parent / "meridian-app" / "public" / "glassbox" / source.name
 
-    assert audit["schema"] == "canli.alphac-external-validation-opportunities.v2"
+    assert audit["schema"] == "canli.alphac-external-validation-opportunities.v3"
     assert audit["decision"] == "NO_EXTERNAL_ACTION_AUTHORIZED_ELIGIBILITY_FACTS_REMAIN"
     assert audit["counts"] == {
         "awarded": 0,
-        "exact_future_deadlines": 1,
+        "exact_future_deadlines": 2,
         "opportunities": 6,
         "registered": 0,
         "registration_authorized": 0,
@@ -798,4 +798,7 @@ def test_external_validation_audit_is_public_and_fail_closed(modules) -> None:
     assert opportunities["wharton_investment_2026_2027"]["eligibility"][
         "team_leader"
     ] == "at least 16 years old at the start of the competition"
+    assert opportunities["wharton_investment_2026_2027"]["exact_deadline"] == (
+        "2026-09-11T17:00:00-04:00"
+    )
     assert source.read_bytes() == legacy.read_bytes() == app.read_bytes()

@@ -1,9 +1,9 @@
 {
   "claim_boundary": "This is a dated official-source opportunity audit. It proves no personal eligibility, registration, submission, judging, advancement, award, review, publication, or Stanford admissions outcome. Rules and deadlines must be rechecked immediately before any authorized external action.",
-  "content_hash": "sha256:a3ff1fff109b7f8d956d70759b291962de84a8fe4fdbf34475a3baf96670cbe0",
+  "content_hash": "sha256:9a5ef9eed1406fd32d3fb0f2b93ff58a102b1a3794263e870dc6bb90b4a4cf4a",
   "counts": {
     "awarded": 0,
-    "exact_future_deadlines": 1,
+    "exact_future_deadlines": 2,
     "opportunities": 6,
     "registered": 0,
     "registration_authorized": 0,
@@ -65,6 +65,13 @@
     },
     {
       "ai_boundary": "Generative AI may be used for ideas and brainstorming, but teams may not submit AI-generated work as their own. Any included AI-generated material must be cited.",
+      "competition_calendar": {
+        "competition_begins": "2026-09-28",
+        "final_report_and_school_documentation": "2026-12-04T17:00:00-05:00",
+        "investment_policy_statement": "2026-11-06T17:00:00-05:00",
+        "official_team_roster": "2026-10-09T17:00:00-04:00",
+        "registered_team_instructions": "2026-09-15"
+      },
       "eligibility": {
         "advisor": "one teacher or educator at the team's high school",
         "grade": "9-12; no secondary-school diploma before competition begins",
@@ -73,18 +80,18 @@
         "team_size": "4-6 students from the same school"
       },
       "entry_claimed": false,
-      "exact_deadline": null,
+      "exact_deadline": "2026-09-11T17:00:00-04:00",
       "fit": "A client-centered team portfolio thesis using ALPHAC's evidence discipline.",
       "id": "wharton_investment_2026_2027",
       "kind": "INVESTMENT_COMPETITION",
       "name": "Wharton Global High School Investment Competition 2026-2027",
-      "next_action": "Form the same-school team and have the teacher-advisor independently verify the live registration calendar before the advisor registers.",
+      "next_action": "Resolve the same-school team and teacher-advisor immediately; have the advisor independently recheck the official calendar before any authorized registration.",
       "official_sources": [
         "https://globalyouth.wharton.upenn.edu/competitions/investment-competition/",
         "https://globalyouth.wharton.upenn.edu/competitions/investment-competition/rules-roles/"
       ],
       "priority": 2,
-      "public_status": "Registration is open; the team and school advisor are unresolved.",
+      "public_status": "Registration closes September 11 at 5:00 p.m. ET; the team and school advisor are unresolved.",
       "registration_authorized": false,
       "source_checked_on": "2026-08-26",
       "state": "OPEN_BUT_TEAM_AND_ADVISOR_UNRESOLVED",
@@ -93,7 +100,7 @@
         "whether Arhan or another eligible teammate can serve as the age-16 team leader",
         "three to five eligible same-school teammates",
         "teacher-advisor assignment",
-        "the current cycle's exact registration close and deliverable calendar"
+        "whether the school can complete advisor registration before the deadline"
       ],
       "window_opens": "2026-08-10"
     },
@@ -231,7 +238,7 @@
   ],
   "opportunity_shortlist": [
     "1. Regeneron ISEF 2027 through an affiliated fair: The official 2025-2026 directory returns no UAE fair; the 2026-2027 directory and personal eligibility remain unresolved.",
-    "2. Wharton Global High School Investment Competition 2026-2027: Registration is open; the team and school advisor are unresolved.",
+    "2. Wharton Global High School Investment Competition 2026-2027: Registration closes September 11 at 5:00 p.m. ET; the team and school advisor are unresolved.",
     "3. Diamond Challenge 2027: The window opens September 16; the team and advisor are unresolved.",
     "4. Emirates Young Scientist Competition, next announced cycle: The next cycle date and Arhan's eligible entry route are unresolved.",
     "5. Conrad Challenge 2026-2027: The current cycle is confirmed; exact phase dates are unresolved.",
@@ -246,6 +253,6 @@
     "available same-school teammates",
     "available teacher, adult sponsor, or advisor"
   ],
-  "schema": "canli.alphac-external-validation-opportunities.v2",
+  "schema": "canli.alphac-external-validation-opportunities.v3",
   "verified_on": "2026-08-26"
 }
