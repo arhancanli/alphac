@@ -45,7 +45,7 @@ must be confirmed before any registration. The table records opportunity, not pa
 
 | Priority | Opportunity | Best ALPHAC scope | Verified boundary and next action |
 |---|---|---|---|
-| 1 | Regeneron ISEF 2027 through an affiliated fair | One new preregistered experiment on falsifiable quantitative-research methodology, provenance, or backtest-overfitting control | Grades 9–12 or equivalent and under 20 on the stated date; qualification must come through an affiliated fair. The last date for any affiliated fair is 12 April 2027 and ISEF is 8–14 May 2027, but Arhan's UAE fair and its earlier local deadline remain unresolved. The 2027 project may contain no more than 12 continuous months and no work before January 2026. Locate the fair and adult sponsor before changing or beginning the competition protocol. |
+| 1 | Regeneron ISEF 2027 through an affiliated fair | One new preregistered experiment on falsifiable quantitative-research methodology, provenance, or backtest-overfitting control | Grades 9–12 or equivalent and under 20 on the stated date; qualification must come through an affiliated fair. A country-filtered query of the official 2025–26 directory on 26 August returned “No fairs match your search criteria” for the United Arab Emirates. That does not establish the 2026–27 network: the Society says the directory is updated as annual affiliations are completed. The last fair date is 12 April 2027 and ISEF is 8–14 May 2027. Recheck the directory as the new cycle appears and ask the school or Society which fair, if any, serves the UAE before changing or beginning a competition protocol. |
 | 2 | Wharton Global High School Investment Competition 2026–27 | A team portfolio thesis that uses ALPHAC's evidence discipline without claiming the platform or old returns as a competition result | The current cycle is for teams of 4–6 eligible secondary-school students with a teacher advisor. Registration opened 10 August 2026. Confirm grade eligibility, form the team, appoint the school advisor, and read the current case and trading rules before entry. |
 | 3 | Diamond Challenge 2027 | ALPHAC as an evidence-first research-software or financial-literacy venture, with a real user problem and validation interviews | Teams of 2–4 high-school students aged 14–18 at the submission deadline need an adult advisor. The submission window opens 16 September 2026 and closes 14 January 2027 at 5 p.m. EST; advancing teams are notified 10 February, finalists 9 March, and the summit is 29–30 April. Decide the business or social-innovation track only after customer interviews support it. |
 | 4 | Emirates Young Scientist Competition, next announced cycle | A UAE-facing scientific or engineering version of the new prospective experiment | The current official interface covers grades 5–12. Individual projects are limited to UAE nationals; groups may contain up to three students and at most one non-UAE national, with a teacher or supervisor. Arhan's nationality and team route are unresolved, and no next-cycle date is claimed. |
@@ -175,8 +175,9 @@ It must not combine sixteen weak result stories into one promotional performance
 ### By 31 August 2026
 
 - Confirm Arhan's age, grade, school status, team availability, and adult or teacher advisors.
-- Use the ISEF fair finder and obtain the local affiliated fair's exact deadlines and approval
-  requirements.
+- Recheck the ISEF fair finder as the 2026–27 network appears. The current 2025–26 directory
+  returns no UAE match. Ask the school or Society for Science which fair, if any, serves the UAE,
+  then obtain that fair's exact deadline and preapproval requirements.
 - Register or prepare registration for Wharton only if the complete team and teacher advisor are
   eligible.
 - Choose the five flagship paper order and have Arhan begin the first technical audit.
