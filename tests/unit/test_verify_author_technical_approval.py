@@ -3,6 +3,7 @@ from __future__ import annotations
 import copy
 import hashlib
 import importlib.util
+import json
 from pathlib import Path
 from types import ModuleType
 
@@ -164,3 +165,32 @@ def test_output_writer_never_overwrites(tmp_path: Path) -> None:
     module._write_new(destination, {"first": True})
     with pytest.raises(FileExistsError, match="refusing to overwrite"):
         module._write_new(destination, {"second": True})
+
+
+def test_cli_reports_incomplete_response_without_traceback(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    module = _module()
+    response_path = tmp_path / "blank-response.json"
+    response_path.write_text(
+        json.dumps(module.prepare("alphavintage_macro_surprise")),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(
+        module.sys,
+        "argv",
+        [
+            "verify_author_technical_approval.py",
+            "verify",
+            "--input",
+            str(response_path),
+        ],
+    )
+
+    assert module.main() == 1
+    captured = capsys.readouterr()
+    assert captured.out == ""
+    assert captured.err.startswith("FAIL: answer WHY_TEST must contain at least 40")
+    assert "Traceback" not in captured.err

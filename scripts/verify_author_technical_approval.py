@@ -316,20 +316,24 @@ def main() -> int:
     verify_parser.add_argument("--output", type=Path)
     args = parser.parse_args()
 
-    if args.command == "prepare":
-        document = prepare(str(args.registry_key))
-        _write_new(args.output, document)
-        print(f"prepared blank author response -> {args.output}")
-        return 0
+    try:
+        if args.command == "prepare":
+            document = prepare(str(args.registry_key))
+            _write_new(args.output, document)
+            print(f"prepared blank author response -> {args.output}")
+            return 0
 
-    response = _load_json(args.input)
-    receipt = verify(response)
-    if args.output is not None:
-        _write_new(args.output, receipt)
-        print(f"verified author approval receipt -> {args.output}")
-    else:
-        print(json.dumps(receipt, indent=2, sort_keys=True))
-    return 0
+        response = _load_json(args.input)
+        receipt = verify(response)
+        if args.output is not None:
+            _write_new(args.output, receipt)
+            print(f"verified author approval receipt -> {args.output}")
+        else:
+            print(json.dumps(receipt, indent=2, sort_keys=True))
+        return 0
+    except (FileExistsError, FileNotFoundError, KeyError, ValueError) as exc:
+        print(f"FAIL: {exc}", file=sys.stderr)
+        return 1
 
 
 if __name__ == "__main__":
