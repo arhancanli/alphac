@@ -18,6 +18,7 @@ name: ci
 # complete offline suite remains a separate local verification claim.
 
 on:
+  workflow_dispatch:
   push:
     branches: [main]
   pull_request:
@@ -138,6 +139,56 @@ jobs:
           name: coverage-xml
           path: coverage.xml
           if-no-files-found: warn
+
+  foundry-database-contract:
+    name: foundry PostgreSQL contract
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres@sha256:1c59e2c3c818eaa0f0628f695b36e7c9e362d6b219b36a54a32df645cbd7e1af
+        env:
+          POSTGRES_DB: foundry
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d foundry"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install uv
+        uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
+        with:
+          enable-cache: true
+      - name: Pin Python from .python-version
+        run: uv python install
+      - name: Sync the frozen environment
+        run: uv sync --frozen --dev
+      - name: Create isolated database roles
+        run: |
+          psql -h 127.0.0.1 -U postgres -d foundry <<'SQL'
+          CREATE ROLE foundry_researchd LOGIN;
+          CREATE ROLE foundry_worker LOGIN;
+          CREATE ROLE foundry_status LOGIN;
+          SQL
+      - name: Apply the Foundry database contract
+        run: |
+          psql -v ON_ERROR_STOP=1 -h 127.0.0.1 -U postgres -d foundry \
+            -f deploy/foundry/sql/001_core.sql
+          psql -v ON_ERROR_STOP=1 -h 127.0.0.1 -U postgres -d foundry \
+            -f deploy/foundry/sql/002_privileges.sql
+      - name: Exercise lifecycle, immutability, role and lease boundaries
+        env:
+          FOUNDRY_TEST_ADMIN_DSN: postgresql://postgres@127.0.0.1:5432/foundry
+          FOUNDRY_TEST_RESEARCHD_DSN: postgresql://foundry_researchd@127.0.0.1:5432/foundry
+          FOUNDRY_TEST_WORKER_DSN: postgresql://foundry_worker@127.0.0.1:5432/foundry
+          FOUNDRY_TEST_STATUS_DSN: postgresql://foundry_status@127.0.0.1:5432/foundry
+        run: >-
+          uv run --with-requirements deploy/foundry/requirements.lock
+          pytest -n0 --no-cov
+          tests/integration/test_foundry_postgres.py
 
   browser-interface:
     name: browser interface (synthetic clean-checkout fixture)

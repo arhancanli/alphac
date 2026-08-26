@@ -81,8 +81,12 @@ def test_outcome_access_requires_reserved_identity_and_frozen_snapshot() -> None
 def test_holdout_has_one_human_authorized_entry_and_one_consumption_path() -> None:
     contract = _contract()
     transitions = contract["transitions"]
-    authorization = [transition for transition in transitions if transition["to"] == "HOLDOUT_AUTHORIZED"]
-    consumption = [transition for transition in transitions if transition["to"] == "HOLDOUT_CONSUMED"]
+    authorization = [
+        transition for transition in transitions if transition["to"] == "HOLDOUT_AUTHORIZED"
+    ]
+    consumption = [
+        transition for transition in transitions if transition["to"] == "HOLDOUT_CONSUMED"
+    ]
 
     assert contract["invariants"]["holdout_max_consumptions_per_identity"] == 1
     assert authorization == [

@@ -1,0 +1,28 @@
+#cloud-config
+package_update: true
+package_upgrade: true
+packages:
+  - ca-certificates
+  - nftables
+
+ssh_pwauth: false
+disable_root: true
+
+write_files:
+  - path: /etc/ssh/sshd_config.d/90-foundry-bastion.conf
+    owner: root:root
+    permissions: '0600'
+    content: |
+      PasswordAuthentication no
+      PermitRootLogin no
+      AllowAgentForwarding no
+      AllowTcpForwarding no
+      X11Forwarding no
+      PermitTunnel no
+      MaxAuthTries 3
+      LoginGraceTime 20
+
+runcmd:
+  - [systemctl, restart, ssh]
+
+final_message: "Ephemeral Foundry bastion bootstrap finished. Destroy after the maintenance window."
