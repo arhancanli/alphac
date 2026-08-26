@@ -8,9 +8,9 @@ line of its own docstring, each pipeline's steps are the scripts it actually inv
 contract's boundary is the boundary it states about itself. A script with no docstring appears as
 having none.
 
-At a glance: **334 Python scripts**, **17 shell entry points**,
+At a glance: **335 Python scripts**, **17 shell entry points**,
 **20 configuration contracts**, **27 engineering artifacts**,
-**380 unit test files**, **22 data directories**, **9 scheduled jobs**.
+**381 unit test files**, **22 data directories**, **9 scheduled jobs**.
 
 
 ## What runs on a timer
@@ -485,10 +485,11 @@ and is worth more than a hand-made taxonomy that would drift.
 | `run_crypto_carry_portable_v1.py` | Dry-run by default; execute one reserved crypto_carry_portable_v1 trial explicitly. |
 | `run_prereg_investment_upstream_clean_workspace.py` | Replay historical ``prereg_investment`` from raw archives in a clean workspace. |
 
-### `verify_*` (4)
+### `verify_*` (5)
 
 | script | first line of its docstring |
 |---|---|
+| `verify_author_technical_approval.py` | Prepare and fail-closed verify an author's manuscript-approval response overlay. |
 | `verify_crypto_position_attribution_rollout.py` | Verify the first non-empty natural crypto cycle after attribution rollout. |
 | `verify_publication_clean_checkout.py` | Verify every tracked publication bundle from a clean Git checkout. |
 | `verify_sleeve_publication_replays.py` | Replay audit-only sleeve evidence builders and prove no result or trial ledger changed. |

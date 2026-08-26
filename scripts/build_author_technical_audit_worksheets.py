@@ -7,7 +7,7 @@ import hashlib
 import json
 import shutil
 from pathlib import Path
-from typing import Any, Final
+from typing import Any, Final, cast
 
 ROOT: Final = Path(__file__).resolve().parents[1]
 REGISTRY: Final = ROOT / "config/external_publication_registry.json"
@@ -108,6 +108,75 @@ This blank worksheet proves no author audit, approval, external review, or publi
 """
 
 
+def registry_item(registry_key: str) -> dict[str, Any]:
+    registry = json.loads(REGISTRY.read_text())
+    matches = [item for item in registry["sleeves"] if item["key"] == registry_key]
+    if len(matches) != 1:
+        raise ValueError(f"registry key {registry_key!r} is not uniquely registered")
+    return cast(dict[str, Any], matches[0])
+
+
+def build_worksheet(item: dict[str, Any]) -> dict[str, Any]:
+    manuscript = ROOT / item["source_paper"]
+    bundle_manifest = ROOT / item["bundle_manifest"]
+    paper_pdf = bundle_manifest.parent / "paper.pdf"
+    for path in (manuscript, bundle_manifest, paper_pdf):
+        if not path.is_file():
+            raise FileNotFoundError(path)
+    worksheet: dict[str, Any] = {
+        "schema": "canli.alphac-author-technical-audit-worksheet.v1",
+        "status": "AWAITING_ARHAN_TECHNICAL_AUDIT_NO_APPROVAL_CLAIMED",
+        "registry_key": item["key"],
+        "title": item["title"],
+        "author": "Arhan Canli",
+        "manuscript": {
+            "path": item["source_paper"],
+            "sha256": _sha256(manuscript),
+        },
+        "paper_pdf": {
+            "path": str(paper_pdf.relative_to(ROOT)),
+            "sha256": _sha256(paper_pdf),
+        },
+        "bundle_manifest": {
+            "path": item["bundle_manifest"],
+            "sha256": _sha256(bundle_manifest),
+        },
+        "author_questions": [
+            {
+                "id": question_id,
+                "prompt": prompt,
+                "answer": None,
+                "answered_by": None,
+                "approved_by_author": False,
+            }
+            for question_id, prompt in QUESTIONS
+        ],
+        "claim_trace": [],
+        "research_integrity_checks": [
+            {"check": check, "passes": None, "evidence": None}
+            for check in INTEGRITY_CHECKS
+        ],
+        "approval": {
+            "decision": None,
+            "blocking_issues": [],
+            "author_statement": None,
+            "governed_signature_or_approval_reference": None,
+            "approved_manuscript_sha256": None,
+        },
+        "ai_detector_used": False,
+        "ai_detector_evasion_claimed": False,
+        "author_audit_claimed": False,
+        "external_review_claimed": False,
+        "claim_boundary": (
+            "This machine-populated worksheet binds one manuscript and leaves every author "
+            "judgment, claim trace, integrity decision, and approval blank. It proves no "
+            "authorship audit, approval, external review, or publication."
+        ),
+    }
+    worksheet["content_hash"] = _content_hash(worksheet)
+    return worksheet
+
+
 def generate(out_root: Path = OUTPUT_ROOT) -> dict[str, Any]:
     registry = json.loads(REGISTRY.read_text())
     protocol = json.loads(PROTOCOL.read_text())
@@ -119,63 +188,7 @@ def generate(out_root: Path = OUTPUT_ROOT) -> dict[str, Any]:
     records: list[dict[str, Any]] = []
 
     for item in registry["sleeves"]:
-        manuscript = ROOT / item["source_paper"]
-        bundle_manifest = ROOT / item["bundle_manifest"]
-        paper_pdf = bundle_manifest.parent / "paper.pdf"
-        for path in (manuscript, bundle_manifest, paper_pdf):
-            if not path.is_file():
-                raise FileNotFoundError(path)
-        worksheet: dict[str, Any] = {
-            "schema": "canli.alphac-author-technical-audit-worksheet.v1",
-            "status": "AWAITING_ARHAN_TECHNICAL_AUDIT_NO_APPROVAL_CLAIMED",
-            "registry_key": item["key"],
-            "title": item["title"],
-            "author": "Arhan Canli",
-            "manuscript": {
-                "path": item["source_paper"],
-                "sha256": _sha256(manuscript),
-            },
-            "paper_pdf": {
-                "path": str(paper_pdf.relative_to(ROOT)),
-                "sha256": _sha256(paper_pdf),
-            },
-            "bundle_manifest": {
-                "path": item["bundle_manifest"],
-                "sha256": _sha256(bundle_manifest),
-            },
-            "author_questions": [
-                {
-                    "id": question_id,
-                    "prompt": prompt,
-                    "answer": None,
-                    "answered_by": None,
-                    "approved_by_author": False,
-                }
-                for question_id, prompt in QUESTIONS
-            ],
-            "claim_trace": [],
-            "research_integrity_checks": [
-                {"check": check, "passes": None, "evidence": None}
-                for check in INTEGRITY_CHECKS
-            ],
-            "approval": {
-                "decision": None,
-                "blocking_issues": [],
-                "author_statement": None,
-                "governed_signature_or_approval_reference": None,
-                "approved_manuscript_sha256": None,
-            },
-            "ai_detector_used": False,
-            "ai_detector_evasion_claimed": False,
-            "author_audit_claimed": False,
-            "external_review_claimed": False,
-            "claim_boundary": (
-                "This machine-populated worksheet binds one manuscript and leaves every author "
-                "judgment, claim trace, integrity decision, and approval blank. It proves no "
-                "authorship audit, approval, external review, or publication."
-            ),
-        }
-        worksheet["content_hash"] = _content_hash(worksheet)
+        worksheet = build_worksheet(item)
         destination = out_root / item["bundle_slug"]
         destination.mkdir()
         json_path = destination / "author_audit.json"
