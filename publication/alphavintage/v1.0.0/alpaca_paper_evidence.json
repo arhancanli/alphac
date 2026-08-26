@@ -22,7 +22,7 @@
     "missing_broker_mark_timestamps": [],
     "overlapping_marks": 13
   },
-  "current_equity_as_of": "2026-08-25T10:37:12.676000+00:00",
+  "current_equity_as_of": "2026-08-26T02:25:32.574000+00:00",
   "excluded_fields": [
     "ACCOUNT_IDENTITY",
     "CURRENT_EQUITY_AMOUNT",
@@ -35,7 +35,7 @@
     "last_failure_at": null,
     "last_success_at": "2026-08-24T06:00:20.588000+00:00"
   },
-  "generated_at": "2026-08-25T10:37:12.676240+00:00",
+  "generated_at": "2026-08-26T02:25:32.574697+00:00",
   "passes": true,
   "portfolio_history_first_mark": "2026-08-07T00:00:00+00:00",
   "portfolio_history_last_mark": "2026-08-25T00:00:00+00:00",
@@ -43,6 +43,6 @@
   "sleeve": "alphavintage",
   "source_binding": {
     "path": "artifacts/engineering/alpaca_broker_reconciliation.json",
-    "sha256": "ebde115d3498d2088c68c508609147a14e0b6334a610370d038332bd3c647197"
+    "sha256": "89683bb4ff9d4a32f4db3385c03d4cb05b82e87a42ac144d9e9325175717ce76"
   }
 }

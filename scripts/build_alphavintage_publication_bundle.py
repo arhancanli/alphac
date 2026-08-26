@@ -683,7 +683,10 @@ def build(out: Path = OUT) -> Path:
             "FULL_PIPELINE_CLEAN_ENVIRONMENT_REPLAY_NOT_COMPLETED",
             "INDEPENDENT_HUMAN_REPLICATION_MISSING",
         ],
+        "doi_claimed": False,
         "external_submission_claimed": False,
+        "independent_replication_claimed": False,
+        "peer_review_claimed": False,
     }
     _write_json(out / "bundle_manifest.json", manifest)
     _write_json(out / "ro-crate-metadata.json", _ro_crate(out))

@@ -27,6 +27,7 @@
     }
   },
   "author": "Arhan Canli",
+  "doi_claimed": false,
   "external_submission_claimed": false,
   "files_before_inventory": [
     "CITATION.cff",
@@ -61,6 +62,8 @@
     "sealed_outcome.json",
     "trial_accounting.json"
   ],
+  "independent_replication_claimed": false,
+  "peer_review_claimed": false,
   "registry_key": "alphavintage_macro_surprise",
   "remaining_blockers": [
     "DATA_LICENCE_REVIEW_REQUIRED",

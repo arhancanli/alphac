@@ -37,6 +37,23 @@ env:
   UV_FROZEN: "1"
 
 jobs:
+  publication-integrity:
+    name: publication integrity (clean checkout)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Verify all tracked scholarly preparation bundles
+        run: >-
+          python scripts/verify_publication_clean_checkout.py
+          --receipt publication-clean-checkout-integrity.json
+      - name: Upload the commit-bound verification receipt
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: publication-clean-checkout-integrity
+          path: publication-clean-checkout-integrity.json
+          if-no-files-found: error
+
   lint:
     name: ruff (governed scope + debt ledger)
     runs-on: ubuntu-latest

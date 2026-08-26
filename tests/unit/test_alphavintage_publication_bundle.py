@@ -34,6 +34,9 @@ def test_bundle_is_honest_sanitized_and_attributed(tmp_path: Path) -> None:
     assert "holdings" not in broker
     assert manifest["status"] == "BUNDLE_INCOMPLETE"
     assert manifest["external_submission_claimed"] is False
+    assert manifest["doi_claimed"] is False
+    assert manifest["independent_replication_claimed"] is False
+    assert manifest["peer_review_claimed"] is False
     assert manifest["remaining_blockers"]
     assert reproduction["core_clean_environment_reproduction_completed"] is True
     assert reproduction["full_decision_clean_environment_reproduction_completed"] is True

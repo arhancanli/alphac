@@ -26,9 +26,9 @@ artifact-bound publication pipeline; this is not a real-time broker display.
 | | |
 |---|---|
 | Paper sleeves | **4 / 14 planned** — funding carry, equity momentum, managed-futures trend, PIT macro surprise |
-| Forward record | **17 daily returns** from 2026-08-07 through 2026-08-26; cumulative return **−2.36546%**; provenance currently passes the publication gate |
+| Forward record | **17 daily returns** from 2026-08-07 through 2026-08-26; cumulative return **−2.40774%**; provenance currently passes the publication gate |
 | Forward Sharpe | **Not reportable** — 252 observations are required for an estimate and 756 for the project's establishment test |
-| Drawdown | Realized **2.47291%** to date, descriptive only; the current-composition model estimates **9.318% expected / 16.451% p95**, neither established by live evidence |
+| Drawdown | Realized **2.51305%** to date, descriptive only; the current-composition model estimates **9.318% expected / 16.451% p95**, neither established by live evidence |
 | Diversification | Research-curve average pairwise correlation **+0.02483** across 4 sleeves; live-forward diversification is not established |
 | DSR policy | Mandatory to measure and publish; **0.95 is a full-union portfolio-maturity threshold, not a per-sleeve or incremental-admission gate** |
 
@@ -99,6 +99,18 @@ The Parquet data lake (`data/`, ~26GB) and run artifacts (`artifacts/`) are not 
 re-derivable from the exchange and vendor sources the ingest scripts name. Published numbers and
 their inputs are mirrored as machine-readable artifacts under
 [canlicapital.com/open](https://canlicapital.com/open).
+
+Every tracked sleeve-publication bundle can also be checked before the Python environment is
+installed:
+
+```sh
+python scripts/verify_publication_clean_checkout.py --receipt publication-integrity.json
+```
+
+That clean-checkout check currently covers 16 incomplete preparation bundles, 402
+checksum-bound files and 80 machine-validated PDF pages. It verifies archive integrity,
+authorship, current code/environment bindings and fail-closed publication claims. It does not
+regenerate returns, clear data rights, establish independent replication or claim submission.
 
 ## Not investment advice
 
