@@ -1,0 +1,216 @@
+{
+  "@context": "https://w3id.org/ro/crate/1.1/context",
+  "@graph": [
+    {
+      "@id": "ro-crate-metadata.json",
+      "@type": "CreativeWork",
+      "about": {
+        "@id": "./"
+      },
+      "conformsTo": {
+        "@id": "https://w3id.org/ro/crate/1.1"
+      }
+    },
+    {
+      "@id": "./",
+      "@type": "Dataset",
+      "author": {
+        "@id": "#arhan-canli"
+      },
+      "datePublished": "2026-08-23",
+      "hasPart": [
+        {
+          "@id": "CITATION.cff"
+        },
+        {
+          "@id": "CORRECTIONS.md"
+        },
+        {
+          "@id": "LICENSE"
+        },
+        {
+          "@id": "README.md"
+        },
+        {
+          "@id": "archival_visual_inspection_receipt.json"
+        },
+        {
+          "@id": "bundle_manifest.json"
+        },
+        {
+          "@id": "codemeta.json"
+        },
+        {
+          "@id": "data_manifest.json"
+        },
+        {
+          "@id": "evidence/family_result.json"
+        },
+        {
+          "@id": "evidence/probe_result.json"
+        },
+        {
+          "@id": "internal_replay_receipt.json"
+        },
+        {
+          "@id": "isolated_replay_receipt.json"
+        },
+        {
+          "@id": "paper.html"
+        },
+        {
+          "@id": "paper.json"
+        },
+        {
+          "@id": "paper.md"
+        },
+        {
+          "@id": "paper.pdf"
+        },
+        {
+          "@id": "paper.tex"
+        },
+        {
+          "@id": "pdf_validation.json"
+        },
+        {
+          "@id": "references.bib"
+        },
+        {
+          "@id": "references.json"
+        },
+        {
+          "@id": "reproduction.json"
+        },
+        {
+          "@id": "sbom.spdx.json"
+        },
+        {
+          "@id": "trial_accounting.json"
+        }
+      ],
+      "name": "Clustered Insider Purchases: Two Negative Event-Information Trials",
+      "version": "0.1.0"
+    },
+    {
+      "@id": "#arhan-canli",
+      "@type": "Person",
+      "name": "Arhan Canli"
+    },
+    {
+      "@id": "CITATION.cff",
+      "@type": "File",
+      "sha256": "dc9c520dec9554afaf9cf83e43604c198b26bfa2ed7e91e68b7c513abd138464"
+    },
+    {
+      "@id": "CORRECTIONS.md",
+      "@type": "File",
+      "sha256": "0dd38c857bd0568f5b5fd84d8c8360d38cba15ddc5aa47a7fa2600a06df5adea"
+    },
+    {
+      "@id": "LICENSE",
+      "@type": "File",
+      "sha256": "e679ca02271c3b6ff38e197098b9260900656c23f06b787383624681f425fa26"
+    },
+    {
+      "@id": "README.md",
+      "@type": "File",
+      "sha256": "1293e58ccee6ecd48e13944713d79c5341fb8934c1c2a206b7ab66c329d7f511"
+    },
+    {
+      "@id": "archival_visual_inspection_receipt.json",
+      "@type": "File",
+      "sha256": "7a40b8c55de12ec4dd2f93143810266ac8854dc14fdd2ac1a336f64ff9dd8578"
+    },
+    {
+      "@id": "bundle_manifest.json",
+      "@type": "File",
+      "sha256": "30437364c9cb8272477527b84d3d3863d625c122fb2ca6263f2b90338195f82e"
+    },
+    {
+      "@id": "codemeta.json",
+      "@type": "File",
+      "sha256": "ff32b2b9a343597f6a987619c2062073fb468901de7f2641ed6a309d0aecbea9"
+    },
+    {
+      "@id": "data_manifest.json",
+      "@type": "File",
+      "sha256": "dac96223d920cb152a56955f2ae9baa08884d43b175a76c1b36cca46b9f1b156"
+    },
+    {
+      "@id": "evidence/family_result.json",
+      "@type": "File",
+      "sha256": "ae6965124a71f5b58a294e0f023b8b573fd5d98f25ee8009036bec60e69857c7"
+    },
+    {
+      "@id": "evidence/probe_result.json",
+      "@type": "File",
+      "sha256": "126ff81e3e47d96571095d7447d1f8fb9ce23737d8d6c4a7b7359a3a4982a97b"
+    },
+    {
+      "@id": "internal_replay_receipt.json",
+      "@type": "File",
+      "sha256": "70ac0c8d8542294e02c396085216646208a786295c747940f0eb0f576010ec95"
+    },
+    {
+      "@id": "isolated_replay_receipt.json",
+      "@type": "File",
+      "sha256": "d0df878375d415986fa639487e4ccffc9cad6396dca9bde5f3be4a7fdf50b2ad"
+    },
+    {
+      "@id": "paper.html",
+      "@type": "File",
+      "sha256": "7d6ea5995a5f715132da1dc60447e833ee0c2d0b40c5e8cfb15faa8a51fcc654"
+    },
+    {
+      "@id": "paper.json",
+      "@type": "File",
+      "sha256": "5bb3fed7ff5756cd66346e348eaea15f4d74be890e9031ea1c7aeff3e8907fd4"
+    },
+    {
+      "@id": "paper.md",
+      "@type": "File",
+      "sha256": "23b78849957d7c2cc99b86cbb8f15acf42e01d28a6205aad5e3d1e82b48ed945"
+    },
+    {
+      "@id": "paper.pdf",
+      "@type": "File",
+      "sha256": "f7361073dc107b7414b60e8cc50c77515dae71a8d280745582250e970aa653dc"
+    },
+    {
+      "@id": "paper.tex",
+      "@type": "File",
+      "sha256": "d97e55ec7ef28f9bb1a693b993ed453e5bc8e565febf9b70a33c6333735a90f7"
+    },
+    {
+      "@id": "pdf_validation.json",
+      "@type": "File",
+      "sha256": "4e24a5de5b830ca6685a4f9f4208498e65aa29818f871f067763c9275d2df37b"
+    },
+    {
+      "@id": "references.bib",
+      "@type": "File",
+      "sha256": "e0956f60cb7afb1c881df2d1e2d806ec2ff9bc8f08844680662e0848d40645f4"
+    },
+    {
+      "@id": "references.json",
+      "@type": "File",
+      "sha256": "5f1a310fecb14e5f5635db2676282acae8b585211d648170faf5d333ea9da725"
+    },
+    {
+      "@id": "reproduction.json",
+      "@type": "File",
+      "sha256": "9290006201cdb422c8c699d26febf0a8aa85bd7a007a958622dbe7919aa9d52f"
+    },
+    {
+      "@id": "sbom.spdx.json",
+      "@type": "File",
+      "sha256": "66916969fd1f2fa86ed905dea9e71dfbf1bc883f0c13c9e6e18fb92eab826c7d"
+    },
+    {
+      "@id": "trial_accounting.json",
+      "@type": "File",
+      "sha256": "bc62c3ff71454563af8ec893e9ab81be51df8bbb5d06739d95a7d58e58ecbe94"
+    }
+  ]
+}

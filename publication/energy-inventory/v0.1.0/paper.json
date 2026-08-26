@@ -1,0 +1,30 @@
+{
+  "abstract": "This study tests one preregistered implementation of petroleum-inventory scarcity using EIA first-release data and liquid exchange-traded energy proxies. The signal enters on the next market open after release, normalizes inventory surprises against five years of seasonal history, and hedges trailing DBC beta. Over 2,669 immutable ledger observations, annualized Sharpe was -0.5893, skew was -1.5157, and kurtosis was 30.2245. The fuller probe measured net Sharpe -0.5892, Newey-West t-statistic -1.8450, DSR effectively zero, and maximum drawdown of 41.05%. It passed exposure and correlation checks but failed the return, robustness, product-consistency, portfolio, and capacity gates. The verdict is KILL and the family contributes zero sleeves.",
+  "authors": [
+    {
+      "affiliation": "Canli Capital / AlphaC Algorithms",
+      "full_name": "Arhan Canli",
+      "roles": [
+        "CONCEPTUALIZATION",
+        "METHODOLOGY",
+        "SOFTWARE",
+        "VALIDATION",
+        "INVESTIGATION",
+        "WRITING",
+        "PROJECT_ADMINISTRATION"
+      ]
+    }
+  ],
+  "capital_kind": "RESEARCH_SIMULATION_ONLY",
+  "claim_boundary": "This is an incomplete preparation bundle. It proves no external submission, DOI, peer review, independent replication, funded performance, or future return.",
+  "date": "2026-08-23",
+  "external_identifiers": [],
+  "language": "en",
+  "peer_reviewed": false,
+  "registry_key": "energy_inventory",
+  "result_release_complete": true,
+  "schema": "canli.alphac-sleeve-paper.v1",
+  "title": "Petroleum Inventory Scarcity: One Negative Macro-Commodity Identity",
+  "type": "WORKING_PAPER_PREPRINT_NOT_PEER_REVIEWED",
+  "version": "0.1.0"
+}

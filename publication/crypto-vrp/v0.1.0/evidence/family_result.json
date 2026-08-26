@@ -1,0 +1,79 @@
+{
+  "author": "Arhan Canli",
+  "claim_boundary": "This is a signal-validity proxy using DVOL and realized variance, not an executable option return, forward record, capacity study, admitted sleeve, or return promise.",
+  "diagnostics": {
+    "BTC": {
+      "frac_days_vrp_positive": 0.7299,
+      "mean_vrp_volpts": 0.044,
+      "naive_always_short_sharpe": 2.4818,
+      "naive_always_short_skew": -5.4874
+    },
+    "ETH": {
+      "frac_days_vrp_positive": 0.6525,
+      "mean_vrp_volpts": -0.0008,
+      "naive_always_short_sharpe": 0.5309,
+      "naive_always_short_skew": -10.6795
+    }
+  },
+  "evidence_date": "2026-08-22",
+  "family_key": "crypto_volatility_risk_premium",
+  "identity": {
+    "artifact_path": "artifacts/exp2/20260625T094710Z/exp2_metrics.json",
+    "artifact_sha256": "f39839b1e05b33e718563984228ee4dba64e94bdbf10c1b174426c0bd880d3a4",
+    "config_hash": "99596bbb5b6f8e38",
+    "configuration": {
+      "cost_bps": 10.0,
+      "currencies": [
+        "BTC",
+        "ETH"
+      ],
+      "end": "2026-06-01",
+      "k_cost": 0.02,
+      "normalizer": "expanding_std_shift_1",
+      "probe": "crypto_vrp_proxy",
+      "signal": "dvol_minus_yang_zhang_168",
+      "start": "2021-03-24",
+      "warmup_days": 365
+    },
+    "hypothesis_key": "bd4688c240711a16",
+    "ledger_source_path": "var/experiments.jsonl",
+    "result": {
+      "annualized_sharpe": -0.633,
+      "artifact_era_dsr": 0.0,
+      "artifact_era_global_trials": 84,
+      "artifact_era_psr": 0.066,
+      "clears_artifact_era_dsr_gate": false,
+      "currencies": [
+        "BTC",
+        "ETH"
+      ],
+      "oos_days": 1492,
+      "raw_kurtosis": 132.65,
+      "skew": -9.517,
+      "window": {
+        "end": "2026-06-01",
+        "start": "2021-03-24"
+      }
+    }
+  },
+  "implementation": {
+    "is_deployable_option_pnl": false,
+    "return_type": "variance_swap_signal_validity_proxy",
+    "source_path": "scripts/exp2_crypto_vrp.py",
+    "source_sha256": "12cc277a6c84a136dcd819d9297d4e117c52e4bfdfbba50601e15c279cb101b0"
+  },
+  "schema": "canli.alphac-crypto-vrp-family.v1",
+  "source_provenance": {
+    "report_path": "artifacts/exp2/20260625T094710Z/exp2_metrics.json",
+    "report_sha256": "f39839b1e05b33e718563984228ee4dba64e94bdbf10c1b174426c0bd880d3a4"
+  },
+  "summary": {
+    "admission_status": "FAIL_RESEARCH_ONLY",
+    "artifact_era_dsr_gate_passes": 0,
+    "broker_reconciled_forward_status": "NOT_ESTABLISHED",
+    "capacity_status": "UNMEASURED_NO_OPTIONS_CAPACITY_SWEEP",
+    "distinct_hypothesis_identities": 1,
+    "options_surface_status": "UNAVAILABLE_HISTORICAL_SURFACE_PROXY_ONLY"
+  },
+  "unresolved_diversification": "PENDING \u2014 read from exp1 carry/momentum OOS curves once exp1 finishes"
+}

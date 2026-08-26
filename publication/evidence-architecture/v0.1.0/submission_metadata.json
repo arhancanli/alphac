@@ -1,0 +1,39 @@
+{
+  "schema": "canli.arxiv-submission-metadata-draft.v1",
+  "status": "DRAFT_REQUIRES_AUTHOR_APPROVAL",
+  "title": "From Backtest to Public Record: A Fail-Closed Evidence Architecture for Prospective Validation of Systematic Trading Systems",
+  "authors": [
+    {
+      "name": "Arhan Canli",
+      "affiliation": "Independent Researcher",
+      "country": "United Arab Emirates",
+      "corresponding_email_in_paper": false
+    }
+  ],
+  "primary_category_recommendation": "q-fin.CP",
+  "cross_list_recommendations": [
+    "q-fin.PM",
+    "cs.SE"
+  ],
+  "cross_list_note": "Use cs.SE only if the final author-reviewed manuscript retains the software-evaluation contribution and the category is available to the author. Category choice remains subject to arXiv moderation.",
+  "comments_draft": "Author-review draft. Paper-trading and research-simulation evidence only; no funded performance. Source and case-study snapshot included.",
+  "report_number": null,
+  "journal_reference": null,
+  "doi": null,
+  "license_recommendation": "arXiv.org perpetual, non-exclusive license",
+  "license_requires_author_choice": true,
+  "external_submission_authorized": false,
+  "external_submission_claimed": false,
+  "peer_review_claimed": false,
+  "ai_disclosure_draft": "AI-assisted software and editorial tools contributed to code development, evidence auditing, literature discovery, and manuscript preparation. Arhan Canli is the sole intended human author and is responsible for personally reviewing and approving the final submitted work.",
+  "required_author_decisions": [
+    "Approve or revise the title and abstract.",
+    "Confirm sole authorship and the Independent Researcher affiliation.",
+    "Confirm every contribution attributed to Arhan Canli is accurate.",
+    "Approve or revise the AI-assistance disclosure.",
+    "Choose the arXiv distribution license.",
+    "Approve the primary category and any cross-lists.",
+    "Inspect the arXiv-generated PDF from the exact upload source.",
+    "Explicitly authorize final submission after all prior checks pass."
+  ]
+}

@@ -1,0 +1,30 @@
+#!/usr/sbin/nft -f
+
+flush ruleset
+
+table inet foundry_holdout_filter {
+    chain input {
+        type filter hook input priority filter; policy drop;
+        ct state invalid drop
+        ct state established,related accept
+        iifname "lo" accept
+        meta l4proto icmp accept
+    }
+
+    chain forward {
+        type filter hook forward priority filter; policy drop;
+    }
+
+    chain output {
+        type filter hook output priority filter; policy drop;
+        ct state invalid drop
+        ct state established,related accept
+        oifname "lo" accept
+
+        meta skuid 0 udp dport { 53, 123 } accept
+        meta skuid 0 tcp dport { 53, 443 } accept
+
+        meta skuid "foundryholdoutegress" udp dport 53 accept
+        meta skuid "foundryholdoutegress" tcp dport { 53, 443 } accept
+    }
+}

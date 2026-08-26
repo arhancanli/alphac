@@ -20,6 +20,7 @@ These tests pin the RUNNING path: the exact module objects ``main()`` emits — 
 resolves descriptors through. No network, no DB, no disk writes. The last test additionally
 validates the real emitted artifact when it is present on the box.
 """
+
 from __future__ import annotations
 
 import importlib.util
@@ -32,6 +33,9 @@ import pytest
 REPO = Path(__file__).resolve().parents[2]
 PTS_PATH = REPO / "scripts" / "paper_trading_state.py"
 STATE_JSON = REPO / "data" / "paper" / "state.json"
+ALPHATREND_SELECTED_ARTIFACT = (
+    REPO / "artifacts" / "walkforward" / "managed_futures" / "walkforward.json"
+)
 
 # The sleeves that COMPOSE the flagship, addressed by key (never by list position).
 # The sleeves that COMPOSE the flagship. AlphaVintage joined 2026-08-10 (WEIGHT_SCHEDULE entry
@@ -50,6 +54,7 @@ def pts():
 
 
 # --------------------------------------------------------------- ordering (fix A)
+
 
 def test_flagship_alphac_is_first_and_is_the_only_flagship(pts):
     """ALPHAC leads. This is the whole point: the record is ABOUT the combined book."""
@@ -79,7 +84,22 @@ def test_every_algorithm_is_present_exactly_once(pts):
     assert len(keys) == len(set(keys))
 
 
+def test_execution_provenance_is_structured_and_never_claims_real_money(pts):
+    by_key = {algo["key"]: algo["execution"] for algo in pts.ALGOS}
+
+    assert all(item["capital_kind"] == "PAPER_ONLY" for item in by_key.values())
+    assert by_key["alphac"]["record_kind"] == "DERIVED_PAPER_BOOK"
+    assert by_key["alphac"]["account_scope"] == "NO_DIRECT_BROKER_ACCOUNT"
+    for key in ("alphamax", "managed_futures", "alphavintage"):
+        assert by_key[key]["record_kind"] == "BROKER_EXECUTED_PAPER"
+        assert by_key[key]["broker"] == "ALPACA"
+        assert by_key[key]["external_attestation"] is False
+    assert by_key["alphaforge"]["broker"] == "ALPHAFORGE_PAPERBROKER"
+    assert by_key["alphaforge"]["record_kind"] == "LOCALLY_SIMULATED_PAPER_FILLS"
+
+
 # ------------------------------------- descriptors resolve by key, never by position
+
 
 def test_descriptors_are_addressed_by_key(pts):
     """``ALGO_BY_KEY`` is how the back-compat ``book.sleeves`` block reads descriptors. If a
@@ -88,6 +108,18 @@ def test_descriptors_are_addressed_by_key(pts):
     for key in COMPOSITION_KEYS:
         assert pts.ALGO_BY_KEY[key]["key"] == key
     assert pts.ALGO_BY_KEY["alphaforge"]["desc"] != pts.ALGO_BY_KEY["alphamax"]["desc"]
+
+
+def test_alphatrend_headline_and_family_rederivation_are_not_conflated(pts):
+    """The card's selected artifact and the broader family re-derivation are different curves."""
+    trend = pts.ALGO_BY_KEY["managed_futures"]
+    selected = json.loads(ALPHATREND_SELECTED_ARTIFACT.read_text())["summary"]
+    assert trend["standalone_sharpe"] == pytest.approx(selected["sharpe"], abs=0.005)
+    assert "selected 5,133-day walk-forward artifact" in trend["desc"]
+    assert f"Sharpe {selected['sharpe']:.4f}" in trend["desc"]
+    assert "family-wide re-derivation has net Sharpe 0.25" in trend["desc"]
+    assert "Both are historical simulations" in trend["desc"]
+    assert "The 0.33 headline is the selected walk-forward artifact" in trend["caveat"]
 
 
 def test_source_contains_no_positional_algos_indexing():
@@ -100,15 +132,24 @@ def test_source_contains_no_positional_algos_indexing():
 
 # ------------------------------------------------- the owed disclosure (fix B)
 
+
 def test_transparency_entries_are_non_empty_strings(pts):
     entries = pts.transparency_entries()
     assert entries and all(isinstance(e, str) and e.strip() for e in entries)
 
 
+def test_capital_boundary_is_scoped_to_the_published_strategy_record(pts):
+    """A separate account must not make a project-wide zero-capital sentence false."""
+    first = pts.transparency_entries()[0]
+    assert "published ALPHAC strategy record" in first
+    assert "No real capital has been deployed" not in first
+
+
 def test_evidence_base_disclosure_is_published(pts):
     """The dated entry must state ALL THREE facts, or it is a half-disclosure."""
-    entry = next((e for e in pts.transparency_entries()
-                  if e.startswith("DISCLOSURE 2026-08-01")), None)
+    entry = next(
+        (e for e in pts.transparency_entries() if e.startswith("DISCLOSURE 2026-08-01")), None
+    )
     assert entry is not None, "the owed 2026-08-01 evidence-base disclosure is missing"
 
     # (1) the published figures re-measure lower on today's data
@@ -137,8 +178,8 @@ def test_disclosure_does_not_claim_the_live_construction_is_better(pts):
         if spin in lowered:
             # the only permitted mentions are explicit NEGATIONS of the claim
             idx = lowered.index(spin)
-            context = lowered[max(0, idx - 60):idx + len(spin)]
-            assert ("never shown" in context or "not claiming" in context), (
+            context = lowered[max(0, idx - 60) : idx + len(spin)]
+            assert "never shown" in context or "not claiming" in context, (
                 f"unqualified claim of superiority near: ...{context}"
             )
 
@@ -146,8 +187,9 @@ def test_disclosure_does_not_claim_the_live_construction_is_better(pts):
 def test_presentation_change_is_itself_disclosed(pts):
     """The signed transparency chain hashes ``algorithms[]``; a verifier diffing seq N vs N+1
     sees the reorder. It gets a documented reason, not an unexplained reshuffle."""
-    entry = next((e for e in pts.transparency_entries()
-                  if e.startswith("PRESENTATION 2026-08-01")), None)
+    entry = next(
+        (e for e in pts.transparency_entries() if e.startswith("PRESENTATION 2026-08-01")), None
+    )
     assert entry is not None
     assert "ALPHAC now leads" in entry
     assert "No number, weight, cadence or metric changed" in entry
@@ -156,15 +198,24 @@ def test_presentation_change_is_itself_disclosed(pts):
 def test_older_disclosures_survive_append_only(pts):
     """Corrections are ADDED to the record, never swapped in over an older claim."""
     blob = "\n".join(pts.transparency_entries())
-    for marker in ("CORRECTION 2026-07-05", "CORRECTION 2026-07-19", "OPEN INCIDENT 2026-07-20",
-                   "DISCLOSURE 2026-07-11", "GATE AUDIT 2026-07-12", "2026-06-29 RE-BASELINE"):
+    for marker in (
+        "CORRECTION 2026-07-05",
+        "CORRECTION 2026-07-19",
+        "OPEN INCIDENT 2026-07-20",
+        "DISCLOSURE 2026-07-11",
+        "GATE AUDIT 2026-07-12",
+        "2026-06-29 RE-BASELINE",
+    ):
         assert marker in blob, f"an existing disclosure was dropped: {marker}"
 
 
 # ---------------------------------------------------- the real emitted artifact
 
-@pytest.mark.skipif(not STATE_JSON.exists(),
-                    reason="data/paper/state.json is generated (gitignored); nothing to check")
+
+@pytest.mark.skipif(
+    not STATE_JSON.exists(),
+    reason="data/paper/state.json is generated (gitignored); nothing to check",
+)
 def test_emitted_state_json_leads_with_the_flagship_and_carries_the_disclosure(pts):
     """End of the running path: the file the sites actually serve."""
     state = json.loads(STATE_JSON.read_text())

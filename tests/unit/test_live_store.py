@@ -12,6 +12,7 @@ two concurrent connections.
 from __future__ import annotations
 
 import math
+import sqlite3
 from collections.abc import Iterator
 from pathlib import Path
 
@@ -322,6 +323,48 @@ class TestSnapshots:
         store.snapshot_positions(T0, (p2,))
         got = store.positions_at(T0)
         assert [p.instrument_id for p in got] == ["BINANCE:PERP:ETHUSDT"]
+
+    def test_position_snapshot_persists_exact_mark_and_unrealized_pnl(
+        self, store: TradingStore
+    ) -> None:
+        position = Position(
+            instrument_id="BINANCE:PERP:BTCUSDT",
+            qty=-2.0,
+            avg_entry_price=100.0,
+            opened_ts=T0,
+        )
+        store.snapshot_positions(
+            T0,
+            (position,),
+            marks={position.instrument_id: (90.0, "order_book_mid")},
+        )
+
+        snapshot = store.position_snapshots_at(T0)[0]
+        assert snapshot.mark_price == 90.0
+        assert snapshot.mark_source == "order_book_mid"
+        assert snapshot.market_value_quote == -180.0
+        assert snapshot.unrealized_pnl_quote == 20.0
+
+    def test_legacy_position_table_is_migrated_without_rewriting_rows(self, tmp_path: Path) -> None:
+        path = tmp_path / "legacy.sqlite"
+        with sqlite3.connect(path) as connection:
+            connection.execute(
+                "CREATE TABLE positions_snapshots ("
+                "cycle_ts INTEGER NOT NULL, instrument_id TEXT NOT NULL, qty REAL NOT NULL, "
+                "avg_entry_price REAL NOT NULL, opened_ts INTEGER NOT NULL, "
+                "PRIMARY KEY (cycle_ts, instrument_id)) WITHOUT ROWID"
+            )
+            connection.execute(
+                "INSERT INTO positions_snapshots VALUES (?, ?, ?, ?, ?)",
+                (T0, "BINANCE:PERP:BTCUSDT", 2.0, 100.0, T0),
+            )
+
+        with TradingStore(path) as migrated:
+            snapshot = migrated.position_snapshots_at(T0)[0]
+
+        assert snapshot.qty == 2.0
+        assert snapshot.mark_price is None
+        assert snapshot.unrealized_pnl_quote is None
 
     def test_equity_snapshot_and_curve(self, store: TradingStore) -> None:
         for k in range(3):

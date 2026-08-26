@@ -1,0 +1,71 @@
+{
+  "author": "Arhan Canli",
+  "claim_boundary": "Machine validation proves page geometry, extractable text, metadata, font resources, and required disclosures. Visual inspection is separate and is not peer review, content validation, accessibility certification, or independent replication.",
+  "extractable_characters": 5476,
+  "failures": [],
+  "font_resources": [
+    "AAAAAA+Arial-BoldMT",
+    "BAAAAA+Georgia",
+    "CAAAAA+Georgia",
+    "DAAAAA+ArialMT",
+    "EAAAAA+Arial-BoldMT",
+    "FAAAAA+ArialMT",
+    "GAAAAA+ArialMT",
+    "HAAAAA+Arial-BoldMT",
+    "IAAAAA+ArialMT",
+    "JAAAAA+Menlo-Regular",
+    "KAAAAA+Georgia",
+    "LAAAAA+Georgia",
+    "MAAAAA+Arial-BoldMT",
+    "NAAAAA+ArialMT",
+    "OAAAAA+Georgia-Bold",
+    "PAAAAA+Georgia-Italic"
+  ],
+  "metadata": {
+    "author": "Arhan Canli",
+    "title": "Crypto Short-Horizon Reversal: Two Decisive Negative Trials"
+  },
+  "minimum_extractable_characters_on_page": 497,
+  "page_height_points": [
+    841.92
+  ],
+  "page_width_points": [
+    594.96
+  ],
+  "pages": 3,
+  "passes": true,
+  "registry_key": "crypto_reversal",
+  "render_environment": {
+    "latex_compilation_validated": false,
+    "pdf_engine": "Google Chrome 151.0.7922.174",
+    "pdf_normalizer": "pypdf 6.16.1"
+  },
+  "schema": "canli.alphac-archival-pdf-validation.v1",
+  "source_bindings": {
+    "bibliography": {
+      "references.bib": {
+        "path": "references.bib",
+        "sha256": "e71dc3bb4fe2de631f1e331e283a95cfdfdf76e4eab439463eb2705f55744480"
+      },
+      "references.json": {
+        "path": "references.json",
+        "sha256": "81ad816cea639130bbf1ee536726fcaa04fbcfe5fe9147d93fa390245633c43b"
+      }
+    },
+    "paper_markdown": {
+      "path": "publication/crypto-reversal/v0.1.0/paper.md",
+      "sha256": "74204bd4d7fb7b89047a9578af2697a19d33a9454e5f0998c18c8d7a03e0d5fc"
+    },
+    "renderer": {
+      "path": "scripts/build_archival_publication_papers.py",
+      "sha256": "d36584c93e00be6f75bc50da079d25a46d1da4e0d1b2d58b73661e3f527c9f3e"
+    },
+    "static_site_paper_html": {
+      "declared_markdown_sha256": "74204bd4d7fb7b89047a9578af2697a19d33a9454e5f0998c18c8d7a03e0d5fc",
+      "matches_paper_markdown": true,
+      "path": "/Users/arhancanli/meridian/research/crypto-reversal-lineage.html",
+      "sha256": "0f463fb31a94faf6e9e84fbd5e099d0263c18ecfd49360987b420841c2bd3c38"
+    }
+  },
+  "status": "PASS_MACHINE_PDF_VALIDATION"
+}

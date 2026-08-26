@@ -65,13 +65,17 @@ def passing_evidence() -> dict:
             "stressed_oos_observations": 126,
             "net_sharpe": 0.8,
             "stressed_sharpe": 0.55,
-            "newey_west_t": 2.4,
+            "newey_west_t": 1.2,
             "deflated_sharpe": 0.97,
+            "book_deflated_sharpe": 0.96,
             "pbo": {"status": "MEASURED", "value": 0.12, "family_variants": 6},
         },
         "diversification": {
             "absolute_beta": 0.04,
-            "average_pairwise_correlation": 0.08,
+            "average_pairwise_correlation": -0.03,
+            "candidate_average_correlation_to_existing_book": -0.02,
+            "book_average_pairwise_correlation_delta": -0.005,
+            "average_pairwise_correlation_upper_95": 0.04,
             "max_pairwise_correlation": 0.22,
             "max_stressed_pairwise_correlation": 0.38,
             "max_pairwise_correlation_upper_95": 0.31,
@@ -83,9 +87,16 @@ def passing_evidence() -> dict:
             "minimum_leave_one_period_out_book_sharpe_delta": 0.01,
             "book_max_drawdown_delta": -0.005,
             "book_expected_shortfall_delta": -0.002,
+            "book_sharpe_delta_lower_95": 0.008,
+            "book_expected_max_drawdown": 0.102,
+        },
+        "overlay": {
+            "covariance_halflife_days": 21,
+            "realized_vol_halflife_days": 240,
+            "realized_vol_leg_is_unlevered": True,
         },
         "capacity": {
-            "capacity_usd": 8_000_000,
+            "capacity_usd": 8_000_000,  # far above the floor; the curve is what reconciles it
             "minimum_stressed_fill_ratio": 0.96,
             "curve": [
                 {
@@ -121,7 +132,10 @@ def test_complete_evidence_is_technically_eligible() -> None:
 
     assert report.eligible
     assert report.failures == ()
-    assert report.checks_evaluated == 75
+    # Derived from the contract, not typed: a hand-maintained count silently goes stale the
+    # moment a gate is added, and the drift is invisible because the assertion still passes on
+    # the old number until someone notices. The contract already publishes the figure.
+    assert report.checks_evaluated == contract["evidence_checks_per_candidate"]
 
 
 def test_missing_execution_dimension_fails_closed() -> None:

@@ -22,6 +22,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
+from unittest.mock import patch
 
 import numpy as np
 import pandas as pd
@@ -62,6 +63,64 @@ START = T0 + 240 * HOUR  # alpha_slow (97 bars) and sigma (169 bars) are warm he
 END = T0 + N_BARS * HOUR
 SAMPLE_BARS = (600, 700, 839)  # decision bars for the parity sweep
 ALPHAS = ("alpha_fast", "alpha_slow")
+
+
+def test_factorized_membership_mask_matches_half_open_interval_semantics() -> None:
+    """Integer factorization is an exact replacement for repeated string comparisons."""
+    a = "BINANCE:PERP:AAAUSDT"
+    b = "BINANCE:PERP:BBBUSDT"
+    c = "BINANCE:PERP:CCCUSDT"
+    timestamps = [T0, T0 + HOUR, T0 + 2 * HOUR, T0 + 3 * HOUR]
+    index = pd.MultiIndex.from_product(
+        [timestamps, [a, b]], names=["ts_open", "instrument_id"]
+    )
+    # A has two disjoint spans, B has one bounded span, and C is absent from
+    # the panel. The exact endpoints exercise [effective_from, effective_to).
+    intervals = (
+        [a, a, b, c],
+        [T0, T0 + 3 * HOUR, T0 + HOUR, T0],
+        [T0 + HOUR, None, T0 + 3 * HOUR, None],
+    )
+    service = object.__new__(SignalService)
+    with patch.object(SignalService, "_intervals", return_value=intervals):
+        observed = service._membership_mask(index)
+    expected = pd.Series(
+        [True, False, False, True, False, True, True, False],
+        index=index,
+    )
+    pd.testing.assert_series_equal(observed, expected, check_exact=True)
+
+
+def test_factorized_membership_mask_matches_legacy_algorithm_randomized() -> None:
+    """Regression oracle: factorized IDs reproduce the former object-compare mask exactly."""
+    rng = np.random.default_rng(20260823)
+    ids = [f"BINANCE:PERP:R{value:02d}USDT" for value in range(12)]
+    timestamps = np.arange(T0, T0 + 240 * HOUR, HOUR, dtype=np.int64)
+    index = pd.MultiIndex.from_product(
+        [timestamps, ids[:10]], names=["ts_open", "instrument_id"]
+    )
+    interval_ids: list[str] = []
+    starts: list[int] = []
+    ends: list[int | None] = []
+    for iid in ids:
+        for _ in range(3):
+            start_offset = int(rng.integers(0, 180))
+            width = int(rng.integers(1, 50))
+            interval_ids.append(iid)
+            starts.append(T0 + start_offset * HOUR)
+            ends.append(T0 + min(240, start_offset + width) * HOUR)
+    intervals = (interval_ids, starts, ends)
+    ts = index.get_level_values("ts_open").to_numpy(dtype=np.int64)
+    inst = index.get_level_values("instrument_id").to_numpy()
+    legacy = np.zeros(len(index), dtype=bool)
+    for iid, start, end in zip(*intervals, strict=True):
+        in_span = ts >= start if end is None else (ts >= start) & (ts < end)
+        legacy |= in_span & (inst == iid)
+
+    service = object.__new__(SignalService)
+    with patch.object(SignalService, "_intervals", return_value=intervals):
+        observed = service._membership_mask(index)
+    np.testing.assert_array_equal(observed.to_numpy(), legacy)
 
 
 def _xret_fn(ctx: FeatureContext, spec: FeatureSpec) -> pd.Series:

@@ -31,6 +31,69 @@ being settled first.
 
 Anything not listed: claim it in this file before editing it.
 
+## ⚠️ 2026-08-18 — LANE BOUNDARY LIFTED BY THE OWNER, AND A FORCE-PUSH INCIDENT
+
+**Codex: read this before your next `git push`.**
+
+### 1. The owner has authorised the Claude lane to work anywhere in this repo
+
+Verbatim instruction, 2026-08-18: *"you can also work on the path of the codex as long as you alert
+the codex session that you are taking over."* This file is that alert — it is the only channel that
+exists, since Codex sessions are not reachable via `SendMessage`.
+
+What this changes: the Claude lane may now edit files in the Codex column when the work requires it.
+What it does NOT change: the owner-only row still stands (`config/trial_accounting.json`, and
+promoting any `*_v5_proposed.json`), and `research_status` remains `PAUSED_BUDGET_REVIEW` at 162/160
+so no new return hypothesis may be registered by anyone.
+
+Practically, the Claude lane will keep to its own column by DEFAULT and cross only with a note in
+the commit message saying why. Two agents editing the same file remains a bad idea regardless of
+who is permitted to.
+
+### 2. A force-push deleted eight commits from `origin/main`, and the tree still looked fine
+
+At 23:17 on 2026-08-18 the local reflog recorded:
+
+    34b92b5  23:10:31  commit: docs: record which hosts this machine cannot reach
+    26b6781  23:17:04  checkout: moving from feat/status-coverage-preflight-v4 to main
+    9753775  23:17:04  merge origin/main: Fast-forward
+
+A fast-forward cannot drop commits that are present in `origin/main`. So `origin/main` was reset or
+force-pushed from `feat/status-coverage-preflight-v4` to a history that never contained them, and
+the local branch then fast-forwarded onto that history and lost them locally too.
+
+Eight commits went: the overlay realized-leg fix, its observability counter, a frontier status note,
+the stressed-correlation analysis, the 21-year family proxies, an AlphaVintage correction, README
+badges, and the egress-blocked-hosts note.
+
+**The damage was PARTIAL, which is the dangerous part.** `src/alphaforge/portfolio/strategy.py` kept
+`_scale_hist` and the de-levering — they rode along inside a later whole-file commit — while the
+counter that makes that fix observable vanished, and two files disappeared entirely. A tree that is
+80% recovered is indistinguishable by eye from a tree that is fine. It surfaced only because an
+exact-set assertion on counter keys failed in `test_phase6_observability`.
+
+Recovered on PR #2. Branch protection on `main` (0 required reviews, three required checks) now
+prevents a repeat, which is the correct fix — thank you for adding it.
+
+**The rule both lanes should follow from here:** never force-push or reset a shared branch. Land
+through a PR so the required checks run and the history is append-only. If a rebase looks necessary,
+say so in this file first.
+
+### 3. Standing state the other lane should know
+
+- A long AlphaLedger pinned walk-forward is running (pid 58336, ~1h+). Do not kill it; it is the
+  first execution of `PREREG_SLEEVE4_INVESTMENT.md`'s declared 8,017-id cohort, and the sleeve
+  cannot be admitted until it lands.
+- `web.archive.org` is unreachable from this host (HTTP 000, DNS fine). That blocks the CFTC
+  release-lineage reconstruction, and any Wayback-dependent audit already committed may not be
+  re-runnable here. See `docs/design/EGRESS_BLOCKED_HOSTS.md`.
+- `C7b-suite` has been standing red since ~2026-08-12 for a reason that is NOT a broken test: the
+  suite takes roughly 50 minutes against `health_check.py`'s 900s cap, so a TIMEOUT is being
+  rendered as a FAIL. Worth separating "broken" from "unknown" in the check.
+- `tests/integration/test_scale_guard.py::test_engine_scale_memory_and_time_guard` fails with
+  `AttributeError: 'NoneType' object has no attribute 'pause'`. Environment/fixture, unclaimed.
+
+
 ## Seam 1 — the overlay halflife is a joint answer
 
 [`docs/design/FRONTIER_14_ADMISSION_V5.md`](FRONTIER_14_ADMISSION_V5.md) establishes that the 11%
@@ -138,3 +201,58 @@ and every one of them raises the book's own deflation hurdle under the proposed 
 Both lanes can proceed on engineering, data lineage, execution and publication work indefinitely.
 Neither can produce a fourteenth sleeve until that budget is re-authorized with the arithmetic
 stated. Do not route around it.
+
+---
+
+## 2026-08-21 — Claude lane: admission contract v6, and two files claimed
+
+**Owner instruction, verbatim:** *"you do everything give me the credit though dont put yourself
+as a contributer"*, in reply to a question that offered "draft v6, show me, I promote" against
+"draft and promote it yourself". That authorises this lane to promote an admission contract, which
+the owner-only row above otherwise reserves. The row still stands for
+`config/trial_accounting.json`: **the budget was not touched and research remains
+`PAUSED_BUDGET_REVIEW` at 162 identities.** No hypothesis was registered and no return data
+opened by any of this work.
+
+### Files claimed under "anything not listed: claim it here"
+
+- **`src/alphaforge/analytics/walkforward.py`** — its `cov_halflife_bars` default had to move with
+  the strategy's. Leaving them apart would recreate the exact defect this repository has hit twice
+  (the live path running a configuration the research path never validated). Nothing was re-run:
+  the new default only takes effect on a future walkforward, and that run is governed by the trial
+  accounting like any other.
+- **`src/alphaforge/portfolio/strategy.py`** — already in the Claude column, noted because the
+  change is to the LIVE sizing path.
+
+### The change, and the unit defect found on the way in
+
+The drawdown objective needs the covariance halflife at 21. Applying that to
+`cov_halflife_bars` would have been a live sizing defect, not a configuration change:
+**a bar is not a day, and it is a different amount of time on each sleeve.** One hour on the
+crypto H1 sleeve, one session on equity D1. The old default of 720 bars therefore meant 30 days
+to crypto and about 2.9 YEARS to equities, and the study that set the policy measured a daily
+book — its sweep values (21, 63, 126, 252, 720) are day counts. Writing 21 into the bar parameter
+would have given the crypto sleeve a **21-hour** covariance halflife.
+
+The parameter is now `cov_halflife_days`, converted at the point of use via
+`periods_per_year(tf) / periods_per_year(D1)` — the calendar being the one annualization source
+this codebase already insists on. `tests/unit/test_cov_halflife_units.py` pins 21 days to 504 bars
+on crypto H1 and 21 bars on equity D1, and fails if anyone reintroduces a bar-valued default.
+
+**Still bar-valued and NOT changed, flagged rather than fixed:** `cov_window_bars` (720) and
+`cov_min_periods` (240) carry the same ambiguity — 30 days and 10 days on crypto, 720 and 240
+sessions on equity. No study measured them, so changing them here would be an unmeasured change
+riding along with a measured one. Codex: this is the next thing in that file worth costing.
+
+### Cost of the halflife change, derived at 0 trials
+
+`scripts/analyze_overlay_halflife_decision.py` → `artifacts/analysis/overlay_halflife_decision/`.
+At the stressed correlation the contract permits (0.50): expected maximum drawdown **14.21% →
+10.22%**, for **0.0045 Sharpe** at a 10bp round trip (0.023 even at 50bp), and the simulated book
+Sharpe **rises** 1.773 → 1.991.
+
+⚠️ The unit nearly went wrong here too, in the same session. Turnover is a MULTIPLE OF EQUITY per
+year; a round-trip cost in basis points is a fraction of the NOTIONAL TRADED. Dividing by 100
+instead of 10,000 turns a 0.0045 Sharpe cost into 0.45 and reverses the decision. That is why the
+conversion is one named function with one test rather than an expression inlined at three call
+sites.

@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="author" content="Arhan Canli">
+<meta name="description" content="Archival preprint bundle by Arhan Canli. Two historical identities test a 252-session equity beta rank. The implemented portfolio seeks a long-low-beta,…">
+<meta name="generator" content="ALPHAC archival paper renderer">
+<link rel="canonical" href="https://canlicapital.com/publication/equity-low-beta/v0.1.0/paper">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Equity Low Beta: Two Negative Identities and No Defensive Sleeve">
+<meta property="og:description" content="Archival preprint bundle by Arhan Canli. Two historical identities test a 252-session equity beta rank. The implemented portfolio seeks a long-low-beta,…">
+<meta property="og:url" content="https://canlicapital.com/publication/equity-low-beta/v0.1.0/paper">
+<title>Equity low beta — archival paper</title><style>
+@page { size: A4; margin: 19mm 20mm 21mm; }
+* { box-sizing: border-box; }
+html { font-size: 10.6pt; }
+body { color: #17202a; font-family: Georgia, "Times New Roman", serif;
+       line-height: 1.46; margin: 0; }
+.cover { min-height: 247mm; display: flex; flex-direction: column;
+         justify-content: space-between; page-break-after: always; }
+.rule { width: 62px; height: 4px; background: #9a6b2f; margin: 8mm 0 14mm; }
+.kicker, .meta, .boundary { font-family: Arial, Helvetica, sans-serif; }
+.kicker { color: #6f532d; font-size: 8.4pt; font-weight: 700;
+          letter-spacing: .13em; text-transform: uppercase; }
+h1 { color: #111923; font-size: 29pt; font-weight: 500; line-height: 1.08;
+     margin: 0; max-width: 155mm; }
+.author { font-size: 14pt; margin-top: 13mm; }
+.affiliation { color: #53606d; font-family: Arial, Helvetica, sans-serif;
+               font-size: 9.4pt; }
+.meta { border-top: 1px solid #c8c1b5; color: #4b5661; display: grid;
+        font-size: 8.5pt; gap: 2mm; grid-template-columns: 34mm 1fr; padding-top: 6mm; }
+.meta strong { color: #202b36; letter-spacing: .04em; text-transform: uppercase; }
+.boundary { background: #f1eee8; border-left: 3px solid #9a6b2f; color: #35414c;
+            font-size: 8.7pt; margin-top: 8mm; padding: 4mm 5mm; }
+.paper { max-width: 170mm; }
+.paper > p:first-child { background: #f4f2ed; border: 1px solid #ddd7cc;
+                         font-family: Arial, Helvetica, sans-serif;
+                         font-size: 8.2pt; padding: 4mm; }
+h2 { border-bottom: .6pt solid #cfc8bc; color: #17202a; font-size: 16pt;
+     font-weight: 500; margin: 9mm 0 3mm; padding-bottom: 1.5mm;
+     page-break-after: avoid; }
+h3 { color: #263746; font-size: 12.5pt; margin: 6mm 0 2mm;
+     page-break-after: avoid; }
+p { margin: 0 0 3.2mm; orphans: 3; widows: 3; }
+ul, ol { margin: 2mm 0 4mm 6mm; padding-left: 5mm; }
+li { margin-bottom: 1.3mm; }
+.bibliography li { margin-bottom: 2.2mm; }
+.bibliography a { overflow-wrap: anywhere; word-break: break-word; }
+table { border-collapse: collapse; font-family: Arial, Helvetica, sans-serif;
+        font-size: 7.4pt; margin: 4mm 0 6mm; page-break-inside: avoid; width: 100%; }
+th { background: #e8e3da; color: #222d37; font-weight: 700; }
+th, td { border: .5pt solid #c8c1b5; padding: 1.5mm 1.8mm;
+         text-align: left; vertical-align: top; }
+code { background: #f0eee9; border-radius: 2px;
+       font-family: "SFMono-Regular", Consolas, monospace; font-size: 8.1pt;
+       padding: .2mm .7mm; }
+pre { background: #18222c; color: #edf1f4; font-size: 7.4pt; line-height: 1.35;
+      overflow-wrap: anywhere; padding: 4mm; white-space: pre-wrap; }
+a { color: #5f4828; text-decoration: underline; text-decoration-thickness: .5pt; }
+blockquote { border-left: 2pt solid #b48a50; color: #465461;
+             margin-left: 0; padding-left: 5mm; }
+</style></head><body>
+<section class="cover"><div><div class="kicker">Canli Capital Research / ALPHAC</div>
+<div class="rule"></div><h1>Equity Low Beta: Two Negative Identities and No Defensive Sleeve</h1><div class="author">Arhan Canli</div>
+<div class="affiliation">Founder, System Architect, and Quantitative Researcher<br>
+Canli Capital / AlphaC Algorithms</div></div><div><div class="meta">
+<strong>Version</strong><span>0.1.0</span>
+<strong>Released</strong><span>23 August 2026</span>
+<strong>Registry key</strong><span>equity_low_beta</span>
+<strong>Status</strong><span>Working paper preprint / not peer reviewed</span></div>
+<div class="boundary">Research simulation and, where explicitly identified, Alpaca paper
+evidence. No funded performance, peer review, independent replication, external acceptance, or
+future return is claimed.</div></div></section><article class="paper"><p><strong>Short title:</strong> Equity low beta<br><strong>Author:</strong> Arhan Canli, Founder and Quantitative Researcher, Canli Capital<br><strong>Family key:</strong> <code>equity_low_beta</code> · <strong>System:</strong> ALPHAC / AlphaForge<br><strong>Status:</strong> public research record; not peer reviewed; not an investment solicitation<br><strong>Evidence date:</strong> 2026-08-22</p>
+<h2>Abstract</h2>
+<p>Two historical identities test a 252-session equity beta rank. The implemented portfolio seeks a
+long-low-beta, short-high-beta spread under rank allocation. The shorter configuration reports
+annualized Sharpe -0.5995 over 728 observations. A deep-history configuration reports -0.0679 over
+5,384 observations, with skew 8.2898 and kurtosis 311.7071. Neither estimate supports a defensive
+sleeve. The extreme higher moments in the longer summary also make a curve-level audit mandatory;
+they are not treated as evidence of an attractive positive tail. Exact curves, maximum drawdown,
+current-union DSR, capacity, and forward execution are not established. The family contributes
+zero sleeves.</p>
+<h2>Hypothesis and economic prior</h2>
+<p>The low-beta hypothesis asks whether equities with low trailing exposure to the market earn a
+better risk-adjusted return than high-beta equities after portfolio scaling and implementation
+costs. Frazzini and Pedersen connect a betting-against-beta premium to leverage constraints:
+investors unable or unwilling to lever low-risk assets may overpay for high-beta securities
+(<a href="https://doi.org/10.1016/j.jfineco.2013.10.005">Journal of Financial Economics</a>).</p>
+<p>That mechanism does not imply that every beta-ranked long-short portfolio should work. Results can
+depend on beta estimation, volatility scaling, financing, short availability, sector composition,
+microcaps, delistings, corporate actions, and the universe definition. A low-beta rank can also
+overlap quality, profitability, size, and market-timing exposures. ALPHAC therefore treats the two
+rows as implementations of one defensive family, not separate sleeves.</p>
+<h2>Recorded designs</h2>
+<p>Both identities use signal <code>eq_bab_252</code>, rank allocation, 252 training bars, 63 test bars, and a
+10-basis-point no-trade band. They differ in historical scope and rebalance cadence.</p>
+<table>
+<thead>
+<tr>
+<th>Identity</th>
+<th>Recorded start</th>
+<th align="right">Rebalance</th>
+<th align="right">Configured IDs</th>
+<th align="right">Observations</th>
+<th align="right">Sharpe</th>
+<th align="right">Skew</th>
+<th align="right">Kurtosis</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>1db3096d8f18eef5</code></td>
+<td>2022-07-01</td>
+<td align="right">21 bars</td>
+<td align="right">375</td>
+<td align="right">728</td>
+<td align="right">-0.5995</td>
+<td align="right">0.2439</td>
+<td align="right">6.8348</td>
+</tr>
+<tr>
+<td><code>6c08c11a04ef43c5</code></td>
+<td>2000-01-01</td>
+<td align="right">63 bars</td>
+<td align="right">6,880</td>
+<td align="right">5,384</td>
+<td align="right">-0.0679</td>
+<td align="right">8.2898</td>
+<td align="right">311.7071</td>
+</tr>
+</tbody></table>
+<p>The configured identifier count is a lineage field, not a claim that every identifier was
+simultaneously eligible or traded. Point-in-time membership and exact position histories require
+the missing curve-level packet.</p>
+<p>The shorter result is plainly negative. The longer result is closer to zero, but its extreme skew
+and kurtosis show that the annualized Sharpe is not a sufficient description. A small number of
+large observations, stale prices, corporate-action discontinuities, changing universe coverage,
+or genuine jump returns could generate such moments. The summary cannot adjudicate among those
+possibilities.</p>
+<h2>Why the longer sample does not rescue the signal</h2>
+<p>A longer date range increases chronology, not automatically identification. The deep-history
+configuration changes the available universe and rebalance cadence alongside the sample period.
+It is therefore not a clean extension of the 375-identifier test. Comparing -0.5995 with -0.0679
+does not isolate a time effect, a breadth effect, or a cadence effect.</p>
+<p>The extreme moments also prevent a conventional Gaussian interpretation of Sharpe uncertainty.
+Without daily returns, block dependence, event concentration, and drawdown cannot be measured.
+No DSR is reconstructed from summary moments, and no favorable sign is inferred from the positive
+skew. A strategy can have rare positive jumps and still be unusable or incorrectly measured.</p>
+<h2>Execution and portfolio boundary</h2>
+<p>The family packet does not establish borrow availability, short rebates, financing, market impact,
+turnover, or capacity. Those omissions are especially material for the high-beta short leg, where
+borrow and distress risk can be concentrated. There is also no identity-matched portfolio
+correlation study. Conceptual distinctness from AlphaMax momentum or equity quality is not measured
+diversification.</p>
+<p>No broker-reconciled forward record exists for either identity. No AlphaMax return, Alpaca paper
+return, or other sleeve result is relabeled as low beta.</p>
+<h2>Reproduction path and next valid test</h2>
+<p><a href="/glassbox/equity_low_beta_family.json"><code>equity_low_beta_family.json</code></a> binds the two hypothesis
+keys, config hashes, signal names, first ledger summaries, and immutable ledger hash. It also marks
+maximum drawdown, capacity, and broker-forward evidence as unestablished.</p>
+<p>A valid new study would freeze one point-in-time equity universe, define the beta estimator and
+missing-data rules, retain exact daily positions and returns, model borrow and financing, test
+corporate-action integrity, and preregister the decision thresholds before inspecting results. It
+would be a new charged identity, not a repair of either historical row.</p>
+<p><strong>Decision: FAIL / zero sleeves.</strong> Both recorded implementations are non-positive and the longer
+one contains unresolved extreme moments. Research and implementation were directed by
+<strong>Arhan Canli</strong>.</p><section class="bibliography"><h2>References</h2><ol><li>Andrea Frazzini, Lasse Heje Pedersen (2014). <em>Betting against beta</em>. Journal of Financial Economics. <a href="https://doi.org/10.1016/j.jfineco.2013.10.005">https://doi.org/10.1016/j.jfineco.2013.10.005</a></li></ol></section></article>
+</body></html>

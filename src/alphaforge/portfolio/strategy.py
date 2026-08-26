@@ -96,6 +96,16 @@ from alphaforge.portfolio.overlay import vol_target
 from alphaforge.risk import DDState, DrawdownLadder
 from alphaforge.signals.sizing import MU_ANN_COLUMN
 
+# The covariance halflife every live sleeve has ACTUALLY been running, in bars. It is incoherent
+# across sleeves by construction -- 720 bars is 30 days on the crypto H1 sleeve and 720 SESSIONS
+# (about 2.86 years) on equity D1 -- and that incoherence is exactly why the parameter is now
+# expressible in days. It remains the default anyway, because changing a default here changes the
+# LIVE BOOK: no call site passes this argument (crypto at cli/paper_cmds.py, the AlphaTrend
+# gauntlet, and the AlphaMax walk-forward all take the default), the walk-forwards are regenerated
+# by the daily ticks, and live_cycle.py submits the last leg's weights straight to the broker. A
+# default change is a trade, not a configuration edit.
+LEGACY_COV_HALFLIFE_BARS: Final[int] = 720
+
 if TYPE_CHECKING:
     from collections.abc import Callable, Mapping
 
@@ -137,7 +147,12 @@ class BlendStrategy:
             delegates to the same fallback on any solver trouble).
         rebalance_bars: bars between decisions (default 24 = daily on 1h).
         cov_window_bars: trailing return window for Σ (default 720 = 30d).
-        cov_halflife_bars: EWMA covariance halflife (default 720).
+        cov_halflife_days: EWMA covariance halflife in DAYS, converted to bars against the
+            sleeve's own calendar at the point of use so the same number means the same
+            duration on every sleeve (see ``_cov_halflife_bars_for``). ``None`` (the
+            default) keeps ``LEGACY_COV_HALFLIFE_BARS``, which is the configuration every
+            live sleeve has actually been running. That default is deliberately NOT the
+            drawdown study's 21 days: see ``_cov_halflife_bars_for``.
         cov_min_periods: minimum return rows before Σ is trusted; fewer ->
             hold (cold start). Default 240 (10d).
         realized_vol_halflife_bars: EWMA halflife of realized portfolio-return
@@ -156,7 +171,7 @@ class BlendStrategy:
         rebalance_bars: int = 24,
         rebalance_anchor: Literal["run", "epoch"] = "run",
         cov_window_bars: int = 720,
-        cov_halflife_bars: int = 720,
+        cov_halflife_days: float | None = None,
         cov_min_periods: int = 240,
         realized_vol_halflife_bars: int = 240,
         cost_frac_oneway: float = _DEFAULT_COST_FRAC,
@@ -173,8 +188,10 @@ class BlendStrategy:
                 f"need cov_window_bars ({cov_window_bars}) >= cov_min_periods "
                 f"({cov_min_periods}) >= 2"
             )
-        if cov_halflife_bars <= 0 or realized_vol_halflife_bars <= 0:
-            raise ValueError("cov_halflife_bars/realized_vol_halflife_bars must be > 0")
+        if (cov_halflife_days is not None and cov_halflife_days <= 0) or (
+            realized_vol_halflife_bars <= 0
+        ):
+            raise ValueError("cov_halflife_days/realized_vol_halflife_bars must be > 0")
         if not math.isfinite(cost_frac_oneway) or cost_frac_oneway < 0.0:
             raise ValueError(f"cost_frac_oneway must be finite and >= 0, got {cost_frac_oneway!r}")
 
@@ -226,7 +243,7 @@ class BlendStrategy:
         # (ts % (rebalance_bars * tf.ms) == 0) OR the book is flat (the boot entry).
         self._rebalance_anchor = rebalance_anchor
         self._cov_window_bars = cov_window_bars
-        self._cov_halflife_bars = cov_halflife_bars
+        self._cov_halflife_days = cov_halflife_days
         self._cov_min_periods = cov_min_periods
         self._rv_halflife_bars = realized_vol_halflife_bars
         self._cost_frac = cost_frac_oneway
@@ -262,6 +279,10 @@ class BlendStrategy:
         #     rank-fallback is no longer silent.
         self._n_rebalances: int = 0
         self._n_fallback_used: int = 0
+        # Did the FAST realized leg actually overrule the SLOW covariance leg? Simulation
+        # said 0.02% of days as shipped vs 81.8% de-levered; a counter makes that
+        # measurable in the REAL book instead of only in a study.
+        self._n_realized_leg_bound: int = 0
         #   per hold/halt reason (F-E): a dead/stale feed (frozen book) is now
         #     distinguishable from healthy between-rebalance holding.
         self._n_hold_between_rebalance: int = 0
@@ -286,7 +307,10 @@ class BlendStrategy:
         Precomputed mode only (live mode never builds per-leg frames). REPLACES
         the precomputed signal frame (re-validating it identically) and PRESERVES
         the :class:`~alphaforge.risk.DrawdownLadder` (state + HWM), the
-        realized-vol equity history (``_equity_hist``), ``_last_result`` /
+        realized-vol equity history (``_equity_hist``) and its index-aligned
+        ``_scale_hist`` (these two MUST be preserved and dropped together -- the
+        realized leg de-levers bar-by-bar using the pair, so clearing one alone
+        silently mis-scales every subsequent vol estimate), ``_last_result`` /
         ``_last_scale`` / ``_last_targets``, and all observability counters.
         RESETS ``_next_rebalance_ts`` to None so the leg — which restarts FLAT
         (positions do not cross the boundary; this is the documented pessimistic
@@ -347,6 +371,11 @@ class BlendStrategy:
                 target book.
             bars_half_gross: bars emitted at the HALF_GROSS de-grossed level
                 (rebalance or every-bar re-emit, F-B).
+            realized_leg_bound: rebalances where the FAST realized leg exceeded the
+                SLOW ex-ante leg and therefore set the size. Near-zero against a
+                large n_rebalances means the fast regime detector is inert -- the
+                exact failure that hid the pre-overlay/post-overlay scale defect,
+                which is why this is counted rather than assumed.
             n_auto_rearms: times the ladder auto-rearmed out of FLAT_HALTED
                 after the cooldown elapsed (resumed trading from a reset HWM).
                 Zero here means either no full halt occurred or the run ended
@@ -355,6 +384,7 @@ class BlendStrategy:
         return {
             "n_rebalances": self._n_rebalances,
             "n_fallback_used": self._n_fallback_used,
+            "realized_leg_bound": self._n_realized_leg_bound,
             "hold_between_rebalance": self._n_hold_between_rebalance,
             "hold_stale_signal": self._n_hold_stale_signal,
             "hold_cov_cold_start": self._n_hold_cov_cold_start,
@@ -500,7 +530,7 @@ class BlendStrategy:
 
         cov_bar = ewma_cov(
             rets.loc[:, ids],
-            halflife_bars=self._cov_halflife_bars,
+            halflife_bars=self._cov_halflife_bars_for(ctx, tf),
             min_periods=self._cov_min_periods,
         )
         # Zero-variance columns (constant prints) make inverse-vol sizing
@@ -547,10 +577,16 @@ class BlendStrategy:
         cost = np.full(len(ids), self._cost_frac, dtype=np.float64)
 
         result = self._allocator.solve(mu, cov_ann, w_prev, cost, shortable)
+        realized_ann = self._realized_vol_ann(periods_per_year)
+        # Recomputed here rather than read back out of vol_target so the counter cannot
+        # drift from the overlay's own definition of ex-ante without a test noticing.
+        _w = np.asarray(result.weights, dtype=np.float64).ravel()
+        if realized_ann > math.sqrt(max(float(_w @ cov_ann @ _w), 0.0)):
+            self._n_realized_leg_bound += 1
         w_vt, scale = vol_target(
             result.weights,
             cov_ann,
-            self._realized_vol_ann(periods_per_year),
+            realized_ann,
             target=self._vol_target_ann,
             s_max=self._vol_scale_max,
             gross_max=self._gross_max,
@@ -616,6 +652,33 @@ class BlendStrategy:
             .reindex(index=index, columns=ids)
             .astype("float64")
         )
+
+    def _cov_halflife_bars_for(self, ctx: StrategyContext, tf: Timeframe) -> int:
+        """Convert the covariance halflife from DAYS to bars on this sleeve's calendar.
+
+        WHY THIS IS NOT A BAR COUNT. ``ewma_cov`` takes a halflife in bars, and a bar is a
+        different amount of time on different sleeves: one hour on the crypto H1 sleeve, one
+        session on equity D1. A single bar-valued default therefore means 30 days to crypto
+        and roughly 2.9 YEARS to equities, and the drawdown study that set this policy
+        measured a DAILY book -- its sweep values (21, 63, 126, 252, 720) are day counts.
+        Setting the bar parameter to the study's 21 would have given the crypto sleeve a
+        21-HOUR covariance halflife: not the change that was measured, and a live sizing
+        defect rather than a configuration choice. The admission contract states the gate in
+        days (``covariance_halflife_days_max``) for the same reason.
+
+        Bars per day comes from the calendar, which is the one annualization source in this
+        codebase: ``periods_per_year(tf) / periods_per_year(D1)`` is 8760/365 = 24 for crypto
+        H1 and 252/252 = 1 for equity D1. Never a hard-coded 24.
+
+        Floored at one bar, because a sub-bar halflife is not representable and silently
+        rounding it to zero would make ``lambda`` zero and throw away the estimator entirely.
+        """
+        if self._cov_halflife_days is None:
+            return LEGACY_COV_HALFLIFE_BARS
+        bars_per_day = ctx.calendar.periods_per_year(tf) / ctx.calendar.periods_per_year(
+            Timeframe.D1
+        )
+        return max(1, round(self._cov_halflife_days * bars_per_day))
 
     def _realized_vol_ann(self, periods_per_year: float) -> float:
         """Annualized zero-mean EWMA vol of realized per-bar equity returns.

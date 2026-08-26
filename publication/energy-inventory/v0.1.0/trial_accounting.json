@@ -1,0 +1,66 @@
+{
+  "complete_recorded_union_extracted": true,
+  "distinct_recorded_hypothesis_identities": 1,
+  "every_identity_packet_complete": false,
+  "global_ledger": {
+    "path": "config/trial_accounting.json",
+    "sha256": "f15af7c989aded5da6c5259a7f7e5587377ab33977b5cd3c5b2395a84ea45043"
+  },
+  "identities": [
+    {
+      "candidate_match_is_verified": true,
+      "candidate_public_papers": [
+        "/research/kill-commodity-inventory-seasonal.md"
+      ],
+      "completion_assessment": {
+        "blockers": [],
+        "claim_boundary": "Every required packet section is verified.",
+        "status": "COMPLETE"
+      },
+      "config_hash": "ccde1e9dc1523998",
+      "coverage_status": "COMPLETE",
+      "family_paper_binding_status": "VERIFIED_TAXONOMY_BINDING",
+      "first_recorded_at": "2026-08-15T16:26:36.211000+00:00",
+      "hypothesis_key": "8446702cb8dd1768",
+      "identity_packet_content_hash": "sha256:8e044d8e41a29edc469806da98d989b52db854842b5b60aa1f2eadb1d111d895",
+      "identity_packet_status": "COMPLETE_EVIDENCED_KILL",
+      "label": "eia_petroleum_inventory",
+      "ledger_profile": "var",
+      "ledger_source_path": "var/experiments.jsonl",
+      "measurement": {
+        "annualized_sharpe": -0.5893138450004753,
+        "kurtosis": 30.224506678313656,
+        "observations": 2669,
+        "skew": -1.5156582682335131
+      },
+      "missing_sections": [],
+      "research_family_key": "energy_inventory",
+      "research_family_title": "Energy inventory scarcity",
+      "sleeve_context": "Diversifier research",
+      "verified_family_paper_path": "/research/energy-inventory-lineage.md",
+      "verified_packet_path": "/glassbox/trial-packets/8446702cb8dd1768.json",
+      "verified_sections": [
+        "identity_and_authorship",
+        "economic_mechanism_and_falsifiable_hypothesis",
+        "literature_and_overlap_decision",
+        "family_and_union_trial_accounting",
+        "machine_readable_packet_and_stable_public_paper",
+        "preregistration_and_hashes",
+        "point_in_time_data_and_survivorship_controls",
+        "execution_and_cost_model",
+        "result_uncertainty_stress_capacity_and_diversification",
+        "admission_or_kill_decision",
+        "code_environment_and_reproduction"
+      ]
+    }
+  ],
+  "registry_key": "energy_inventory",
+  "research_family_key": "energy_inventory",
+  "schema": "canli.alphac-publication-trial-accounting-binding.v2",
+  "status": "COMPLETE_RECORDED_UNION_EXTRACTED_IDENTITY_PACKETS_MAY_BE_INCOMPLETE",
+  "trial_packet_manifest": {
+    "content_hash": "sha256:38758b89a1a5fa845487a640b1deab046fffcf61ede5ad3afb6371798b208371",
+    "path": "artifacts/research/trial_packet_manifest.json",
+    "sha256": "0147dd8e631ca24257e2db384bf01d4637a79371f1754b284f3f7e9637c1369c"
+  }
+}

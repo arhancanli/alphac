@@ -1,0 +1,632 @@
+{
+  "schema": "canli.earnings-narrative-change-probe.v1",
+  "preregistration": "docs/design/PREREG_EARNINGS_NARRATIVE_CHANGE.md",
+  "hypotheses_spent": 1,
+  "return_identity_reservation": {
+    "schema": "canli.alphac-return-identity-reservation.v1",
+    "status": "RETURN_IDENTITY_RESERVED",
+    "family_trial_account": "earnings_narrative_change",
+    "return_identity_id": "earnings_narrative_change_v1",
+    "hypotheses_spent": 1,
+    "preregistration_sha256": "60486da41f1e2c88e62b6e56d436d780f645420ffaeb13364540d0c4040cc3b9",
+    "corpus_parts_sha256": "45505610e0a93bf7cb27829aa6b62acf4dbd28659783e1fb7735b56f63e59a1b",
+    "pair_file_sha256": "31b0c4e1eac60cbcee690256ad624edef4a66db00975e9ead8f72aa76fe3d808",
+    "trial_config": {
+      "mechanism": "sec_10k_item1a_stability_jaccard5",
+      "direction": "long_stable_short_changed",
+      "controls": "filing_reaction_momentum_sic2",
+      "cohort": "acceptance_month_second_next_open",
+      "tails": "residual_quintiles",
+      "hold_sessions": 63,
+      "hedge": "individual_252d_spy_beta_clamped_pm1",
+      "costs": {
+        "stock_oneway": 0.0015,
+        "spy_oneway": 0.0001,
+        "borrow_annual": 0.03
+      },
+      "oos_start": "2016-01-01",
+      "oos_end": "2025-12-31"
+    },
+    "trial_config_hash": "ed221f310f19889c",
+    "reserved_at": "2026-08-16T00:04:17.382468+00:00"
+  },
+  "reproduction": {
+    "command": "uv run python scripts/probe_earnings_narrative_change.py",
+    "python": "3.12.13 (main, Jun  2 2026, 22:42:28) [Clang 22.1.3 ]",
+    "numpy": "2.4.6",
+    "pandas": "3.0.3",
+    "pyproject_path": "pyproject.toml",
+    "pyproject_sha256": "ddaf8b60999275f6d3fb93b3073f256d75d1383bfc8bab14263dc58645841006",
+    "uv_lock_path": "uv.lock",
+    "uv_lock_sha256": "5caca664242722a3a3112663d7a19b7b5000583e30ade3753e1b8ffdecfd6f06",
+    "runner_path": "scripts/probe_earnings_narrative_change.py",
+    "runner_sha256": "b64c366b95c2f9595de3f6bf292f3958db7d9f2b1b5cab38ebedd94a082e3a05"
+  },
+  "pbo": {
+    "status": "NOT_DEFINED_SINGLE_IDENTITY",
+    "value": null,
+    "reason": "one locked configuration has no selection surface"
+  },
+  "corpus": {
+    "schema": "canli.ingest.sec-10k-item1a-corpus.v1",
+    "generated_at": "2026-08-15T23:56:57.349705+00:00",
+    "stage": "corpus_ingest_no_prices_no_returns",
+    "hypothesis_identities_spent": 0,
+    "preregistration": "docs/design/PREREG_EARNINGS_NARRATIVE_CHANGE.md",
+    "parser_version": "sec-filing-sections-v2",
+    "source_manifest": {
+      "path": "artifacts/ingest/earnings_narrative_change/filings_manifest.parquet",
+      "sha256": "7228eef1a2493152355da5b0e84cc620a3c15707279caecc7f45041941dfa651"
+    },
+    "manifest_rows": 83070,
+    "pair_eligible_manifest_rows": 82491,
+    "processed_rows": 82491,
+    "successful_downloads": 82491,
+    "download_rate": 1.0,
+    "item1a_extracted": 73744,
+    "item1a_extraction_rate": 0.8939641900328521,
+    "sic_complete": 82171,
+    "sic_missing_at_source": 320,
+    "sic_rate": 0.9961207889345505,
+    "current_parser_rows": 82491,
+    "median_section_words": 6876.0,
+    "unique_ciks": 8122,
+    "part_count": 331,
+    "parts_sha256": "45505610e0a93bf7cb27829aa6b62acf4dbd28659783e1fb7735b56f63e59a1b",
+    "complete": true
+  },
+  "pairs": {
+    "schema": "canli.ingest.sec-10k-item1a-pairs.v1",
+    "generated_at": "2026-08-16T00:02:49.972699+00:00",
+    "stage": "narrative_pairs_no_prices_no_returns",
+    "hypothesis_identities_spent": 0,
+    "preregistration": "docs/design/PREREG_EARNINGS_NARRATIVE_CHANGE.md",
+    "preregistration_sha256": "60486da41f1e2c88e62b6e56d436d780f645420ffaeb13364540d0c4040cc3b9",
+    "parser_version": "sec-filing-sections-v2",
+    "source_corpus_result": "artifacts/ingest/earnings_narrative_change/corpus_result.json",
+    "source_manifest": {
+      "path": "artifacts/ingest/earnings_narrative_change/filings_manifest.parquet",
+      "sha256": "7228eef1a2493152355da5b0e84cc620a3c15707279caecc7f45041941dfa651",
+      "rows": 83070,
+      "pair_eligible_rows": 82491,
+      "forms": [
+        "10-K"
+      ],
+      "duplicate_filing_identities": 0,
+      "invalid_acceptance_timestamps": 0
+    },
+    "source_identity_coverage": {
+      "eligible_manifest_identities": 82491,
+      "latest_corpus_identities": 82491,
+      "missing": 0,
+      "unexpected": 0
+    },
+    "source_corpus_parts": 331,
+    "source_corpus_parts_sha256": "45505610e0a93bf7cb27829aa6b62acf4dbd28659783e1fb7735b56f63e59a1b",
+    "source_processed_rows": 82491,
+    "pair_file_sha256": "31b0c4e1eac60cbcee690256ad624edef4a66db00975e9ead8f72aa76fe3d808",
+    "minimum_section_words": 500,
+    "pairs": 65050,
+    "adjacency_attrition": {
+      "first_filing_for_issuer": 8122,
+      "invalid_current_section": 537,
+      "invalid_immediate_predecessor": 8522,
+      "missing_current_filing_sic": 260
+    },
+    "adjacency_accounted_rows": 82491,
+    "unique_ciks": 7516,
+    "acceptance_start": "2006-02-24T19:54:50+00:00",
+    "acceptance_end": "2025-12-29T21:31:10+00:00",
+    "exact_duplicate_rate": 0.0005226748654880861,
+    "jaccard": {
+      "p05": 0.37428757048465394,
+      "median": 0.7373191845610818,
+      "p95": 0.9093887466936639
+    },
+    "complete": true
+  },
+  "mapping": {
+    "eligible_before_prices": 31130,
+    "rejections": {
+      "pre_oos": 32295,
+      "issuer_interval_missing": 1363,
+      "issuer_interval_ambiguous": 4,
+      "incomplete_hold": 258
+    }
+  },
+  "selection": {
+    "selected_rows": 5556,
+    "selected_cohorts": 52,
+    "rejections": {
+      "duplicate_issuer_month": 8,
+      "price_unmapped": 8555,
+      "liquidity": 7392,
+      "control_endpoint_missing": 37,
+      "cohort_below_20": 711,
+      "saturated_cohort": 389,
+      "tail_below_5": 45
+    },
+    "terminal_force_flats": [
+      {
+        "ticker": "AAWW",
+        "last_observed_open": "2023-03-17",
+        "affected_cohorts": 1
+      },
+      {
+        "ticker": "AEGN",
+        "last_observed_open": "2021-05-14",
+        "affected_cohorts": 1
+      },
+      {
+        "ticker": "AGTI",
+        "last_observed_open": "2024-05-06",
+        "affected_cohorts": 1
+      },
+      {
+        "ticker": "BEAV",
+        "last_observed_open": "2017-04-12",
+        "affected_cohorts": 1
+      },
+      {
+        "ticker": "BIVV",
+        "last_observed_open": "2018-03-08",
+        "affected_cohorts": 1
+      },
+      {
+        "ticker": "CARO",
+        "last_observed_open": "2020-05-01",
+        "affected_cohorts": 1
+      },
+      {
+        "ticker": "CBAY",
+        "last_observed_open": "2024-03-21",
+        "affected_cohorts": 1
+      },
+      {
+        "ticker": "CBI",
+        "last_observed_open": "2018-05-10",
+        "affected_cohorts": 1
+      },
+      {
+        "ticker": "CKH",
+        "last_observed_open": "2021-04-14",
+        "affected_cohorts": 1
+      },
+      {
+        "ticker": "CKP",
+        "last_observed_open": "2016-05-13",
+        "affected_cohorts": 1
+      },
+      {
+        "ticker": "CVT",
+        "last_observed_open": "2023-06-14",
+        "affected_cohorts": 1
+      },
+      {
+        "ticker": "CY",
+        "last_observed_open": "2020-04-16",
+        "affected_cohorts": 1
+      },
+      {
+        "ticker": "DOOR",
+        "last_observed_open": "2024-05-14",
+        "affected_cohorts": 1
+      },
+      {
+        "ticker": "DST",
+        "last_observed_open": "2018-04-16",
+        "affected_cohorts": 1
+      },
+      {
+        "ticker": "ENFN",
+        "last_observed_open": "2025-04-17",
+        "affected_cohorts": 1
+      },
+      {
+        "ticker": "ETP1",
+        "last_observed_open": "2017-04-27",
+        "affected_cohorts": 1
+      },
+      {
+        "ticker": "EVOP",
+        "last_observed_open": "2023-03-23",
+        "affected_cohorts": 1
+      },
+      {
+        "ticker": "EVRI",
+        "last_observed_open": "2025-06-30",
+        "affected_cohorts": 1
+      },
+      {
+        "ticker": "FINL",
+        "last_observed_open": "2018-06-15",
+        "affected_cohorts": 1
+      },
+      {
+        "ticker": "FOE",
+        "last_observed_open": "2022-04-21",
+        "affected_cohorts": 1
+      },
+      {
+        "ticker": "FRTA",
+        "last_observed_open": "2022-03-17",
+        "affected_cohorts": 1
+      },
+      {
+        "ticker": "GNMK",
+        "last_observed_open": "2021-04-21",
+        "affected_cohorts": 1
+      },
+      {
+        "ticker": "HEES",
+        "last_observed_open": "2025-05-30",
+        "affected_cohorts": 1
+      },
+      {
+        "ticker": "HMHC",
+        "last_observed_open": "2022-04-06",
+        "affected_cohorts": 1
+      },
+      {
+        "ticker": "HNT",
+        "last_observed_open": "2016-03-23",
+        "affected_cohorts": 1
+      },
+      {
+        "ticker": "HPY",
+        "last_observed_open": "2016-04-22",
+        "affected_cohorts": 1
+      },
+      {
+        "ticker": "HRC",
+        "last_observed_open": "2021-12-10",
+        "affected_cohorts": 1
+      },
+      {
+        "ticker": "IAA",
+        "last_observed_open": "2023-03-20",
+        "affected_cohorts": 1
+      },
+      {
+        "ticker": "INST1",
+        "last_observed_open": "2020-03-23",
+        "affected_cohorts": 1
+      },
+      {
+        "ticker": "IOTS",
+        "last_observed_open": "2020-06-26",
+        "affected_cohorts": 1
+      },
+      {
+        "ticker": "IPHI",
+        "last_observed_open": "2021-04-20",
+        "affected_cohorts": 1
+      },
+      {
+        "ticker": "ISBC",
+        "last_observed_open": "2022-04-06",
+        "affected_cohorts": 1
+      },
+      {
+        "ticker": "JNS",
+        "last_observed_open": "2017-05-26",
+        "affected_cohorts": 1
+      },
+      {
+        "ticker": "KAMN",
+        "last_observed_open": "2024-04-18",
+        "affected_cohorts": 1
+      },
+      {
+        "ticker": "KEM1",
+        "last_observed_open": "2020-06-12",
+        "affected_cohorts": 1
+      },
+      {
+        "ticker": "LQ2",
+        "last_observed_open": "2018-05-30",
+        "affected_cohorts": 1
+      },
+      {
+        "ticker": "MGI",
+        "last_observed_open": "2023-05-31",
+        "affected_cohorts": 1
+      },
+      {
+        "ticker": "MTSC",
+        "last_observed_open": "2021-04-06",
+        "affected_cohorts": 1
+      },
+      {
+        "ticker": "OCDX",
+        "last_observed_open": "2022-05-26",
+        "affected_cohorts": 1
+      },
+      {
+        "ticker": "POLY",
+        "last_observed_open": "2022-08-26",
+        "affected_cohorts": 1
+      },
+      {
+        "ticker": "PRVB",
+        "last_observed_open": "2023-04-27",
+        "affected_cohorts": 1
+      },
+      {
+        "ticker": "PXD",
+        "last_observed_open": "2024-05-02",
+        "affected_cohorts": 1
+      },
+      {
+        "ticker": "RARX",
+        "last_observed_open": "2020-04-02",
+        "affected_cohorts": 1
+      },
+      {
+        "ticker": "REGI",
+        "last_observed_open": "2022-06-10",
+        "affected_cohorts": 1
+      },
+      {
+        "ticker": "RKUS",
+        "last_observed_open": "2016-05-26",
+        "affected_cohorts": 1
+      },
+      {
+        "ticker": "RTN",
+        "last_observed_open": "2020-04-02",
+        "affected_cohorts": 1
+      },
+      {
+        "ticker": "SCAI",
+        "last_observed_open": "2017-03-23",
+        "affected_cohorts": 1
+      },
+      {
+        "ticker": "SGFY",
+        "last_observed_open": "2023-03-28",
+        "affected_cohorts": 1
+      },
+      {
+        "ticker": "SGY",
+        "last_observed_open": "2018-05-09",
+        "affected_cohorts": 1
+      },
+      {
+        "ticker": "SNDK1",
+        "last_observed_open": "2016-05-11",
+        "affected_cohorts": 1
+      },
+      {
+        "ticker": "SRRA",
+        "last_observed_open": "2022-06-30",
+        "affected_cohorts": 1
+      },
+      {
+        "ticker": "TCP",
+        "last_observed_open": "2021-03-02",
+        "affected_cohorts": 1
+      },
+      {
+        "ticker": "TGI",
+        "last_observed_open": "2025-07-24",
+        "affected_cohorts": 1
+      },
+      {
+        "ticker": "ULTI1",
+        "last_observed_open": "2019-05-02",
+        "affected_cohorts": 1
+      },
+      {
+        "ticker": "UPLMQ",
+        "last_observed_open": "2017-04-11",
+        "affected_cohorts": 1
+      },
+      {
+        "ticker": "USG1",
+        "last_observed_open": "2019-04-23",
+        "affected_cohorts": 1
+      },
+      {
+        "ticker": "WAGE",
+        "last_observed_open": "2019-08-29",
+        "affected_cohorts": 1
+      },
+      {
+        "ticker": "ZLTQ",
+        "last_observed_open": "2017-04-27",
+        "affected_cohorts": 1
+      }
+    ],
+    "deferred_target_changes_during_missing_opens": {}
+  },
+  "metrics": {
+    "net_sharpe": -0.0074355006698948066,
+    "newey_west_t": -0.024159385592414994,
+    "dsr": 1.135167655547433e-05,
+    "psr": 0.49063363567839996,
+    "n_trials_union_including_candidate": 228,
+    "sr_trial_variance": 0.0008957471162984615,
+    "max_drawdown": -0.2847080682530856,
+    "skew": 0.05157137520091304,
+    "realized_spy_beta": 0.0032566977631836255,
+    "turnover_ann": 3.953845431455051,
+    "net_sharpe_at_2x_costs": -0.462084363844257,
+    "long_leg_gross_contribution": 0.7616211960073791,
+    "short_leg_gross_contribution": -0.4637276418442936,
+    "capacity": {
+      "p05_usd_at_1bp_adv": 7398.2888639352395,
+      "median_usd_at_1bp_adv": 14072.434169549422,
+      "p05_usd_at_5bp_adv": 36991.4443196762,
+      "median_usd_at_5bp_adv": 70362.17084774711,
+      "p05_usd_at_10bp_adv": 73982.8886393524,
+      "median_usd_at_10bp_adv": 140724.34169549422,
+      "p05_usd_at_1pct_adv": 739828.8863935239,
+      "median_usd_at_1pct_adv": 1407243.416954942
+    }
+  },
+  "annual_oos": {
+    "2016": {
+      "observations": 252,
+      "total_return": 0.03494985683595919,
+      "sharpe": 0.5749449712774232
+    },
+    "2017": {
+      "observations": 251,
+      "total_return": 0.005490770092097641,
+      "sharpe": 0.1426347334820586
+    },
+    "2018": {
+      "observations": 251,
+      "total_return": 0.047762552949535575,
+      "sharpe": 0.8286124068605658
+    },
+    "2019": {
+      "observations": 252,
+      "total_return": 0.02841484619547474,
+      "sharpe": 0.5412976714478429
+    },
+    "2020": {
+      "observations": 253,
+      "total_return": -0.0891662778674106,
+      "sharpe": -1.431932854293939
+    },
+    "2021": {
+      "observations": 252,
+      "total_return": 0.010169564122935792,
+      "sharpe": 0.17979943490721068
+    },
+    "2022": {
+      "observations": 251,
+      "total_return": -0.15288798386305946,
+      "sharpe": -2.3027519553211353
+    },
+    "2023": {
+      "observations": 250,
+      "total_return": -0.038062439777412416,
+      "sharpe": -0.5982897200354295
+    },
+    "2024": {
+      "observations": 252,
+      "total_return": 0.0830768902362422,
+      "sharpe": 1.0498119653340108
+    },
+    "2025": {
+      "observations": 250,
+      "total_return": 0.07134038679523513,
+      "sharpe": 1.1866342550431854
+    }
+  },
+  "correlation": {
+    "ordinary_by_sleeve": {
+      "AlphaForge": 0.02736331272331045,
+      "AlphaMax": -0.0031903582044590455,
+      "AlphaTrend": 0.09206852554163532,
+      "AlphaVintage": -0.022273431628806413
+    },
+    "average": 0.023492012107920075,
+    "max_pair": 0.09206852554163532,
+    "ordinary_upper_95_by_sleeve": {
+      "AlphaForge": 0.0899152987409554,
+      "AlphaMax": 0.07751919167070313,
+      "AlphaTrend": 0.15567657252495046,
+      "AlphaVintage": 0.06044752856769722
+    },
+    "max_pair_upper_95": 0.15567657252495046,
+    "stressed_by_sleeve": {
+      "AlphaForge": 0.09622151604148202,
+      "AlphaMax": -0.02346603761072069,
+      "AlphaTrend": -0.06225414872288813,
+      "AlphaVintage": -0.21459086187881107
+    },
+    "max_stressed": 0.09622151604148202,
+    "stressed_upper_95_by_sleeve": {
+      "AlphaForge": 0.28850484727559783,
+      "AlphaMax": 0.19150690489006872,
+      "AlphaTrend": 0.07400190823483108,
+      "AlphaVintage": -0.07980984657540517
+    },
+    "max_stressed_upper_95": 0.28850484727559783,
+    "observations": 625,
+    "stressed_observations": 63,
+    "candidate_mean_on_book_es_days": 0.001639115635386668,
+    "stressed_joint_loss_rate": 0.42857142857142855,
+    "artifact": "artifacts/probe/earnings_narrative_change/diversification.json",
+    "artifact_sha256": "db1ae528574297b72916720ce8f048231800a6ad4834bfc8b05a4ed65f058c8e",
+    "content_hash": "sha256:d1d98cdc792ba52fce6efa5ec13ed9f46870e25cc2cb5b59c5c15de73ebd1e4e"
+  },
+  "book": {
+    "common_start": "2023-07-07",
+    "common_end": "2025-12-31",
+    "common_days": 625,
+    "base_sharpe": 0.9563039455217212,
+    "candidate_10pct_sharpe": 1.0643866940055202,
+    "delta_sharpe": 0.10808274848379906,
+    "mean_zero_delta_sharpe": -0.02312704243262531,
+    "leave_one_year_out_delta": {
+      "2023": 0.18677688351353372,
+      "2024": 0.06253912684435192,
+      "2025": 0.043468158389669886
+    },
+    "all_leave_one_year_out_positive": true,
+    "max_drawdown_delta": 0.008491690405378005,
+    "expected_shortfall_delta": 0.00050298898479041
+  },
+  "lineage": {
+    "preregistration_sha256": "60486da41f1e2c88e62b6e56d436d780f645420ffaeb13364540d0c4040cc3b9",
+    "data_manifest_sha256": "3f69cc02bd0038d9fc3ad4c8f61b832e884127cbef93e862194e22b06f25e006",
+    "data_manifest_path": "artifacts/probe/earnings_narrative_change/input_data_manifest.json",
+    "filing_manifest_sha256": "7228eef1a2493152355da5b0e84cc620a3c15707279caecc7f45041941dfa651",
+    "ticker_history_sha256": "eb40fa6f1a6ba1e37336efd75392c5149123a825bfee209a84a83d0b7458e4cf",
+    "corpus_parts_sha256": "45505610e0a93bf7cb27829aa6b62acf4dbd28659783e1fb7735b56f63e59a1b",
+    "corpus_result_sha256": "0c4fc9a4ae8955a160120c5bee8904edb4f66dd7ef17767a95b7ddf950b827dc",
+    "pair_file_sha256": "31b0c4e1eac60cbcee690256ad624edef4a66db00975e9ead8f72aa76fe3d808",
+    "pair_result_sha256": "77e63f666c0ff2625757b6cef6636361c65ca6094e3874b1b9008c5e79c82b42",
+    "runner_sha256": "b64c366b95c2f9595de3f6bf292f3958db7d9f2b1b5cab38ebedd94a082e3a05",
+    "diversification_report_sha256": "db1ae528574297b72916720ce8f048231800a6ad4834bfc8b05a4ed65f058c8e",
+    "admission_contract_sha256": "5f628a44ae73ed9c412b225ac9dc56c4e59c1bc0645e2ebde251501e938b9932",
+    "return_identity_reservation_sha256": "1cca246e42c70803830ce69e9efda1ee6978b92ba88b6adee7830d479eabae79"
+  },
+  "gates": {
+    "net_sharpe_at_least_0_40": false,
+    "dsr_at_least_0_95": false,
+    "newey_west_t_at_least_2": false,
+    "stressed_sharpe_at_least_0_40": false,
+    "absolute_beta_at_most_0_10": true,
+    "average_correlation_at_most_0_15": true,
+    "max_pair_correlation_at_most_0_35": true,
+    "max_stressed_correlation_at_most_0_50": true,
+    "max_pair_correlation_upper_95_at_most_0_35": true,
+    "max_stressed_correlation_upper_95_at_most_0_50": true,
+    "correlation_observations_at_least_252": true,
+    "stressed_observations_at_least_63": true,
+    "book_delta_positive": true,
+    "mean_zero_book_delta_positive": false,
+    "all_leave_one_year_out_positive": true,
+    "book_max_drawdown_delta_at_most_0_01": true,
+    "book_expected_shortfall_delta_nonpositive": false,
+    "long_leg_positive": true,
+    "short_leg_positive": false,
+    "capacity_at_least_5m": false
+  },
+  "admission_review": {
+    "contract_schema": "canli.alphac-sleeve-admission-contract.v6",
+    "contract_path": "config/sleeve_admission_contract.json",
+    "contract_sha256": "5f628a44ae73ed9c412b225ac9dc56c4e59c1bc0645e2ebde251501e938b9932",
+    "checks_required_for_technical_eligibility": 85,
+    "research_subset_checks": 20,
+    "research_subset_passed": 12,
+    "canonical_diversification_report_sha256": "db1ae528574297b72916720ce8f048231800a6ad4834bfc8b05a4ed65f058c8e",
+    "status": "RESEARCH_SUBSET_FAILED",
+    "technically_eligible": false,
+    "unresolved_evidence": [
+      "point-in-time historical locate and borrow availability",
+      "full execution-dimension scenario bundle and replay hashes",
+      "capacity-curve reconciliation across stressed capital levels",
+      "complete required lineage and robustness bundle"
+    ],
+    "claim_boundary": "Passing this contract makes a result technically eligible for an explicit admission decision. It does not guarantee a sleeve, future performance, the target Sharpe, or the target drawdown. Point estimates cannot override confidence-bound, crisis-conditional, tail-loss, execution-evidence, or capacity-reconciliation failures. v6 additionally refuses to load if its own significance floors cannot all be satisfied at once, gates the average pairwise correlation on its upper confidence bound as well as its point estimate, and publishes the arithmetic relating the correlation gate to the portfolio objective -- including the distance the gate does not close."
+  },
+  "verdict": "KILL",
+  "data_escalation": null
+}

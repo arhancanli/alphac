@@ -1,0 +1,48 @@
+{
+  "account_status": "ACTIVE",
+  "broker": "ALPACA",
+  "capital_kind": "PAPER_ONLY",
+  "checks": {
+    "account_active": true,
+    "all_broker_marks_match_to_cent_after_refresh": true,
+    "all_broker_marks_present_after_refresh": true,
+    "current_account_equity_persisted": true,
+    "fill_reconciliation_healthy": true,
+    "nontrivial_broker_history": true,
+    "paper_endpoint": true,
+    "pre_refresh_overlap_matched_to_cent": true
+  },
+  "claim_boundary": "Self-published read-only reconciliation against three dedicated Alpaca paper accounts. It is broker-derived but not an independent third-party attestation, does not imply real capital, and does not establish future performance.",
+  "comparison_after_refresh": {
+    "all_overlapping_marks_match_to_cent": true,
+    "broker_marks": 13,
+    "broker_marks_missing_locally": 0,
+    "local_marks": 14,
+    "max_absolute_equity_difference": 0.0,
+    "missing_broker_mark_timestamps": [],
+    "overlapping_marks": 13
+  },
+  "current_equity_as_of": "2026-08-26T02:25:32.574000+00:00",
+  "excluded_fields": [
+    "ACCOUNT_IDENTITY",
+    "CURRENT_EQUITY_AMOUNT",
+    "CURRENT_HOLDINGS",
+    "OTHER_SLEEVE_ACCOUNTS"
+  ],
+  "fill_outcome_reconciliation": {
+    "consecutive_fill_reconcile_failures": 0,
+    "last_error": null,
+    "last_failure_at": null,
+    "last_success_at": "2026-08-24T06:00:20.588000+00:00"
+  },
+  "generated_at": "2026-08-26T02:25:32.574697+00:00",
+  "passes": true,
+  "portfolio_history_first_mark": "2026-08-07T00:00:00+00:00",
+  "portfolio_history_last_mark": "2026-08-25T00:00:00+00:00",
+  "schema": "canli.alphac-alphavintage-publication-alpaca-evidence.v1",
+  "sleeve": "alphavintage",
+  "source_binding": {
+    "path": "artifacts/engineering/alpaca_broker_reconciliation.json",
+    "sha256": "89683bb4ff9d4a32f4db3385c03d4cb05b82e87a42ac144d9e9325175717ce76"
+  }
+}

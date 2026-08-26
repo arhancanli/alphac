@@ -342,13 +342,21 @@ class SignalService:
         # (``inst == iid`` is never true), so skipping it is byte-identical -- but it
         # turns an O(intervals x N) full-numpy-scan-per-interval blowup (the dominant
         # live-cycle cost: 2000+ scans of the panel) into O(panel-instruments x N).
-        panel_ids = set(inst.tolist())
+        # ``inst`` is an object/string array. Comparing that full array once per
+        # membership interval dominated a five-year, 58-contract carry replay: the
+        # same strings were compared hundreds of millions of times. Factorize the
+        # immutable index once and compare compact integer codes below. This is an
+        # exact representation change only -- ``codes == code_by_iid[iid]`` selects
+        # precisely the rows for which the former ``inst == iid`` was true.
+        inst_codes, unique_inst = pd.factorize(inst, sort=False)
+        code_by_iid = {iid: code for code, iid in enumerate(unique_inst.tolist())}
         member = np.zeros(len(index), dtype=bool)
         for iid, eff_from, eff_to in zip(ids, froms, tos, strict=True):
-            if iid not in panel_ids:
+            code = code_by_iid.get(iid)
+            if code is None:
                 continue
             in_span = ts >= eff_from if eff_to is None else (ts >= eff_from) & (ts < eff_to)
-            member |= in_span & (inst == iid)
+            member |= in_span & (inst_codes == code)
         return pd.Series(member, index=index)
 
     def _intervals(self) -> tuple[list[str], list[int], list[int | None]]:

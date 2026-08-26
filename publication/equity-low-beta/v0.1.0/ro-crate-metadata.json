@@ -1,0 +1,208 @@
+{
+  "@context": "https://w3id.org/ro/crate/1.1/context",
+  "@graph": [
+    {
+      "@id": "ro-crate-metadata.json",
+      "@type": "CreativeWork",
+      "about": {
+        "@id": "./"
+      },
+      "conformsTo": {
+        "@id": "https://w3id.org/ro/crate/1.1"
+      }
+    },
+    {
+      "@id": "./",
+      "@type": "Dataset",
+      "author": {
+        "@id": "#arhan-canli"
+      },
+      "datePublished": "2026-08-23",
+      "hasPart": [
+        {
+          "@id": "CITATION.cff"
+        },
+        {
+          "@id": "CORRECTIONS.md"
+        },
+        {
+          "@id": "LICENSE"
+        },
+        {
+          "@id": "README.md"
+        },
+        {
+          "@id": "archival_visual_inspection_receipt.json"
+        },
+        {
+          "@id": "bundle_manifest.json"
+        },
+        {
+          "@id": "codemeta.json"
+        },
+        {
+          "@id": "data_manifest.json"
+        },
+        {
+          "@id": "evidence/family_result.json"
+        },
+        {
+          "@id": "internal_replay_receipt.json"
+        },
+        {
+          "@id": "isolated_replay_receipt.json"
+        },
+        {
+          "@id": "paper.html"
+        },
+        {
+          "@id": "paper.json"
+        },
+        {
+          "@id": "paper.md"
+        },
+        {
+          "@id": "paper.pdf"
+        },
+        {
+          "@id": "paper.tex"
+        },
+        {
+          "@id": "pdf_validation.json"
+        },
+        {
+          "@id": "references.bib"
+        },
+        {
+          "@id": "references.json"
+        },
+        {
+          "@id": "reproduction.json"
+        },
+        {
+          "@id": "sbom.spdx.json"
+        },
+        {
+          "@id": "trial_accounting.json"
+        }
+      ],
+      "name": "Equity Low Beta: Two Negative Identities and No Defensive Sleeve",
+      "version": "0.1.0"
+    },
+    {
+      "@id": "#arhan-canli",
+      "@type": "Person",
+      "name": "Arhan Canli"
+    },
+    {
+      "@id": "CITATION.cff",
+      "@type": "File",
+      "sha256": "6fc29e9e6c3d376cade089268c6dc23ffec12374365d874c6daeb11784cfa0cd"
+    },
+    {
+      "@id": "CORRECTIONS.md",
+      "@type": "File",
+      "sha256": "f332eae2c624bd3a2dbece72ef65b2d4f7a6e1de74b4d59c272983f012dfbfbe"
+    },
+    {
+      "@id": "LICENSE",
+      "@type": "File",
+      "sha256": "e679ca02271c3b6ff38e197098b9260900656c23f06b787383624681f425fa26"
+    },
+    {
+      "@id": "README.md",
+      "@type": "File",
+      "sha256": "ec5f3f49e05fb2c8a1074356f79fc5b3a754c0907198ba5ec05ebaef93cb57e5"
+    },
+    {
+      "@id": "archival_visual_inspection_receipt.json",
+      "@type": "File",
+      "sha256": "7a40b8c55de12ec4dd2f93143810266ac8854dc14fdd2ac1a336f64ff9dd8578"
+    },
+    {
+      "@id": "bundle_manifest.json",
+      "@type": "File",
+      "sha256": "71317e73d7d22794d075688a9748b29c533f3c7e82bc36d8c9132fe8fa8984bb"
+    },
+    {
+      "@id": "codemeta.json",
+      "@type": "File",
+      "sha256": "eec9b63ddb94674d6385e91f7e4c7c0bce01ef880e5fb7412057e68ebe2d15f5"
+    },
+    {
+      "@id": "data_manifest.json",
+      "@type": "File",
+      "sha256": "921431ba9a0021cd1f01b3ff02f318f75b9da7116357298a9807a388149b3313"
+    },
+    {
+      "@id": "evidence/family_result.json",
+      "@type": "File",
+      "sha256": "b51f32d5be62b777b27e3687c96c27fbe988a7d709b548b6ae850fd8d13c57cc"
+    },
+    {
+      "@id": "internal_replay_receipt.json",
+      "@type": "File",
+      "sha256": "70ac0c8d8542294e02c396085216646208a786295c747940f0eb0f576010ec95"
+    },
+    {
+      "@id": "isolated_replay_receipt.json",
+      "@type": "File",
+      "sha256": "d0df878375d415986fa639487e4ccffc9cad6396dca9bde5f3be4a7fdf50b2ad"
+    },
+    {
+      "@id": "paper.html",
+      "@type": "File",
+      "sha256": "18915f38d46365dad6881a143157da066aa1e3d4e63f83348381a1693d5d9303"
+    },
+    {
+      "@id": "paper.json",
+      "@type": "File",
+      "sha256": "15de2c7553f4128602af3cfd23b5ce07ab7b4bb72b8da171b5b2983c50f39fcf"
+    },
+    {
+      "@id": "paper.md",
+      "@type": "File",
+      "sha256": "13370ad27d5c66d0d00fef2d0869c667fa4bdb47e9abaaea3897d23f07be36cc"
+    },
+    {
+      "@id": "paper.pdf",
+      "@type": "File",
+      "sha256": "9044474480c24191f19bf8d2498cf0a452e0b5602c28116567739e6881340dcf"
+    },
+    {
+      "@id": "paper.tex",
+      "@type": "File",
+      "sha256": "d6b8a17233473381c30878931d2f31166341bba2d8876051234272bcd9b7e806"
+    },
+    {
+      "@id": "pdf_validation.json",
+      "@type": "File",
+      "sha256": "f499707074aadca72188eea36201be2751f14123689bd683e3544828d67e7738"
+    },
+    {
+      "@id": "references.bib",
+      "@type": "File",
+      "sha256": "6f7e0d5658abf2921e5406612d01e54f1837cfd0542ca9bbfde782868f01e021"
+    },
+    {
+      "@id": "references.json",
+      "@type": "File",
+      "sha256": "8d97035435bd5453f6e18dc84bb85cf2c633f690ce09105e7a5279bced4a391e"
+    },
+    {
+      "@id": "reproduction.json",
+      "@type": "File",
+      "sha256": "1e092ed7983cb6b10ca05baa765bef1fc7c5f4a4ebfd1eefcbdb9ca121b9ede2"
+    },
+    {
+      "@id": "sbom.spdx.json",
+      "@type": "File",
+      "sha256": "f9ab5946e2942ee8bb3d008ff73875ddb8ba72ce710703b6a690f443528183ea"
+    },
+    {
+      "@id": "trial_accounting.json",
+      "@type": "File",
+      "sha256": "91a8c069172a4441ec024b488f4ab7136d51064cc944189306d68cc04bace0e7"
+    }
+  ]
+}

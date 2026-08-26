@@ -1,0 +1,30 @@
+{
+  "abstract": "ALPHAC evaluates seven immutable identities spanning an economic-trend engine, CPI-surprise sizing, and point-in-time macro-vintage variants. Persisted historical summaries range from -0.2981 to +0.3403, but the +0.3403 value is withdrawn because its active-day calendar omitted zero-exposure sessions. The calendar-corrected result is +0.2298 with Newey-West t 1.267 and a `KILLED` verdict. The withdrawn row remains in the lineage as a superseded measurement. The economic premise is that slowly updating growth and inflation information may forecast liquid cross-asset returns. Revised releases create a direct look-ahead hazard, so only vintages available at each decision are admissible. The seven identities share macro information and constitute one research family, not seven independent sleeves; they may also overlap managed-futures trend. Current evidence is summary-level rather than a complete curve, DSR, capacity, drawdown, and crisis correlation packet. The decision is therefore **zero validated sleeves**. A related AlphaVintage Alpaca paper experiment does not reverse that research decision and is neither funded nor independently attested. Future admission requires one frozen vintage-safe configuration, current-union deflation, full risk and capacity evidence, and forward execution.",
+  "authors": [
+    {
+      "affiliation": "Canli Capital / AlphaC Algorithms",
+      "full_name": "Arhan Canli",
+      "roles": [
+        "CONCEPTUALIZATION",
+        "METHODOLOGY",
+        "SOFTWARE",
+        "VALIDATION",
+        "INVESTIGATION",
+        "WRITING",
+        "PROJECT_ADMINISTRATION"
+      ]
+    }
+  ],
+  "capital_kind": "RESEARCH_SIMULATION_ONLY",
+  "claim_boundary": "This is an incomplete preparation bundle. It proves no external submission, DOI, peer review, independent replication, funded performance, or future return.",
+  "date": "2026-08-23",
+  "external_identifiers": [],
+  "language": "en",
+  "peer_reviewed": false,
+  "registry_key": "macro_economic_trend",
+  "result_release_complete": true,
+  "schema": "canli.alphac-sleeve-paper.v1",
+  "title": "Point-in-Time Macroeconomic Trend: Seven Identities Without a Validated Sleeve",
+  "type": "WORKING_PAPER_PREPRINT_NOT_PEER_REVIEWED",
+  "version": "0.1.0"
+}

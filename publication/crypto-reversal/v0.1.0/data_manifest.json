@@ -1,0 +1,20 @@
+{
+  "license_review_complete": false,
+  "registry_key": "crypto_reversal",
+  "released_data_objects": [],
+  "released_result_objects": [
+    {
+      "bundle_path": "evidence/family_result.json",
+      "byte_identical_to_source": true,
+      "role": "complete short-horizon reversal identity family",
+      "sha256": "dfdccb113b86b8126446a3c67eb9247892a492bc4de80c5634ad9227153b30fd",
+      "source_path": "artifacts/research/crypto_reversal_family.json"
+    }
+  ],
+  "schema": "canli.alphac-publication-data-manifest.v1",
+  "source_paper": {
+    "path": "docs/research/CRYPTO_REVERSAL_LINEAGE.md",
+    "sha256": "74204bd4d7fb7b89047a9578af2697a19d33a9454e5f0998c18c8d7a03e0d5fc"
+  },
+  "status": "RESULT_OBJECTS_RELEASED_RAW_INPUT_INVENTORY_INCOMPLETE"
+}

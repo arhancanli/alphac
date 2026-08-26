@@ -1,0 +1,28 @@
+{
+ "spec": {
+  "instruments": [
+   "IWM",
+   "SPY"
+  ],
+  "ar_lags": 3,
+  "clip": 3.0,
+  "cost_oneway_bp": 5.999999999999999,
+  "configs_tried": 1
+ },
+ "net_sharpe": 0.2298358829229609,
+ "nw_t": 1.2673190577321936,
+ "active_day_net_sharpe_superseded": 0.338207199401868,
+ "portfolio_days": 6296,
+ "active_days": 5998,
+ "calendar_correction": "zero-exposure sessions retained between first and last activity",
+ "gross_sharpe": 0.44100360008192313,
+ "placebo_sharpe": -0.02051691397900317,
+ "placebo_nw_t": -0.11700964029171129,
+ "checks": {
+  "a_clears_bar": true,
+  "b_nw_t_ge_1p5": false,
+  "c_benefit_is_the_mean": true,
+  "d_placebo_dead": true
+ },
+ "verdict": "KILLED"
+}
