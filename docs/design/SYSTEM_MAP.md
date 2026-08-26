@@ -8,8 +8,8 @@ line of its own docstring, each pipeline's steps are the scripts it actually inv
 contract's boundary is the boundary it states about itself. A script with no docstring appears as
 having none.
 
-At a glance: **335 Python scripts**, **17 shell entry points**,
-**20 configuration contracts**, **27 engineering artifacts**,
+At a glance: **336 Python scripts**, **17 shell entry points**,
+**21 configuration contracts**, **27 engineering artifacts**,
 **381 unit test files**, **22 data directories**, **9 scheduled jobs**.
 
 
@@ -175,6 +175,7 @@ are the ones a reader has to know about; everything else is derived from them.
 
 | file | what it governs, in its own words |
 |---|---|
+| `config/active_ownership_confirmatory_design_inputs.json` | This tracked compact receipt preserves governed counts and hashes needed to rebuild the pre-outcome design in a clean checkout. |
 | `config/admission_v7_promotion.json` | _(no stated boundary)_ |
 | `config/clean_checkout_workspace_evidence_policy.json` | This policy classifies test modules by input availability only. |
 | `config/crypto_carry_portable_v1_prerun.json` | This contract freezes a source-availability decision before any portable-v1 return is computed. |
@@ -495,7 +496,7 @@ and is worth more than a hand-made taxonomy that would drift.
 | `verify_sleeve_publication_replays.py` | Replay audit-only sleeve evidence builders and prove no result or trial ledger changed. |
 | `verify_transparency.py` | Verify the public track-record chain, signatures and disclosed payloads. |
 
-### everything else (119)
+### everything else (120)
 
 | script | first line of its docstring |
 |---|---|
@@ -573,6 +574,7 @@ and is worth more than a hand-made taxonomy that would drift.
 | `restate_legacy_dsr.py` | Restate reproducible legacy DSR outputs against the current selection union. |
 | `reviewer_verify_active_ownership.py` | Dependency-free verifier shipped inside the Active Ownership blind-review packet. |
 | `seal_active_ownership_confirmatory_design.py` | Seal the pre-outcome Active Ownership confirmatory-corpus design. |
+| `seal_active_ownership_confirmatory_inputs.py` | Seal the compact source receipt used by the Active Ownership confirmation design. |
 | `seal_alphamax_upstream_replay_inputs.py` | Seal a public hash manifest for AlphaMax's private reacquired replay inputs. |
 | `seal_alphatrend_upstream_replay_inputs.py` | Seal the private inputs and reference output for AlphaTrend's 2026-08-23 replay. |
 | `seal_alphavintage_core_portable_reproduction.py` | Seal a fresh AlphaVintage core replay without overstating independence or scope. |

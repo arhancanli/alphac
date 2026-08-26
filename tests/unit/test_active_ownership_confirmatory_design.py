@@ -4,12 +4,21 @@ import importlib.util
 import json
 from pathlib import Path
 
+import pytest
+
 ROOT = Path(__file__).resolve().parents[2]
 SCRIPT = ROOT / "scripts" / "seal_active_ownership_confirmatory_design.py"
 SPEC = importlib.util.spec_from_file_location("active_ownership_confirmatory_design", SCRIPT)
 assert SPEC is not None and SPEC.loader is not None
 MODULE = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(MODULE)
+INPUT_SCRIPT = ROOT / "scripts" / "seal_active_ownership_confirmatory_inputs.py"
+INPUT_SPEC = importlib.util.spec_from_file_location(
+    "active_ownership_confirmatory_inputs", INPUT_SCRIPT
+)
+assert INPUT_SPEC is not None and INPUT_SPEC.loader is not None
+INPUT_MODULE = importlib.util.module_from_spec(INPUT_SPEC)
+INPUT_SPEC.loader.exec_module(INPUT_MODULE)
 
 
 def test_confirmatory_design_is_disjoint_large_and_fail_closed() -> None:
@@ -62,5 +71,28 @@ def test_current_cache_is_explicitly_insufficient() -> None:
     assert cache["confirmation_submissions_acquired"] == 0
 
 
+def test_compact_input_receipt_is_tracked_self_hashing_and_source_bound() -> None:
+    snapshot = json.loads(MODULE.INPUT_SNAPSHOT.read_text(encoding="utf-8"))
+    assert snapshot["content_hash"] == MODULE.content_hash(snapshot)
+    assert snapshot["status"] == (
+        "SEALED_COMPACT_INPUT_RECEIPT_RAW_WORKSPACE_SOURCES_NOT_INCLUDED"
+    )
+    assert snapshot["governed_values"]["header_audit"]["eligible_disjoint_rows"] == 218
+    assert snapshot["governed_values"]["original_document_sample"]["unique_accessions"] == 160
+    assert set(snapshot["raw_source_bindings"]) == {
+        "metadata_result",
+        "header_audit",
+        "original_document_sample",
+        "feasibility_result",
+        "point_gate_audit",
+    }
+
+
+@pytest.mark.workspace_evidence
+def test_checked_in_compact_input_receipt_matches_raw_workspace_sources() -> None:
+    assert json.loads(INPUT_MODULE.OUTPUT.read_text(encoding="utf-8")) == INPUT_MODULE.build()
+
+
+@pytest.mark.workspace_evidence
 def test_checked_in_confirmatory_design_matches_sources() -> None:
     assert json.loads(MODULE.OUTPUT.read_text(encoding="utf-8")) == MODULE.build()
