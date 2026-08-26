@@ -8,9 +8,9 @@ line of its own docstring, each pipeline's steps are the scripts it actually inv
 contract's boundary is the boundary it states about itself. A script with no docstring appears as
 having none.
 
-At a glance: **332 Python scripts**, **17 shell entry points**,
+At a glance: **333 Python scripts**, **17 shell entry points**,
 **20 configuration contracts**, **27 engineering artifacts**,
-**378 unit test files**, **22 data directories**, **9 scheduled jobs**.
+**379 unit test files**, **22 data directories**, **9 scheduled jobs**.
 
 
 ## What runs on a timer
@@ -258,7 +258,7 @@ and is worth more than a hand-made taxonomy that would drift.
 | `analyze_target_2p5.py` | ANALYSIS — what would a book Sharpe of 2.5 actually require, and is it reachable? |
 | `analyze_trial_budget_cost.py` | Price a prospective trial budget before it is authorized. |
 
-### `audit_*` (73)
+### `audit_*` (74)
 
 | script | first line of its docstring |
 |---|---|
@@ -267,6 +267,7 @@ and is worth more than a hand-made taxonomy that would drift.
 | `audit_active_ownership_13d_item4_v3.py` | Run the locked Schedule 13D source-schema v3 on the unchanged 160 accessions. |
 | `audit_active_ownership_13d_metadata.py` | Audit global Schedule 13D target lineage without opening documents or returns. |
 | `audit_active_ownership_13d_schema_v2.py` | Run the schema-aware v2 Schedule 13D metadata audit without documents or returns. |
+| `audit_active_ownership_human_gate.py` | Prospectively audit the frozen Active Ownership human-label gate without returns. |
 | `audit_all_sleeve_data_rights.py` | Audit all sleeve bundles for raw-row exclusion and conservative source mapping. |
 | `audit_alphatrend_family.py` | Build deterministic evidence for every managed-futures trend hypothesis. |
 | `audit_bond_etf_nav_dislocation_feasibility.py` | Audit bond-ETF NAV-dislocation sources without opening market or return data. |

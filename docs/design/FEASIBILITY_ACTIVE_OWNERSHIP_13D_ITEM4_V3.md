@@ -67,6 +67,22 @@ classifications, matched sentences, percentage candidates, prices, and returns. 
 verification cannot itself prove reviewer independence or label correctness; those remain the
 reviewer's attested responsibility and the subsequent frozen scoring gate.
 
+## Prospective gate-interpretation audit — 2026-08-26
+
+Before any human labels or return data were opened, the discrete reachability and statistical
+meaning of the 48-row gate were audited in
+`docs/design/ACTIVE_OWNERSHIP_HUMAN_GATE_AUDIT.md`. The existing 95% precision, 80% recall, and 90%
+ownership point thresholds remain unchanged. They govern eligibility to proceed to return
+preregistration; they do not, by themselves, establish confidence-bound classifier accuracy.
+
+The frozen packet contains eight machine-predicted positives, so the precision point gate requires
+8/8 and fails on one false positive. Even 8/8 has a one-sided 95% exact lower bound of only about
+68.8%. Any passing report must therefore publish raw confusion counts, point metrics, and exact
+confidence bounds. Before sleeve admission, a disjoint independent confirmatory corpus must meet
+the same thresholds on one-sided 95% exact lower bounds. This interpretation was fixed while all
+48 human labels remained blank and zero return identities had been spent; it cannot rescue a known
+classification or investment outcome.
+
 ## Machine outputs
 
 - `artifacts/feasibility/active_ownership_13d_item4_v3/document_audit.parquet`
