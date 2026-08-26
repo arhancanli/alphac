@@ -9,7 +9,7 @@ contract's boundary is the boundary it states about itself. A script with no doc
 having none.
 
 At a glance: **342 Python scripts**, **17 shell entry points**,
-**27 configuration contracts**, **27 engineering artifacts**,
+**27 configuration contracts**, **28 engineering artifacts**,
 **395 unit test files**, **22 data directories**, **9 scheduled jobs**.
 
 
@@ -220,6 +220,7 @@ are the ones a reader has to know about; everything else is derived from them.
 | `artifacts/engineering/forward_drawdown_evidence.json` | The sealed study cell is a 96-path, two-year, fourteen-sleeve, daily simulation at a 10% book-level volatility target. |
 | `artifacts/engineering/forward_evidence_maturity.json` | Paper-only, self-published evidence. |
 | `artifacts/engineering/forward_sleeve_contribution.json` | Descriptive arithmetic attribution of the published paper curve only. |
+| `artifacts/engineering/foundry_local_contract_verification.json` | This receipt verifies committed local contracts. |
 | `artifacts/engineering/futures_execution_contract.json` | These primitives prevent several classes of futures lifecycle leakage and unsafe fallback. |
 | `artifacts/engineering/guards_that_cannot_fire.json` | A STRUCTURAL scan of source for checks that cannot fail. |
 | `artifacts/engineering/lint_debt_contract.json` | Ruff is clean for src/alphaforge and tests. |
