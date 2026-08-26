@@ -8,9 +8,9 @@ line of its own docstring, each pipeline's steps are the scripts it actually inv
 contract's boundary is the boundary it states about itself. A script with no docstring appears as
 having none.
 
-At a glance: **336 Python scripts**, **17 shell entry points**,
+At a glance: **337 Python scripts**, **17 shell entry points**,
 **21 configuration contracts**, **27 engineering artifacts**,
-**381 unit test files**, **22 data directories**, **9 scheduled jobs**.
+**382 unit test files**, **22 data directories**, **9 scheduled jobs**.
 
 
 ## What runs on a timer
@@ -259,7 +259,7 @@ and is worth more than a hand-made taxonomy that would drift.
 | `analyze_target_2p5.py` | ANALYSIS — what would a book Sharpe of 2.5 actually require, and is it reachable? |
 | `analyze_trial_budget_cost.py` | Price a prospective trial budget before it is authorized. |
 
-### `audit_*` (74)
+### `audit_*` (75)
 
 | script | first line of its docstring |
 |---|---|
@@ -330,6 +330,7 @@ and is worth more than a hand-made taxonomy that would drift.
 | `audit_treasury_auction_feasibility.py` | Build a no-return, point-in-time Treasury coupon-auction feasibility manifest. |
 | `audit_treasury_auction_identity_timing.py` | Check whether formal auction announcements support the published 10-day identity. |
 | `audit_treasury_calendar_revisions.py` | Classify unresolved Treasury auction dates without opening prices or returns. |
+| `audit_treasury_schedule_state_machine.py` | Audit the Treasury schedule state machine without loading prices or returns. |
 | `audit_treasury_tentative_schedule_archive.py` | Seal Treasury tentative schedules and audit the published ten-session identity. |
 | `audit_treasury_wayback_pdf_schedule_lineage.py` | Audit archived Treasury tentative-schedule PDFs without opening returns. |
 | `audit_treasury_wayback_schedule_lineage.py` | Audit timestamped Internet Archive captures of Treasury's mutable auction XML. |

@@ -94,11 +94,9 @@ def test_staged_families_use_declared_current_artifacts_and_blockers() -> None:
     assert spin_off["classification"] == "BLOCKED_ON_MEASURED_REACHABILITY_CEILING"
 
     treasury = rows["treasury_auction_concession"]
-    assert treasury["source_artifact"].endswith("/calendar_revision_audit.json")
-    assert treasury["decision"] == "IDENTITY_NOT_OBSERVABLE_AS_PREREGISTERED"
-    assert treasury["classification"] == (
-        "BLOCKED_ON_IDENTITY_UNOBSERVABLE_AS_PREREGISTERED"
-    )
+    assert treasury["source_artifact"].endswith("/schedule_state_machine_audit.json")
+    assert treasury["decision"] == "AUTHOR_APPROVAL_REQUIRED"
+    assert treasury["classification"] == "BLOCKED_ON_AUTHOR_TECHNICAL_APPROVAL"
 
     for row in (pre_fomc, repurchase, spin_off, treasury):
         assert row["source_artifact"] in row["artifacts_considered"]
@@ -130,6 +128,7 @@ def test_script_discovery_does_not_match_only_the_first_family_token() -> None:
     paths = {path.name for path in MODULE._scripts_for("treasury_auction_concession")}
     assert "audit_treasury_auction_feasibility.py" in paths
     assert "audit_treasury_calendar_revisions.py" in paths
+    assert "audit_treasury_schedule_state_machine.py" in paths
     assert "audit_treasury_futures_basis_feasibility.py" not in paths
 
 

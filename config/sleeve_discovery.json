@@ -558,6 +558,25 @@
         "return_hypotheses_spent": 0,
         "required_redesign": "Register a point-in-time schedule-revision state machine with explicit cancel, roll, late-announcement, and missing-update behavior before opening returns."
       },
+      "schedule_state_machine": {
+        "protocol": "docs/design/FEASIBILITY_TREASURY_AUCTION_STATE_MACHINE.md",
+        "protocol_public": "/research/treasury-auction-state-machine.md",
+        "result": "artifacts/feasibility/treasury_auction_concession/schedule_state_machine_audit.json",
+        "result_public": "/glassbox/treasury_schedule_state_machine_audit.json",
+        "technical_decision": "PASS_NO_RETURN_STATE_MACHINE_AUDIT",
+        "governance_decision": "AUTHOR_APPROVAL_REQUIRED",
+        "eligible_events": 156,
+        "exact_schedule_pre_and_post": 145,
+        "events_with_pre_leg": 149,
+        "events_post_only": 7,
+        "pre_entered_then_cancelled_on_revision": 4,
+        "adjacent_event_windows_with_overlap": 83,
+        "author_technical_approval": false,
+        "return_preregistration_authorized": false,
+        "return_data_opened": false,
+        "return_hypotheses_spent": 0,
+        "content_hash": "sha256:46dfc56e7a2bd92cf55cacc1cb69ce4d09d8803a56376ab93faeb0d4b45ebef2"
+      },
       "return_hypotheses_spent": 0,
       "kill": "Kill if the effect is absent after the 2013 publication date, reduces to unhedged duration beta, cannot survive one-tick-plus-fee costs, or correlates above 0.35 with AlphaTrend."
     },

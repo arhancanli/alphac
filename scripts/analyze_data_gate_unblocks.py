@@ -40,6 +40,9 @@ ACTIVE_OWNERSHIP_BLIND_PACKET = (
     / "active_ownership_13d_item4_v3_blind"
     / "manifest.json"
 )
+TREASURY_STATE_MACHINE = (
+    FEASIBILITY / "treasury_auction_concession" / "schedule_state_machine_audit.json"
+)
 SUPERSEDED_RESULTS = {
     "active_ownership_13d",
     "active_ownership_13d_schema_v2",
@@ -55,7 +58,7 @@ CURRENT_STAGE_ARTIFACTS: dict[str, str] = {
     "pre_fomc_announcement_drift": "market_data_readiness.json",
     "repurchase_issuance_flow": "item703/documents_result.json",
     "spin_off_dislocation": "document_schema_result.json",
-    "treasury_auction_concession": "calendar_revision_audit.json",
+    "treasury_auction_concession": "schedule_state_machine_audit.json",
 }
 
 # Credential -> what it costs to obtain. Stated so a blocker is never reported without its price.
@@ -181,9 +184,9 @@ def main() -> int:
         ):
             classification = "BLOCKED_ON_HUMAN_BLIND_LABELING"
         elif directory.name == "treasury_auction_concession" and decision == (
-            "IDENTITY_NOT_OBSERVABLE_AS_PREREGISTERED"
+            "AUTHOR_APPROVAL_REQUIRED"
         ):
-            classification = "BLOCKED_ON_IDENTITY_UNOBSERVABLE_AS_PREREGISTERED"
+            classification = "BLOCKED_ON_AUTHOR_TECHNICAL_APPROVAL"
         elif reachability.get(directory.name) == "GATE_UNREACHABLE_BY_DETECTOR_REPAIR":
             classification = "BLOCKED_ON_MEASURED_REACHABILITY_CEILING"
         elif decision == "HUMAN_AUDIT_REQUIRED":
@@ -327,6 +330,22 @@ def main() -> int:
                 "unblocks": ["active_ownership_13d_item4_v3"],
                 "packet": str(ACTIVE_OWNERSHIP_BLIND_PACKET.relative_to(REPO)),
                 "packet_content_hash": json.loads(ACTIVE_OWNERSHIP_BLIND_PACKET.read_text())[
+                    "content_hash"
+                ],
+            },
+            {
+                "action": (
+                    "Arhan independently reviews the Treasury schedule state machine and records "
+                    "approval or required changes; automation may not answer for him"
+                ),
+                "effort": "technical authorship review; no prices or returns",
+                "unblocks": ["treasury_auction_concession"],
+                "protocol": "docs/design/FEASIBILITY_TREASURY_AUCTION_STATE_MACHINE.md",
+                "source_artifact": (
+                    "artifacts/feasibility/treasury_auction_concession/"
+                    "schedule_state_machine_audit.json"
+                ),
+                "artifact_content_hash": json.loads(TREASURY_STATE_MACHINE.read_text())[
                     "content_hash"
                 ],
             },

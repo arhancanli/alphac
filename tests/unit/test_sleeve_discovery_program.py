@@ -50,6 +50,13 @@ TREASURY_REVISION_RESULT = (
     / "treasury_auction_concession"
     / "calendar_revision_audit.json"
 )
+TREASURY_STATE_MACHINE_RESULT = (
+    Path(__file__).resolve().parents[2]
+    / "artifacts"
+    / "feasibility"
+    / "treasury_auction_concession"
+    / "schedule_state_machine_audit.json"
+)
 PRE_FOMC_RESULT = (
     Path(__file__).resolve().parents[2]
     / "artifacts"
@@ -385,6 +392,27 @@ def test_treasury_feasibility_matches_the_sealed_result() -> None:
     )
     assert revision["unresolved_auction_dates"] == revision_result["unresolved_auction_dates"]
     assert revision["return_hypotheses_spent"] == 0
+
+    state_result = json.loads(TREASURY_STATE_MACHINE_RESULT.read_text())
+    state_machine = candidate["schedule_state_machine"]
+    assert (
+        state_machine["technical_decision"]
+        == state_result["technical_decision"]
+        == "PASS_NO_RETURN_STATE_MACHINE_AUDIT"
+    )
+    assert (
+        state_machine["governance_decision"]
+        == state_result["governance_decision"]
+        == "AUTHOR_APPROVAL_REQUIRED"
+    )
+    assert state_machine["eligible_events"] == state_result["summary"]["eligible_events"]
+    assert state_machine["events_with_pre_leg"] == state_result["summary"]["events_with_pre_leg"]
+    assert state_machine["events_post_only"] == state_result["summary"]["events_post_only"]
+    assert state_machine["author_technical_approval"] is False
+    assert state_machine["return_preregistration_authorized"] is False
+    assert state_machine["return_data_opened"] is False
+    assert state_machine["return_hypotheses_spent"] == 0
+    assert state_machine["content_hash"] == state_result["content_hash"]
 
 
 @pytest.mark.workspace_evidence

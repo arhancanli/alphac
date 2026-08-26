@@ -60,6 +60,7 @@ SOURCES = {
     "spin_off_lineage.json": EXPORT.SPIN_OFF_LINEAGE_RESULT,
     "treasury_auction_concession_feasibility.json": EXPORT.TREASURY_FEASIBILITY_RESULT,
     "treasury_calendar_revision_audit.json": EXPORT.TREASURY_CALENDAR_REVISION_RESULT,
+    "treasury_schedule_state_machine_audit.json": EXPORT.TREASURY_STATE_MACHINE_RESULT,
     "treasury_wayback_pdf_schedule_audit.json": EXPORT.TREASURY_WAYBACK_PDF_SCHEDULE_RESULT,
     "treasury_wayback_schedule_audit.json": EXPORT.TREASURY_WAYBACK_SCHEDULE_RESULT,
 }
