@@ -8,9 +8,9 @@ line of its own docstring, each pipeline's steps are the scripts it actually inv
 contract's boundary is the boundary it states about itself. A script with no docstring appears as
 having none.
 
-At a glance: **341 Python scripts**, **17 shell entry points**,
-**24 configuration contracts**, **27 engineering artifacts**,
-**386 unit test files**, **22 data directories**, **9 scheduled jobs**.
+At a glance: **342 Python scripts**, **17 shell entry points**,
+**26 configuration contracts**, **27 engineering artifacts**,
+**393 unit test files**, **22 data directories**, **9 scheduled jobs**.
 
 
 ## What runs on a timer
@@ -186,6 +186,8 @@ are the ones a reader has to know about; everything else is derived from them.
 | `config/external_review_protocol.json` | This protocol is a local plan. |
 | `config/forward_evidence_contract.json` | This contract freezes how forward evidence will be described before the record is mature. |
 | `config/forward_full_evidence_reservation_v2_template.json` | This is a fail-closed design template, not an active policy, reservation, candidate, result, or return authorization. |
+| `config/foundry_deployment_manifest.json` | This manifest describes the reviewed Foundry v1 deployment target. |
+| `config/foundry_runtime_contract.json` | This contract defines the required runtime confinement. |
 | `config/foundry_trial_state_machine.json` | This contract freezes the allowed Foundry trial lifecycle. |
 | `config/identity_trial_evidence_bindings.json` | A binding credits only the named packet sections after every listed byte hash and semantic relation validates. |
 | `config/legacy_dsr_exceptions.json` | No executable raw-row DSR implementation remains. |
@@ -491,13 +493,14 @@ and is worth more than a hand-made taxonomy that would drift.
 | `run_crypto_carry_portable_v1.py` | Dry-run by default; execute one reserved crypto_carry_portable_v1 trial explicitly. |
 | `run_prereg_investment_upstream_clean_workspace.py` | Replay historical ``prereg_investment`` from raw archives in a clean workspace. |
 
-### `verify_*` (6)
+### `verify_*` (7)
 
 | script | first line of its docstring |
 |---|---|
 | `verify_author_protocol_approval.py` | Prepare and fail-closed verify an author's approval-gated protocol response. |
 | `verify_author_technical_approval.py` | Prepare and fail-closed verify an author's manuscript-approval response overlay. |
 | `verify_crypto_position_attribution_rollout.py` | Verify the first non-empty natural crypto cycle after attribution rollout. |
+| `verify_foundry_contract.py` | Verify Foundry design, database, runtime and deployment artifacts without cloud access. |
 | `verify_publication_clean_checkout.py` | Verify every tracked publication bundle from a clean Git checkout. |
 | `verify_sleeve_publication_replays.py` | Replay audit-only sleeve evidence builders and prove no result or trial ledger changed. |
 | `verify_transparency.py` | Verify the public track-record chain, signatures and disclosed payloads. |

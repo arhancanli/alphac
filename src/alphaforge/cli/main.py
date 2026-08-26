@@ -9,6 +9,7 @@ import typer
 
 from alphaforge.cli.backtest_cmds import backtest_app
 from alphaforge.cli.data_cmds import data_app
+from alphaforge.cli.foundry_cmds import foundry_app
 from alphaforge.cli.instruments_cmds import instruments_app
 from alphaforge.cli.ops_cmds import ops_app
 from alphaforge.cli.paper_cmds import paper_app
@@ -24,6 +25,7 @@ app = typer.Typer(
 )
 app.add_typer(backtest_app, name="backtest")
 app.add_typer(data_app, name="data")
+app.add_typer(foundry_app, name="foundry")
 app.add_typer(instruments_app, name="instruments")
 app.add_typer(ops_app, name="ops")
 app.add_typer(paper_app, name="paper")
