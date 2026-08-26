@@ -30,20 +30,29 @@ def synchronize(evidence: dict[str, Any], readme: str) -> str:
     drawdown = evidence["drawdown_evidence"]
     diversification = evidence["diversification_evidence"]
     snapshot_date = str(evidence["generated_at"])[:10]
-    provenance_passes = bool(evidence["provenance_gate"]["passes"])
-    provenance_summary = (
-        "provenance currently passes the publication gate"
-        if provenance_passes
-        else "provenance currently fails closed on incomplete crypto position attribution"
-    )
-    provenance_sentence = (
-        "its provenance gate currently passes."
-        if provenance_passes
-        else (
-            "its provenance gate remains closed until crypto position attribution is deployed "
-            "and verified."
+    provenance = evidence["provenance_gate"]
+    provenance_passes = bool(provenance["passes"])
+    failed_checks = set(provenance.get("failed_checks", []))
+    attribution_stale_only = failed_checks == {
+        "crypto_position_attribution_covers_last_mark"
+    }
+    if provenance_passes:
+        provenance_summary = "provenance currently passes the publication gate"
+        provenance_sentence = "its provenance gate currently passes."
+    elif attribution_stale_only:
+        provenance_summary = (
+            "provenance fails closed because crypto attribution does not cover the latest mark"
         )
-    )
+        provenance_sentence = (
+            "its provenance gate remains closed because the latest composite mark is newer "
+            "than the last attributed crypto cycle."
+        )
+    else:
+        provenance_summary = "provenance currently fails closed on incomplete evidence"
+        provenance_sentence = (
+            "its provenance gate remains closed on the failed checks named in the evidence "
+            "artifact."
+        )
     expected_drawdown = _percentage(
         float(drawdown["current_composition_conservative_expected_max_drawdown"]), 3
     )

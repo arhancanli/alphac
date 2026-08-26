@@ -10,7 +10,7 @@ having none.
 
 At a glance: **331 Python scripts**, **17 shell entry points**,
 **20 configuration contracts**, **27 engineering artifacts**,
-**376 unit test files**, **22 data directories**, **9 scheduled jobs**.
+**377 unit test files**, **22 data directories**, **9 scheduled jobs**.
 
 
 ## What runs on a timer
