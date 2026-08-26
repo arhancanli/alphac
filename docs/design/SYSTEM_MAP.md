@@ -9,8 +9,8 @@ contract's boundary is the boundary it states about itself. A script with no doc
 having none.
 
 At a glance: **341 Python scripts**, **17 shell entry points**,
-**23 configuration contracts**, **27 engineering artifacts**,
-**385 unit test files**, **22 data directories**, **9 scheduled jobs**.
+**24 configuration contracts**, **27 engineering artifacts**,
+**386 unit test files**, **22 data directories**, **9 scheduled jobs**.
 
 
 ## What runs on a timer
@@ -186,6 +186,7 @@ are the ones a reader has to know about; everything else is derived from them.
 | `config/external_review_protocol.json` | This protocol is a local plan. |
 | `config/forward_evidence_contract.json` | This contract freezes how forward evidence will be described before the record is mature. |
 | `config/forward_full_evidence_reservation_v2_template.json` | This is a fail-closed design template, not an active policy, reservation, candidate, result, or return authorization. |
+| `config/foundry_trial_state_machine.json` | This contract freezes the allowed Foundry trial lifecycle. |
 | `config/identity_trial_evidence_bindings.json` | A binding credits only the named packet sections after every listed byte hash and semantic relation validates. |
 | `config/legacy_dsr_exceptions.json` | No executable raw-row DSR implementation remains. |
 | `config/live_change_contract.json` | _(no stated boundary)_ |
