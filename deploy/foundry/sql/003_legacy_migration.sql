@@ -100,7 +100,7 @@ CREATE OR REPLACE FUNCTION foundry.enqueue_job(
     p_disk_mebibytes INTEGER,
     p_wall_seconds INTEGER,
     p_network_policy TEXT,
-    p_max_attempts SMALLINT
+    p_max_attempts INTEGER
 ) RETURNS foundry.job
 LANGUAGE plpgsql
 SECURITY DEFINER
@@ -141,7 +141,7 @@ BEGIN
     ) VALUES (
         p_job_id, p_trial_id, p_kind, p_manifest_hash, p_image_digest, p_source_commit,
         p_cpu_millis, p_memory_mebibytes, p_process_limit, p_disk_mebibytes,
-        p_wall_seconds, p_network_policy, p_max_attempts
+        p_wall_seconds, p_network_policy, p_max_attempts::SMALLINT
     ) RETURNING * INTO created;
 
     IF current_trial.migrated_legacy AND p_kind = 'CLEAN_REPLAY' THEN
