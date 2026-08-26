@@ -6,7 +6,7 @@ from __future__ import annotations
 import hashlib
 import json
 from pathlib import Path
-from typing import Any, Final
+from typing import Any, Final, cast
 
 REPO: Final[Path] = Path(__file__).resolve().parents[1]
 DISCOVERY: Final[Path] = REPO / "config/sleeve_discovery.json"
@@ -33,7 +33,7 @@ def _content_hash(payload: dict[str, Any]) -> str:
 
 
 def _load_sealed(path: Path) -> dict[str, Any]:
-    payload = json.loads(path.read_text(encoding="utf-8"))
+    payload = cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
     declared = payload.pop("content_hash", None)
     actual = _content_hash(payload)
     payload["content_hash"] = declared
@@ -118,9 +118,10 @@ def build() -> dict[str, Any]:
             )
         },
         "required_next_action": (
-            "Give the frozen 48-document packet to a reviewer independent of parser development. "
-            "Do not run classifier scoring, returns, correlation, or capacity until the completed "
-            "labels and signed independence attestation pass the existing importer."
+            "Give the frozen 48-document packet to a reviewer independent of research design and "
+            "parser development. Do not run classifier scoring, returns, correlation, or capacity "
+            "until the completed verbatim-source labels and the no-AI, conflict, relationship, "
+            "compensation, and independence attestation pass the existing importer."
         ),
         "claim_boundary": (
             "This selects the next feasibility candidate using source reachability and mechanism "

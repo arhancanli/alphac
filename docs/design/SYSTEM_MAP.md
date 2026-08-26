@@ -86,20 +86,21 @@ Canli Capital - daily PUBLISH of the live track record to the public sites.
 | 10 | `scripts/build_identity_trial_packets.py` | Publish one deterministic, fail-closed evidence packet per hypothesis identity. |
 | 11 | `scripts/build_trial_packet_manifest.py` | Inventory one permanent evidence packet for every union hypothesis identity. |
 | 12 | `scripts/seal_legacy_research_epoch.py` | Retire the legacy return-identity epoch without forgiving its evidence debt. |
-| 13 | `scripts/transparency_log.py` | Tamper-evident transparency log for the live track record. |
-| 14 | `scripts/anchor_transparency.py` | External anchoring of the transparency chain into Bitcoin via OpenTimestamps — the S-tier trust seal. |
-| 15 | `scripts/export_crypto_position_attribution.py` | Export fail-closed instrument attribution for the latest crypto paper cycle. |
-| 16 | `scripts/verify_crypto_position_attribution_rollout.py` | Verify the first non-empty natural crypto cycle after attribution rollout. |
-| 17 | `scripts/analyze_current_book_drawdown.py` | Measure current-composition drawdown under a frozen two-model protocol. |
-| 18 | `scripts/analyze_current_book_diversification.py` | Measure exact current-book diversification under the frozen retrospective protocol. |
-| 19 | `scripts/seal_forward_drawdown_evidence.py` | Seal the drawdown study and expose its exact live-equivalence boundary. |
-| 20 | `scripts/evaluate_forward_evidence_maturity.py` | Evaluate the ALPHAC paper record against a frozen forward-evidence contract. |
-| 21 | `scripts/sync_readme_forward_evidence.py` | Synchronize README forward headlines with the canonical maturity artifact. |
-| 22 | `scripts/analyze_forward_sleeve_contribution.py` | Attribute the published forward book to its realized sleeve curves. |
-| 23 | `scripts/audit_crypto_lab_carry_crash.py` | Seal the LABUSDT carry-crash incident from immutable local execution evidence. |
-| 24 | `scripts/research_export.py` | Research data layer: emit research.json — the FULL honest gauntlet — from REAL artifacts. |
-| 25 | `scripts/reproduce.py` | Reproduce our numbers — the outsider's one-command verifier of the Canli Capital glass box. |
-| 26 | `scripts/check_retracted_claims.py` | Refuse to publish a claim this record has already withdrawn. |
+| 13 | `scripts/seal_next_sleeve_selection.py` | Select the next sleeve feasibility candidate without opening returns. |
+| 14 | `scripts/transparency_log.py` | Tamper-evident transparency log for the live track record. |
+| 15 | `scripts/anchor_transparency.py` | External anchoring of the transparency chain into Bitcoin via OpenTimestamps — the S-tier trust seal. |
+| 16 | `scripts/export_crypto_position_attribution.py` | Export fail-closed instrument attribution for the latest crypto paper cycle. |
+| 17 | `scripts/verify_crypto_position_attribution_rollout.py` | Verify the first non-empty natural crypto cycle after attribution rollout. |
+| 18 | `scripts/analyze_current_book_drawdown.py` | Measure current-composition drawdown under a frozen two-model protocol. |
+| 19 | `scripts/analyze_current_book_diversification.py` | Measure exact current-book diversification under the frozen retrospective protocol. |
+| 20 | `scripts/seal_forward_drawdown_evidence.py` | Seal the drawdown study and expose its exact live-equivalence boundary. |
+| 21 | `scripts/evaluate_forward_evidence_maturity.py` | Evaluate the ALPHAC paper record against a frozen forward-evidence contract. |
+| 22 | `scripts/sync_readme_forward_evidence.py` | Synchronize README forward headlines with the canonical maturity artifact. |
+| 23 | `scripts/analyze_forward_sleeve_contribution.py` | Attribute the published forward book to its realized sleeve curves. |
+| 24 | `scripts/audit_crypto_lab_carry_crash.py` | Seal the LABUSDT carry-crash incident from immutable local execution evidence. |
+| 25 | `scripts/research_export.py` | Research data layer: emit research.json — the FULL honest gauntlet — from REAL artifacts. |
+| 26 | `scripts/reproduce.py` | Reproduce our numbers — the outsider's one-command verifier of the Canli Capital glass box. |
+| 27 | `scripts/check_retracted_claims.py` | Refuse to publish a claim this record has already withdrawn. |
 
 ### `scripts/live_tick.sh`
 
@@ -116,19 +117,20 @@ Canli Capital - hourly live PAPER cycle (the running track record).
 | 7 | `scripts/build_identity_trial_packets.py` | Publish one deterministic, fail-closed evidence packet per hypothesis identity. |
 | 8 | `scripts/build_trial_packet_manifest.py` | Inventory one permanent evidence packet for every union hypothesis identity. |
 | 9 | `scripts/seal_legacy_research_epoch.py` | Retire the legacy return-identity epoch without forgiving its evidence debt. |
-| 10 | `scripts/transparency_log.py` | Tamper-evident transparency log for the live track record. |
-| 11 | `scripts/export_crypto_position_attribution.py` | Export fail-closed instrument attribution for the latest crypto paper cycle. |
-| 12 | `scripts/verify_crypto_position_attribution_rollout.py` | Verify the first non-empty natural crypto cycle after attribution rollout. |
-| 13 | `scripts/analyze_current_book_drawdown.py` | Measure current-composition drawdown under a frozen two-model protocol. |
-| 14 | `scripts/analyze_current_book_diversification.py` | Measure exact current-book diversification under the frozen retrospective protocol. |
-| 15 | `scripts/seal_forward_drawdown_evidence.py` | Seal the drawdown study and expose its exact live-equivalence boundary. |
-| 16 | `scripts/evaluate_forward_evidence_maturity.py` | Evaluate the ALPHAC paper record against a frozen forward-evidence contract. |
-| 17 | `scripts/sync_readme_forward_evidence.py` | Synchronize README forward headlines with the canonical maturity artifact. |
-| 18 | `scripts/analyze_forward_sleeve_contribution.py` | Attribute the published forward book to its realized sleeve curves. |
-| 19 | `scripts/audit_crypto_lab_carry_crash.py` | Seal the LABUSDT carry-crash incident from immutable local execution evidence. |
-| 20 | `scripts/research_export.py` | Research data layer: emit research.json — the FULL honest gauntlet — from REAL artifacts. |
-| 21 | `scripts/check_retracted_claims.py` | Refuse to publish a claim this record has already withdrawn. |
-| 22 | `scripts/check_live_change_declared.py` | Block the publish if the live trading configuration has changed without being declared. |
+| 10 | `scripts/seal_next_sleeve_selection.py` | Select the next sleeve feasibility candidate without opening returns. |
+| 11 | `scripts/transparency_log.py` | Tamper-evident transparency log for the live track record. |
+| 12 | `scripts/export_crypto_position_attribution.py` | Export fail-closed instrument attribution for the latest crypto paper cycle. |
+| 13 | `scripts/verify_crypto_position_attribution_rollout.py` | Verify the first non-empty natural crypto cycle after attribution rollout. |
+| 14 | `scripts/analyze_current_book_drawdown.py` | Measure current-composition drawdown under a frozen two-model protocol. |
+| 15 | `scripts/analyze_current_book_diversification.py` | Measure exact current-book diversification under the frozen retrospective protocol. |
+| 16 | `scripts/seal_forward_drawdown_evidence.py` | Seal the drawdown study and expose its exact live-equivalence boundary. |
+| 17 | `scripts/evaluate_forward_evidence_maturity.py` | Evaluate the ALPHAC paper record against a frozen forward-evidence contract. |
+| 18 | `scripts/sync_readme_forward_evidence.py` | Synchronize README forward headlines with the canonical maturity artifact. |
+| 19 | `scripts/analyze_forward_sleeve_contribution.py` | Attribute the published forward book to its realized sleeve curves. |
+| 20 | `scripts/audit_crypto_lab_carry_crash.py` | Seal the LABUSDT carry-crash incident from immutable local execution evidence. |
+| 21 | `scripts/research_export.py` | Research data layer: emit research.json — the FULL honest gauntlet — from REAL artifacts. |
+| 22 | `scripts/check_retracted_claims.py` | Refuse to publish a claim this record has already withdrawn. |
+| 23 | `scripts/check_live_change_declared.py` | Block the publish if the live trading configuration has changed without being declared. |
 
 ### `scripts/macro_vintage_tick.sh`
 

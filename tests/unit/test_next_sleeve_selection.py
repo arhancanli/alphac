@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import hashlib
 import importlib.util
 import io
+import json
 import tarfile
 from pathlib import Path
 
@@ -18,13 +20,17 @@ def _module(name: str):
 
 
 def test_active_ownership_is_selected_without_return_access() -> None:
-    payload = _module("seal_next_sleeve_selection").build()
+    module = _module("seal_next_sleeve_selection")
+    payload = module.build()
     assert payload["selected_candidate"]["id"] == "active_ownership_escalation"
     assert payload["selected_candidate"]["return_trial_authorized"] is False
     assert payload["selected_candidate"]["blind_labels_completed"] == 0
     assert payload["selected_candidate"]["blind_labels_required"] == 48
     assert payload["return_data_opened"] is False
     assert payload["hypotheses_spent"] == 0
+    assert json.loads(module.OUTPUT.read_text(encoding="utf-8")) == payload
+    for relative, expected_sha256 in payload["lineage"].items():
+        assert hashlib.sha256((REPO / relative).read_bytes()).hexdigest() == expected_sha256
 
 
 def test_external_review_archive_is_deterministic_and_prediction_blind() -> None:
