@@ -90,7 +90,9 @@ jobs:
         run: uv sync --frozen --dev
       # Network, workspace-evidence and wall-clock performance tests are excluded
       # from this parallel correctness lane. Workspace evidence cannot run without
-      # the deliberately unversioned corpus and sibling website workspaces. Slow
+      # the deliberately unversioned corpus and sibling website workspaces; the
+      # exact module inventory is versioned in
+      # config/clean_checkout_workspace_evidence_policy.json. Slow
       # performance guards run serially in the next mandatory step: measuring an
       # 8-second wall budget while 17 sibling workers contend for the host measures
       # pytest scheduling rather than engine performance.
@@ -101,10 +103,14 @@ jobs:
       # (see pyproject): a floor is pinned once a true baseline is observed,
       # rather than redding CI aspirationally.
       - name: pytest (portable offline suite with branch coverage)
+        env:
+          ALPHAC_TEST_CONTEXT: clean-checkout-portable
         run: >-
           uv run pytest -m 'not network and not workspace_evidence and not slow'
           --cov-report=xml --cov-report=term
       - name: pytest (serial performance guards)
+        env:
+          ALPHAC_TEST_CONTEXT: clean-checkout-portable
         run: >-
           uv run pytest -n0 --no-cov
           -m 'slow and not network and not workspace_evidence'
