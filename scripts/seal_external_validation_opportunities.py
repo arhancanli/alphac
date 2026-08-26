@@ -10,7 +10,7 @@ from typing import Any, Final
 
 ROOT: Final = Path(__file__).resolve().parents[1]
 OUTPUT: Final = ROOT / "artifacts/analysis/external_validation_opportunities.json"
-SCHEMA: Final = "canli.alphac-external-validation-opportunities.v2"
+SCHEMA: Final = "canli.alphac-external-validation-opportunities.v3"
 
 
 def _content_hash(payload: dict[str, Any]) -> str:
@@ -97,7 +97,10 @@ def build() -> dict[str, Any]:
             "kind": "INVESTMENT_COMPETITION",
             "fit": "A client-centered team portfolio thesis using ALPHAC's evidence discipline.",
             "state": "OPEN_BUT_TEAM_AND_ADVISOR_UNRESOLVED",
-            "public_status": "Registration is open; the team and school advisor are unresolved.",
+            "public_status": (
+                "Registration closes September 11 at 5:00 p.m. ET; the team and school "
+                "advisor are unresolved."
+            ),
             "registration_authorized": False,
             "entry_claimed": False,
             "source_checked_on": "2026-08-26",
@@ -113,17 +116,24 @@ def build() -> dict[str, Any]:
                 "AI-generated work as their own. Any included AI-generated material must be cited."
             ),
             "window_opens": "2026-08-10",
-            "exact_deadline": None,
+            "exact_deadline": "2026-09-11T17:00:00-04:00",
+            "competition_calendar": {
+                "registered_team_instructions": "2026-09-15",
+                "competition_begins": "2026-09-28",
+                "official_team_roster": "2026-10-09T17:00:00-04:00",
+                "investment_policy_statement": "2026-11-06T17:00:00-05:00",
+                "final_report_and_school_documentation": "2026-12-04T17:00:00-05:00",
+            },
             "unknowns": [
                 "Arhan's grade and school status",
                 "whether Arhan or another eligible teammate can serve as the age-16 team leader",
                 "three to five eligible same-school teammates",
                 "teacher-advisor assignment",
-                "the current cycle's exact registration close and deliverable calendar",
+                "whether the school can complete advisor registration before the deadline",
             ],
             "next_action": (
-                "Form the same-school team and have the teacher-advisor independently verify the "
-                "live registration calendar before the advisor registers."
+                "Resolve the same-school team and teacher-advisor immediately; have the advisor "
+                "independently recheck the official calendar before any authorized registration."
             ),
             "official_sources": [
                 "https://globalyouth.wharton.upenn.edu/competitions/investment-competition/",
