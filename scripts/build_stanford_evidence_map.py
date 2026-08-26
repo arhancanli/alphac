@@ -13,6 +13,9 @@ SOURCES: Final = {
     "admission_v7": ROOT / "config" / "admission_v7_promotion.json",
     "trial_packets": ROOT / "artifacts" / "research" / "trial_packet_manifest.json",
     "publication": ROOT / "artifacts" / "audit" / "external_publication_readiness.json",
+    "submission_worksheets": (
+        ROOT / "artifacts" / "publication" / "repository_submission_worksheets.json"
+    ),
     "all_sleeve_archives": (
         ROOT / "artifacts" / "publication" / "all_sleeve_review_archives.json"
     ),
@@ -27,6 +30,18 @@ SOURCES: Final = {
     "mutation": ROOT / "artifacts" / "engineering" / "mutation_ledger.json",
     "legacy_closure": ROOT / "artifacts" / "research" / "legacy_research_epoch_closure.json",
     "prospective_trial": ROOT / "artifacts" / "research" / "crypto_carry_portable_v1_result.json",
+    "external_review": ROOT / "artifacts" / "publication" / "external_reviewer_packets.json",
+    "external_review_protocol": ROOT / "config" / "external_review_protocol.json",
+    "foundry_deployment": ROOT / "config" / "foundry_deployment_manifest.json",
+}
+BINDING_ONLY_SOURCES: Final = {
+    "publication_standard": ROOT / "docs" / "design" / "EXTERNAL_RESEARCH_PUBLICATION_STANDARD.md",
+    "governing_plan": (
+        ROOT
+        / "docs"
+        / "design"
+        / "CANLI_CAPITAL_PRODUCT_FOUNDRY_AND_AUTHORITY_PLAN_2026_08_26.md"
+    ),
 }
 OUTPUT: Final = ROOT / "artifacts" / "portfolio" / "stanford_cs_evidence_map.json"
 MARKDOWN: Final = ROOT / "docs" / "design" / "STANFORD_CS_PORTFOLIO_EVIDENCE.md"
@@ -49,6 +64,7 @@ def build() -> dict[str, Any]:
     source = {key: json.loads(path.read_text()) for key, path in SOURCES.items()}
     trials = source["trial_packets"]["summary"]
     publication = source["publication"]
+    submission_worksheets = source["submission_worksheets"]
     archives = source["all_sleeve_archives"]
     source_rights = source["source_rights"]
     clean_reproduction = source["clean_reproduction"]
@@ -57,6 +73,9 @@ def build() -> dict[str, Any]:
     mutation = source["mutation"]
     closure = source["legacy_closure"]["summary"]
     prospective = source["prospective_trial"]
+    external_review = source["external_review"]
+    external_review_protocol = source["external_review_protocol"]
+    foundry_deployment = source["foundry_deployment"]
     objective = source["admission_v7"]["active_contract"]["objective"]
 
     activity = (
@@ -88,6 +107,63 @@ def build() -> dict[str, Any]:
                 "The project became stronger when its validation system disproved attractive "
                 "results; the contribution is the machinery that makes those reversals visible."
             ),
+        },
+        "contribution_map": {
+            "status": "SELF_DISCLOSED_SOURCE_BOUND_NOT_INDEPENDENTLY_ATTESTED",
+            "arhan_canli": {
+                "role": (
+                    "Founder, named author, project owner and final accountable human for "
+                    "methodology, claims, corrections and publication decisions."
+                ),
+                "responsibilities": [
+                    "sets the project direction and accepts responsibility for what is published",
+                    "must personally approve author answers and manuscript-specific claims",
+                    "controls external submissions and responses to reviewers",
+                    "must be able to explain and defend every major research and system decision",
+                ],
+                "credit_boundary": (
+                    "Named authorship records responsibility. It does not prove that Arhan typed "
+                    "every line without assistance."
+                ),
+            },
+            "ai_assisted_tooling": {
+                "role": (
+                    "Reviewed development assistance across implementation, testing, technical "
+                    "drafting, publication preparation and quality assurance."
+                ),
+                "not_permitted_to_claim": [
+                    "authorship",
+                    "independent review",
+                    "author approval",
+                    "scientific judgment independent of Arhan",
+                ],
+                "venue_disclosure_required": external_review_protocol["authorship_policy"][
+                    "venue_specific_ai_disclosure_required"
+                ],
+            },
+            "libraries_services_and_data": {
+                "role": (
+                    "Open-source software, market-data providers, Alpaca paper accounts, "
+                    "DigitalOcean and web infrastructure supply capabilities and inputs."
+                ),
+                "credit_boundary": (
+                    "Their use is not evidence that they endorse, reviewed or validated ALPHAC."
+                ),
+            },
+            "external_validation": {
+                "assigned_reviewers": external_review["assigned_reviewers"],
+                "completed_reviews": external_review["completed_reviews"],
+                "independent_replications": external_review_protocol["current_counts"][
+                    "independent_replications"
+                ],
+                "boundary": external_review["claim_boundary"],
+            },
+            "not_established": [
+                "unaided authorship",
+                "line-by-line historical attribution",
+                "independent confirmation of the contribution map",
+                "external adoption or admissions impact",
+            ],
         },
         "evidence": {
             "systems_and_provenance": {
@@ -169,7 +245,7 @@ def build() -> dict[str, Any]:
                     "Each sleeve has an authored archival research object and evidence bundle."
                 ),
                 "facts": {
-                    "sleeve_papers": publication["current_sleeves"],
+                    "sleeve_papers": submission_worksheets["counts"]["sleeve_papers"],
                     "pdf_pages_visually_inspected": publication["archival_pdf_pages"],
                     "released_exact_result_objects": publication["released_result_objects"],
                     "normalized_bibliographies": publication["normalized_bibliographies"],
@@ -226,25 +302,82 @@ def build() -> dict[str, Any]:
                 ),
             },
         },
-        "ninety_second_project_map": [
-            "Question: can a quantitative claim be made independently falsifiable?",
-            (
-                "System: point-in-time inputs -> registered trial -> realistic simulation -> "
-                "gate -> paper account -> signed evidence -> public paper."
+        "ninety_second_walkthrough": {
+            "total_seconds": 90,
+            "status": "SCRIPT_AND_SHOT_MAP_READY_VIDEO_NOT_RECORDED",
+            "chapters": [
+                {
+                    "start_second": 0,
+                    "end_second": 12,
+                    "label": "The question",
+                    "screen": "/founder#walkthrough",
+                    "narration": (
+                        "Most quant projects publish the winning curve. I wanted to know whether "
+                        "the evidence could stay public even when it proved me wrong."
+                    ),
+                },
+                {
+                    "start_second": 12,
+                    "end_second": 28,
+                    "label": "Freeze the attempt",
+                    "screen": "/trials",
+                    "narration": (
+                        "ALPHAC records every attempt before judging it. The public union now "
+                        f"contains {trials['distinct_hypothesis_identities']} legacy identities "
+                        f"and one prospective identity, including failures and incomplete packets."
+                    ),
+                },
+                {
+                    "start_second": 28,
+                    "end_second": 45,
+                    "label": "Keep the reversal",
+                    "screen": "/progress",
+                    "narration": (
+                        "When a flattering result breaks, the system keeps the original claim, "
+                        "the defect, the correction and the test that prevents the same mistake."
+                    ),
+                },
+                {
+                    "start_second": 45,
+                    "end_second": 61,
+                    "label": "Observe the broker",
+                    "screen": "/measurements/alpaca-broker-reconciliation",
+                    "narration": (
+                        "Three dedicated Alpaca paper accounts reconcile against the published "
+                        "record. They contain no client capital and prove no funded performance."
+                    ),
+                },
+                {
+                    "start_second": 61,
+                    "end_second": 76,
+                    "label": "Publish the proof",
+                    "screen": "/verify",
+                    "narration": (
+                        "A signed append-only record connects public claims to artifacts and "
+                        "corrections. Verification proves integrity, not that the strategy will "
+                        "win."
+                    ),
+                },
+                {
+                    "start_second": 76,
+                    "end_second": 90,
+                    "label": "End with the burden",
+                    "screen": "/founder#open-burden",
+                    "narration": (
+                        "The forward record has only "
+                        f"{forward['record']['daily_return_observations']} "
+                        f"daily observations, external reviews remain at zero, and Foundry is "
+                        f"{foundry_deployment['status'].lower().replace('_', ' ')}. The open "
+                        "burden "
+                        f"is part of the result."
+                    ),
+                },
+            ],
+            "claim_boundary": (
+                "This is a timed production script and evidence path. It is not a recorded video, "
+                "proof that a viewer watched it or evidence of admissions impact."
             ),
-            (
-                "Decision quality: attractive results were corrected, killed or kept provisional "
-                "when evidence failed."
-            ),
-            (
-                "Public output: trial packets, papers, machine-readable artifacts, corrections "
-                "and broker-separated paper evidence."
-            ),
-            (
-                "Open burden: longer forward evidence, ten additional distinct sleeves, portable "
-                "raw-input replay and independent review."
-            ),
-        ],
+        },
         "what_not_to_claim": [
             "funded or client performance",
             "a statistically established forward Sharpe",
@@ -255,7 +388,7 @@ def build() -> dict[str, Any]:
         ],
         "source_bindings": {
             key: {"path": str(path.relative_to(ROOT)), "sha256": _sha256(path)}
-            for key, path in SOURCES.items()
+            for key, path in (SOURCES | BINDING_ONLY_SOURCES).items()
         },
         "claim_boundary": (
             "This is a source-bound portfolio evidence map. It supports concise factual writing "
@@ -270,7 +403,7 @@ def build() -> dict[str, Any]:
 def _render(document: dict[str, Any]) -> str:
     evidence = document["evidence"]
     lines = [
-        "# ALPHAC — Stanford CS portfolio evidence",
+        "# ALPHAC: Stanford CS portfolio evidence",
         "",
         "**Applicant and project author:** Arhan Canli  ",
         "**Status:** factual evidence map, not an admissions claim",
@@ -297,10 +430,48 @@ def _render(document: dict[str, Any]) -> str:
         for key, value in section["facts"].items():
             lines.append(f"- `{key}`: {value}")
         lines.extend(["", f"Boundary: {section['boundary']}", ""])
-    lines.extend(["## Ninety-second project map", ""])
+    contribution = document["contribution_map"]
+    lines.extend(["## Contribution boundary", ""])
     lines.extend(
-        f"{index}. {item}" for index, item in enumerate(document["ninety_second_project_map"], 1)
+        [
+            f"**Arhan Canli:** {contribution['arhan_canli']['role']}",
+            "",
+            f"**AI-assisted tooling:** {contribution['ai_assisted_tooling']['role']}",
+            "",
+            (
+                "**Libraries, services and data:** "
+                f"{contribution['libraries_services_and_data']['role']}"
+            ),
+            "",
+            (
+                "**External validation:** "
+                f"{contribution['external_validation']['completed_reviews']} completed reviews; "
+                f"{contribution['external_validation']['independent_replications']} independent "
+                "replications."
+            ),
+            "",
+            contribution["arhan_canli"]["credit_boundary"],
+            "",
+        ]
     )
+    lines.extend(["## Ninety-second walkthrough", ""])
+    walkthrough = document["ninety_second_walkthrough"]
+    for chapter in walkthrough["chapters"]:
+        lines.extend(
+            [
+                (
+                    f"### {chapter['start_second']:02d} to "
+                    f"{chapter['end_second']:02d} seconds: "
+                    f"{chapter['label']}"
+                ),
+                "",
+                f"Screen: `{chapter['screen']}`",
+                "",
+                chapter["narration"],
+                "",
+            ]
+        )
+    lines.extend([walkthrough["claim_boundary"], ""])
     lines.extend(["", "## Claims deliberately excluded", ""])
     lines.extend(f"- {item}" for item in document["what_not_to_claim"])
     lines.extend(["", document["claim_boundary"], ""])
