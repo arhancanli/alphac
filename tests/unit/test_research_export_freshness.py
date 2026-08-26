@@ -777,7 +777,7 @@ def test_external_validation_audit_is_public_and_fail_closed(modules) -> None:
     legacy = REPO.parent / "meridian" / "public" / "glassbox" / source.name
     app = REPO.parent / "meridian-app" / "public" / "glassbox" / source.name
 
-    assert audit["schema"] == "canli.alphac-external-validation-opportunities.v1"
+    assert audit["schema"] == "canli.alphac-external-validation-opportunities.v2"
     assert audit["decision"] == "NO_EXTERNAL_ACTION_AUTHORIZED_ELIGIBILITY_FACTS_REMAIN"
     assert audit["counts"] == {
         "awarded": 0,
@@ -791,4 +791,11 @@ def test_external_validation_audit_is_public_and_fail_closed(modules) -> None:
     assert len(audit["opportunity_shortlist"]) == 6
     assert all(not row["registration_authorized"] for row in audit["opportunities"])
     assert all(not row["entry_claimed"] for row in audit["opportunities"])
+    opportunities = {row["id"]: row for row in audit["opportunities"]}
+    assert opportunities["regeneron_isef_2027"]["affiliated_fair_directory_query"][
+        "result"
+    ] == "NO_FAIRS_MATCH_YOUR_SEARCH_CRITERIA"
+    assert opportunities["wharton_investment_2026_2027"]["eligibility"][
+        "team_leader"
+    ] == "at least 16 years old at the start of the competition"
     assert source.read_bytes() == legacy.read_bytes() == app.read_bytes()
