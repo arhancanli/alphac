@@ -5,9 +5,9 @@
 **Applies to:** every sleeve research record and every result-bearing prospective trial
 
 **Current inventory:** 16 sleeve-lineage records of unequal editorial depth; all 16 have checksum-bound preparation
-bundles, complete extracts of their recorded hypothesis-identity unions, and 32 released exact
+bundles, complete extracts of their recorded hypothesis-identity unions, and 34 released exact
 result objects. All 16 now also have deterministic archival HTML, LaTeX source, normalized
-bibliography, machine-validated PDF and an internal visual-inspection receipt covering 70 pages.
+bibliography, machine-validated PDF and an internal visual-inspection receipt covering 80 pages.
 All remain `BUNDLE_INCOMPLETE`, and no external submission is claimed. Source-class mapping is
 complete for all 16, but source-specific license review, portable clean-workspace replay and
 independent human replication remain incomplete.
@@ -48,6 +48,12 @@ all-sleeve archive and conservative source-rights controls are
 `artifacts/publication/all_sleeve_review_archives.json` and
 `artifacts/publication/all_sleeve_data_rights_audit.json`; the clean-replay contract audit is
 `artifacts/publication/clean_workspace_reproduction_audit.json`.
+The standard-library clean-checkout verifier
+`scripts/verify_publication_clean_checkout.py` checks all 16 tracked preparation bundles before
+dependency installation. Its CI receipt proves checksum-complete archive integrity, current
+code/environment bindings, explicit authorship and fail-closed publication claims. It does not
+regenerate returns, establish raw-input portability, clear data rights, or constitute peer review
+or independent replication.
 
 ## Purpose
 

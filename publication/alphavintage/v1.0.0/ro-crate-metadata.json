@@ -162,7 +162,7 @@
     {
       "@id": "alpaca_paper_evidence.json",
       "@type": "File",
-      "sha256": "4e69365fd8ebb86ab81cfb440ee6db30593d58e951d0c55e5e2f7bd22870b228"
+      "sha256": "d83c96d7333280102505f6907bd06ab163f06212bd48a2b13a59b645916da2fb"
     },
     {
       "@id": "alphamax_upstream_clean_workspace_receipt.json",
@@ -197,7 +197,7 @@
     {
       "@id": "bundle_manifest.json",
       "@type": "File",
-      "sha256": "a3456d74dbf961faa5240bd4b4a2f0aecd282f2b7f41c256dc8f83b5f7498d79"
+      "sha256": "9effb4af30556da97bdab2dff8381bfcc6d97ae07450e705a0eef4c90be6ca2f"
     },
     {
       "@id": "codemeta.json",
