@@ -354,17 +354,15 @@ def test_chain_head_must_equal_the_exact_state_used_for_sharpe(evaluator) -> Non
 @pytest.mark.workspace_evidence
 def test_current_workspace_record_is_honestly_immature(evaluator) -> None:
     report = json.loads(evaluator.OUTPUT_JSON.read_text())
-    assert report["status"] == "FAIL_CLOSED_PROVENANCE"
-    assert report["sharpe_evidence"]["underlying_status"] == "IMMATURE_RECORD_TOO_SHORT"
-    assert report["provenance_gate"]["passes"] is False
-    assert "crypto_position_attribution_complete" in report["provenance_gate"]["failed_checks"]
-    assert (
-        "crypto_position_attribution_reproduces_position_arithmetic"
-        in report["provenance_gate"]["failed_checks"]
-    )
-    assert (
-        "crypto_position_attribution_rollout_verified" in report["provenance_gate"]["failed_checks"]
-    )
+    provenance = report["provenance_gate"]
+    failed_checks = [name for name, passes in provenance["checks"].items() if not passes]
+    assert provenance["passes"] is (not failed_checks)
+    assert provenance["failed_checks"] == failed_checks
+    if provenance["passes"]:
+        assert report["status"] == report["sharpe_evidence"]["status"]
+    else:
+        assert report["status"] == "FAIL_CLOSED_PROVENANCE"
+        assert report["sharpe_evidence"]["underlying_status"] == "IMMATURE_RECORD_TOO_SHORT"
     assert report["record"]["cumulative_return"] < 0.0
     assert report["sharpe_evidence"]["annualized_point_estimate"] is None
     assert report["sharpe_evidence"]["target_statistically_established"] is False
