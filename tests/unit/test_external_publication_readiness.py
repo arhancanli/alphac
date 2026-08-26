@@ -22,7 +22,11 @@ def test_external_publication_registry_is_honest_and_source_bound() -> None:
 
     assert report["passes"] is True
     assert report["external_submissions_claimed"] is False
-    assert report["current_sleeves"] == 16
+    assert "current_sleeves" not in report
+    assert report["publication_record_count"] == 16
+    assert report["publication_record_count_unit"] == (
+        "PREPARED_SLEEVE_RESEARCH_RECORDS_NOT_ADMITTED_LIVE_SLEEVES"
+    )
     assert report["lineage_monographs"] == 16
     assert report["registry_coverage_fraction"] == 1.0
     assert report["bundles_with_verified_checksums"] == 16
