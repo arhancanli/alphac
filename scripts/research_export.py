@@ -827,6 +827,16 @@ TREASURY_CALENDAR_REVISION_RESULT: Final[Path] = (
     / "treasury_auction_concession"
     / "calendar_revision_audit.json"
 )
+TREASURY_STATE_MACHINE_MD: Final[Path] = (
+    REPO / "docs" / "design" / "FEASIBILITY_TREASURY_AUCTION_STATE_MACHINE.md"
+)
+TREASURY_STATE_MACHINE_RESULT: Final[Path] = (
+    REPO
+    / "artifacts"
+    / "feasibility"
+    / "treasury_auction_concession"
+    / "schedule_state_machine_audit.json"
+)
 CFTC_FEASIBILITY_MD: Final[Path] = REPO / "docs" / "design" / "FEASIBILITY_CFTC_HEDGING_PRESSURE.md"
 CFTC_FEASIBILITY_RESULT: Final[Path] = (
     REPO / "artifacts" / "feasibility" / "cftc_hedging_pressure" / "result.json"
@@ -3995,6 +4005,12 @@ def main(out_dir: Path = OUT_DIR) -> Path:
     (out_dir / "treasury_calendar_revision_audit.json").write_text(
         TREASURY_CALENDAR_REVISION_RESULT.read_text()
     )
+    (literature_dir / "treasury-auction-state-machine.md").write_text(
+        TREASURY_STATE_MACHINE_MD.read_text()
+    )
+    (out_dir / "treasury_schedule_state_machine_audit.json").write_text(
+        TREASURY_STATE_MACHINE_RESULT.read_text()
+    )
     (literature_dir / "cftc-hedging-pressure-feasibility.md").write_text(
         CFTC_FEASIBILITY_MD.read_text()
     )
@@ -4659,6 +4675,12 @@ def main(out_dir: Path = OUT_DIR) -> Path:
         )
         (app_dir / "treasury_calendar_revision_audit.json").write_text(
             TREASURY_CALENDAR_REVISION_RESULT.read_text()
+        )
+        (app_literature_dir / "treasury-auction-state-machine.md").write_text(
+            TREASURY_STATE_MACHINE_MD.read_text()
+        )
+        (app_dir / "treasury_schedule_state_machine_audit.json").write_text(
+            TREASURY_STATE_MACHINE_RESULT.read_text()
         )
         (app_literature_dir / "cftc-hedging-pressure-feasibility.md").write_text(
             CFTC_FEASIBILITY_MD.read_text()
