@@ -23,32 +23,50 @@ claim that DigitalOcean resources exist or that any deployment acceptance test h
 ## 1. Prerequisites
 
 The provisioning principal needs only the DigitalOcean scopes required to create and inspect the
-project, VPCs, private Droplets, firewalls, Managed PostgreSQL and Spaces buckets. It must not have
-access to the ALPHAC live host or broker secrets.
+project, VPCs, NAT gateways, private Droplets, firewalls, Managed PostgreSQL and Spaces buckets. It
+must not have access to the ALPHAC live host or broker secrets. Confirm that the account can plan
+`digitalocean_vpc_nat_gateway` before creating any resource. Private Droplets cannot complete
+package installation or retrieve approved artifacts without a default outbound route.
 
 Provide credentials through process environment variables supported by the DigitalOcean Terraform
 provider. Never put them in a `.tfvars` file, shell history, Git, Terraform output or a receipt.
 
-Use a protected Terraform backend before the first real plan. The state contains infrastructure
-metadata and Managed PostgreSQL credentials. A local unencrypted state file is not an acceptable
-production backend.
+Use a dedicated, pre-existing, private and versioned Spaces bucket for the Terraform backend before
+the first real plan. Give its key access only to the state bucket. The committed backend enables an
+S3-compatible lock file. Supply the bucket name through partial backend configuration and inject the
+backend key through `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`. Do not reuse the application
+bucket key. State contains infrastructure metadata and Managed PostgreSQL credentials. A local
+unencrypted state file is not an acceptable production backend.
+
+The infrastructure provider also needs `DIGITALOCEAN_TOKEN`, `SPACES_ACCESS_KEY_ID` and
+`SPACES_SECRET_ACCESS_KEY`. Inject all secret values from a password manager or protected runner.
+Do not type secret values into command history. Before planning, create one dedicated Foundry SSH
+key in DigitalOcean and record its fingerprint. Terraform installs that key on both private hosts at
+creation. Adding it only to a later bastion cannot make an existing private host reachable.
 
 ## 2. Review and plan
 
 ```bash
 cd deploy/foundry/terraform
 cp terraform.tfvars.example terraform.tfvars
-# Set only the globally unique bucket prefix. Keep the bastion disabled.
-terraform init
+# Set the globally unique bucket prefix and dedicated Foundry SSH key fingerprint.
+# Keep the bastion disabled. The tfvars file contains identifiers only, never secrets.
+terraform init -backend-config="bucket=$FOUNDRY_STATE_BUCKET"
 terraform fmt -check -recursive
 terraform validate
 terraform plan -out=foundry.tfplan
 terraform show -json foundry.tfplan > foundry-plan.private.json
 ```
 
-The plan is private. Review it for exactly two unpeered VPCs, two private application Droplets, one
-private PostgreSQL cluster, three private versioned buckets and no execution resource. Confirm that
-`public_networking = false` remains set on both application Droplets.
+The plan is private. Review it for exactly two unpeered VPCs, two distinct default-route NAT
+gateways, two private application Droplets, one private PostgreSQL cluster, three private versioned
+buckets and no execution resource. Confirm that `public_networking = false` remains set on both
+application Droplets, that each host depends on its own VPC NAT gateway, and that the SSH key list
+contains only the dedicated Foundry operator key.
+
+The two smallest managed NAT gateways have a documented base cost of USD 80 per month in total as
+of 2026-08-26. Confirm current pricing and account availability in the reviewed plan. Sharing one
+gateway between the research and holdout VPCs is not permitted by this design.
 
 Creating the resources spends money and is a separate apply decision. Record the reviewed plan hash,
 reviewer, UTC time and exact provider lock hash before applying it.
@@ -61,6 +79,11 @@ Apply the saved plan only, then export a redacted resource inventory. Terraform 
 The cloud-init payload installs rootless Podman prerequisites, separate locked Unix identities,
 host nftables rules and the explicit HTTPS proxy allowlist. It does not deploy an application,
 container image, database password, Spaces key, holdout object or broker credential.
+
+Wait for both NAT gateways to report ready before private host creation. Preserve proof that each is
+the default route for exactly one VPC. A NAT gateway supplies transport only. Cloud Firewalls, host
+nftables rules, Unix identities and loopback proxy allowlists still define which process may reach
+which destination.
 
 ## 4. Issue application credentials
 

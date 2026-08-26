@@ -36,6 +36,10 @@ The current DigitalOcean design relies only on documented platform properties:
    broad, so this design replaces them with explicit destinations.
 4. Managed PostgreSQL provides a private VPC hostname, TLS and trusted-source controls.
 5. Spaces supports application-specific access keys with bucket-level permission scopes.
+6. A private Droplet needs a VPC NAT gateway or another explicit gateway for outbound internet
+   access. When a NAT gateway is the VPC default route, private Droplets use it automatically.
+7. Terraform remote state in Spaces can use a versioned private bucket and an S3-compatible lock
+   file, with credentials injected through environment variables.
 
 Platform documentation:
 
@@ -45,6 +49,8 @@ Platform documentation:
 4. <https://docs.digitalocean.com/products/databases/postgresql/how-to/connect/>
 5. <https://docs.digitalocean.com/products/databases/postgresql/how-to/secure/>
 6. <https://docs.digitalocean.com/products/spaces/how-to/manage-access/>
+7. <https://docs.digitalocean.com/products/droplets/details/private-droplets/>
+8. <https://docs.digitalocean.com/products/spaces/reference/terraform-backend/>
 
 Cloud controls and host controls are separate. A Cloud Firewall rule does not configure UFW or the
 container runtime. Both layers require independent verification.
@@ -68,6 +74,10 @@ container runtime. Both layers require independent verification.
 
 ```text
 Internet
+   |
+   +---- [Dedicated research NAT] ---- [Z2/Z3 private research VPC]
+   |
+   +---- [Dedicated holdout NAT] ----- [Z4 private holdout VPC]
    |
    v
 [Z0 Public product] <----- sanitized bundle ----- [Z1 Publisher]
@@ -133,6 +143,10 @@ Every unlisted connection is denied.
 |---|---|---:|---|
 | Operator allowlist | Bastion or private administration path | Yes | Reviewed administration |
 | Public internet | Research nodes | No | No public worker or controller ports |
+| Research private hosts | Dedicated research NAT | Narrow | Approved updates and allowlisted proxy egress |
+| Holdout private host | Dedicated holdout NAT | Narrow | Holdout object access only |
+| Research VPC | Holdout NAT | No | Preserve separate egress and fault domains |
+| Holdout VPC | Research NAT | No | Preserve separate egress and fault domains |
 | `researchd` | Managed PostgreSQL private hostname | Yes | Queue, registry and audit transactions |
 | Workers | Managed PostgreSQL private hostname | Narrow | Lease heartbeat and result metadata only |
 | Workers | Data gateway | Yes | Approved snapshot reads |
@@ -261,17 +275,19 @@ Minimum recovery controls:
 ## 13. Deployment sequence
 
 1. Export and preserve the current ALPHAC live firewall and secret inventory.
-2. Create a separate Foundry VPC and deployment principal.
-3. Provision private Managed PostgreSQL with trusted sources and TLS verification.
-4. Create separate research, holdout and sanitized publication buckets and keys.
-5. Provision `researchd`, data gateway, validator and one worker pool with no public service ports.
-6. Apply Cloud Firewall and host firewall rules from the network matrix.
-7. Run negative connectivity tests, especially Foundry to ALPHAC and Alpaca order endpoints.
-8. Deploy the state machine in audit-only mode.
-9. Migrate one existing killed trial without spending a new identity.
-10. Reproduce it in a clean worker and publish only the sanitized packet.
-11. Perform a restore drill.
-12. Change status from `DESIGN_FROZEN_NOT_DEPLOYED` only after receipts prove each control.
+2. Create a dedicated, private, versioned and lock-enabled remote state backend.
+3. Create separate research and holdout VPCs under a dedicated Foundry deployment principal.
+4. Create one dedicated default-route NAT gateway per VPC and verify that the routes are not shared.
+5. Provision private Managed PostgreSQL with trusted sources and TLS verification.
+6. Create separate research, holdout and sanitized publication buckets and keys.
+7. Provision `researchd`, data gateway, validator and one worker pool with no public service ports.
+8. Apply Cloud Firewall and host firewall rules from the network matrix.
+9. Run negative connectivity tests, especially Foundry to ALPHAC and Alpaca order endpoints.
+10. Deploy the state machine in audit-only mode.
+11. Migrate one existing killed trial without spending a new identity.
+12. Reproduce it in a clean worker and publish only the sanitized packet.
+13. Perform a restore drill.
+14. Change status from `DESIGN_FROZEN_NOT_DEPLOYED` only after receipts prove each control.
 
 ## 14. Deployment acceptance evidence
 

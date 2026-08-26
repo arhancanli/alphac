@@ -73,12 +73,17 @@ variable "operator_cidr" {
 }
 
 variable "operator_ssh_key_fingerprints" {
-  description = "Reviewed SSH keys. They are attached only to the ephemeral bastion."
+  description = "Dedicated reviewed Foundry SSH keys. They are installed on private hosts at creation and attached to an ephemeral bastion only when enabled."
   type        = list(string)
   default     = []
 
   validation {
-    condition     = !var.enable_ephemeral_bastion || length(var.operator_ssh_key_fingerprints) > 0
-    error_message = "At least one reviewed SSH key is required when the bastion is enabled."
+    condition = (
+      length(var.operator_ssh_key_fingerprints) > 0
+      && alltrue([
+        for fingerprint in var.operator_ssh_key_fingerprints : length(trimspace(fingerprint)) > 0
+      ])
+    )
+    error_message = "At least one non-empty dedicated Foundry SSH key fingerprint is required before private hosts are created."
   }
 }

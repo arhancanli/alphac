@@ -23,6 +23,13 @@
       "public_networking": false,
       "peered_with_research": false
     },
+    "egress": {
+      "type": "dedicated_managed_nat_per_vpc",
+      "shared_between_research_and_holdout": false,
+      "default_route_required_before_private_host_creation": true,
+      "host_and_cloud_firewalls_remain_authoritative": true,
+      "documented_monthly_base_cost_usd_as_of_2026_08_26": 80
+    },
     "execution": {
       "managed_by_this_manifest": false,
       "reachable_from_research": false,
@@ -30,6 +37,11 @@
     }
   },
   "compute": {
+    "operator_access": {
+      "dedicated_ssh_key_required_at_host_creation": true,
+      "private_hosts_accept_ssh_from_research_vpc_only": true,
+      "ephemeral_bastion_required_for_remote_ssh": true
+    },
     "research_node": {
       "size": "s-2vcpu-4gb",
       "rootless_services": [

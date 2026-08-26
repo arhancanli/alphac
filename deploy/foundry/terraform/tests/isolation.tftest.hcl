@@ -4,7 +4,33 @@ run "foundry_isolation_contract" {
   command = plan
 
   variables {
-    spaces_bucket_prefix = "canli-foundry-ci-contract"
+    spaces_bucket_prefix          = "canli-foundry-ci-contract"
+    operator_ssh_key_fingerprints = ["aa:bb:cc:dd:foundry-ci-only"]
+  }
+
+  assert {
+    condition = (
+      digitalocean_vpc_nat_gateway.research.name != digitalocean_vpc_nat_gateway.holdout.name
+      && length(digitalocean_vpc_nat_gateway.research.vpcs) == 1
+      && length(digitalocean_vpc_nat_gateway.holdout.vpcs) == 1
+      && alltrue([
+        for attachment in digitalocean_vpc_nat_gateway.research.vpcs :
+        attachment.default_gateway
+      ])
+      && alltrue([
+        for attachment in digitalocean_vpc_nat_gateway.holdout.vpcs :
+        attachment.default_gateway
+      ])
+    )
+    error_message = "Each private VPC must have its own default-route NAT gateway."
+  }
+
+  assert {
+    condition = (
+      toset(digitalocean_droplet.research.ssh_keys) == toset(var.operator_ssh_key_fingerprints)
+      && toset(digitalocean_droplet.holdout.ssh_keys) == toset(var.operator_ssh_key_fingerprints)
+    )
+    error_message = "Private hosts must receive the reviewed Foundry operator key at creation."
   }
 
   assert {
