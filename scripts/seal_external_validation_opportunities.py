@@ -104,13 +104,19 @@ def build() -> dict[str, Any]:
             "eligibility": {
                 "grade": "9-12; no secondary-school diploma before competition begins",
                 "team_size": "4-6 students from the same school",
+                "team_leader": "at least 16 years old at the start of the competition",
                 "advisor": "one teacher or educator at the team's high school",
                 "registration_actor": "advisor, not student",
             },
+            "ai_boundary": (
+                "Generative AI may be used for ideas and brainstorming, but teams may not submit "
+                "AI-generated work as their own. Any included AI-generated material must be cited."
+            ),
             "window_opens": "2026-08-10",
             "exact_deadline": None,
             "unknowns": [
                 "Arhan's grade and school status",
+                "whether Arhan or another eligible teammate can serve as the age-16 team leader",
                 "three to five eligible same-school teammates",
                 "teacher-advisor assignment",
                 "the current cycle's exact registration close and deliverable calendar",

@@ -1,6 +1,6 @@
 {
   "claim_boundary": "This is a dated official-source opportunity audit. It proves no personal eligibility, registration, submission, judging, advancement, award, review, publication, or Stanford admissions outcome. Rules and deadlines must be rechecked immediately before any authorized external action.",
-  "content_hash": "sha256:bde5fce8a3c952f1ad58c43c2e5fea92e9a7b38072dc7c262cf20fa2dc15d441",
+  "content_hash": "sha256:a3ff1fff109b7f8d956d70759b291962de84a8fe4fdbf34475a3baf96670cbe0",
   "counts": {
     "awarded": 0,
     "exact_future_deadlines": 1,
@@ -64,10 +64,12 @@
       ]
     },
     {
+      "ai_boundary": "Generative AI may be used for ideas and brainstorming, but teams may not submit AI-generated work as their own. Any included AI-generated material must be cited.",
       "eligibility": {
         "advisor": "one teacher or educator at the team's high school",
         "grade": "9-12; no secondary-school diploma before competition begins",
         "registration_actor": "advisor, not student",
+        "team_leader": "at least 16 years old at the start of the competition",
         "team_size": "4-6 students from the same school"
       },
       "entry_claimed": false,
@@ -88,6 +90,7 @@
       "state": "OPEN_BUT_TEAM_AND_ADVISOR_UNRESOLVED",
       "unknowns": [
         "Arhan's grade and school status",
+        "whether Arhan or another eligible teammate can serve as the age-16 team leader",
         "three to five eligible same-school teammates",
         "teacher-advisor assignment",
         "the current cycle's exact registration close and deliverable calendar"
