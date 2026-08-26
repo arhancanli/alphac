@@ -30,6 +30,10 @@ users:
     lock_passwd: true
     create_home: true
     shell: /usr/sbin/nologin
+  - name: foundrymigrator
+    lock_passwd: true
+    create_home: true
+    shell: /usr/sbin/nologin
   - name: foundrygateway
     lock_passwd: true
     create_home: true
@@ -78,6 +82,7 @@ runcmd:
   - [loginctl, enable-linger, foundryworker]
   - [loginctl, enable-linger, foundryvalidator]
   - [loginctl, enable-linger, foundrypublisher]
+  - [loginctl, enable-linger, foundrymigrator]
   - [loginctl, enable-linger, foundrygateway]
   - [loginctl, enable-linger, foundryegress]
   - [loginctl, enable-linger, foundrysentinel]
@@ -85,6 +90,7 @@ runcmd:
   - [install, -d, -m, '0700', -o, foundryworker, -g, foundryworker, /var/lib/foundry/worker]
   - [install, -d, -m, '0700', -o, foundryvalidator, -g, foundryvalidator, /var/lib/foundry/validator]
   - [install, -d, -m, '0700', -o, foundrypublisher, -g, foundrypublisher, /var/lib/foundry/publisher]
+  - [install, -d, -m, '0700', -o, foundrymigrator, -g, foundrymigrator, /var/lib/foundry/migrator]
   - [install, -d, -m, '0700', -o, foundrygateway, -g, foundrygateway, /var/lib/foundry/gateway]
   - [install, -d, -m, '0700', -o, foundryegress, -g, foundryegress, /var/lib/foundry/egress]
   - [install, -d, -m, '0700', -o, foundrysentinel, -g, foundrysentinel, /var/lib/foundry/sentinel]

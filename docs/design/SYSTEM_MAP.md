@@ -9,8 +9,8 @@ contract's boundary is the boundary it states about itself. A script with no doc
 having none.
 
 At a glance: **342 Python scripts**, **17 shell entry points**,
-**26 configuration contracts**, **27 engineering artifacts**,
-**393 unit test files**, **22 data directories**, **9 scheduled jobs**.
+**27 configuration contracts**, **27 engineering artifacts**,
+**395 unit test files**, **22 data directories**, **9 scheduled jobs**.
 
 
 ## What runs on a timer
@@ -186,6 +186,7 @@ are the ones a reader has to know about; everything else is derived from them.
 | `config/external_review_protocol.json` | This protocol is a local plan. |
 | `config/forward_evidence_contract.json` | This contract freezes how forward evidence will be described before the record is mature. |
 | `config/forward_full_evidence_reservation_v2_template.json` | This is a fail-closed design template, not an active policy, reservation, candidate, result, or return authorization. |
+| `config/foundry_acceptance_receipt_contract.json` | This contract defines the evidence required before Foundry may be described as operational. |
 | `config/foundry_deployment_manifest.json` | This manifest describes the reviewed Foundry v1 deployment target. |
 | `config/foundry_runtime_contract.json` | This contract defines the required runtime confinement. |
 | `config/foundry_trial_state_machine.json` | This contract freezes the allowed Foundry trial lifecycle. |

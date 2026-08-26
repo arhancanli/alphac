@@ -44,9 +44,9 @@
     },
     "validator": {
       "unix_user": "foundryvalidator",
-      "database_role": null,
-      "network": ["egress_proxy_loopback"],
-      "secrets": ["validator_research_read_key"],
+      "database_role": "foundry_validator",
+      "network": ["postgres_private", "egress_proxy_loopback"],
+      "secrets": ["validator_database_dsn", "validator_research_read_key"],
       "broker_write_access": false
     },
     "data_gateway": {
@@ -58,9 +58,17 @@
     },
     "sanitizer_publisher": {
       "unix_user": "foundrypublisher",
-      "database_role": null,
-      "network": ["egress_proxy_loopback"],
-      "secrets": ["publisher_sanitized_write_key"],
+      "database_role": "foundry_publisher",
+      "network": ["postgres_private", "egress_proxy_loopback"],
+      "secrets": ["publisher_database_dsn", "publisher_sanitized_write_key"],
+      "broker_write_access": false
+    },
+    "migration_operator": {
+      "unix_user": "foundrymigrator",
+      "database_role": "foundry_migrator",
+      "network": ["postgres_private"],
+      "secrets": ["ephemeral_migration_database_dsn"],
+      "disabled_after_first_migration": true,
       "broker_write_access": false
     },
     "sentinel": {

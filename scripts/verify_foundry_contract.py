@@ -24,6 +24,9 @@ FILES: Final = (
     Path("deploy/foundry/requirements.lock"),
     Path("deploy/foundry/terraform/.terraform.lock.hcl"),
     Path("deploy/foundry/terraform/tests/isolation.tftest.hcl"),
+    Path("deploy/foundry/sql/003_legacy_migration.sql"),
+    Path("config/foundry_legacy_migrations/eia_petroleum_inventory_v1.json"),
+    Path("config/foundry_acceptance_receipt_contract.json"),
 )
 
 
@@ -41,6 +44,19 @@ def verify() -> dict[str, Any]:
     runtime = json.loads((ROOT / FILES[2]).read_text(encoding="utf-8"))
     core_sql = (ROOT / FILES[3]).read_text(encoding="utf-8")
     privileges = (ROOT / FILES[4]).read_text(encoding="utf-8")
+    legacy_sql = (ROOT / "deploy/foundry/sql/003_legacy_migration.sql").read_text(
+        encoding="utf-8"
+    )
+    migration = json.loads(
+        (ROOT / "config/foundry_legacy_migrations/eia_petroleum_inventory_v1.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    receipt_contract = json.loads(
+        (ROOT / "config/foundry_acceptance_receipt_contract.json").read_text(
+            encoding="utf-8"
+        )
+    )
 
     failures: list[str] = []
     if lifecycle["status"] != "DESIGN_FROZEN_NOT_DEPLOYED":
@@ -68,6 +84,36 @@ def verify() -> dict[str, Any]:
         failures.append("researchd has a direct trial mutation grant")
     if "GRANT SELECT, INSERT, UPDATE ON foundry.job" in privileges:
         failures.append("researchd has a direct job mutation grant")
+    for required in (
+        "CREATE TABLE foundry.legacy_migration",
+        "foundry.import_legacy_killed_trial",
+        "foundry.finalize_legacy_replay",
+        "foundry.publish_legacy_packet",
+        "foundry_identity_ordinal, migrated_legacy",
+        "current_trial.replay_status <> 'NOT_RUN'",
+    ):
+        if required not in legacy_sql:
+            failures.append(f"legacy migration control missing: {required}")
+    if migration["status"] != "PREPARED_NOT_IMPORTED_OR_REPLAYED":
+        failures.append("legacy migration packet overclaims execution")
+    if migration["trial"]["state"] != "KILLED":
+        failures.append("legacy migration does not preserve the killed state")
+    if migration["trial"]["foundry_identity_ordinal"] is not None:
+        failures.append("legacy migration allocates a new Foundry identity")
+    if migration["replay"]["network_policy"] != "NONE":
+        failures.append("legacy migration replay has network access")
+    if any(value is not False for value in migration["security"].values()):
+        failures.append("legacy migration enables a forbidden capability")
+    if receipt_contract["status"] != "FROZEN_NOT_SATISFIED":
+        failures.append("acceptance receipt contract overclaims satisfaction")
+    if set(receipt_contract["receipts"]) != set(deployment["acceptance_receipts_required"]):
+        failures.append("acceptance receipt inventory differs from deployment manifest")
+    if runtime["components"]["migration_operator"]["disabled_after_first_migration"] is not True:
+        failures.append("migration operator is not disabled after first import")
+    if runtime["components"]["validator"]["database_role"] != "foundry_validator":
+        failures.append("validator database role is absent")
+    if runtime["components"]["sanitizer_publisher"]["database_role"] != "foundry_publisher":
+        failures.append("publisher database role is absent")
 
     receipt = {
         "schema": "canli.foundry-local-contract-verification.v1",
@@ -88,6 +134,15 @@ def verify() -> dict[str, Any]:
             ),
             "direct_mutation_grants_absent": not any(
                 "direct" in item and "grant" in item for item in failures
+            ),
+            "legacy_kill_migration_bounded": not any(
+                "legacy migration" in item for item in failures
+            ),
+            "acceptance_receipts_fail_closed": not any(
+                "acceptance receipt" in item for item in failures
+            ),
+            "migration_roles_separated": not any(
+                "operator" in item or "database role" in item for item in failures
             ),
         },
         "failures": failures,

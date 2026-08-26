@@ -172,6 +172,9 @@ jobs:
           CREATE ROLE foundry_researchd LOGIN;
           CREATE ROLE foundry_worker LOGIN;
           CREATE ROLE foundry_status LOGIN;
+          CREATE ROLE foundry_migrator LOGIN;
+          CREATE ROLE foundry_validator LOGIN;
+          CREATE ROLE foundry_publisher LOGIN;
           SQL
       - name: Apply the Foundry database contract
         run: |
@@ -179,12 +182,17 @@ jobs:
             -f deploy/foundry/sql/001_core.sql
           psql -v ON_ERROR_STOP=1 -h 127.0.0.1 -U postgres -d foundry \
             -f deploy/foundry/sql/002_privileges.sql
+          psql -v ON_ERROR_STOP=1 -h 127.0.0.1 -U postgres -d foundry \
+            -f deploy/foundry/sql/003_legacy_migration.sql
       - name: Exercise lifecycle, immutability, role and lease boundaries
         env:
           FOUNDRY_TEST_ADMIN_DSN: postgresql://postgres@127.0.0.1:5432/foundry
           FOUNDRY_TEST_RESEARCHD_DSN: postgresql://foundry_researchd@127.0.0.1:5432/foundry
           FOUNDRY_TEST_WORKER_DSN: postgresql://foundry_worker@127.0.0.1:5432/foundry
           FOUNDRY_TEST_STATUS_DSN: postgresql://foundry_status@127.0.0.1:5432/foundry
+          FOUNDRY_TEST_MIGRATOR_DSN: postgresql://foundry_migrator@127.0.0.1:5432/foundry
+          FOUNDRY_TEST_VALIDATOR_DSN: postgresql://foundry_validator@127.0.0.1:5432/foundry
+          FOUNDRY_TEST_PUBLISHER_DSN: postgresql://foundry_publisher@127.0.0.1:5432/foundry
         run: >-
           uv run --with-requirements deploy/foundry/requirements.lock
           pytest -n0 --no-cov
