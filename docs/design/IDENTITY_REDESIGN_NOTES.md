@@ -217,6 +217,15 @@ Two changes, and the second matters more than the first.
    reintroducing the defect on purpose, and any redesign that silently keeps only the convenient
    stratum is doing something worse. Both strata get published, whatever they say.
 
+### Prospective v2 status
+
+That corrected structure is now specified in
+`docs/design/FEASIBILITY_MERGER_ANNOUNCEMENT_IDENTITY_V2.md`. It preserves the failed aggregate
+result as exploration, freezes both filing strata, and reserves 2006–2015 as a disjoint
+confirmation period with 200 anchors per stratum. Its structural audit opens no confirmation
+documents, labels, prices, or returns. It is a technical draft awaiting Arhan's review, not an
+approved preregistration or a sleeve.
+
 ---
 
 ## What the three notes share, restated because it is the transferable part

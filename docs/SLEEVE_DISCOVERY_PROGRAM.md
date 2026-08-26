@@ -148,14 +148,21 @@ It scanned 2,794,953 cached official SEC filing records and found 1,965 high-pre
 anchors across 1,798 CIKs. Later Item 2.01/1.02 outcome coverage was 91.76%, but only 67.02% linked
 to the locked prior Item 1.01 announcement window, below the declared 80% gate. Target tender
 filings performed better (86.65%), but the aggregate protocol was not narrowed after observation.
-A future tender-only document contract or licensed PIT deal database must be declared separately.
+That failed result is unchanged. A materially new v2 identity is now frozen before opening its
+confirmation corpus. It searches a declared SEC source set for the earliest qualifying acceptance
+timestamp, preserves `DEFM14A` and `SC 14D9` as separately gated strata, and reserves 2006–2015 as
+a disjoint 400-anchor confirmation panel. The technical design passes its no-return structural
+audit, but it remains `AUTHOR_APPROVAL_REQUIRED`: Arhan has not approved the exact draft, zero
+confirmation documents or labels have been opened, and no return preregistration is authorized.
+The protocol is `docs/design/FEASIBILITY_MERGER_ANNOUNCEMENT_IDENTITY_V2.md`.
 
 That separate tender-only contract has now also closed `DATA_GATED`. On the frozen 100-file
 `SC 14D9` sample, immutable downloads and Item 4 extraction passed, but only 10.64% of extracted
 sections yielded a unique canonical cash price, 74.47% were ambiguous, and recommendation posture
 resolved in only 22.34%. The parser was not retuned after the result. Merger arbitrage therefore
-still requires a licensed point-in-time deal-state source or an independently labelled extraction
-program before any spread return may be opened; this branch also spent zero return identities.
+still requires either the approved v2 disjoint confirmation program or a licensed point-in-time
+deal-state source before any spread return may be opened; this branch also spent zero return
+identities.
 
 The active-ownership escalation family has passed a separately declared schema-aware metadata
 gate without opening documents or returns. Its first protocol correctly failed after exposing the

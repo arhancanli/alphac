@@ -43,6 +43,9 @@ ACTIVE_OWNERSHIP_BLIND_PACKET = (
 TREASURY_STATE_MACHINE = (
     FEASIBILITY / "treasury_auction_concession" / "schedule_state_machine_audit.json"
 )
+MERGER_CONFIRMATORY_DESIGN = (
+    FEASIBILITY / "merger_arbitrage" / "announcement_confirmatory_design.json"
+)
 SUPERSEDED_RESULTS = {
     "active_ownership_13d",
     "active_ownership_13d_schema_v2",
@@ -55,6 +58,7 @@ SUPERSEDED_RESULTS = {
 # other families must use their canonical result.json.  Never let filename ordering decide
 # which research state is current.
 CURRENT_STAGE_ARTIFACTS: dict[str, str] = {
+    "merger_arbitrage": "announcement_confirmatory_design.json",
     "pre_fomc_announcement_drift": "market_data_readiness.json",
     "repurchase_issuance_flow": "item703/documents_result.json",
     "spin_off_dislocation": "document_schema_result.json",
@@ -148,7 +152,7 @@ def main() -> int:
         selected_artifact, considered_artifacts = _artifact_for(directory)
         artifact = json.loads(selected_artifact.read_text(encoding="utf-8"))
         decision = str(artifact.get("decision", "UNKNOWN"))
-        gates = artifact.get("gates") or {}
+        gates = artifact.get("gates") or artifact.get("technical_gates") or {}
         failing = sorted(k for k, v in gates.items() if v is False)
         blocking = list(artifact.get("blocking_reasons") or [])
         paths = _scripts_for(directory.name)
@@ -183,9 +187,7 @@ def main() -> int:
             "READY_FOR_BLIND_LABELING"
         ):
             classification = "BLOCKED_ON_HUMAN_BLIND_LABELING"
-        elif directory.name == "treasury_auction_concession" and decision == (
-            "AUTHOR_APPROVAL_REQUIRED"
-        ):
+        elif decision == "AUTHOR_APPROVAL_REQUIRED":
             classification = "BLOCKED_ON_AUTHOR_TECHNICAL_APPROVAL"
         elif reachability.get(directory.name) == "GATE_UNREACHABLE_BY_DETECTOR_REPAIR":
             classification = "BLOCKED_ON_MEASURED_REACHABILITY_CEILING"
@@ -330,6 +332,25 @@ def main() -> int:
                 "unblocks": ["active_ownership_13d_item4_v3"],
                 "packet": str(ACTIVE_OWNERSHIP_BLIND_PACKET.relative_to(REPO)),
                 "packet_content_hash": json.loads(ACTIVE_OWNERSHIP_BLIND_PACKET.read_text())[
+                    "content_hash"
+                ],
+            },
+            {
+                "action": (
+                    "Arhan independently reviews the merger-announcement v2 confirmation design "
+                    "and records approval or required changes; automation may not answer for him"
+                ),
+                "effort": (
+                    "technical authorship review; confirmation corpus, prices and returns "
+                    "remain unopened"
+                ),
+                "unblocks": ["merger_arbitrage"],
+                "protocol": "docs/design/FEASIBILITY_MERGER_ANNOUNCEMENT_IDENTITY_V2.md",
+                "source_artifact": (
+                    "artifacts/feasibility/merger_arbitrage/"
+                    "announcement_confirmatory_design.json"
+                ),
+                "artifact_content_hash": json.loads(MERGER_CONFIRMATORY_DESIGN.read_text())[
                     "content_hash"
                 ],
             },

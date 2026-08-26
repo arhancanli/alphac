@@ -98,7 +98,13 @@ def test_staged_families_use_declared_current_artifacts_and_blockers() -> None:
     assert treasury["decision"] == "AUTHOR_APPROVAL_REQUIRED"
     assert treasury["classification"] == "BLOCKED_ON_AUTHOR_TECHNICAL_APPROVAL"
 
-    for row in (pre_fomc, repurchase, spin_off, treasury):
+    merger = rows["merger_arbitrage"]
+    assert merger["source_artifact"].endswith("/announcement_confirmatory_design.json")
+    assert merger["decision"] == "AUTHOR_APPROVAL_REQUIRED"
+    assert merger["classification"] == "BLOCKED_ON_AUTHOR_TECHNICAL_APPROVAL"
+    assert merger["failing_gates"] == ["author_technical_approval_recorded"]
+
+    for row in (pre_fomc, repurchase, spin_off, treasury, merger):
         assert row["source_artifact"] in row["artifacts_considered"]
 
     polygon_actions = [
@@ -121,6 +127,14 @@ def test_staged_families_use_declared_current_artifacts_and_blockers() -> None:
         packet = REPO / action["packet"]
         assert packet.is_file()
         assert json.loads(packet.read_text())["content_hash"] == action["packet_content_hash"]
+    approval_actions = {
+        tuple(action["unblocks"]): action
+        for action in result["owner_actions"]
+        if "artifact_content_hash" in action
+    }
+    assert approval_actions[("merger_arbitrage",)]["artifact_content_hash"] == (
+        "sha256:e2d294361c96994931849cef2e44faa464e3f2ab6a9ba1e05e9c4d6742f82b74"
+    )
     assert result["content_hash"] == MODULE.content_hash(result)
 
 
