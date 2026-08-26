@@ -26,15 +26,15 @@ def test_external_validation_audit_fails_closed() -> None:
     assert payload["decision"] == "NO_EXTERNAL_ACTION_AUTHORIZED_ELIGIBILITY_FACTS_REMAIN"
     assert payload["verified_on"] == "2026-08-26"
     assert payload["counts"] == {
-        "opportunities": 6,
+        "opportunities": 7,
         "registered": 0,
         "submitted": 0,
         "awarded": 0,
         "registration_authorized": 0,
-        "exact_future_deadlines": 2,
+        "exact_future_deadlines": 3,
     }
     assert len(payload["owner_facts_required"]) == 6
-    assert len(payload["opportunity_shortlist"]) == 6
+    assert len(payload["opportunity_shortlist"]) == 7
     assert payload["opportunity_shortlist"][0].startswith(
         "1. Regeneron ISEF 2027 through an affiliated fair"
     )
@@ -96,6 +96,13 @@ def test_high_priority_rules_preserve_verified_constraints() -> None:
         "starts": "2027-04-29",
         "ends": "2027-04-30",
     }
+
+    blue_ocean = rows["blue_ocean_student_competition_2027"]
+    assert blue_ocean["eligibility"]["team_size"] == "1-5 students"
+    assert blue_ocean["exact_deadline"] == "2027-02-21_LOCAL_MIDNIGHT"
+    assert blue_ocean["competition_calendar"]["winners_announced"] == "2027-05-13"
+    assert "does not validate" in blue_ocean["validation_boundary"]
+    assert "AI-assistance" in blue_ocean["unknowns"][-1]
 
     emirates = rows["emirates_young_scientist_next_cycle"]
     assert emirates["eligibility"]["individual"] == "UAE nationals only"
