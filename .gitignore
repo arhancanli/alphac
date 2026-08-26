@@ -4,7 +4,9 @@
 /data/
 /var/
 /artifacts/
-.env
+# Local credentials and runtime configuration. A placeholder-only example may be committed.
+.env*
+!.env.example
 
 # python
 __pycache__/
