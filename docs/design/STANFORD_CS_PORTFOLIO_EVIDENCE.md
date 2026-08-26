@@ -1,4 +1,4 @@
-# ALPHAC — Stanford CS portfolio evidence
+# ALPHAC: Stanford CS portfolio evidence
 
 **Applicant and project author:** Arhan Canli  
 **Status:** factual evidence map, not an admissions claim
@@ -83,7 +83,7 @@ Boundary: Archive integrity is not result replay or rights clearance; no DOI, ex
 ### The project refuses to infer success from an immature forward record.
 
 - `daily_return_observations`: 17
-- `cumulative_return`: -0.02365460000000008
+- `cumulative_return`: -0.02213339999999997
 - `sharpe_status`: IMMATURE_RECORD_TOO_SHORT
 - `current_sleeves`: 4
 - `target_sleeves`: 14
@@ -91,13 +91,58 @@ Boundary: Archive integrity is not result replay or rights clearance; no DOI, ex
 
 Boundary: The forward Sharpe, drawdown and diversification objectives are not established.
 
-## Ninety-second project map
+## Contribution boundary
 
-1. Question: can a quantitative claim be made independently falsifiable?
-2. System: point-in-time inputs -> registered trial -> realistic simulation -> gate -> paper account -> signed evidence -> public paper.
-3. Decision quality: attractive results were corrected, killed or kept provisional when evidence failed.
-4. Public output: trial packets, papers, machine-readable artifacts, corrections and broker-separated paper evidence.
-5. Open burden: longer forward evidence, ten additional distinct sleeves, portable raw-input replay and independent review.
+**Arhan Canli:** Founder, named author, project owner and final accountable human for methodology, claims, corrections and publication decisions.
+
+**AI-assisted tooling:** Reviewed development assistance across implementation, testing, technical drafting, publication preparation and quality assurance.
+
+**Libraries, services and data:** Open-source software, market-data providers, Alpaca paper accounts, DigitalOcean and web infrastructure supply capabilities and inputs.
+
+**External validation:** 0 completed reviews; 0 independent replications.
+
+Named authorship records responsibility. It does not prove that Arhan typed every line without assistance.
+
+## Ninety-second walkthrough
+
+### 00 to 12 seconds: The question
+
+Screen: `/founder#walkthrough`
+
+Most quant projects publish the winning curve. I wanted to know whether the evidence could stay public even when it proved me wrong.
+
+### 12 to 28 seconds: Freeze the attempt
+
+Screen: `/trials`
+
+ALPHAC records every attempt before judging it. The public union now contains 228 legacy identities and one prospective identity, including failures and incomplete packets.
+
+### 28 to 45 seconds: Keep the reversal
+
+Screen: `/progress`
+
+When a flattering result breaks, the system keeps the original claim, the defect, the correction and the test that prevents the same mistake.
+
+### 45 to 61 seconds: Observe the broker
+
+Screen: `/measurements/alpaca-broker-reconciliation`
+
+Three dedicated Alpaca paper accounts reconcile against the published record. They contain no client capital and prove no funded performance.
+
+### 61 to 76 seconds: Publish the proof
+
+Screen: `/verify`
+
+A signed append-only record connects public claims to artifacts and corrections. Verification proves integrity, not that the strategy will win.
+
+### 76 to 90 seconds: End with the burden
+
+Screen: `/founder#open-burden`
+
+The forward record has only 17 daily observations, external reviews remain at zero, and Foundry is planned not applied. The open burden is part of the result.
+
+This is a timed production script and evidence path. It is not a recorded video, proof that a viewer watched it or evidence of admissions impact.
+
 
 ## Claims deliberately excluded
 

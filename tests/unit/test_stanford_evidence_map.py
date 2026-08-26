@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+from itertools import pairwise
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -45,6 +46,22 @@ def test_stanford_evidence_map_is_compact_factual_and_fail_closed() -> None:
     forward_source = json.loads(module.SOURCES["forward"].read_text())
     assert forward_truth["provenance_passes"] is forward_source["provenance_gate"]["passes"]
     assert forward_truth["sharpe_status"] == forward_source["sharpe_evidence"]["status"]
+    contribution = report["contribution_map"]
+    assert contribution["status"] == "SELF_DISCLOSED_SOURCE_BOUND_NOT_INDEPENDENTLY_ATTESTED"
+    assert contribution["external_validation"]["assigned_reviewers"] == 0
+    assert contribution["external_validation"]["completed_reviews"] == 0
+    assert contribution["external_validation"]["independent_replications"] == 0
+    assert "authorship" in contribution["ai_assisted_tooling"]["not_permitted_to_claim"]
+    assert "unaided authorship" in contribution["not_established"]
+    walkthrough = report["ninety_second_walkthrough"]
+    assert walkthrough["total_seconds"] == 90
+    assert walkthrough["chapters"][0]["start_second"] == 0
+    assert walkthrough["chapters"][-1]["end_second"] == 90
+    assert all(
+        left["end_second"] == right["start_second"]
+        for left, right in pairwise(walkthrough["chapters"])
+    )
+    assert walkthrough["status"] == "SCRIPT_AND_SHOT_MAP_READY_VIDEO_NOT_RECORDED"
     assert "independent replication" in report["what_not_to_claim"]
     assert report["content_hash"] == module._content_hash(report)
 
