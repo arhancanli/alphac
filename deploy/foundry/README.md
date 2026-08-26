@@ -71,8 +71,9 @@ Issue each credential independently after the infrastructure exists:
 | `researchd` | Foundry database role and no object or broker key |
 | Worker | Worker database role and no direct public-internet key |
 | Data gateway | Approved provider credentials and research-bucket read/write |
-| Validator | Research-bucket read only |
-| Publisher | Sanitized publication bucket write only |
+| Migration operator | Ephemeral migration database role; disable after the first import |
+| Validator | Validator database role and research-bucket read only |
+| Publisher | Publisher database role and sanitized publication bucket write only |
 | Public adapter | Sanitized publication bucket read only |
 | Holdout worker | Holdout bucket only, issued for one authorized consumption |
 | Evidence signer | Signing operation only, unavailable to workers |
@@ -86,14 +87,18 @@ Foundry process must refuse startup if an Alpaca or broker credential variable i
 
 ## 5. Migrate and bind PostgreSQL
 
-Create the `foundry_researchd`, `foundry_worker` and `foundry_status` database users outside Git.
-Apply migrations as the narrow database owner:
+Create `foundry_researchd`, `foundry_worker`, `foundry_status`, `foundry_migrator`,
+`foundry_validator` and `foundry_publisher` outside Git. Give each a distinct generated credential.
+The migration credential is temporary and must be disabled after the first import. Apply migrations
+as the narrow database owner:
 
 ```bash
 psql "$FOUNDRY_DATABASE_ADMIN_DSN" -v ON_ERROR_STOP=1 \
   -f deploy/foundry/sql/001_core.sql
 psql "$FOUNDRY_DATABASE_ADMIN_DSN" -v ON_ERROR_STOP=1 \
   -f deploy/foundry/sql/002_privileges.sql
+psql "$FOUNDRY_DATABASE_ADMIN_DSN" -v ON_ERROR_STOP=1 \
+  -f deploy/foundry/sql/003_legacy_migration.sql
 FOUNDRY_DATABASE_DSN="$FOUNDRY_DATABASE_ADMIN_DSN" \
   uv run af foundry bind-contract \
   --activated-by "deployment-receipt:<private receipt hash>"
@@ -129,10 +134,71 @@ the private receipt. Never probe an order endpoint with an authenticated request
 
 ## 8. Migrate one killed trial
 
-Choose an existing complete killed identity. Import its immutable identity and packet references as
-legacy migration data without assigning a new Foundry identity ordinal. Run its declared clean replay
-in a pinned worker, validate artifact hash equality, sanitize the complete packet and publish the
-negative outcome. This migration may not reopen the identity or spend a new hypothesis.
+The selected identity is `eia_petroleum_inventory`, historical key `8446702cb8dd1768`. It is one of
+two identities in the 228-identity union classified `COMPLETE_EVIDENCED_KILL`. Every required packet
+section is verified and the historical result is negative. The choice is frozen in
+`config/foundry_legacy_migrations/eia_petroleum_inventory_v1.json`.
+
+First, verify tracked publication bindings. Then stage the private content-addressed input snapshot
+on the deployment host and expand every referenced object hash:
+
+```bash
+uv run af foundry verify-legacy-migration --tracked-bindings-only
+uv run af foundry verify-legacy-migration --verify-private-snapshot
+```
+
+The strict preflight currently expects 851 referenced snapshot objects. A different count or hash is
+a hard stop. Import through the temporary migrator role. The import stores the historical kill with
+`identity_spent = true`, `migrated_legacy = true` and a null Foundry identity ordinal:
+
+```bash
+FOUNDRY_DATABASE_DSN="$FOUNDRY_MIGRATOR_DATABASE_DSN" \
+  uv run af foundry import-legacy-killed \
+  --source-commit "$REVIEWED_FOUNDRY_COMMIT" \
+  --actor-id "migration-operator:<operator>" \
+  --authorization-reference "deployment-receipt:<private receipt hash>"
+```
+
+Disable the migrator credential after the import. Queue exactly one no-network clean replay through
+`foundry_researchd`, execute it in the pinned rootless worker, and complete the lease with the actual
+result artifact hash. The validator compares that database-recorded hash with the frozen historical
+hash. A mismatch records `FAIL`; it cannot be converted into another attempt by changing the packet.
+
+```bash
+FOUNDRY_DATABASE_DSN="$FOUNDRY_RESEARCHD_DATABASE_DSN" \
+  uv run af foundry enqueue-legacy-replay \
+  --image-digest "$FOUNDRY_WORKER_IMAGE" \
+  --source-commit "$REVIEWED_FOUNDRY_COMMIT"
+
+FOUNDRY_DATABASE_DSN="$FOUNDRY_VALIDATOR_DATABASE_DSN" \
+  uv run af foundry finalize-legacy-replay \
+  --trial-id a9ae69f6-bc4a-5269-bfa3-00af807d24da \
+  --job-id "$REPLAY_JOB_ID" \
+  --observed-object-hash "$VALIDATOR_OBSERVED_REPLAY_HASH" \
+  --validator-id "validator:<instance>" \
+  --authorization-reference "replay-receipt:<private receipt hash>"
+```
+
+Only a database-recorded `PASS` can enqueue sanitization. Complete that worker lease with the
+sanitized packet hash, then bind it through the publisher role:
+
+```bash
+FOUNDRY_DATABASE_DSN="$FOUNDRY_RESEARCHD_DATABASE_DSN" \
+  uv run af foundry enqueue-legacy-sanitizer \
+  --image-digest "$FOUNDRY_WORKER_IMAGE" \
+  --source-commit "$REVIEWED_FOUNDRY_COMMIT"
+
+FOUNDRY_DATABASE_DSN="$FOUNDRY_PUBLISHER_DATABASE_DSN" \
+  uv run af foundry publish-legacy-packet \
+  --trial-id a9ae69f6-bc4a-5269-bfa3-00af807d24da \
+  --job-id "$SANITIZER_JOB_ID" \
+  --observed-sanitized-hash "$PUBLISHER_OBSERVED_SANITIZED_HASH" \
+  --publisher-id "publisher:<instance>" \
+  --authorization-reference "sanitizer-receipt:<private receipt hash>"
+```
+
+This migration may not reopen the identity, allocate an ordinal, consume a holdout or spend a new
+hypothesis. Do not accept new outcome-bearing research until the full path completes.
 
 Do not accept new outcome-bearing research until this path completes.
 
@@ -163,3 +229,15 @@ Foundry v1 is operational only when every receipt required by the deployment man
 cleanly and points to the same infrastructure, contract, policy, source commit and image digest. A
 partially complete deployment remains `PROVISIONED_UNVERIFIED` or `DESIGN_FROZEN_NOT_DEPLOYED` on the
 public surface.
+
+Receipt fields and receipt-specific assertions are frozen in
+`config/foundry_acceptance_receipt_contract.json`. Verify the private receipt directory before any
+status change:
+
+```bash
+uv run af foundry verify-acceptance-receipts \
+  --directory /var/lib/foundry/private/acceptance-receipts
+```
+
+The command exits nonzero for a missing, failed, inconsistent, stale-ordered, tampered or
+secret-bearing receipt. `ACCEPTED_OPERATIONAL` is the only output that permits an operational label.

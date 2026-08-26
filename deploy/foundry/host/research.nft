@@ -32,7 +32,9 @@ table inet foundry_filter {
 
         meta skuid "researchd" ip daddr 10.44.0.0/20 tcp dport @private_database_ports accept
         meta skuid "foundryworker" ip daddr 10.44.0.0/20 tcp dport @private_database_ports accept
-
+        meta skuid "foundryvalidator" ip daddr 10.44.0.0/20 tcp dport @private_database_ports accept
+        meta skuid "foundrypublisher" ip daddr 10.44.0.0/20 tcp dport @private_database_ports accept
+        meta skuid "foundrymigrator" ip daddr 10.44.0.0/20 tcp dport @private_database_ports accept
         meta skuid "foundrysentinel" ip daddr 10.44.0.0/20 tcp dport @private_database_ports accept
 
         meta skuid "foundryegress" udp dport 53 accept

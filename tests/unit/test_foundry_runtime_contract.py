@@ -43,6 +43,23 @@ def test_worker_has_bounded_resources_and_no_general_internet_network() -> None:
     }
 
 
+def test_migration_validation_and_publication_database_roles_are_separate() -> None:
+    contract = json.loads(RUNTIME.read_text(encoding="utf-8"))
+    assert contract["components"]["migration_operator"] == {
+        "unix_user": "foundrymigrator",
+        "database_role": "foundry_migrator",
+        "network": ["postgres_private"],
+        "secrets": ["ephemeral_migration_database_dsn"],
+        "disabled_after_first_migration": True,
+        "broker_write_access": False,
+    }
+    assert contract["components"]["validator"]["database_role"] == "foundry_validator"
+    assert (
+        contract["components"]["sanitizer_publisher"]["database_role"]
+        == "foundry_publisher"
+    )
+
+
 def test_host_firewalls_are_deny_default_and_keep_holdout_separate() -> None:
     research = RESEARCH_FIREWALL.read_text(encoding="utf-8")
     holdout = HOLDOUT_FIREWALL.read_text(encoding="utf-8")

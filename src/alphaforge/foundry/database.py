@@ -11,6 +11,7 @@ from dataclasses import dataclass
 from typing import Any, Final, cast
 
 from alphaforge.foundry.contract import FoundryContract, canonical_sha256
+from alphaforge.foundry.migration import LegacyMigrationPacket
 from alphaforge.foundry.policy import FoundryPolicy
 
 BROKER_ENVIRONMENT_KEY: Final[re.Pattern[str]] = re.compile(
@@ -245,6 +246,227 @@ class FoundryDatabase:
             trial = cursor.fetchone()
             if trial is None:
                 raise DatabaseContractError("database transition returned no trial")
+            return cast(dict[str, Any], trial)
+
+    def import_legacy_killed(
+        self,
+        *,
+        packet: LegacyMigrationPacket,
+        source_commit: str,
+        actor_id: str,
+        authorization_reference: str,
+    ) -> dict[str, Any]:
+        """Import one hash-bound historical kill without allocating a new identity."""
+        event_hash = canonical_sha256(
+            {
+                "migration_key": packet.migration_key,
+                "trial_id": str(packet.trial_id),
+                "public_trial_id": packet.public_trial_id,
+                "historical_identity_key": packet.historical_identity_key,
+                "identity_packet_hash": packet.identity_packet_hash,
+                "input_snapshot_hash": packet.input_snapshot_hash,
+                "expected_result_hash": packet.expected_result_hash,
+                "prior_replay_receipt_hash": packet.prior_replay_receipt_hash,
+                "migration_manifest_hash": packet.manifest_hash,
+                "source_commit": source_commit,
+                "actor_id": actor_id,
+                "authorization_reference": authorization_reference,
+            }
+        )
+        with self._connect() as connection, connection.cursor() as cursor:
+            cursor.execute(
+                """
+                SELECT * FROM foundry.import_legacy_killed_trial(
+                    %s, %s, %s, %s, %s, %s, %s, %s,
+                    %s, %s, %s, %s, %s, %s, %s
+                )
+                """,
+                (
+                    packet.migration_key,
+                    packet.trial_id,
+                    packet.public_trial_id,
+                    packet.historical_identity_key,
+                    packet.private_hypothesis_hash,
+                    packet.historical_recorded_at,
+                    packet.identity_packet_hash,
+                    packet.input_snapshot_hash,
+                    packet.expected_result_hash,
+                    packet.prior_replay_receipt_hash,
+                    packet.manifest_hash,
+                    source_commit,
+                    actor_id,
+                    authorization_reference,
+                    event_hash,
+                ),
+            )
+            trial = cursor.fetchone()
+            if trial is None:
+                raise DatabaseContractError("database legacy import returned no trial")
+            return cast(dict[str, Any], trial)
+
+    def enqueue_legacy_replay(
+        self,
+        *,
+        packet: LegacyMigrationPacket,
+        image_digest: str,
+        source_commit: str,
+    ) -> dict[str, Any]:
+        """Queue the packet's exact one-shot, no-network replay manifest."""
+        replay = cast(dict[str, Any], packet.document["replay"])
+        quota = cast(dict[str, int], replay["quota"])
+        job_manifest_hash = canonical_sha256(
+            {
+                "migration_manifest_hash": packet.manifest_hash,
+                "trial_id": str(packet.trial_id),
+                "argv": replay["argv"],
+                "shell": replay["shell"],
+                "network_policy": replay["network_policy"],
+                "workspace": replay["workspace"],
+                "historical_ledger_mode": replay["historical_ledger_mode"],
+                "expected_result_path": replay["expected_result_path"],
+                "expected_result_hash": packet.expected_result_hash,
+                "quota": quota,
+                "image_digest": image_digest,
+                "source_commit": source_commit,
+            }
+        )
+        job_id = uuid.uuid4()
+        with self._connect() as connection, connection.cursor() as cursor:
+            cursor.execute(
+                """
+                SELECT * FROM foundry.enqueue_job(
+                    %s, %s, 'CLEAN_REPLAY', %s, %s, %s,
+                    %s, %s, %s, %s, %s, 'NONE', 1
+                )
+                """,
+                (
+                    job_id,
+                    packet.trial_id,
+                    job_manifest_hash,
+                    image_digest,
+                    source_commit,
+                    quota["cpu_millis"],
+                    quota["memory_mebibytes"],
+                    quota["process_limit"],
+                    quota["disk_mebibytes"],
+                    quota["wall_seconds"],
+                ),
+            )
+            job = cursor.fetchone()
+            if job is None:
+                raise DatabaseContractError("database legacy replay enqueue returned no job")
+            return cast(dict[str, Any], job)
+
+    def finalize_legacy_replay(
+        self,
+        *,
+        trial_id: uuid.UUID,
+        job_id: uuid.UUID,
+        observed_object_hash: str,
+        validator_id: str,
+        authorization_reference: str,
+    ) -> dict[str, Any]:
+        event_hash = canonical_sha256(
+            {
+                "trial_id": str(trial_id),
+                "job_id": str(job_id),
+                "observed_object_hash": observed_object_hash,
+                "validator_id": validator_id,
+                "authorization_reference": authorization_reference,
+            }
+        )
+        with self._connect() as connection, connection.cursor() as cursor:
+            cursor.execute(
+                "SELECT * FROM foundry.finalize_legacy_replay(%s, %s, %s, %s, %s, %s)",
+                (
+                    trial_id,
+                    job_id,
+                    observed_object_hash,
+                    validator_id,
+                    authorization_reference,
+                    event_hash,
+                ),
+            )
+            trial = cursor.fetchone()
+            if trial is None:
+                raise DatabaseContractError("database legacy replay finalizer returned no trial")
+            return cast(dict[str, Any], trial)
+
+    def enqueue_legacy_sanitizer(
+        self,
+        *,
+        packet: LegacyMigrationPacket,
+        image_digest: str,
+        source_commit: str,
+    ) -> dict[str, Any]:
+        """Queue the allowlisted sanitizer after the database has recorded replay PASS."""
+        publication = cast(dict[str, Any], packet.document["publication"])
+        job_manifest_hash = canonical_sha256(
+            {
+                "migration_manifest_hash": packet.manifest_hash,
+                "trial_id": str(packet.trial_id),
+                "required_replay_status": publication["required_replay_status"],
+                "public_fields_only": publication["public_fields_only"],
+                "forbidden_claims": publication["forbidden_claims"],
+                "image_digest": image_digest,
+                "source_commit": source_commit,
+            }
+        )
+        job_id = uuid.uuid4()
+        with self._connect() as connection, connection.cursor() as cursor:
+            cursor.execute(
+                """
+                SELECT * FROM foundry.enqueue_job(
+                    %s, %s, 'SANITIZE', %s, %s, %s,
+                    500, 256, 32, 512, 60, 'PUBLICATION_ONLY', 1
+                )
+                """,
+                (
+                    job_id,
+                    packet.trial_id,
+                    job_manifest_hash,
+                    image_digest,
+                    source_commit,
+                ),
+            )
+            job = cursor.fetchone()
+            if job is None:
+                raise DatabaseContractError("database legacy sanitizer enqueue returned no job")
+            return cast(dict[str, Any], job)
+
+    def publish_legacy_packet(
+        self,
+        *,
+        trial_id: uuid.UUID,
+        job_id: uuid.UUID,
+        observed_sanitized_hash: str,
+        publisher_id: str,
+        authorization_reference: str,
+    ) -> dict[str, Any]:
+        event_hash = canonical_sha256(
+            {
+                "trial_id": str(trial_id),
+                "job_id": str(job_id),
+                "observed_sanitized_hash": observed_sanitized_hash,
+                "publisher_id": publisher_id,
+                "authorization_reference": authorization_reference,
+            }
+        )
+        with self._connect() as connection, connection.cursor() as cursor:
+            cursor.execute(
+                "SELECT * FROM foundry.publish_legacy_packet(%s, %s, %s, %s, %s, %s)",
+                (
+                    trial_id,
+                    job_id,
+                    observed_sanitized_hash,
+                    publisher_id,
+                    authorization_reference,
+                    event_hash,
+                ),
+            )
+            trial = cursor.fetchone()
+            if trial is None:
+                raise DatabaseContractError("database legacy publisher returned no trial")
             return cast(dict[str, Any], trial)
 
     def claim_job(self, worker_id: str, lease_seconds: int) -> dict[str, Any] | None:

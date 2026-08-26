@@ -21,4 +21,4 @@ def test_foundry_local_contract_verifier_passes_without_claiming_deployment() ->
     assert receipt["status"] == "PASS"
     assert all(receipt["checks"].values())
     assert "not a Terraform plan" in receipt["claim_boundary"]
-    assert len(receipt["files"]) == 13
+    assert len(receipt["files"]) == 16
