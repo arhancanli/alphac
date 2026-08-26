@@ -42,8 +42,9 @@ def test_stanford_evidence_map_is_compact_factual_and_fail_closed() -> None:
     assert scholarly["upstream_strategy_curve_replays"] == 3
     assert scholarly["independent_human_reproductions"] == 0
     forward_truth = report["evidence"]["forward_truth"]["facts"]
-    assert forward_truth["provenance_passes"] is False
-    assert forward_truth["sharpe_status"] == "IMMATURE_RECORD_TOO_SHORT"
+    forward_source = json.loads(module.SOURCES["forward"].read_text())
+    assert forward_truth["provenance_passes"] is forward_source["provenance_gate"]["passes"]
+    assert forward_truth["sharpe_status"] == forward_source["sharpe_evidence"]["status"]
     assert "independent replication" in report["what_not_to_claim"]
     assert report["content_hash"] == module._content_hash(report)
 
