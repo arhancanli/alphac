@@ -19,6 +19,13 @@ output "database_port" {
   value = digitalocean_database_cluster.foundry.port
 }
 
+output "nat_gateway_ids" {
+  value = {
+    research = digitalocean_vpc_nat_gateway.research.id
+    holdout  = digitalocean_vpc_nat_gateway.holdout.id
+  }
+}
+
 output "bucket_names" {
   value = {
     research    = digitalocean_spaces_bucket.research.name

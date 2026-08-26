@@ -23,6 +23,8 @@
       "required_assertions": [
         "application_droplets_have_no_public_network",
         "research_and_holdout_vpcs_are_distinct_and_unpeered",
+        "each_private_vpc_has_a_distinct_default_route_nat_gateway",
+        "reviewed_operator_key_is_installed_on_private_hosts_at_creation",
         "postgres_is_private_and_trusted_sources_are_narrow",
         "object_buckets_are_private_versioned_and_prevent_destroy",
         "broker_credentials_are_absent_from_plan_and_state"

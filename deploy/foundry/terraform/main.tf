@@ -16,6 +16,38 @@ resource "digitalocean_vpc" "holdout" {
   ip_range = var.holdout_vpc_cidr
 }
 
+resource "digitalocean_vpc_nat_gateway" "research" {
+  name   = "canli-foundry-research-egress"
+  type   = "PUBLIC"
+  region = var.region
+  size   = "1"
+
+  vpcs {
+    vpc_uuid        = digitalocean_vpc.research.id
+    default_gateway = true
+  }
+
+  lifecycle {
+    prevent_destroy = true
+  }
+}
+
+resource "digitalocean_vpc_nat_gateway" "holdout" {
+  name   = "canli-foundry-holdout-egress"
+  type   = "PUBLIC"
+  region = var.region
+  size   = "1"
+
+  vpcs {
+    vpc_uuid        = digitalocean_vpc.holdout.id
+    default_gateway = true
+  }
+
+  lifecycle {
+    prevent_destroy = true
+  }
+}
+
 resource "digitalocean_tag" "research" {
   name = "canli-foundry-research"
 }
@@ -36,6 +68,7 @@ resource "digitalocean_droplet" "research" {
   backups           = true
   graceful_shutdown = true
   droplet_agent     = true
+  ssh_keys          = var.operator_ssh_key_fingerprints
   tags              = [digitalocean_tag.research.id]
   user_data = templatefile("${path.module}/cloud-init/research.yaml.tftpl", {
     nftables_config = file("${path.module}/../host/research.nft")
@@ -45,6 +78,8 @@ resource "digitalocean_droplet" "research" {
   lifecycle {
     prevent_destroy = true
   }
+
+  depends_on = [digitalocean_vpc_nat_gateway.research]
 }
 
 resource "digitalocean_droplet" "holdout" {
@@ -59,6 +94,7 @@ resource "digitalocean_droplet" "holdout" {
   backups           = true
   graceful_shutdown = true
   droplet_agent     = true
+  ssh_keys          = var.operator_ssh_key_fingerprints
   tags              = [digitalocean_tag.holdout.id]
   user_data = templatefile("${path.module}/cloud-init/holdout.yaml.tftpl", {
     nftables_config = file("${path.module}/../host/holdout.nft")
@@ -68,6 +104,8 @@ resource "digitalocean_droplet" "holdout" {
   lifecycle {
     prevent_destroy = true
   }
+
+  depends_on = [digitalocean_vpc_nat_gateway.holdout]
 }
 
 resource "digitalocean_droplet" "bastion" {

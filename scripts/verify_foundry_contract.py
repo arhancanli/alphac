@@ -27,6 +27,15 @@ FILES: Final = (
     Path("deploy/foundry/sql/003_legacy_migration.sql"),
     Path("config/foundry_legacy_migrations/eia_petroleum_inventory_v1.json"),
     Path("config/foundry_acceptance_receipt_contract.json"),
+    Path("deploy/foundry/README.md"),
+    Path("deploy/foundry/terraform/main.tf"),
+    Path("deploy/foundry/terraform/outputs.tf"),
+    Path("deploy/foundry/terraform/variables.tf"),
+    Path("deploy/foundry/terraform/versions.tf"),
+    Path("deploy/foundry/terraform/terraform.tfvars.example"),
+    Path("deploy/foundry/terraform/cloud-init/bastion.yaml"),
+    Path("deploy/foundry/terraform/cloud-init/holdout.yaml.tftpl"),
+    Path("deploy/foundry/terraform/cloud-init/research.yaml.tftpl"),
 )
 
 
@@ -57,6 +66,10 @@ def verify() -> dict[str, Any]:
             encoding="utf-8"
         )
     )
+    terraform_main = (ROOT / "deploy/foundry/terraform/main.tf").read_text(encoding="utf-8")
+    terraform_versions = (ROOT / "deploy/foundry/terraform/versions.tf").read_text(
+        encoding="utf-8"
+    )
 
     failures: list[str] = []
     if lifecycle["status"] != "DESIGN_FROZEN_NOT_DEPLOYED":
@@ -67,6 +80,31 @@ def verify() -> dict[str, Any]:
         failures.append("holdout is peered with research")
     if deployment["networks"]["execution"]["reachable_from_research"] is not False:
         failures.append("research can reach execution")
+    if deployment["networks"]["egress"] != {
+        "type": "dedicated_managed_nat_per_vpc",
+        "shared_between_research_and_holdout": False,
+        "default_route_required_before_private_host_creation": True,
+        "host_and_cloud_firewalls_remain_authoritative": True,
+        "documented_monthly_base_cost_usd_as_of_2026_08_26": 80,
+    }:
+        failures.append("private-host egress contract drifted")
+    if terraform_main.count('resource "digitalocean_vpc_nat_gateway"') != 2:
+        failures.append("Terraform does not declare two dedicated NAT gateways")
+    if terraform_main.count("default_gateway = true") != 2:
+        failures.append("each Foundry VPC does not have a default NAT route")
+    for required in (
+        "vpc_uuid        = digitalocean_vpc.research.id",
+        "vpc_uuid        = digitalocean_vpc.holdout.id",
+    ):
+        if required not in terraform_main:
+            failures.append(f"dedicated NAT attachment missing: {required}")
+    if terraform_main.count("ssh_keys          = var.operator_ssh_key_fingerprints") != 3:
+        failures.append("reviewed operator keys are not installed on every SSH host")
+    if terraform_main.count("depends_on = [digitalocean_vpc_nat_gateway.") != 2:
+        failures.append("private host creation is not ordered after NAT readiness")
+    for required in ('backend "s3"', "use_lockfile                = true"):
+        if required not in terraform_versions:
+            failures.append(f"protected remote state control missing: {required}")
     if any(
         component["broker_write_access"] is not False
         for component in runtime["components"].values()
@@ -143,6 +181,10 @@ def verify() -> dict[str, Any]:
             ),
             "migration_roles_separated": not any(
                 "operator" in item or "database role" in item for item in failures
+            ),
+            "private_host_egress_and_state_protected": not any(
+                "NAT" in item or "egress" in item or "remote state" in item
+                for item in failures
             ),
         },
         "failures": failures,

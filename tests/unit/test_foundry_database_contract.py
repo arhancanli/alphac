@@ -43,7 +43,10 @@ def test_deployment_manifest_preserves_execution_and_holdout_isolation() -> None
     assert manifest["provider"]["existing_api_optimizer_principals_reusable"] is False
     assert manifest["networks"]["research"]["public_networking"] is False
     assert manifest["networks"]["holdout"]["peered_with_research"] is False
+    assert manifest["networks"]["egress"]["type"] == "dedicated_managed_nat_per_vpc"
+    assert manifest["networks"]["egress"]["shared_between_research_and_holdout"] is False
     assert manifest["networks"]["execution"]["managed_by_this_manifest"] is False
+    assert manifest["compute"]["operator_access"]["dedicated_ssh_key_required_at_host_creation"]
     assert manifest["credentials"]["broker_credentials_present"] is False
     assert manifest["object_storage"]["application_keys_managed_in_main_terraform_state"] is False
 
