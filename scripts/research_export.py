@@ -471,6 +471,12 @@ SLEEVE_PUBLICATION_EVIDENCE_JSON: Final[Path] = REPO / "config" / "sleeve_public
 EXTERNAL_PUBLICATION_READINESS_JSON: Final[Path] = (
     REPO / "artifacts" / "audit" / "external_publication_readiness.json"
 )
+AUTHOR_PROTOCOL_REVIEW_PACKETS_JSON: Final[Path] = (
+    REPO / "artifacts" / "governance" / "author_protocol_review_packets.json"
+)
+AUTHOR_PROTOCOL_APPROVAL_PROTOCOL_MD: Final[Path] = (
+    REPO / "docs" / "design" / "AUTHOR_PROTOCOL_APPROVAL_PROTOCOL.md"
+)
 PUBLICATION_CLEAN_CHECKOUT_INTEGRITY_JSON: Final[Path] = (
     REPO / "artifacts" / "audit" / "publication_clean_checkout_integrity.json"
 )
@@ -2181,6 +2187,7 @@ def build_program_status(state: dict[str, Any]) -> dict[str, Any]:
     paper_names.add("crypto-carry-portable-v1.md")
     paper_names.add("treasury-auction-state-machine.md")
     paper_names.add("merger-announcement-identity-v2.md")
+    paper_names.add("author-protocol-approval-protocol.md")
     prospective_trial = build_prospective_trial_record()
     packet_manifest = (
         json.loads(TRIAL_PACKET_MANIFEST_JSON.read_text())
@@ -3051,6 +3058,11 @@ def build_research_export() -> dict[str, Any]:
             if MERGER_ANNOUNCEMENT_CONFIRMATORY_DESIGN_JSON.exists()
             else None
         ),
+        "author_protocol_review_packets": (
+            json.loads(AUTHOR_PROTOCOL_REVIEW_PACKETS_JSON.read_text())
+            if AUTHOR_PROTOCOL_REVIEW_PACKETS_JSON.exists()
+            else None
+        ),
         "external_validation_opportunities": json.loads(
             EXTERNAL_VALIDATION_OPPORTUNITIES_JSON.read_text()
         ),
@@ -3588,6 +3600,9 @@ def main(out_dir: Path = OUT_DIR) -> Path:
     (out_dir / "external_publication_readiness.json").write_text(
         EXTERNAL_PUBLICATION_READINESS_JSON.read_text()
     )
+    (out_dir / "author_protocol_review_packets.json").write_text(
+        AUTHOR_PROTOCOL_REVIEW_PACKETS_JSON.read_text()
+    )
     (out_dir / "publication_clean_checkout_integrity.json").write_text(
         PUBLICATION_CLEAN_CHECKOUT_INTEGRITY_JSON.read_text()
     )
@@ -4045,6 +4060,9 @@ def main(out_dir: Path = OUT_DIR) -> Path:
     (out_dir / "merger_announcement_confirmatory_design.json").write_text(
         MERGER_ANNOUNCEMENT_IDENTITY_V2_RESULT.read_text()
     )
+    (literature_dir / "author-protocol-approval-protocol.md").write_text(
+        AUTHOR_PROTOCOL_APPROVAL_PROTOCOL_MD.read_text()
+    )
     (literature_dir / "cftc-hedging-pressure-feasibility.md").write_text(
         CFTC_FEASIBILITY_MD.read_text()
     )
@@ -4428,6 +4446,9 @@ def main(out_dir: Path = OUT_DIR) -> Path:
         (app_dir / "external_publication_readiness.json").write_text(
             EXTERNAL_PUBLICATION_READINESS_JSON.read_text()
         )
+        (app_dir / "author_protocol_review_packets.json").write_text(
+            AUTHOR_PROTOCOL_REVIEW_PACKETS_JSON.read_text()
+        )
         (app_dir / "publication_clean_checkout_integrity.json").write_text(
             PUBLICATION_CLEAN_CHECKOUT_INTEGRITY_JSON.read_text()
         )
@@ -4725,6 +4746,9 @@ def main(out_dir: Path = OUT_DIR) -> Path:
         )
         (app_dir / "merger_announcement_confirmatory_design.json").write_text(
             MERGER_ANNOUNCEMENT_IDENTITY_V2_RESULT.read_text()
+        )
+        (app_literature_dir / "author-protocol-approval-protocol.md").write_text(
+            AUTHOR_PROTOCOL_APPROVAL_PROTOCOL_MD.read_text()
         )
         (app_literature_dir / "cftc-hedging-pressure-feasibility.md").write_text(
             CFTC_FEASIBILITY_MD.read_text()

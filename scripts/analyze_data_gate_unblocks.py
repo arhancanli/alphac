@@ -46,6 +46,15 @@ TREASURY_STATE_MACHINE = (
 MERGER_CONFIRMATORY_DESIGN = (
     FEASIBILITY / "merger_arbitrage" / "announcement_confirmatory_design.json"
 )
+AUTHOR_PROTOCOL_REVIEW_ROOT = (
+    REPO / "artifacts" / "governance" / "author_protocol_review_packets"
+)
+MERGER_AUTHOR_REVIEW_PACKET = (
+    AUTHOR_PROTOCOL_REVIEW_ROOT / "merger-announcement-identity-v2" / "review_packet.json"
+)
+TREASURY_AUTHOR_REVIEW_PACKET = (
+    AUTHOR_PROTOCOL_REVIEW_ROOT / "treasury-auction-state-machine" / "review_packet.json"
+)
 SUPERSEDED_RESULTS = {
     "active_ownership_13d",
     "active_ownership_13d_schema_v2",
@@ -353,6 +362,10 @@ def main() -> int:
                 "artifact_content_hash": json.loads(MERGER_CONFIRMATORY_DESIGN.read_text())[
                     "content_hash"
                 ],
+                "review_packet": str(MERGER_AUTHOR_REVIEW_PACKET.relative_to(REPO)),
+                "review_packet_content_hash": json.loads(MERGER_AUTHOR_REVIEW_PACKET.read_text())[
+                    "content_hash"
+                ],
             },
             {
                 "action": (
@@ -367,6 +380,10 @@ def main() -> int:
                     "schedule_state_machine_audit.json"
                 ),
                 "artifact_content_hash": json.loads(TREASURY_STATE_MACHINE.read_text())[
+                    "content_hash"
+                ],
+                "review_packet": str(TREASURY_AUTHOR_REVIEW_PACKET.relative_to(REPO)),
+                "review_packet_content_hash": json.loads(TREASURY_AUTHOR_REVIEW_PACKET.read_text())[
                     "content_hash"
                 ],
             },

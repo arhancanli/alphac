@@ -135,6 +135,14 @@ def test_staged_families_use_declared_current_artifacts_and_blockers() -> None:
     assert approval_actions[("merger_arbitrage",)]["artifact_content_hash"] == (
         "sha256:e2d294361c96994931849cef2e44faa464e3f2ab6a9ba1e05e9c4d6742f82b74"
     )
+    for family in ("merger_arbitrage", "treasury_auction_concession"):
+        action = approval_actions[(family,)]
+        packet = REPO / action["review_packet"]
+        document = json.loads(packet.read_text())
+        assert packet.is_file()
+        assert document["content_hash"] == action["review_packet_content_hash"]
+        assert document["author_approval_claimed"] is False
+        assert document["activation_boundary"]["next_stage_authorized"] is False
     assert result["content_hash"] == MODULE.content_hash(result)
 
 
