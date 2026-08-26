@@ -314,6 +314,8 @@
         "confirmation_corpus_opened": false,
         "return_data_opened": false,
         "return_hypotheses_spent": 0,
+        "author_review_packet": "artifacts/governance/author_protocol_review_packets/merger-announcement-identity-v2/review_packet.json",
+        "author_review_packet_content_hash": "sha256:1b5e4a781dfd0fb9f188e541b38920cf6e93be07e9a5027cdae4172545e62dad",
         "content_hash": "sha256:e2d294361c96994931849cef2e44faa464e3f2ab6a9ba1e05e9c4d6742f82b74"
       },
       "tender_only_document_feasibility": {
@@ -593,6 +595,8 @@
         "return_preregistration_authorized": false,
         "return_data_opened": false,
         "return_hypotheses_spent": 0,
+        "author_review_packet": "artifacts/governance/author_protocol_review_packets/treasury-auction-state-machine/review_packet.json",
+        "author_review_packet_content_hash": "sha256:c260e8f1d3c11d784ddb11ed12253e70e7b572114b3e3fd3204e54f6f813e7d4",
         "content_hash": "sha256:46dfc56e7a2bd92cf55cacc1cb69ce4d09d8803a56376ab93faeb0d4b45ebef2"
       },
       "return_hypotheses_spent": 0,

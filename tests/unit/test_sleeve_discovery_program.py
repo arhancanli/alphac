@@ -380,6 +380,11 @@ def test_merger_v2_is_a_disjoint_unopened_identity_redesign() -> None:
     assert redesign["confirmation_corpus_opened"] is False
     assert redesign["return_data_opened"] is False
     assert redesign["return_hypotheses_spent"] == 0
+    review = json.loads(
+        (Path(__file__).resolve().parents[2] / redesign["author_review_packet"]).read_text()
+    )
+    assert redesign["author_review_packet_content_hash"] == review["content_hash"]
+    assert review["author_approval_claimed"] is False
     assert redesign["content_hash"] == result["content_hash"]
 
 
@@ -442,6 +447,11 @@ def test_treasury_feasibility_matches_the_sealed_result() -> None:
     assert state_machine["return_preregistration_authorized"] is False
     assert state_machine["return_data_opened"] is False
     assert state_machine["return_hypotheses_spent"] == 0
+    review = json.loads(
+        (Path(__file__).resolve().parents[2] / state_machine["author_review_packet"]).read_text()
+    )
+    assert state_machine["author_review_packet_content_hash"] == review["content_hash"]
+    assert review["author_approval_claimed"] is False
     assert state_machine["content_hash"] == state_result["content_hash"]
 
 

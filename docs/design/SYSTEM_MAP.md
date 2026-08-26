@@ -8,9 +8,9 @@ line of its own docstring, each pipeline's steps are the scripts it actually inv
 contract's boundary is the boundary it states about itself. A script with no docstring appears as
 having none.
 
-At a glance: **339 Python scripts**, **17 shell entry points**,
-**22 configuration contracts**, **27 engineering artifacts**,
-**383 unit test files**, **22 data directories**, **9 scheduled jobs**.
+At a glance: **341 Python scripts**, **17 shell entry points**,
+**23 configuration contracts**, **27 engineering artifacts**,
+**385 unit test files**, **22 data directories**, **9 scheduled jobs**.
 
 
 ## What runs on a timer
@@ -177,6 +177,7 @@ are the ones a reader has to know about; everything else is derived from them.
 |---|---|
 | `config/active_ownership_confirmatory_design_inputs.json` | This tracked compact receipt preserves governed counts and hashes needed to rebuild the pre-outcome design in a clean checkout. |
 | `config/admission_v7_promotion.json` | _(no stated boundary)_ |
+| `config/author_protocol_review_registry.json` | This registry identifies protocols awaiting Arhan Canli's review. |
 | `config/clean_checkout_workspace_evidence_policy.json` | This policy classifies test modules by input availability only. |
 | `config/crypto_carry_portable_v1_prerun.json` | This contract freezes a source-availability decision before any portable-v1 return is computed. |
 | `config/crypto_carry_portable_v1_run.json` | FROZEN_BEFORE_RETURN_COMPUTE. |
@@ -340,7 +341,7 @@ and is worth more than a hand-made taxonomy that would drift.
 | `audit_vate_2020_dividend_vendor_resolution.py` | Resolve the unsupported VATE/HCHC 2020 dividend row without opening returns. |
 | `audit_wave1_data_rights.py` | Audit Wave 1 publication bundles against the conservative data-rights policy. |
 
-### `build_*` (35)
+### `build_*` (36)
 
 | script | first line of its docstring |
 |---|---|
@@ -349,6 +350,7 @@ and is worth more than a hand-made taxonomy that would drift.
 | `build_admission_contract_v7.py` | Build the prospective v7 admission proposal from the in-force v6 contract and power audit. |
 | `build_alphavintage_publication_bundle.py` | Build the deterministic AlphaVintage external-publication source bundle. |
 | `build_archival_publication_papers.py` | Render and validate archival paper assets for every registered sleeve bundle. |
+| `build_author_protocol_review_packets.py` | Build blank, hash-bound author review packets for approval-gated protocols. |
 | `build_author_technical_audit_worksheets.py` | Build manuscript-specific author-audit worksheets without inventing author answers. |
 | `build_claim_coverage_map.py` | Which published claims have a guard, which mechanism guards them, and when it last ran. |
 | `build_crypto_carry_metadata_manifest.py` | Seal the full frozen instrument metadata required by a portable crypto-carry replay. |
@@ -488,10 +490,11 @@ and is worth more than a hand-made taxonomy that would drift.
 | `run_crypto_carry_portable_v1.py` | Dry-run by default; execute one reserved crypto_carry_portable_v1 trial explicitly. |
 | `run_prereg_investment_upstream_clean_workspace.py` | Replay historical ``prereg_investment`` from raw archives in a clean workspace. |
 
-### `verify_*` (5)
+### `verify_*` (6)
 
 | script | first line of its docstring |
 |---|---|
+| `verify_author_protocol_approval.py` | Prepare and fail-closed verify an author's approval-gated protocol response. |
 | `verify_author_technical_approval.py` | Prepare and fail-closed verify an author's manuscript-approval response overlay. |
 | `verify_crypto_position_attribution_rollout.py` | Verify the first non-empty natural crypto cycle after attribution rollout. |
 | `verify_publication_clean_checkout.py` | Verify every tracked publication bundle from a clean Git checkout. |
