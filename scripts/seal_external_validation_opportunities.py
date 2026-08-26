@@ -10,7 +10,7 @@ from typing import Any, Final
 
 ROOT: Final = Path(__file__).resolve().parents[1]
 OUTPUT: Final = ROOT / "artifacts/analysis/external_validation_opportunities.json"
-SCHEMA: Final = "canli.alphac-external-validation-opportunities.v1"
+SCHEMA: Final = "canli.alphac-external-validation-opportunities.v2"
 
 
 def _content_hash(payload: dict[str, Any]) -> str:
@@ -30,8 +30,11 @@ def build() -> dict[str, Any]:
                 "A new, narrow experiment on provenance, overfitting control, or "
                 "quantitative-research methodology."
             ),
-            "state": "POTENTIAL_ELIGIBILITY_LOCAL_FAIR_UNRESOLVED",
-            "public_status": "Eligibility and the local affiliated fair are unresolved.",
+            "state": "POTENTIAL_ELIGIBILITY_NO_UAE_FAIR_IN_CURRENT_DIRECTORY_2027_PENDING",
+            "public_status": (
+                "The official 2025-2026 directory returns no UAE fair; the 2026-2027 "
+                "directory and personal eligibility remain unresolved."
+            ),
             "registration_authorized": False,
             "entry_claimed": False,
             "source_checked_on": "2026-08-26",
@@ -53,6 +56,19 @@ def build() -> dict[str, Any]:
                 "abstract_rewrite_deadline": "2027-04-16",
                 "isef_event": {"starts": "2027-05-08", "ends": "2027-05-14"},
             },
+            "affiliated_fair_directory_query": {
+                "directory_cycle": "2025-2026",
+                "country": "United Arab Emirates",
+                "fair_type": "ISEF",
+                "result": "NO_FAIRS_MATCH_YOUR_SEARCH_CRITERIA",
+                "result_count": 0,
+                "checked_on": "2026-08-26",
+                "interpretation": (
+                    "This establishes only that the current public directory lists no UAE "
+                    "ISEF fair. It does not establish the 2026-2027 network, which the "
+                    "Society says is populated as fairs complete annual affiliation."
+                ),
+            },
             "exact_deadline": None,
             "unknowns": [
                 "Arhan's grade and age on the governing dates",
@@ -61,8 +77,10 @@ def build() -> dict[str, Any]:
                 "adult sponsor assignment",
             ],
             "next_action": (
-                "Resolve the affiliated fair and adult sponsor before freezing or beginning the "
-                "competition-specific experiment."
+                "Recheck the official directory as 2026-2027 affiliations appear, and ask the "
+                "school or Society for Science which fair, if any, serves the UAE. Resolve that "
+                "route and an adult sponsor before freezing or beginning the competition-specific "
+                "experiment."
             ),
             "official_sources": [
                 "https://www.societyforscience.org/isef/international-rules/",

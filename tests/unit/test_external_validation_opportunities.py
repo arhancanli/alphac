@@ -59,6 +59,19 @@ def test_high_priority_rules_preserve_verified_constraints() -> None:
         "abstract_rewrite_deadline": "2027-04-16",
         "isef_event": {"starts": "2027-05-08", "ends": "2027-05-14"},
     }
+    assert isef["affiliated_fair_directory_query"] == {
+        "directory_cycle": "2025-2026",
+        "country": "United Arab Emirates",
+        "fair_type": "ISEF",
+        "result": "NO_FAIRS_MATCH_YOUR_SEARCH_CRITERIA",
+        "result_count": 0,
+        "checked_on": "2026-08-26",
+        "interpretation": (
+            "This establishes only that the current public directory lists no UAE ISEF fair. "
+            "It does not establish the 2026-2027 network, which the Society says is populated "
+            "as fairs complete annual affiliation."
+        ),
+    }
 
     wharton = rows["wharton_investment_2026_2027"]
     assert wharton["eligibility"]["team_size"] == "4-6 students from the same school"
