@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import statistics
 import subprocess
 from collections.abc import Iterator
@@ -36,11 +37,24 @@ import pyarrow.parquet as pq
 ROOT: Final = Path(__file__).resolve().parents[1]
 ARTIFACT: Final = ROOT / "artifacts/walkforward/prereg_investment"
 LEDGER: Final = ROOT / "var/experiments.jsonl"
-TRANSCRIPT: Final = (
-    Path.home()
-    / ".claude/projects/-Users-arhancanli/"
-    / "0039cc52-3755-446f-a516-316da07f1b06.jsonl"
-)
+# The private conversation record carrying the orchestration and launch events.
+# It is machine-local and contains unpublished content, so this public source does
+# not hard-code its location: set ``ALPHAC_RUN_TRANSCRIPT`` to the file before
+# rebuilding the receipt.  The receipt binds the file by SHA-256 (see
+# ``EXPECTED_TRANSCRIPT_SHA256``), so a wrong, moved or edited transcript fails
+# closed rather than silently producing a different lineage.
+TRANSCRIPT_ENV: Final = "ALPHAC_RUN_TRANSCRIPT"
+
+
+def transcript_path() -> Path:
+    """Resolve the private run transcript from the environment, fail-closed."""
+    raw = os.environ.get(TRANSCRIPT_ENV, "").strip()
+    if not raw:
+        raise RuntimeError(
+            f"{TRANSCRIPT_ENV} is unset.  Point it at the private run transcript for "
+            "the 2026-06-21T05:21:24Z launch; the receipt binds it by SHA-256."
+        )
+    return Path(raw).expanduser()
 OUTPUT: Final = ROOT / "artifacts/publication/prereg_investment_historical_lineage.json"
 
 SOURCE_COMMIT: Final = "8417cb850a27306b30f6c70365c3565f3d209ddf"
@@ -166,9 +180,10 @@ def _walk(value: Any) -> Iterator[dict[str, Any]]:
 
 
 def _transcript_evidence() -> dict[str, Any]:
-    if not TRANSCRIPT.is_file():
-        raise FileNotFoundError(TRANSCRIPT)
-    transcript_sha = _sha256(TRANSCRIPT)
+    transcript = transcript_path()
+    if not transcript.is_file():
+        raise FileNotFoundError(transcript)
+    transcript_sha = _sha256(transcript)
     if transcript_sha != EXPECTED_TRANSCRIPT_SHA256:
         raise ValueError("private transcript binding drifted")
 
@@ -181,7 +196,7 @@ def _transcript_evidence() -> dict[str, Any]:
     investment_started = datetime.fromtimestamp(TRIAL_NOW_MS / 1000, tz=UTC)
     investment_finished = datetime.fromisoformat("2026-06-21T08:34:57+00:00")
 
-    with TRANSCRIPT.open(encoding="utf-8") as handle:
+    with transcript.open(encoding="utf-8") as handle:
         for line_number, raw in enumerate(handle, start=1):
             event = json.loads(raw)
             timestamp = str(event.get("timestamp", ""))
