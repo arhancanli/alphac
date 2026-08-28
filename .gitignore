@@ -39,3 +39,4 @@ htmlcov/
 /scratch/
 /scratchpad/
 *.bak
+.claude/
