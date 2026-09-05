@@ -232,6 +232,28 @@ def age_hours(iso_ts: str) -> float | None:
 RESULTS: list[dict] = []
 
 
+def _http_json(url: str, timeout: int = 20):
+    """(status, parsed body or None). Reads the body because a 200 with a failing
+    payload is the case the validation-api check exists for."""
+    cmd = f"/usr/bin/curl -sS -w '\\n%{{http_code}}' --max-time {timeout} {url}"
+    _rc, out = sh(cmd, timeout=timeout + 5)
+    try:
+        *body_lines, code = out.strip().splitlines()
+        return int(code), json.loads("\n".join(body_lines))
+    except Exception:
+        return 0, None
+
+
+def check_validation_api():
+    """C10: the keyed validation API answers and can reach its store. Also the daily keep-alive
+    that stops the free-tier Supabase project from pausing after a week idle."""
+    status, body = _http_json(f"{LANDING}/api/v1/validate/status")
+    reachable = bool(isinstance(body, dict) and (body.get("data") or {}).get("store_reachable"))
+    st = "PASS" if status == 200 and reachable else "FAIL"
+    add("C10-validation-api", "sites", "validation API status + store reachable", st, "high",
+        observed=f"http {status}, store_reachable={reachable}", expected="200 and true")
+
+
 def add(id, group, title, status, severity, observed="", expected="", evidence=""):
     RESULTS.append(dict(id=id, group=group, title=title, status=status,
                         severity=severity, observed=str(observed),
@@ -328,6 +350,7 @@ def check_sites(lite=False):
         "PASS" if g == 405 else "FAIL", "high", observed=g, expected=405,
         evidence="404 here = api route dropped in deploy")
 
+    check_validation_api()
 
 def _freshness(url, idc, title, warn_h, fail_h):
     d = get_json(url)
