@@ -1091,3 +1091,68 @@ class TestLadderRestoration:
             assert loop._ladder.state is DDState.NORMAL
         finally:
             store.close()
+
+
+# ----------------------------------------------------- boot: restore the strategy's history
+
+
+class _ScaledStrategy(ScriptedStrategy):
+    """A scripted strategy that also exposes the overlay scale in force, like BlendStrategy."""
+
+    def __init__(self, targets: Mapping[str, float], *, scales: list[float]) -> None:
+        super().__init__(targets)
+        self._scales = list(scales)
+        self.last_scale = float("nan")
+
+    def on_bar_close(self, ctx: object) -> Mapping[str, float]:
+        out = super().on_bar_close(ctx)
+        if self._scales:
+            self.last_scale = self._scales.pop(0)
+        return out
+
+
+class _SeedableStrategy(ScriptedStrategy):
+    """A fresh process's strategy: records what recover_on_boot seeds it with."""
+
+    def __init__(self, targets: Mapping[str, float]) -> None:
+        super().__init__(targets)
+        self.seeded: list[tuple[float, float]] | None = None
+
+    def seed_history(self, history: Sequence[tuple[float, float]]) -> bool:
+        self.seeded = [tuple(h) for h in history]
+        return True
+
+
+class TestStrategyHistoryRestoration:
+    """recover_on_boot must hand the strategy the recorded equity curve WITH the overlay scale
+    in force at each cycle, so the realized-vol leg can be rebuilt in a fresh --once process."""
+
+    def test_the_loop_records_the_scale_and_a_fresh_boot_seeds_it(self, tmp_path: Path) -> None:
+        strat_a = _ScaledStrategy({BTC: 0.10}, scales=[0.9, 1.05, 1.05])
+        loop_a, store_a, _b, _ = build_loop(tmp_path, strategy=strat_a, clock=Clock(T0 + 4 * HOUR))
+        try:
+            for k in range(3):
+                assert loop_a.run_cycle(T0 + k * HOUR).status == "ok"
+            pts = store_a.equity_curve_points()
+            assert [round(p.overlay_scale, 6) for p in pts] == [0.9, 1.05, 1.05]
+        finally:
+            store_a.close()
+
+        strat_b = _SeedableStrategy({BTC: 0.10})
+        loop_b, store_b, _b2, _ = build_loop(tmp_path, strategy=strat_b, clock=Clock(T0 + 4 * HOUR))
+        try:
+            loop_b.recover_on_boot()
+            assert strat_b.seeded is not None
+            assert len(strat_b.seeded) == 3
+            assert [round(s, 6) for _e, s in strat_b.seeded] == [0.9, 1.05, 1.05]
+            assert all(e > 0 for e, _s in strat_b.seeded)
+        finally:
+            store_b.close()
+
+    def test_a_strategy_without_the_seam_is_left_alone(self, tmp_path: Path) -> None:
+        loop, store, _b, _ = build_loop(tmp_path, clock=Clock(T0 + 2 * HOUR))
+        try:
+            assert loop.run_cycle(T0).status == "ok"
+            loop.recover_on_boot()  # ScriptedStrategy has no seed_history: must not raise
+        finally:
+            store.close()

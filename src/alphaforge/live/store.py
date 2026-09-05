@@ -131,6 +131,23 @@ class OrderRecord:
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
+class EquityPoint:
+    """One ``equity_curve`` row with the overlay scale that was in force at that cycle.
+
+    ``overlay_scale`` is the strategy's vol-target scale ``s`` after the cycle's decision
+    (BlendStrategy.last_scale), or NaN when none was recorded (rows written before the
+    column existed, or a cycle whose strategy exposes no scale). It exists so a fresh
+    ``--once`` process can rebuild the realized-vol leg's de-lever history on boot.
+    """
+
+    cycle_ts: Ms
+    equity_quote: float
+    cash_quote: float
+    n_pos: int
+    overlay_scale: float
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
 class LadderSnapshot:
     """The LIVE DrawdownLadder state persisted each cycle (execDesign.md section 7.2).
 
@@ -337,6 +354,7 @@ class TradingStore:
         with self._conn:
             self._conn.executescript(_CREATE_SQL)
             self._ensure_position_mark_columns()
+            self._ensure_equity_curve_columns()
 
     def _ensure_position_mark_columns(self) -> None:
         """Add prospective attribution columns to legacy live databases in place."""
@@ -355,6 +373,17 @@ class TradingStore:
                 self._conn.execute(
                     f"ALTER TABLE positions_snapshots ADD COLUMN {name} {sql_type}"
                 )
+
+    def _ensure_equity_curve_columns(self) -> None:
+        """Additive, nullable: ``overlay_scale`` on the equity curve (2026-09-06). Same
+        migration shape as the position-mark columns, so an existing trading DB gains it on
+        first open and its old rows read back as NaN."""
+        present = {
+            str(row["name"])
+            for row in self._conn.execute("PRAGMA table_info(equity_curve)").fetchall()
+        }
+        if "overlay_scale" not in present:
+            self._conn.execute("ALTER TABLE equity_curve ADD COLUMN overlay_scale REAL")
 
     def __enter__(self) -> Self:
         return self
@@ -719,7 +748,9 @@ class TradingStore:
             for r in rows
         )
 
-    def snapshot_equity(self, cycle_ts: Ms, account: AccountState) -> None:
+    def snapshot_equity(
+        self, cycle_ts: Ms, account: AccountState, *, overlay_scale: float | None = None
+    ) -> None:
         """Record the equity point for ``cycle_ts`` (the live equity curve).
 
         Idempotent on ``cycle_ts`` (PRIMARY KEY upsert): re-running a cycle's
@@ -727,19 +758,42 @@ class TradingStore:
         """
         with self._conn:
             self._conn.execute(
-                "INSERT INTO equity_curve (cycle_ts, equity_quote, cash_quote, n_pos, ts) "
-                "VALUES (?, ?, ?, ?, ?) "
+                "INSERT INTO equity_curve "
+                "(cycle_ts, equity_quote, cash_quote, n_pos, ts, overlay_scale) "
+                "VALUES (?, ?, ?, ?, ?, ?) "
                 "ON CONFLICT (cycle_ts) DO UPDATE SET "
                 "equity_quote = excluded.equity_quote, cash_quote = excluded.cash_quote, "
-                "n_pos = excluded.n_pos, ts = excluded.ts",
+                "n_pos = excluded.n_pos, ts = excluded.ts, overlay_scale = excluded.overlay_scale",
                 (
                     cycle_ts,
                     account.equity_quote,
                     account.cash_quote,
                     len(account.positions),
                     account.ts,
+                    # NaN would be stored as NULL by the driver anyway; be explicit so the
+                    # round-trip (NULL -> NaN) is a documented contract, not an accident.
+                    None
+                    if overlay_scale is None or not math.isfinite(overlay_scale)
+                    else float(overlay_scale),
                 ),
             )
+
+    def equity_curve_points(self) -> list[EquityPoint]:
+        """The whole equity curve as :class:`EquityPoint` rows, ascending, NULL scale -> NaN."""
+        rows = self._conn.execute(
+            "SELECT cycle_ts, equity_quote, cash_quote, n_pos, overlay_scale FROM equity_curve "
+            "ORDER BY cycle_ts"
+        ).fetchall()
+        return [
+            EquityPoint(
+                cycle_ts=int(r["cycle_ts"]),
+                equity_quote=float(r["equity_quote"]),
+                cash_quote=float(r["cash_quote"]),
+                n_pos=int(r["n_pos"]),
+                overlay_scale=math.nan if r["overlay_scale"] is None else float(r["overlay_scale"]),
+            )
+            for r in rows
+        ]
 
     def equity_curve(self, start: Ms | None = None) -> list[tuple[Ms, float, float, int]]:
         """Return ``(cycle_ts, equity_quote, cash_quote, n_pos)`` rows, ascending.

@@ -97,6 +97,14 @@
       "evidence": "tests/unit/test_live_universe_refresher_wiring.py; tests/unit/test_universe_rebalance_selfheal.py; artifacts/engineering/live_config_fingerprint.json",
       "contaminates_forward_record": false,
       "note": "The forward record from 2026-06-01 to this deploy ran on a universe that did not refresh; that is the already-disclosed defect window, not a new one. This change restores the declared cadence. The first refreshed cycle will trade turnover that a monthly-refreshing book would have spread across three rebalances; it is booked as it happens, not smoothed."
+    },
+    {
+      "date": "2026-09-06",
+      "change": "the realized-volatility leg of the sizing overlay is restored under the --once deployment. Each cycle now persists the overlay scale in force (BlendStrategy.last_scale) on its equity_curve row (additive nullable column overlay_scale), and recover_on_boot seeds the strategy's equity and scale histories from the recorded curve through the new BlendStrategy.seed_history seam. Declared thresholds and parameters are unchanged; the fingerprint does not move. What changes is that sigma_hat = max(ex_ante, realized) can now bind on the realized side live, as the backtest always allowed; at rebalances where the de-levered realized vol exceeds the ex-ante estimate the book will be sized smaller than it has been.",
+      "reason": "The strategy kept both histories in memory and production runs one process per cycle, so every live rebalance saw one equity point and the realized leg was 0.0 by construction; the fast regime detector, measured to bind 81.8% of days when correctly scaled (artifacts/analysis/frontier_14), never bound live. The 2026-08 realized-leg scale correction was therefore correct, tested, and never executing. Measured on the path itself: a fresh strategy's _realized_vol_ann is 0.0 (pinned as a test), a seeded one is positive, and the loop test proves a second process receives the scales the first recorded, in order, with the documented t-1 alignment.",
+      "evidence": "tests/unit/test_strategy_history_seed.py; tests/unit/test_store_overlay_scale.py; tests/unit/test_live_loop.py::TestStrategyHistoryRestoration; artifacts/engineering/live_config_fingerprint.json",
+      "contaminates_forward_record": false,
+      "note": "Rows recorded before the column existed carry no scale and are masked by the de-lever, so the leg warms up from the deploy forward rather than being back-filled from a guess. The window before this change ran with the realized leg inert; it is the same disclosed defect window as the ladder's."
     }
   ]
 }

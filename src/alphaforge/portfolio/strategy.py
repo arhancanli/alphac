@@ -107,7 +107,7 @@ from alphaforge.signals.sizing import MU_ANN_COLUMN
 LEGACY_COV_HALFLIFE_BARS: Final[int] = 720
 
 if TYPE_CHECKING:
-    from collections.abc import Callable, Mapping
+    from collections.abc import Callable, Mapping, Sequence
 
     from alphaforge.backtest import StrategyContext
     from alphaforge.config.settings import Settings
@@ -343,6 +343,44 @@ class BlendStrategy:
     def last_scale(self) -> float:
         """Vol-target scale ``s`` of the most recent rebalance (NaN before)."""
         return self._last_scale
+
+    def seed_history(self, history: Sequence[tuple[float, float]]) -> bool:
+        """Restore the realized-vol leg's history from the durable equity curve.
+
+        THE DEFECT THIS REPAIRS (found 2026-09-05). ``_equity_hist`` and ``_scale_hist`` live
+        only in memory. Production runs ``af paper run --once``, one process per hourly
+        cycle, so every cycle saw ONE equity point and ``_realized_vol_ann`` returned 0.0
+        by construction: the fast regime detector, measured to bind 81.8% of days when
+        correctly scaled (artifacts/analysis/frontier_14), never bound live.
+
+        ``history`` is the recorded curve, oldest first: ``(equity_quote, overlay_scale)``
+        per completed cycle, where ``overlay_scale`` is the scale in force AFTER that
+        cycle's decision (what the loop persisted from :attr:`last_scale`; NaN where none
+        was recorded). Alignment matters and is the whole point: the scale in force while
+        the return INTO ``equity[t]`` was being earned is the one set at cycle ``t-1``, so
+        ``_scale_hist[0]`` is NaN and ``_scale_hist[t] = history[t-1].scale``. That is
+        exactly how :meth:`on_bar_close` builds the pair bar by bar. ``_last_scale`` becomes
+        the newest finite recorded scale, so the next between-rebalance bar re-emits at the
+        true scale instead of NaN.
+
+        Returns False and changes nothing when the strategy already has history (a
+        long-lived ``--forever`` process carries the truth). Raises ``ValueError`` on a
+        non-positive or non-finite equity: a bad row must not be masked into the leg.
+        """
+        if self._equity_hist or self._scale_hist:
+            return False
+        points = [(float(e), float(sc)) for e, sc in history]
+        for equity, _scale in points:
+            if not math.isfinite(equity) or equity <= 0.0:
+                raise ValueError(f"seed_history: equity must be finite and > 0, got {equity!r}")
+        if not points:
+            return True
+        self._equity_hist = [e for e, _ in points]
+        self._scale_hist = [math.nan, *(sc for _, sc in points[:-1])]
+        finite = [sc for _, sc in points if math.isfinite(sc)]
+        if finite:
+            self._last_scale = finite[-1]
+        return True
 
     @property
     def counters(self) -> dict[str, int]:

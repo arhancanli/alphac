@@ -782,6 +782,10 @@ class LiveLoop:
         # 2b. Rebuild the drawdown ladder from the recorded equity curve BEFORE any
         # decision (it is a no-op on a truly fresh boot, whose curve is empty).
         self._restore_ladder()
+        # 2c. Same durable record, second consumer: hand the strategy its equity history and
+        # the overlay scale in force at each cycle, so the realized-vol leg is not 0.0 by
+        # construction in a fresh process (duck-typed; a strategy without the seam is left alone).
+        self._restore_strategy_history()
         # A TRULY fresh boot (no persisted state of any kind, broker untouched at
         # initial_cash) has nothing to recover or reconcile: there is no prior book
         # to diverge from. Short-circuit BEFORE seeding a synthetic opening-equity
@@ -1082,6 +1086,37 @@ class LiveLoop:
                 f"gross multiplier {mult}",
             )
 
+    def _restore_strategy_history(self) -> None:
+        """Seed the strategy's realized-vol history from ``equity_curve`` (+ overlay scale).
+
+        Companion to :meth:`_restore_ladder`, same defect: ``BlendStrategy`` keeps the equity
+        history and the per-bar overlay scale in memory, so under ``--once`` the realized leg
+        of ``max(ex_ante, realized)`` was 0.0 every cycle. The loop now persists the scale in
+        force with each equity row, and on boot hands the strategy the whole recorded curve
+        through its optional ``seed_history`` seam. Rows older than the column carry NaN, which
+        the de-lever masks rather than misreads. The strategy refuses the seed when it already
+        has history, so a long-lived process is never overwritten.
+        """
+        seed = getattr(self._strategy, "seed_history", None)
+        if seed is None:
+            return
+        points = self._store.equity_curve_points()
+        if not points:
+            return
+        try:
+            accepted = bool(seed([(p.equity_quote, p.overlay_scale) for p in points]))
+        except ValueError as exc:
+            self._alerter.alert(AlertLevel.WARN, f"boot: strategy history not restored: {exc}")
+            _log.warning("boot.strategy_history_rejected", error=str(exc))
+            return
+        with_scale = sum(1 for p in points if math.isfinite(p.overlay_scale))
+        _log.info(
+            "boot.strategy_history_restored",
+            accepted=accepted,
+            points=len(points),
+            with_scale=with_scale,
+        )
+
     def _fail_running_cycles(self, *, now: Ms) -> list[Ms]:
         """Mark every interrupted ``'running'`` cycle ``'failed'``; return their ids."""
         failed: list[Ms] = []
@@ -1288,9 +1323,14 @@ class LiveLoop:
             cycle_ts, targets, account, instruments, now=now, degraded=freshness.degraded
         )
 
-        # (7) persist the post-trade book + equity + paper_state; finish 'ok'.
+        # (7) persist the post-trade book + equity + paper_state; finish 'ok'. The overlay
+        # scale in force after this decision rides along on the equity row so a fresh --once
+        # process can rebuild the realized-vol leg's de-lever history
+        # (see _restore_strategy_history).
         marked = self._broker.account_at(cycle_ts)
-        self._persist_book(cycle_ts, marked, now=now)
+        scale = getattr(self._strategy, "last_scale", math.nan)
+        overlay_scale = float(scale) if isinstance(scale, (int, float)) else math.nan
+        self._persist_book(cycle_ts, marked, now=now, overlay_scale=overlay_scale)
         self._store.finish_cycle(cycle_ts, "ok", report.detail, now=now)
         if report.traded:
             self._alerter.alert(
@@ -1605,14 +1645,16 @@ class LiveLoop:
                 f"sleeve is accruing a track record that omits its own carry.",
             )
 
-    def _persist_book(self, cycle_ts: Ms, account: AccountState, *, now: Ms) -> None:
-        """Snapshot positions + equity + the paper_state blob for ``cycle_ts``."""
+    def _persist_book(
+        self, cycle_ts: Ms, account: AccountState, *, now: Ms, overlay_scale: float = math.nan
+    ) -> None:
+        """Snapshot positions + equity (+ the overlay scale in force) + the paper_state blob."""
         self._store.snapshot_positions(
             cycle_ts,
             account.positions,
             marks=self._broker.position_marks_at(cycle_ts),
         )
-        self._store.snapshot_equity(cycle_ts, account)
+        self._store.snapshot_equity(cycle_ts, account, overlay_scale=overlay_scale)
         self._store.save_paper_state(
             cycle_ts, encode_paper_state(self._broker.snapshot_state()), now=now
         )

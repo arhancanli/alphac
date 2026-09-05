@@ -1455,6 +1455,14 @@ def transparency_entries() -> list[str]:
         "2026-06-01 to the current month's, and the turnover that a monthly-refreshing book would have "
         "spread across three rebalances is booked as it happens, not smoothed. The window that traded "
         "the stale cross-section stays in the record as disclosed.",
+        "UPDATE 2026-09-06 (second) — the sizing overlay's realized-volatility leg, which the ladder note "
+        "above said was also lost by the per-cycle process, is restored: each cycle now records the "
+        "overlay scale in force beside its equity mark, and on start the strategy is handed the "
+        "recorded curve with those scales, so the faster of the two volatility estimates can bind again "
+        "as the backtest always allowed. Rows from before the change carry no scale and are left "
+        "unused rather than guessed, so the leg warms up from deployment forward. Where it binds, the "
+        "book is sized smaller than it has been. Declared in the live-change contract; thresholds and "
+        "parameters are unchanged.",
     ]
 
 
