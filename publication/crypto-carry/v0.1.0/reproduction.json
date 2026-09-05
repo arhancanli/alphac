@@ -10,7 +10,7 @@
     "scripts/seal_walkforward_input_snapshot_protocol.py": "e43fa6f89eba61cfb769ee407c3190569c3e8aa9a86aa0e284abc194c2e5fc28",
     "src/alphaforge/execution/paper.py": "975e5362afb144c083bc9f196a508af2d75d6492061b71f404dd9d5229d0c278",
     "src/alphaforge/features/library/carry.py": "c51f8faeb8456302692a55f28a0f59e87eaff1816d25b19ee5c1ce8767a1dc90",
-    "src/alphaforge/portfolio/strategy.py": "e2e247cf5d32fa707f813b11ff8afe32cd01b3d46a831d25f030810a4f3bc1f4",
+    "src/alphaforge/portfolio/strategy.py": "e1308c8bf6560a759983d1bd2fbef505050340ccce4ef42499d6943c559d5263",
     "src/alphaforge/validation/input_snapshot.py": "c0a3f5842a3387f0f5922b87fcd31495181e32e67b458597f0105eae6ac93533"
   },
   "environment_bindings": {

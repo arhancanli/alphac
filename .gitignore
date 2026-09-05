@@ -46,3 +46,5 @@ htmlcov/
 .claude/
 docs/design/LANE_CONTRACT_CLAUDE_CODEX.md
 docs/design/CLAUDE_HISTORY_RECONCILIATION_2026_08_16.md
+.claude-flow/
+ruvector.db
