@@ -1,0 +1,2134 @@
+{
+  "complete_recorded_union_extracted": true,
+  "distinct_recorded_hypothesis_identities": 21,
+  "every_identity_packet_complete": false,
+  "global_ledger": {
+    "path": "config/trial_accounting.json",
+    "sha256": "f15af7c989aded5da6c5259a7f7e5587377ab33977b5cd3c5b2395a84ea45043"
+  },
+  "identities": [
+    {
+      "candidate_match_is_verified": true,
+      "candidate_public_papers": [],
+      "completion_assessment": {
+        "blockers": [
+          {
+            "code": "IDENTITY_PREREGISTRATION_AND_ORIGINAL_ENVIRONMENT_NOT_BOUND",
+            "evidence": [
+              {
+                "path": "artifacts/research/alphatrend_family.json",
+                "sha256": "59bc39da95d216241213e5bfd2cccae1fdd3932ea7bcdc67b81d95c203a7cfbb"
+              },
+              {
+                "path": "var_mf/experiments.jsonl",
+                "sha256": "e3153a28bf2f28974744b05aaa67dafec65563213a73137ddd03b957db4c8cb2"
+              },
+              {
+                "path": "artifacts/sweep/mf_trend/walkforward.json",
+                "sha256": "cb641dc1f452d0058cfe2fb3c6d187f4147259a98c8ddfef4f19d7eeab93e184"
+              }
+            ],
+            "finding": "The canonical family audit binds this identity to its immutable ledger measurement, but does not bind an identity-level preregistration, original code commit, runner hash, lockfile, and input snapshot. Those missing historical fields cannot be reconstructed from the family summary.",
+            "required_section": "preregistration_and_hashes"
+          },
+          {
+            "code": "IDENTITY_LEVEL_DECISION_PACKET_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/research/alphatrend_family.json",
+                "sha256": "59bc39da95d216241213e5bfd2cccae1fdd3932ea7bcdc67b81d95c203a7cfbb"
+              }
+            ],
+            "finding": "The family-level admission status is PAPER_EVIDENCE_COLLECTION_NOT_ESTABLISHED; it is not a preserved identity-level gate decision under the complete packet contract.",
+            "required_section": "admission_or_kill_decision"
+          },
+          {
+            "code": "IDENTITY_CAPACITY_NOT_MEASURED",
+            "evidence": [
+              {
+                "path": "artifacts/research/alphatrend_family.json",
+                "sha256": "59bc39da95d216241213e5bfd2cccae1fdd3932ea7bcdc67b81d95c203a7cfbb"
+              }
+            ],
+            "finding": "The canonical family audit records capacity as UNMEASURED_NO_PERSISTED_CAPACITY_SWEEP; no identity-level capacity evidence can be credited.",
+            "required_section": "result_uncertainty_stress_capacity_and_diversification"
+          }
+        ],
+        "config_hash": "82d9878e5289643f",
+        "evidence_grade": "complete_walkforward_curve_config_and_validation",
+        "family_audit": "artifacts/research/alphatrend_family.json",
+        "status": "AUDITED_NOT_CURRENTLY_COMPLETABLE"
+      },
+      "config_hash": "82d9878e5289643f",
+      "coverage_status": "VERIFIED_INCOMPLETE_IDENTITY_PACKET",
+      "family_paper_binding_status": "VERIFIED_TAXONOMY_BINDING",
+      "first_recorded_at": "2026-06-26T20:29:45.703000+00:00",
+      "hypothesis_key": "34d1ad35e104768c",
+      "identity_packet_content_hash": "sha256:41545f22436ad2cc864b67e1f272aeecb5f1bb3ad43490c59da20961503bd420",
+      "identity_packet_status": "INCOMPLETE_BACKFILL_REQUIRED",
+      "label": "mf_trend_63 + mf_trend_126 + mf_trend_252",
+      "ledger_profile": "var_mf",
+      "ledger_source_path": "var_mf/experiments.jsonl",
+      "measurement": {
+        "annualized_sharpe": 0.2629366240897837,
+        "kurtosis": 16.627780411275193,
+        "observations": 5132,
+        "skew": -0.013125408959537233
+      },
+      "missing_sections": [
+        "preregistration_and_hashes",
+        "point_in_time_data_and_survivorship_controls",
+        "execution_and_cost_model",
+        "result_uncertainty_stress_capacity_and_diversification",
+        "admission_or_kill_decision",
+        "code_environment_and_reproduction"
+      ],
+      "research_family_key": "managed_futures_trend",
+      "research_family_title": "Managed-futures trend",
+      "sleeve_context": "Managed Futures",
+      "verified_family_paper_path": "/research/alphatrend-managed-futures-lineage.md",
+      "verified_packet_path": "/glassbox/trial-packets/34d1ad35e104768c.json",
+      "verified_sections": [
+        "identity_and_authorship",
+        "economic_mechanism_and_falsifiable_hypothesis",
+        "literature_and_overlap_decision",
+        "family_and_union_trial_accounting",
+        "machine_readable_packet_and_stable_public_paper"
+      ]
+    },
+    {
+      "candidate_match_is_verified": true,
+      "candidate_public_papers": [],
+      "completion_assessment": {
+        "blockers": [
+          {
+            "code": "IDENTITY_PREREGISTRATION_AND_ORIGINAL_ENVIRONMENT_NOT_BOUND",
+            "evidence": [
+              {
+                "path": "artifacts/research/alphatrend_family.json",
+                "sha256": "59bc39da95d216241213e5bfd2cccae1fdd3932ea7bcdc67b81d95c203a7cfbb"
+              },
+              {
+                "path": "var_mf/experiments.jsonl",
+                "sha256": "e3153a28bf2f28974744b05aaa67dafec65563213a73137ddd03b957db4c8cb2"
+              },
+              {
+                "path": "artifacts/sweep/mf_126/walkforward.json",
+                "sha256": "39aff8fcdf8562935c57f22d823635a663c72a683b4a5f6a963cfd9d2940064d"
+              }
+            ],
+            "finding": "The canonical family audit binds this identity to its immutable ledger measurement, but does not bind an identity-level preregistration, original code commit, runner hash, lockfile, and input snapshot. Those missing historical fields cannot be reconstructed from the family summary.",
+            "required_section": "preregistration_and_hashes"
+          },
+          {
+            "code": "IDENTITY_LEVEL_DECISION_PACKET_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/research/alphatrend_family.json",
+                "sha256": "59bc39da95d216241213e5bfd2cccae1fdd3932ea7bcdc67b81d95c203a7cfbb"
+              }
+            ],
+            "finding": "The family-level admission status is PAPER_EVIDENCE_COLLECTION_NOT_ESTABLISHED; it is not a preserved identity-level gate decision under the complete packet contract.",
+            "required_section": "admission_or_kill_decision"
+          },
+          {
+            "code": "IDENTITY_CAPACITY_NOT_MEASURED",
+            "evidence": [
+              {
+                "path": "artifacts/research/alphatrend_family.json",
+                "sha256": "59bc39da95d216241213e5bfd2cccae1fdd3932ea7bcdc67b81d95c203a7cfbb"
+              }
+            ],
+            "finding": "The canonical family audit records capacity as UNMEASURED_NO_PERSISTED_CAPACITY_SWEEP; no identity-level capacity evidence can be credited.",
+            "required_section": "result_uncertainty_stress_capacity_and_diversification"
+          }
+        ],
+        "config_hash": "085f558de3ae2d0f",
+        "evidence_grade": "complete_walkforward_curve_config_and_validation",
+        "family_audit": "artifacts/research/alphatrend_family.json",
+        "status": "AUDITED_NOT_CURRENTLY_COMPLETABLE"
+      },
+      "config_hash": "085f558de3ae2d0f",
+      "coverage_status": "VERIFIED_INCOMPLETE_IDENTITY_PACKET",
+      "family_paper_binding_status": "VERIFIED_TAXONOMY_BINDING",
+      "first_recorded_at": "2026-06-27T04:12:48.300000+00:00",
+      "hypothesis_key": "ff04cd656519e1e4",
+      "identity_packet_content_hash": "sha256:90148c19c71ac511c30e7d458bddc42ba880c1e31d659d7288acb2976ed210a7",
+      "identity_packet_status": "INCOMPLETE_BACKFILL_REQUIRED",
+      "label": "mf_trend_126",
+      "ledger_profile": "var_mf",
+      "ledger_source_path": "var_mf/experiments.jsonl",
+      "measurement": {
+        "annualized_sharpe": 0.17543384503138512,
+        "kurtosis": 21.472509306784552,
+        "observations": 5132,
+        "skew": 0.02872102374556621
+      },
+      "missing_sections": [
+        "preregistration_and_hashes",
+        "point_in_time_data_and_survivorship_controls",
+        "execution_and_cost_model",
+        "result_uncertainty_stress_capacity_and_diversification",
+        "admission_or_kill_decision",
+        "code_environment_and_reproduction"
+      ],
+      "research_family_key": "managed_futures_trend",
+      "research_family_title": "Managed-futures trend",
+      "sleeve_context": "Managed Futures",
+      "verified_family_paper_path": "/research/alphatrend-managed-futures-lineage.md",
+      "verified_packet_path": "/glassbox/trial-packets/ff04cd656519e1e4.json",
+      "verified_sections": [
+        "identity_and_authorship",
+        "economic_mechanism_and_falsifiable_hypothesis",
+        "literature_and_overlap_decision",
+        "family_and_union_trial_accounting",
+        "machine_readable_packet_and_stable_public_paper"
+      ]
+    },
+    {
+      "candidate_match_is_verified": true,
+      "candidate_public_papers": [],
+      "completion_assessment": {
+        "blockers": [
+          {
+            "code": "IDENTITY_PREREGISTRATION_AND_ORIGINAL_ENVIRONMENT_NOT_BOUND",
+            "evidence": [
+              {
+                "path": "artifacts/research/alphatrend_family.json",
+                "sha256": "59bc39da95d216241213e5bfd2cccae1fdd3932ea7bcdc67b81d95c203a7cfbb"
+              },
+              {
+                "path": "var_mf/experiments.jsonl",
+                "sha256": "e3153a28bf2f28974744b05aaa67dafec65563213a73137ddd03b957db4c8cb2"
+              },
+              {
+                "path": "artifacts/sweep/mf_252/walkforward.json",
+                "sha256": "a58b908461b4d7d3bca66afd78f4d223c14226b38c6f00a6c2da29db73493e21"
+              }
+            ],
+            "finding": "The canonical family audit binds this identity to its immutable ledger measurement, but does not bind an identity-level preregistration, original code commit, runner hash, lockfile, and input snapshot. Those missing historical fields cannot be reconstructed from the family summary.",
+            "required_section": "preregistration_and_hashes"
+          },
+          {
+            "code": "IDENTITY_LEVEL_DECISION_PACKET_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/research/alphatrend_family.json",
+                "sha256": "59bc39da95d216241213e5bfd2cccae1fdd3932ea7bcdc67b81d95c203a7cfbb"
+              }
+            ],
+            "finding": "The family-level admission status is PAPER_EVIDENCE_COLLECTION_NOT_ESTABLISHED; it is not a preserved identity-level gate decision under the complete packet contract.",
+            "required_section": "admission_or_kill_decision"
+          },
+          {
+            "code": "IDENTITY_CAPACITY_NOT_MEASURED",
+            "evidence": [
+              {
+                "path": "artifacts/research/alphatrend_family.json",
+                "sha256": "59bc39da95d216241213e5bfd2cccae1fdd3932ea7bcdc67b81d95c203a7cfbb"
+              }
+            ],
+            "finding": "The canonical family audit records capacity as UNMEASURED_NO_PERSISTED_CAPACITY_SWEEP; no identity-level capacity evidence can be credited.",
+            "required_section": "result_uncertainty_stress_capacity_and_diversification"
+          }
+        ],
+        "config_hash": "208db5dbfa72ec0b",
+        "evidence_grade": "complete_walkforward_curve_config_and_validation",
+        "family_audit": "artifacts/research/alphatrend_family.json",
+        "status": "AUDITED_NOT_CURRENTLY_COMPLETABLE"
+      },
+      "config_hash": "208db5dbfa72ec0b",
+      "coverage_status": "VERIFIED_INCOMPLETE_IDENTITY_PACKET",
+      "family_paper_binding_status": "VERIFIED_TAXONOMY_BINDING",
+      "first_recorded_at": "2026-06-27T04:13:05.997000+00:00",
+      "hypothesis_key": "0a30261280d92c9c",
+      "identity_packet_content_hash": "sha256:8f3187981db55f01d0d2203828c2232b95b2cae587744bdd489884ecb9b98d46",
+      "identity_packet_status": "INCOMPLETE_BACKFILL_REQUIRED",
+      "label": "mf_trend_252",
+      "ledger_profile": "var_mf",
+      "ledger_source_path": "var_mf/experiments.jsonl",
+      "measurement": {
+        "annualized_sharpe": 0.18183004953152396,
+        "kurtosis": 17.3423567160634,
+        "observations": 5132,
+        "skew": 0.009371628422500274
+      },
+      "missing_sections": [
+        "preregistration_and_hashes",
+        "point_in_time_data_and_survivorship_controls",
+        "execution_and_cost_model",
+        "result_uncertainty_stress_capacity_and_diversification",
+        "admission_or_kill_decision",
+        "code_environment_and_reproduction"
+      ],
+      "research_family_key": "managed_futures_trend",
+      "research_family_title": "Managed-futures trend",
+      "sleeve_context": "Managed Futures",
+      "verified_family_paper_path": "/research/alphatrend-managed-futures-lineage.md",
+      "verified_packet_path": "/glassbox/trial-packets/0a30261280d92c9c.json",
+      "verified_sections": [
+        "identity_and_authorship",
+        "economic_mechanism_and_falsifiable_hypothesis",
+        "literature_and_overlap_decision",
+        "family_and_union_trial_accounting",
+        "machine_readable_packet_and_stable_public_paper"
+      ]
+    },
+    {
+      "candidate_match_is_verified": true,
+      "candidate_public_papers": [],
+      "completion_assessment": {
+        "blockers": [
+          {
+            "code": "IDENTITY_PREREGISTRATION_AND_ORIGINAL_ENVIRONMENT_NOT_BOUND",
+            "evidence": [
+              {
+                "path": "artifacts/research/alphatrend_family.json",
+                "sha256": "59bc39da95d216241213e5bfd2cccae1fdd3932ea7bcdc67b81d95c203a7cfbb"
+              },
+              {
+                "path": "var_mf/experiments.jsonl",
+                "sha256": "e3153a28bf2f28974744b05aaa67dafec65563213a73137ddd03b957db4c8cb2"
+              },
+              {
+                "path": "artifacts/sweep/mf_rb5/walkforward.json",
+                "sha256": "db2a261a10b2402c8b381724c7b3bf663c69b92fa20c38f1c87ab137057331fc"
+              }
+            ],
+            "finding": "The canonical family audit binds this identity to its immutable ledger measurement, but does not bind an identity-level preregistration, original code commit, runner hash, lockfile, and input snapshot. Those missing historical fields cannot be reconstructed from the family summary.",
+            "required_section": "preregistration_and_hashes"
+          },
+          {
+            "code": "IDENTITY_LEVEL_DECISION_PACKET_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/research/alphatrend_family.json",
+                "sha256": "59bc39da95d216241213e5bfd2cccae1fdd3932ea7bcdc67b81d95c203a7cfbb"
+              }
+            ],
+            "finding": "The family-level admission status is PAPER_EVIDENCE_COLLECTION_NOT_ESTABLISHED; it is not a preserved identity-level gate decision under the complete packet contract.",
+            "required_section": "admission_or_kill_decision"
+          },
+          {
+            "code": "IDENTITY_CAPACITY_NOT_MEASURED",
+            "evidence": [
+              {
+                "path": "artifacts/research/alphatrend_family.json",
+                "sha256": "59bc39da95d216241213e5bfd2cccae1fdd3932ea7bcdc67b81d95c203a7cfbb"
+              }
+            ],
+            "finding": "The canonical family audit records capacity as UNMEASURED_NO_PERSISTED_CAPACITY_SWEEP; no identity-level capacity evidence can be credited.",
+            "required_section": "result_uncertainty_stress_capacity_and_diversification"
+          }
+        ],
+        "config_hash": "f622e8b77d246114",
+        "evidence_grade": "complete_walkforward_curve_config_and_validation",
+        "family_audit": "artifacts/research/alphatrend_family.json",
+        "status": "AUDITED_NOT_CURRENTLY_COMPLETABLE"
+      },
+      "config_hash": "f622e8b77d246114",
+      "coverage_status": "VERIFIED_INCOMPLETE_IDENTITY_PACKET",
+      "family_paper_binding_status": "VERIFIED_TAXONOMY_BINDING",
+      "first_recorded_at": "2026-06-27T04:14:02.955000+00:00",
+      "hypothesis_key": "de979d426420242c",
+      "identity_packet_content_hash": "sha256:8aec44efd8d536c6298885b39c94102e4deebe100dea55148ecfcda3c3d6df12",
+      "identity_packet_status": "INCOMPLETE_BACKFILL_REQUIRED",
+      "label": "mf_trend_63 + mf_trend_126 + mf_trend_252",
+      "ledger_profile": "var_mf",
+      "ledger_source_path": "var_mf/experiments.jsonl",
+      "measurement": {
+        "annualized_sharpe": 0.2784989926741244,
+        "kurtosis": 19.408163532459348,
+        "observations": 5132,
+        "skew": 0.20239369812768546
+      },
+      "missing_sections": [
+        "preregistration_and_hashes",
+        "point_in_time_data_and_survivorship_controls",
+        "execution_and_cost_model",
+        "result_uncertainty_stress_capacity_and_diversification",
+        "admission_or_kill_decision",
+        "code_environment_and_reproduction"
+      ],
+      "research_family_key": "managed_futures_trend",
+      "research_family_title": "Managed-futures trend",
+      "sleeve_context": "Managed Futures",
+      "verified_family_paper_path": "/research/alphatrend-managed-futures-lineage.md",
+      "verified_packet_path": "/glassbox/trial-packets/de979d426420242c.json",
+      "verified_sections": [
+        "identity_and_authorship",
+        "economic_mechanism_and_falsifiable_hypothesis",
+        "literature_and_overlap_decision",
+        "family_and_union_trial_accounting",
+        "machine_readable_packet_and_stable_public_paper"
+      ]
+    },
+    {
+      "candidate_match_is_verified": true,
+      "candidate_public_papers": [],
+      "completion_assessment": {
+        "blockers": [
+          {
+            "code": "IDENTITY_PREREGISTRATION_AND_ORIGINAL_ENVIRONMENT_NOT_BOUND",
+            "evidence": [
+              {
+                "path": "artifacts/research/alphatrend_family.json",
+                "sha256": "59bc39da95d216241213e5bfd2cccae1fdd3932ea7bcdc67b81d95c203a7cfbb"
+              },
+              {
+                "path": "var_mf/experiments.jsonl",
+                "sha256": "e3153a28bf2f28974744b05aaa67dafec65563213a73137ddd03b957db4c8cb2"
+              },
+              {
+                "path": "artifacts/sweep/mf_rb10/walkforward.json",
+                "sha256": "0a37e37a83c75e059d7cfc69a97d167f630505119146936955fb32a8f791813f"
+              }
+            ],
+            "finding": "The canonical family audit binds this identity to its immutable ledger measurement, but does not bind an identity-level preregistration, original code commit, runner hash, lockfile, and input snapshot. Those missing historical fields cannot be reconstructed from the family summary.",
+            "required_section": "preregistration_and_hashes"
+          },
+          {
+            "code": "IDENTITY_LEVEL_DECISION_PACKET_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/research/alphatrend_family.json",
+                "sha256": "59bc39da95d216241213e5bfd2cccae1fdd3932ea7bcdc67b81d95c203a7cfbb"
+              }
+            ],
+            "finding": "The family-level admission status is PAPER_EVIDENCE_COLLECTION_NOT_ESTABLISHED; it is not a preserved identity-level gate decision under the complete packet contract.",
+            "required_section": "admission_or_kill_decision"
+          },
+          {
+            "code": "IDENTITY_CAPACITY_NOT_MEASURED",
+            "evidence": [
+              {
+                "path": "artifacts/research/alphatrend_family.json",
+                "sha256": "59bc39da95d216241213e5bfd2cccae1fdd3932ea7bcdc67b81d95c203a7cfbb"
+              }
+            ],
+            "finding": "The canonical family audit records capacity as UNMEASURED_NO_PERSISTED_CAPACITY_SWEEP; no identity-level capacity evidence can be credited.",
+            "required_section": "result_uncertainty_stress_capacity_and_diversification"
+          }
+        ],
+        "config_hash": "66080ea19000763e",
+        "evidence_grade": "complete_walkforward_curve_config_and_validation",
+        "family_audit": "artifacts/research/alphatrend_family.json",
+        "status": "AUDITED_NOT_CURRENTLY_COMPLETABLE"
+      },
+      "config_hash": "66080ea19000763e",
+      "coverage_status": "VERIFIED_INCOMPLETE_IDENTITY_PACKET",
+      "family_paper_binding_status": "VERIFIED_TAXONOMY_BINDING",
+      "first_recorded_at": "2026-06-27T04:14:33.889000+00:00",
+      "hypothesis_key": "f9c8f796702a6ba5",
+      "identity_packet_content_hash": "sha256:b110c7466f6bc3f16e538c15b209e5c15bd1ba43db745cc10c48c5620f6555de",
+      "identity_packet_status": "INCOMPLETE_BACKFILL_REQUIRED",
+      "label": "mf_trend_63 + mf_trend_126 + mf_trend_252",
+      "ledger_profile": "var_mf",
+      "ledger_source_path": "var_mf/experiments.jsonl",
+      "measurement": {
+        "annualized_sharpe": 0.3112438702358207,
+        "kurtosis": 17.44919132827517,
+        "observations": 5132,
+        "skew": 0.34048020216624025
+      },
+      "missing_sections": [
+        "preregistration_and_hashes",
+        "point_in_time_data_and_survivorship_controls",
+        "execution_and_cost_model",
+        "result_uncertainty_stress_capacity_and_diversification",
+        "admission_or_kill_decision",
+        "code_environment_and_reproduction"
+      ],
+      "research_family_key": "managed_futures_trend",
+      "research_family_title": "Managed-futures trend",
+      "sleeve_context": "Managed Futures",
+      "verified_family_paper_path": "/research/alphatrend-managed-futures-lineage.md",
+      "verified_packet_path": "/glassbox/trial-packets/f9c8f796702a6ba5.json",
+      "verified_sections": [
+        "identity_and_authorship",
+        "economic_mechanism_and_falsifiable_hypothesis",
+        "literature_and_overlap_decision",
+        "family_and_union_trial_accounting",
+        "machine_readable_packet_and_stable_public_paper"
+      ]
+    },
+    {
+      "candidate_match_is_verified": true,
+      "candidate_public_papers": [],
+      "completion_assessment": {
+        "blockers": [
+          {
+            "code": "IDENTITY_PREREGISTRATION_AND_ORIGINAL_ENVIRONMENT_NOT_BOUND",
+            "evidence": [
+              {
+                "path": "artifacts/research/alphatrend_family.json",
+                "sha256": "59bc39da95d216241213e5bfd2cccae1fdd3932ea7bcdc67b81d95c203a7cfbb"
+              },
+              {
+                "path": "var_mf/experiments.jsonl",
+                "sha256": "e3153a28bf2f28974744b05aaa67dafec65563213a73137ddd03b957db4c8cb2"
+              }
+            ],
+            "finding": "The canonical family audit binds this identity to its immutable ledger measurement, but does not bind an identity-level preregistration, original code commit, runner hash, lockfile, and input snapshot. Those missing historical fields cannot be reconstructed from the family summary.",
+            "required_section": "preregistration_and_hashes"
+          },
+          {
+            "code": "IDENTITY_LEVEL_DECISION_PACKET_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/research/alphatrend_family.json",
+                "sha256": "59bc39da95d216241213e5bfd2cccae1fdd3932ea7bcdc67b81d95c203a7cfbb"
+              }
+            ],
+            "finding": "The family-level admission status is PAPER_EVIDENCE_COLLECTION_NOT_ESTABLISHED; it is not a preserved identity-level gate decision under the complete packet contract.",
+            "required_section": "admission_or_kill_decision"
+          },
+          {
+            "code": "IMMUTABLE_SUMMARY_LACKS_COMPLETE_IDENTITY_CURVE",
+            "evidence": [
+              {
+                "path": "artifacts/research/alphatrend_family.json",
+                "sha256": "59bc39da95d216241213e5bfd2cccae1fdd3932ea7bcdc67b81d95c203a7cfbb"
+              },
+              {
+                "path": "var_mf/experiments.jsonl",
+                "sha256": "e3153a28bf2f28974744b05aaa67dafec65563213a73137ddd03b957db4c8cb2"
+              }
+            ],
+            "finding": "The immutable ledger summary preserves the first measurement but not the complete identity-level curve, uncertainty, stress, capacity, and diversification evidence required for packet completion.",
+            "required_section": "result_uncertainty_stress_capacity_and_diversification"
+          },
+          {
+            "code": "IDENTITY_CAPACITY_NOT_MEASURED",
+            "evidence": [
+              {
+                "path": "artifacts/research/alphatrend_family.json",
+                "sha256": "59bc39da95d216241213e5bfd2cccae1fdd3932ea7bcdc67b81d95c203a7cfbb"
+              }
+            ],
+            "finding": "The canonical family audit records capacity as UNMEASURED_NO_PERSISTED_CAPACITY_SWEEP; no identity-level capacity evidence can be credited.",
+            "required_section": "result_uncertainty_stress_capacity_and_diversification"
+          }
+        ],
+        "config_hash": "d95808ca458aaba4",
+        "evidence_grade": "immutable_ledger_summary_only",
+        "family_audit": "artifacts/research/alphatrend_family.json",
+        "status": "AUDITED_NOT_CURRENTLY_COMPLETABLE"
+      },
+      "config_hash": "d95808ca458aaba4",
+      "coverage_status": "VERIFIED_INCOMPLETE_IDENTITY_PACKET",
+      "family_paper_binding_status": "VERIFIED_TAXONOMY_BINDING",
+      "first_recorded_at": "2026-06-28T07:12:53.710000+00:00",
+      "hypothesis_key": "36c70319603d0212",
+      "identity_packet_content_hash": "sha256:a714a9ba99685ab09910506fa9f2ea1653e6c19616e2fcf143181a62dffc3340",
+      "identity_packet_status": "INCOMPLETE_BACKFILL_REQUIRED",
+      "label": "mf_trend_63 + mf_trend_126 + mf_trend_252",
+      "ledger_profile": "var_mf",
+      "ledger_source_path": "var_mf/experiments.jsonl",
+      "measurement": {
+        "annualized_sharpe": null,
+        "kurtosis": null,
+        "observations": 5151,
+        "skew": null
+      },
+      "missing_sections": [
+        "preregistration_and_hashes",
+        "point_in_time_data_and_survivorship_controls",
+        "execution_and_cost_model",
+        "result_uncertainty_stress_capacity_and_diversification",
+        "admission_or_kill_decision",
+        "code_environment_and_reproduction"
+      ],
+      "research_family_key": "managed_futures_trend",
+      "research_family_title": "Managed-futures trend",
+      "sleeve_context": "Managed Futures",
+      "verified_family_paper_path": "/research/alphatrend-managed-futures-lineage.md",
+      "verified_packet_path": "/glassbox/trial-packets/36c70319603d0212.json",
+      "verified_sections": [
+        "identity_and_authorship",
+        "economic_mechanism_and_falsifiable_hypothesis",
+        "literature_and_overlap_decision",
+        "family_and_union_trial_accounting",
+        "machine_readable_packet_and_stable_public_paper"
+      ]
+    },
+    {
+      "candidate_match_is_verified": true,
+      "candidate_public_papers": [],
+      "completion_assessment": {
+        "blockers": [
+          {
+            "code": "IDENTITY_PREREGISTRATION_AND_ORIGINAL_ENVIRONMENT_NOT_BOUND",
+            "evidence": [
+              {
+                "path": "artifacts/research/alphatrend_family.json",
+                "sha256": "59bc39da95d216241213e5bfd2cccae1fdd3932ea7bcdc67b81d95c203a7cfbb"
+              },
+              {
+                "path": "var_fut_real/experiments.jsonl",
+                "sha256": "847a2f504b87d3885135a4c2f147038c87d624160e896bf3a5ff77186bd1c7ee"
+              },
+              {
+                "path": "artifacts/sweep/fut_real2/walkforward.json",
+                "sha256": "ada977db1f24b16cfdc3b1c4a561945c2e98c6e05dadd31c220b56ae9e795516"
+              }
+            ],
+            "finding": "The canonical family audit binds this identity to its immutable ledger measurement, but does not bind an identity-level preregistration, original code commit, runner hash, lockfile, and input snapshot. Those missing historical fields cannot be reconstructed from the family summary.",
+            "required_section": "preregistration_and_hashes"
+          },
+          {
+            "code": "IDENTITY_LEVEL_DECISION_PACKET_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/research/alphatrend_family.json",
+                "sha256": "59bc39da95d216241213e5bfd2cccae1fdd3932ea7bcdc67b81d95c203a7cfbb"
+              }
+            ],
+            "finding": "The family-level admission status is PAPER_EVIDENCE_COLLECTION_NOT_ESTABLISHED; it is not a preserved identity-level gate decision under the complete packet contract.",
+            "required_section": "admission_or_kill_decision"
+          },
+          {
+            "code": "IDENTITY_CAPACITY_NOT_MEASURED",
+            "evidence": [
+              {
+                "path": "artifacts/research/alphatrend_family.json",
+                "sha256": "59bc39da95d216241213e5bfd2cccae1fdd3932ea7bcdc67b81d95c203a7cfbb"
+              }
+            ],
+            "finding": "The canonical family audit records capacity as UNMEASURED_NO_PERSISTED_CAPACITY_SWEEP; no identity-level capacity evidence can be credited.",
+            "required_section": "result_uncertainty_stress_capacity_and_diversification"
+          }
+        ],
+        "config_hash": "6a3b0d615898ef14",
+        "evidence_grade": "complete_walkforward_curve_config_and_validation",
+        "family_audit": "artifacts/research/alphatrend_family.json",
+        "status": "AUDITED_NOT_CURRENTLY_COMPLETABLE"
+      },
+      "config_hash": "6a3b0d615898ef14",
+      "coverage_status": "VERIFIED_INCOMPLETE_IDENTITY_PACKET",
+      "family_paper_binding_status": "VERIFIED_TAXONOMY_BINDING",
+      "first_recorded_at": "2026-06-28T20:13:53.117000+00:00",
+      "hypothesis_key": "5829101185f4f6ec",
+      "identity_packet_content_hash": "sha256:c4ea3852f6b325db6a2ec1fc24af19a4d41745d84ccbec530b3f31faeb805085",
+      "identity_packet_status": "INCOMPLETE_BACKFILL_REQUIRED",
+      "label": "mf_trend_63 + mf_trend_126 + mf_trend_252",
+      "ledger_profile": "var_fut_real",
+      "ledger_source_path": "var_fut_real/experiments.jsonl",
+      "measurement": {
+        "annualized_sharpe": -0.2375633317789115,
+        "kurtosis": 22.795559428178553,
+        "observations": 3515,
+        "skew": -0.03985349195814139
+      },
+      "missing_sections": [
+        "preregistration_and_hashes",
+        "point_in_time_data_and_survivorship_controls",
+        "execution_and_cost_model",
+        "result_uncertainty_stress_capacity_and_diversification",
+        "admission_or_kill_decision",
+        "code_environment_and_reproduction"
+      ],
+      "research_family_key": "managed_futures_trend",
+      "research_family_title": "Managed-futures trend",
+      "sleeve_context": "Managed Futures",
+      "verified_family_paper_path": "/research/alphatrend-managed-futures-lineage.md",
+      "verified_packet_path": "/glassbox/trial-packets/5829101185f4f6ec.json",
+      "verified_sections": [
+        "identity_and_authorship",
+        "economic_mechanism_and_falsifiable_hypothesis",
+        "literature_and_overlap_decision",
+        "family_and_union_trial_accounting",
+        "machine_readable_packet_and_stable_public_paper"
+      ]
+    },
+    {
+      "candidate_match_is_verified": true,
+      "candidate_public_papers": [],
+      "completion_assessment": {
+        "blockers": [
+          {
+            "code": "IDENTITY_PREREGISTRATION_AND_ORIGINAL_ENVIRONMENT_NOT_BOUND",
+            "evidence": [
+              {
+                "path": "artifacts/research/alphatrend_family.json",
+                "sha256": "59bc39da95d216241213e5bfd2cccae1fdd3932ea7bcdc67b81d95c203a7cfbb"
+              },
+              {
+                "path": "var_mf/experiments.jsonl",
+                "sha256": "e3153a28bf2f28974744b05aaa67dafec65563213a73137ddd03b957db4c8cb2"
+              }
+            ],
+            "finding": "The canonical family audit binds this identity to its immutable ledger measurement, but does not bind an identity-level preregistration, original code commit, runner hash, lockfile, and input snapshot. Those missing historical fields cannot be reconstructed from the family summary.",
+            "required_section": "preregistration_and_hashes"
+          },
+          {
+            "code": "IDENTITY_LEVEL_DECISION_PACKET_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/research/alphatrend_family.json",
+                "sha256": "59bc39da95d216241213e5bfd2cccae1fdd3932ea7bcdc67b81d95c203a7cfbb"
+              }
+            ],
+            "finding": "The family-level admission status is PAPER_EVIDENCE_COLLECTION_NOT_ESTABLISHED; it is not a preserved identity-level gate decision under the complete packet contract.",
+            "required_section": "admission_or_kill_decision"
+          },
+          {
+            "code": "IMMUTABLE_SUMMARY_LACKS_COMPLETE_IDENTITY_CURVE",
+            "evidence": [
+              {
+                "path": "artifacts/research/alphatrend_family.json",
+                "sha256": "59bc39da95d216241213e5bfd2cccae1fdd3932ea7bcdc67b81d95c203a7cfbb"
+              },
+              {
+                "path": "var_mf/experiments.jsonl",
+                "sha256": "e3153a28bf2f28974744b05aaa67dafec65563213a73137ddd03b957db4c8cb2"
+              }
+            ],
+            "finding": "The immutable ledger summary preserves the first measurement but not the complete identity-level curve, uncertainty, stress, capacity, and diversification evidence required for packet completion.",
+            "required_section": "result_uncertainty_stress_capacity_and_diversification"
+          },
+          {
+            "code": "IDENTITY_CAPACITY_NOT_MEASURED",
+            "evidence": [
+              {
+                "path": "artifacts/research/alphatrend_family.json",
+                "sha256": "59bc39da95d216241213e5bfd2cccae1fdd3932ea7bcdc67b81d95c203a7cfbb"
+              }
+            ],
+            "finding": "The canonical family audit records capacity as UNMEASURED_NO_PERSISTED_CAPACITY_SWEEP; no identity-level capacity evidence can be credited.",
+            "required_section": "result_uncertainty_stress_capacity_and_diversification"
+          }
+        ],
+        "config_hash": "a781a9bd9ae89866",
+        "evidence_grade": "immutable_ledger_summary_only",
+        "family_audit": "artifacts/research/alphatrend_family.json",
+        "status": "AUDITED_NOT_CURRENTLY_COMPLETABLE"
+      },
+      "config_hash": "a781a9bd9ae89866",
+      "coverage_status": "VERIFIED_INCOMPLETE_IDENTITY_PACKET",
+      "family_paper_binding_status": "VERIFIED_TAXONOMY_BINDING",
+      "first_recorded_at": "2026-07-04T06:25:44.053000+00:00",
+      "hypothesis_key": "07c8d58c9396b466",
+      "identity_packet_content_hash": "sha256:9ba9628d32c17acdbb2fd764ae043b10be8f9993393706d418e9fcdb6d3fc3e8",
+      "identity_packet_status": "INCOMPLETE_BACKFILL_REQUIRED",
+      "label": "mf_trend_63 + mf_trend_126 + mf_trend_252",
+      "ledger_profile": "var_mf",
+      "ledger_source_path": "var_mf/experiments.jsonl",
+      "measurement": {
+        "annualized_sharpe": 0.32221721025921585,
+        "kurtosis": 13.105479000109394,
+        "observations": 5155,
+        "skew": 0.1071110978647551
+      },
+      "missing_sections": [
+        "preregistration_and_hashes",
+        "point_in_time_data_and_survivorship_controls",
+        "execution_and_cost_model",
+        "result_uncertainty_stress_capacity_and_diversification",
+        "admission_or_kill_decision",
+        "code_environment_and_reproduction"
+      ],
+      "research_family_key": "managed_futures_trend",
+      "research_family_title": "Managed-futures trend",
+      "sleeve_context": "Managed Futures",
+      "verified_family_paper_path": "/research/alphatrend-managed-futures-lineage.md",
+      "verified_packet_path": "/glassbox/trial-packets/07c8d58c9396b466.json",
+      "verified_sections": [
+        "identity_and_authorship",
+        "economic_mechanism_and_falsifiable_hypothesis",
+        "literature_and_overlap_decision",
+        "family_and_union_trial_accounting",
+        "machine_readable_packet_and_stable_public_paper"
+      ]
+    },
+    {
+      "candidate_match_is_verified": true,
+      "candidate_public_papers": [],
+      "completion_assessment": {
+        "blockers": [
+          {
+            "code": "IDENTITY_PREREGISTRATION_AND_ORIGINAL_ENVIRONMENT_NOT_BOUND",
+            "evidence": [
+              {
+                "path": "artifacts/research/alphatrend_family.json",
+                "sha256": "59bc39da95d216241213e5bfd2cccae1fdd3932ea7bcdc67b81d95c203a7cfbb"
+              },
+              {
+                "path": "var_mf/experiments.jsonl",
+                "sha256": "e3153a28bf2f28974744b05aaa67dafec65563213a73137ddd03b957db4c8cb2"
+              }
+            ],
+            "finding": "The canonical family audit binds this identity to its immutable ledger measurement, but does not bind an identity-level preregistration, original code commit, runner hash, lockfile, and input snapshot. Those missing historical fields cannot be reconstructed from the family summary.",
+            "required_section": "preregistration_and_hashes"
+          },
+          {
+            "code": "IDENTITY_LEVEL_DECISION_PACKET_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/research/alphatrend_family.json",
+                "sha256": "59bc39da95d216241213e5bfd2cccae1fdd3932ea7bcdc67b81d95c203a7cfbb"
+              }
+            ],
+            "finding": "The family-level admission status is PAPER_EVIDENCE_COLLECTION_NOT_ESTABLISHED; it is not a preserved identity-level gate decision under the complete packet contract.",
+            "required_section": "admission_or_kill_decision"
+          },
+          {
+            "code": "IMMUTABLE_SUMMARY_LACKS_COMPLETE_IDENTITY_CURVE",
+            "evidence": [
+              {
+                "path": "artifacts/research/alphatrend_family.json",
+                "sha256": "59bc39da95d216241213e5bfd2cccae1fdd3932ea7bcdc67b81d95c203a7cfbb"
+              },
+              {
+                "path": "var_mf/experiments.jsonl",
+                "sha256": "e3153a28bf2f28974744b05aaa67dafec65563213a73137ddd03b957db4c8cb2"
+              }
+            ],
+            "finding": "The immutable ledger summary preserves the first measurement but not the complete identity-level curve, uncertainty, stress, capacity, and diversification evidence required for packet completion.",
+            "required_section": "result_uncertainty_stress_capacity_and_diversification"
+          },
+          {
+            "code": "IDENTITY_CAPACITY_NOT_MEASURED",
+            "evidence": [
+              {
+                "path": "artifacts/research/alphatrend_family.json",
+                "sha256": "59bc39da95d216241213e5bfd2cccae1fdd3932ea7bcdc67b81d95c203a7cfbb"
+              }
+            ],
+            "finding": "The canonical family audit records capacity as UNMEASURED_NO_PERSISTED_CAPACITY_SWEEP; no identity-level capacity evidence can be credited.",
+            "required_section": "result_uncertainty_stress_capacity_and_diversification"
+          }
+        ],
+        "config_hash": "09d738d83093f920",
+        "evidence_grade": "immutable_ledger_summary_only",
+        "family_audit": "artifacts/research/alphatrend_family.json",
+        "status": "AUDITED_NOT_CURRENTLY_COMPLETABLE"
+      },
+      "config_hash": "09d738d83093f920",
+      "coverage_status": "VERIFIED_INCOMPLETE_IDENTITY_PACKET",
+      "family_paper_binding_status": "VERIFIED_TAXONOMY_BINDING",
+      "first_recorded_at": "2026-07-09T05:56:27.960000+00:00",
+      "hypothesis_key": "8e8816393676531a",
+      "identity_packet_content_hash": "sha256:5bd0b5e5a2f7f5ca3ee92f9336fac3785ba099df0d0c02e34754e0e9281f0507",
+      "identity_packet_status": "INCOMPLETE_BACKFILL_REQUIRED",
+      "label": "mf_trend_63 + mf_trend_126 + mf_trend_252",
+      "ledger_profile": "var_mf",
+      "ledger_source_path": "var_mf/experiments.jsonl",
+      "measurement": {
+        "annualized_sharpe": 0.3080753682559224,
+        "kurtosis": 15.617064952680835,
+        "observations": 5158,
+        "skew": 0.295000014630226
+      },
+      "missing_sections": [
+        "preregistration_and_hashes",
+        "point_in_time_data_and_survivorship_controls",
+        "execution_and_cost_model",
+        "result_uncertainty_stress_capacity_and_diversification",
+        "admission_or_kill_decision",
+        "code_environment_and_reproduction"
+      ],
+      "research_family_key": "managed_futures_trend",
+      "research_family_title": "Managed-futures trend",
+      "sleeve_context": "Managed Futures",
+      "verified_family_paper_path": "/research/alphatrend-managed-futures-lineage.md",
+      "verified_packet_path": "/glassbox/trial-packets/8e8816393676531a.json",
+      "verified_sections": [
+        "identity_and_authorship",
+        "economic_mechanism_and_falsifiable_hypothesis",
+        "literature_and_overlap_decision",
+        "family_and_union_trial_accounting",
+        "machine_readable_packet_and_stable_public_paper"
+      ]
+    },
+    {
+      "candidate_match_is_verified": true,
+      "candidate_public_papers": [],
+      "completion_assessment": {
+        "blockers": [
+          {
+            "code": "IDENTITY_PREREGISTRATION_AND_ORIGINAL_ENVIRONMENT_NOT_BOUND",
+            "evidence": [
+              {
+                "path": "artifacts/research/alphatrend_family.json",
+                "sha256": "59bc39da95d216241213e5bfd2cccae1fdd3932ea7bcdc67b81d95c203a7cfbb"
+              },
+              {
+                "path": "var_mf/experiments.jsonl",
+                "sha256": "e3153a28bf2f28974744b05aaa67dafec65563213a73137ddd03b957db4c8cb2"
+              }
+            ],
+            "finding": "The canonical family audit binds this identity to its immutable ledger measurement, but does not bind an identity-level preregistration, original code commit, runner hash, lockfile, and input snapshot. Those missing historical fields cannot be reconstructed from the family summary.",
+            "required_section": "preregistration_and_hashes"
+          },
+          {
+            "code": "IDENTITY_LEVEL_DECISION_PACKET_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/research/alphatrend_family.json",
+                "sha256": "59bc39da95d216241213e5bfd2cccae1fdd3932ea7bcdc67b81d95c203a7cfbb"
+              }
+            ],
+            "finding": "The family-level admission status is PAPER_EVIDENCE_COLLECTION_NOT_ESTABLISHED; it is not a preserved identity-level gate decision under the complete packet contract.",
+            "required_section": "admission_or_kill_decision"
+          },
+          {
+            "code": "IMMUTABLE_SUMMARY_LACKS_COMPLETE_IDENTITY_CURVE",
+            "evidence": [
+              {
+                "path": "artifacts/research/alphatrend_family.json",
+                "sha256": "59bc39da95d216241213e5bfd2cccae1fdd3932ea7bcdc67b81d95c203a7cfbb"
+              },
+              {
+                "path": "var_mf/experiments.jsonl",
+                "sha256": "e3153a28bf2f28974744b05aaa67dafec65563213a73137ddd03b957db4c8cb2"
+              }
+            ],
+            "finding": "The immutable ledger summary preserves the first measurement but not the complete identity-level curve, uncertainty, stress, capacity, and diversification evidence required for packet completion.",
+            "required_section": "result_uncertainty_stress_capacity_and_diversification"
+          },
+          {
+            "code": "IDENTITY_CAPACITY_NOT_MEASURED",
+            "evidence": [
+              {
+                "path": "artifacts/research/alphatrend_family.json",
+                "sha256": "59bc39da95d216241213e5bfd2cccae1fdd3932ea7bcdc67b81d95c203a7cfbb"
+              }
+            ],
+            "finding": "The canonical family audit records capacity as UNMEASURED_NO_PERSISTED_CAPACITY_SWEEP; no identity-level capacity evidence can be credited.",
+            "required_section": "result_uncertainty_stress_capacity_and_diversification"
+          }
+        ],
+        "config_hash": "7c6b3d1a338977ac",
+        "evidence_grade": "immutable_ledger_summary_only",
+        "family_audit": "artifacts/research/alphatrend_family.json",
+        "status": "AUDITED_NOT_CURRENTLY_COMPLETABLE"
+      },
+      "config_hash": "7c6b3d1a338977ac",
+      "coverage_status": "VERIFIED_INCOMPLETE_IDENTITY_PACKET",
+      "family_paper_binding_status": "VERIFIED_TAXONOMY_BINDING",
+      "first_recorded_at": "2026-07-23T06:09:34.568000+00:00",
+      "hypothesis_key": "92e6a893c23dc9eb",
+      "identity_packet_content_hash": "sha256:942abb3a8d824b328f2d291a7515507519ab57490eae2fd325f1caf89cff419d",
+      "identity_packet_status": "INCOMPLETE_BACKFILL_REQUIRED",
+      "label": "mf_trend_63 + mf_trend_126 + mf_trend_252",
+      "ledger_profile": "var_mf",
+      "ledger_source_path": "var_mf/experiments.jsonl",
+      "measurement": {
+        "annualized_sharpe": 0.2843991922767909,
+        "kurtosis": 13.429942654634218,
+        "observations": 5168,
+        "skew": 0.10529419495165643
+      },
+      "missing_sections": [
+        "preregistration_and_hashes",
+        "point_in_time_data_and_survivorship_controls",
+        "execution_and_cost_model",
+        "result_uncertainty_stress_capacity_and_diversification",
+        "admission_or_kill_decision",
+        "code_environment_and_reproduction"
+      ],
+      "research_family_key": "managed_futures_trend",
+      "research_family_title": "Managed-futures trend",
+      "sleeve_context": "Managed Futures",
+      "verified_family_paper_path": "/research/alphatrend-managed-futures-lineage.md",
+      "verified_packet_path": "/glassbox/trial-packets/92e6a893c23dc9eb.json",
+      "verified_sections": [
+        "identity_and_authorship",
+        "economic_mechanism_and_falsifiable_hypothesis",
+        "literature_and_overlap_decision",
+        "family_and_union_trial_accounting",
+        "machine_readable_packet_and_stable_public_paper"
+      ]
+    },
+    {
+      "candidate_match_is_verified": true,
+      "candidate_public_papers": [],
+      "completion_assessment": {
+        "blockers": [
+          {
+            "code": "IDENTITY_PREREGISTRATION_AND_ORIGINAL_ENVIRONMENT_NOT_BOUND",
+            "evidence": [
+              {
+                "path": "artifacts/research/alphatrend_family.json",
+                "sha256": "59bc39da95d216241213e5bfd2cccae1fdd3932ea7bcdc67b81d95c203a7cfbb"
+              },
+              {
+                "path": "var_mf/experiments.jsonl",
+                "sha256": "e3153a28bf2f28974744b05aaa67dafec65563213a73137ddd03b957db4c8cb2"
+              }
+            ],
+            "finding": "The canonical family audit binds this identity to its immutable ledger measurement, but does not bind an identity-level preregistration, original code commit, runner hash, lockfile, and input snapshot. Those missing historical fields cannot be reconstructed from the family summary.",
+            "required_section": "preregistration_and_hashes"
+          },
+          {
+            "code": "IDENTITY_LEVEL_DECISION_PACKET_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/research/alphatrend_family.json",
+                "sha256": "59bc39da95d216241213e5bfd2cccae1fdd3932ea7bcdc67b81d95c203a7cfbb"
+              }
+            ],
+            "finding": "The family-level admission status is PAPER_EVIDENCE_COLLECTION_NOT_ESTABLISHED; it is not a preserved identity-level gate decision under the complete packet contract.",
+            "required_section": "admission_or_kill_decision"
+          },
+          {
+            "code": "IMMUTABLE_SUMMARY_LACKS_COMPLETE_IDENTITY_CURVE",
+            "evidence": [
+              {
+                "path": "artifacts/research/alphatrend_family.json",
+                "sha256": "59bc39da95d216241213e5bfd2cccae1fdd3932ea7bcdc67b81d95c203a7cfbb"
+              },
+              {
+                "path": "var_mf/experiments.jsonl",
+                "sha256": "e3153a28bf2f28974744b05aaa67dafec65563213a73137ddd03b957db4c8cb2"
+              }
+            ],
+            "finding": "The immutable ledger summary preserves the first measurement but not the complete identity-level curve, uncertainty, stress, capacity, and diversification evidence required for packet completion.",
+            "required_section": "result_uncertainty_stress_capacity_and_diversification"
+          },
+          {
+            "code": "IDENTITY_CAPACITY_NOT_MEASURED",
+            "evidence": [
+              {
+                "path": "artifacts/research/alphatrend_family.json",
+                "sha256": "59bc39da95d216241213e5bfd2cccae1fdd3932ea7bcdc67b81d95c203a7cfbb"
+              }
+            ],
+            "finding": "The canonical family audit records capacity as UNMEASURED_NO_PERSISTED_CAPACITY_SWEEP; no identity-level capacity evidence can be credited.",
+            "required_section": "result_uncertainty_stress_capacity_and_diversification"
+          }
+        ],
+        "config_hash": "44916a51553133dd",
+        "evidence_grade": "immutable_ledger_summary_only",
+        "family_audit": "artifacts/research/alphatrend_family.json",
+        "status": "AUDITED_NOT_CURRENTLY_COMPLETABLE"
+      },
+      "config_hash": "44916a51553133dd",
+      "coverage_status": "VERIFIED_INCOMPLETE_IDENTITY_PACKET",
+      "family_paper_binding_status": "VERIFIED_TAXONOMY_BINDING",
+      "first_recorded_at": "2026-07-26T06:08:12.253000+00:00",
+      "hypothesis_key": "3bb6916d5e480681",
+      "identity_packet_content_hash": "sha256:84ab6f7be8cef580845e7abd3d396ffdd54709662a66c4e84a745ff307cb1334",
+      "identity_packet_status": "INCOMPLETE_BACKFILL_REQUIRED",
+      "label": "mf_trend_63 + mf_trend_126 + mf_trend_252",
+      "ledger_profile": "var_mf",
+      "ledger_source_path": "var_mf/experiments.jsonl",
+      "measurement": {
+        "annualized_sharpe": 0.3082691411137522,
+        "kurtosis": 15.778543939265203,
+        "observations": 5169,
+        "skew": 0.16249200207159864
+      },
+      "missing_sections": [
+        "preregistration_and_hashes",
+        "point_in_time_data_and_survivorship_controls",
+        "execution_and_cost_model",
+        "result_uncertainty_stress_capacity_and_diversification",
+        "admission_or_kill_decision",
+        "code_environment_and_reproduction"
+      ],
+      "research_family_key": "managed_futures_trend",
+      "research_family_title": "Managed-futures trend",
+      "sleeve_context": "Managed Futures",
+      "verified_family_paper_path": "/research/alphatrend-managed-futures-lineage.md",
+      "verified_packet_path": "/glassbox/trial-packets/3bb6916d5e480681.json",
+      "verified_sections": [
+        "identity_and_authorship",
+        "economic_mechanism_and_falsifiable_hypothesis",
+        "literature_and_overlap_decision",
+        "family_and_union_trial_accounting",
+        "machine_readable_packet_and_stable_public_paper"
+      ]
+    },
+    {
+      "candidate_match_is_verified": true,
+      "candidate_public_papers": [],
+      "completion_assessment": {
+        "blockers": [
+          {
+            "code": "IDENTITY_PREREGISTRATION_AND_ORIGINAL_ENVIRONMENT_NOT_BOUND",
+            "evidence": [
+              {
+                "path": "artifacts/research/alphatrend_family.json",
+                "sha256": "59bc39da95d216241213e5bfd2cccae1fdd3932ea7bcdc67b81d95c203a7cfbb"
+              },
+              {
+                "path": "var_mf/experiments.jsonl",
+                "sha256": "e3153a28bf2f28974744b05aaa67dafec65563213a73137ddd03b957db4c8cb2"
+              }
+            ],
+            "finding": "The canonical family audit binds this identity to its immutable ledger measurement, but does not bind an identity-level preregistration, original code commit, runner hash, lockfile, and input snapshot. Those missing historical fields cannot be reconstructed from the family summary.",
+            "required_section": "preregistration_and_hashes"
+          },
+          {
+            "code": "IDENTITY_LEVEL_DECISION_PACKET_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/research/alphatrend_family.json",
+                "sha256": "59bc39da95d216241213e5bfd2cccae1fdd3932ea7bcdc67b81d95c203a7cfbb"
+              }
+            ],
+            "finding": "The family-level admission status is PAPER_EVIDENCE_COLLECTION_NOT_ESTABLISHED; it is not a preserved identity-level gate decision under the complete packet contract.",
+            "required_section": "admission_or_kill_decision"
+          },
+          {
+            "code": "IMMUTABLE_SUMMARY_LACKS_COMPLETE_IDENTITY_CURVE",
+            "evidence": [
+              {
+                "path": "artifacts/research/alphatrend_family.json",
+                "sha256": "59bc39da95d216241213e5bfd2cccae1fdd3932ea7bcdc67b81d95c203a7cfbb"
+              },
+              {
+                "path": "var_mf/experiments.jsonl",
+                "sha256": "e3153a28bf2f28974744b05aaa67dafec65563213a73137ddd03b957db4c8cb2"
+              }
+            ],
+            "finding": "The immutable ledger summary preserves the first measurement but not the complete identity-level curve, uncertainty, stress, capacity, and diversification evidence required for packet completion.",
+            "required_section": "result_uncertainty_stress_capacity_and_diversification"
+          },
+          {
+            "code": "IDENTITY_CAPACITY_NOT_MEASURED",
+            "evidence": [
+              {
+                "path": "artifacts/research/alphatrend_family.json",
+                "sha256": "59bc39da95d216241213e5bfd2cccae1fdd3932ea7bcdc67b81d95c203a7cfbb"
+              }
+            ],
+            "finding": "The canonical family audit records capacity as UNMEASURED_NO_PERSISTED_CAPACITY_SWEEP; no identity-level capacity evidence can be credited.",
+            "required_section": "result_uncertainty_stress_capacity_and_diversification"
+          }
+        ],
+        "config_hash": "06555b46e9b0a140",
+        "evidence_grade": "immutable_ledger_summary_only",
+        "family_audit": "artifacts/research/alphatrend_family.json",
+        "status": "AUDITED_NOT_CURRENTLY_COMPLETABLE"
+      },
+      "config_hash": "06555b46e9b0a140",
+      "coverage_status": "VERIFIED_INCOMPLETE_IDENTITY_PACKET",
+      "family_paper_binding_status": "VERIFIED_TAXONOMY_BINDING",
+      "first_recorded_at": "2026-07-27T06:37:10.470000+00:00",
+      "hypothesis_key": "420a3a61a0a0aaf6",
+      "identity_packet_content_hash": "sha256:dcfbacba0699056b689d860b45dc487e172ee82fabb9dc9b6e9d83fe341d9f74",
+      "identity_packet_status": "INCOMPLETE_BACKFILL_REQUIRED",
+      "label": "mf_trend_63 + mf_trend_126 + mf_trend_252",
+      "ledger_profile": "var_mf",
+      "ledger_source_path": "var_mf/experiments.jsonl",
+      "measurement": {
+        "annualized_sharpe": 0.2363901883979139,
+        "kurtosis": 16.923615467057772,
+        "observations": 5169,
+        "skew": 0.29695602051155484
+      },
+      "missing_sections": [
+        "preregistration_and_hashes",
+        "point_in_time_data_and_survivorship_controls",
+        "execution_and_cost_model",
+        "result_uncertainty_stress_capacity_and_diversification",
+        "admission_or_kill_decision",
+        "code_environment_and_reproduction"
+      ],
+      "research_family_key": "managed_futures_trend",
+      "research_family_title": "Managed-futures trend",
+      "sleeve_context": "Managed Futures",
+      "verified_family_paper_path": "/research/alphatrend-managed-futures-lineage.md",
+      "verified_packet_path": "/glassbox/trial-packets/420a3a61a0a0aaf6.json",
+      "verified_sections": [
+        "identity_and_authorship",
+        "economic_mechanism_and_falsifiable_hypothesis",
+        "literature_and_overlap_decision",
+        "family_and_union_trial_accounting",
+        "machine_readable_packet_and_stable_public_paper"
+      ]
+    },
+    {
+      "candidate_match_is_verified": true,
+      "candidate_public_papers": [],
+      "completion_assessment": {
+        "blockers": [
+          {
+            "code": "IDENTITY_PREREGISTRATION_AND_ORIGINAL_ENVIRONMENT_NOT_BOUND",
+            "evidence": [
+              {
+                "path": "artifacts/research/alphatrend_family.json",
+                "sha256": "59bc39da95d216241213e5bfd2cccae1fdd3932ea7bcdc67b81d95c203a7cfbb"
+              },
+              {
+                "path": "var_mf/experiments.jsonl",
+                "sha256": "e3153a28bf2f28974744b05aaa67dafec65563213a73137ddd03b957db4c8cb2"
+              }
+            ],
+            "finding": "The canonical family audit binds this identity to its immutable ledger measurement, but does not bind an identity-level preregistration, original code commit, runner hash, lockfile, and input snapshot. Those missing historical fields cannot be reconstructed from the family summary.",
+            "required_section": "preregistration_and_hashes"
+          },
+          {
+            "code": "IDENTITY_LEVEL_DECISION_PACKET_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/research/alphatrend_family.json",
+                "sha256": "59bc39da95d216241213e5bfd2cccae1fdd3932ea7bcdc67b81d95c203a7cfbb"
+              }
+            ],
+            "finding": "The family-level admission status is PAPER_EVIDENCE_COLLECTION_NOT_ESTABLISHED; it is not a preserved identity-level gate decision under the complete packet contract.",
+            "required_section": "admission_or_kill_decision"
+          },
+          {
+            "code": "IMMUTABLE_SUMMARY_LACKS_COMPLETE_IDENTITY_CURVE",
+            "evidence": [
+              {
+                "path": "artifacts/research/alphatrend_family.json",
+                "sha256": "59bc39da95d216241213e5bfd2cccae1fdd3932ea7bcdc67b81d95c203a7cfbb"
+              },
+              {
+                "path": "var_mf/experiments.jsonl",
+                "sha256": "e3153a28bf2f28974744b05aaa67dafec65563213a73137ddd03b957db4c8cb2"
+              }
+            ],
+            "finding": "The immutable ledger summary preserves the first measurement but not the complete identity-level curve, uncertainty, stress, capacity, and diversification evidence required for packet completion.",
+            "required_section": "result_uncertainty_stress_capacity_and_diversification"
+          },
+          {
+            "code": "IDENTITY_CAPACITY_NOT_MEASURED",
+            "evidence": [
+              {
+                "path": "artifacts/research/alphatrend_family.json",
+                "sha256": "59bc39da95d216241213e5bfd2cccae1fdd3932ea7bcdc67b81d95c203a7cfbb"
+              }
+            ],
+            "finding": "The canonical family audit records capacity as UNMEASURED_NO_PERSISTED_CAPACITY_SWEEP; no identity-level capacity evidence can be credited.",
+            "required_section": "result_uncertainty_stress_capacity_and_diversification"
+          }
+        ],
+        "config_hash": "f583cd411d242b30",
+        "evidence_grade": "immutable_ledger_summary_only",
+        "family_audit": "artifacts/research/alphatrend_family.json",
+        "status": "AUDITED_NOT_CURRENTLY_COMPLETABLE"
+      },
+      "config_hash": "f583cd411d242b30",
+      "coverage_status": "VERIFIED_INCOMPLETE_IDENTITY_PACKET",
+      "family_paper_binding_status": "VERIFIED_TAXONOMY_BINDING",
+      "first_recorded_at": "2026-07-28T08:30:28.635000+00:00",
+      "hypothesis_key": "6086a8e1414ed5b9",
+      "identity_packet_content_hash": "sha256:9dc39701a382c78ac067f81680a9c8f3f9a3c145e1da8b569499c3b6e7c8e981",
+      "identity_packet_status": "INCOMPLETE_BACKFILL_REQUIRED",
+      "label": "mf_trend_63 + mf_trend_126 + mf_trend_252",
+      "ledger_profile": "var_mf",
+      "ledger_source_path": "var_mf/experiments.jsonl",
+      "measurement": {
+        "annualized_sharpe": 0.344510359843972,
+        "kurtosis": 12.176397483352615,
+        "observations": 5171,
+        "skew": 0.16225018921428247
+      },
+      "missing_sections": [
+        "preregistration_and_hashes",
+        "point_in_time_data_and_survivorship_controls",
+        "execution_and_cost_model",
+        "result_uncertainty_stress_capacity_and_diversification",
+        "admission_or_kill_decision",
+        "code_environment_and_reproduction"
+      ],
+      "research_family_key": "managed_futures_trend",
+      "research_family_title": "Managed-futures trend",
+      "sleeve_context": "Managed Futures",
+      "verified_family_paper_path": "/research/alphatrend-managed-futures-lineage.md",
+      "verified_packet_path": "/glassbox/trial-packets/6086a8e1414ed5b9.json",
+      "verified_sections": [
+        "identity_and_authorship",
+        "economic_mechanism_and_falsifiable_hypothesis",
+        "literature_and_overlap_decision",
+        "family_and_union_trial_accounting",
+        "machine_readable_packet_and_stable_public_paper"
+      ]
+    },
+    {
+      "candidate_match_is_verified": true,
+      "candidate_public_papers": [],
+      "completion_assessment": {
+        "blockers": [
+          {
+            "code": "IDENTITY_PREREGISTRATION_AND_ORIGINAL_ENVIRONMENT_NOT_BOUND",
+            "evidence": [
+              {
+                "path": "artifacts/research/alphatrend_family.json",
+                "sha256": "59bc39da95d216241213e5bfd2cccae1fdd3932ea7bcdc67b81d95c203a7cfbb"
+              },
+              {
+                "path": "var_mf/experiments.jsonl",
+                "sha256": "e3153a28bf2f28974744b05aaa67dafec65563213a73137ddd03b957db4c8cb2"
+              }
+            ],
+            "finding": "The canonical family audit binds this identity to its immutable ledger measurement, but does not bind an identity-level preregistration, original code commit, runner hash, lockfile, and input snapshot. Those missing historical fields cannot be reconstructed from the family summary.",
+            "required_section": "preregistration_and_hashes"
+          },
+          {
+            "code": "IDENTITY_LEVEL_DECISION_PACKET_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/research/alphatrend_family.json",
+                "sha256": "59bc39da95d216241213e5bfd2cccae1fdd3932ea7bcdc67b81d95c203a7cfbb"
+              }
+            ],
+            "finding": "The family-level admission status is PAPER_EVIDENCE_COLLECTION_NOT_ESTABLISHED; it is not a preserved identity-level gate decision under the complete packet contract.",
+            "required_section": "admission_or_kill_decision"
+          },
+          {
+            "code": "IMMUTABLE_SUMMARY_LACKS_COMPLETE_IDENTITY_CURVE",
+            "evidence": [
+              {
+                "path": "artifacts/research/alphatrend_family.json",
+                "sha256": "59bc39da95d216241213e5bfd2cccae1fdd3932ea7bcdc67b81d95c203a7cfbb"
+              },
+              {
+                "path": "var_mf/experiments.jsonl",
+                "sha256": "e3153a28bf2f28974744b05aaa67dafec65563213a73137ddd03b957db4c8cb2"
+              }
+            ],
+            "finding": "The immutable ledger summary preserves the first measurement but not the complete identity-level curve, uncertainty, stress, capacity, and diversification evidence required for packet completion.",
+            "required_section": "result_uncertainty_stress_capacity_and_diversification"
+          },
+          {
+            "code": "IDENTITY_CAPACITY_NOT_MEASURED",
+            "evidence": [
+              {
+                "path": "artifacts/research/alphatrend_family.json",
+                "sha256": "59bc39da95d216241213e5bfd2cccae1fdd3932ea7bcdc67b81d95c203a7cfbb"
+              }
+            ],
+            "finding": "The canonical family audit records capacity as UNMEASURED_NO_PERSISTED_CAPACITY_SWEEP; no identity-level capacity evidence can be credited.",
+            "required_section": "result_uncertainty_stress_capacity_and_diversification"
+          }
+        ],
+        "config_hash": "b64bf369f9652355",
+        "evidence_grade": "immutable_ledger_summary_only",
+        "family_audit": "artifacts/research/alphatrend_family.json",
+        "status": "AUDITED_NOT_CURRENTLY_COMPLETABLE"
+      },
+      "config_hash": "b64bf369f9652355",
+      "coverage_status": "VERIFIED_INCOMPLETE_IDENTITY_PACKET",
+      "family_paper_binding_status": "VERIFIED_TAXONOMY_BINDING",
+      "first_recorded_at": "2026-07-29T06:01:07.905000+00:00",
+      "hypothesis_key": "d4ab93039f48dd53",
+      "identity_packet_content_hash": "sha256:afa949ee6632aa196e5c4e8eaa97e8840bf06f9a61cbcadd4cd69acf051c0409",
+      "identity_packet_status": "INCOMPLETE_BACKFILL_REQUIRED",
+      "label": "mf_trend_63 + mf_trend_126 + mf_trend_252",
+      "ledger_profile": "var_mf",
+      "ledger_source_path": "var_mf/experiments.jsonl",
+      "measurement": {
+        "annualized_sharpe": null,
+        "kurtosis": null,
+        "observations": 5171,
+        "skew": null
+      },
+      "missing_sections": [
+        "preregistration_and_hashes",
+        "point_in_time_data_and_survivorship_controls",
+        "execution_and_cost_model",
+        "result_uncertainty_stress_capacity_and_diversification",
+        "admission_or_kill_decision",
+        "code_environment_and_reproduction"
+      ],
+      "research_family_key": "managed_futures_trend",
+      "research_family_title": "Managed-futures trend",
+      "sleeve_context": "Managed Futures",
+      "verified_family_paper_path": "/research/alphatrend-managed-futures-lineage.md",
+      "verified_packet_path": "/glassbox/trial-packets/d4ab93039f48dd53.json",
+      "verified_sections": [
+        "identity_and_authorship",
+        "economic_mechanism_and_falsifiable_hypothesis",
+        "literature_and_overlap_decision",
+        "family_and_union_trial_accounting",
+        "machine_readable_packet_and_stable_public_paper"
+      ]
+    },
+    {
+      "candidate_match_is_verified": true,
+      "candidate_public_papers": [
+        "/research/alphamax-equity-momentum-lineage.md",
+        "/research/alphatrend-managed-futures-lineage.md",
+        "/research/crypto-carry-lineage.md",
+        "/research/crypto-multifactor-engine-lineage.md",
+        "/research/equity-narrative-change-lineage.md",
+        "/research/execution-realism.md",
+        "/research/kill-alphamax-shorttail.md",
+        "/research/kill-eq-mom-margin.md",
+        "/research/legacy-dsr-restatement.md",
+        "/research/prereg-earnings-narrative-change.md",
+        "/research/prereg-pre-fomc-announcement-drift.md"
+      ],
+      "completion_assessment": {
+        "blockers": [
+          {
+            "code": "IDENTITY_PREREGISTRATION_AND_ORIGINAL_ENVIRONMENT_NOT_BOUND",
+            "evidence": [
+              {
+                "path": "artifacts/research/alphatrend_family.json",
+                "sha256": "59bc39da95d216241213e5bfd2cccae1fdd3932ea7bcdc67b81d95c203a7cfbb"
+              },
+              {
+                "path": "var/experiments.jsonl",
+                "sha256": "b5a318c0997d980575f758451f509e0154eecbbb50d734e49a587d473062bd08"
+              },
+              {
+                "path": "artifacts/sweep/alphatrend_arp/report.json",
+                "sha256": "303b643d0cbbc5628f638061bdfda8a5635562f771c24d138e7942f0fa582fa8"
+              }
+            ],
+            "finding": "The canonical family audit binds this identity to its immutable ledger measurement, but does not bind an identity-level preregistration, original code commit, runner hash, lockfile, and input snapshot. Those missing historical fields cannot be reconstructed from the family summary.",
+            "required_section": "preregistration_and_hashes"
+          },
+          {
+            "code": "IDENTITY_LEVEL_DECISION_PACKET_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/research/alphatrend_family.json",
+                "sha256": "59bc39da95d216241213e5bfd2cccae1fdd3932ea7bcdc67b81d95c203a7cfbb"
+              }
+            ],
+            "finding": "The family-level admission status is PAPER_EVIDENCE_COLLECTION_NOT_ESTABLISHED; it is not a preserved identity-level gate decision under the complete packet contract.",
+            "required_section": "admission_or_kill_decision"
+          },
+          {
+            "code": "IMMUTABLE_SUMMARY_LACKS_COMPLETE_IDENTITY_CURVE",
+            "evidence": [
+              {
+                "path": "artifacts/research/alphatrend_family.json",
+                "sha256": "59bc39da95d216241213e5bfd2cccae1fdd3932ea7bcdc67b81d95c203a7cfbb"
+              },
+              {
+                "path": "var/experiments.jsonl",
+                "sha256": "b5a318c0997d980575f758451f509e0154eecbbb50d734e49a587d473062bd08"
+              },
+              {
+                "path": "artifacts/sweep/alphatrend_arp/report.json",
+                "sha256": "303b643d0cbbc5628f638061bdfda8a5635562f771c24d138e7942f0fa582fa8"
+              }
+            ],
+            "finding": "The immutable ledger summary preserves the first measurement but not the complete identity-level curve, uncertainty, stress, capacity, and diversification evidence required for packet completion.",
+            "required_section": "result_uncertainty_stress_capacity_and_diversification"
+          },
+          {
+            "code": "IDENTITY_CAPACITY_NOT_MEASURED",
+            "evidence": [
+              {
+                "path": "artifacts/research/alphatrend_family.json",
+                "sha256": "59bc39da95d216241213e5bfd2cccae1fdd3932ea7bcdc67b81d95c203a7cfbb"
+              }
+            ],
+            "finding": "The canonical family audit records capacity as UNMEASURED_NO_PERSISTED_CAPACITY_SWEEP; no identity-level capacity evidence can be credited.",
+            "required_section": "result_uncertainty_stress_capacity_and_diversification"
+          }
+        ],
+        "config_hash": "8808d789acccaf3a",
+        "evidence_grade": "persisted_summary_missing_daily_curve_and_kurtosis",
+        "family_audit": "artifacts/research/alphatrend_family.json",
+        "status": "AUDITED_NOT_CURRENTLY_COMPLETABLE"
+      },
+      "config_hash": "8808d789acccaf3a",
+      "coverage_status": "VERIFIED_INCOMPLETE_IDENTITY_PACKET",
+      "family_paper_binding_status": "VERIFIED_TAXONOMY_BINDING",
+      "first_recorded_at": "2026-08-17T00:00:00.071000+00:00",
+      "hypothesis_key": "084a8fc5292327ee",
+      "identity_packet_content_hash": "sha256:4e102b96917f8421284dc1b2ca7c895d3d7a07d4d8b59a87c8716b7244c1d160",
+      "identity_packet_status": "INCOMPLETE_BACKFILL_REQUIRED",
+      "label": "alphatrend_arp / baseline",
+      "ledger_profile": "var",
+      "ledger_source_path": "var/experiments.jsonl",
+      "measurement": {
+        "annualized_sharpe": 0.289,
+        "kurtosis": null,
+        "observations": 5161,
+        "skew": 0.006
+      },
+      "missing_sections": [
+        "preregistration_and_hashes",
+        "point_in_time_data_and_survivorship_controls",
+        "execution_and_cost_model",
+        "result_uncertainty_stress_capacity_and_diversification",
+        "admission_or_kill_decision",
+        "code_environment_and_reproduction"
+      ],
+      "research_family_key": "managed_futures_trend",
+      "research_family_title": "Managed-futures trend",
+      "sleeve_context": "Managed Futures",
+      "verified_family_paper_path": "/research/alphatrend-managed-futures-lineage.md",
+      "verified_packet_path": "/glassbox/trial-packets/084a8fc5292327ee.json",
+      "verified_sections": [
+        "identity_and_authorship",
+        "economic_mechanism_and_falsifiable_hypothesis",
+        "literature_and_overlap_decision",
+        "family_and_union_trial_accounting",
+        "machine_readable_packet_and_stable_public_paper"
+      ]
+    },
+    {
+      "candidate_match_is_verified": true,
+      "candidate_public_papers": [
+        "/research/legacy-dsr-restatement.md"
+      ],
+      "completion_assessment": {
+        "blockers": [
+          {
+            "code": "IDENTITY_PREREGISTRATION_AND_ORIGINAL_ENVIRONMENT_NOT_BOUND",
+            "evidence": [
+              {
+                "path": "artifacts/research/alphatrend_family.json",
+                "sha256": "59bc39da95d216241213e5bfd2cccae1fdd3932ea7bcdc67b81d95c203a7cfbb"
+              },
+              {
+                "path": "var/experiments.jsonl",
+                "sha256": "b5a318c0997d980575f758451f509e0154eecbbb50d734e49a587d473062bd08"
+              },
+              {
+                "path": "artifacts/sweep/alphatrend_arp/report.json",
+                "sha256": "303b643d0cbbc5628f638061bdfda8a5635562f771c24d138e7942f0fa582fa8"
+              }
+            ],
+            "finding": "The canonical family audit binds this identity to its immutable ledger measurement, but does not bind an identity-level preregistration, original code commit, runner hash, lockfile, and input snapshot. Those missing historical fields cannot be reconstructed from the family summary.",
+            "required_section": "preregistration_and_hashes"
+          },
+          {
+            "code": "IDENTITY_LEVEL_DECISION_PACKET_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/research/alphatrend_family.json",
+                "sha256": "59bc39da95d216241213e5bfd2cccae1fdd3932ea7bcdc67b81d95c203a7cfbb"
+              }
+            ],
+            "finding": "The family-level admission status is PAPER_EVIDENCE_COLLECTION_NOT_ESTABLISHED; it is not a preserved identity-level gate decision under the complete packet contract.",
+            "required_section": "admission_or_kill_decision"
+          },
+          {
+            "code": "IMMUTABLE_SUMMARY_LACKS_COMPLETE_IDENTITY_CURVE",
+            "evidence": [
+              {
+                "path": "artifacts/research/alphatrend_family.json",
+                "sha256": "59bc39da95d216241213e5bfd2cccae1fdd3932ea7bcdc67b81d95c203a7cfbb"
+              },
+              {
+                "path": "var/experiments.jsonl",
+                "sha256": "b5a318c0997d980575f758451f509e0154eecbbb50d734e49a587d473062bd08"
+              },
+              {
+                "path": "artifacts/sweep/alphatrend_arp/report.json",
+                "sha256": "303b643d0cbbc5628f638061bdfda8a5635562f771c24d138e7942f0fa582fa8"
+              }
+            ],
+            "finding": "The immutable ledger summary preserves the first measurement but not the complete identity-level curve, uncertainty, stress, capacity, and diversification evidence required for packet completion.",
+            "required_section": "result_uncertainty_stress_capacity_and_diversification"
+          },
+          {
+            "code": "IDENTITY_CAPACITY_NOT_MEASURED",
+            "evidence": [
+              {
+                "path": "artifacts/research/alphatrend_family.json",
+                "sha256": "59bc39da95d216241213e5bfd2cccae1fdd3932ea7bcdc67b81d95c203a7cfbb"
+              }
+            ],
+            "finding": "The canonical family audit records capacity as UNMEASURED_NO_PERSISTED_CAPACITY_SWEEP; no identity-level capacity evidence can be credited.",
+            "required_section": "result_uncertainty_stress_capacity_and_diversification"
+          }
+        ],
+        "config_hash": "7845a023b51f8f68",
+        "evidence_grade": "persisted_summary_missing_daily_curve_and_kurtosis",
+        "family_audit": "artifacts/research/alphatrend_family.json",
+        "status": "AUDITED_NOT_CURRENTLY_COMPLETABLE"
+      },
+      "config_hash": "7845a023b51f8f68",
+      "coverage_status": "VERIFIED_INCOMPLETE_IDENTITY_PACKET",
+      "family_paper_binding_status": "VERIFIED_TAXONOMY_BINDING",
+      "first_recorded_at": "2026-08-17T00:00:00.072000+00:00",
+      "hypothesis_key": "f4d5aef87af5cc92",
+      "identity_packet_content_hash": "sha256:6c29d3128e902e7b69d33556c2488c3a358f2b1d29410998569d2a5c9cf1fd65",
+      "identity_packet_status": "INCOMPLETE_BACKFILL_REQUIRED",
+      "label": "alphatrend_arp / T1_corr_whiten",
+      "ledger_profile": "var",
+      "ledger_source_path": "var/experiments.jsonl",
+      "measurement": {
+        "annualized_sharpe": 0.186,
+        "kurtosis": null,
+        "observations": 5161,
+        "skew": 0.163
+      },
+      "missing_sections": [
+        "preregistration_and_hashes",
+        "point_in_time_data_and_survivorship_controls",
+        "execution_and_cost_model",
+        "result_uncertainty_stress_capacity_and_diversification",
+        "admission_or_kill_decision",
+        "code_environment_and_reproduction"
+      ],
+      "research_family_key": "managed_futures_trend",
+      "research_family_title": "Managed-futures trend",
+      "sleeve_context": "Managed Futures",
+      "verified_family_paper_path": "/research/alphatrend-managed-futures-lineage.md",
+      "verified_packet_path": "/glassbox/trial-packets/f4d5aef87af5cc92.json",
+      "verified_sections": [
+        "identity_and_authorship",
+        "economic_mechanism_and_falsifiable_hypothesis",
+        "literature_and_overlap_decision",
+        "family_and_union_trial_accounting",
+        "machine_readable_packet_and_stable_public_paper"
+      ]
+    },
+    {
+      "candidate_match_is_verified": true,
+      "candidate_public_papers": [
+        "/research/legacy-dsr-restatement.md"
+      ],
+      "completion_assessment": {
+        "blockers": [
+          {
+            "code": "IDENTITY_PREREGISTRATION_AND_ORIGINAL_ENVIRONMENT_NOT_BOUND",
+            "evidence": [
+              {
+                "path": "artifacts/research/alphatrend_family.json",
+                "sha256": "59bc39da95d216241213e5bfd2cccae1fdd3932ea7bcdc67b81d95c203a7cfbb"
+              },
+              {
+                "path": "var/experiments.jsonl",
+                "sha256": "b5a318c0997d980575f758451f509e0154eecbbb50d734e49a587d473062bd08"
+              },
+              {
+                "path": "artifacts/sweep/alphatrend_arp/report.json",
+                "sha256": "303b643d0cbbc5628f638061bdfda8a5635562f771c24d138e7942f0fa582fa8"
+              }
+            ],
+            "finding": "The canonical family audit binds this identity to its immutable ledger measurement, but does not bind an identity-level preregistration, original code commit, runner hash, lockfile, and input snapshot. Those missing historical fields cannot be reconstructed from the family summary.",
+            "required_section": "preregistration_and_hashes"
+          },
+          {
+            "code": "IDENTITY_LEVEL_DECISION_PACKET_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/research/alphatrend_family.json",
+                "sha256": "59bc39da95d216241213e5bfd2cccae1fdd3932ea7bcdc67b81d95c203a7cfbb"
+              }
+            ],
+            "finding": "The family-level admission status is PAPER_EVIDENCE_COLLECTION_NOT_ESTABLISHED; it is not a preserved identity-level gate decision under the complete packet contract.",
+            "required_section": "admission_or_kill_decision"
+          },
+          {
+            "code": "IMMUTABLE_SUMMARY_LACKS_COMPLETE_IDENTITY_CURVE",
+            "evidence": [
+              {
+                "path": "artifacts/research/alphatrend_family.json",
+                "sha256": "59bc39da95d216241213e5bfd2cccae1fdd3932ea7bcdc67b81d95c203a7cfbb"
+              },
+              {
+                "path": "var/experiments.jsonl",
+                "sha256": "b5a318c0997d980575f758451f509e0154eecbbb50d734e49a587d473062bd08"
+              },
+              {
+                "path": "artifacts/sweep/alphatrend_arp/report.json",
+                "sha256": "303b643d0cbbc5628f638061bdfda8a5635562f771c24d138e7942f0fa582fa8"
+              }
+            ],
+            "finding": "The immutable ledger summary preserves the first measurement but not the complete identity-level curve, uncertainty, stress, capacity, and diversification evidence required for packet completion.",
+            "required_section": "result_uncertainty_stress_capacity_and_diversification"
+          },
+          {
+            "code": "IDENTITY_CAPACITY_NOT_MEASURED",
+            "evidence": [
+              {
+                "path": "artifacts/research/alphatrend_family.json",
+                "sha256": "59bc39da95d216241213e5bfd2cccae1fdd3932ea7bcdc67b81d95c203a7cfbb"
+              }
+            ],
+            "finding": "The canonical family audit records capacity as UNMEASURED_NO_PERSISTED_CAPACITY_SWEEP; no identity-level capacity evidence can be credited.",
+            "required_section": "result_uncertainty_stress_capacity_and_diversification"
+          }
+        ],
+        "config_hash": "18165c784f0332de",
+        "evidence_grade": "persisted_summary_missing_daily_curve_and_kurtosis",
+        "family_audit": "artifacts/research/alphatrend_family.json",
+        "status": "AUDITED_NOT_CURRENTLY_COMPLETABLE"
+      },
+      "config_hash": "18165c784f0332de",
+      "coverage_status": "VERIFIED_INCOMPLETE_IDENTITY_PACKET",
+      "family_paper_binding_status": "VERIFIED_TAXONOMY_BINDING",
+      "first_recorded_at": "2026-08-17T00:00:00.073000+00:00",
+      "hypothesis_key": "0c5ddfb3d5b52ca5",
+      "identity_packet_content_hash": "sha256:0f1968420ca158e42fd0ef069df08101362d940a8afc590e968fdf37481e2520",
+      "identity_packet_status": "INCOMPLETE_BACKFILL_REQUIRED",
+      "label": "alphatrend_arp / T2_single_110",
+      "ledger_profile": "var",
+      "ledger_source_path": "var/experiments.jsonl",
+      "measurement": {
+        "annualized_sharpe": 0.271,
+        "kurtosis": null,
+        "observations": 5161,
+        "skew": 0.115
+      },
+      "missing_sections": [
+        "preregistration_and_hashes",
+        "point_in_time_data_and_survivorship_controls",
+        "execution_and_cost_model",
+        "result_uncertainty_stress_capacity_and_diversification",
+        "admission_or_kill_decision",
+        "code_environment_and_reproduction"
+      ],
+      "research_family_key": "managed_futures_trend",
+      "research_family_title": "Managed-futures trend",
+      "sleeve_context": "Managed Futures",
+      "verified_family_paper_path": "/research/alphatrend-managed-futures-lineage.md",
+      "verified_packet_path": "/glassbox/trial-packets/0c5ddfb3d5b52ca5.json",
+      "verified_sections": [
+        "identity_and_authorship",
+        "economic_mechanism_and_falsifiable_hypothesis",
+        "literature_and_overlap_decision",
+        "family_and_union_trial_accounting",
+        "machine_readable_packet_and_stable_public_paper"
+      ]
+    },
+    {
+      "candidate_match_is_verified": true,
+      "candidate_public_papers": [
+        "/research/legacy-dsr-restatement.md"
+      ],
+      "completion_assessment": {
+        "blockers": [
+          {
+            "code": "IDENTITY_PREREGISTRATION_AND_ORIGINAL_ENVIRONMENT_NOT_BOUND",
+            "evidence": [
+              {
+                "path": "artifacts/research/alphatrend_family.json",
+                "sha256": "59bc39da95d216241213e5bfd2cccae1fdd3932ea7bcdc67b81d95c203a7cfbb"
+              },
+              {
+                "path": "var/experiments.jsonl",
+                "sha256": "b5a318c0997d980575f758451f509e0154eecbbb50d734e49a587d473062bd08"
+              },
+              {
+                "path": "artifacts/sweep/alphatrend_breadth/report.json",
+                "sha256": "c9eb52113b13647d468957136732792051b96ce9ec2437337298049bacaf0244"
+              }
+            ],
+            "finding": "The canonical family audit binds this identity to its immutable ledger measurement, but does not bind an identity-level preregistration, original code commit, runner hash, lockfile, and input snapshot. Those missing historical fields cannot be reconstructed from the family summary.",
+            "required_section": "preregistration_and_hashes"
+          },
+          {
+            "code": "IDENTITY_LEVEL_DECISION_PACKET_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/research/alphatrend_family.json",
+                "sha256": "59bc39da95d216241213e5bfd2cccae1fdd3932ea7bcdc67b81d95c203a7cfbb"
+              }
+            ],
+            "finding": "The family-level admission status is PAPER_EVIDENCE_COLLECTION_NOT_ESTABLISHED; it is not a preserved identity-level gate decision under the complete packet contract.",
+            "required_section": "admission_or_kill_decision"
+          },
+          {
+            "code": "IMMUTABLE_SUMMARY_LACKS_COMPLETE_IDENTITY_CURVE",
+            "evidence": [
+              {
+                "path": "artifacts/research/alphatrend_family.json",
+                "sha256": "59bc39da95d216241213e5bfd2cccae1fdd3932ea7bcdc67b81d95c203a7cfbb"
+              },
+              {
+                "path": "var/experiments.jsonl",
+                "sha256": "b5a318c0997d980575f758451f509e0154eecbbb50d734e49a587d473062bd08"
+              },
+              {
+                "path": "artifacts/sweep/alphatrend_breadth/report.json",
+                "sha256": "c9eb52113b13647d468957136732792051b96ce9ec2437337298049bacaf0244"
+              }
+            ],
+            "finding": "The immutable ledger summary preserves the first measurement but not the complete identity-level curve, uncertainty, stress, capacity, and diversification evidence required for packet completion.",
+            "required_section": "result_uncertainty_stress_capacity_and_diversification"
+          },
+          {
+            "code": "IDENTITY_CAPACITY_NOT_MEASURED",
+            "evidence": [
+              {
+                "path": "artifacts/research/alphatrend_family.json",
+                "sha256": "59bc39da95d216241213e5bfd2cccae1fdd3932ea7bcdc67b81d95c203a7cfbb"
+              }
+            ],
+            "finding": "The canonical family audit records capacity as UNMEASURED_NO_PERSISTED_CAPACITY_SWEEP; no identity-level capacity evidence can be credited.",
+            "required_section": "result_uncertainty_stress_capacity_and_diversification"
+          }
+        ],
+        "config_hash": "356929813b18d8db",
+        "evidence_grade": "persisted_summary_missing_daily_curve_and_kurtosis",
+        "family_audit": "artifacts/research/alphatrend_family.json",
+        "status": "AUDITED_NOT_CURRENTLY_COMPLETABLE"
+      },
+      "config_hash": "356929813b18d8db",
+      "coverage_status": "VERIFIED_INCOMPLETE_IDENTITY_PACKET",
+      "family_paper_binding_status": "VERIFIED_TAXONOMY_BINDING",
+      "first_recorded_at": "2026-08-17T00:00:00.074000+00:00",
+      "hypothesis_key": "e60ed7b6904004af",
+      "identity_packet_content_hash": "sha256:3e60b1ecf0e92ab88eca2385ab96cac1442f05ca43c5b948db77553bf96fbf8b",
+      "identity_packet_status": "INCOMPLETE_BACKFILL_REQUIRED",
+      "label": "alphatrend_breadth",
+      "ledger_profile": "var",
+      "ledger_source_path": "var/experiments.jsonl",
+      "measurement": {
+        "annualized_sharpe": 0.289,
+        "kurtosis": null,
+        "observations": 5161,
+        "skew": 0.006
+      },
+      "missing_sections": [
+        "preregistration_and_hashes",
+        "point_in_time_data_and_survivorship_controls",
+        "execution_and_cost_model",
+        "result_uncertainty_stress_capacity_and_diversification",
+        "admission_or_kill_decision",
+        "code_environment_and_reproduction"
+      ],
+      "research_family_key": "managed_futures_trend",
+      "research_family_title": "Managed-futures trend",
+      "sleeve_context": "Managed Futures",
+      "verified_family_paper_path": "/research/alphatrend-managed-futures-lineage.md",
+      "verified_packet_path": "/glassbox/trial-packets/e60ed7b6904004af.json",
+      "verified_sections": [
+        "identity_and_authorship",
+        "economic_mechanism_and_falsifiable_hypothesis",
+        "literature_and_overlap_decision",
+        "family_and_union_trial_accounting",
+        "machine_readable_packet_and_stable_public_paper"
+      ]
+    },
+    {
+      "candidate_match_is_verified": true,
+      "candidate_public_papers": [
+        "/research/legacy-dsr-restatement.md"
+      ],
+      "completion_assessment": {
+        "blockers": [
+          {
+            "code": "IDENTITY_PREREGISTRATION_AND_ORIGINAL_ENVIRONMENT_NOT_BOUND",
+            "evidence": [
+              {
+                "path": "artifacts/research/alphatrend_family.json",
+                "sha256": "59bc39da95d216241213e5bfd2cccae1fdd3932ea7bcdc67b81d95c203a7cfbb"
+              },
+              {
+                "path": "var/experiments.jsonl",
+                "sha256": "b5a318c0997d980575f758451f509e0154eecbbb50d734e49a587d473062bd08"
+              },
+              {
+                "path": "artifacts/sweep/alphatrend_breadth/report.json",
+                "sha256": "c9eb52113b13647d468957136732792051b96ce9ec2437337298049bacaf0244"
+              }
+            ],
+            "finding": "The canonical family audit binds this identity to its immutable ledger measurement, but does not bind an identity-level preregistration, original code commit, runner hash, lockfile, and input snapshot. Those missing historical fields cannot be reconstructed from the family summary.",
+            "required_section": "preregistration_and_hashes"
+          },
+          {
+            "code": "IDENTITY_LEVEL_DECISION_PACKET_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/research/alphatrend_family.json",
+                "sha256": "59bc39da95d216241213e5bfd2cccae1fdd3932ea7bcdc67b81d95c203a7cfbb"
+              }
+            ],
+            "finding": "The family-level admission status is PAPER_EVIDENCE_COLLECTION_NOT_ESTABLISHED; it is not a preserved identity-level gate decision under the complete packet contract.",
+            "required_section": "admission_or_kill_decision"
+          },
+          {
+            "code": "IMMUTABLE_SUMMARY_LACKS_COMPLETE_IDENTITY_CURVE",
+            "evidence": [
+              {
+                "path": "artifacts/research/alphatrend_family.json",
+                "sha256": "59bc39da95d216241213e5bfd2cccae1fdd3932ea7bcdc67b81d95c203a7cfbb"
+              },
+              {
+                "path": "var/experiments.jsonl",
+                "sha256": "b5a318c0997d980575f758451f509e0154eecbbb50d734e49a587d473062bd08"
+              },
+              {
+                "path": "artifacts/sweep/alphatrend_breadth/report.json",
+                "sha256": "c9eb52113b13647d468957136732792051b96ce9ec2437337298049bacaf0244"
+              }
+            ],
+            "finding": "The immutable ledger summary preserves the first measurement but not the complete identity-level curve, uncertainty, stress, capacity, and diversification evidence required for packet completion.",
+            "required_section": "result_uncertainty_stress_capacity_and_diversification"
+          },
+          {
+            "code": "IDENTITY_CAPACITY_NOT_MEASURED",
+            "evidence": [
+              {
+                "path": "artifacts/research/alphatrend_family.json",
+                "sha256": "59bc39da95d216241213e5bfd2cccae1fdd3932ea7bcdc67b81d95c203a7cfbb"
+              }
+            ],
+            "finding": "The canonical family audit records capacity as UNMEASURED_NO_PERSISTED_CAPACITY_SWEEP; no identity-level capacity evidence can be credited.",
+            "required_section": "result_uncertainty_stress_capacity_and_diversification"
+          }
+        ],
+        "config_hash": "dc78c2c55edfc678",
+        "evidence_grade": "persisted_summary_missing_daily_curve_and_kurtosis",
+        "family_audit": "artifacts/research/alphatrend_family.json",
+        "status": "AUDITED_NOT_CURRENTLY_COMPLETABLE"
+      },
+      "config_hash": "dc78c2c55edfc678",
+      "coverage_status": "VERIFIED_INCOMPLETE_IDENTITY_PACKET",
+      "family_paper_binding_status": "VERIFIED_TAXONOMY_BINDING",
+      "first_recorded_at": "2026-08-17T00:00:00.075000+00:00",
+      "hypothesis_key": "c8d703989f9e36ca",
+      "identity_packet_content_hash": "sha256:ffbd110b84122cf5c377078357d1f7cf8f86fa45c5758472af4623b1057dbda4",
+      "identity_packet_status": "INCOMPLETE_BACKFILL_REQUIRED",
+      "label": "alphatrend_breadth",
+      "ledger_profile": "var",
+      "ledger_source_path": "var/experiments.jsonl",
+      "measurement": {
+        "annualized_sharpe": 0.128,
+        "kurtosis": null,
+        "observations": 5161,
+        "skew": -0.13
+      },
+      "missing_sections": [
+        "preregistration_and_hashes",
+        "point_in_time_data_and_survivorship_controls",
+        "execution_and_cost_model",
+        "result_uncertainty_stress_capacity_and_diversification",
+        "admission_or_kill_decision",
+        "code_environment_and_reproduction"
+      ],
+      "research_family_key": "managed_futures_trend",
+      "research_family_title": "Managed-futures trend",
+      "sleeve_context": "Managed Futures",
+      "verified_family_paper_path": "/research/alphatrend-managed-futures-lineage.md",
+      "verified_packet_path": "/glassbox/trial-packets/c8d703989f9e36ca.json",
+      "verified_sections": [
+        "identity_and_authorship",
+        "economic_mechanism_and_falsifiable_hypothesis",
+        "literature_and_overlap_decision",
+        "family_and_union_trial_accounting",
+        "machine_readable_packet_and_stable_public_paper"
+      ]
+    },
+    {
+      "candidate_match_is_verified": true,
+      "candidate_public_papers": [
+        "/research/legacy-dsr-restatement.md"
+      ],
+      "completion_assessment": {
+        "blockers": [
+          {
+            "code": "IDENTITY_PREREGISTRATION_AND_ORIGINAL_ENVIRONMENT_NOT_BOUND",
+            "evidence": [
+              {
+                "path": "artifacts/research/alphatrend_family.json",
+                "sha256": "59bc39da95d216241213e5bfd2cccae1fdd3932ea7bcdc67b81d95c203a7cfbb"
+              },
+              {
+                "path": "var/experiments.jsonl",
+                "sha256": "b5a318c0997d980575f758451f509e0154eecbbb50d734e49a587d473062bd08"
+              },
+              {
+                "path": "artifacts/sweep/alphatrend_breadth/report.json",
+                "sha256": "c9eb52113b13647d468957136732792051b96ce9ec2437337298049bacaf0244"
+              }
+            ],
+            "finding": "The canonical family audit binds this identity to its immutable ledger measurement, but does not bind an identity-level preregistration, original code commit, runner hash, lockfile, and input snapshot. Those missing historical fields cannot be reconstructed from the family summary.",
+            "required_section": "preregistration_and_hashes"
+          },
+          {
+            "code": "IDENTITY_LEVEL_DECISION_PACKET_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/research/alphatrend_family.json",
+                "sha256": "59bc39da95d216241213e5bfd2cccae1fdd3932ea7bcdc67b81d95c203a7cfbb"
+              }
+            ],
+            "finding": "The family-level admission status is PAPER_EVIDENCE_COLLECTION_NOT_ESTABLISHED; it is not a preserved identity-level gate decision under the complete packet contract.",
+            "required_section": "admission_or_kill_decision"
+          },
+          {
+            "code": "IMMUTABLE_SUMMARY_LACKS_COMPLETE_IDENTITY_CURVE",
+            "evidence": [
+              {
+                "path": "artifacts/research/alphatrend_family.json",
+                "sha256": "59bc39da95d216241213e5bfd2cccae1fdd3932ea7bcdc67b81d95c203a7cfbb"
+              },
+              {
+                "path": "var/experiments.jsonl",
+                "sha256": "b5a318c0997d980575f758451f509e0154eecbbb50d734e49a587d473062bd08"
+              },
+              {
+                "path": "artifacts/sweep/alphatrend_breadth/report.json",
+                "sha256": "c9eb52113b13647d468957136732792051b96ce9ec2437337298049bacaf0244"
+              }
+            ],
+            "finding": "The immutable ledger summary preserves the first measurement but not the complete identity-level curve, uncertainty, stress, capacity, and diversification evidence required for packet completion.",
+            "required_section": "result_uncertainty_stress_capacity_and_diversification"
+          },
+          {
+            "code": "IDENTITY_CAPACITY_NOT_MEASURED",
+            "evidence": [
+              {
+                "path": "artifacts/research/alphatrend_family.json",
+                "sha256": "59bc39da95d216241213e5bfd2cccae1fdd3932ea7bcdc67b81d95c203a7cfbb"
+              }
+            ],
+            "finding": "The canonical family audit records capacity as UNMEASURED_NO_PERSISTED_CAPACITY_SWEEP; no identity-level capacity evidence can be credited.",
+            "required_section": "result_uncertainty_stress_capacity_and_diversification"
+          }
+        ],
+        "config_hash": "ea967116409691ab",
+        "evidence_grade": "persisted_summary_missing_daily_curve_and_kurtosis",
+        "family_audit": "artifacts/research/alphatrend_family.json",
+        "status": "AUDITED_NOT_CURRENTLY_COMPLETABLE"
+      },
+      "config_hash": "ea967116409691ab",
+      "coverage_status": "VERIFIED_INCOMPLETE_IDENTITY_PACKET",
+      "family_paper_binding_status": "VERIFIED_TAXONOMY_BINDING",
+      "first_recorded_at": "2026-08-17T00:00:00.076000+00:00",
+      "hypothesis_key": "0b91174c6e27a1f3",
+      "identity_packet_content_hash": "sha256:2c7b5a95b294205738e3a7eadc3a7b4ad3cd2cf7d8617cf946e55930360b23d6",
+      "identity_packet_status": "INCOMPLETE_BACKFILL_REQUIRED",
+      "label": "alphatrend_breadth",
+      "ledger_profile": "var",
+      "ledger_source_path": "var/experiments.jsonl",
+      "measurement": {
+        "annualized_sharpe": 0.217,
+        "kurtosis": null,
+        "observations": 5161,
+        "skew": -0.241
+      },
+      "missing_sections": [
+        "preregistration_and_hashes",
+        "point_in_time_data_and_survivorship_controls",
+        "execution_and_cost_model",
+        "result_uncertainty_stress_capacity_and_diversification",
+        "admission_or_kill_decision",
+        "code_environment_and_reproduction"
+      ],
+      "research_family_key": "managed_futures_trend",
+      "research_family_title": "Managed-futures trend",
+      "sleeve_context": "Managed Futures",
+      "verified_family_paper_path": "/research/alphatrend-managed-futures-lineage.md",
+      "verified_packet_path": "/glassbox/trial-packets/0b91174c6e27a1f3.json",
+      "verified_sections": [
+        "identity_and_authorship",
+        "economic_mechanism_and_falsifiable_hypothesis",
+        "literature_and_overlap_decision",
+        "family_and_union_trial_accounting",
+        "machine_readable_packet_and_stable_public_paper"
+      ]
+    },
+    {
+      "candidate_match_is_verified": true,
+      "candidate_public_papers": [
+        "/research/legacy-dsr-restatement.md"
+      ],
+      "completion_assessment": {
+        "blockers": [
+          {
+            "code": "IDENTITY_PREREGISTRATION_AND_ORIGINAL_ENVIRONMENT_NOT_BOUND",
+            "evidence": [
+              {
+                "path": "artifacts/research/alphatrend_family.json",
+                "sha256": "59bc39da95d216241213e5bfd2cccae1fdd3932ea7bcdc67b81d95c203a7cfbb"
+              },
+              {
+                "path": "var/experiments.jsonl",
+                "sha256": "b5a318c0997d980575f758451f509e0154eecbbb50d734e49a587d473062bd08"
+              },
+              {
+                "path": "artifacts/sweep/alphatrend_breadth/report.json",
+                "sha256": "c9eb52113b13647d468957136732792051b96ce9ec2437337298049bacaf0244"
+              }
+            ],
+            "finding": "The canonical family audit binds this identity to its immutable ledger measurement, but does not bind an identity-level preregistration, original code commit, runner hash, lockfile, and input snapshot. Those missing historical fields cannot be reconstructed from the family summary.",
+            "required_section": "preregistration_and_hashes"
+          },
+          {
+            "code": "IDENTITY_LEVEL_DECISION_PACKET_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/research/alphatrend_family.json",
+                "sha256": "59bc39da95d216241213e5bfd2cccae1fdd3932ea7bcdc67b81d95c203a7cfbb"
+              }
+            ],
+            "finding": "The family-level admission status is PAPER_EVIDENCE_COLLECTION_NOT_ESTABLISHED; it is not a preserved identity-level gate decision under the complete packet contract.",
+            "required_section": "admission_or_kill_decision"
+          },
+          {
+            "code": "IMMUTABLE_SUMMARY_LACKS_COMPLETE_IDENTITY_CURVE",
+            "evidence": [
+              {
+                "path": "artifacts/research/alphatrend_family.json",
+                "sha256": "59bc39da95d216241213e5bfd2cccae1fdd3932ea7bcdc67b81d95c203a7cfbb"
+              },
+              {
+                "path": "var/experiments.jsonl",
+                "sha256": "b5a318c0997d980575f758451f509e0154eecbbb50d734e49a587d473062bd08"
+              },
+              {
+                "path": "artifacts/sweep/alphatrend_breadth/report.json",
+                "sha256": "c9eb52113b13647d468957136732792051b96ce9ec2437337298049bacaf0244"
+              }
+            ],
+            "finding": "The immutable ledger summary preserves the first measurement but not the complete identity-level curve, uncertainty, stress, capacity, and diversification evidence required for packet completion.",
+            "required_section": "result_uncertainty_stress_capacity_and_diversification"
+          },
+          {
+            "code": "IDENTITY_CAPACITY_NOT_MEASURED",
+            "evidence": [
+              {
+                "path": "artifacts/research/alphatrend_family.json",
+                "sha256": "59bc39da95d216241213e5bfd2cccae1fdd3932ea7bcdc67b81d95c203a7cfbb"
+              }
+            ],
+            "finding": "The canonical family audit records capacity as UNMEASURED_NO_PERSISTED_CAPACITY_SWEEP; no identity-level capacity evidence can be credited.",
+            "required_section": "result_uncertainty_stress_capacity_and_diversification"
+          }
+        ],
+        "config_hash": "09f8fee4e13a004d",
+        "evidence_grade": "persisted_summary_missing_daily_curve_and_kurtosis",
+        "family_audit": "artifacts/research/alphatrend_family.json",
+        "status": "AUDITED_NOT_CURRENTLY_COMPLETABLE"
+      },
+      "config_hash": "09f8fee4e13a004d",
+      "coverage_status": "VERIFIED_INCOMPLETE_IDENTITY_PACKET",
+      "family_paper_binding_status": "VERIFIED_TAXONOMY_BINDING",
+      "first_recorded_at": "2026-08-17T00:00:00.077000+00:00",
+      "hypothesis_key": "7843716d6bab8d5b",
+      "identity_packet_content_hash": "sha256:b0e03e4e327c09dc93d3d37b1cffc7d1d7fa7afe154bd06cd79c86029b7ee305",
+      "identity_packet_status": "INCOMPLETE_BACKFILL_REQUIRED",
+      "label": "alphatrend_breadth",
+      "ledger_profile": "var",
+      "ledger_source_path": "var/experiments.jsonl",
+      "measurement": {
+        "annualized_sharpe": 0.204,
+        "kurtosis": null,
+        "observations": 5161,
+        "skew": 0.027
+      },
+      "missing_sections": [
+        "preregistration_and_hashes",
+        "point_in_time_data_and_survivorship_controls",
+        "execution_and_cost_model",
+        "result_uncertainty_stress_capacity_and_diversification",
+        "admission_or_kill_decision",
+        "code_environment_and_reproduction"
+      ],
+      "research_family_key": "managed_futures_trend",
+      "research_family_title": "Managed-futures trend",
+      "sleeve_context": "Managed Futures",
+      "verified_family_paper_path": "/research/alphatrend-managed-futures-lineage.md",
+      "verified_packet_path": "/glassbox/trial-packets/7843716d6bab8d5b.json",
+      "verified_sections": [
+        "identity_and_authorship",
+        "economic_mechanism_and_falsifiable_hypothesis",
+        "literature_and_overlap_decision",
+        "family_and_union_trial_accounting",
+        "machine_readable_packet_and_stable_public_paper"
+      ]
+    }
+  ],
+  "registry_key": "alphatrend_managed_futures",
+  "research_family_key": "managed_futures_trend",
+  "schema": "canli.alphac-publication-trial-accounting-binding.v2",
+  "status": "COMPLETE_RECORDED_UNION_EXTRACTED_IDENTITY_PACKETS_MAY_BE_INCOMPLETE",
+  "trial_packet_manifest": {
+    "content_hash": "sha256:38758b89a1a5fa845487a640b1deab046fffcf61ede5ad3afb6371798b208371",
+    "path": "artifacts/research/trial_packet_manifest.json",
+    "sha256": "0147dd8e631ca24257e2db384bf01d4637a79371f1754b284f3f7e9637c1369c"
+  }
+}

@@ -1,0 +1,76 @@
+{
+  "author": "Arhan Canli",
+  "metadata_cache": {
+    "content_hash": "sha256:a2b17534e33c4c361cd515387b566cd1c2e352a1b970159e66c329c3519b99c4",
+    "path": "artifacts/research/publication_reference_metadata.json",
+    "sha256": "cc011d355b2613f1514889fe8076752c3de1c54e158e561db60da559d3f1469c"
+  },
+  "reference_count": 3,
+  "references": [
+    {
+      "authors": [
+        {
+          "family": "Fama",
+          "given": "Eugene F."
+        },
+        {
+          "family": "French",
+          "given": "Kenneth R."
+        }
+      ],
+      "citation_key": "fama2015five_aea3e1",
+      "container_title": "Journal of Financial Economics",
+      "doi": "10.1016/j.jfineco.2014.10.010",
+      "metadata_authority": "CROSSREF_REST_API",
+      "title": "A five-factor asset pricing model",
+      "url": "https://doi.org/10.1016/j.jfineco.2014.10.010",
+      "year": 2015
+    },
+    {
+      "authors": [
+        {
+          "family": "COOPER",
+          "given": "MICHAEL J."
+        },
+        {
+          "family": "GULEN",
+          "given": "HUSEYIN"
+        },
+        {
+          "family": "SCHILL",
+          "given": "MICHAEL J."
+        }
+      ],
+      "citation_key": "cooper2008asset_fed0b7",
+      "container_title": "The Journal of Finance",
+      "doi": "10.1111/j.1540-6261.2008.01370.x",
+      "metadata_authority": "CROSSREF_REST_API",
+      "title": "Asset Growth and the Cross‐Section of Stock Returns",
+      "url": "https://doi.org/10.1111/j.1540-6261.2008.01370.x",
+      "year": 2008
+    },
+    {
+      "authors": [
+        {
+          "family": "Pontiff",
+          "given": "Jeffrey"
+        },
+        {
+          "family": "Woodgate",
+          "given": "Artemiza"
+        }
+      ],
+      "citation_key": "pontiff2005shares_01e9f5",
+      "container_title": "",
+      "doi": "10.2139/ssrn.679143",
+      "metadata_authority": "CROSSREF_REST_API",
+      "title": "Shares Outstanding and Cross-Sectional Returns",
+      "url": "https://doi.org/10.2139/ssrn.679143",
+      "year": 2005
+    }
+  ],
+  "registry_key": "equity_value_investment",
+  "schema": "canli.alphac-sleeve-bibliography.v1",
+  "status": "COMPLETE_NORMALIZED_BIBLIOGRAPHY",
+  "unresolved_references": []
+}

@@ -25,7 +25,7 @@ def test_restatement_uses_current_union_and_retires_missing_return_families() ->
     payload = _load().build()
     summary = payload["summary"]
 
-    assert payload["selection_context"]["n_hypotheses"] == 162
+    assert payload["selection_context"]["n_hypotheses"] == 228
     assert summary == {
         "historical_exception_families": 12,
         "restated_families": 5,
@@ -36,6 +36,5 @@ def test_restatement_uses_current_union_and_retires_missing_return_families() ->
     assert all(row["returns_sha256"] for row in payload["restated_variants"])
     assert all(row["status"] == "RESTATED_CURRENT_UNION" for row in payload["restated_variants"])
     assert all(
-        row["status"] == "RETIRED_MISSING_RETURN_SERIES"
-        for row in payload["retired_families"]
+        row["status"] == "RETIRED_MISSING_RETURN_SERIES" for row in payload["retired_families"]
     )

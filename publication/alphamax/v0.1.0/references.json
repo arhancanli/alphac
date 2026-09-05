@@ -1,0 +1,129 @@
+{
+  "author": "Arhan Canli",
+  "metadata_cache": {
+    "content_hash": "sha256:a2b17534e33c4c361cd515387b566cd1c2e352a1b970159e66c329c3519b99c4",
+    "path": "artifacts/research/publication_reference_metadata.json",
+    "sha256": "cc011d355b2613f1514889fe8076752c3de1c54e158e561db60da559d3f1469c"
+  },
+  "reference_count": 6,
+  "references": [
+    {
+      "authors": [
+        {
+          "family": "JEGADEESH",
+          "given": "NARASIMHAN"
+        },
+        {
+          "family": "TITMAN",
+          "given": "SHERIDAN"
+        }
+      ],
+      "citation_key": "jegadeesh1993returns_b36a44",
+      "container_title": "The Journal of Finance",
+      "doi": "10.1111/j.1540-6261.1993.tb04702.x",
+      "metadata_authority": "CROSSREF_REST_API",
+      "title": "Returns to Buying Winners and Selling Losers: Implications for Stock Market Efficiency",
+      "url": "https://doi.org/10.1111/j.1540-6261.1993.tb04702.x",
+      "year": 1993
+    },
+    {
+      "authors": [
+        {
+          "family": "ASNESS",
+          "given": "CLIFFORD S."
+        },
+        {
+          "family": "MOSKOWITZ",
+          "given": "TOBIAS J."
+        },
+        {
+          "family": "PEDERSEN",
+          "given": "LASSE HEJE"
+        }
+      ],
+      "citation_key": "asness2013value_6cc4c2",
+      "container_title": "The Journal of Finance",
+      "doi": "10.1111/jofi.12021",
+      "metadata_authority": "CROSSREF_REST_API",
+      "title": "Value and Momentum Everywhere",
+      "url": "https://doi.org/10.1111/jofi.12021",
+      "year": 2013
+    },
+    {
+      "authors": [
+        {
+          "family": "Daniel",
+          "given": "Kent"
+        },
+        {
+          "family": "Moskowitz",
+          "given": "Tobias J."
+        }
+      ],
+      "citation_key": "daniel2016momentum_0a020e",
+      "container_title": "Journal of Financial Economics",
+      "doi": "10.1016/j.jfineco.2015.12.002",
+      "metadata_authority": "CROSSREF_REST_API",
+      "title": "Momentum crashes",
+      "url": "https://doi.org/10.1016/j.jfineco.2015.12.002",
+      "year": 2016
+    },
+    {
+      "authors": [
+        {
+          "family": "Barroso",
+          "given": "Pedro"
+        },
+        {
+          "family": "Santa-Clara",
+          "given": "Pedro"
+        }
+      ],
+      "citation_key": "barroso2015momentum_f5ba1f",
+      "container_title": "Journal of Financial Economics",
+      "doi": "10.1016/j.jfineco.2014.11.010",
+      "metadata_authority": "CROSSREF_REST_API",
+      "title": "Momentum has its moments",
+      "url": "https://doi.org/10.1016/j.jfineco.2014.11.010",
+      "year": 2015
+    },
+    {
+      "authors": [
+        {
+          "family": "Korajczyk",
+          "given": "Robert A."
+        },
+        {
+          "family": "Sadka",
+          "given": "Ronnie"
+        }
+      ],
+      "citation_key": "korajczyk2004momentum_b75dcc",
+      "container_title": "The Journal of Finance",
+      "doi": "10.1111/j.1540-6261.2004.00656.x",
+      "metadata_authority": "CROSSREF_REST_API",
+      "title": "Are Momentum Profits Robust to Trading Costs?",
+      "url": "https://doi.org/10.1111/j.1540-6261.2004.00656.x",
+      "year": 2004
+    },
+    {
+      "authors": [
+        {
+          "family": "Novy-Marx",
+          "given": "Robert"
+        }
+      ],
+      "citation_key": "novymarx2012momentum_d09598",
+      "container_title": "Journal of Financial Economics",
+      "doi": "10.1016/j.jfineco.2011.05.003",
+      "metadata_authority": "CROSSREF_REST_API",
+      "title": "Is momentum really momentum?",
+      "url": "https://doi.org/10.1016/j.jfineco.2011.05.003",
+      "year": 2012
+    }
+  ],
+  "registry_key": "alphamax_equity_momentum",
+  "schema": "canli.alphac-sleeve-bibliography.v1",
+  "status": "COMPLETE_NORMALIZED_BIBLIOGRAPHY",
+  "unresolved_references": []
+}

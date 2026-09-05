@@ -1,5 +1,7 @@
 # Stablecoin par dislocations: literature and implementation boundary
 
+**Short title:** Stablecoin par dislocations: literature
+
 **Reviewed:** 2026-08-16  
 **Family:** `stablecoin_dislocation`  
 **Claim state:** economic mechanism supported; investable return untested  

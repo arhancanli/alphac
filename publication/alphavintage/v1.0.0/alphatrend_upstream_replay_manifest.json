@@ -1,0 +1,4434 @@
+{
+  "author": "Arhan Canli",
+  "claim_boundary": "This manifest binds a local author-workspace snapshot and the historical derived output. It does not establish redistribution rights, fresh vendor reacquisition, an independent reproduction, or an exact reconstruction of the historical DSR selection context.",
+  "content_hash": "sha256:cfb84152dbea31f4aac60c393ee7c857fc39e0b3165483b787e86899e879c934",
+  "evidence_date": "2026-08-24",
+  "historical_run": {
+    "command": ".venv/bin/python3 scripts/mf_gauntlet.py --alphas mf_trend_63,mf_trend_126,mf_trend_252 --rebalance 10 --cash 100000 --start 2003-01-01 --end 2026-08-24 --out artifacts/walkforward/mf_live_fwd",
+    "declared_end_exclusive": "2026-08-24",
+    "operational_log": {
+      "path": "var/log/mf_tick.log",
+      "reason": "The log includes broker-operational detail outside this replay packet.",
+      "redistributed": false
+    },
+    "run_finished_utc": "2026-08-23T05:31:55Z",
+    "run_started_utc": "2026-08-23T05:30:04Z",
+    "source_commit_reconstruction": "577555f12636e4df81e42a3940184678d0cceb7e"
+  },
+  "private_input_snapshot": {
+    "bytes": 5994016,
+    "copied_before_next_scheduled_vendor_refresh": true,
+    "experiment_context_files": 1,
+    "files": 410,
+    "instrument_state_files": 1,
+    "market_lake_files": 408,
+    "path": "data/reproduction/alphatrend_mf_live_fwd_20260823",
+    "records": [
+      {
+        "bytes": 16119,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:DBAUSD/year=2007/data.parquet",
+        "sha256": "0734c8a43506d92e81baf0a7fd20165fadfb1db2aa04f6f0156fcdf4ef8b31ef"
+      },
+      {
+        "bytes": 16536,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:DBAUSD/year=2008/data.parquet",
+        "sha256": "6c609bae991384ea2d3d76e08dd4786fdcdbf9c791815e52f364f01f005fce83"
+      },
+      {
+        "bytes": 16190,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:DBAUSD/year=2009/data.parquet",
+        "sha256": "a0b765eac7cef2f8496385ebac136e75b86af249fbf585d4c74fae9d566ff8ea"
+      },
+      {
+        "bytes": 16296,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:DBAUSD/year=2010/data.parquet",
+        "sha256": "27d3f2d810d6c8a9bf9dfa965e5b9d25f4db4ba472b8cf59f287e7a41f9ff190"
+      },
+      {
+        "bytes": 16325,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:DBAUSD/year=2011/data.parquet",
+        "sha256": "76b8b1cd814d5fafbd453f66c0762a9f1fae08a646c8f0f764c22ca8d43a9f88"
+      },
+      {
+        "bytes": 16052,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:DBAUSD/year=2012/data.parquet",
+        "sha256": "f920e7ce2e4266375ea16f84a7622d42f76b09c78b6ac2a47567f67c017318f5"
+      },
+      {
+        "bytes": 15662,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:DBAUSD/year=2013/data.parquet",
+        "sha256": "3cdb65d53c4ee92f0e535c4378826f9cd9c75ea86f95b8a4326aba33b5469ba8"
+      },
+      {
+        "bytes": 16123,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:DBAUSD/year=2014/data.parquet",
+        "sha256": "fa8482a3277e5fa9addb290f4c0aaca089abfee5c29745dfc7fabde9878752c2"
+      },
+      {
+        "bytes": 15970,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:DBAUSD/year=2015/data.parquet",
+        "sha256": "359463fca5e777eec7ca6844eb481b56b888db35b94f20e0d653b0c1cb013625"
+      },
+      {
+        "bytes": 15674,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:DBAUSD/year=2016/data.parquet",
+        "sha256": "947cbd32c6361b5ac8b6de3eabcdbc09fa488d06909f42b2d5a1dad8c49381c5"
+      },
+      {
+        "bytes": 15558,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:DBAUSD/year=2017/data.parquet",
+        "sha256": "8a153276017f1c83454f3e119985eaa66f2c2970d022da633fa30281502c67ef"
+      },
+      {
+        "bytes": 15556,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:DBAUSD/year=2018/data.parquet",
+        "sha256": "fd1c77b0f5df9a83a046930d0bac695c90c66e05e57906e55ad1941f62b8f960"
+      },
+      {
+        "bytes": 15561,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:DBAUSD/year=2019/data.parquet",
+        "sha256": "3c6b44e56738b5b850e4b9f96de56030e32da0c097d33dd58c239890c54c305f"
+      },
+      {
+        "bytes": 15832,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:DBAUSD/year=2020/data.parquet",
+        "sha256": "cb7ba8f1b52b62587687299fba8baac1068b8af65f42f8458120f13908404b1e"
+      },
+      {
+        "bytes": 15944,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:DBAUSD/year=2021/data.parquet",
+        "sha256": "abf2a33889185937120dce26cdc75ebc85587cd3f282c0b8d6a8100aba85911b"
+      },
+      {
+        "bytes": 15889,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:DBAUSD/year=2022/data.parquet",
+        "sha256": "8fca7d2c1e8e3d5781d2624f79b587e802c5bfac7e1eb394a62bebae8782379e"
+      },
+      {
+        "bytes": 15809,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:DBAUSD/year=2023/data.parquet",
+        "sha256": "9bc52ab28f0fe7f4b33cfb45cc582ae58109fc5a1cf1102420bb9c3f930f208d"
+      },
+      {
+        "bytes": 16220,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:DBAUSD/year=2024/data.parquet",
+        "sha256": "578bf634337cd1a5428d8dfa0ac40715778000110b03a5246a4e7680b89f735c"
+      },
+      {
+        "bytes": 15591,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:DBAUSD/year=2025/data.parquet",
+        "sha256": "ce86ef69bc5b51e1ac0e12017b8e13d1aba4aa82df99b9c0b182ecf80f9ee1ba"
+      },
+      {
+        "bytes": 9672,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:DBAUSD/year=2026/data.parquet",
+        "sha256": "9c3b7c2d150fc548f71dd4dbf7c4c47cb35918f341278e2c092f2e4212b702b1"
+      },
+      {
+        "bytes": 15073,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:DBCUSD/year=2006/data.parquet",
+        "sha256": "1f39d999865d9a1576085ec14cdab10f07910de01c57c665d72802bfda13660c"
+      },
+      {
+        "bytes": 16077,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:DBCUSD/year=2007/data.parquet",
+        "sha256": "0f1ac8e98846aa8bd68dcc2565d1b8fba8e2192198224e8fcaf9b59b905334d1"
+      },
+      {
+        "bytes": 16529,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:DBCUSD/year=2008/data.parquet",
+        "sha256": "4239b10091da446f7bcac544f35938f7a1001d68fa03474e63f999b77fdecde9"
+      },
+      {
+        "bytes": 16320,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:DBCUSD/year=2009/data.parquet",
+        "sha256": "9d58de09e8859ba03b51ab928fcb5eb0db9d94fc3f577d1ed2b989b94fcade39"
+      },
+      {
+        "bytes": 16274,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:DBCUSD/year=2010/data.parquet",
+        "sha256": "5d0dd44e1f0ee2437592d65139155611fe05a5c32f1ecc34c33a437457d910fb"
+      },
+      {
+        "bytes": 16323,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:DBCUSD/year=2011/data.parquet",
+        "sha256": "9a9081b1a091bc1b279b1b654b57f4f7ad33493346c49aeaa904548a6c70b50f"
+      },
+      {
+        "bytes": 16120,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:DBCUSD/year=2012/data.parquet",
+        "sha256": "9fdd25bc1aaea4d74e727a1815f55f500f414481b71d2cc1590bdf4ff88b9bf1"
+      },
+      {
+        "bytes": 15915,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:DBCUSD/year=2013/data.parquet",
+        "sha256": "ea7e18971e423e201804d13c41320889a3b16a64d136ed82bab5e54e6511e796"
+      },
+      {
+        "bytes": 16132,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:DBCUSD/year=2014/data.parquet",
+        "sha256": "459c9f06c67658bed22da340230cf43e32afc4ff5f9f0faf132c16eef5077e82"
+      },
+      {
+        "bytes": 16147,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:DBCUSD/year=2015/data.parquet",
+        "sha256": "e55adb99037ecfb239dab0e9550ae0889f966b3cc59b8afe67e341299a8fbf20"
+      },
+      {
+        "bytes": 16059,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:DBCUSD/year=2016/data.parquet",
+        "sha256": "a3425b50c660991fac937d18b28dd636f7b04c0fc80e319ef43ef53abeaf1747"
+      },
+      {
+        "bytes": 15807,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:DBCUSD/year=2017/data.parquet",
+        "sha256": "02e524999731b910cf3013e2d93d2859aec30be925d5e325491db8a16389be1e"
+      },
+      {
+        "bytes": 15968,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:DBCUSD/year=2018/data.parquet",
+        "sha256": "7c20415478e800ed675024200f0fad7dc659c28f7bd2c050eab112b1968761d7"
+      },
+      {
+        "bytes": 15524,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:DBCUSD/year=2019/data.parquet",
+        "sha256": "72806bbaa7bd7ab8ba981f2f93297ecf5bac535ca1fefa5bdc7bebf23238aaa4"
+      },
+      {
+        "bytes": 16191,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:DBCUSD/year=2020/data.parquet",
+        "sha256": "1740e4138c28367f3dee652a18fbc159b182baacc14257e6270f50fe92e90645"
+      },
+      {
+        "bytes": 16202,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:DBCUSD/year=2021/data.parquet",
+        "sha256": "86180b78f3dca5150e056892836a66b66fb117a69186199aa00c96f33ada2580"
+      },
+      {
+        "bytes": 16438,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:DBCUSD/year=2022/data.parquet",
+        "sha256": "ecada04b2768a8b085767615dc17f9d077c390ec7f54afaaca49255161f571f2"
+      },
+      {
+        "bytes": 15989,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:DBCUSD/year=2023/data.parquet",
+        "sha256": "d27b8c473d5f8d533b2d158e4f9e5c2438ed06d95203371db426ffa098a58083"
+      },
+      {
+        "bytes": 15785,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:DBCUSD/year=2024/data.parquet",
+        "sha256": "d2774a322bd2f349ef5f6497b179c28d27288440176f2bf6bd3075a9650b0e6c"
+      },
+      {
+        "bytes": 15693,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:DBCUSD/year=2025/data.parquet",
+        "sha256": "d57ae97a9e5b4e9a9e297394a1488e1eb314cbbd0797d1bf6d10a2516f8a3e86"
+      },
+      {
+        "bytes": 10134,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:DBCUSD/year=2026/data.parquet",
+        "sha256": "440b8bc947368bdf40cdaa54e2619c895701bfd5db7e7f55c45082c7d67c416a"
+      },
+      {
+        "bytes": 13364,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:EEMUSD/year=2003/data.parquet",
+        "sha256": "ede643c9c1f2ae687608639fa1886087883c4924bae66d2218221ba01644b710"
+      },
+      {
+        "bytes": 16454,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:EEMUSD/year=2004/data.parquet",
+        "sha256": "3c88dc50a0bb1e611ca41bfe4a1a6fdc455ed2405b3f194f463567e9561ae0e6"
+      },
+      {
+        "bytes": 16608,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:EEMUSD/year=2005/data.parquet",
+        "sha256": "060426d1d9f2483c9afe6530efa4f3a50abb12a4a536a9450d0224f18e477644"
+      },
+      {
+        "bytes": 16595,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:EEMUSD/year=2006/data.parquet",
+        "sha256": "4d921e87558bbd06b37022f2ecb32012c6abeae3d1ff2678bbf0b6e818488d56"
+      },
+      {
+        "bytes": 16855,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:EEMUSD/year=2007/data.parquet",
+        "sha256": "b36aa75e68d36737421dd65e6ddd4e6bf77b0d5705eb1697c00448d8772aa012"
+      },
+      {
+        "bytes": 17012,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:EEMUSD/year=2008/data.parquet",
+        "sha256": "5fe0e309e6fe59b2f61462a9d6a7e918117c9a542fbfb087a820abc52fb38ea1"
+      },
+      {
+        "bytes": 16977,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:EEMUSD/year=2009/data.parquet",
+        "sha256": "d2dd0dd50508f4109b4bcb52109fcea07f0ab0017576e1bed3238f647f8ae974"
+      },
+      {
+        "bytes": 16840,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:EEMUSD/year=2010/data.parquet",
+        "sha256": "4a64ca902b4e25f2c2867754f3034fb827b4b1fcde9803796dff54fb003412e0"
+      },
+      {
+        "bytes": 16790,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:EEMUSD/year=2011/data.parquet",
+        "sha256": "32bb736543957336268de950cce99109800111ff6295e40dc032f79f86d94967"
+      },
+      {
+        "bytes": 16650,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:EEMUSD/year=2012/data.parquet",
+        "sha256": "7cd06b91c712bb38df82809840acf0e2d2f253bac74cba427136d1b778ff158b"
+      },
+      {
+        "bytes": 16681,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:EEMUSD/year=2013/data.parquet",
+        "sha256": "516065064cd3ca6d13a5dd244d28c67d1c65976abd5486e65040abd271c0953b"
+      },
+      {
+        "bytes": 16661,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:EEMUSD/year=2014/data.parquet",
+        "sha256": "cdc1549cd4c3a4440226f603a6d79cbb34d7fe1307f3574dbe29d40e348c982f"
+      },
+      {
+        "bytes": 16787,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:EEMUSD/year=2015/data.parquet",
+        "sha256": "9273ddb622e47dcacdac77f6c93f089fe976bee79e754c200b178cf6e6734b75"
+      },
+      {
+        "bytes": 16791,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:EEMUSD/year=2016/data.parquet",
+        "sha256": "59e1620e72ba68ba19f806369e7cc00c76bc852de5da223d0d7a0a246c55f3d9"
+      },
+      {
+        "bytes": 16639,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:EEMUSD/year=2017/data.parquet",
+        "sha256": "4605bef001778302f8ef0064d4f0b743bc9aa334e11eb20e529c16135b7edc18"
+      },
+      {
+        "bytes": 16681,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:EEMUSD/year=2018/data.parquet",
+        "sha256": "44d6241e3f7ea43ae6c2bec56a6b58dcc34a3a980de27a19dd8ef5f6c836c8a2"
+      },
+      {
+        "bytes": 16629,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:EEMUSD/year=2019/data.parquet",
+        "sha256": "66f8e79ad16033af7ab2ee5570ac8dbbb77f9f1cde110c2a69bffe5ecd3c67a6"
+      },
+      {
+        "bytes": 16936,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:EEMUSD/year=2020/data.parquet",
+        "sha256": "d9574fe14d4170db4aa642da8c028100bb3356a02895991462a521b1f5761fc6"
+      },
+      {
+        "bytes": 16704,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:EEMUSD/year=2021/data.parquet",
+        "sha256": "e1d199603ca49c8d10e9f503f67d4e1854f0c55babf970c39b502459f04eaa92"
+      },
+      {
+        "bytes": 16686,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:EEMUSD/year=2022/data.parquet",
+        "sha256": "cf489d8a0958faa56c0506fdf453b44f07c15409fc8fcfa75ebbeb1aff8ed373"
+      },
+      {
+        "bytes": 16581,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:EEMUSD/year=2023/data.parquet",
+        "sha256": "24e7f307eb9686bdbb2e49308751890391520cda624221009ddd01ac5ba12f46"
+      },
+      {
+        "bytes": 16661,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:EEMUSD/year=2024/data.parquet",
+        "sha256": "34278d50f33b4827e7b8a1a076b70315f80a50bc6f4f8d48ec49f1c111dbdf3e"
+      },
+      {
+        "bytes": 16640,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:EEMUSD/year=2025/data.parquet",
+        "sha256": "5244d780439df4c1efb88078e9132f4a1d07dfb5f9e6c61a3f138184309ffeec"
+      },
+      {
+        "bytes": 12096,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:EEMUSD/year=2026/data.parquet",
+        "sha256": "a1702a9031c8e1de57a128fee882823ebe614d4d3e86de51a1f40a8f24ffbc0a"
+      },
+      {
+        "bytes": 8892,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:EFAUSD/year=2001/data.parquet",
+        "sha256": "4e5597829c90d19522dc9e8c4a13783b075821a29148309440089de315a2b132"
+      },
+      {
+        "bytes": 16455,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:EFAUSD/year=2002/data.parquet",
+        "sha256": "db688d0e94bfe614790bec861bb5702734cda1735e92f19e39bec64aacd4d38b"
+      },
+      {
+        "bytes": 16538,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:EFAUSD/year=2003/data.parquet",
+        "sha256": "2141800e297113e98b1ff3405135575d261ff12b52c5ab4b69d88a00f75ab397"
+      },
+      {
+        "bytes": 16358,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:EFAUSD/year=2004/data.parquet",
+        "sha256": "108982ea263fc1fcbcf255b68d398b058c7d7cd0683f7c17cd33a1733a66f0c1"
+      },
+      {
+        "bytes": 16425,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:EFAUSD/year=2005/data.parquet",
+        "sha256": "1abd54282e6852e4562fda0686382249d6b872bb2ef4e6bf849de2382cfe8951"
+      },
+      {
+        "bytes": 16359,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:EFAUSD/year=2006/data.parquet",
+        "sha256": "72556fd1025485d56ec9bc56288fa1135f0a9b76ef9821e6cd4bd11ae8ec6053"
+      },
+      {
+        "bytes": 16482,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:EFAUSD/year=2007/data.parquet",
+        "sha256": "2f0adde3d94dcc82443a438a2bb0a1b36d2bd7c1840773c3451cb9cb319fb8b3"
+      },
+      {
+        "bytes": 16896,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:EFAUSD/year=2008/data.parquet",
+        "sha256": "383942efea53bd9f95717a65680134def6997a86b63e81544ba99ffa60201559"
+      },
+      {
+        "bytes": 16763,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:EFAUSD/year=2009/data.parquet",
+        "sha256": "2cc3b7f95fdec95e54ab5208357649e4d18a4a1065e17513e49448c42fe859b5"
+      },
+      {
+        "bytes": 16706,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:EFAUSD/year=2010/data.parquet",
+        "sha256": "9b114bc00d11d8e864aa40c3bec920e3ce7764b503f13bf0cffb9a2cf58c84ca"
+      },
+      {
+        "bytes": 16636,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:EFAUSD/year=2011/data.parquet",
+        "sha256": "9e4b3177fa81f8903d1a0239c72d632efac5e1455c459259de3b3b38f390f121"
+      },
+      {
+        "bytes": 16514,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:EFAUSD/year=2012/data.parquet",
+        "sha256": "cc00fcbb5f265f160548dcc61e1f4de1e1d72d4e89afda4b1d7cc9f737e73fc4"
+      },
+      {
+        "bytes": 16595,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:EFAUSD/year=2013/data.parquet",
+        "sha256": "64fbb7e93ed8197d3239c3fed79a775b87e9bb23354f9b7e12cb11dcf7063d73"
+      },
+      {
+        "bytes": 16659,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:EFAUSD/year=2014/data.parquet",
+        "sha256": "b61f8e8ae630c684ac8f54ec91c456ec6e6f18779685edf7affcdf7ed60c4051"
+      },
+      {
+        "bytes": 16649,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:EFAUSD/year=2015/data.parquet",
+        "sha256": "c8cca427fb7a47f8599b6bc33d0f040d47f8609fdd1df3a490c77bb3d3e26826"
+      },
+      {
+        "bytes": 16592,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:EFAUSD/year=2016/data.parquet",
+        "sha256": "efdcafd6c040f5a9fc25e22a3254c11ff6dcb4121c2b56197b831cd19e76cf88"
+      },
+      {
+        "bytes": 16552,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:EFAUSD/year=2017/data.parquet",
+        "sha256": "9c64ae44da4cf42b665dd8bb4ceeb125cd4c7072e2f7272bbcd0ccbd6e3a06ad"
+      },
+      {
+        "bytes": 16721,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:EFAUSD/year=2018/data.parquet",
+        "sha256": "5f0e4eccaae679d9bd5add332b9ffe0bbef56abf8f73a3fa9a795acb04e59ac7"
+      },
+      {
+        "bytes": 16654,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:EFAUSD/year=2019/data.parquet",
+        "sha256": "c84ee07ae503f26712c3e7a29da8b5454b4c11868f1e21ae6c4650ff7e396d92"
+      },
+      {
+        "bytes": 16915,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:EFAUSD/year=2020/data.parquet",
+        "sha256": "103411d8a93cd75b8f1dfd0ea754fc85919166a52a7c937279df4775b9c93671"
+      },
+      {
+        "bytes": 16649,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:EFAUSD/year=2021/data.parquet",
+        "sha256": "96978d74f8c24f5fe88e6d17338f805b8e0706d09526307cfa115d900e5d8eb1"
+      },
+      {
+        "bytes": 16845,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:EFAUSD/year=2022/data.parquet",
+        "sha256": "77a45ee43cf5126f4c8615f264ab23a206215142fffd0d50e38700cf6788b0f0"
+      },
+      {
+        "bytes": 16551,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:EFAUSD/year=2023/data.parquet",
+        "sha256": "2f6f49aaac50cca7db208e60ce43a2b5b2a071f4c3949e6697c72c021db60b6d"
+      },
+      {
+        "bytes": 16594,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:EFAUSD/year=2024/data.parquet",
+        "sha256": "392c8bd0ced1d0a909627d1d15a3b217d411a5dbf98fde8416588804b43bcfb1"
+      },
+      {
+        "bytes": 16638,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:EFAUSD/year=2025/data.parquet",
+        "sha256": "7db9a6db8c5e1f91ffb450260ac356ec82057f3fb4a2a21d592f6cb94dcac78d"
+      },
+      {
+        "bytes": 12083,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:EFAUSD/year=2026/data.parquet",
+        "sha256": "fd085bbe8b355cf5d29eccf0e2817c8a99f4cf99606dc76876bb34f904509fe3"
+      },
+      {
+        "bytes": 5479,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:FXEUSD/year=2005/data.parquet",
+        "sha256": "a5df2111b2b1e0207d42cf108a255ed7fbe82cbb187f7d271f091e02a869ce2f"
+      },
+      {
+        "bytes": 16398,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:FXEUSD/year=2006/data.parquet",
+        "sha256": "5104e86ace37b06b85a743af0ce1ab49348e1cb1cb108362afdbf7c0aedf05a3"
+      },
+      {
+        "bytes": 16319,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:FXEUSD/year=2007/data.parquet",
+        "sha256": "d6c76a4fe6166cd3d4ef401e3491e05695e709c8d378f3d4e7949a3dab079f3e"
+      },
+      {
+        "bytes": 16577,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:FXEUSD/year=2008/data.parquet",
+        "sha256": "8eff22b7f9b4cc475d75e3d7af8e62a0700ed0973030bb761767c99654a3770d"
+      },
+      {
+        "bytes": 16416,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:FXEUSD/year=2009/data.parquet",
+        "sha256": "9be86eb35874ab699d6fafcc2eaac44f3ef2c1df0ef2a14eb3ae1aa584dec899"
+      },
+      {
+        "bytes": 16570,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:FXEUSD/year=2010/data.parquet",
+        "sha256": "9c11890af065d581c570df918ed6784691d62e70b11a56f2669eda11410302a4"
+      },
+      {
+        "bytes": 16454,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:FXEUSD/year=2011/data.parquet",
+        "sha256": "d1965b18b689b158fd9d707c3d232ff79574cedb1d70b21ffaae2b9ad4a144f1"
+      },
+      {
+        "bytes": 16361,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:FXEUSD/year=2012/data.parquet",
+        "sha256": "6a7698ca20b39cdc4c6667f64698647bbf6c941fc67a4ce92ebdb9c81fa5323a"
+      },
+      {
+        "bytes": 16291,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:FXEUSD/year=2013/data.parquet",
+        "sha256": "45c12c58b2d1e518cb63ce347fbcccd7e1c1fed6a0b5c30f0a80d488832a5e82"
+      },
+      {
+        "bytes": 16360,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:FXEUSD/year=2014/data.parquet",
+        "sha256": "44fd9926a586d4ea7e972cd9c58d67cfc24a56e5b32fd4bbae130e4b1dba3d5d"
+      },
+      {
+        "bytes": 16413,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:FXEUSD/year=2015/data.parquet",
+        "sha256": "6eaa1769889512eae26fb617ff7a328ca9bcb239c87f89756af4a3de2561f01f"
+      },
+      {
+        "bytes": 16311,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:FXEUSD/year=2016/data.parquet",
+        "sha256": "908672f9d228e607dc328d6171846ec3dda0af96cfd62e0be15da5a6a836cbb2"
+      },
+      {
+        "bytes": 16295,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:FXEUSD/year=2017/data.parquet",
+        "sha256": "81ae1417fc2b9bb87b4c8a598a6c0089147d72e692ba13cb50ceb6c2aedde2c0"
+      },
+      {
+        "bytes": 16332,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:FXEUSD/year=2018/data.parquet",
+        "sha256": "50af9c1349eaf90df89e324cda3ba725f51e2d18c912516d709c2ff23b29362b"
+      },
+      {
+        "bytes": 16161,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:FXEUSD/year=2019/data.parquet",
+        "sha256": "4ac194aa7b1a0aedfb99f85fe8ac4d16fe93a63cceb412ed59f6085b5b9d76c8"
+      },
+      {
+        "bytes": 16264,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:FXEUSD/year=2020/data.parquet",
+        "sha256": "fcd3ef91a85eae0f8480421f4394e52eda82e46e2fba344a76c029a4635ce8e1"
+      },
+      {
+        "bytes": 16074,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:FXEUSD/year=2021/data.parquet",
+        "sha256": "9569379fb5d9e6a238f18a8354f0ebba787ed27b25f3968d0963064f6928f89a"
+      },
+      {
+        "bytes": 16342,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:FXEUSD/year=2022/data.parquet",
+        "sha256": "e35835bc1c7294ff7debc3abddd9795cc8347cdd0172f6d03771cf742babf53c"
+      },
+      {
+        "bytes": 16083,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:FXEUSD/year=2023/data.parquet",
+        "sha256": "1e51a30ced6fbce56d0ac8a009c713819ba2d7b189fa254b50eab2f43db706fb"
+      },
+      {
+        "bytes": 15835,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:FXEUSD/year=2024/data.parquet",
+        "sha256": "8b9c1b2491b46b1f68d288fe59c59046fb5a08c9de067110233d2a689cb76fad"
+      },
+      {
+        "bytes": 16225,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:FXEUSD/year=2025/data.parquet",
+        "sha256": "db61ea1ed5144b4aa5f2014a185bd3946b03b84f9d1071c73ada0ca280d26cd3"
+      },
+      {
+        "bytes": 12111,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:FXEUSD/year=2026/data.parquet",
+        "sha256": "b3d6e748dc30dc2efefd2b241090484047419543447993a947629f1b38b2d61b"
+      },
+      {
+        "bytes": 11886,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:FXYUSD/year=2007/data.parquet",
+        "sha256": "c6caf9a3b0bfde49bdee143347a39e5f9ed72df996fa50a5dcf68d05197c7ca9"
+      },
+      {
+        "bytes": 13151,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:FXYUSD/year=2008/data.parquet",
+        "sha256": "54ab49cd93dd8d7d3207a31424e2c253d9152dd37032290a793e0343884b2163"
+      },
+      {
+        "bytes": 12968,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:FXYUSD/year=2009/data.parquet",
+        "sha256": "d0464b633d83500f16c52bd18050f21a50ea4186508cf21752d8c5e49c17b59c"
+      },
+      {
+        "bytes": 12919,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:FXYUSD/year=2010/data.parquet",
+        "sha256": "22aead69b304be00ec690d408e530d701830c8bd72c7e067779d73424fdf0830"
+      },
+      {
+        "bytes": 12932,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:FXYUSD/year=2011/data.parquet",
+        "sha256": "8fc1865e2979886693fb6f69c57807128034f691b1983e5fff455ac14c994a88"
+      },
+      {
+        "bytes": 12979,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:FXYUSD/year=2012/data.parquet",
+        "sha256": "c38a02bbcbe062be3102d6156a25c3720aa8db07fb80a9451e3b14c13f2304f4"
+      },
+      {
+        "bytes": 13140,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:FXYUSD/year=2013/data.parquet",
+        "sha256": "40ee6f108e0335306db0784881da35f7115baea5047ffba5feffbca46f9fe9c9"
+      },
+      {
+        "bytes": 12629,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:FXYUSD/year=2014/data.parquet",
+        "sha256": "733cb588fc42803546f971cd63df0ebfc329f0d1e79c86c1346244de975827ea"
+      },
+      {
+        "bytes": 12297,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:FXYUSD/year=2015/data.parquet",
+        "sha256": "c5edcc744b3c5abd8bee05fa2e526bb9aa1d42664d1573d4cb1c2e650643ec01"
+      },
+      {
+        "bytes": 13051,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:FXYUSD/year=2016/data.parquet",
+        "sha256": "5f20bdb8a00434ddd1fa040b1ab19fe6c28f697cc5d7f2873ae32dad5babd668"
+      },
+      {
+        "bytes": 12403,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:FXYUSD/year=2017/data.parquet",
+        "sha256": "b58644512adb144531979585f12d46de310516108ccdd4c719061656a93cf9f1"
+      },
+      {
+        "bytes": 12482,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:FXYUSD/year=2018/data.parquet",
+        "sha256": "3cb9eb770bff9d5c6dbd54c285a5e9c936d6fe5cd61eb40ba17fac5fe6a5cbcd"
+      },
+      {
+        "bytes": 12412,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:FXYUSD/year=2019/data.parquet",
+        "sha256": "9f254d57c286436a74ab368e9ae4c9144dcbf22a0c8bec9236dfe9aa3b056585"
+      },
+      {
+        "bytes": 12365,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:FXYUSD/year=2020/data.parquet",
+        "sha256": "9f8e9d423f21901f7bb847e818544588ec564e259f5891b3338dff36bc571790"
+      },
+      {
+        "bytes": 12032,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:FXYUSD/year=2021/data.parquet",
+        "sha256": "fe4877b8108b3220c58cb996acc713cc46c7e735eb237c4de6076dd536c87278"
+      },
+      {
+        "bytes": 12608,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:FXYUSD/year=2022/data.parquet",
+        "sha256": "58b36975d57d20e3fe2514327ecce568bb1ce8691bf2bf1ef3b172c5bc584a7c"
+      },
+      {
+        "bytes": 12561,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:FXYUSD/year=2023/data.parquet",
+        "sha256": "a3c25f931e20fec2eb3a2885505a4ece557e05e5ebac19ca5f33ea11eaab0065"
+      },
+      {
+        "bytes": 12674,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:FXYUSD/year=2024/data.parquet",
+        "sha256": "89bb2c765463fcc7ac402a250d346d44657b1010ba0379780e74649ae29603f5"
+      },
+      {
+        "bytes": 12632,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:FXYUSD/year=2025/data.parquet",
+        "sha256": "014947ba34fba76b0a7901188395b6ce2aa9451304b3fd904763bc02300de13a"
+      },
+      {
+        "bytes": 9730,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:FXYUSD/year=2026/data.parquet",
+        "sha256": "fd5d352dbcbee2f8e9943a124aca8f02c6f07908bcced1fce984706936e11e04"
+      },
+      {
+        "bytes": 6052,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:GLDUSD/year=2004/data.parquet",
+        "sha256": "4c83a09e34d1b2e860e80ec83be46fa2ccd3ac0a1ab0cd317d6c447c9e28e4f8"
+      },
+      {
+        "bytes": 12628,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:GLDUSD/year=2005/data.parquet",
+        "sha256": "ad65c199ff86089b001dd3fb06b2fe36a8898178e1c188b901dcfa8b5b0c28f3"
+      },
+      {
+        "bytes": 13112,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:GLDUSD/year=2006/data.parquet",
+        "sha256": "7bf819c2cdd27255455c913121d9cd14b54794556f4dc2f78228e0ee3074f148"
+      },
+      {
+        "bytes": 13049,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:GLDUSD/year=2007/data.parquet",
+        "sha256": "a912f3b22422766722caaa43d2c3dbfdde459c1af49d286e40e456de3b5629ba"
+      },
+      {
+        "bytes": 13546,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:GLDUSD/year=2008/data.parquet",
+        "sha256": "0672421b1195deb790b71a739a84c55ab6546ae61322728b7e9663eddcd6451a"
+      },
+      {
+        "bytes": 13520,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:GLDUSD/year=2009/data.parquet",
+        "sha256": "9b586cfada352ecf8d6226bd0c52ba7623eba0b2734a79dfabb78781416e6eb7"
+      },
+      {
+        "bytes": 13597,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:GLDUSD/year=2010/data.parquet",
+        "sha256": "e647f018a1328296dc7892575458d372f6c0e7fdbfc2778f4f3b627b379ae408"
+      },
+      {
+        "bytes": 13375,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:GLDUSD/year=2011/data.parquet",
+        "sha256": "1ef94c27919f4687d4c6caeb7067a968a4ba05c08b434a1e540443fec72d7644"
+      },
+      {
+        "bytes": 13281,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:GLDUSD/year=2012/data.parquet",
+        "sha256": "9a98520722f920d58b8f9909553a3c1f3593667ba25740be84e7b668d151277c"
+      },
+      {
+        "bytes": 13525,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:GLDUSD/year=2013/data.parquet",
+        "sha256": "66c024d8b75be42ce66805152e8c49c6528fbceaf0678b3160c2e81be4cf62b1"
+      },
+      {
+        "bytes": 13239,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:GLDUSD/year=2014/data.parquet",
+        "sha256": "9eb8a6590973f19d2426f59e01db90efebf7bbc5b4e9d46315bdf6c38e32fe37"
+      },
+      {
+        "bytes": 13309,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:GLDUSD/year=2015/data.parquet",
+        "sha256": "1f8459725815588c2c3b0c9bd3ae1dc02dfed285a158bfc02639eb1160bea494"
+      },
+      {
+        "bytes": 13490,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:GLDUSD/year=2016/data.parquet",
+        "sha256": "192bdb12a7164d672b1a33bed7436afb254880abeedf995ab946a860f0c640cf"
+      },
+      {
+        "bytes": 13065,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:GLDUSD/year=2017/data.parquet",
+        "sha256": "54dba71451e33bade4a2eeaa65645cc1a85ca70dac3d6a62e21d41001da567ba"
+      },
+      {
+        "bytes": 13096,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:GLDUSD/year=2018/data.parquet",
+        "sha256": "2c2dec339235a857a879ce1dd1de9d02708603a4ed51d9372fdbceeef85ea503"
+      },
+      {
+        "bytes": 13051,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:GLDUSD/year=2019/data.parquet",
+        "sha256": "d61c259bc11d56c5dd8d5cf7b11029285d80b0a9495341d6246cd5f5cf5c13e6"
+      },
+      {
+        "bytes": 13506,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:GLDUSD/year=2020/data.parquet",
+        "sha256": "c696bea390d9531713d451ce281667728b559d598943bfe32ff9dc48458c982d"
+      },
+      {
+        "bytes": 13273,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:GLDUSD/year=2021/data.parquet",
+        "sha256": "7f5b85f91202a589440b111253ff29331eced02f9a7fa31feedf7080a51d5a71"
+      },
+      {
+        "bytes": 13275,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:GLDUSD/year=2022/data.parquet",
+        "sha256": "454ca6f1b62e2a1a77a12dffd3def9513105de90c1695332be6ee7b3b538a8e8"
+      },
+      {
+        "bytes": 13063,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:GLDUSD/year=2023/data.parquet",
+        "sha256": "49af0cc54ecc2969d4660a9b0cf8f05c50d92c5851f7f2065818ed38b5a0a653"
+      },
+      {
+        "bytes": 13398,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:GLDUSD/year=2024/data.parquet",
+        "sha256": "c79ea9aaac84ddaa33f360e1849543479a7c3dddd670c072e24b4b148dced857"
+      },
+      {
+        "bytes": 13526,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:GLDUSD/year=2025/data.parquet",
+        "sha256": "0f9456a7e094e753f09ac4c016903478730175a0a101a01c5ff2e991e81292e6"
+      },
+      {
+        "bytes": 10571,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:GLDUSD/year=2026/data.parquet",
+        "sha256": "44e42c542fe0003b7dc07211439f87650136243f6d4bf00ef135947eb5a32255"
+      },
+      {
+        "bytes": 9894,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:IEFUSD/year=2002/data.parquet",
+        "sha256": "51ccb1394442932768a10a9f20c1f9a4dee02a008eb01126386e6518dba39ecf"
+      },
+      {
+        "bytes": 16211,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:IEFUSD/year=2003/data.parquet",
+        "sha256": "5f3e2ad369aa8520a29a2dc1ee34dc19ccb6ee5ff44a27df790722d97fc20388"
+      },
+      {
+        "bytes": 16341,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:IEFUSD/year=2004/data.parquet",
+        "sha256": "0cc568c0fa303c469d57839bb69f4d9c7137e0323b6d35aa49512c7e29f91b91"
+      },
+      {
+        "bytes": 16295,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:IEFUSD/year=2005/data.parquet",
+        "sha256": "ad28da6808430130515ba70173a8d3dd856e6b4a9c2dbb62a88ec7ab4500fc73"
+      },
+      {
+        "bytes": 16270,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:IEFUSD/year=2006/data.parquet",
+        "sha256": "e7ca2594c11e6a4815a2da190d72339196a619355fbc986a07e617cbd6029eaf"
+      },
+      {
+        "bytes": 16347,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:IEFUSD/year=2007/data.parquet",
+        "sha256": "bdf4d86751f5b2bdd738a97ddba4457206f2226020b351b429db9c94a4c829ac"
+      },
+      {
+        "bytes": 16439,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:IEFUSD/year=2008/data.parquet",
+        "sha256": "a9361d8084627fbf9f0830601f215195c892ece05e94855cccd41309197e4a22"
+      },
+      {
+        "bytes": 16376,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:IEFUSD/year=2009/data.parquet",
+        "sha256": "c794a009b9f6e7ed5fcafa54655f8107f060022c2d0b75bc6700d6e39017fd3b"
+      },
+      {
+        "bytes": 16373,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:IEFUSD/year=2010/data.parquet",
+        "sha256": "487de151beb2ce624dbfaffadbb32c0eda085a4d663a9f9453dfcdcb47c2e69f"
+      },
+      {
+        "bytes": 16418,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:IEFUSD/year=2011/data.parquet",
+        "sha256": "936ff7196e1e54b9412e5755081eea7f2cf7cc78c4f3114e9b562f7a2c308c5c"
+      },
+      {
+        "bytes": 16270,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:IEFUSD/year=2012/data.parquet",
+        "sha256": "3f79830186b40b88dbe8df0fea6066d47e456cb4105f1f21fc227b8a26f131b8"
+      },
+      {
+        "bytes": 16359,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:IEFUSD/year=2013/data.parquet",
+        "sha256": "2bf90313d09e7c93553eb6a6140e2458acb22a1045bf3f22d60ceaad664c2cbc"
+      },
+      {
+        "bytes": 16336,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:IEFUSD/year=2014/data.parquet",
+        "sha256": "f79947322f0b467f29fb49d6684bd98ae402e1b07e2e93fb722f96a7eeeb4aec"
+      },
+      {
+        "bytes": 16310,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:IEFUSD/year=2015/data.parquet",
+        "sha256": "44d4bd7fc55c4f40efa2529b5fc8d1a8448ecb05849bc0fdc97cbcef2e4ad75b"
+      },
+      {
+        "bytes": 16407,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:IEFUSD/year=2016/data.parquet",
+        "sha256": "dd733b98b39ddf22acf3ff58ce7e2c91d14338323a9516f0427aecaaa1825d46"
+      },
+      {
+        "bytes": 16222,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:IEFUSD/year=2017/data.parquet",
+        "sha256": "f1c7a22d6bd2dc8280018b2db66bde3293faa0e50e80163a2aa957ec528c53e2"
+      },
+      {
+        "bytes": 16296,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:IEFUSD/year=2018/data.parquet",
+        "sha256": "7511e5bffede07e0d315c7a165983e3d5fe754cb3ad8d80083a73986d87b621d"
+      },
+      {
+        "bytes": 16419,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:IEFUSD/year=2019/data.parquet",
+        "sha256": "a932108c554279b559cab0a5cf93b2d57107fbaf8e5d1407ac74f2ee09347412"
+      },
+      {
+        "bytes": 16561,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:IEFUSD/year=2020/data.parquet",
+        "sha256": "1b1818acd84f70687d0fffe308d4be3d874e02fbc47be616e733fdb9177402d2"
+      },
+      {
+        "bytes": 16432,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:IEFUSD/year=2021/data.parquet",
+        "sha256": "984160b33182cca8a8cbf8f32b77564522a47a157cf7879e865f031bc897398a"
+      },
+      {
+        "bytes": 16606,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:IEFUSD/year=2022/data.parquet",
+        "sha256": "0d643869c435337189e7168bb32fba486a295a2b5f3cf46b7a74e0fec4aa2a1c"
+      },
+      {
+        "bytes": 16524,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:IEFUSD/year=2023/data.parquet",
+        "sha256": "e49bc23cf8e990a102a73a5cd402777adb6ee53eddb8465488e972f7e57072c8"
+      },
+      {
+        "bytes": 16481,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:IEFUSD/year=2024/data.parquet",
+        "sha256": "1cde21ce88b02cf0abe96efd7d64b2f7c5fa32977c8ec80282681eb52cb1c124"
+      },
+      {
+        "bytes": 16433,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:IEFUSD/year=2025/data.parquet",
+        "sha256": "7274a5ef810041324d675baa0798ce52c5b78982a47eec079cee1ebf9511a78c"
+      },
+      {
+        "bytes": 12105,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:IEFUSD/year=2026/data.parquet",
+        "sha256": "e5384c5494d36e5898e9194eb9d21cd777f0ba1bb3bcf513bb8576ab004973f0"
+      },
+      {
+        "bytes": 10796,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:IWMUSD/year=2001/data.parquet",
+        "sha256": "2a0d48f7bb52292a5a79f2d70ac32253e10b3830b5c44596ba9b8b86ae4aec70"
+      },
+      {
+        "bytes": 16491,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:IWMUSD/year=2002/data.parquet",
+        "sha256": "4bc8aec1a27a8e0409f2c6e4b0a9c1bb354e91e22787df688ab1736f23323f75"
+      },
+      {
+        "bytes": 16579,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:IWMUSD/year=2003/data.parquet",
+        "sha256": "2c21ea15b7cc72e5206c2d90ed43273e2c1fd342031f5dc589a35c4208b491b0"
+      },
+      {
+        "bytes": 16626,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:IWMUSD/year=2004/data.parquet",
+        "sha256": "e2e3946966afb1f2659c618a834adaa2373b0ca6e0a1dfcc072b51f087d6d67a"
+      },
+      {
+        "bytes": 16745,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:IWMUSD/year=2005/data.parquet",
+        "sha256": "d4c1faa3356e132142506a44ba7e23c5e73df91c90be3c2f2233fb647034f9ce"
+      },
+      {
+        "bytes": 16772,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:IWMUSD/year=2006/data.parquet",
+        "sha256": "466cd3aa5cf332a358a3c2b65f673779a5398d5cf5c1e3dca848ccce90a58fd9"
+      },
+      {
+        "bytes": 16853,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:IWMUSD/year=2007/data.parquet",
+        "sha256": "34173395ffbec4bb86f6317c56cafec15715cb36bb3c4e5b6cfa9de2472ebb4b"
+      },
+      {
+        "bytes": 17029,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:IWMUSD/year=2008/data.parquet",
+        "sha256": "8ce5a61255e6ff9b6a45e8d24e8ecc7401ccfebc993433f1e87fdd4ff41d4acf"
+      },
+      {
+        "bytes": 16893,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:IWMUSD/year=2009/data.parquet",
+        "sha256": "792b7957d348b3f1a561147706b2bad36d0303c62d44463a9ecf2f647938c0da"
+      },
+      {
+        "bytes": 16916,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:IWMUSD/year=2010/data.parquet",
+        "sha256": "a3f3634c681550a00d3d1c00a1f51ba5f01e5024682a955b3aa5507b70879438"
+      },
+      {
+        "bytes": 16929,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:IWMUSD/year=2011/data.parquet",
+        "sha256": "2b54f57e87dbbc573726f9bc88b75a45e9471dbb68d4d50d6854f5d732de303f"
+      },
+      {
+        "bytes": 16675,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:IWMUSD/year=2012/data.parquet",
+        "sha256": "fc8dd5690f00bf7ac224de57039b18f414a571f9a0b312c453dc98d86eb3cf0c"
+      },
+      {
+        "bytes": 16831,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:IWMUSD/year=2013/data.parquet",
+        "sha256": "39b50f5b962779039b951bb8d5fd73040156cb84bcc46f32624ad13ed4b55c01"
+      },
+      {
+        "bytes": 16781,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:IWMUSD/year=2014/data.parquet",
+        "sha256": "46f43aac6e000d8e11b5aa5ca32beecc4f44416aaa864d594e8363e3640bfb6c"
+      },
+      {
+        "bytes": 16820,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:IWMUSD/year=2015/data.parquet",
+        "sha256": "1ebfcebae7201538e19fb163ec90d5af5cba81d6c3589a3070056b33caf2a61f"
+      },
+      {
+        "bytes": 16875,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:IWMUSD/year=2016/data.parquet",
+        "sha256": "fd79c5946c59d1084e75a81fdf17af1b8901d71a234ed7d690ce8092315973b8"
+      },
+      {
+        "bytes": 16749,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:IWMUSD/year=2017/data.parquet",
+        "sha256": "34818d677bea312a6d1bbc276d728ad2ae06a967a105fcd4549af34d624031e1"
+      },
+      {
+        "bytes": 16749,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:IWMUSD/year=2018/data.parquet",
+        "sha256": "2927ca2f38fa2eeaadeccab729869135af4186fbb33e32d0d6cd58bc80b7bf92"
+      },
+      {
+        "bytes": 16718,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:IWMUSD/year=2019/data.parquet",
+        "sha256": "43e2f8c35323401a37c238bb45009d025bd3f766638591290be4fdb4f154726b"
+      },
+      {
+        "bytes": 17002,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:IWMUSD/year=2020/data.parquet",
+        "sha256": "bff9e769a60b2a311ae7fa09df2c2db88d44dce4719229bcd0eaee4b5ae6bf89"
+      },
+      {
+        "bytes": 16812,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:IWMUSD/year=2021/data.parquet",
+        "sha256": "2e67c023db922f5df6bba3cf301c08e412d9cd8b678760bdcae21b949889de5f"
+      },
+      {
+        "bytes": 16850,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:IWMUSD/year=2022/data.parquet",
+        "sha256": "75eb3622b6cf7b1f05169de8886ad4361723adda0e3abfa37f8dea09a690122c"
+      },
+      {
+        "bytes": 16771,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:IWMUSD/year=2023/data.parquet",
+        "sha256": "ce0261ad2690099399d426252a428f2b66b88aa596196c2874a9e6015bf075e1"
+      },
+      {
+        "bytes": 16908,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:IWMUSD/year=2024/data.parquet",
+        "sha256": "20cfb09402c3f27d059d01b350717bc36f284fb79d25841761902c7648673635"
+      },
+      {
+        "bytes": 16899,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:IWMUSD/year=2025/data.parquet",
+        "sha256": "2f03b3f2d58233d145cee9919e94f1ccf78e883dcf83fab3d318b8292d35739a"
+      },
+      {
+        "bytes": 12141,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:IWMUSD/year=2026/data.parquet",
+        "sha256": "02788b1e8d0142e56c57a46d56a83ebe6b68622906e84ec4ec13b3739d671963"
+      },
+      {
+        "bytes": 11081,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:QQQUSD/year=2001/data.parquet",
+        "sha256": "2f9517d66dbab978d6a7914676b86db0cd3316dc5bd13a4a3108f04e4fc0fdfc"
+      },
+      {
+        "bytes": 16898,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:QQQUSD/year=2002/data.parquet",
+        "sha256": "8e094f8d790954b366e15bd2bfe8c67b9268ded534bb4744788f034bd7441a71"
+      },
+      {
+        "bytes": 16827,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:QQQUSD/year=2003/data.parquet",
+        "sha256": "d84baeb82d9d155e9c2d647e8b2e0dff1abc008642f97c561212314eaf5bd272"
+      },
+      {
+        "bytes": 16689,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:QQQUSD/year=2004/data.parquet",
+        "sha256": "879a4c6947bddd4969172e7d1971dc26df5492712783536f47dfab0c2ef03c22"
+      },
+      {
+        "bytes": 16566,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:QQQUSD/year=2005/data.parquet",
+        "sha256": "026871b901a1d38650639c28293a383e53de8e6b388d3115e699557240a7062a"
+      },
+      {
+        "bytes": 16675,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:QQQUSD/year=2006/data.parquet",
+        "sha256": "4b9ae8ca9f486a9f88d48d6d0be2026168e91f5e53fb2b7f89ecb0fe9264fcf7"
+      },
+      {
+        "bytes": 16862,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:QQQUSD/year=2007/data.parquet",
+        "sha256": "217c69ea6fa45d030e411f62c54f7bed54b12af75ddbd4f3f6040f2b31c8c368"
+      },
+      {
+        "bytes": 17053,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:QQQUSD/year=2008/data.parquet",
+        "sha256": "891d5be274e08e7768ee0392c205754abd07441890e976326bcfa8ab03de6c38"
+      },
+      {
+        "bytes": 16927,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:QQQUSD/year=2009/data.parquet",
+        "sha256": "58b0086b5c99408b2ff9ab4a96f8849cb9756758dddf011d213b3a6f7947131a"
+      },
+      {
+        "bytes": 16908,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:QQQUSD/year=2010/data.parquet",
+        "sha256": "73546ad672d6daac1b5208ef8c5030875ea0d1c13c36b54c1e31bef83ab6fce4"
+      },
+      {
+        "bytes": 16822,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:QQQUSD/year=2011/data.parquet",
+        "sha256": "13a2157838ebc5dbfe69d16b2db6b799ae2783529703c8487a90991228115224"
+      },
+      {
+        "bytes": 16749,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:QQQUSD/year=2012/data.parquet",
+        "sha256": "581d27dc0b006972f32875760a05d4b3890ab32819bfd791957789a5b056bcb7"
+      },
+      {
+        "bytes": 16815,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:QQQUSD/year=2013/data.parquet",
+        "sha256": "8e01bcbd770ae9f4715fa49ea59de793ecd10771c311e1f478ae69f64daf5077"
+      },
+      {
+        "bytes": 16847,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:QQQUSD/year=2014/data.parquet",
+        "sha256": "f60364e3606fed7e9de3e474f8128de027d81a5479da67c17ceef8028a806709"
+      },
+      {
+        "bytes": 16833,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:QQQUSD/year=2015/data.parquet",
+        "sha256": "d953291c99a036962711a14e1e5f9eb4b1190e1a74a534679d791790f53dc9db"
+      },
+      {
+        "bytes": 16755,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:QQQUSD/year=2016/data.parquet",
+        "sha256": "28e6b8e8645d886ccf71cf445df86d2c1c910d5b4da3ec04affe8702a494df88"
+      },
+      {
+        "bytes": 16735,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:QQQUSD/year=2017/data.parquet",
+        "sha256": "ab4655dcf2f1a85e9712941f4f9ca9bef2f4896380474bfbb1800429a1b15d5b"
+      },
+      {
+        "bytes": 16819,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:QQQUSD/year=2018/data.parquet",
+        "sha256": "5ba2a84b4e04b7bdfd77d65fd54eb604814190f0e3dc5ce6a92f20bcfbb247da"
+      },
+      {
+        "bytes": 16850,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:QQQUSD/year=2019/data.parquet",
+        "sha256": "38f79e1df5903f7eacb848e46f7ba5d68d59ac067439f486423253c7f8eaca96"
+      },
+      {
+        "bytes": 17047,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:QQQUSD/year=2020/data.parquet",
+        "sha256": "10e1d71638eab8ec2e3a71d2cf59e3cf8dacfd948bf0dc3d47a8050ff7a6829b"
+      },
+      {
+        "bytes": 16922,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:QQQUSD/year=2021/data.parquet",
+        "sha256": "22cbcdd3fc9833cf01e4da4f7c58b6711768e54af961e36f9f93d00bd44081de"
+      },
+      {
+        "bytes": 16911,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:QQQUSD/year=2022/data.parquet",
+        "sha256": "d4ba68d5b6e3c9abc5c6057ca9fef37a7a304de3ed64ea91cadbfdaad32a2d33"
+      },
+      {
+        "bytes": 16813,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:QQQUSD/year=2023/data.parquet",
+        "sha256": "579c0c007901f2a6e842cdef2a8d559f11f225db325087886ad9809efae84abb"
+      },
+      {
+        "bytes": 16904,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:QQQUSD/year=2024/data.parquet",
+        "sha256": "cd2adbe8c25cb2731d43308f77cb5b5dcdb8fb94d2e5aebd2bb7555625128949"
+      },
+      {
+        "bytes": 16839,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:QQQUSD/year=2025/data.parquet",
+        "sha256": "9a46ab34c091ad7f562ba9fb069331c3f76d291b3a25488bfcdfc089b56bfcc8"
+      },
+      {
+        "bytes": 12191,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:QQQUSD/year=2026/data.parquet",
+        "sha256": "1bb6c7cdd3a58c15f2c59795aa540ee5b6493c90ff898da93e5ba424ce1209cf"
+      },
+      {
+        "bytes": 9739,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:SHYUSD/year=2002/data.parquet",
+        "sha256": "84b2c86b73d3aa7214d0b8144c52ba5c0ec82292d0aae54fe5c6412c1de53a7a"
+      },
+      {
+        "bytes": 15799,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:SHYUSD/year=2003/data.parquet",
+        "sha256": "4c270a74d5220a8469bf75912c0c3b88425e5c33fb5cffb2c95c86d138b534e4"
+      },
+      {
+        "bytes": 15791,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:SHYUSD/year=2004/data.parquet",
+        "sha256": "e5e7851cdf581760c666c087dcbaa08bf63968ac07debdc8f91793ecb8aee52e"
+      },
+      {
+        "bytes": 15871,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:SHYUSD/year=2005/data.parquet",
+        "sha256": "6f0e92472a8b934dd69db3586c80695c53552a88f9b07c6f1f25a05103a20dd1"
+      },
+      {
+        "bytes": 15762,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:SHYUSD/year=2006/data.parquet",
+        "sha256": "0d7751056e051cc4c5003260f7f940bd4f67240bb0b02b3e051c94652b5b2090"
+      },
+      {
+        "bytes": 16011,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:SHYUSD/year=2007/data.parquet",
+        "sha256": "798963b78099648a1352c89ab575be77871a3d04f7919b559d316da9ecbbcc1d"
+      },
+      {
+        "bytes": 16301,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:SHYUSD/year=2008/data.parquet",
+        "sha256": "7e4c0ce40ad051d20a9b26df56403a6f0a878e6512f9963388d0f0813cc89955"
+      },
+      {
+        "bytes": 15825,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:SHYUSD/year=2009/data.parquet",
+        "sha256": "fad357f94b94c36e698fb0f730cedf37105403b78d0b1723ff2af3df74b0a825"
+      },
+      {
+        "bytes": 15606,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:SHYUSD/year=2010/data.parquet",
+        "sha256": "fd31a5244755593628d8c19334b5d3f87df3ce0a1724a1ad060af974cc1729a3"
+      },
+      {
+        "bytes": 15205,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:SHYUSD/year=2011/data.parquet",
+        "sha256": "760c497bb5b2bb07cbbc313effbde9d91e8a0f8ceea20442b7236015bbe777f5"
+      },
+      {
+        "bytes": 14208,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:SHYUSD/year=2012/data.parquet",
+        "sha256": "e53b8aa269dae1a5e4911eb3b980d6587e6f1d9e1b7a6451610c247c8cb797a8"
+      },
+      {
+        "bytes": 14408,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:SHYUSD/year=2013/data.parquet",
+        "sha256": "6aba07c9644e18e43a8e25fe650e16cfdc6b2bc64b742d0a275d6e3dc0fbf205"
+      },
+      {
+        "bytes": 15209,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:SHYUSD/year=2014/data.parquet",
+        "sha256": "165c212d1f0ba203b117d56e6e3688623bb4266d1335b733810a2dc7e8f79c46"
+      },
+      {
+        "bytes": 15265,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:SHYUSD/year=2015/data.parquet",
+        "sha256": "b6cd64c9196857c1268920412406fb06d985dc99faf55ea7f82cf1e4c374754b"
+      },
+      {
+        "bytes": 15439,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:SHYUSD/year=2016/data.parquet",
+        "sha256": "fa2de521d187ccad769d7efaa8fb2b833e019c6b13828f72733e7892884b99d4"
+      },
+      {
+        "bytes": 15314,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:SHYUSD/year=2017/data.parquet",
+        "sha256": "1b8acad081aa3832e00abf45911b858340930ad2c971ebf236d56cd715b34c56"
+      },
+      {
+        "bytes": 15199,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:SHYUSD/year=2018/data.parquet",
+        "sha256": "e4b5c427cb458ab5daa1818bee2c3b8ded439ef40574d68b5b20f2db4af0519c"
+      },
+      {
+        "bytes": 15840,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:SHYUSD/year=2019/data.parquet",
+        "sha256": "2e427d199cbe8aabb0ed2eef8bd6826e699991cfaa413a773056e4cee59c6476"
+      },
+      {
+        "bytes": 14437,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:SHYUSD/year=2020/data.parquet",
+        "sha256": "72789cf2cde83d05698ebc35b3cd94f68532e6419fcb54423c9e3773f05d4a64"
+      },
+      {
+        "bytes": 14449,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:SHYUSD/year=2021/data.parquet",
+        "sha256": "b1e74673284946b10a2de757c73207c4f6f81c0fc5a2da7e3ac2f28a026ee7a4"
+      },
+      {
+        "bytes": 16177,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:SHYUSD/year=2022/data.parquet",
+        "sha256": "283e90844bc0b2eb01b93bf5bdef76bf52a2b9e12fd350b6c278c4a704091513"
+      },
+      {
+        "bytes": 16009,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:SHYUSD/year=2023/data.parquet",
+        "sha256": "2819e1f2534b8bbcb0503affda2b619370334c3073bfaf4a9f2eee7229b67136"
+      },
+      {
+        "bytes": 15888,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:SHYUSD/year=2024/data.parquet",
+        "sha256": "1da8e851da6ceeb6901bca0a938cca99d1f720541b9fbd0779807075c03df921"
+      },
+      {
+        "bytes": 15716,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:SHYUSD/year=2025/data.parquet",
+        "sha256": "12b3fd3bbdbe46808ad11c76ef136875d3682c1dbb1cadbab216656377818e62"
+      },
+      {
+        "bytes": 11551,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:SHYUSD/year=2026/data.parquet",
+        "sha256": "42181f86a46cd2528b087879a285a354b0178ae551709911f2b6781d16323325"
+      },
+      {
+        "bytes": 10906,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:SLVUSD/year=2006/data.parquet",
+        "sha256": "6eabad767244585779307f7a1c7ad9fc66aea4cd7b779eccfcf9e6b294d03207"
+      },
+      {
+        "bytes": 13425,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:SLVUSD/year=2007/data.parquet",
+        "sha256": "7b24f7c535d39e88cd60ae1a4cbe0f05b11faec34e1cfb4efffb5245bf1ce95e"
+      },
+      {
+        "bytes": 13585,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:SLVUSD/year=2008/data.parquet",
+        "sha256": "44b6e30dcfb7fa714528022a06e82d43422a0002801288e72ae17d84c2aa7eb0"
+      },
+      {
+        "bytes": 12865,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:SLVUSD/year=2009/data.parquet",
+        "sha256": "acd70e99881b4f0bb947d05dc5a4b555e16fd7210f56c30d55dc098578eb8357"
+      },
+      {
+        "bytes": 12995,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:SLVUSD/year=2010/data.parquet",
+        "sha256": "7f26921f8b62316e43b8f3eb004fe95b869fd1f517350f6818c4a362fd80b3a6"
+      },
+      {
+        "bytes": 13406,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:SLVUSD/year=2011/data.parquet",
+        "sha256": "c62a130175dac91f8a3a72960db3aa09dec3b8d250660cb68fa09e622dbcb55f"
+      },
+      {
+        "bytes": 13011,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:SLVUSD/year=2012/data.parquet",
+        "sha256": "b78f4dab316f70d37b85a2a4549f0d8d94ba206b8fdf39e3a64b00ffa31d4201"
+      },
+      {
+        "bytes": 13042,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:SLVUSD/year=2013/data.parquet",
+        "sha256": "5582b39148adae99e5a5e672825a4e64dd0c9ac2259a7df43585f39f5e2e32e0"
+      },
+      {
+        "bytes": 12569,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:SLVUSD/year=2014/data.parquet",
+        "sha256": "40b66626ce1c9741d41834844a5f648558a82b9760bcbe011ed8af7770f8264a"
+      },
+      {
+        "bytes": 12396,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:SLVUSD/year=2015/data.parquet",
+        "sha256": "e11ca9fa414cd32a8a7d38a5b430e4fa995ab391e6be4045b16a723c0d4de6cd"
+      },
+      {
+        "bytes": 12678,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:SLVUSD/year=2016/data.parquet",
+        "sha256": "0122cf2a002ee085f2b7b104238d6f1225bc746ac2b71483e0858896ada65589"
+      },
+      {
+        "bytes": 12085,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:SLVUSD/year=2017/data.parquet",
+        "sha256": "a2b8b4a7eed717a061037bf3b7df4cbd26c429ae3fc831258d3d8d56559f1844"
+      },
+      {
+        "bytes": 12119,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:SLVUSD/year=2018/data.parquet",
+        "sha256": "f23a99ac6f4bff8fbdbdcfa1d9b7d9fff4b50837f003c4728b77e91ae527f544"
+      },
+      {
+        "bytes": 12467,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:SLVUSD/year=2019/data.parquet",
+        "sha256": "3ec0672452d197e5f89b99a61605933f4285b1867ed0d2c89335e5be3b39abb9"
+      },
+      {
+        "bytes": 13121,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:SLVUSD/year=2020/data.parquet",
+        "sha256": "3a0cf9f6b4ba639c88e8a30fa607cb099268ced26d6bbe82903aa707a3ef5839"
+      },
+      {
+        "bytes": 12889,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:SLVUSD/year=2021/data.parquet",
+        "sha256": "4c80c667003cf0fcfeda0b883f2c147c8ff39f02bd966f8ca73b3f8e982ad98b"
+      },
+      {
+        "bytes": 12972,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:SLVUSD/year=2022/data.parquet",
+        "sha256": "e6d3df00b0a8953dcc462baa338a06a9c8a0b8388c5326a33abb9904c99d45df"
+      },
+      {
+        "bytes": 12621,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:SLVUSD/year=2023/data.parquet",
+        "sha256": "d6c797e651da7c889e4511c9d443252b6f736a3438c661de7636f102e2831dad"
+      },
+      {
+        "bytes": 13109,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:SLVUSD/year=2024/data.parquet",
+        "sha256": "db28e6627496f163b7fe36b94217af4cbcfea86baabe29e9076f1dabb87cbbab"
+      },
+      {
+        "bytes": 13306,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:SLVUSD/year=2025/data.parquet",
+        "sha256": "40f9c2b0967f554f4da654c7f9371e2d3145e03034c3c2e03c8a661ac7827f71"
+      },
+      {
+        "bytes": 10714,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:SLVUSD/year=2026/data.parquet",
+        "sha256": "3332d08cee95742960a19970e1e2f8d6c98e472fdbb5cca9040bb06c2eeb44d7"
+      },
+      {
+        "bytes": 10982,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:SPYUSD/year=2001/data.parquet",
+        "sha256": "dcc7a2a09c98b75557d44422bf2ce554dab156e9055691bb1af38592fcaa77bd"
+      },
+      {
+        "bytes": 16920,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:SPYUSD/year=2002/data.parquet",
+        "sha256": "f1d6e2a69c0109e9ffd28fbf0cdf350072a0d5bf3278badaacfedd56ef48dd01"
+      },
+      {
+        "bytes": 16814,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:SPYUSD/year=2003/data.parquet",
+        "sha256": "57a52fba9954bd07d5ab146ee08f6b8eced3c820d56e533b7158cb62bd07c6ee"
+      },
+      {
+        "bytes": 16728,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:SPYUSD/year=2004/data.parquet",
+        "sha256": "40adbca0468f30f392b8eca3bb057450e13e0d6071d94bd941629318d28506e5"
+      },
+      {
+        "bytes": 16783,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:SPYUSD/year=2005/data.parquet",
+        "sha256": "18efedde5e77bf3e3a646b4e10957fc377118f21e94d413b625c3d4873e1dab8"
+      },
+      {
+        "bytes": 16745,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:SPYUSD/year=2006/data.parquet",
+        "sha256": "0ead40ce5002c1e8584b70ad7bd5f6e45b13e7499a138ef3c80288b0a1f1c403"
+      },
+      {
+        "bytes": 16875,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:SPYUSD/year=2007/data.parquet",
+        "sha256": "7fcb3b3ab168e524867591afed8678d52e2e2f6cab11fb0018bbf0cbfaddc84b"
+      },
+      {
+        "bytes": 17070,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:SPYUSD/year=2008/data.parquet",
+        "sha256": "317ec17a1d1699074442caddaca646a7fd0b8b37388df21b9f2af63c7aad1d90"
+      },
+      {
+        "bytes": 16968,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:SPYUSD/year=2009/data.parquet",
+        "sha256": "5f884510f1764c010f6e83a5cdbe40d1aff255cf5e19e08083357ffadeea7fdb"
+      },
+      {
+        "bytes": 16850,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:SPYUSD/year=2010/data.parquet",
+        "sha256": "4a081eaafec27aa949e1640e73cd45b5d42177a0e152079d916a78a872d4bc9d"
+      },
+      {
+        "bytes": 16928,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:SPYUSD/year=2011/data.parquet",
+        "sha256": "f1095d26d80579b8138b53ba56d9e8ae333febc114bfa146e3ca3088d1aa7be7"
+      },
+      {
+        "bytes": 16807,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:SPYUSD/year=2012/data.parquet",
+        "sha256": "d5087aae66bc023bef4d5e5c5cd9e49c534f6fd495672d8507ded1b07b13d725"
+      },
+      {
+        "bytes": 16882,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:SPYUSD/year=2013/data.parquet",
+        "sha256": "cbfe8a65b1ba6f6233c0131bda8b8691b100985448fb58e379354f8c0b2f1168"
+      },
+      {
+        "bytes": 16823,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:SPYUSD/year=2014/data.parquet",
+        "sha256": "0fb67cb2ef3a55ac9c7f5f0d1984a443a56f9b0916c1c8839e023ddf944ef443"
+      },
+      {
+        "bytes": 16772,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:SPYUSD/year=2015/data.parquet",
+        "sha256": "5a08082b2ebab68948a539574c6fe020f485481f3d913c458b1374ed4cd830f7"
+      },
+      {
+        "bytes": 16876,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:SPYUSD/year=2016/data.parquet",
+        "sha256": "8bca19b427fdd36daf078ef9b5542214c2ed03010d7bf9aca217260e9df616f9"
+      },
+      {
+        "bytes": 16715,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:SPYUSD/year=2017/data.parquet",
+        "sha256": "1ec288345a9fd73665764bd0e6b81b0b31ee41a288a60c0f1b55bec8db0bc0a0"
+      },
+      {
+        "bytes": 16893,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:SPYUSD/year=2018/data.parquet",
+        "sha256": "2cab34101cb74e83fabcc7c02c82d9caa1b1f49ab38a3e3ba574d8d5bff5d58f"
+      },
+      {
+        "bytes": 16823,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:SPYUSD/year=2019/data.parquet",
+        "sha256": "e7ebb84c7575521c45a04406c67a7f053aaf58c23547defef9f1214b6614011d"
+      },
+      {
+        "bytes": 17034,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:SPYUSD/year=2020/data.parquet",
+        "sha256": "8fe225855a07a419ec33ee10ef56223c2d5987c546acba31d1a953ea4d6982b2"
+      },
+      {
+        "bytes": 16897,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:SPYUSD/year=2021/data.parquet",
+        "sha256": "dc5e09da760104665942ead3846d3a7f891e5efd43402ef8d2ec342975494099"
+      },
+      {
+        "bytes": 16895,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:SPYUSD/year=2022/data.parquet",
+        "sha256": "165a5fa80224f4f8a41f56a2586f17f97e5ca79f26cd564d908f6e6b85b61b1e"
+      },
+      {
+        "bytes": 16802,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:SPYUSD/year=2023/data.parquet",
+        "sha256": "1a928515c9ff2e6f7f905b5641af6b970e26dc25a002b42f8b41d26924e739ed"
+      },
+      {
+        "bytes": 16863,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:SPYUSD/year=2024/data.parquet",
+        "sha256": "5c4a99b503ce046e455e950bfca6ce174ebb41f3fe1f4ef267a12917b348ec1a"
+      },
+      {
+        "bytes": 16810,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:SPYUSD/year=2025/data.parquet",
+        "sha256": "bcef0905f6d098a67e6a726b63f0b14b6a7460dae35c2ad60e0e185bd9a7ab64"
+      },
+      {
+        "bytes": 12183,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:SPYUSD/year=2026/data.parquet",
+        "sha256": "0a837afd846c1854cf92601e05e2f84df9edc359b4419641036ffaef2f46d530"
+      },
+      {
+        "bytes": 9856,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:TLTUSD/year=2002/data.parquet",
+        "sha256": "c68b85b07f1e764522b6f74a53470741322f6e0c1103bdd75be881ec0dc20ea9"
+      },
+      {
+        "bytes": 16428,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:TLTUSD/year=2003/data.parquet",
+        "sha256": "9e6d5884649eebfe913e57ec476a16e65225fa06a133aed9fc2a9db2036681a0"
+      },
+      {
+        "bytes": 16376,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:TLTUSD/year=2004/data.parquet",
+        "sha256": "792c859e6225b38b87c71e6a62618998e5920a45f09d05d14f6e8d928cf7e4a1"
+      },
+      {
+        "bytes": 16443,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:TLTUSD/year=2005/data.parquet",
+        "sha256": "b1d7d42f04dd7204219f75b262d38f9c4d44c1ab37274b8066c50692965664fb"
+      },
+      {
+        "bytes": 16359,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:TLTUSD/year=2006/data.parquet",
+        "sha256": "9cea8c5f8d887a13687862e08500f59548ab5677c603cb363fad5f2e15e6b4b1"
+      },
+      {
+        "bytes": 16467,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:TLTUSD/year=2007/data.parquet",
+        "sha256": "6888116d08eb79d12ba6f4b3e85172584d2c08e7b94582ac1b438eb1867b99db"
+      },
+      {
+        "bytes": 16570,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:TLTUSD/year=2008/data.parquet",
+        "sha256": "916d6365d6d3509bd608b6fe70ba1d7c3f4ea2c1e68f449627f36893f40edbcc"
+      },
+      {
+        "bytes": 16604,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:TLTUSD/year=2009/data.parquet",
+        "sha256": "f3b37aee8c088e815b6283ac3089a05c4374941f18069b31efd966a1b5f19767"
+      },
+      {
+        "bytes": 16712,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:TLTUSD/year=2010/data.parquet",
+        "sha256": "d284a4b789846e50f7cf88f0fea0f41fbdf6357d5548a226d16a2f367599080f"
+      },
+      {
+        "bytes": 16791,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:TLTUSD/year=2011/data.parquet",
+        "sha256": "b7d7037e7021e0338441f3442674a2c26582546aa618dbe8f719c1dbc0512496"
+      },
+      {
+        "bytes": 16557,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:TLTUSD/year=2012/data.parquet",
+        "sha256": "c11f883f2d7914a278f3def8db9a89743a76a7c85029d8034a966353af035e7b"
+      },
+      {
+        "bytes": 16672,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:TLTUSD/year=2013/data.parquet",
+        "sha256": "ff67408bbd35dc7f712ec22c9d2e066b2ff166a725a82ef5bcb0a65ac6057b24"
+      },
+      {
+        "bytes": 16632,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:TLTUSD/year=2014/data.parquet",
+        "sha256": "75fab40192040c1b20e01cae3a320c1f69c45b3275032eba4027cf5aeb546051"
+      },
+      {
+        "bytes": 16659,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:TLTUSD/year=2015/data.parquet",
+        "sha256": "af409a9ebc2e33581d38c9c80d2d2ed95213087d138d287c96560aa4b711595c"
+      },
+      {
+        "bytes": 16736,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:TLTUSD/year=2016/data.parquet",
+        "sha256": "a30ee5381015281801624dbbd150b1d658e4db364795e68a94d9182ab90063ea"
+      },
+      {
+        "bytes": 16562,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:TLTUSD/year=2017/data.parquet",
+        "sha256": "157f4fda0a8a2bcdab8e4f292e0e61450a79c9c8c464370c152da26945f7342b"
+      },
+      {
+        "bytes": 16533,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:TLTUSD/year=2018/data.parquet",
+        "sha256": "f677d023a94b255169eaa4d87b2d210535e7c9c3cddbfb03cfa20bbd165ee34e"
+      },
+      {
+        "bytes": 16726,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:TLTUSD/year=2019/data.parquet",
+        "sha256": "91e1c32244317e5e9434f3fad246de9a8e91776ff525fff8ee2bb9f36e23859f"
+      },
+      {
+        "bytes": 16727,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:TLTUSD/year=2020/data.parquet",
+        "sha256": "279de56f0a48b300cc0465cbff93fcb6ca165c2188d61d02638a5ab16689045f"
+      },
+      {
+        "bytes": 16780,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:TLTUSD/year=2021/data.parquet",
+        "sha256": "7fd568471f3fd9e2a00fbf3d74d26b33f881735a27455134ab5ad202d1d21f77"
+      },
+      {
+        "bytes": 16792,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:TLTUSD/year=2022/data.parquet",
+        "sha256": "eb8d055b99f79efed0b0f3d77007f90a7a067ae8069299d5d96f41ab1b220f94"
+      },
+      {
+        "bytes": 16771,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:TLTUSD/year=2023/data.parquet",
+        "sha256": "f6cdb7a9cde9b534288e04bd8f81d748270062fe272691129b3c85bbde0dc8eb"
+      },
+      {
+        "bytes": 16798,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:TLTUSD/year=2024/data.parquet",
+        "sha256": "743a44187e22cf8563c3d30318103c4429a2e115e842ee10518dc31c092e9dfd"
+      },
+      {
+        "bytes": 16605,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:TLTUSD/year=2025/data.parquet",
+        "sha256": "f60e8a1d163188cb2ad342d84cc413706a986db374e9e0bb344e737d8333bf20"
+      },
+      {
+        "bytes": 12332,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:TLTUSD/year=2026/data.parquet",
+        "sha256": "60a488a80cc2a61b444f048163ffb95e146b3051e01e6eac02c269048ab6c121"
+      },
+      {
+        "bytes": 10641,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:UNGUSD/year=2007/data.parquet",
+        "sha256": "25187392a7415bd6b2b1cec0accbc24014f9ca787ef07ea4b38ce13da5b4cf67"
+      },
+      {
+        "bytes": 13199,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:UNGUSD/year=2008/data.parquet",
+        "sha256": "05dbdbedcbc2faa34a857d645d41281a2f69585090858b9ac73b52327a656530"
+      },
+      {
+        "bytes": 13042,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:UNGUSD/year=2009/data.parquet",
+        "sha256": "6332527a4ee45b55cbcf9db5b53d8bac2225618749b43af4f36f6786b687eeac"
+      },
+      {
+        "bytes": 12444,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:UNGUSD/year=2010/data.parquet",
+        "sha256": "6de4721e6ca238f44fbbdae7f90e6ff712ab6691c606c05510a93f5c72a9d4f6"
+      },
+      {
+        "bytes": 12484,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:UNGUSD/year=2011/data.parquet",
+        "sha256": "1931d7a1c483ad357098cad8276e3069a66c4c0b866358a63fccf4abc3b7a3b6"
+      },
+      {
+        "bytes": 12830,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:UNGUSD/year=2012/data.parquet",
+        "sha256": "ececc654cfbe426ec279b56c94a85344ad709c80705d0a12bab4f1e8b027e973"
+      },
+      {
+        "bytes": 12602,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:UNGUSD/year=2013/data.parquet",
+        "sha256": "18a76e25cbcdbefa97e1ed272f8edad79f0ced2d62db93f694722db84da382a2"
+      },
+      {
+        "bytes": 12863,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:UNGUSD/year=2014/data.parquet",
+        "sha256": "abb970581fb197bdb6c7c8b284eab6d7159be2e3d9be4d62ea739e1a5d04116a"
+      },
+      {
+        "bytes": 12548,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:UNGUSD/year=2015/data.parquet",
+        "sha256": "b4597784fb1146338484395f773949e6e25360ef713c87aa61f88dab2da135b1"
+      },
+      {
+        "bytes": 12243,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:UNGUSD/year=2016/data.parquet",
+        "sha256": "cec6c2ac9e1e9fbfa7e78ed8a5135446787a74215aa9b1ea51db7b3ecc5a907a"
+      },
+      {
+        "bytes": 11863,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:UNGUSD/year=2017/data.parquet",
+        "sha256": "d3952f134975489083a46cff773b48c64275a15dddbebd4b0bc4b65e6bbd6c5a"
+      },
+      {
+        "bytes": 12732,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:UNGUSD/year=2018/data.parquet",
+        "sha256": "72c79aff8925c117f46e7de051b1d476c6f62dc56b16444385467f45055dc124"
+      },
+      {
+        "bytes": 12919,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:UNGUSD/year=2019/data.parquet",
+        "sha256": "ea21f63bf9f6b5c7cac4d67dd159b68a07ed87225bfcfd7fe2ec48313008eda8"
+      },
+      {
+        "bytes": 12824,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:UNGUSD/year=2020/data.parquet",
+        "sha256": "25332a3be4fb009090ae60221087428e18edc8635ccc720562c6dcf2a817ab3f"
+      },
+      {
+        "bytes": 12885,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:UNGUSD/year=2021/data.parquet",
+        "sha256": "ee4a2d86e2f48d6aaf39eb98ab08a17bff07f7a20f68a73663eb80f608103d7f"
+      },
+      {
+        "bytes": 13472,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:UNGUSD/year=2022/data.parquet",
+        "sha256": "2298072e57c5106571cc49a21263a5b160b12fdf9a5151588484d987df95063d"
+      },
+      {
+        "bytes": 12480,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:UNGUSD/year=2023/data.parquet",
+        "sha256": "f34c8d8246f8bb3b5571a9bb016327f5ccfb846ca53d9996d8befd4caacdc5d1"
+      },
+      {
+        "bytes": 13007,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:UNGUSD/year=2024/data.parquet",
+        "sha256": "c8171733ed11b6a0f2241032bf172d5cfd15dcf86b6a12ed0932cb5cbf1a198b"
+      },
+      {
+        "bytes": 13095,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:UNGUSD/year=2025/data.parquet",
+        "sha256": "e0a6f64c0bf6636415ff6e1a3667131ca6f6310963959c956be09c64ecbe1033"
+      },
+      {
+        "bytes": 10022,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:UNGUSD/year=2026/data.parquet",
+        "sha256": "8262e2f67ae4b6af47b9fbd688dfcf3fc90492b4302cef0d394433d1a8025f5c"
+      },
+      {
+        "bytes": 11005,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:USOUSD/year=2006/data.parquet",
+        "sha256": "b954447d78c7c6a08bd3014932d3448f1f950a73c8b7fde82113dfde9c33372f"
+      },
+      {
+        "bytes": 13145,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:USOUSD/year=2007/data.parquet",
+        "sha256": "676336dd4dca15f0b964080708e3c9da91486da4fc703a3e4ec1e1977d0a61cc"
+      },
+      {
+        "bytes": 13547,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:USOUSD/year=2008/data.parquet",
+        "sha256": "f514aa8aaac6b125189a7aefd4378f676f6a9372c18d0d2d60840308ea9579a1"
+      },
+      {
+        "bytes": 13348,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:USOUSD/year=2009/data.parquet",
+        "sha256": "20b9195ed778aa32ec0764bd694b6b46b672577c13f863c0aac9922dd28f2f8f"
+      },
+      {
+        "bytes": 12965,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:USOUSD/year=2010/data.parquet",
+        "sha256": "de8ed93e222ebb9f0a7eebfcdbeaabc9ec7d3eaa46a45b4c70645cb8b8b264e1"
+      },
+      {
+        "bytes": 13112,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:USOUSD/year=2011/data.parquet",
+        "sha256": "c6d52d91432257bd36b2e3a52cb07b336138bff6dc113efbf496b16aad8ea4a7"
+      },
+      {
+        "bytes": 12923,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:USOUSD/year=2012/data.parquet",
+        "sha256": "bdf0ec4d150e25c3cc5ee2158e8f54f099b33f2deed1061036355985a04702eb"
+      },
+      {
+        "bytes": 12637,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:USOUSD/year=2013/data.parquet",
+        "sha256": "d7f14c3d09d9ef3606ee9b4a1f02659253bba37c35667e8d5d36a71ef5424b7e"
+      },
+      {
+        "bytes": 12952,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:USOUSD/year=2014/data.parquet",
+        "sha256": "ab386ae785b34adc78c3a99e118ea371adbbe3019eab089b109b5e7d078a8341"
+      },
+      {
+        "bytes": 13101,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:USOUSD/year=2015/data.parquet",
+        "sha256": "23c96add18202d93ab24ddd43725866e26d1085cb87a972e572cb71fdedb4f73"
+      },
+      {
+        "bytes": 12551,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:USOUSD/year=2016/data.parquet",
+        "sha256": "7b1f7988b942a994bb0aae6de63404b214818cbac64fb0076508073e482a0fa5"
+      },
+      {
+        "bytes": 12162,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:USOUSD/year=2017/data.parquet",
+        "sha256": "e8524960b742077d0b3ebe427d08959459e77c17a00c6f1e62a6cbc35e53db85"
+      },
+      {
+        "bytes": 12578,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:USOUSD/year=2018/data.parquet",
+        "sha256": "a0eb7514210dbddba15893efd282607caefc5e15f931fe6287d37479565da366"
+      },
+      {
+        "bytes": 12310,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:USOUSD/year=2019/data.parquet",
+        "sha256": "460aa3665b6dc953e826ed8f488744fdaf7cad2c884a0653bce630038fc9a6ab"
+      },
+      {
+        "bytes": 13274,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:USOUSD/year=2020/data.parquet",
+        "sha256": "815981cae8333ab10a87c8ebdc8fc17c2deb9d52fe51280e7979448751c16280"
+      },
+      {
+        "bytes": 13257,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:USOUSD/year=2021/data.parquet",
+        "sha256": "524d0cedcee6750095454dce7c90ba644f78d359f8846cbb118e0e67cdfd508e"
+      },
+      {
+        "bytes": 13410,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:USOUSD/year=2022/data.parquet",
+        "sha256": "147dfa518d62c721c527b831d97c55fac62810c436855f9e54b5c5cf3cbef9f0"
+      },
+      {
+        "bytes": 13265,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:USOUSD/year=2023/data.parquet",
+        "sha256": "d11dd81106e5223984d1d11961b468692e8361425b83e36b8c9ce203d4d5e60a"
+      },
+      {
+        "bytes": 13165,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:USOUSD/year=2024/data.parquet",
+        "sha256": "4bebac41741dc2873a30f07a73d2bfdeac29d52cedcead7ba12356c5b391b5d8"
+      },
+      {
+        "bytes": 13224,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:USOUSD/year=2025/data.parquet",
+        "sha256": "5f043bb70f73ec6fe48295d11b4cd267eac48a30a22cae2526e02e7a9ef7b5b5"
+      },
+      {
+        "bytes": 10608,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:USOUSD/year=2026/data.parquet",
+        "sha256": "91182ac05ad491d46fcac9157b9bea6ace12606817056fde688ffca94d86c6ff"
+      },
+      {
+        "bytes": 13327,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:UUPUSD/year=2007/data.parquet",
+        "sha256": "21d22c41323dbc8e711421376b97df006449b67741d4ff3a1e18178935daa788"
+      },
+      {
+        "bytes": 15996,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:UUPUSD/year=2008/data.parquet",
+        "sha256": "974f3626aa31de6761fe33920612f865b1aaa453a61c516218a6a696b6a664b6"
+      },
+      {
+        "bytes": 16172,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:UUPUSD/year=2009/data.parquet",
+        "sha256": "27b7b3eec5adc9a2ffac36e407ef4e9ca5d9a141f777ced428680261662c1cdd"
+      },
+      {
+        "bytes": 15880,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:UUPUSD/year=2010/data.parquet",
+        "sha256": "b2a56f64e0f2282a9ffe905c11c3de5cae0202e0338f1fbb195f5ddacd166e68"
+      },
+      {
+        "bytes": 15616,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:UUPUSD/year=2011/data.parquet",
+        "sha256": "b7c92aa9e335070a709ff14b76bcfe29ba8cf7e5f5c1dd8414ca34f98def48f3"
+      },
+      {
+        "bytes": 14930,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:UUPUSD/year=2012/data.parquet",
+        "sha256": "e1eb12a72c57841d1c788818da8464852b6ef12385a5ad7d829fe0ff3f39653d"
+      },
+      {
+        "bytes": 15047,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:UUPUSD/year=2013/data.parquet",
+        "sha256": "d292a48a78c6d1c2045c1dd0a1663f77fb7ad9295e2545c017a2c4f1a158e3e1"
+      },
+      {
+        "bytes": 14753,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:UUPUSD/year=2014/data.parquet",
+        "sha256": "8da98c412cf0041d287147d5b6805a441003d7e3301f61ca08240395a99eb290"
+      },
+      {
+        "bytes": 15301,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:UUPUSD/year=2015/data.parquet",
+        "sha256": "b2acc8121f258fe42fa9ba84a9bbe82661ca8850260e07d3eb77726325a6eba0"
+      },
+      {
+        "bytes": 15466,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:UUPUSD/year=2016/data.parquet",
+        "sha256": "0e72f2915ceacdf0ed841d2db93e4cbd0380217b6a7901ac63bdbad8d0221270"
+      },
+      {
+        "bytes": 15533,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:UUPUSD/year=2017/data.parquet",
+        "sha256": "2dd1063780168da345320dfca7d835b554031c301e596d4003c4cb0664a7d183"
+      },
+      {
+        "bytes": 15450,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:UUPUSD/year=2018/data.parquet",
+        "sha256": "6e5e3f0b8325a27fe147da5196fdb086ca07248bff2a4e933c36a0fc02f514ae"
+      },
+      {
+        "bytes": 15026,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:UUPUSD/year=2019/data.parquet",
+        "sha256": "79f0d476c5ca859f659ffada35464c1986d9638419aab8f881d0284e5d4ebadb"
+      },
+      {
+        "bytes": 15595,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:UUPUSD/year=2020/data.parquet",
+        "sha256": "b1e02f11bf7a0bbc4f403e71ed714a838e9b32f821981e67e926b32afda0827c"
+      },
+      {
+        "bytes": 14997,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:UUPUSD/year=2021/data.parquet",
+        "sha256": "08972719ff57219a9c25106cdf87892363f42e5248509609a763e0e006118bac"
+      },
+      {
+        "bytes": 16103,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:UUPUSD/year=2022/data.parquet",
+        "sha256": "daa0b7012c1618d97566d90a5704ef938340dd9d2e910b71f3277930c5abcee9"
+      },
+      {
+        "bytes": 15616,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:UUPUSD/year=2023/data.parquet",
+        "sha256": "97014171fa9ffdb5529931c7c6906c07014ca32357dfdfc27a05f880896856cc"
+      },
+      {
+        "bytes": 15404,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:UUPUSD/year=2024/data.parquet",
+        "sha256": "36d92789b4d4b012219a7c61229bdda30e47844bc90fd63206d99dc114da7a7f"
+      },
+      {
+        "bytes": 15401,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:UUPUSD/year=2025/data.parquet",
+        "sha256": "8bb41c6bbbe763e0474a98c7948577506d364d57721e11e89991622190fd0b62"
+      },
+      {
+        "bytes": 9469,
+        "path": "lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:UUPUSD/year=2026/data.parquet",
+        "sha256": "5cbd79ce443ffe246d4781ed458e1995a7aaa840ec4b6ac2a3845e306b65245a"
+      },
+      {
+        "bytes": 2534,
+        "path": "lake_mf/universe_membership/instrument_id=XUSE:CASH:DBAUSD/year=2007/data.parquet",
+        "sha256": "6cf788b663fbe0d37330d76a120f0e8b140d988f1afa068b442315e6a31b1189"
+      },
+      {
+        "bytes": 2534,
+        "path": "lake_mf/universe_membership/instrument_id=XUSE:CASH:DBCUSD/year=2006/data.parquet",
+        "sha256": "1907d1ed440f6c404a2b12dc4def130977964959f2315abbe2b98418c7f48b1e"
+      },
+      {
+        "bytes": 2534,
+        "path": "lake_mf/universe_membership/instrument_id=XUSE:CASH:EEMUSD/year=2003/data.parquet",
+        "sha256": "a3581f3a6fa29e2607a0f4a253fe7b1d897bbe442dc25323a22e59a3020a25a1"
+      },
+      {
+        "bytes": 2534,
+        "path": "lake_mf/universe_membership/instrument_id=XUSE:CASH:EFAUSD/year=2001/data.parquet",
+        "sha256": "cc57ad5aba600cc59d99720bcbb780c34fe7b9bde4dafbd062c0e934b1cd77e5"
+      },
+      {
+        "bytes": 2534,
+        "path": "lake_mf/universe_membership/instrument_id=XUSE:CASH:FXEUSD/year=2005/data.parquet",
+        "sha256": "1d309f553ebed27f4bf86915b7dadcb98529f2edfb1803f968a8f1bdbc3ac353"
+      },
+      {
+        "bytes": 2534,
+        "path": "lake_mf/universe_membership/instrument_id=XUSE:CASH:FXYUSD/year=2007/data.parquet",
+        "sha256": "f9afa0aee29acb1fb1147275dbb8f95f2a20e480ad37e2640cff0b366e53f107"
+      },
+      {
+        "bytes": 2534,
+        "path": "lake_mf/universe_membership/instrument_id=XUSE:CASH:GLDUSD/year=2004/data.parquet",
+        "sha256": "104b6203ddda25037d4f5dfa6330f16363d43f119c6b7085d4306a7dc62ec237"
+      },
+      {
+        "bytes": 2534,
+        "path": "lake_mf/universe_membership/instrument_id=XUSE:CASH:IEFUSD/year=2002/data.parquet",
+        "sha256": "59c0fea374bfd68e5be67fa6eea38cbf6c905a901e64eca630a7e2494a9ff74a"
+      },
+      {
+        "bytes": 2534,
+        "path": "lake_mf/universe_membership/instrument_id=XUSE:CASH:IWMUSD/year=2001/data.parquet",
+        "sha256": "65cff4398984ce246d0a7d8d1fea3339380bb8f973508b445791da5dc8dcdab4"
+      },
+      {
+        "bytes": 2534,
+        "path": "lake_mf/universe_membership/instrument_id=XUSE:CASH:QQQUSD/year=2001/data.parquet",
+        "sha256": "ab363d2ab41eb0dfc16b82cb2d366b9d5db1c428ee75252cde792aad37eb9599"
+      },
+      {
+        "bytes": 2534,
+        "path": "lake_mf/universe_membership/instrument_id=XUSE:CASH:SHYUSD/year=2002/data.parquet",
+        "sha256": "9eb66c7f0d9d63b7ba653e7a5253b5407a1bcfec450e3504de748cb6c181f5d3"
+      },
+      {
+        "bytes": 2534,
+        "path": "lake_mf/universe_membership/instrument_id=XUSE:CASH:SLVUSD/year=2006/data.parquet",
+        "sha256": "74e660b9249c24a12a0568365ecd686081e12b45aae387455091308c15653503"
+      },
+      {
+        "bytes": 2534,
+        "path": "lake_mf/universe_membership/instrument_id=XUSE:CASH:SPYUSD/year=2001/data.parquet",
+        "sha256": "292dcb5b9e09c07cda5e8dd11ef6eea50be3d4086db007d35bf51cec99852378"
+      },
+      {
+        "bytes": 2534,
+        "path": "lake_mf/universe_membership/instrument_id=XUSE:CASH:TLTUSD/year=2002/data.parquet",
+        "sha256": "c7e73d6401ee65d0d02b1c1b5e75dd8d3f1e7e0cdc6dab0b77975db65588c6c9"
+      },
+      {
+        "bytes": 2534,
+        "path": "lake_mf/universe_membership/instrument_id=XUSE:CASH:UNGUSD/year=2007/data.parquet",
+        "sha256": "86a053536506cf2c77c52ed218002c3c6654a17520592e6a40e9f4ce40442c91"
+      },
+      {
+        "bytes": 2534,
+        "path": "lake_mf/universe_membership/instrument_id=XUSE:CASH:USOUSD/year=2006/data.parquet",
+        "sha256": "0cbf1dd6d0ed8d05d7f685979b3b4f5c3fd41b97d1f8a76be4e47b80cfdc1a50"
+      },
+      {
+        "bytes": 2534,
+        "path": "lake_mf/universe_membership/instrument_id=XUSE:CASH:UUPUSD/year=2007/data.parquet",
+        "sha256": "d7e291498ea51a0165e6a4bdb489d8a0e558c236a33ef2461126a88d9f1a469e"
+      },
+      {
+        "bytes": 37456,
+        "path": "var_mf/experiments.jsonl",
+        "sha256": "e3153a28bf2f28974744b05aaa67dafec65563213a73137ddd03b957db4c8cb2"
+      },
+      {
+        "bytes": 20480,
+        "path": "var_mf/ops.sqlite",
+        "sha256": "dcadcbce65bd3bedace2261738d80bf8511e1daa61312420e7d29844093c4889"
+      }
+    ],
+    "tree_content_hash": "sha256:d966f1d955810fdc79560b1862a1f669c2b30c683d448d8579a3dce7e5dcd514"
+  },
+  "private_reference_output": {
+    "bytes": 13156304,
+    "equity_parquet_sha256": "e3ccf8948e3dd1626d1d7c089d4a301817cc4c7e9b55b87870b305e663669041",
+    "files": 467,
+    "path": "artifacts/reproduction_private/alphatrend_mf_live_fwd_20260823/reference_output",
+    "records": [
+      {
+        "bytes": 91159,
+        "path": "equity.parquet",
+        "sha256": "e3ccf8948e3dd1626d1d7c089d4a301817cc4c7e9b55b87870b305e663669041"
+      },
+      {
+        "bytes": 3721,
+        "path": "legs/leg_00/corporate_actions.parquet",
+        "sha256": "b326c7ab4cf09da69ae53d627cc50492dd08da897b3ac403c9ce59eeaec9ab16"
+      },
+      {
+        "bytes": 3737,
+        "path": "legs/leg_00/equity.parquet",
+        "sha256": "1059437e4f0dd2281aebe538520a12872fc4b6e30134d220acccde02a7462a2b"
+      },
+      {
+        "bytes": 10785,
+        "path": "legs/leg_00/fills.parquet",
+        "sha256": "a99ed231709a1f23f8725d1828d1bbfb6923ed53826a6764510b488fd9bef254"
+      },
+      {
+        "bytes": 6479,
+        "path": "legs/leg_00/financing.parquet",
+        "sha256": "b87eba653f886861e734d8d32429061b14dcbcbb6af3260586350eac9d13729d"
+      },
+      {
+        "bytes": 3222,
+        "path": "legs/leg_00/funding.parquet",
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      {
+        "bytes": 6847,
+        "path": "legs/leg_00/orders.parquet",
+        "sha256": "b2bd22ac834689b2919a510b847984c13c4a69ca78b9d4f9c1c937b47b8c3fe8"
+      },
+      {
+        "bytes": 33787,
+        "path": "legs/leg_00/positions.parquet",
+        "sha256": "c93ac187c67cc1deba1c770788889fb09d850613fc9def9732724b032561929a"
+      },
+      {
+        "bytes": 1543,
+        "path": "legs/leg_00/run_meta.json",
+        "sha256": "fb38f08310d5b8f0963831ea994f83fd56a1a9885167f1a13fac29b79ada68ab"
+      },
+      {
+        "bytes": 950,
+        "path": "legs/leg_00/summary.txt",
+        "sha256": "edd8b5fb5ac1805495c1fd2b6ea2debc9f75564fc6cc200bc80530a5fde51b9a"
+      },
+      {
+        "bytes": 175099,
+        "path": "legs/leg_00/tearsheet.png",
+        "sha256": "5a1e3787cb9cc046a53889985081caa767393861cb0b363b00800e83a31c45fa"
+      },
+      {
+        "bytes": 950,
+        "path": "legs/leg_00/tearsheet.txt",
+        "sha256": "edd8b5fb5ac1805495c1fd2b6ea2debc9f75564fc6cc200bc80530a5fde51b9a"
+      },
+      {
+        "bytes": 3721,
+        "path": "legs/leg_01/corporate_actions.parquet",
+        "sha256": "b326c7ab4cf09da69ae53d627cc50492dd08da897b3ac403c9ce59eeaec9ab16"
+      },
+      {
+        "bytes": 3736,
+        "path": "legs/leg_01/equity.parquet",
+        "sha256": "319ce69c5df2a974b4b3da07e4fea47fa91783d7ea590acc9f944d8e3d3b0652"
+      },
+      {
+        "bytes": 11608,
+        "path": "legs/leg_01/fills.parquet",
+        "sha256": "62e953c2bb67c787e6c7a9d40480a69b87141e157c77e152823d344bd187b62f"
+      },
+      {
+        "bytes": 6479,
+        "path": "legs/leg_01/financing.parquet",
+        "sha256": "b87eba653f886861e734d8d32429061b14dcbcbb6af3260586350eac9d13729d"
+      },
+      {
+        "bytes": 3222,
+        "path": "legs/leg_01/funding.parquet",
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      {
+        "bytes": 6874,
+        "path": "legs/leg_01/orders.parquet",
+        "sha256": "f88b1645869f6ece8daf71b1e72cdfaee5b64ca079fa8c0f561657bee9f0f690"
+      },
+      {
+        "bytes": 34854,
+        "path": "legs/leg_01/positions.parquet",
+        "sha256": "37e89c88f40d1b8260cf2e3e79978397a2221206834b399ddd61baf64b7ce6ee"
+      },
+      {
+        "bytes": 1554,
+        "path": "legs/leg_01/run_meta.json",
+        "sha256": "7e63cda2fc752217719852f79054146cf71166946ccfbdb623cf1187831c9ad9"
+      },
+      {
+        "bytes": 956,
+        "path": "legs/leg_01/summary.txt",
+        "sha256": "1b49c5131d3ad7226d827790625c47af5b911febfe08d1cdc73d25ca4af84671"
+      },
+      {
+        "bytes": 187490,
+        "path": "legs/leg_01/tearsheet.png",
+        "sha256": "a41dfc90b68f5b93fa5839e2ab1d65707d54d1e81b0cfa392d3bc40f3ff5cee1"
+      },
+      {
+        "bytes": 956,
+        "path": "legs/leg_01/tearsheet.txt",
+        "sha256": "1b49c5131d3ad7226d827790625c47af5b911febfe08d1cdc73d25ca4af84671"
+      },
+      {
+        "bytes": 3721,
+        "path": "legs/leg_02/corporate_actions.parquet",
+        "sha256": "b326c7ab4cf09da69ae53d627cc50492dd08da897b3ac403c9ce59eeaec9ab16"
+      },
+      {
+        "bytes": 3737,
+        "path": "legs/leg_02/equity.parquet",
+        "sha256": "f4143d7d7b279032dfa8a83812911efc19e0c199207f2d52da200366ef91f67a"
+      },
+      {
+        "bytes": 11656,
+        "path": "legs/leg_02/fills.parquet",
+        "sha256": "0f979ee94d5dc69c6abf7f5603f44ada44664d40d43793aacb0a38e135d25b32"
+      },
+      {
+        "bytes": 6479,
+        "path": "legs/leg_02/financing.parquet",
+        "sha256": "b87eba653f886861e734d8d32429061b14dcbcbb6af3260586350eac9d13729d"
+      },
+      {
+        "bytes": 3222,
+        "path": "legs/leg_02/funding.parquet",
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      {
+        "bytes": 7380,
+        "path": "legs/leg_02/orders.parquet",
+        "sha256": "b3e9386f799b964cfb36dc8379db897276fca33c3a993fde666ce4c92c14b5be"
+      },
+      {
+        "bytes": 42959,
+        "path": "legs/leg_02/positions.parquet",
+        "sha256": "085aa70bd50402fe19af5cd56b90eda098547ff97c11edc292027cbb3faebe5a"
+      },
+      {
+        "bytes": 1554,
+        "path": "legs/leg_02/run_meta.json",
+        "sha256": "144594705427cadeeb60049865e070d4e12b9faeacb07e50510902e3dacffcca"
+      },
+      {
+        "bytes": 955,
+        "path": "legs/leg_02/summary.txt",
+        "sha256": "d298488fe09c30ac4572ded3ce7f89c16d0f2f6d4d5bb6c5a8df2222ea6f6e69"
+      },
+      {
+        "bytes": 188482,
+        "path": "legs/leg_02/tearsheet.png",
+        "sha256": "3ab7e2ff20e04eac9285c0c133efc42255cfa527771e20aa02b66002e44fd034"
+      },
+      {
+        "bytes": 955,
+        "path": "legs/leg_02/tearsheet.txt",
+        "sha256": "d298488fe09c30ac4572ded3ce7f89c16d0f2f6d4d5bb6c5a8df2222ea6f6e69"
+      },
+      {
+        "bytes": 3721,
+        "path": "legs/leg_03/corporate_actions.parquet",
+        "sha256": "b326c7ab4cf09da69ae53d627cc50492dd08da897b3ac403c9ce59eeaec9ab16"
+      },
+      {
+        "bytes": 3740,
+        "path": "legs/leg_03/equity.parquet",
+        "sha256": "47a633fce25596cada55dabbcf0b6fde170eae80d13e030f5e70b960fb8d3389"
+      },
+      {
+        "bytes": 12054,
+        "path": "legs/leg_03/fills.parquet",
+        "sha256": "8035cbfa6027b426e8b46b90038a3d8ed123d57d349b2382052028cf873f6378"
+      },
+      {
+        "bytes": 6479,
+        "path": "legs/leg_03/financing.parquet",
+        "sha256": "b87eba653f886861e734d8d32429061b14dcbcbb6af3260586350eac9d13729d"
+      },
+      {
+        "bytes": 3222,
+        "path": "legs/leg_03/funding.parquet",
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      {
+        "bytes": 7688,
+        "path": "legs/leg_03/orders.parquet",
+        "sha256": "b37853596948bf7a4491c07ad7db44eff818c10976924a4ab582e168fe34c6fd"
+      },
+      {
+        "bytes": 48562,
+        "path": "legs/leg_03/positions.parquet",
+        "sha256": "e3adb1069828b422cfa52d5bb53ffe6f2e424f7aa23c8605b5b5d2f709552b8c"
+      },
+      {
+        "bytes": 1553,
+        "path": "legs/leg_03/run_meta.json",
+        "sha256": "e1dd08637e394433b31054fcc7d7173db94bc36bc9db2b933c8c33ec79be2284"
+      },
+      {
+        "bytes": 949,
+        "path": "legs/leg_03/summary.txt",
+        "sha256": "70a0301952edd23ae4e51444dd6f6cd4c19fd208dea5983dbadd002bbf819089"
+      },
+      {
+        "bytes": 218543,
+        "path": "legs/leg_03/tearsheet.png",
+        "sha256": "93ffebb0ca8c6da477280b7bbf4aeed8a2ff56f00a1eecac361c5d7164f55bd3"
+      },
+      {
+        "bytes": 949,
+        "path": "legs/leg_03/tearsheet.txt",
+        "sha256": "70a0301952edd23ae4e51444dd6f6cd4c19fd208dea5983dbadd002bbf819089"
+      },
+      {
+        "bytes": 3721,
+        "path": "legs/leg_04/corporate_actions.parquet",
+        "sha256": "b326c7ab4cf09da69ae53d627cc50492dd08da897b3ac403c9ce59eeaec9ab16"
+      },
+      {
+        "bytes": 3739,
+        "path": "legs/leg_04/equity.parquet",
+        "sha256": "da973ea5b5888e1329c10b8ac49c233f2b49a9c09e62d49fb923ae4c76d9e791"
+      },
+      {
+        "bytes": 13239,
+        "path": "legs/leg_04/fills.parquet",
+        "sha256": "7026eff96ac8416cf6f6ed8251e24fdbc5009a1fa96eaa9a8788e57fc6019730"
+      },
+      {
+        "bytes": 6479,
+        "path": "legs/leg_04/financing.parquet",
+        "sha256": "b87eba653f886861e734d8d32429061b14dcbcbb6af3260586350eac9d13729d"
+      },
+      {
+        "bytes": 3222,
+        "path": "legs/leg_04/funding.parquet",
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      {
+        "bytes": 8314,
+        "path": "legs/leg_04/orders.parquet",
+        "sha256": "2a83fac262791ae1915c8e8130bf5f7a1ae28a41aeb5faa0365a8a67e39563ef"
+      },
+      {
+        "bytes": 55187,
+        "path": "legs/leg_04/positions.parquet",
+        "sha256": "6fabaa203a68bb1bc537e958fc771bafff0c84116c1c9e72c9df5da38dbb60f3"
+      },
+      {
+        "bytes": 1554,
+        "path": "legs/leg_04/run_meta.json",
+        "sha256": "ed5061b124d546e9e225dfa46b1241436c628ddc51e5c0cefdf40ab95f1edb3b"
+      },
+      {
+        "bytes": 949,
+        "path": "legs/leg_04/summary.txt",
+        "sha256": "34db0643593dc128ae73ecaca92480c57a3737d8677a006605b7d27055bec851"
+      },
+      {
+        "bytes": 201015,
+        "path": "legs/leg_04/tearsheet.png",
+        "sha256": "2c1ae6cf3f2f9f3e95aafdcb64669a1fedc4b4d872526db606b1c453784cd556"
+      },
+      {
+        "bytes": 949,
+        "path": "legs/leg_04/tearsheet.txt",
+        "sha256": "34db0643593dc128ae73ecaca92480c57a3737d8677a006605b7d27055bec851"
+      },
+      {
+        "bytes": 3721,
+        "path": "legs/leg_05/corporate_actions.parquet",
+        "sha256": "b326c7ab4cf09da69ae53d627cc50492dd08da897b3ac403c9ce59eeaec9ab16"
+      },
+      {
+        "bytes": 3737,
+        "path": "legs/leg_05/equity.parquet",
+        "sha256": "55ba0898629a14f37d144f539fae596def0acbf698fb7d1afecd5755933b7c4f"
+      },
+      {
+        "bytes": 13361,
+        "path": "legs/leg_05/fills.parquet",
+        "sha256": "ac609fcfab4da8e9db5a75a85fbafc57fd695e4205f5b840b2584b2f3bdbb74c"
+      },
+      {
+        "bytes": 6479,
+        "path": "legs/leg_05/financing.parquet",
+        "sha256": "b87eba653f886861e734d8d32429061b14dcbcbb6af3260586350eac9d13729d"
+      },
+      {
+        "bytes": 3222,
+        "path": "legs/leg_05/funding.parquet",
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      {
+        "bytes": 8647,
+        "path": "legs/leg_05/orders.parquet",
+        "sha256": "2de8dd559ed3031ccafec1005894b01bcdba0834f7220aa6a6716618381c357d"
+      },
+      {
+        "bytes": 57372,
+        "path": "legs/leg_05/positions.parquet",
+        "sha256": "d797149fd40382cc7fbe36869c5108ed3f753dce55352ed2cd15402cce48cc84"
+      },
+      {
+        "bytes": 1556,
+        "path": "legs/leg_05/run_meta.json",
+        "sha256": "31fbc629615c9247d7a042d8629055be3cea4ff3024c0c4890d5a8cc4d700e58"
+      },
+      {
+        "bytes": 950,
+        "path": "legs/leg_05/summary.txt",
+        "sha256": "61bacf2ae6fc0d8113536cb61e607a9ef25b50378727e671ad3fe81f10372aad"
+      },
+      {
+        "bytes": 216187,
+        "path": "legs/leg_05/tearsheet.png",
+        "sha256": "6a8a4671f2b0f04af726d17a52d50a0f501f36437c30d359e4cc757ea0bc0000"
+      },
+      {
+        "bytes": 950,
+        "path": "legs/leg_05/tearsheet.txt",
+        "sha256": "61bacf2ae6fc0d8113536cb61e607a9ef25b50378727e671ad3fe81f10372aad"
+      },
+      {
+        "bytes": 3721,
+        "path": "legs/leg_06/corporate_actions.parquet",
+        "sha256": "b326c7ab4cf09da69ae53d627cc50492dd08da897b3ac403c9ce59eeaec9ab16"
+      },
+      {
+        "bytes": 3739,
+        "path": "legs/leg_06/equity.parquet",
+        "sha256": "4f2f275e9343ce1c4b1fc121f3280c8f21f7ad4b9320375b8b8c8405f4480ba7"
+      },
+      {
+        "bytes": 14234,
+        "path": "legs/leg_06/fills.parquet",
+        "sha256": "93f79e7a5dc8d52ce1ed94e9d1be830ea03dbb6c8a0fb0940618b3b9fa0c805b"
+      },
+      {
+        "bytes": 6479,
+        "path": "legs/leg_06/financing.parquet",
+        "sha256": "b87eba653f886861e734d8d32429061b14dcbcbb6af3260586350eac9d13729d"
+      },
+      {
+        "bytes": 3222,
+        "path": "legs/leg_06/funding.parquet",
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      {
+        "bytes": 8658,
+        "path": "legs/leg_06/orders.parquet",
+        "sha256": "0c3e55956dd71aaaf0fb475fa7a22a1b37441142c10517b51c8642aeb8027b8a"
+      },
+      {
+        "bytes": 57965,
+        "path": "legs/leg_06/positions.parquet",
+        "sha256": "3b2e1e0cebd37de7cc51cc63badc8827779c2400f4742c1747cb6cbd0b6dd540"
+      },
+      {
+        "bytes": 1554,
+        "path": "legs/leg_06/run_meta.json",
+        "sha256": "1499378c07cf1682342374537b7b7248175c8320970436f4701d07796b01258a"
+      },
+      {
+        "bytes": 958,
+        "path": "legs/leg_06/summary.txt",
+        "sha256": "db1eb4666ff63bcba3bc768cc407770b2f13e2e1d4d3b60b78568f5f3cd26515"
+      },
+      {
+        "bytes": 198461,
+        "path": "legs/leg_06/tearsheet.png",
+        "sha256": "743f51dbf0bd2306d28fe732cbd6997e3449f61f801c059b2ba42942b6d759a4"
+      },
+      {
+        "bytes": 958,
+        "path": "legs/leg_06/tearsheet.txt",
+        "sha256": "db1eb4666ff63bcba3bc768cc407770b2f13e2e1d4d3b60b78568f5f3cd26515"
+      },
+      {
+        "bytes": 3721,
+        "path": "legs/leg_07/corporate_actions.parquet",
+        "sha256": "b326c7ab4cf09da69ae53d627cc50492dd08da897b3ac403c9ce59eeaec9ab16"
+      },
+      {
+        "bytes": 3736,
+        "path": "legs/leg_07/equity.parquet",
+        "sha256": "b7c892c9665c9c2b1bf16a5365584941f68c1f03da0ef0ac96295ec5343b9741"
+      },
+      {
+        "bytes": 12835,
+        "path": "legs/leg_07/fills.parquet",
+        "sha256": "6f56e601754df882b9bc79db92df6763ea90a59be7755848252e02e7e13f0854"
+      },
+      {
+        "bytes": 6479,
+        "path": "legs/leg_07/financing.parquet",
+        "sha256": "b87eba653f886861e734d8d32429061b14dcbcbb6af3260586350eac9d13729d"
+      },
+      {
+        "bytes": 3222,
+        "path": "legs/leg_07/funding.parquet",
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      {
+        "bytes": 8516,
+        "path": "legs/leg_07/orders.parquet",
+        "sha256": "bd82c42d81996ba0a25511870771cff9e45e379764713366ff2e9c4719d7a078"
+      },
+      {
+        "bytes": 59038,
+        "path": "legs/leg_07/positions.parquet",
+        "sha256": "1532c13b5194bbd48ac67f0d8035d73b77674cc776a90e6716c0e6f73f4011c5"
+      },
+      {
+        "bytes": 1555,
+        "path": "legs/leg_07/run_meta.json",
+        "sha256": "67d0a6425dcae3411407a054269df7dcb33dca1e9c802e992748582c1ae07ab4"
+      },
+      {
+        "bytes": 951,
+        "path": "legs/leg_07/summary.txt",
+        "sha256": "5b5ab83327aed54053f0882c1a840d47b2fbe66140a70f01e2573a33b66b4432"
+      },
+      {
+        "bytes": 217822,
+        "path": "legs/leg_07/tearsheet.png",
+        "sha256": "80cf48bb6379ed29aa536d86bbba37da8ed43135e187cdff2600527de6bb1eeb"
+      },
+      {
+        "bytes": 951,
+        "path": "legs/leg_07/tearsheet.txt",
+        "sha256": "5b5ab83327aed54053f0882c1a840d47b2fbe66140a70f01e2573a33b66b4432"
+      },
+      {
+        "bytes": 3721,
+        "path": "legs/leg_08/corporate_actions.parquet",
+        "sha256": "b326c7ab4cf09da69ae53d627cc50492dd08da897b3ac403c9ce59eeaec9ab16"
+      },
+      {
+        "bytes": 3737,
+        "path": "legs/leg_08/equity.parquet",
+        "sha256": "cb5d1716ba74c702f3f77ead3a4eb6208a9b654567eb42c013082a1d4275ef02"
+      },
+      {
+        "bytes": 11865,
+        "path": "legs/leg_08/fills.parquet",
+        "sha256": "313c2b7af5b1fd3e9172c25d2634fa9773e71db7484aeeedda8bf02d9e8d92b1"
+      },
+      {
+        "bytes": 6479,
+        "path": "legs/leg_08/financing.parquet",
+        "sha256": "b87eba653f886861e734d8d32429061b14dcbcbb6af3260586350eac9d13729d"
+      },
+      {
+        "bytes": 3222,
+        "path": "legs/leg_08/funding.parquet",
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      {
+        "bytes": 8506,
+        "path": "legs/leg_08/orders.parquet",
+        "sha256": "ae742ea0a0c0c4bb4cdafdf7abbf2a95402cfed156ba98b2769e1f8d9eaf3d71"
+      },
+      {
+        "bytes": 58786,
+        "path": "legs/leg_08/positions.parquet",
+        "sha256": "9eb56abffb4999539dc4538ec513d163805fb3a4af5f18797458cf05bf4e43bf"
+      },
+      {
+        "bytes": 1557,
+        "path": "legs/leg_08/run_meta.json",
+        "sha256": "142b08205418fdcfe8baa7f136cd2ce8e572e0a7fa86d231070df329f64569c8"
+      },
+      {
+        "bytes": 957,
+        "path": "legs/leg_08/summary.txt",
+        "sha256": "49e6ea3fc99abee7fdb761b5fce9ff2617fc3e61756fae44780af06ec6e69ec6"
+      },
+      {
+        "bytes": 204143,
+        "path": "legs/leg_08/tearsheet.png",
+        "sha256": "773724e527f42d70d773da3e803303a996445932278e63d098bae39a0a26c8e3"
+      },
+      {
+        "bytes": 957,
+        "path": "legs/leg_08/tearsheet.txt",
+        "sha256": "49e6ea3fc99abee7fdb761b5fce9ff2617fc3e61756fae44780af06ec6e69ec6"
+      },
+      {
+        "bytes": 3721,
+        "path": "legs/leg_09/corporate_actions.parquet",
+        "sha256": "b326c7ab4cf09da69ae53d627cc50492dd08da897b3ac403c9ce59eeaec9ab16"
+      },
+      {
+        "bytes": 3739,
+        "path": "legs/leg_09/equity.parquet",
+        "sha256": "793a19aeb702de32fc36952fb033e773d89555f047357f76b1d32cdd44ee4851"
+      },
+      {
+        "bytes": 12567,
+        "path": "legs/leg_09/fills.parquet",
+        "sha256": "65fe2bc86db4dcfa18d6e970c0fa0ce1adf8a3c9b0204fc6a44934cedb34446c"
+      },
+      {
+        "bytes": 6479,
+        "path": "legs/leg_09/financing.parquet",
+        "sha256": "b87eba653f886861e734d8d32429061b14dcbcbb6af3260586350eac9d13729d"
+      },
+      {
+        "bytes": 3222,
+        "path": "legs/leg_09/funding.parquet",
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      {
+        "bytes": 8499,
+        "path": "legs/leg_09/orders.parquet",
+        "sha256": "6e054dcb99960fbfebc5890151425a36a0a741326ab8be74eb5469af16f606d6"
+      },
+      {
+        "bytes": 59237,
+        "path": "legs/leg_09/positions.parquet",
+        "sha256": "ddcfc66c809e2ca6bf59439e66a9f4a274d98746debd9d6143424389f43ae295"
+      },
+      {
+        "bytes": 1556,
+        "path": "legs/leg_09/run_meta.json",
+        "sha256": "9b921479de2d5890c7c7387ecf4c7726fe5ffe4ce5db8ced5c4af652682b8bfd"
+      },
+      {
+        "bytes": 950,
+        "path": "legs/leg_09/summary.txt",
+        "sha256": "9599907711e6e2d3f6e0d84e1db158a1e6cd16b6f12a03ffb8b496af93f86ea6"
+      },
+      {
+        "bytes": 222713,
+        "path": "legs/leg_09/tearsheet.png",
+        "sha256": "9c985352d76faa9a4757cc09a543207372650eb057c9b6b7f017f3a1065be9b4"
+      },
+      {
+        "bytes": 950,
+        "path": "legs/leg_09/tearsheet.txt",
+        "sha256": "9599907711e6e2d3f6e0d84e1db158a1e6cd16b6f12a03ffb8b496af93f86ea6"
+      },
+      {
+        "bytes": 3721,
+        "path": "legs/leg_10/corporate_actions.parquet",
+        "sha256": "b326c7ab4cf09da69ae53d627cc50492dd08da897b3ac403c9ce59eeaec9ab16"
+      },
+      {
+        "bytes": 3738,
+        "path": "legs/leg_10/equity.parquet",
+        "sha256": "24a791607d9262b21a058deed52c5a4de738a46e68b60d76f493ff5827cc969b"
+      },
+      {
+        "bytes": 12682,
+        "path": "legs/leg_10/fills.parquet",
+        "sha256": "c218c74720686df97135203e3f1487788b47f5b27617a074ef55e4791d03db20"
+      },
+      {
+        "bytes": 6479,
+        "path": "legs/leg_10/financing.parquet",
+        "sha256": "b87eba653f886861e734d8d32429061b14dcbcbb6af3260586350eac9d13729d"
+      },
+      {
+        "bytes": 3222,
+        "path": "legs/leg_10/funding.parquet",
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      {
+        "bytes": 8601,
+        "path": "legs/leg_10/orders.parquet",
+        "sha256": "98dde846733d75f0ef36d04031868dd90be2dc92e4e0efeb54f072c410b3599f"
+      },
+      {
+        "bytes": 59421,
+        "path": "legs/leg_10/positions.parquet",
+        "sha256": "a32827fe07477521d06449b779993a751c88bbb591f9af054298400423eca794"
+      },
+      {
+        "bytes": 1557,
+        "path": "legs/leg_10/run_meta.json",
+        "sha256": "1c534cc8ec09348db91be1fa9e09f829a552797d882edbc2b87fea0721ad02e8"
+      },
+      {
+        "bytes": 959,
+        "path": "legs/leg_10/summary.txt",
+        "sha256": "b9ff13e372bd9e0c5b644a454bce78fda7481b072f72940b195de9a50d5c8f9c"
+      },
+      {
+        "bytes": 186038,
+        "path": "legs/leg_10/tearsheet.png",
+        "sha256": "b32adacce1f4859ac953d32686ff5ef382819cfcf398ba9d8faefd3789d666f6"
+      },
+      {
+        "bytes": 959,
+        "path": "legs/leg_10/tearsheet.txt",
+        "sha256": "b9ff13e372bd9e0c5b644a454bce78fda7481b072f72940b195de9a50d5c8f9c"
+      },
+      {
+        "bytes": 3721,
+        "path": "legs/leg_11/corporate_actions.parquet",
+        "sha256": "b326c7ab4cf09da69ae53d627cc50492dd08da897b3ac403c9ce59eeaec9ab16"
+      },
+      {
+        "bytes": 3738,
+        "path": "legs/leg_11/equity.parquet",
+        "sha256": "08b4e1cb2175c0347d26e49b26e41ee91c15410444091b237ff8d727d36d10fd"
+      },
+      {
+        "bytes": 13505,
+        "path": "legs/leg_11/fills.parquet",
+        "sha256": "40de9edfe0cab6551c91d26ac2f1248c22527dfbd6019631a119244d79982117"
+      },
+      {
+        "bytes": 6479,
+        "path": "legs/leg_11/financing.parquet",
+        "sha256": "b87eba653f886861e734d8d32429061b14dcbcbb6af3260586350eac9d13729d"
+      },
+      {
+        "bytes": 3222,
+        "path": "legs/leg_11/funding.parquet",
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      {
+        "bytes": 8615,
+        "path": "legs/leg_11/orders.parquet",
+        "sha256": "f1575792e28a9fa7e10da642e3ce6560a5cf711001c1f515cc53bcc13637556f"
+      },
+      {
+        "bytes": 59123,
+        "path": "legs/leg_11/positions.parquet",
+        "sha256": "6ece6b08cc1b6e5ea01fea647e7c2b53aa0132deaf67562007b811a2c4ef5c1b"
+      },
+      {
+        "bytes": 1557,
+        "path": "legs/leg_11/run_meta.json",
+        "sha256": "72b5110a0e4ebdd32e5dcdffb1e1374a60d080945ff4b9a5d2b80b2d0732573e"
+      },
+      {
+        "bytes": 951,
+        "path": "legs/leg_11/summary.txt",
+        "sha256": "c8ae4a8ac0990dc86785c0a2b9749324f709493c4eec734fd0cc4f039ddea8a8"
+      },
+      {
+        "bytes": 200041,
+        "path": "legs/leg_11/tearsheet.png",
+        "sha256": "66191f902906150ec837e6d40f9441526ea15dd8f81ffadb87b62cee1f5bca9e"
+      },
+      {
+        "bytes": 951,
+        "path": "legs/leg_11/tearsheet.txt",
+        "sha256": "c8ae4a8ac0990dc86785c0a2b9749324f709493c4eec734fd0cc4f039ddea8a8"
+      },
+      {
+        "bytes": 3721,
+        "path": "legs/leg_12/corporate_actions.parquet",
+        "sha256": "b326c7ab4cf09da69ae53d627cc50492dd08da897b3ac403c9ce59eeaec9ab16"
+      },
+      {
+        "bytes": 3738,
+        "path": "legs/leg_12/equity.parquet",
+        "sha256": "58893813da886581f893554c890d603806c45dbac11562e0ee640ada002a8588"
+      },
+      {
+        "bytes": 11903,
+        "path": "legs/leg_12/fills.parquet",
+        "sha256": "126c6d6e1c7d637698ef6f16e63e6fa500e7500952a79df3cfca37298f7102ba"
+      },
+      {
+        "bytes": 6479,
+        "path": "legs/leg_12/financing.parquet",
+        "sha256": "b87eba653f886861e734d8d32429061b14dcbcbb6af3260586350eac9d13729d"
+      },
+      {
+        "bytes": 3222,
+        "path": "legs/leg_12/funding.parquet",
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      {
+        "bytes": 8624,
+        "path": "legs/leg_12/orders.parquet",
+        "sha256": "0c62472569f489eabadfd53055ab61a5a688d692d09cdda714a638600d4d78ff"
+      },
+      {
+        "bytes": 58530,
+        "path": "legs/leg_12/positions.parquet",
+        "sha256": "ea2ff469a75684a9a6a4c5f6b1a619f317d7498bdef9f5d9e9169f97a9459d48"
+      },
+      {
+        "bytes": 1556,
+        "path": "legs/leg_12/run_meta.json",
+        "sha256": "f7226d88bd82afc064e0a0f1ee0902352c2976b1c2fb68e457be8932d4357cdf"
+      },
+      {
+        "bytes": 958,
+        "path": "legs/leg_12/summary.txt",
+        "sha256": "b78f38255afc6d2d914f5d2041b230b7fb3ee66dd5b321f2feda5deda04181fa"
+      },
+      {
+        "bytes": 202527,
+        "path": "legs/leg_12/tearsheet.png",
+        "sha256": "4787a55ecfe5284231b4724a9622a3c94a25f6549a0ebae0938268d87275a1e3"
+      },
+      {
+        "bytes": 958,
+        "path": "legs/leg_12/tearsheet.txt",
+        "sha256": "b78f38255afc6d2d914f5d2041b230b7fb3ee66dd5b321f2feda5deda04181fa"
+      },
+      {
+        "bytes": 3721,
+        "path": "legs/leg_13/corporate_actions.parquet",
+        "sha256": "b326c7ab4cf09da69ae53d627cc50492dd08da897b3ac403c9ce59eeaec9ab16"
+      },
+      {
+        "bytes": 3737,
+        "path": "legs/leg_13/equity.parquet",
+        "sha256": "aeabea7f91f30c407f37b283a507a011d3c0d57cb1f15cc6b1242afed56e27ca"
+      },
+      {
+        "bytes": 12375,
+        "path": "legs/leg_13/fills.parquet",
+        "sha256": "8cf998db4d5622c100d02408f15137893e21b0fe18060edad1c27e66d1836805"
+      },
+      {
+        "bytes": 6479,
+        "path": "legs/leg_13/financing.parquet",
+        "sha256": "b87eba653f886861e734d8d32429061b14dcbcbb6af3260586350eac9d13729d"
+      },
+      {
+        "bytes": 3222,
+        "path": "legs/leg_13/funding.parquet",
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      {
+        "bytes": 8592,
+        "path": "legs/leg_13/orders.parquet",
+        "sha256": "41511c583a1e392b8a43ab01d121e1b0e154fd7b00d0dc3f30c3259740ec6b31"
+      },
+      {
+        "bytes": 59917,
+        "path": "legs/leg_13/positions.parquet",
+        "sha256": "8b01630d7999d0b10d2d4e9146c1a28b4a07f5bfea598316cdb6696826351789"
+      },
+      {
+        "bytes": 1558,
+        "path": "legs/leg_13/run_meta.json",
+        "sha256": "812dc5b3c51cbaa7f9ffe82680175efc2218c4eef0223e11797e36822dc9c623"
+      },
+      {
+        "bytes": 958,
+        "path": "legs/leg_13/summary.txt",
+        "sha256": "f3064bc11f477352baefb641cfced21a716f842dc369b27cb2bd8db8abb76514"
+      },
+      {
+        "bytes": 185501,
+        "path": "legs/leg_13/tearsheet.png",
+        "sha256": "8adbdf4891fa57c71d9c69eba4f0e1e170a0dc6c1182c996f711463b541e1f78"
+      },
+      {
+        "bytes": 958,
+        "path": "legs/leg_13/tearsheet.txt",
+        "sha256": "f3064bc11f477352baefb641cfced21a716f842dc369b27cb2bd8db8abb76514"
+      },
+      {
+        "bytes": 3721,
+        "path": "legs/leg_14/corporate_actions.parquet",
+        "sha256": "b326c7ab4cf09da69ae53d627cc50492dd08da897b3ac403c9ce59eeaec9ab16"
+      },
+      {
+        "bytes": 3736,
+        "path": "legs/leg_14/equity.parquet",
+        "sha256": "95955608ef987a737efea6eaf3d7deadd8654a8d5e55c5a6c47c2da8c1b54ece"
+      },
+      {
+        "bytes": 11685,
+        "path": "legs/leg_14/fills.parquet",
+        "sha256": "a1cfdd492ba01afd8f2a1b186a46f15b7c1c620023ad1d93dfc0ef36a08fbb9c"
+      },
+      {
+        "bytes": 6479,
+        "path": "legs/leg_14/financing.parquet",
+        "sha256": "b87eba653f886861e734d8d32429061b14dcbcbb6af3260586350eac9d13729d"
+      },
+      {
+        "bytes": 3222,
+        "path": "legs/leg_14/funding.parquet",
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      {
+        "bytes": 8400,
+        "path": "legs/leg_14/orders.parquet",
+        "sha256": "260029cd81f0820d8329b4a77ab2244028a9c2c392fc546772d9cf37a55d9a60"
+      },
+      {
+        "bytes": 57924,
+        "path": "legs/leg_14/positions.parquet",
+        "sha256": "7fd9c4f7883dc2ba57e3b657bf063f9a104b1923c2501e3f847fee8c4175b5bb"
+      },
+      {
+        "bytes": 1557,
+        "path": "legs/leg_14/run_meta.json",
+        "sha256": "362881d9103f5e942027c605c5c71f7a135bc23621c9e50a52a2115f45e3f059"
+      },
+      {
+        "bytes": 950,
+        "path": "legs/leg_14/summary.txt",
+        "sha256": "3abfef2d7042259fbf03fedad8933f1b078808013469b597e264984f7365e1e5"
+      },
+      {
+        "bytes": 204581,
+        "path": "legs/leg_14/tearsheet.png",
+        "sha256": "e5bcfe51eb0f6d152594b92e1d98ff499038a8cb33802c479e0614e31db518da"
+      },
+      {
+        "bytes": 950,
+        "path": "legs/leg_14/tearsheet.txt",
+        "sha256": "3abfef2d7042259fbf03fedad8933f1b078808013469b597e264984f7365e1e5"
+      },
+      {
+        "bytes": 3721,
+        "path": "legs/leg_15/corporate_actions.parquet",
+        "sha256": "b326c7ab4cf09da69ae53d627cc50492dd08da897b3ac403c9ce59eeaec9ab16"
+      },
+      {
+        "bytes": 3738,
+        "path": "legs/leg_15/equity.parquet",
+        "sha256": "721492eb0df21b7505a54abe7b396f0a39192b1ac355b34e9da72369178684ba"
+      },
+      {
+        "bytes": 11318,
+        "path": "legs/leg_15/fills.parquet",
+        "sha256": "22f9f0b946f98785e0519406a684dcd8bd2480a2ed1489779398ca9211386b7d"
+      },
+      {
+        "bytes": 6479,
+        "path": "legs/leg_15/financing.parquet",
+        "sha256": "b87eba653f886861e734d8d32429061b14dcbcbb6af3260586350eac9d13729d"
+      },
+      {
+        "bytes": 3222,
+        "path": "legs/leg_15/funding.parquet",
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      {
+        "bytes": 8497,
+        "path": "legs/leg_15/orders.parquet",
+        "sha256": "57b149185c77c9813b37b71e87da05ff80812381748715c86cf586242273383e"
+      },
+      {
+        "bytes": 57296,
+        "path": "legs/leg_15/positions.parquet",
+        "sha256": "e28008018273702052a1e5752948490542df670767a1a6fc8c0611775117607a"
+      },
+      {
+        "bytes": 1557,
+        "path": "legs/leg_15/run_meta.json",
+        "sha256": "6609f8af3662172f6a0ba2a79a50ef31aa272c807a460f51d3f0dce39fb38259"
+      },
+      {
+        "bytes": 950,
+        "path": "legs/leg_15/summary.txt",
+        "sha256": "4fec177a8e4d0e4a360a55f29609de6eb6bbf6e1bf0f3f9dfbbc5e6ddf1334f3"
+      },
+      {
+        "bytes": 206965,
+        "path": "legs/leg_15/tearsheet.png",
+        "sha256": "d5a2ea7c20b1f8ec682ac7e93a302ba3210a0c13a04785cb21f2b39f68f2ce3d"
+      },
+      {
+        "bytes": 950,
+        "path": "legs/leg_15/tearsheet.txt",
+        "sha256": "4fec177a8e4d0e4a360a55f29609de6eb6bbf6e1bf0f3f9dfbbc5e6ddf1334f3"
+      },
+      {
+        "bytes": 3721,
+        "path": "legs/leg_16/corporate_actions.parquet",
+        "sha256": "b326c7ab4cf09da69ae53d627cc50492dd08da897b3ac403c9ce59eeaec9ab16"
+      },
+      {
+        "bytes": 3739,
+        "path": "legs/leg_16/equity.parquet",
+        "sha256": "dace40ff48f48aebd00061dcc68aa5c315e400dca366472ce27ca2542904e8b1"
+      },
+      {
+        "bytes": 11480,
+        "path": "legs/leg_16/fills.parquet",
+        "sha256": "f894ab8b918d76f7f4a7b06bc146243e310706bdfd65d47f1a12f5d15e84e40a"
+      },
+      {
+        "bytes": 6479,
+        "path": "legs/leg_16/financing.parquet",
+        "sha256": "b87eba653f886861e734d8d32429061b14dcbcbb6af3260586350eac9d13729d"
+      },
+      {
+        "bytes": 3222,
+        "path": "legs/leg_16/funding.parquet",
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      {
+        "bytes": 8569,
+        "path": "legs/leg_16/orders.parquet",
+        "sha256": "6c8c951205c3b2627fb359fd053bd82d2ff9f270391f489a8f63d1ea80f0c317"
+      },
+      {
+        "bytes": 57245,
+        "path": "legs/leg_16/positions.parquet",
+        "sha256": "6f102612d6e5207ceed488f71276ef207bcf86a3c8fd5c5fdc51bdb7b6773d11"
+      },
+      {
+        "bytes": 1558,
+        "path": "legs/leg_16/run_meta.json",
+        "sha256": "bf51f05524be8e0e4dd3b036ac19b021879679ce474b256477f30a8e0d7345f5"
+      },
+      {
+        "bytes": 958,
+        "path": "legs/leg_16/summary.txt",
+        "sha256": "267d69d948281d7c6878351ccb76279090b20ab0d05cf9035828ec6b935ef346"
+      },
+      {
+        "bytes": 201442,
+        "path": "legs/leg_16/tearsheet.png",
+        "sha256": "6d40c9763b7b7c6e03c94f86a0accdc7b5b85cc3c5ef6c109e4c363dfa8e337f"
+      },
+      {
+        "bytes": 958,
+        "path": "legs/leg_16/tearsheet.txt",
+        "sha256": "267d69d948281d7c6878351ccb76279090b20ab0d05cf9035828ec6b935ef346"
+      },
+      {
+        "bytes": 3721,
+        "path": "legs/leg_17/corporate_actions.parquet",
+        "sha256": "b326c7ab4cf09da69ae53d627cc50492dd08da897b3ac403c9ce59eeaec9ab16"
+      },
+      {
+        "bytes": 3738,
+        "path": "legs/leg_17/equity.parquet",
+        "sha256": "3783e412f2dfeb713f9de9db0c9b0bb091d298659deb1e189aef83ced38c8acc"
+      },
+      {
+        "bytes": 11776,
+        "path": "legs/leg_17/fills.parquet",
+        "sha256": "3cec3441c208da3ccaf1fc139573f676f3d337b9bc90081d85b038eb41a2397d"
+      },
+      {
+        "bytes": 6479,
+        "path": "legs/leg_17/financing.parquet",
+        "sha256": "b87eba653f886861e734d8d32429061b14dcbcbb6af3260586350eac9d13729d"
+      },
+      {
+        "bytes": 3222,
+        "path": "legs/leg_17/funding.parquet",
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      {
+        "bytes": 8535,
+        "path": "legs/leg_17/orders.parquet",
+        "sha256": "096659565289ca62fc3453d128ef4beca5d12a4900c5a590172aa7549475029b"
+      },
+      {
+        "bytes": 58334,
+        "path": "legs/leg_17/positions.parquet",
+        "sha256": "ddf7b8167e37fb32d7338911374eda42544528f369bdf3e99536b16e3db12ca5"
+      },
+      {
+        "bytes": 1557,
+        "path": "legs/leg_17/run_meta.json",
+        "sha256": "f9b9b23eb49417624214ef960c2067fb120d73d39f93834d15e847938e73b676"
+      },
+      {
+        "bytes": 953,
+        "path": "legs/leg_17/summary.txt",
+        "sha256": "fe08d306bc07fc9eac81b27304e0cf2de2b1ba98c15b2ca7c65dc670b287a503"
+      },
+      {
+        "bytes": 203050,
+        "path": "legs/leg_17/tearsheet.png",
+        "sha256": "4d81ada4a811da2b14e314287b7d24542b3c229e5e3b51a2c9749f864684263b"
+      },
+      {
+        "bytes": 953,
+        "path": "legs/leg_17/tearsheet.txt",
+        "sha256": "fe08d306bc07fc9eac81b27304e0cf2de2b1ba98c15b2ca7c65dc670b287a503"
+      },
+      {
+        "bytes": 3721,
+        "path": "legs/leg_18/corporate_actions.parquet",
+        "sha256": "b326c7ab4cf09da69ae53d627cc50492dd08da897b3ac403c9ce59eeaec9ab16"
+      },
+      {
+        "bytes": 3740,
+        "path": "legs/leg_18/equity.parquet",
+        "sha256": "9203d3ec4e0250a9f4e3bf8f81c1af014195b60e9703e276f0468eb6faa45def"
+      },
+      {
+        "bytes": 12056,
+        "path": "legs/leg_18/fills.parquet",
+        "sha256": "21f7acbb7fef2d1337c0fbf6e2cb87f5a439c63fe1c2ae553a16e456a094fe77"
+      },
+      {
+        "bytes": 6479,
+        "path": "legs/leg_18/financing.parquet",
+        "sha256": "b87eba653f886861e734d8d32429061b14dcbcbb6af3260586350eac9d13729d"
+      },
+      {
+        "bytes": 3222,
+        "path": "legs/leg_18/funding.parquet",
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      {
+        "bytes": 8567,
+        "path": "legs/leg_18/orders.parquet",
+        "sha256": "d04cb36daaf497d4767184d8f227669070b4261df2b99e9bc20220632cc4c18b"
+      },
+      {
+        "bytes": 58389,
+        "path": "legs/leg_18/positions.parquet",
+        "sha256": "939387af90d729bc7ed2fceddf5e52d8f79e8a1a9e35e967de4aa77ab158a713"
+      },
+      {
+        "bytes": 1556,
+        "path": "legs/leg_18/run_meta.json",
+        "sha256": "ee135d24976f43f91367207d459109743d46fbc73e6f0c5ee6545ad0ddf1c697"
+      },
+      {
+        "bytes": 950,
+        "path": "legs/leg_18/summary.txt",
+        "sha256": "400e1254627a5a0d55a4030897c630e9ddf37ab7d0b40d0ccf660d97210184ed"
+      },
+      {
+        "bytes": 212557,
+        "path": "legs/leg_18/tearsheet.png",
+        "sha256": "8c27401f64dfa358e9eacc184c3d3ba5b620964377771e7fab3091576e378a3f"
+      },
+      {
+        "bytes": 950,
+        "path": "legs/leg_18/tearsheet.txt",
+        "sha256": "400e1254627a5a0d55a4030897c630e9ddf37ab7d0b40d0ccf660d97210184ed"
+      },
+      {
+        "bytes": 3721,
+        "path": "legs/leg_19/corporate_actions.parquet",
+        "sha256": "b326c7ab4cf09da69ae53d627cc50492dd08da897b3ac403c9ce59eeaec9ab16"
+      },
+      {
+        "bytes": 3738,
+        "path": "legs/leg_19/equity.parquet",
+        "sha256": "b0b153e3351893ec9436122752812568e9bf8f1e7fa9bd0a4fad936dbb4dddb9"
+      },
+      {
+        "bytes": 12529,
+        "path": "legs/leg_19/fills.parquet",
+        "sha256": "b90c2c91536fe36046c346df8a6ab9ecaee05570e616b18048fa9e709815e26c"
+      },
+      {
+        "bytes": 6479,
+        "path": "legs/leg_19/financing.parquet",
+        "sha256": "b87eba653f886861e734d8d32429061b14dcbcbb6af3260586350eac9d13729d"
+      },
+      {
+        "bytes": 3222,
+        "path": "legs/leg_19/funding.parquet",
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      {
+        "bytes": 8595,
+        "path": "legs/leg_19/orders.parquet",
+        "sha256": "6c800dafcc935e021da2a45dd464bcc434ac119fa2ed2e48acc8df7f6e6e1fb6"
+      },
+      {
+        "bytes": 60174,
+        "path": "legs/leg_19/positions.parquet",
+        "sha256": "bf7196d20dafcab3215f39db985bb4d31674803451694032be816586cf85e459"
+      },
+      {
+        "bytes": 1557,
+        "path": "legs/leg_19/run_meta.json",
+        "sha256": "f7fa26a9d877af05dc495c0ada1c7c8534ba0a270c3f88e248813f2af5bada4d"
+      },
+      {
+        "bytes": 950,
+        "path": "legs/leg_19/summary.txt",
+        "sha256": "b51166ddcb05e65c093c56aeba573f26db08111ed31c81cb774a2dfe90aeb50e"
+      },
+      {
+        "bytes": 209871,
+        "path": "legs/leg_19/tearsheet.png",
+        "sha256": "6e7d3bf388426d62508ff9f0ea6be36933a53c8532bce877827d635f56f371ea"
+      },
+      {
+        "bytes": 950,
+        "path": "legs/leg_19/tearsheet.txt",
+        "sha256": "b51166ddcb05e65c093c56aeba573f26db08111ed31c81cb774a2dfe90aeb50e"
+      },
+      {
+        "bytes": 3721,
+        "path": "legs/leg_20/corporate_actions.parquet",
+        "sha256": "b326c7ab4cf09da69ae53d627cc50492dd08da897b3ac403c9ce59eeaec9ab16"
+      },
+      {
+        "bytes": 3737,
+        "path": "legs/leg_20/equity.parquet",
+        "sha256": "c49eaa56cc132e4d20ac15feb975745ccf2d6a3a2b2328d3f931524f7231677f"
+      },
+      {
+        "bytes": 12804,
+        "path": "legs/leg_20/fills.parquet",
+        "sha256": "19e3b5ede613c3d9b91f4df83b13fa9801d4a4e17d9ee815b637ffbf76ae9a0b"
+      },
+      {
+        "bytes": 6479,
+        "path": "legs/leg_20/financing.parquet",
+        "sha256": "b87eba653f886861e734d8d32429061b14dcbcbb6af3260586350eac9d13729d"
+      },
+      {
+        "bytes": 3222,
+        "path": "legs/leg_20/funding.parquet",
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      {
+        "bytes": 8527,
+        "path": "legs/leg_20/orders.parquet",
+        "sha256": "a4e6b25b4edd652ef318b5f44ab2d84cf9f4f58e65164612dee0eeb29fe0b032"
+      },
+      {
+        "bytes": 58674,
+        "path": "legs/leg_20/positions.parquet",
+        "sha256": "2e0c930e4370af63600b16557f264606d8307ac6667d814c2eb40f8efbeac74e"
+      },
+      {
+        "bytes": 1556,
+        "path": "legs/leg_20/run_meta.json",
+        "sha256": "47a88aab64db2238a76d078691907942d51630ecaa8d1e23716d553f1f2e0fa7"
+      },
+      {
+        "bytes": 950,
+        "path": "legs/leg_20/summary.txt",
+        "sha256": "b573876372539e26d6c042f0faf4afd0cd4422d8ccbf71541c6951cef1178400"
+      },
+      {
+        "bytes": 206448,
+        "path": "legs/leg_20/tearsheet.png",
+        "sha256": "e6e29ae535324fb04ce3294a7e6481dae1c21365eb2a3062504e91c7f26dbfa1"
+      },
+      {
+        "bytes": 950,
+        "path": "legs/leg_20/tearsheet.txt",
+        "sha256": "b573876372539e26d6c042f0faf4afd0cd4422d8ccbf71541c6951cef1178400"
+      },
+      {
+        "bytes": 3721,
+        "path": "legs/leg_21/corporate_actions.parquet",
+        "sha256": "b326c7ab4cf09da69ae53d627cc50492dd08da897b3ac403c9ce59eeaec9ab16"
+      },
+      {
+        "bytes": 3738,
+        "path": "legs/leg_21/equity.parquet",
+        "sha256": "3c63551c4f4854f43917593640a76882a9ac05d4abd9bceedbfeac727288f810"
+      },
+      {
+        "bytes": 12068,
+        "path": "legs/leg_21/fills.parquet",
+        "sha256": "7db173d182da87ff4dc89698b7a6d53658cf3c5cdd71ab7f81b3f782f3638185"
+      },
+      {
+        "bytes": 6479,
+        "path": "legs/leg_21/financing.parquet",
+        "sha256": "b87eba653f886861e734d8d32429061b14dcbcbb6af3260586350eac9d13729d"
+      },
+      {
+        "bytes": 3222,
+        "path": "legs/leg_21/funding.parquet",
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      {
+        "bytes": 8653,
+        "path": "legs/leg_21/orders.parquet",
+        "sha256": "9f6df62a350b37b431753fa553e961fa96bb74ca7b321be2f40cf00310f9d531"
+      },
+      {
+        "bytes": 58311,
+        "path": "legs/leg_21/positions.parquet",
+        "sha256": "9ca2f451b32b4cdce11dfca79db80ef469eed9fe19207ada3bdbd599b89b37b0"
+      },
+      {
+        "bytes": 1554,
+        "path": "legs/leg_21/run_meta.json",
+        "sha256": "32bfa2643776ac6f4147f2d4412c79366406b472f875ea78e26db37bbbfc53a7"
+      },
+      {
+        "bytes": 957,
+        "path": "legs/leg_21/summary.txt",
+        "sha256": "9abd8901034af89472c9453095ab30df625157014c38d284bb42d76a846bb231"
+      },
+      {
+        "bytes": 195301,
+        "path": "legs/leg_21/tearsheet.png",
+        "sha256": "d32de48493f745d9e5174ba4789bd9db794c8e3e82ca0ab7aabe905716fa7758"
+      },
+      {
+        "bytes": 957,
+        "path": "legs/leg_21/tearsheet.txt",
+        "sha256": "9abd8901034af89472c9453095ab30df625157014c38d284bb42d76a846bb231"
+      },
+      {
+        "bytes": 3721,
+        "path": "legs/leg_22/corporate_actions.parquet",
+        "sha256": "b326c7ab4cf09da69ae53d627cc50492dd08da897b3ac403c9ce59eeaec9ab16"
+      },
+      {
+        "bytes": 3739,
+        "path": "legs/leg_22/equity.parquet",
+        "sha256": "c01bfa443da47eab6d02cb498f077d44773f07542e1c55368b29f25449c16aa0"
+      },
+      {
+        "bytes": 11810,
+        "path": "legs/leg_22/fills.parquet",
+        "sha256": "b0853834771180bb7db2a22eef6cda38f0b42c21c01381470a96bd048670c62e"
+      },
+      {
+        "bytes": 6479,
+        "path": "legs/leg_22/financing.parquet",
+        "sha256": "b87eba653f886861e734d8d32429061b14dcbcbb6af3260586350eac9d13729d"
+      },
+      {
+        "bytes": 3222,
+        "path": "legs/leg_22/funding.parquet",
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      {
+        "bytes": 8455,
+        "path": "legs/leg_22/orders.parquet",
+        "sha256": "91b99dbd7700979e4ae0d4c8e1dbc438611b2a90849ee26c9cbe8d2d5f041ec6"
+      },
+      {
+        "bytes": 57453,
+        "path": "legs/leg_22/positions.parquet",
+        "sha256": "9bda3ff43f83759a9bd3d074e817224d2542b4ee231aa888065894ff2c81acd6"
+      },
+      {
+        "bytes": 1558,
+        "path": "legs/leg_22/run_meta.json",
+        "sha256": "9ada44cc3062c86282da77f982ea6a0232cdedaf592be7fdf6c83904d2eb8133"
+      },
+      {
+        "bytes": 958,
+        "path": "legs/leg_22/summary.txt",
+        "sha256": "7ae6e054c9f243e45d3a4da73ea8c38eb0af5707abea8933b6aa65cec9d5e888"
+      },
+      {
+        "bytes": 223579,
+        "path": "legs/leg_22/tearsheet.png",
+        "sha256": "d23bfbc06abce255d19324e93930b0831daa78420f42d1186d8ba35a02b56bc0"
+      },
+      {
+        "bytes": 958,
+        "path": "legs/leg_22/tearsheet.txt",
+        "sha256": "7ae6e054c9f243e45d3a4da73ea8c38eb0af5707abea8933b6aa65cec9d5e888"
+      },
+      {
+        "bytes": 3721,
+        "path": "legs/leg_23/corporate_actions.parquet",
+        "sha256": "b326c7ab4cf09da69ae53d627cc50492dd08da897b3ac403c9ce59eeaec9ab16"
+      },
+      {
+        "bytes": 3736,
+        "path": "legs/leg_23/equity.parquet",
+        "sha256": "a1e193f831bdd12a304bb5865a800f4e3bcc1255d1255ce3d77d996eed0e56b7"
+      },
+      {
+        "bytes": 11058,
+        "path": "legs/leg_23/fills.parquet",
+        "sha256": "a27331a7e1d9ef60c33657928abd47f0ba9028a87ac6b1d3ae06afca368561d6"
+      },
+      {
+        "bytes": 6479,
+        "path": "legs/leg_23/financing.parquet",
+        "sha256": "b87eba653f886861e734d8d32429061b14dcbcbb6af3260586350eac9d13729d"
+      },
+      {
+        "bytes": 3222,
+        "path": "legs/leg_23/funding.parquet",
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      {
+        "bytes": 8406,
+        "path": "legs/leg_23/orders.parquet",
+        "sha256": "39d2399c044b5a474c90716c4d307884499898f9bbe6ce78a70023ab514b9858"
+      },
+      {
+        "bytes": 56858,
+        "path": "legs/leg_23/positions.parquet",
+        "sha256": "d53955671cb76c9c1dd3c4a51e4686d915764ba2e60d23354dabddcdc9b94180"
+      },
+      {
+        "bytes": 1556,
+        "path": "legs/leg_23/run_meta.json",
+        "sha256": "fd178b229960938136b4af9fc8328ae78abdb84826eaea11fa24ac6b6c29354e"
+      },
+      {
+        "bytes": 951,
+        "path": "legs/leg_23/summary.txt",
+        "sha256": "b521cc1c7601465c242bd5b4c24f7f32f9ad78f80a5e58a4c24b8338345e1106"
+      },
+      {
+        "bytes": 217531,
+        "path": "legs/leg_23/tearsheet.png",
+        "sha256": "8808727b999962983049fdfe678ab3aa405ca0aa24b988e6b6781fc40c2bb9b3"
+      },
+      {
+        "bytes": 951,
+        "path": "legs/leg_23/tearsheet.txt",
+        "sha256": "b521cc1c7601465c242bd5b4c24f7f32f9ad78f80a5e58a4c24b8338345e1106"
+      },
+      {
+        "bytes": 3721,
+        "path": "legs/leg_24/corporate_actions.parquet",
+        "sha256": "b326c7ab4cf09da69ae53d627cc50492dd08da897b3ac403c9ce59eeaec9ab16"
+      },
+      {
+        "bytes": 3738,
+        "path": "legs/leg_24/equity.parquet",
+        "sha256": "d2861417f4bb081cf06d7175ee92e7f3585625de8e3ea502f4d55b6ebca96873"
+      },
+      {
+        "bytes": 11283,
+        "path": "legs/leg_24/fills.parquet",
+        "sha256": "c7a79b910166c9d3000ede6e5a8f6ec711aeef4095ffdb07853f329705491c49"
+      },
+      {
+        "bytes": 6479,
+        "path": "legs/leg_24/financing.parquet",
+        "sha256": "b87eba653f886861e734d8d32429061b14dcbcbb6af3260586350eac9d13729d"
+      },
+      {
+        "bytes": 3222,
+        "path": "legs/leg_24/funding.parquet",
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      {
+        "bytes": 8467,
+        "path": "legs/leg_24/orders.parquet",
+        "sha256": "134aafcb4aeea33b21452567f58c63b4b72ad0077991f1cfbc2ba7bbaaf3d1fa"
+      },
+      {
+        "bytes": 57185,
+        "path": "legs/leg_24/positions.parquet",
+        "sha256": "bd8c59798165ee10b04fbf0c681e64fa1f2753f11a99ece0ff34c4fdcb654166"
+      },
+      {
+        "bytes": 1557,
+        "path": "legs/leg_24/run_meta.json",
+        "sha256": "55e18e13ad01a17238761f7a7f87a8279487a018cb791c3f4585161d124755f6"
+      },
+      {
+        "bytes": 951,
+        "path": "legs/leg_24/summary.txt",
+        "sha256": "25d8f6bb10b34dc92bfa97267ba965913ea0534c953876cade81277588b4246f"
+      },
+      {
+        "bytes": 221681,
+        "path": "legs/leg_24/tearsheet.png",
+        "sha256": "f9ec72208cac7f2a61869e5f8f3bf3b0bf002aaf4548b491c65cd97da3a7ddeb"
+      },
+      {
+        "bytes": 951,
+        "path": "legs/leg_24/tearsheet.txt",
+        "sha256": "25d8f6bb10b34dc92bfa97267ba965913ea0534c953876cade81277588b4246f"
+      },
+      {
+        "bytes": 3721,
+        "path": "legs/leg_25/corporate_actions.parquet",
+        "sha256": "b326c7ab4cf09da69ae53d627cc50492dd08da897b3ac403c9ce59eeaec9ab16"
+      },
+      {
+        "bytes": 3738,
+        "path": "legs/leg_25/equity.parquet",
+        "sha256": "19ff6024098edcb528339a60ce074b8894a15016d98b15fc5e5374e8adb9b83b"
+      },
+      {
+        "bytes": 11258,
+        "path": "legs/leg_25/fills.parquet",
+        "sha256": "547c0135e0a599ad9519b11121781256a54f1bf89f8d24af0500f76786528e87"
+      },
+      {
+        "bytes": 6479,
+        "path": "legs/leg_25/financing.parquet",
+        "sha256": "b87eba653f886861e734d8d32429061b14dcbcbb6af3260586350eac9d13729d"
+      },
+      {
+        "bytes": 3222,
+        "path": "legs/leg_25/funding.parquet",
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      {
+        "bytes": 8578,
+        "path": "legs/leg_25/orders.parquet",
+        "sha256": "1d503c81ba7f684c92c1350104bce4b18ac75b1d979628a54a331478dfa6fd0a"
+      },
+      {
+        "bytes": 57569,
+        "path": "legs/leg_25/positions.parquet",
+        "sha256": "fe282cbeacf5219b6a2003ea09100825cd3f9953a2c71cd8787c27cd78b49d81"
+      },
+      {
+        "bytes": 1557,
+        "path": "legs/leg_25/run_meta.json",
+        "sha256": "73afb6c35861259cb8cb428a3fd85e3a7491ec801cd0e6252c82874d475abc84"
+      },
+      {
+        "bytes": 950,
+        "path": "legs/leg_25/summary.txt",
+        "sha256": "54099392a3e2f57aff3f0d640cdc3abf5ff8ef208b71315251461bf48e8f3b0e"
+      },
+      {
+        "bytes": 213008,
+        "path": "legs/leg_25/tearsheet.png",
+        "sha256": "8490cbb5710bf946098b312d0c1a29e5a2d3d0e2fc2f400eb4127d20e30d84a4"
+      },
+      {
+        "bytes": 950,
+        "path": "legs/leg_25/tearsheet.txt",
+        "sha256": "54099392a3e2f57aff3f0d640cdc3abf5ff8ef208b71315251461bf48e8f3b0e"
+      },
+      {
+        "bytes": 3721,
+        "path": "legs/leg_26/corporate_actions.parquet",
+        "sha256": "b326c7ab4cf09da69ae53d627cc50492dd08da897b3ac403c9ce59eeaec9ab16"
+      },
+      {
+        "bytes": 3736,
+        "path": "legs/leg_26/equity.parquet",
+        "sha256": "b7e9780ebde41a83edbac532c4f0353258ec83cb93ebdfd055ff361ea9c48d89"
+      },
+      {
+        "bytes": 11961,
+        "path": "legs/leg_26/fills.parquet",
+        "sha256": "37e6f2c1d671e408770d9c751106e1a2d9c063abc773ca72b51f46bd4b828b6f"
+      },
+      {
+        "bytes": 6479,
+        "path": "legs/leg_26/financing.parquet",
+        "sha256": "b87eba653f886861e734d8d32429061b14dcbcbb6af3260586350eac9d13729d"
+      },
+      {
+        "bytes": 3222,
+        "path": "legs/leg_26/funding.parquet",
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      {
+        "bytes": 8593,
+        "path": "legs/leg_26/orders.parquet",
+        "sha256": "499ebda80c3fbcc9273e1b7371f72fa9c19cbe9b9f52dc97d78f533d51a8ade2"
+      },
+      {
+        "bytes": 59659,
+        "path": "legs/leg_26/positions.parquet",
+        "sha256": "0cb34ffeb17edbc98147c7a2a1e6b017fac73ca17d223e24dddeeaa92a0f374d"
+      },
+      {
+        "bytes": 1557,
+        "path": "legs/leg_26/run_meta.json",
+        "sha256": "470328b3f3bd0b332e87cf9bda6405a1808f7fdfaf261070e0ac569f2d3ea2e6"
+      },
+      {
+        "bytes": 957,
+        "path": "legs/leg_26/summary.txt",
+        "sha256": "a9a827ea943f7c0dae87d971accb7461a109572015566f97bc498594a5e94f42"
+      },
+      {
+        "bytes": 210664,
+        "path": "legs/leg_26/tearsheet.png",
+        "sha256": "cd7b9daf2f1f2b3d6e86ea9e94269eed28c60e053d2000af99a5fb8e1b4ee9f8"
+      },
+      {
+        "bytes": 957,
+        "path": "legs/leg_26/tearsheet.txt",
+        "sha256": "a9a827ea943f7c0dae87d971accb7461a109572015566f97bc498594a5e94f42"
+      },
+      {
+        "bytes": 3721,
+        "path": "legs/leg_27/corporate_actions.parquet",
+        "sha256": "b326c7ab4cf09da69ae53d627cc50492dd08da897b3ac403c9ce59eeaec9ab16"
+      },
+      {
+        "bytes": 3737,
+        "path": "legs/leg_27/equity.parquet",
+        "sha256": "76a196fd5b8d2819a1d2620dc2bcd2321eedbe982d6f04608522059197747004"
+      },
+      {
+        "bytes": 12349,
+        "path": "legs/leg_27/fills.parquet",
+        "sha256": "d18010dcd84056fd0990eee52b800ede5bfd57cd4e082879fa22c8720b745d2c"
+      },
+      {
+        "bytes": 6479,
+        "path": "legs/leg_27/financing.parquet",
+        "sha256": "b87eba653f886861e734d8d32429061b14dcbcbb6af3260586350eac9d13729d"
+      },
+      {
+        "bytes": 3222,
+        "path": "legs/leg_27/funding.parquet",
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      {
+        "bytes": 8557,
+        "path": "legs/leg_27/orders.parquet",
+        "sha256": "589cb832005c651b66f2c260b0da4fa0a79193a70795f2afc0d2622ff8c4b078"
+      },
+      {
+        "bytes": 59753,
+        "path": "legs/leg_27/positions.parquet",
+        "sha256": "c205cc60ab9d8e4e8e3c0a350f8852d9afe19f25a45385b5ce8dc3f0a9cd4cd7"
+      },
+      {
+        "bytes": 1557,
+        "path": "legs/leg_27/run_meta.json",
+        "sha256": "cc271d37e6632a7411842c445a474fd6b321a97a4e7407401e958625768b807d"
+      },
+      {
+        "bytes": 950,
+        "path": "legs/leg_27/summary.txt",
+        "sha256": "ac4b6693cf495023dace96a4de1abd5cbaeec007d474c1fb653eaac9366f98d3"
+      },
+      {
+        "bytes": 199447,
+        "path": "legs/leg_27/tearsheet.png",
+        "sha256": "0f108fe323dfa546e1e2662aa6089e58fb1c59555ec0f60d7887ec7626170bd6"
+      },
+      {
+        "bytes": 950,
+        "path": "legs/leg_27/tearsheet.txt",
+        "sha256": "ac4b6693cf495023dace96a4de1abd5cbaeec007d474c1fb653eaac9366f98d3"
+      },
+      {
+        "bytes": 3721,
+        "path": "legs/leg_28/corporate_actions.parquet",
+        "sha256": "b326c7ab4cf09da69ae53d627cc50492dd08da897b3ac403c9ce59eeaec9ab16"
+      },
+      {
+        "bytes": 3738,
+        "path": "legs/leg_28/equity.parquet",
+        "sha256": "fc98101baafb3a61a1cb46826fad2b7125e73562078e394103b1099fb05fbdf3"
+      },
+      {
+        "bytes": 13419,
+        "path": "legs/leg_28/fills.parquet",
+        "sha256": "1deb9c3cd5dc1a74c8ffa8f3aeaa848498f8f99e904cd4d766231d4be980f4fd"
+      },
+      {
+        "bytes": 6479,
+        "path": "legs/leg_28/financing.parquet",
+        "sha256": "b87eba653f886861e734d8d32429061b14dcbcbb6af3260586350eac9d13729d"
+      },
+      {
+        "bytes": 3222,
+        "path": "legs/leg_28/funding.parquet",
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      {
+        "bytes": 8671,
+        "path": "legs/leg_28/orders.parquet",
+        "sha256": "1c593b7089f292cb0d8614b761e86882870001dc2ef237f2a6f411e6bb4c26d1"
+      },
+      {
+        "bytes": 60656,
+        "path": "legs/leg_28/positions.parquet",
+        "sha256": "8f435f752c6135fa6fa814d86b7ff988850b3a7d7cc078ac6c841c683567fd0f"
+      },
+      {
+        "bytes": 1557,
+        "path": "legs/leg_28/run_meta.json",
+        "sha256": "210c999a6a4047c685cbdc3c5e1b179de0b8e3456f9213ae52ed8d9fb51b82de"
+      },
+      {
+        "bytes": 950,
+        "path": "legs/leg_28/summary.txt",
+        "sha256": "a2812ad9888b5204793d5b92a5d2d8ca3bcfbdaa0433af0b7c85df5027e5e66a"
+      },
+      {
+        "bytes": 198749,
+        "path": "legs/leg_28/tearsheet.png",
+        "sha256": "23fa057f42cc54440be3fd44fe08763fe7363cd61f7d480fbf57baa66899684d"
+      },
+      {
+        "bytes": 950,
+        "path": "legs/leg_28/tearsheet.txt",
+        "sha256": "a2812ad9888b5204793d5b92a5d2d8ca3bcfbdaa0433af0b7c85df5027e5e66a"
+      },
+      {
+        "bytes": 3721,
+        "path": "legs/leg_29/corporate_actions.parquet",
+        "sha256": "b326c7ab4cf09da69ae53d627cc50492dd08da897b3ac403c9ce59eeaec9ab16"
+      },
+      {
+        "bytes": 3736,
+        "path": "legs/leg_29/equity.parquet",
+        "sha256": "c2e9745de4e7a5ff29c8acf7382cb709be3328c19eb8cb07f54f39a134fc8be3"
+      },
+      {
+        "bytes": 11734,
+        "path": "legs/leg_29/fills.parquet",
+        "sha256": "c9d118a0b134704b1f790204d8e3764b10457fd22c53608e96594a4ca59e4260"
+      },
+      {
+        "bytes": 6479,
+        "path": "legs/leg_29/financing.parquet",
+        "sha256": "b87eba653f886861e734d8d32429061b14dcbcbb6af3260586350eac9d13729d"
+      },
+      {
+        "bytes": 3222,
+        "path": "legs/leg_29/funding.parquet",
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      {
+        "bytes": 8533,
+        "path": "legs/leg_29/orders.parquet",
+        "sha256": "1829f4e5469a2f17f68bdea10f251a2eee3bbcf9ebc545507e6d3e818542bcf2"
+      },
+      {
+        "bytes": 59688,
+        "path": "legs/leg_29/positions.parquet",
+        "sha256": "7f0830fc8aabf1ca30791ea31dcb343cd29b5297c6b527c523452350d8866c3e"
+      },
+      {
+        "bytes": 1558,
+        "path": "legs/leg_29/run_meta.json",
+        "sha256": "d7e95f6575b28d21adb4199cc1cb841b196a0e5e8f354c9fa91442688454b06f"
+      },
+      {
+        "bytes": 950,
+        "path": "legs/leg_29/summary.txt",
+        "sha256": "843f6bc7918a851e8c0d813427d87a2a690d492bb9265407ad730c4c345a8615"
+      },
+      {
+        "bytes": 203103,
+        "path": "legs/leg_29/tearsheet.png",
+        "sha256": "f291a702b2ec39663713bae70dd1fad154ac8bbc203b7cc77d72b36d54adfe95"
+      },
+      {
+        "bytes": 950,
+        "path": "legs/leg_29/tearsheet.txt",
+        "sha256": "843f6bc7918a851e8c0d813427d87a2a690d492bb9265407ad730c4c345a8615"
+      },
+      {
+        "bytes": 3721,
+        "path": "legs/leg_30/corporate_actions.parquet",
+        "sha256": "b326c7ab4cf09da69ae53d627cc50492dd08da897b3ac403c9ce59eeaec9ab16"
+      },
+      {
+        "bytes": 3737,
+        "path": "legs/leg_30/equity.parquet",
+        "sha256": "1bc9da12f5c6d7e6daf60f171ba5aecc9901b822bc85ebbe1f3a186c6c19f622"
+      },
+      {
+        "bytes": 11847,
+        "path": "legs/leg_30/fills.parquet",
+        "sha256": "6fb71bcc59aa476a849c1a5837efa3a4cc9f8975431edca48300f6675b27121b"
+      },
+      {
+        "bytes": 6479,
+        "path": "legs/leg_30/financing.parquet",
+        "sha256": "b87eba653f886861e734d8d32429061b14dcbcbb6af3260586350eac9d13729d"
+      },
+      {
+        "bytes": 3222,
+        "path": "legs/leg_30/funding.parquet",
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      {
+        "bytes": 8484,
+        "path": "legs/leg_30/orders.parquet",
+        "sha256": "1f2e82e41c606a4eda248b18ae7c9fe186620a771fd4ebaed7d82b7969d05dde"
+      },
+      {
+        "bytes": 57894,
+        "path": "legs/leg_30/positions.parquet",
+        "sha256": "c4bae55d30ef527c18af3bd5da72caf0fe821fdda66675893613c4c351ed4640"
+      },
+      {
+        "bytes": 1557,
+        "path": "legs/leg_30/run_meta.json",
+        "sha256": "473791990f32772c81ecf9982294928dde7ac56d21fdca44f2dd4c52b7b36d24"
+      },
+      {
+        "bytes": 951,
+        "path": "legs/leg_30/summary.txt",
+        "sha256": "7856ffe38b0bcf375fc923095a71f548b95c18d93700b2e89a949293dc8015a3"
+      },
+      {
+        "bytes": 203839,
+        "path": "legs/leg_30/tearsheet.png",
+        "sha256": "df6e16b453ff2b6cc5bb9c295b7b8386a7bf99181f49e18cc6c1a30bf755c8d6"
+      },
+      {
+        "bytes": 951,
+        "path": "legs/leg_30/tearsheet.txt",
+        "sha256": "7856ffe38b0bcf375fc923095a71f548b95c18d93700b2e89a949293dc8015a3"
+      },
+      {
+        "bytes": 3721,
+        "path": "legs/leg_31/corporate_actions.parquet",
+        "sha256": "b326c7ab4cf09da69ae53d627cc50492dd08da897b3ac403c9ce59eeaec9ab16"
+      },
+      {
+        "bytes": 3737,
+        "path": "legs/leg_31/equity.parquet",
+        "sha256": "573ae278ded2339c94337e014abecdfe4434c33fbd3685fdacfbb539eb618f03"
+      },
+      {
+        "bytes": 11282,
+        "path": "legs/leg_31/fills.parquet",
+        "sha256": "4d55faebc5732ca1ae15fe82ab68c47c86357f33d79bc08ff28e8f32d4688d16"
+      },
+      {
+        "bytes": 6479,
+        "path": "legs/leg_31/financing.parquet",
+        "sha256": "b87eba653f886861e734d8d32429061b14dcbcbb6af3260586350eac9d13729d"
+      },
+      {
+        "bytes": 3222,
+        "path": "legs/leg_31/funding.parquet",
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      {
+        "bytes": 8403,
+        "path": "legs/leg_31/orders.parquet",
+        "sha256": "1fb3a856b6ce7661bdeac415a906277a98428a94c542b18a79d1dec4662fd2a8"
+      },
+      {
+        "bytes": 57804,
+        "path": "legs/leg_31/positions.parquet",
+        "sha256": "7ca83c4f04ab39eb485c6e910efc0b6e8db2cba99a874e07adba53bc9baef90e"
+      },
+      {
+        "bytes": 1557,
+        "path": "legs/leg_31/run_meta.json",
+        "sha256": "a9829eaa57a336363fb94c999ae95c3bdb881dff98e99a2ca496c7d51078fab5"
+      },
+      {
+        "bytes": 951,
+        "path": "legs/leg_31/summary.txt",
+        "sha256": "9606c6dc3d756e1bdb0403b6698cd1484b24e380274ebda0a0be458197b3d016"
+      },
+      {
+        "bytes": 209109,
+        "path": "legs/leg_31/tearsheet.png",
+        "sha256": "bd9ebe9253cc88160727489812932b0d46b8bf4b56101b9b9fc3b792863963bf"
+      },
+      {
+        "bytes": 951,
+        "path": "legs/leg_31/tearsheet.txt",
+        "sha256": "9606c6dc3d756e1bdb0403b6698cd1484b24e380274ebda0a0be458197b3d016"
+      },
+      {
+        "bytes": 3721,
+        "path": "legs/leg_32/corporate_actions.parquet",
+        "sha256": "b326c7ab4cf09da69ae53d627cc50492dd08da897b3ac403c9ce59eeaec9ab16"
+      },
+      {
+        "bytes": 3739,
+        "path": "legs/leg_32/equity.parquet",
+        "sha256": "9142956b58d854ba5b415c873a6b64ba6e4b04fe6b9ac71e482820a974019a13"
+      },
+      {
+        "bytes": 13293,
+        "path": "legs/leg_32/fills.parquet",
+        "sha256": "f872ab6afa3b6d5dced266506415a7e8dacf4543edac6a74697518fa70a168a8"
+      },
+      {
+        "bytes": 6479,
+        "path": "legs/leg_32/financing.parquet",
+        "sha256": "b87eba653f886861e734d8d32429061b14dcbcbb6af3260586350eac9d13729d"
+      },
+      {
+        "bytes": 3222,
+        "path": "legs/leg_32/funding.parquet",
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      {
+        "bytes": 8559,
+        "path": "legs/leg_32/orders.parquet",
+        "sha256": "88f4318022b1f687c86523fd9593e4a7366d655d8f4352be96745a058cf22f62"
+      },
+      {
+        "bytes": 58933,
+        "path": "legs/leg_32/positions.parquet",
+        "sha256": "3239a4f69896fde02a2dc432f800540a5ce3cb2086189dd8834aed6b56862d4b"
+      },
+      {
+        "bytes": 1558,
+        "path": "legs/leg_32/run_meta.json",
+        "sha256": "b2a3d1b70ffeceeed0f6dcd27d7cf23fe92f670dd4b07074e6b23ff97cc53b33"
+      },
+      {
+        "bytes": 951,
+        "path": "legs/leg_32/summary.txt",
+        "sha256": "b4b599455bbc5692ba8112514b52378ef93dbe9ee4fc29260f1a410b3d80220d"
+      },
+      {
+        "bytes": 198888,
+        "path": "legs/leg_32/tearsheet.png",
+        "sha256": "bebf5e12ee82ef9c7d667813bbe33fa5f45c798b27c9aae899634c9e75d1a9b9"
+      },
+      {
+        "bytes": 951,
+        "path": "legs/leg_32/tearsheet.txt",
+        "sha256": "b4b599455bbc5692ba8112514b52378ef93dbe9ee4fc29260f1a410b3d80220d"
+      },
+      {
+        "bytes": 3721,
+        "path": "legs/leg_33/corporate_actions.parquet",
+        "sha256": "b326c7ab4cf09da69ae53d627cc50492dd08da897b3ac403c9ce59eeaec9ab16"
+      },
+      {
+        "bytes": 3738,
+        "path": "legs/leg_33/equity.parquet",
+        "sha256": "1e5861c2661c708c0b906c74edc8d69fb18750c704c76506b83a311995849dd3"
+      },
+      {
+        "bytes": 13010,
+        "path": "legs/leg_33/fills.parquet",
+        "sha256": "fa10eb965a5a1605d6bb926eb96251a6360bf56b2d4b6204417868ffcaa45afd"
+      },
+      {
+        "bytes": 6479,
+        "path": "legs/leg_33/financing.parquet",
+        "sha256": "b87eba653f886861e734d8d32429061b14dcbcbb6af3260586350eac9d13729d"
+      },
+      {
+        "bytes": 3222,
+        "path": "legs/leg_33/funding.parquet",
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      {
+        "bytes": 8604,
+        "path": "legs/leg_33/orders.parquet",
+        "sha256": "dae29c599ba709543bad8fe8afc4469863799fb78738bc877973b2b57a333eb9"
+      },
+      {
+        "bytes": 60049,
+        "path": "legs/leg_33/positions.parquet",
+        "sha256": "94c8d23ae5671f1a72f5a113d48e23bb3ac24639fb4c06724ac210f34528cfd6"
+      },
+      {
+        "bytes": 1557,
+        "path": "legs/leg_33/run_meta.json",
+        "sha256": "f44ac26ac3cc6a8dd2f397ddc7ae83ca982b71b2938212b30b34ff694396a276"
+      },
+      {
+        "bytes": 958,
+        "path": "legs/leg_33/summary.txt",
+        "sha256": "88f81df1235e605bb4a5e03d19a5231dd8dccf303a45110cf3e45bd65ed316a8"
+      },
+      {
+        "bytes": 195546,
+        "path": "legs/leg_33/tearsheet.png",
+        "sha256": "122aa923701796b86f87a8b215191b0f8c8acd4e99f0c68e77ed45bffc6000b8"
+      },
+      {
+        "bytes": 958,
+        "path": "legs/leg_33/tearsheet.txt",
+        "sha256": "88f81df1235e605bb4a5e03d19a5231dd8dccf303a45110cf3e45bd65ed316a8"
+      },
+      {
+        "bytes": 3721,
+        "path": "legs/leg_34/corporate_actions.parquet",
+        "sha256": "b326c7ab4cf09da69ae53d627cc50492dd08da897b3ac403c9ce59eeaec9ab16"
+      },
+      {
+        "bytes": 3739,
+        "path": "legs/leg_34/equity.parquet",
+        "sha256": "4f06ccba62a79748b37be630590acd764e5236bd97464b522ab1923d70ce4c6f"
+      },
+      {
+        "bytes": 12297,
+        "path": "legs/leg_34/fills.parquet",
+        "sha256": "83daf34de64f0050a6cfd89d6ba02b4521ead7fe47ca1e94181d5814fa6c7550"
+      },
+      {
+        "bytes": 6479,
+        "path": "legs/leg_34/financing.parquet",
+        "sha256": "b87eba653f886861e734d8d32429061b14dcbcbb6af3260586350eac9d13729d"
+      },
+      {
+        "bytes": 3222,
+        "path": "legs/leg_34/funding.parquet",
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      {
+        "bytes": 8575,
+        "path": "legs/leg_34/orders.parquet",
+        "sha256": "99d8a4245b434c1ea4d00bb8cf08fdaedc763427d9bf7296765a5b9f956097aa"
+      },
+      {
+        "bytes": 60926,
+        "path": "legs/leg_34/positions.parquet",
+        "sha256": "805b3ee2d15d1426ca4c9cdf33131740d6522eada5e002a46454ad1d8bc51bdd"
+      },
+      {
+        "bytes": 1556,
+        "path": "legs/leg_34/run_meta.json",
+        "sha256": "7fae311e935bc3de29ea19bf93acc6b7ca2a12f76f2c8a9c00d3f757aa444d8a"
+      },
+      {
+        "bytes": 958,
+        "path": "legs/leg_34/summary.txt",
+        "sha256": "1030b2be60befdd4a42e124e224236fe5bc977c3428a199f77654da7d0d2156c"
+      },
+      {
+        "bytes": 213867,
+        "path": "legs/leg_34/tearsheet.png",
+        "sha256": "2aa66838c1dbc97b170c452019ca76a14a85cf39668b9486dc643ff955098ddb"
+      },
+      {
+        "bytes": 958,
+        "path": "legs/leg_34/tearsheet.txt",
+        "sha256": "1030b2be60befdd4a42e124e224236fe5bc977c3428a199f77654da7d0d2156c"
+      },
+      {
+        "bytes": 3721,
+        "path": "legs/leg_35/corporate_actions.parquet",
+        "sha256": "b326c7ab4cf09da69ae53d627cc50492dd08da897b3ac403c9ce59eeaec9ab16"
+      },
+      {
+        "bytes": 3736,
+        "path": "legs/leg_35/equity.parquet",
+        "sha256": "555c140db4fae8990671a6bbc3d61b65a29279cbf13f2379f931202f02771796"
+      },
+      {
+        "bytes": 13079,
+        "path": "legs/leg_35/fills.parquet",
+        "sha256": "529a320cb403e538690dc13fa21c2be74001600e43b657c1cc3ed904600a9f15"
+      },
+      {
+        "bytes": 6479,
+        "path": "legs/leg_35/financing.parquet",
+        "sha256": "b87eba653f886861e734d8d32429061b14dcbcbb6af3260586350eac9d13729d"
+      },
+      {
+        "bytes": 3222,
+        "path": "legs/leg_35/funding.parquet",
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      {
+        "bytes": 8621,
+        "path": "legs/leg_35/orders.parquet",
+        "sha256": "9d1759153de4ad48ab78dccfb134f480924fd7f87b5b70bd82aa1aef2401563d"
+      },
+      {
+        "bytes": 59857,
+        "path": "legs/leg_35/positions.parquet",
+        "sha256": "904b26a2fcddd5fe5b00cbd3095da481ce64f0dc95bdc66e7027a87351f1343b"
+      },
+      {
+        "bytes": 1558,
+        "path": "legs/leg_35/run_meta.json",
+        "sha256": "8f6d6a6463ba78881fb9f91cffbca137ceec4a563cf36884afff888bb830847e"
+      },
+      {
+        "bytes": 958,
+        "path": "legs/leg_35/summary.txt",
+        "sha256": "2783932f65dee269292b89aa4efc0711ff9365e1790ef4da7641009dc8f6ee20"
+      },
+      {
+        "bytes": 195346,
+        "path": "legs/leg_35/tearsheet.png",
+        "sha256": "065a82fe9364aaa7faa0d52489a530a4526c513b3f44cdd67c79372ce4be3388"
+      },
+      {
+        "bytes": 958,
+        "path": "legs/leg_35/tearsheet.txt",
+        "sha256": "2783932f65dee269292b89aa4efc0711ff9365e1790ef4da7641009dc8f6ee20"
+      },
+      {
+        "bytes": 3721,
+        "path": "legs/leg_36/corporate_actions.parquet",
+        "sha256": "b326c7ab4cf09da69ae53d627cc50492dd08da897b3ac403c9ce59eeaec9ab16"
+      },
+      {
+        "bytes": 3737,
+        "path": "legs/leg_36/equity.parquet",
+        "sha256": "d9d1193de5031e8864c7d3884c2a600bf113969f50aec346d1227cc78d29704b"
+      },
+      {
+        "bytes": 12011,
+        "path": "legs/leg_36/fills.parquet",
+        "sha256": "d581f57a95d2d504e8682ea3ba0a56b00b26c3bbb901365c29deef6bc2d55e96"
+      },
+      {
+        "bytes": 6479,
+        "path": "legs/leg_36/financing.parquet",
+        "sha256": "b87eba653f886861e734d8d32429061b14dcbcbb6af3260586350eac9d13729d"
+      },
+      {
+        "bytes": 3222,
+        "path": "legs/leg_36/funding.parquet",
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      {
+        "bytes": 8539,
+        "path": "legs/leg_36/orders.parquet",
+        "sha256": "94453b8585c613ab797eba78b0562a64923d0a9b9e2f0bd953e497b3e46b227b"
+      },
+      {
+        "bytes": 58934,
+        "path": "legs/leg_36/positions.parquet",
+        "sha256": "62aeef8787fa040aad4c7756a5d64b362435f2f774fca98f3c2e4c19644832ab"
+      },
+      {
+        "bytes": 1557,
+        "path": "legs/leg_36/run_meta.json",
+        "sha256": "6ae2e2078be80cfef7fa6a15c93278896bbedb9beefee29f1d4d75381b9968e0"
+      },
+      {
+        "bytes": 950,
+        "path": "legs/leg_36/summary.txt",
+        "sha256": "85d3dae37be49b5cade2ae406bdf65eae99f38af6de9a64ab34001854bf3edda"
+      },
+      {
+        "bytes": 204282,
+        "path": "legs/leg_36/tearsheet.png",
+        "sha256": "1f4a3debbc9c5bba0d2e5cfa9211e1a33df72dbea1a4719392be426b4aed3814"
+      },
+      {
+        "bytes": 950,
+        "path": "legs/leg_36/tearsheet.txt",
+        "sha256": "85d3dae37be49b5cade2ae406bdf65eae99f38af6de9a64ab34001854bf3edda"
+      },
+      {
+        "bytes": 3721,
+        "path": "legs/leg_37/corporate_actions.parquet",
+        "sha256": "b326c7ab4cf09da69ae53d627cc50492dd08da897b3ac403c9ce59eeaec9ab16"
+      },
+      {
+        "bytes": 3737,
+        "path": "legs/leg_37/equity.parquet",
+        "sha256": "0498d7d533b27daf5866a31b76c63fc4d112e3c432a3b5a745d5d69860912cb8"
+      },
+      {
+        "bytes": 13131,
+        "path": "legs/leg_37/fills.parquet",
+        "sha256": "2c8234a6564088957d1a30ef4576bf19e9828e95bf126891e836f9259c26462d"
+      },
+      {
+        "bytes": 6479,
+        "path": "legs/leg_37/financing.parquet",
+        "sha256": "b87eba653f886861e734d8d32429061b14dcbcbb6af3260586350eac9d13729d"
+      },
+      {
+        "bytes": 3222,
+        "path": "legs/leg_37/funding.parquet",
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      {
+        "bytes": 8518,
+        "path": "legs/leg_37/orders.parquet",
+        "sha256": "5e7369783e1555cc5059106bace7f500f96af6ca050dd4b02e1d107e36345ddb"
+      },
+      {
+        "bytes": 61209,
+        "path": "legs/leg_37/positions.parquet",
+        "sha256": "1e408a2d427c199d12d6ad786e287bd0dc83647481520be873ddd4ce2f2db5ec"
+      },
+      {
+        "bytes": 1557,
+        "path": "legs/leg_37/run_meta.json",
+        "sha256": "23ec75c7ffe72f8d25212b2f5db9d3973cbef4c3f5174c74249ac0c575064d5e"
+      },
+      {
+        "bytes": 958,
+        "path": "legs/leg_37/summary.txt",
+        "sha256": "eea03300c23980f4832bc4e5762bc20948ab20a40939bfdf9de37119dc8cd144"
+      },
+      {
+        "bytes": 192679,
+        "path": "legs/leg_37/tearsheet.png",
+        "sha256": "61ee202721f8e0fdff733b2dbfebb475cb68d8a81d30a418e0b8c9e8d3bdafbe"
+      },
+      {
+        "bytes": 958,
+        "path": "legs/leg_37/tearsheet.txt",
+        "sha256": "eea03300c23980f4832bc4e5762bc20948ab20a40939bfdf9de37119dc8cd144"
+      },
+      {
+        "bytes": 3721,
+        "path": "legs/leg_38/corporate_actions.parquet",
+        "sha256": "b326c7ab4cf09da69ae53d627cc50492dd08da897b3ac403c9ce59eeaec9ab16"
+      },
+      {
+        "bytes": 3737,
+        "path": "legs/leg_38/equity.parquet",
+        "sha256": "cc6a62a98a32cb848ce57eeddfb13c7230ac0f90654476505cfb0c04214cced3"
+      },
+      {
+        "bytes": 14040,
+        "path": "legs/leg_38/fills.parquet",
+        "sha256": "e185d2445b7ed92e25dcab0346048b64f50afd3087c97d5edda65fa92a742496"
+      },
+      {
+        "bytes": 6479,
+        "path": "legs/leg_38/financing.parquet",
+        "sha256": "b87eba653f886861e734d8d32429061b14dcbcbb6af3260586350eac9d13729d"
+      },
+      {
+        "bytes": 3222,
+        "path": "legs/leg_38/funding.parquet",
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      {
+        "bytes": 8569,
+        "path": "legs/leg_38/orders.parquet",
+        "sha256": "276300bfaaae2b59620503870c9189c370c47125abebf4e495090a0d26d68b7e"
+      },
+      {
+        "bytes": 60413,
+        "path": "legs/leg_38/positions.parquet",
+        "sha256": "be484ff28037aebc711aa54237d5e5f7c0ad33cdc4255ed853ff1bb4699c9aed"
+      },
+      {
+        "bytes": 1557,
+        "path": "legs/leg_38/run_meta.json",
+        "sha256": "348a6762b871bbe069649ad7e287c9e3c10e36eea209c0b015c7ddc1f5245c23"
+      },
+      {
+        "bytes": 958,
+        "path": "legs/leg_38/summary.txt",
+        "sha256": "2692705e8fcbb452b2395894d35460107066977d321548602ef513bf0a70623c"
+      },
+      {
+        "bytes": 190427,
+        "path": "legs/leg_38/tearsheet.png",
+        "sha256": "a55fc368bde831f88c2440c37384e1bc5f54cbadf83c12dc84133ebeb2729e25"
+      },
+      {
+        "bytes": 958,
+        "path": "legs/leg_38/tearsheet.txt",
+        "sha256": "2692705e8fcbb452b2395894d35460107066977d321548602ef513bf0a70623c"
+      },
+      {
+        "bytes": 3721,
+        "path": "legs/leg_39/corporate_actions.parquet",
+        "sha256": "b326c7ab4cf09da69ae53d627cc50492dd08da897b3ac403c9ce59eeaec9ab16"
+      },
+      {
+        "bytes": 3737,
+        "path": "legs/leg_39/equity.parquet",
+        "sha256": "324ede130c21b4e8a888719a65fd98eced59320cc2a871ef2c066d740687570d"
+      },
+      {
+        "bytes": 11806,
+        "path": "legs/leg_39/fills.parquet",
+        "sha256": "a41ebb99060a6fe2681285ddd84c45c137670095ee267ddca39cab767c369d9e"
+      },
+      {
+        "bytes": 6479,
+        "path": "legs/leg_39/financing.parquet",
+        "sha256": "b87eba653f886861e734d8d32429061b14dcbcbb6af3260586350eac9d13729d"
+      },
+      {
+        "bytes": 3222,
+        "path": "legs/leg_39/funding.parquet",
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      {
+        "bytes": 8417,
+        "path": "legs/leg_39/orders.parquet",
+        "sha256": "40b9be9018a4110076cdd6173abcf275b10fe5bfca19187a20b09c822b45e304"
+      },
+      {
+        "bytes": 58732,
+        "path": "legs/leg_39/positions.parquet",
+        "sha256": "0876bd0d6f52ca2df15b82251b963cfac9b655501ab5d30f7de3d86562ccb337"
+      },
+      {
+        "bytes": 1558,
+        "path": "legs/leg_39/run_meta.json",
+        "sha256": "849431cbcbb86c5552a3cf0415ae88a892c4518a48359c315b6caada71dd2b37"
+      },
+      {
+        "bytes": 950,
+        "path": "legs/leg_39/summary.txt",
+        "sha256": "2ed500e667e660cfa1a94914ca1f92245cd525550d24d4dd9fd40ea5582fddfb"
+      },
+      {
+        "bytes": 210495,
+        "path": "legs/leg_39/tearsheet.png",
+        "sha256": "56c69efc05963c76aeb20f0da5a4925edf194ba687be5c244ac1cb8306643230"
+      },
+      {
+        "bytes": 950,
+        "path": "legs/leg_39/tearsheet.txt",
+        "sha256": "2ed500e667e660cfa1a94914ca1f92245cd525550d24d4dd9fd40ea5582fddfb"
+      },
+      {
+        "bytes": 3721,
+        "path": "legs/leg_40/corporate_actions.parquet",
+        "sha256": "b326c7ab4cf09da69ae53d627cc50492dd08da897b3ac403c9ce59eeaec9ab16"
+      },
+      {
+        "bytes": 3737,
+        "path": "legs/leg_40/equity.parquet",
+        "sha256": "cf46e30b9412a23f791fe0e3d25b0298af0cedb6df9826efb47fb988d219cfac"
+      },
+      {
+        "bytes": 12794,
+        "path": "legs/leg_40/fills.parquet",
+        "sha256": "eb63bf11776827696ac0d379a517810b7eee685788bdfa285e4dafe89b989d98"
+      },
+      {
+        "bytes": 6479,
+        "path": "legs/leg_40/financing.parquet",
+        "sha256": "b87eba653f886861e734d8d32429061b14dcbcbb6af3260586350eac9d13729d"
+      },
+      {
+        "bytes": 3222,
+        "path": "legs/leg_40/funding.parquet",
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      {
+        "bytes": 8609,
+        "path": "legs/leg_40/orders.parquet",
+        "sha256": "a534686626d846288988d2dac64309f199b1402fde49fe5a9b1d602d6566c897"
+      },
+      {
+        "bytes": 59212,
+        "path": "legs/leg_40/positions.parquet",
+        "sha256": "e19a6bd81c80b162785dcb73a807586498cc29f06a32b6fbbee8dcbecfa9b467"
+      },
+      {
+        "bytes": 1557,
+        "path": "legs/leg_40/run_meta.json",
+        "sha256": "28207d2ff39c070bbf10c87252a7a96b47958e3aaa9e69b435e330df38677d9d"
+      },
+      {
+        "bytes": 958,
+        "path": "legs/leg_40/summary.txt",
+        "sha256": "4b6bc86665a51e7ab2cde0ffe28b6d9dcaebe2030194fd49caf0ab38bdefe23c"
+      },
+      {
+        "bytes": 190447,
+        "path": "legs/leg_40/tearsheet.png",
+        "sha256": "7d9720b0a40e66da86892d8483afbed74f04019413a5fda9caedb58c1ec361da"
+      },
+      {
+        "bytes": 958,
+        "path": "legs/leg_40/tearsheet.txt",
+        "sha256": "4b6bc86665a51e7ab2cde0ffe28b6d9dcaebe2030194fd49caf0ab38bdefe23c"
+      },
+      {
+        "bytes": 3721,
+        "path": "legs/leg_41/corporate_actions.parquet",
+        "sha256": "b326c7ab4cf09da69ae53d627cc50492dd08da897b3ac403c9ce59eeaec9ab16"
+      },
+      {
+        "bytes": 2118,
+        "path": "legs/leg_41/equity.parquet",
+        "sha256": "5ddf10e24e24fc0f7fae75c81d0f183af6c3d1f8548beb2e726a1a47f9d5486d"
+      },
+      {
+        "bytes": 8218,
+        "path": "legs/leg_41/fills.parquet",
+        "sha256": "0d49b4f07464df96672d2dae322fbe4de0f29468ddaa56400a7b4a1145504da8"
+      },
+      {
+        "bytes": 6479,
+        "path": "legs/leg_41/financing.parquet",
+        "sha256": "b87eba653f886861e734d8d32429061b14dcbcbb6af3260586350eac9d13729d"
+      },
+      {
+        "bytes": 3222,
+        "path": "legs/leg_41/funding.parquet",
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      {
+        "bytes": 5698,
+        "path": "legs/leg_41/orders.parquet",
+        "sha256": "3dd8a28cda46b71e4f3dfdc736704e99c057d2a82f7daa606a5be600b97e1402"
+      },
+      {
+        "bytes": 14636,
+        "path": "legs/leg_41/positions.parquet",
+        "sha256": "07204812617146fec412a14ba9bd4b5af3926e61f6ace4c9eac2cb9a24700308"
+      },
+      {
+        "bytes": 1552,
+        "path": "legs/leg_41/run_meta.json",
+        "sha256": "9591f29a350b74b3bc4212907e79d6a23cb443f39d5233c96cacbd22d76715ee"
+      },
+      {
+        "bytes": 956,
+        "path": "legs/leg_41/summary.txt",
+        "sha256": "a31fd77b891a9e6f24f54ad7271b9487de63d9ea475dd3666aba5e7728a6e0f9"
+      },
+      {
+        "bytes": 165235,
+        "path": "legs/leg_41/tearsheet.png",
+        "sha256": "4cded470989c58b2555b5e153a503d7f2dc86e8a64aa2f97a027cbdb7e171a7f"
+      },
+      {
+        "bytes": 956,
+        "path": "legs/leg_41/tearsheet.txt",
+        "sha256": "a31fd77b891a9e6f24f54ad7271b9487de63d9ea475dd3666aba5e7728a6e0f9"
+      },
+      {
+        "bytes": 1135,
+        "path": "summary.txt",
+        "sha256": "9a7d446f790ef6478ed8d0fe7a354a07ad6530c3c49107009f25685122bb4b24"
+      },
+      {
+        "bytes": 414233,
+        "path": "tearsheet.png",
+        "sha256": "a9aff166b01ddbd996cbd8df603ac7260d429a50a888c1b58fd7bfbd82943f3e"
+      },
+      {
+        "bytes": 954,
+        "path": "tearsheet.txt",
+        "sha256": "ba700490ec3795473ec6db32e393b3f4c77f5ab0523489cc0bb0233e86d74356"
+      },
+      {
+        "bytes": 70971,
+        "path": "walkforward.json",
+        "sha256": "f844254606971b4d9ef41cf6c9c79a13babbb53af409c0e89bf5e3a2c0d08696"
+      }
+    ],
+    "tree_content_hash": "sha256:a762189de3793b854ffd9912e4134ab8fe9ac572c46e4a772bc77ab3d2a74b13"
+  },
+  "rights_and_release": {
+    "fresh_reacquisition_is_not_claimed_by_this_manifest": true,
+    "hash_manifest_may_be_published": true,
+    "market_source": "Yahoo Finance chart endpoint; adjusted daily ETF bars",
+    "private_snapshot_may_be_published": false,
+    "public_bundle_must_withhold_private_snapshot_and_reference_rows": true,
+    "raw_or_normalized_rows_publication_authorized": false
+  },
+  "schema": "canli.alphac-alphatrend-upstream-replay-manifest.v1",
+  "status": "SEALED_LOCAL_INPUTS_AND_REFERENCE_OUTPUT_RIGHTS_WITHHELD"
+}

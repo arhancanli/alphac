@@ -9,7 +9,7 @@ import json
 import sys
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, Final
+from typing import Any, Final, cast
 
 import pandas as pd
 
@@ -38,6 +38,7 @@ from collect_repurchase_item703_documents import (
 OUT: Final = Path(
     "artifacts/feasibility/repurchase_issuance_flow/item703/label_seal.json"
 )
+BLIND_PACKET: Final = Path("artifacts/labeling/repurchase_item703_blind")
 PARSER_SOURCE: Final = Path("scripts/parse_repurchase_item703_documents.py")
 PARSER_RESULT: Final = Path(
     "artifacts/feasibility/repurchase_issuance_flow/item703/parser_result.json"
@@ -56,6 +57,44 @@ LABEL_COLUMNS: Final = (
     "expected_total_row",
     "label_notes",
 )
+ATTESTATION_TRUE_FIELDS: Final = (
+    "independent_of_parser_development",
+    "machine_outputs_not_consulted",
+    "prices_and_returns_not_consulted",
+    "all_labels_are_personally_reviewed",
+)
+
+
+def packet_content_hash(payload: dict[str, Any]) -> str:
+    body = {key: value for key, value in payload.items() if key != "content_hash"}
+    encoded = json.dumps(body, sort_keys=True, separators=(",", ":")).encode()
+    return "sha256:" + hashlib.sha256(encoded).hexdigest()
+
+
+def validate_blind_packet(packet_dir: Path) -> dict[str, Any]:
+    manifest_path = packet_dir / "manifest.json"
+    manifest = cast(dict[str, Any], json.loads(manifest_path.read_text(encoding="utf-8")))
+    if manifest.get("content_hash") != packet_content_hash(manifest):
+        raise ValueError("blind Item 703 packet manifest content hash mismatch")
+    if manifest.get("prediction_blind") is not True:
+        raise ValueError("blind Item 703 packet does not attest prediction blindness")
+    packet_files = cast(dict[str, Any], manifest.get("packet_files", {}))
+    expected = {
+        "reviewer_labels_sha256": packet_dir / "reviewer_labels.csv",
+        "reviewer_attestation_template_sha256": packet_dir / "reviewer_attestation.json",
+    }
+    for field, path in expected.items():
+        if not path.is_file() or packet_files.get(field) != file_sha256(path):
+            raise ValueError(f"blind Item 703 packet {field} mismatch")
+    expected_documents = cast(dict[str, str], packet_files.get("documents", {}))
+    documents_dir = packet_dir / "documents"
+    actual_documents = {path.name: path for path in documents_dir.glob("*.html")}
+    if set(actual_documents) != set(expected_documents):
+        raise ValueError("blind Item 703 packet document set mismatch")
+    for name, expected_hash in expected_documents.items():
+        if file_sha256(actual_documents[name]) != expected_hash:
+            raise ValueError(f"blind Item 703 packet document hash mismatch: {name}")
+    return manifest
 
 
 def parse_bool(value: object, field: str) -> bool:
@@ -104,6 +143,17 @@ def validate_labels(labels: pd.DataFrame, sample: pd.DataFrame) -> pd.DataFrame:
     return actual.sort_values("accession").reset_index(drop=True)
 
 
+def validate_attestation(path: Path) -> dict[str, Any]:
+    attestation = cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+    for field in ("reviewer_name", "reviewer_role", "completed_at"):
+        if not str(attestation.get(field, "")).strip():
+            raise ValueError(f"reviewer attestation requires {field}")
+    for field in ATTESTATION_TRUE_FIELDS:
+        if attestation.get(field) is not True:
+            raise ValueError(f"reviewer attestation requires {field}=true")
+    return attestation
+
+
 def require_sources(args: argparse.Namespace) -> tuple[dict[str, Any], dict[str, Any]]:
     manifest = json.loads(Path(args.manifest_result).read_text())
     documents = json.loads(Path(args.documents_result).read_text())
@@ -140,11 +190,15 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         raise FileExistsError("label seal already exists and is immutable")
     if Path(args.parser_result).exists() or any(parse_parts.glob("parse-*.parquet")):
         raise RuntimeError("refusing to seal labels after parser output exists")
+    blind_packet_dir = Path(args.blind_packet_dir)
+    blind_packet = validate_blind_packet(blind_packet_dir)
     manifest, documents = require_sources(args)
     parser_source = Path(args.parser_source)
     if not parser_source.exists():
         raise RuntimeError("frozen parser source must exist before labels are sealed")
     labels_path = Path(args.labels)
+    attestation_path = Path(args.attestation)
+    attestation = validate_attestation(attestation_path)
     labels = validate_labels(
         pd.read_csv(labels_path, keep_default_na=False),
         pd.read_parquet(args.label_sample),
@@ -157,8 +211,17 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "stage": "blind_labels_sealed_before_parser_evaluation",
         "source_manifest_hash": manifest["content_hash"],
         "source_documents_parts_sha256": documents["parts_sha256"],
+        "blind_packet_manifest_sha256": file_sha256(blind_packet_dir / "manifest.json"),
+        "blind_packet_content_hash": blind_packet["content_hash"],
         "label_sample_sha256": manifest["label_sample_sha256"],
         "labels_sha256": file_sha256(labels_path),
+        "reviewer": {
+            "name": attestation["reviewer_name"],
+            "role": attestation["reviewer_role"],
+            "completed_at": attestation["completed_at"],
+        },
+        "attestation_sha256": file_sha256(attestation_path),
+        "prediction_blind_attested": True,
         "parser_source_sha256": file_sha256(parser_source),
         "label_count": len(labels),
         "positive_count": int(labels["has_item703_table"].sum()),
@@ -179,6 +242,8 @@ def main() -> int:
     parser.add_argument("--manifest-result", default=str(MANIFEST_RESULT))
     parser.add_argument("--label-sample", default=str(LABEL_SAMPLE))
     parser.add_argument("--labels", default=str(LABEL_TEMPLATE))
+    parser.add_argument("--attestation", required=True)
+    parser.add_argument("--blind-packet-dir", default=str(BLIND_PACKET))
     parser.add_argument("--document-parts", default=str(DOCUMENT_PARTS))
     parser.add_argument("--documents-result", default=str(DOCUMENT_RESULT))
     parser.add_argument("--parser-source", default=str(PARSER_SOURCE))

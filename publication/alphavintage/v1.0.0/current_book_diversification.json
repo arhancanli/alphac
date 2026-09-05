@@ -1,0 +1,466 @@
+{
+  "author": "Arhan Canli",
+  "bootstrap": {
+    "primary_block_days": 63,
+    "results": {
+      "126": {
+        "average_pairwise_correlation": {
+          "mean": 0.02442988518373505,
+          "mean_monte_carlo_standard_error": 0.0001539262354610785,
+          "upper_95": 0.049101463814902435,
+          "upper_95_monte_carlo_standard_error": 0.00031154200394775997
+        },
+        "block_days": 126,
+        "maximum_pairwise_upper_95": 0.30860831669605204,
+        "pairs": [
+          {
+            "mean": 0.038585286054870535,
+            "mean_monte_carlo_standard_error": 0.0002918861041157187,
+            "pair": [
+              "alphavintage_live",
+              "crypto_carry_wk"
+            ],
+            "upper_95": 0.08281314951150373,
+            "upper_95_monte_carlo_standard_error": 0.00042883591773373934
+          },
+          {
+            "mean": -0.0650604488483633,
+            "mean_monte_carlo_standard_error": 0.00028332682199059113,
+            "pair": [
+              "alphavintage_live",
+              "k30_dn_63"
+            ],
+            "upper_95": -0.021654041050425222,
+            "upper_95_monte_carlo_standard_error": 0.0004182676181053727
+          },
+          {
+            "mean": -0.04445147101818446,
+            "mean_monte_carlo_standard_error": 0.00016775663643255872,
+            "pair": [
+              "alphavintage_live",
+              "managed_futures"
+            ],
+            "upper_95": -0.01623284071794473,
+            "upper_95_monte_carlo_standard_error": 0.0003281463488280583
+          },
+          {
+            "mean": -0.014325898872112334,
+            "mean_monte_carlo_standard_error": 0.0002659884685044078,
+            "pair": [
+              "crypto_carry_wk",
+              "k30_dn_63"
+            ],
+            "upper_95": 0.03053409858390047,
+            "upper_95_monte_carlo_standard_error": 0.0006107792048559548
+          },
+          {
+            "mean": 0.019306401484374295,
+            "mean_monte_carlo_standard_error": 0.00016473258947180967,
+            "pair": [
+              "crypto_carry_wk",
+              "managed_futures"
+            ],
+            "upper_95": 0.0457662740604827,
+            "upper_95_monte_carlo_standard_error": 0.00030829240729223693
+          },
+          {
+            "mean": 0.21252544230182557,
+            "mean_monte_carlo_standard_error": 0.0005959140795990798,
+            "pair": [
+              "k30_dn_63",
+              "managed_futures"
+            ],
+            "upper_95": 0.30860831669605204,
+            "upper_95_monte_carlo_standard_error": 0.0010459133675904749
+          }
+        ],
+        "samples": 10000
+      },
+      "21": {
+        "average_pairwise_correlation": {
+          "mean": 0.024519509483841764,
+          "mean_monte_carlo_standard_error": 0.00014690119112283802,
+          "upper_95": 0.04842714027183097,
+          "upper_95_monte_carlo_standard_error": 0.00030615655724262756
+        },
+        "block_days": 21,
+        "maximum_pairwise_upper_95": 0.2861132518564261,
+        "pairs": [
+          {
+            "mean": 0.038409926463836744,
+            "mean_monte_carlo_standard_error": 0.0003163479082474496,
+            "pair": [
+              "alphavintage_live",
+              "crypto_carry_wk"
+            ],
+            "upper_95": 0.08843095209436658,
+            "upper_95_monte_carlo_standard_error": 0.0006692573346779988
+          },
+          {
+            "mean": -0.06326363016222798,
+            "mean_monte_carlo_standard_error": 0.00029692065545122275,
+            "pair": [
+              "alphavintage_live",
+              "k30_dn_63"
+            ],
+            "upper_95": -0.01550658919771931,
+            "upper_95_monte_carlo_standard_error": 0.000587999544898296
+          },
+          {
+            "mean": -0.04455716473675957,
+            "mean_monte_carlo_standard_error": 0.0002710164070877974,
+            "pair": [
+              "alphavintage_live",
+              "managed_futures"
+            ],
+            "upper_95": -0.00030529388630379836,
+            "upper_95_monte_carlo_standard_error": 0.0006447690168377961
+          },
+          {
+            "mean": -0.0132039112689435,
+            "mean_monte_carlo_standard_error": 0.0002693735648708581,
+            "pair": [
+              "crypto_carry_wk",
+              "k30_dn_63"
+            ],
+            "upper_95": 0.030483735231380357,
+            "upper_95_monte_carlo_standard_error": 0.0005692753300751418
+          },
+          {
+            "mean": 0.01975605431726005,
+            "mean_monte_carlo_standard_error": 0.00026486164545546666,
+            "pair": [
+              "crypto_carry_wk",
+              "managed_futures"
+            ],
+            "upper_95": 0.06393230818030932,
+            "upper_95_monte_carlo_standard_error": 0.0005224395756083548
+          },
+          {
+            "mean": 0.2099757822898848,
+            "mean_monte_carlo_standard_error": 0.00046651922975205433,
+            "pair": [
+              "k30_dn_63",
+              "managed_futures"
+            ],
+            "upper_95": 0.2861132518564261,
+            "upper_95_monte_carlo_standard_error": 0.0008831445156083725
+          }
+        ],
+        "samples": 10000
+      },
+      "63": {
+        "average_pairwise_correlation": {
+          "mean": 0.02471117640925481,
+          "mean_monte_carlo_standard_error": 0.00014563710928238205,
+          "upper_95": 0.04870778381377487,
+          "upper_95_monte_carlo_standard_error": 0.0003018259675840908
+        },
+        "block_days": 63,
+        "maximum_pairwise_upper_95": 0.3025187934584474,
+        "pairs": [
+          {
+            "mean": 0.03835719624234438,
+            "mean_monte_carlo_standard_error": 0.00029567961322473984,
+            "pair": [
+              "alphavintage_live",
+              "crypto_carry_wk"
+            ],
+            "upper_95": 0.08413552704096826,
+            "upper_95_monte_carlo_standard_error": 0.0005109694804647266
+          },
+          {
+            "mean": -0.0636970540464584,
+            "mean_monte_carlo_standard_error": 0.0002680463402844279,
+            "pair": [
+              "alphavintage_live",
+              "k30_dn_63"
+            ],
+            "upper_95": -0.02175482734918728,
+            "upper_95_monte_carlo_standard_error": 0.0005215891564686898
+          },
+          {
+            "mean": -0.04407115865088599,
+            "mean_monte_carlo_standard_error": 0.00021868567565769552,
+            "pair": [
+              "alphavintage_live",
+              "managed_futures"
+            ],
+            "upper_95": -0.007065622537040492,
+            "upper_95_monte_carlo_standard_error": 0.00043953834921574904
+          },
+          {
+            "mean": -0.013538217773214447,
+            "mean_monte_carlo_standard_error": 0.00028076686949667003,
+            "pair": [
+              "crypto_carry_wk",
+              "k30_dn_63"
+            ],
+            "upper_95": 0.032010277235734866,
+            "upper_95_monte_carlo_standard_error": 0.0005781353226417735
+          },
+          {
+            "mean": 0.01953296893944611,
+            "mean_monte_carlo_standard_error": 0.00021800957565461005,
+            "pair": [
+              "crypto_carry_wk",
+              "managed_futures"
+            ],
+            "upper_95": 0.05549148102265489,
+            "upper_95_monte_carlo_standard_error": 0.0005116253265741609
+          },
+          {
+            "mean": 0.21168332374429719,
+            "mean_monte_carlo_standard_error": 0.0005430656418177872,
+            "pair": [
+              "k30_dn_63",
+              "managed_futures"
+            ],
+            "upper_95": 0.3025187934584474,
+            "upper_95_monte_carlo_standard_error": 0.0010987850646376751
+          }
+        ],
+        "samples": 10000
+      }
+    },
+    "samples": 10000,
+    "seed": 20260825,
+    "sensitivity_block_days": [
+      21,
+      63,
+      126
+    ]
+  },
+  "capital_kind": "RESEARCH_SIMULATION_OVER_PAPER_SPECIFICATION",
+  "claim_boundary": "Retrospective diversification measurement of the exact current four-sleeve research specification and strategic overlay. It does not establish live-forward correlation, alpha, the 1.5 Sharpe objective, a reweighting decision, or retroactive admission. The return data were known before this protocol and the research window ends before the broker-reconciled forward record begins.",
+  "configuration": {
+    "aggregation": {
+      "book_level_drawdown_ladder": null,
+      "book_level_vol_target_ann": null,
+      "claim_boundary": "Constituent strategies own their internal sizing. ALPHAC combines their realized returns at the committed fixed-weight schedule and adds the separately disclosed strategic overlay. It does not apply a second book-level volatility target or drawdown ladder.",
+      "missing_mark_policy": "ZERO_CONTRIBUTION_ON_MISSING_DAILY_SLEEVE_MARK",
+      "scheme": "fixed",
+      "strategic_overlay_is_book_vol_scaled": false
+    },
+    "live_fingerprint": "sha256:fe82c4eeed742289bfcfee5d39856ee2bb8ca9cfe209bcc7e34abff98553706d",
+    "sleeves": [
+      "alphavintage_live",
+      "crypto_carry_wk",
+      "k30_dn_63",
+      "managed_futures"
+    ],
+    "strategic_tilt_mix": {
+      "BTC": 0.5,
+      "SPY": 0.5
+    },
+    "strategic_tilt_pct": 0.1,
+    "weights": {
+      "alphavintage_live": 0.25,
+      "crypto_carry_wk": 0.25,
+      "k30_dn_63": 0.25,
+      "managed_futures": 0.25
+    }
+  },
+  "content_hash": "sha256:af7297d7ec13bf8b7e3812fd78d52faaff7c0de28dd9979dd11db045ed535f52",
+  "failed_establishment_dimensions": [
+    "RESEARCH_CURVES_END_BEFORE_BROKER_RECONCILED_FORWARD_RECORD",
+    "RETURN_DATA_WERE_KNOWN_BEFORE_PROTOCOL",
+    "NO_HUMAN_INDEPENDENT_REPLICATION",
+    "NO_CRISIS_COMPLETE_FORWARD_CORRELATION_WINDOW"
+  ],
+  "governing_comparison": {
+    "active_v7_book_average_correlation_delta_gate_exclusive": 0.0,
+    "active_v7_candidate_average_correlation_gate": 0.0,
+    "active_v7_has_no_global_average_correlation_point_gate": true,
+    "average_pairwise_correlation_objective": -0.03,
+    "average_pairwise_correlation_upper_95_gate": 0.1,
+    "average_pairwise_upper_95": 0.04870778381377487,
+    "checks": {
+      "average_pairwise_upper_95": true,
+      "minimum_correlation_observations": true,
+      "ordinary_pairwise_point": true,
+      "ordinary_pairwise_upper_95": true,
+      "stressed_pairwise_design": true
+    },
+    "current_sleeves": 4,
+    "distance_from_average_correlation_objective": 0.05482741429360785,
+    "existing_sleeves_are_not_retroactively_adjudicated": true,
+    "historical_v6_global_average_correlation_point_check": false,
+    "historical_v6_global_average_correlation_point_gate": 0.0,
+    "live_forward_diversification_established": false,
+    "maximum_pairwise_upper_95": 0.3025187934584474,
+    "meets_active_correlation_objective": false,
+    "minimum_new_sleeves": 10,
+    "ordinary_pairwise_correlation_point_gate": 0.35,
+    "ordinary_pairwise_correlation_upper_95_gate": 0.35,
+    "passes_all_active_v7_risk_comparisons": true,
+    "stressed_pairwise_correlation_gate": 0.5,
+    "stressed_pairwise_design_value_not_observed": 0.5,
+    "target_total_sleeves": 14
+  },
+  "observed": {
+    "average_pairwise_correlation": 0.024827414293607856,
+    "correlation_matrix": [
+      [
+        1.0,
+        0.039263626988088135,
+        -0.06196020201990138,
+        -0.04438969572740401
+      ],
+      [
+        0.039263626988088135,
+        1.0,
+        -0.013369983642823956,
+        0.019668844934251493
+      ],
+      [
+        -0.061960202019901385,
+        -0.013369983642823957,
+        0.9999999999999999,
+        0.20975189522943685
+      ],
+      [
+        -0.04438969572740402,
+        0.019668844934251493,
+        0.20975189522943685,
+        1.0
+      ]
+    ],
+    "diversification_ratio_sleeves_only": 1.8153132626773805,
+    "effective_independent_sleeves_participation_ratio": 3.8988014966039604,
+    "exact_component_reconstruction_max_abs_error": 0.0,
+    "full_book_sharpe_research_simulation_not_forward_evidence": 1.7846281534351103,
+    "marginal_book_sharpe_research_diagnostics": {
+      "alphavintage_live": {
+        "book_sharpe_with_sleeve": 1.7846281534351103,
+        "book_sharpe_with_sleeve_replaced_by_cash": 1.7908857094735895,
+        "marginal_book_sharpe_delta": -0.006257556038479217
+      },
+      "crypto_carry_wk": {
+        "book_sharpe_with_sleeve": 1.7846281534351103,
+        "book_sharpe_with_sleeve_replaced_by_cash": 1.2520345246277234,
+        "marginal_book_sharpe_delta": 0.5325936288073869
+      },
+      "k30_dn_63": {
+        "book_sharpe_with_sleeve": 1.7846281534351103,
+        "book_sharpe_with_sleeve_replaced_by_cash": 1.637795681607975,
+        "marginal_book_sharpe_delta": 0.1468324718271352
+      },
+      "managed_futures": {
+        "book_sharpe_with_sleeve": 1.7846281534351103,
+        "book_sharpe_with_sleeve_replaced_by_cash": 1.875465970548092,
+        "marginal_book_sharpe_delta": -0.09083781711298178
+      }
+    },
+    "maximum_pairwise_correlation": 0.20975189522943685,
+    "pairwise_correlations": [
+      {
+        "correlation": 0.039263626988088135,
+        "pair": [
+          "alphavintage_live",
+          "crypto_carry_wk"
+        ]
+      },
+      {
+        "correlation": -0.06196020201990138,
+        "pair": [
+          "alphavintage_live",
+          "k30_dn_63"
+        ]
+      },
+      {
+        "correlation": -0.04438969572740401,
+        "pair": [
+          "alphavintage_live",
+          "managed_futures"
+        ]
+      },
+      {
+        "correlation": -0.013369983642823956,
+        "pair": [
+          "crypto_carry_wk",
+          "k30_dn_63"
+        ]
+      },
+      {
+        "correlation": 0.019668844934251493,
+        "pair": [
+          "crypto_carry_wk",
+          "managed_futures"
+        ]
+      },
+      {
+        "correlation": 0.20975189522943685,
+        "pair": [
+          "k30_dn_63",
+          "managed_futures"
+        ]
+      }
+    ]
+  },
+  "schema": "canli.alphac-current-book-diversification-study.v1",
+  "source_bindings": {
+    "admission_contract": {
+      "path": "config/sleeve_admission_contract.json",
+      "sha256": "6bc72c1f47675b4e14897e1ba3aad6e56aba9b5f013a7b9bae57f930e8d3b8b6"
+    },
+    "book_implementation": {
+      "path": "src/alphaforge/portfolio/book.py",
+      "sha256": "f63f2bc83ddf739f7e91c0ba8b2cd095984f26148461b56ddbb7a69c8ccd9c07"
+    },
+    "current_book_drawdown": {
+      "content_hash": "sha256:bf0759012873386a4d049f35eaae0677a3fd7e98a62c3ea09f44b6a6215e7c23",
+      "path": "artifacts/analysis/current_book_drawdown/result.json",
+      "sha256": "8c99fd77e1212ff9bdd7ddb66df7bb5b04b170673c8687b0de3ff4b6c6b70ce7"
+    },
+    "drawdown_implementation": {
+      "path": "scripts/analyze_current_book_drawdown.py",
+      "sha256": "24d93be7cb2a6d6c1a64a7e219b4c1bc5c7d00b6d48ec2123ef0068ee6cd526e"
+    },
+    "legacy_v6_admission_contract": {
+      "path": "config/archive/sleeve_admission_contract_v6_superseded.json",
+      "sha256": "5f628a44ae73ed9c412b225ac9dc56c4e59c1bc0645e2ebde251501e938b9932"
+    },
+    "live_contract": {
+      "path": "config/live_change_contract.json",
+      "sha256": "a28ea309bf15253229f9cfa11da4c786323076d1aef6c83ffda5d7615338793d"
+    },
+    "market_factor_implementation": {
+      "path": "src/alphaforge/portfolio/market_factor.py",
+      "sha256": "da817e6e953224b3602f20b4cb32339bf94f632453d883f8e3896a609685f6f0"
+    },
+    "market_factor_source_corpus": {
+      "files": 33,
+      "manifest_sha256": "06d47fe170a286b0cdaebee50fbadda56f29cce88c076a7655792b3bdd518dc8"
+    },
+    "paper_state_builder": {
+      "path": "scripts/paper_trading_state.py",
+      "sha256": "ac41a0480a860a8ca08588ce2e0f36e6db6b68c6ac6980816ee44b35738311c5"
+    },
+    "protocol": {
+      "path": "docs/design/CURRENT_BOOK_DIVERSIFICATION_STUDY_PROTOCOL.md",
+      "sha256": "be16f0091ad5d1ea210384cde26d8ae040ad3106b354acedb50213a1ed3f7fdf"
+    },
+    "sleeve_equity_inputs": {
+      "artifacts/probe/cpi_surprise_size/equity.parquet": "d277c63ddf2bed6e9314aa863dbbf6adf3f4adb55bd89e8166aee4a19aab415f",
+      "artifacts/walkforward/crypto_carry_wk/equity.parquet": "37598579af6f34892e40902e2a357e4b07993b3e572012a1da311f7e91798a2a",
+      "artifacts/walkforward/k30_dn_63/equity.parquet": "76f82c8df3726f049144d7699c0f13069db6a1e0d1f1e4570babd8d82a85cfc9",
+      "artifacts/walkforward/managed_futures/equity.parquet": "870c87827ac72ab8759d77d511a1207da44d5ec679ee24eb18bb1cdd0aeb75b3"
+    },
+    "study_implementation": {
+      "path": "scripts/analyze_current_book_diversification.py",
+      "sha256": "8309f592bfca5c1c011d60013bc0a65bdd4fb6bf83f26347c817151fb71aa6f2"
+    }
+  },
+  "status": "CURRENT_COMPOSITION_DIVERSIFICATION_OBJECTIVE_GAP_RESEARCH_ONLY",
+  "trial_accounting": {
+    "classification": "RETROSPECTIVE_EXISTING_RETURN_RISK_REMEASUREMENT",
+    "hypothesis_identities_spent": 0,
+    "return_data_were_known_before_protocol": true
+  },
+  "window": {
+    "calendar_rows": 1061,
+    "end": "2026-06-01",
+    "start": "2023-07-07"
+  }
+}

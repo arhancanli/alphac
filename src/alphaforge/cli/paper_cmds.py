@@ -43,7 +43,10 @@ if TYPE_CHECKING:
     from alphaforge.backtest.engine import StrategyContext
     from alphaforge.config.settings import Settings
     from alphaforge.core.instruments import Instrument, InstrumentStore
+    from alphaforge.core.types import AssetClass
     from alphaforge.data.store.reader import PITDataReader
+    from alphaforge.data.universe.builder import UniverseBuilder
+    from alphaforge.data.universe.store import UniverseStore
     from alphaforge.live.loop import CostInputSource, LiveLoop
     from alphaforge.live.store import TradingStore
 
@@ -163,6 +166,58 @@ class _InstrumentsAdapter:
             if inst is not None and inst.asset_class == self._asset_class:
                 out[iid] = inst
         return out
+
+
+class _UniverseRefresherAdapter:
+    """The live loop's monthly universe refresh, scoped to this profile's asset class.
+
+    FOUND 2026-09-05: ``LiveLoop`` had carried the ``universe_refresher`` seam and its
+    self-healing catch-up since 2026-08-11, and ``_build_loop`` never passed one, so the
+    crypto sleeve kept trading the cross-section selected on 2026-06-01. This adapter is a
+    thin wrapper over the SAME asset-class-scoped :class:`UniverseBuilder` the ``universe
+    rebuild`` CLI uses, so a live refresh and a hand-run rebuild write identical rows.
+
+    ``newest_rebalance_ms`` reads the newest ``effective_from`` among THIS class's members
+    only: the store is shared across asset classes, and a fresh equity rebalance must not
+    mask a stale crypto membership. ``None`` means "cannot tell", which the loop treats as
+    not stale (it never rebuilds on a guess).
+    """
+
+    __slots__ = ("_asset_class", "_builder", "_instruments", "_start_ms", "_universe")
+
+    def __init__(
+        self,
+        builder: UniverseBuilder,
+        universe: UniverseStore,
+        instruments: InstrumentStore,
+        asset_class: AssetClass,
+        *,
+        start_ms: Ms,
+    ) -> None:
+        self._builder = builder
+        self._universe = universe
+        self._instruments = instruments
+        self._asset_class = asset_class
+        self._start_ms = start_ms
+
+    def refresh(self, *, cycle_ts: Ms) -> None:
+        # Same window the CLI uses: the configured backfill start through the cycle, with
+        # ``now=cycle_ts`` so no rebalance instant after the decision bar is taken early.
+        self._builder.rebuild(start=self._start_ms, end=cycle_ts, now=cycle_ts)
+
+    def newest_rebalance_ms(self) -> Ms | None:
+        tbl = self._universe.read_intervals()
+        ids: list[str] = tbl.column("instrument_id").to_pylist()
+        froms: list[int] = tbl.column("effective_from").cast(pa.int64()).to_pylist()
+        if not ids:
+            return None
+        known = {
+            inst.instrument_id
+            for inst in self._instruments.all_known(as_of=max(froms))
+            if inst.asset_class is self._asset_class
+        }
+        newest = [f for iid, f in zip(ids, froms, strict=True) if iid in known]
+        return max(newest) if newest else None
 
 
 #: Blend-weight cache TTL. The Rank-IC blend weights are EWMA-smoothed (halflife
@@ -566,6 +621,7 @@ def _build_loop(settings: Settings, *, cash: float) -> _LoopBundle:
     """
     import alphaforge.features.library  # noqa: F401  (registers the factor library)
     from alphaforge.backtest.engine import LakeCostInputs
+    from alphaforge.config.sleeve import sleeve_for
     from alphaforge.core.instruments import InstrumentStore
     from alphaforge.costs import TransactionCostModel
     from alphaforge.data.ingest.backfill import BackfillJob
@@ -576,6 +632,7 @@ def _build_loop(settings: Settings, *, cash: float) -> _LoopBundle:
     from alphaforge.data.store.lake import LakePaths
     from alphaforge.data.store.reader import PITDataReader
     from alphaforge.data.store.writer import LakeWriter
+    from alphaforge.data.universe.builder import UniverseBuilder
     from alphaforge.data.universe.store import UniverseStore
     from alphaforge.execution.order_manager import OrderManager
     from alphaforge.execution.paper import CCXTOrderBookSource, PaperBroker
@@ -695,6 +752,16 @@ def _build_loop(settings: Settings, *, cash: float) -> _LoopBundle:
     # One instruments factory, shared by the loop (what to trade) and the updater
     # (what to ingest) so the per-cycle ingest is exactly the current universe.
     instr_factory = _InstrumentsAdapter(universe, instruments, asset_class)
+    # The monthly universe refresh, finally wired (see _UniverseRefresherAdapter). The loop
+    # calls it on the month boundary and whenever the stored membership predates the current
+    # month, so a missed rebalance repairs itself on the next healthy cycle.
+    universe_refresher = _UniverseRefresherAdapter(
+        UniverseBuilder(
+            reader, instruments, universe, settings.universe,
+            rank_tf=sleeve_for(asset_class).anchor_tf, asset_class=asset_class,
+        ),
+        universe, instruments, asset_class, start_ms=settings.data.backfill_start_ms,
+    )
     # FUNDING (2026-08-06). The live account never booked funding: `Ledger.apply_funding` was
     # reachable only from the backtest engine, so a funding-CARRY sleeve ran without the one
     # cashflow that IS its edge (~51% of its lifetime backtest PnL). PIT by construction --
@@ -774,6 +841,7 @@ def _build_loop(settings: Settings, *, cash: float) -> _LoopBundle:
         cost_inputs_factory=_CostInputsFactory(reader, LakeCostInputs.WARMUP_MS),
         ctx_factory=_ContextFactory(reader, settings.data.timeframe),
         instruments_factory=instr_factory,
+        universe_refresher=universe_refresher,
         initial_cash=cash,
         funding_source=_funding_source,
     )

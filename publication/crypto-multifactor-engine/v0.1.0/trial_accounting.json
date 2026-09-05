@@ -1,0 +1,566 @@
+{
+  "complete_recorded_union_extracted": true,
+  "distinct_recorded_hypothesis_identities": 7,
+  "every_identity_packet_complete": false,
+  "global_ledger": {
+    "path": "config/trial_accounting.json",
+    "sha256": "f15af7c989aded5da6c5259a7f7e5587377ab33977b5cd3c5b2395a84ea45043"
+  },
+  "identities": [
+    {
+      "candidate_match_is_verified": true,
+      "candidate_public_papers": [],
+      "completion_assessment": {
+        "blockers": [
+          {
+            "code": "IDENTITY_PREREGISTRATION_AND_ORIGINAL_ENVIRONMENT_NOT_BOUND",
+            "evidence": [
+              {
+                "path": "artifacts/research/crypto_multifactor_family.json",
+                "sha256": "3c6e476d4aa25f1730ffa9eeba880bebc65571121aed83069dd3a0342c1accab"
+              },
+              {
+                "path": "artifacts/grand_backtest/20260616T143620Z/experiments.jsonl",
+                "sha256": "04f997da63092be453c339e0bf25b5ea700f11f79eeadb8d2c48d312ac3dae8f"
+              },
+              {
+                "path": "artifacts/grand_backtest/20260616T143620Z/matrix.json",
+                "sha256": "786c580d478f7912aa61886e8b1271faa706fe723ff35423ef1c27d7018ba32c"
+              }
+            ],
+            "finding": "The canonical family audit binds this identity to its immutable ledger measurement, but does not bind an identity-level preregistration, original code commit, runner hash, lockfile, and input snapshot. Those missing historical fields cannot be reconstructed from the family summary.",
+            "required_section": "preregistration_and_hashes"
+          },
+          {
+            "code": "IDENTITY_LEVEL_DECISION_PACKET_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/research/crypto_multifactor_family.json",
+                "sha256": "3c6e476d4aa25f1730ffa9eeba880bebc65571121aed83069dd3a0342c1accab"
+              }
+            ],
+            "finding": "The family-level admission status is FAIL_NO_DEPLOY; it is not a preserved identity-level gate decision under the complete packet contract.",
+            "required_section": "admission_or_kill_decision"
+          }
+        ],
+        "config_hash": "044b83e02462d8c3",
+        "evidence_grade": "artifact_bound",
+        "family_audit": "artifacts/research/crypto_multifactor_family.json",
+        "status": "AUDITED_NOT_CURRENTLY_COMPLETABLE"
+      },
+      "config_hash": "044b83e02462d8c3",
+      "coverage_status": "VERIFIED_INCOMPLETE_IDENTITY_PACKET",
+      "family_paper_binding_status": "VERIFIED_TAXONOMY_BINDING",
+      "first_recorded_at": "2026-06-16T14:36:20.756000+00:00",
+      "hypothesis_key": "3cbf5402fe6a1b30",
+      "identity_packet_content_hash": "sha256:349ff3f2c45238f2fdebfcb019edc4810e2ebd179d136f1292ad246f3b7e5db9",
+      "identity_packet_status": "INCOMPLETE_BACKFILL_REQUIRED",
+      "label": "crypto multi-factor / ML gate",
+      "ledger_profile": "20260616T143620Z",
+      "ledger_source_path": "artifacts/grand_backtest/20260616T143620Z/experiments.jsonl",
+      "measurement": {
+        "annualized_sharpe": 0.0424294798491386,
+        "kurtosis": 14.278577775968984,
+        "observations": 1612,
+        "skew": -1.020991686631781
+      },
+      "missing_sections": [
+        "preregistration_and_hashes",
+        "point_in_time_data_and_survivorship_controls",
+        "execution_and_cost_model",
+        "result_uncertainty_stress_capacity_and_diversification",
+        "admission_or_kill_decision",
+        "code_environment_and_reproduction"
+      ],
+      "research_family_key": "crypto_multifactor_engine",
+      "research_family_title": "Crypto multi-factor allocator, regime, and ML engine",
+      "sleeve_context": "AlphaForge research",
+      "verified_family_paper_path": "/research/crypto-multifactor-engine-lineage.md",
+      "verified_packet_path": "/glassbox/trial-packets/3cbf5402fe6a1b30.json",
+      "verified_sections": [
+        "identity_and_authorship",
+        "economic_mechanism_and_falsifiable_hypothesis",
+        "literature_and_overlap_decision",
+        "family_and_union_trial_accounting",
+        "machine_readable_packet_and_stable_public_paper"
+      ]
+    },
+    {
+      "candidate_match_is_verified": true,
+      "candidate_public_papers": [],
+      "completion_assessment": {
+        "blockers": [
+          {
+            "code": "IDENTITY_PREREGISTRATION_AND_ORIGINAL_ENVIRONMENT_NOT_BOUND",
+            "evidence": [
+              {
+                "path": "artifacts/research/crypto_multifactor_family.json",
+                "sha256": "3c6e476d4aa25f1730ffa9eeba880bebc65571121aed83069dd3a0342c1accab"
+              },
+              {
+                "path": "artifacts/grand_backtest/20260616T143620Z/experiments.jsonl",
+                "sha256": "04f997da63092be453c339e0bf25b5ea700f11f79eeadb8d2c48d312ac3dae8f"
+              },
+              {
+                "path": "artifacts/grand_backtest/20260616T143620Z/matrix.json",
+                "sha256": "786c580d478f7912aa61886e8b1271faa706fe723ff35423ef1c27d7018ba32c"
+              }
+            ],
+            "finding": "The canonical family audit binds this identity to its immutable ledger measurement, but does not bind an identity-level preregistration, original code commit, runner hash, lockfile, and input snapshot. Those missing historical fields cannot be reconstructed from the family summary.",
+            "required_section": "preregistration_and_hashes"
+          },
+          {
+            "code": "IDENTITY_LEVEL_DECISION_PACKET_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/research/crypto_multifactor_family.json",
+                "sha256": "3c6e476d4aa25f1730ffa9eeba880bebc65571121aed83069dd3a0342c1accab"
+              }
+            ],
+            "finding": "The family-level admission status is FAIL_NO_DEPLOY; it is not a preserved identity-level gate decision under the complete packet contract.",
+            "required_section": "admission_or_kill_decision"
+          }
+        ],
+        "config_hash": "be593e1f171757fa",
+        "evidence_grade": "artifact_bound",
+        "family_audit": "artifacts/research/crypto_multifactor_family.json",
+        "status": "AUDITED_NOT_CURRENTLY_COMPLETABLE"
+      },
+      "config_hash": "be593e1f171757fa",
+      "coverage_status": "VERIFIED_INCOMPLETE_IDENTITY_PACKET",
+      "family_paper_binding_status": "VERIFIED_TAXONOMY_BINDING",
+      "first_recorded_at": "2026-06-16T14:36:20.756000+00:00",
+      "hypothesis_key": "5492af5ff2c88119",
+      "identity_packet_content_hash": "sha256:0645ce7a00e24f546c8b8fc5fc85805ab044772b6e46dfde4809ee37e0a7f355",
+      "identity_packet_status": "INCOMPLETE_BACKFILL_REQUIRED",
+      "label": "crypto multi-factor / regime gate",
+      "ledger_profile": "20260616T143620Z",
+      "ledger_source_path": "artifacts/grand_backtest/20260616T143620Z/experiments.jsonl",
+      "measurement": {
+        "annualized_sharpe": 0.0424294798491386,
+        "kurtosis": 14.278577775968984,
+        "observations": 1612,
+        "skew": -1.020991686631781
+      },
+      "missing_sections": [
+        "preregistration_and_hashes",
+        "point_in_time_data_and_survivorship_controls",
+        "execution_and_cost_model",
+        "result_uncertainty_stress_capacity_and_diversification",
+        "admission_or_kill_decision",
+        "code_environment_and_reproduction"
+      ],
+      "research_family_key": "crypto_multifactor_engine",
+      "research_family_title": "Crypto multi-factor allocator, regime, and ML engine",
+      "sleeve_context": "AlphaForge research",
+      "verified_family_paper_path": "/research/crypto-multifactor-engine-lineage.md",
+      "verified_packet_path": "/glassbox/trial-packets/5492af5ff2c88119.json",
+      "verified_sections": [
+        "identity_and_authorship",
+        "economic_mechanism_and_falsifiable_hypothesis",
+        "literature_and_overlap_decision",
+        "family_and_union_trial_accounting",
+        "machine_readable_packet_and_stable_public_paper"
+      ]
+    },
+    {
+      "candidate_match_is_verified": true,
+      "candidate_public_papers": [],
+      "completion_assessment": {
+        "blockers": [
+          {
+            "code": "IDENTITY_PREREGISTRATION_AND_ORIGINAL_ENVIRONMENT_NOT_BOUND",
+            "evidence": [
+              {
+                "path": "artifacts/research/crypto_multifactor_family.json",
+                "sha256": "3c6e476d4aa25f1730ffa9eeba880bebc65571121aed83069dd3a0342c1accab"
+              },
+              {
+                "path": "artifacts/grand_backtest/20260616T143620Z/experiments.jsonl",
+                "sha256": "04f997da63092be453c339e0bf25b5ea700f11f79eeadb8d2c48d312ac3dae8f"
+              },
+              {
+                "path": "artifacts/grand_backtest/20260616T143620Z/matrix.json",
+                "sha256": "786c580d478f7912aa61886e8b1271faa706fe723ff35423ef1c27d7018ba32c"
+              }
+            ],
+            "finding": "The canonical family audit binds this identity to its immutable ledger measurement, but does not bind an identity-level preregistration, original code commit, runner hash, lockfile, and input snapshot. Those missing historical fields cannot be reconstructed from the family summary.",
+            "required_section": "preregistration_and_hashes"
+          },
+          {
+            "code": "IDENTITY_LEVEL_DECISION_PACKET_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/research/crypto_multifactor_family.json",
+                "sha256": "3c6e476d4aa25f1730ffa9eeba880bebc65571121aed83069dd3a0342c1accab"
+              }
+            ],
+            "finding": "The family-level admission status is FAIL_NO_DEPLOY; it is not a preserved identity-level gate decision under the complete packet contract.",
+            "required_section": "admission_or_kill_decision"
+          }
+        ],
+        "config_hash": "66ef480f12412ab3",
+        "evidence_grade": "artifact_bound",
+        "family_audit": "artifacts/research/crypto_multifactor_family.json",
+        "status": "AUDITED_NOT_CURRENTLY_COMPLETABLE"
+      },
+      "config_hash": "66ef480f12412ab3",
+      "coverage_status": "VERIFIED_INCOMPLETE_IDENTITY_PACKET",
+      "family_paper_binding_status": "VERIFIED_TAXONOMY_BINDING",
+      "first_recorded_at": "2026-06-16T14:36:20.756000+00:00",
+      "hypothesis_key": "6dd9335545a59286",
+      "identity_packet_content_hash": "sha256:84eb93ea768112f64bafea199ca2f088acb41841432336672e5876491f1156f9",
+      "identity_packet_status": "INCOMPLETE_BACKFILL_REQUIRED",
+      "label": "crypto multi-factor / 10 bp no-trade band",
+      "ledger_profile": "20260616T143620Z",
+      "ledger_source_path": "artifacts/grand_backtest/20260616T143620Z/experiments.jsonl",
+      "measurement": {
+        "annualized_sharpe": -0.1994291526209954,
+        "kurtosis": 16.65788306647896,
+        "observations": 1612,
+        "skew": -1.2531898890561783
+      },
+      "missing_sections": [
+        "preregistration_and_hashes",
+        "point_in_time_data_and_survivorship_controls",
+        "execution_and_cost_model",
+        "result_uncertainty_stress_capacity_and_diversification",
+        "admission_or_kill_decision",
+        "code_environment_and_reproduction"
+      ],
+      "research_family_key": "crypto_multifactor_engine",
+      "research_family_title": "Crypto multi-factor allocator, regime, and ML engine",
+      "sleeve_context": "AlphaForge research",
+      "verified_family_paper_path": "/research/crypto-multifactor-engine-lineage.md",
+      "verified_packet_path": "/glassbox/trial-packets/6dd9335545a59286.json",
+      "verified_sections": [
+        "identity_and_authorship",
+        "economic_mechanism_and_falsifiable_hypothesis",
+        "literature_and_overlap_decision",
+        "family_and_union_trial_accounting",
+        "machine_readable_packet_and_stable_public_paper"
+      ]
+    },
+    {
+      "candidate_match_is_verified": true,
+      "candidate_public_papers": [],
+      "completion_assessment": {
+        "blockers": [
+          {
+            "code": "IDENTITY_PREREGISTRATION_AND_ORIGINAL_ENVIRONMENT_NOT_BOUND",
+            "evidence": [
+              {
+                "path": "artifacts/research/crypto_multifactor_family.json",
+                "sha256": "3c6e476d4aa25f1730ffa9eeba880bebc65571121aed83069dd3a0342c1accab"
+              },
+              {
+                "path": "artifacts/grand_backtest/20260616T143620Z/experiments.jsonl",
+                "sha256": "04f997da63092be453c339e0bf25b5ea700f11f79eeadb8d2c48d312ac3dae8f"
+              },
+              {
+                "path": "artifacts/grand_backtest/20260616T143620Z/matrix.json",
+                "sha256": "786c580d478f7912aa61886e8b1271faa706fe723ff35423ef1c27d7018ba32c"
+              }
+            ],
+            "finding": "The canonical family audit binds this identity to its immutable ledger measurement, but does not bind an identity-level preregistration, original code commit, runner hash, lockfile, and input snapshot. Those missing historical fields cannot be reconstructed from the family summary.",
+            "required_section": "preregistration_and_hashes"
+          },
+          {
+            "code": "IDENTITY_LEVEL_DECISION_PACKET_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/research/crypto_multifactor_family.json",
+                "sha256": "3c6e476d4aa25f1730ffa9eeba880bebc65571121aed83069dd3a0342c1accab"
+              }
+            ],
+            "finding": "The family-level admission status is FAIL_NO_DEPLOY; it is not a preserved identity-level gate decision under the complete packet contract.",
+            "required_section": "admission_or_kill_decision"
+          }
+        ],
+        "config_hash": "177482b4f3d6365d",
+        "evidence_grade": "artifact_bound",
+        "family_audit": "artifacts/research/crypto_multifactor_family.json",
+        "status": "AUDITED_NOT_CURRENTLY_COMPLETABLE"
+      },
+      "config_hash": "177482b4f3d6365d",
+      "coverage_status": "VERIFIED_INCOMPLETE_IDENTITY_PACKET",
+      "family_paper_binding_status": "VERIFIED_TAXONOMY_BINDING",
+      "first_recorded_at": "2026-06-16T14:36:20.756000+00:00",
+      "hypothesis_key": "9de7d18ead3c4555",
+      "identity_packet_content_hash": "sha256:b97460ed198580c0f784b99d98279d121953ca990ef989aeb447789731c648fc",
+      "identity_packet_status": "INCOMPLETE_BACKFILL_REQUIRED",
+      "label": "crypto multi-factor / ML + regime",
+      "ledger_profile": "20260616T143620Z",
+      "ledger_source_path": "artifacts/grand_backtest/20260616T143620Z/experiments.jsonl",
+      "measurement": {
+        "annualized_sharpe": 0.0424294798491386,
+        "kurtosis": 14.278577775968984,
+        "observations": 1612,
+        "skew": -1.020991686631781
+      },
+      "missing_sections": [
+        "preregistration_and_hashes",
+        "point_in_time_data_and_survivorship_controls",
+        "execution_and_cost_model",
+        "result_uncertainty_stress_capacity_and_diversification",
+        "admission_or_kill_decision",
+        "code_environment_and_reproduction"
+      ],
+      "research_family_key": "crypto_multifactor_engine",
+      "research_family_title": "Crypto multi-factor allocator, regime, and ML engine",
+      "sleeve_context": "AlphaForge research",
+      "verified_family_paper_path": "/research/crypto-multifactor-engine-lineage.md",
+      "verified_packet_path": "/glassbox/trial-packets/9de7d18ead3c4555.json",
+      "verified_sections": [
+        "identity_and_authorship",
+        "economic_mechanism_and_falsifiable_hypothesis",
+        "literature_and_overlap_decision",
+        "family_and_union_trial_accounting",
+        "machine_readable_packet_and_stable_public_paper"
+      ]
+    },
+    {
+      "candidate_match_is_verified": true,
+      "candidate_public_papers": [],
+      "completion_assessment": {
+        "blockers": [
+          {
+            "code": "IDENTITY_PREREGISTRATION_AND_ORIGINAL_ENVIRONMENT_NOT_BOUND",
+            "evidence": [
+              {
+                "path": "artifacts/research/crypto_multifactor_family.json",
+                "sha256": "3c6e476d4aa25f1730ffa9eeba880bebc65571121aed83069dd3a0342c1accab"
+              },
+              {
+                "path": "artifacts/grand_backtest/20260616T143620Z/experiments.jsonl",
+                "sha256": "04f997da63092be453c339e0bf25b5ea700f11f79eeadb8d2c48d312ac3dae8f"
+              },
+              {
+                "path": "artifacts/grand_backtest/20260616T143620Z/matrix.json",
+                "sha256": "786c580d478f7912aa61886e8b1271faa706fe723ff35423ef1c27d7018ba32c"
+              }
+            ],
+            "finding": "The canonical family audit binds this identity to its immutable ledger measurement, but does not bind an identity-level preregistration, original code commit, runner hash, lockfile, and input snapshot. Those missing historical fields cannot be reconstructed from the family summary.",
+            "required_section": "preregistration_and_hashes"
+          },
+          {
+            "code": "IDENTITY_LEVEL_DECISION_PACKET_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/research/crypto_multifactor_family.json",
+                "sha256": "3c6e476d4aa25f1730ffa9eeba880bebc65571121aed83069dd3a0342c1accab"
+              }
+            ],
+            "finding": "The family-level admission status is FAIL_NO_DEPLOY; it is not a preserved identity-level gate decision under the complete packet contract.",
+            "required_section": "admission_or_kill_decision"
+          }
+        ],
+        "config_hash": "6b93ad3e8b8fbfcc",
+        "evidence_grade": "artifact_bound",
+        "family_audit": "artifacts/research/crypto_multifactor_family.json",
+        "status": "AUDITED_NOT_CURRENTLY_COMPLETABLE"
+      },
+      "config_hash": "6b93ad3e8b8fbfcc",
+      "coverage_status": "VERIFIED_INCOMPLETE_IDENTITY_PACKET",
+      "family_paper_binding_status": "VERIFIED_TAXONOMY_BINDING",
+      "first_recorded_at": "2026-06-16T14:36:20.756000+00:00",
+      "hypothesis_key": "b0265c76f5298f2a",
+      "identity_packet_content_hash": "sha256:9a100b13ebfca145411af3833965cbe9ba56e3a52d2f4688a17165886cbdce4e",
+      "identity_packet_status": "INCOMPLETE_BACKFILL_REQUIRED",
+      "label": "crypto multi-factor / daily rebalance",
+      "ledger_profile": "20260616T143620Z",
+      "ledger_source_path": "artifacts/grand_backtest/20260616T143620Z/experiments.jsonl",
+      "measurement": {
+        "annualized_sharpe": -0.7900923793610648,
+        "kurtosis": 8.474607073109137,
+        "observations": 1612,
+        "skew": -0.6540175792922273
+      },
+      "missing_sections": [
+        "preregistration_and_hashes",
+        "point_in_time_data_and_survivorship_controls",
+        "execution_and_cost_model",
+        "result_uncertainty_stress_capacity_and_diversification",
+        "admission_or_kill_decision",
+        "code_environment_and_reproduction"
+      ],
+      "research_family_key": "crypto_multifactor_engine",
+      "research_family_title": "Crypto multi-factor allocator, regime, and ML engine",
+      "sleeve_context": "AlphaForge research",
+      "verified_family_paper_path": "/research/crypto-multifactor-engine-lineage.md",
+      "verified_packet_path": "/glassbox/trial-packets/b0265c76f5298f2a.json",
+      "verified_sections": [
+        "identity_and_authorship",
+        "economic_mechanism_and_falsifiable_hypothesis",
+        "literature_and_overlap_decision",
+        "family_and_union_trial_accounting",
+        "machine_readable_packet_and_stable_public_paper"
+      ]
+    },
+    {
+      "candidate_match_is_verified": true,
+      "candidate_public_papers": [],
+      "completion_assessment": {
+        "blockers": [
+          {
+            "code": "IDENTITY_PREREGISTRATION_AND_ORIGINAL_ENVIRONMENT_NOT_BOUND",
+            "evidence": [
+              {
+                "path": "artifacts/research/crypto_multifactor_family.json",
+                "sha256": "3c6e476d4aa25f1730ffa9eeba880bebc65571121aed83069dd3a0342c1accab"
+              },
+              {
+                "path": "artifacts/grand_backtest/20260616T143620Z/experiments.jsonl",
+                "sha256": "04f997da63092be453c339e0bf25b5ea700f11f79eeadb8d2c48d312ac3dae8f"
+              },
+              {
+                "path": "artifacts/grand_backtest/20260616T143620Z/matrix.json",
+                "sha256": "786c580d478f7912aa61886e8b1271faa706fe723ff35423ef1c27d7018ba32c"
+              }
+            ],
+            "finding": "The canonical family audit binds this identity to its immutable ledger measurement, but does not bind an identity-level preregistration, original code commit, runner hash, lockfile, and input snapshot. Those missing historical fields cannot be reconstructed from the family summary.",
+            "required_section": "preregistration_and_hashes"
+          },
+          {
+            "code": "IDENTITY_LEVEL_DECISION_PACKET_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/research/crypto_multifactor_family.json",
+                "sha256": "3c6e476d4aa25f1730ffa9eeba880bebc65571121aed83069dd3a0342c1accab"
+              }
+            ],
+            "finding": "The family-level admission status is FAIL_NO_DEPLOY; it is not a preserved identity-level gate decision under the complete packet contract.",
+            "required_section": "admission_or_kill_decision"
+          }
+        ],
+        "config_hash": "771aab2510bfea24",
+        "evidence_grade": "artifact_bound",
+        "family_audit": "artifacts/research/crypto_multifactor_family.json",
+        "status": "AUDITED_NOT_CURRENTLY_COMPLETABLE"
+      },
+      "config_hash": "771aab2510bfea24",
+      "coverage_status": "VERIFIED_INCOMPLETE_IDENTITY_PACKET",
+      "family_paper_binding_status": "VERIFIED_TAXONOMY_BINDING",
+      "first_recorded_at": "2026-06-16T14:36:20.756000+00:00",
+      "hypothesis_key": "d61ff64d9f08713f",
+      "identity_packet_content_hash": "sha256:24e8f70b5f61c73846872d0a6754fdab66650c155b97cc21b18352a1f3fd31f4",
+      "identity_packet_status": "INCOMPLETE_BACKFILL_REQUIRED",
+      "label": "crypto multi-factor / baseline",
+      "ledger_profile": "20260616T143620Z",
+      "ledger_source_path": "artifacts/grand_backtest/20260616T143620Z/experiments.jsonl",
+      "measurement": {
+        "annualized_sharpe": 0.0424294798491386,
+        "kurtosis": 14.278577775968984,
+        "observations": 1612,
+        "skew": -1.020991686631781
+      },
+      "missing_sections": [
+        "preregistration_and_hashes",
+        "point_in_time_data_and_survivorship_controls",
+        "execution_and_cost_model",
+        "result_uncertainty_stress_capacity_and_diversification",
+        "admission_or_kill_decision",
+        "code_environment_and_reproduction"
+      ],
+      "research_family_key": "crypto_multifactor_engine",
+      "research_family_title": "Crypto multi-factor allocator, regime, and ML engine",
+      "sleeve_context": "AlphaForge research",
+      "verified_family_paper_path": "/research/crypto-multifactor-engine-lineage.md",
+      "verified_packet_path": "/glassbox/trial-packets/d61ff64d9f08713f.json",
+      "verified_sections": [
+        "identity_and_authorship",
+        "economic_mechanism_and_falsifiable_hypothesis",
+        "literature_and_overlap_decision",
+        "family_and_union_trial_accounting",
+        "machine_readable_packet_and_stable_public_paper"
+      ]
+    },
+    {
+      "candidate_match_is_verified": true,
+      "candidate_public_papers": [],
+      "completion_assessment": {
+        "blockers": [
+          {
+            "code": "IDENTITY_PREREGISTRATION_AND_ORIGINAL_ENVIRONMENT_NOT_BOUND",
+            "evidence": [
+              {
+                "path": "artifacts/research/crypto_multifactor_family.json",
+                "sha256": "3c6e476d4aa25f1730ffa9eeba880bebc65571121aed83069dd3a0342c1accab"
+              },
+              {
+                "path": "artifacts/grand_backtest/20260616T143620Z/experiments.jsonl",
+                "sha256": "04f997da63092be453c339e0bf25b5ea700f11f79eeadb8d2c48d312ac3dae8f"
+              },
+              {
+                "path": "artifacts/grand_backtest/20260616T143620Z/matrix.json",
+                "sha256": "786c580d478f7912aa61886e8b1271faa706fe723ff35423ef1c27d7018ba32c"
+              }
+            ],
+            "finding": "The canonical family audit binds this identity to its immutable ledger measurement, but does not bind an identity-level preregistration, original code commit, runner hash, lockfile, and input snapshot. Those missing historical fields cannot be reconstructed from the family summary.",
+            "required_section": "preregistration_and_hashes"
+          },
+          {
+            "code": "IDENTITY_LEVEL_DECISION_PACKET_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/research/crypto_multifactor_family.json",
+                "sha256": "3c6e476d4aa25f1730ffa9eeba880bebc65571121aed83069dd3a0342c1accab"
+              }
+            ],
+            "finding": "The family-level admission status is FAIL_NO_DEPLOY; it is not a preserved identity-level gate decision under the complete packet contract.",
+            "required_section": "admission_or_kill_decision"
+          }
+        ],
+        "config_hash": "016ad5961f97f093",
+        "evidence_grade": "artifact_bound",
+        "family_audit": "artifacts/research/crypto_multifactor_family.json",
+        "status": "AUDITED_NOT_CURRENTLY_COMPLETABLE"
+      },
+      "config_hash": "016ad5961f97f093",
+      "coverage_status": "VERIFIED_INCOMPLETE_IDENTITY_PACKET",
+      "family_paper_binding_status": "VERIFIED_TAXONOMY_BINDING",
+      "first_recorded_at": "2026-06-16T14:36:20.756000+00:00",
+      "hypothesis_key": "db3ff99463afddc1",
+      "identity_packet_content_hash": "sha256:17d345d7e5f72b7cb6210d94d4e25493d6297f583125152b0dda8d8612e6fa0e",
+      "identity_packet_status": "INCOMPLETE_BACKFILL_REQUIRED",
+      "label": "crypto multi-factor / MVO allocator",
+      "ledger_profile": "20260616T143620Z",
+      "ledger_source_path": "artifacts/grand_backtest/20260616T143620Z/experiments.jsonl",
+      "measurement": {
+        "annualized_sharpe": -0.09463401806531034,
+        "kurtosis": 10.332307968968875,
+        "observations": 1612,
+        "skew": -0.5735946471800737
+      },
+      "missing_sections": [
+        "preregistration_and_hashes",
+        "point_in_time_data_and_survivorship_controls",
+        "execution_and_cost_model",
+        "result_uncertainty_stress_capacity_and_diversification",
+        "admission_or_kill_decision",
+        "code_environment_and_reproduction"
+      ],
+      "research_family_key": "crypto_multifactor_engine",
+      "research_family_title": "Crypto multi-factor allocator, regime, and ML engine",
+      "sleeve_context": "AlphaForge research",
+      "verified_family_paper_path": "/research/crypto-multifactor-engine-lineage.md",
+      "verified_packet_path": "/glassbox/trial-packets/db3ff99463afddc1.json",
+      "verified_sections": [
+        "identity_and_authorship",
+        "economic_mechanism_and_falsifiable_hypothesis",
+        "literature_and_overlap_decision",
+        "family_and_union_trial_accounting",
+        "machine_readable_packet_and_stable_public_paper"
+      ]
+    }
+  ],
+  "registry_key": "crypto_multifactor_engine",
+  "research_family_key": "crypto_multifactor_engine",
+  "schema": "canli.alphac-publication-trial-accounting-binding.v2",
+  "status": "COMPLETE_RECORDED_UNION_EXTRACTED_IDENTITY_PACKETS_MAY_BE_INCOMPLETE",
+  "trial_packet_manifest": {
+    "content_hash": "sha256:38758b89a1a5fa845487a640b1deab046fffcf61ede5ad3afb6371798b208371",
+    "path": "artifacts/research/trial_packet_manifest.json",
+    "sha256": "0147dd8e631ca24257e2db384bf01d4637a79371f1754b284f3f7e9637c1369c"
+  }
+}

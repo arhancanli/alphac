@@ -211,6 +211,7 @@ HONEST_N_ROWS_BUDGET = int(_TRIAL_POLICY["primary_ledger_record_audit_ceiling"])
 # repo root is parents[2]). This is the REAL committed ledger, not a tmp_path fixture.
 _REAL_LEDGER = Path(__file__).resolve().parents[2] / "var" / "experiments.jsonl"
 
+
 # EVERY ledger, not just the flagship profile's (added 2026-08-06).
 #
 # This tripwire read `var/experiments.jsonl` alone, but research runs under other profiles
@@ -230,16 +231,18 @@ _REAL_LEDGER = Path(__file__).resolve().parents[2] / "var" / "experiments.jsonl"
 # publish read BETTER than the truth. Counting the union also closes the obvious evasion: a
 # future search cannot dodge the budget by writing to a new directory.
 def _all_ledgers() -> list[Path]:
-    """Every experiments.jsonl under any var* profile dir. Archives are excluded on purpose:
-    `var/archive_broken_prices/` holds trials run on price data later found to be corrupt, and
-    those were withdrawn rather than filed."""
+    """Every ledger in the canonical durable selection union."""
+    from alphaforge.validation.experiments import ExperimentUnion
+
     root = Path(__file__).resolve().parents[2]
-    return sorted(p for p in root.glob("var*/experiments.jsonl") if "archive" not in str(p))
+    union = ExperimentUnion.discover(root / "var" / "experiments.jsonl", root)
+    return [path for path in union.paths if path.exists()]
 
 
 def _union_hypotheses() -> tuple[int, int]:
     """(total rows, distinct hypotheses) across every ledger, deduplicated."""
     from alphaforge.validation.experiments import ExperimentLog
+
     rows, keys = 0, set()
     for path in _all_ledgers():
         log = ExperimentLog(path)
@@ -705,7 +708,10 @@ class TestLedgerHygiene:
                 "and reconcile the debt instead of raising the budget"
             )
         else:
-            assert status == "ACTIVE"
+            assert status in {"ACTIVE", "ACTIVE_STAGED_PROSPECTIVE_BUDGET"}
+            if status == "ACTIVE_STAGED_PROSPECTIVE_BUDGET":
+                assert observed <= n_hyp
+                assert _TRIAL_POLICY["prospective_v7_review"]["status"] == "IN_FORCE"
         # Audit ceiling on TOTAL rows so the exempted re-evaluations can never grow unseen.
         assert n_records <= HONEST_N_ROWS_BUDGET, (
             f"ledger has {n_records} rows, above the audit ceiling {HONEST_N_ROWS_BUDGET}. "
@@ -838,9 +844,7 @@ class TestValidationProvenance:
         ledger = tmp_path / "ledger.jsonl"
         log = ExperimentLog(ledger)
         cfg = {"cfg": "a", "allocator": "rank"}
-        report = compute_validation(
-            _synthetic_equity(9), cfg, log, now_ms=1, with_provenance=True
-        )
+        report = compute_validation(_synthetic_equity(9), cfg, log, now_ms=1, with_provenance=True)
         assert report is not None
         obj = report.to_json_obj()
         prov = obj["_provenance"]

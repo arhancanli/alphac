@@ -1,0 +1,129 @@
+{
+  "author": "Arhan Canli",
+  "author_clean_workspace_run_not_independent": true,
+  "claim_boundary": "This author-run clean workspace uses freshly reacquired Polygon inputs from the first entitled session, 2021-08-23, not a preserved copy of the 2026-06-20 raw lake. The unavailable 58-session earlier universe lookback is disclosed, so a full historical universe rebuild is not claimed. Exact strategy reproduction is claimed only when the equity frame, log returns, config, summary, and historical 27-trial validation block all match. Byte-exact scope is limited to the five surviving historical root files; the original per-leg files are unavailable. The stored historical result is not regraded. This is not redistribution clearance or an independent human reproduction.",
+  "comparison": {
+    "equity_curve": {
+      "bytes_exact": false,
+      "frame_exact": false,
+      "log_returns_exact": false,
+      "max_absolute_equity_difference": 574.6900212383189,
+      "reference_sha256": "76f82c8df3726f049144d7699c0f13069db6a1e0d1f1e4570babd8d82a85cfc9",
+      "replay_sha256": "ef3f7bd087d9087fe485ce0cfcefb4ab3419c80e3300a84dfd92c1902d8552e2",
+      "shape_exact": true,
+      "shape_reference": [
+        729,
+        2
+      ],
+      "shape_replay": [
+        729,
+        2
+      ],
+      "timestamps_exact": true
+    },
+    "output_tree": {
+      "byte_exact_surviving_files": 0,
+      "different_surviving_files": [
+        "equity.parquet",
+        "summary.txt",
+        "tearsheet.png",
+        "tearsheet.txt",
+        "walkforward.json"
+      ],
+      "historical_leg_files_survived_for_comparison": false,
+      "missing_from_reference_root": [],
+      "missing_from_replay_root": [],
+      "replay_root_files": 5,
+      "replay_total_files": 113,
+      "root_path_sets_exact": true,
+      "surviving_reference_files": 5
+    },
+    "walkforward_json": {
+      "config_exact": true,
+      "document_exact": false,
+      "historical_validation": {
+        "clears_dsr_gate": false,
+        "dsr": 0.3405538206318043,
+        "expected_max_sr": 0.06282504089081105,
+        "n_obs": 728,
+        "n_trials": 27,
+        "n_trials_used": 27,
+        "psr": 0.8982132431664076,
+        "sr_ann": 0.9070840668515086,
+        "sr_trials_variance": 0.0009581739898135611
+      },
+      "legs_exact": false,
+      "replay_validation": {
+        "clears_dsr_gate": false,
+        "dsr": 0.3479320055650771,
+        "expected_max_sr": 0.06282504089081105,
+        "n_obs": 728,
+        "n_trials": 27,
+        "n_trials_used": 27,
+        "psr": 0.901670082194358,
+        "sr_ann": 0.9213246144999775,
+        "sr_trials_variance": 0.0009581739898135611
+      },
+      "stored_historical_result_preserved_without_regrading": true,
+      "summary_exact": false,
+      "validation_exact": false
+    }
+  },
+  "content_hash": "sha256:a847a2716c859a438c0d6a4ac2906dc459f4830ea5df5917d3002a2c336db14a",
+  "executed_at": "2026-08-24T08:08:42.371613+00:00",
+  "execution": {
+    "private_inputs_revalidated_after_replay": true,
+    "records": [
+      {
+        "command": "uv sync --frozen",
+        "exit_code": 0,
+        "stderr_sha256": "d2ccaa6006203d06cefaaf4d6e5c369465325e9f95e2bc75c84688d8b04a524a",
+        "stderr_tail": " + cryptography==48.0.1\n + cvxpy-base==1.9.1\n + cycler==0.12.1\n + duckdb==1.5.3\n + exchange-calendars==4.13.2\n + fonttools==4.63.0\n + freezegun==1.5.5\n + frozenlist==1.8.0\n + h11==0.16.0\n + httpcore==1.0.9\n + httpx==0.28.1\n + hypothesis==6.155.2\n + idna==3.18\n + iniconfig==2.3.0\n + jinja2==3.1.6\n + jmespath==1.1.0\n + joblib==1.5.3\n + kiwisolver==1.5.0\n + korean-lunar-calendar==0.4.0\n + librt==0.11.0\n + markdown-it-py==4.2.0\n + markupsafe==3.0.3\n + matplotlib==3.11.0\n + mdurl==0.1.2\n + multidict==6.7.1\n + mypy==2.1.0\n + mypy-boto3-s3==1.43.31\n + mypy-extensions==1.1.0\n + narwhals==2.22.1\n + numpy==2.4.6\n + osqp==1.1.2\n + packaging==26.2\n + pandas==3.0.3\n + pandas-stubs==3.0.3.260530\n + pathspec==1.1.1\n + pillow==12.2.0\n + pluggy==1.6.0\n + propcache==0.5.2\n + pyarrow==24.0.0\n + pycares==5.0.1\n + pycparser==3.0\n + pydantic==2.13.4\n + pydantic-core==2.46.4\n + pydantic-settings==2.14.1\n + pygments==2.20.0\n + pyluach==2.3.0\n + pyparsing==3.3.2\n + pytest==9.0.3\n + pytest-cov==7.1.0\n + python-dateutil==2.9.0.post0\n + python-dotenv==1.2.2\n + pyyaml==6.0.3\n + qdldl==0.1.9.post1\n + requests==2.34.2\n + rich==15.0.0\n + ruff==0.15.16\n + s3transfer==0.19.0\n + scikit-learn==1.9.0\n + scipy==1.17.1\n + setuptools==82.0.1\n + shellingham==1.5.4\n + six==1.17.0\n + sortedcontainers==2.4.0\n + sparsediffpy==0.3.0\n + structlog==26.1.0\n + tenacity==9.1.4\n + threadpoolctl==3.6.0\n + toolz==1.1.0\n + typer==0.26.7\n + types-awscrt==0.34.1\n + types-pyyaml==6.0.12.20260518\n + types-s3transfer==0.16.0\n + typing-extensions==4.15.0\n + typing-inspection==0.4.2\n + tzdata==2026.2\n + urllib3==2.7.0\n + yarl==1.24.2\n",
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_tail": ""
+      },
+      {
+        "command": "uv run af research walkforward --profile equity --start 2022-07-01 --end 2026-06-01 --train-days 252 --test-days 63 --rebalance-bars 63 --allocator rank --alphas eq_mom_252_21 --out outputs/k30_dn_63",
+        "exit_code": 0,
+        "stderr_sha256": "d8076af595ffd0792a39ea5fae208e70f32f7aa5785663f8799101836f26e05d",
+        "stderr_tail": "warning: `VIRTUAL_ENV=/Users/arhancanli/alphaforge/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+        "stdout_sha256": "7ffe6767c11d22e94e929990077fbec64f0b85ecb7fe421671ae1d00308e3653",
+        "stdout_tail": " 1.303966\nvol_ann_hourly    0.130655\nmax_dd_bar        0.085970\nturnover_ann      4.108923\nfees_paid         86.720069\nfunding_net       0.000000\ngross_mean        0.690920\nnet_mean          -0.002713\n\n\nleg 00  test [1688515200000 .. 1696291200000)  equity 100,000.00 -> 100,744.66  sharpe 0.56  max_dd 2.34%\nleg 01  test [1696291200000 .. 1704240000000)  equity 100,744.66 -> 99,739.44  sharpe -0.65  max_dd 4.31%\nleg 02  test [1704240000000 .. 1712188800000)  equity 99,739.44 -> 108,767.87  sharpe 3.68  max_dd 3.79%\nleg 03  test [1712188800000 .. 1720051200000)  equity 108,767.87 -> 109,269.23  sharpe 0.32  max_dd 2.47%\nleg 04  test [1720137600000 .. 1727913600000)  equity 109,269.23 -> 106,542.33  sharpe -1.28  max_dd 6.68%\nleg 05  test [1727913600000 .. 1735862400000)  equity 106,542.33 -> 107,974.67  sharpe 0.98  max_dd 2.90%\nleg 06  test [1735862400000 .. 1743811200000)  equity 107,974.67 -> 102,686.52  sharpe -1.86  max_dd 8.60%\nleg 07  test [1743984000000 .. 1752019200000)  equity 102,686.52 -> 104,568.38  sharpe 1.13  max_dd 2.78%\nleg 08  test [1752019200000 .. 1759795200000)  equity 104,568.38 -> 111,012.74  sharpe 3.53  max_dd 2.42%\nleg 09  test [1759795200000 .. 1767744000000)  equity 111,012.74 -> 105,075.21  sharpe -1.75  max_dd 7.90%\nleg 10  test [1767744000000 .. 1775692800000)  equity 105,075.21 -> 112,813.27  sharpe 2.19  max_dd 4.24%\nleg 11  test [1775692800000 .. 1780099200000)  equity 112,813.27 -> 124,987.26  sharpe 5.62  max_dd 3.53%\n\nvalidation  PSR 0.9017  DSR 0.3479  (gate 0.95: FAILS)  SR_ann 0.92  N_trials 27  SR* 0.0628\nartifacts: outputs/k30_dn_63\n"
+      }
+    ],
+    "repository_strategy_artifacts_mutated_by_replay": false,
+    "source": {
+      "commit": "fd3e930f41b0a62b222ecda4ab83bae21a4ce9f2",
+      "full_dirty_historical_source_tree_recovered": false,
+      "git_archive_sha256": "266346cdccaa5fe1162fd7a7109e6276222e050fcefcbf661e8e225878a74790",
+      "tracked_source_reconstruction": "POST_RUN_COMMIT_OF_PRECOMMIT_CONTENT"
+    },
+    "workspace_destroyed_after_execution": true,
+    "workspace_outside_repository": true
+  },
+  "full_historical_source_tree_recovered": false,
+  "full_historical_universe_lookback_reacquired": false,
+  "historical_leg_output_available_for_comparison": false,
+  "passes_strategy_reproduction": false,
+  "preserved_historical_raw_input_snapshot": false,
+  "rights_and_release": {
+    "hash_manifest_may_be_published": true,
+    "private_snapshot_may_be_published": false,
+    "public_bundle_must_withhold_vendor_rows": true,
+    "raw_or_normalized_vendor_rows_publication_authorized": false
+  },
+  "schema": "canli.alphac-alphamax-upstream-clean-workspace-receipt.v1",
+  "source_bindings": {
+    "manifest": {
+      "content_hash": "sha256:a9f5cf59f270244030662e3ce334362e0dc91518885653e2b30ad17ec8a3ae97",
+      "path": "artifacts/publication/alphamax_upstream_replay_manifest.json",
+      "sha256": "46f5e79ebd6ec40952871faa2616499cda26a1a48905676b3fd57a978d32f1fc"
+    },
+    "private_acquisition_content_hash": "sha256:10c5e4d29de23243e275fd34af259ec2ba712b2cd04a5cf17d1e574aa86529ae",
+    "reference_equity_sha256": "76f82c8df3726f049144d7699c0f13069db6a1e0d1f1e4570babd8d82a85cfc9",
+    "source_commit": "fd3e930f41b0a62b222ecda4ab83bae21a4ce9f2"
+  },
+  "status": "FAIL_UPSTREAM_STRATEGY_REPLAY_FRESH_VENDOR_INPUTS_DIFFER",
+  "strategy_sufficient_fresh_vendor_reacquisition_completed": true,
+  "surviving_reference_root_byte_exact": false
+}

@@ -22,6 +22,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
+from unittest.mock import patch
 
 import numpy as np
 import pandas as pd
@@ -46,6 +47,7 @@ from alphaforge.signals.service import SignalService
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
+    from pathlib import Path
 
     from alphaforge.features.context import FeatureContext
 
@@ -62,6 +64,64 @@ START = T0 + 240 * HOUR  # alpha_slow (97 bars) and sigma (169 bars) are warm he
 END = T0 + N_BARS * HOUR
 SAMPLE_BARS = (600, 700, 839)  # decision bars for the parity sweep
 ALPHAS = ("alpha_fast", "alpha_slow")
+
+
+def test_factorized_membership_mask_matches_half_open_interval_semantics() -> None:
+    """Integer factorization is an exact replacement for repeated string comparisons."""
+    a = "BINANCE:PERP:AAAUSDT"
+    b = "BINANCE:PERP:BBBUSDT"
+    c = "BINANCE:PERP:CCCUSDT"
+    timestamps = [T0, T0 + HOUR, T0 + 2 * HOUR, T0 + 3 * HOUR]
+    index = pd.MultiIndex.from_product(
+        [timestamps, [a, b]], names=["ts_open", "instrument_id"]
+    )
+    # A has two disjoint spans, B has one bounded span, and C is absent from
+    # the panel. The exact endpoints exercise [effective_from, effective_to).
+    intervals = (
+        [a, a, b, c],
+        [T0, T0 + 3 * HOUR, T0 + HOUR, T0],
+        [T0 + HOUR, None, T0 + 3 * HOUR, None],
+    )
+    service = object.__new__(SignalService)
+    with patch.object(SignalService, "_intervals", return_value=intervals):
+        observed = service._membership_mask(index)
+    expected = pd.Series(
+        [True, False, False, True, False, True, True, False],
+        index=index,
+    )
+    pd.testing.assert_series_equal(observed, expected, check_exact=True)
+
+
+def test_factorized_membership_mask_matches_legacy_algorithm_randomized() -> None:
+    """Regression oracle: factorized IDs reproduce the former object-compare mask exactly."""
+    rng = np.random.default_rng(20260823)
+    ids = [f"BINANCE:PERP:R{value:02d}USDT" for value in range(12)]
+    timestamps = np.arange(T0, T0 + 240 * HOUR, HOUR, dtype=np.int64)
+    index = pd.MultiIndex.from_product(
+        [timestamps, ids[:10]], names=["ts_open", "instrument_id"]
+    )
+    interval_ids: list[str] = []
+    starts: list[int] = []
+    ends: list[int | None] = []
+    for iid in ids:
+        for _ in range(3):
+            start_offset = int(rng.integers(0, 180))
+            width = int(rng.integers(1, 50))
+            interval_ids.append(iid)
+            starts.append(T0 + start_offset * HOUR)
+            ends.append(T0 + min(240, start_offset + width) * HOUR)
+    intervals = (interval_ids, starts, ends)
+    ts = index.get_level_values("ts_open").to_numpy(dtype=np.int64)
+    inst = index.get_level_values("instrument_id").to_numpy()
+    legacy = np.zeros(len(index), dtype=bool)
+    for iid, start, end in zip(*intervals, strict=True):
+        in_span = ts >= start if end is None else (ts >= start) & (ts < end)
+        legacy |= in_span & (inst == iid)
+
+    service = object.__new__(SignalService)
+    with patch.object(SignalService, "_intervals", return_value=intervals):
+        observed = service._membership_mask(index)
+    np.testing.assert_array_equal(observed.to_numpy(), legacy)
 
 
 def _xret_fn(ctx: FeatureContext, spec: FeatureSpec) -> pd.Series:
@@ -328,3 +388,138 @@ class TestConstruction:
                 env.cfg,
                 alpha_names=("not_an_alpha",),
             )
+
+
+# --------------------------------------------------------------------------- asset-class scope
+#
+# 2026-09-05: the crypto sleeve's weekly rebalance crashed four Thursdays running
+# (08-13, 08-20, 08-27, 09-03) with ``KeyError: instrument 'XUSE:CASH:AALUSD' is unknown
+# to the SCD2 store``. The universe store is SHARED across asset classes (2,088 equity
+# names beside 20 perps on the crypto lake), the live loop's ``_InstrumentsAdapter``
+# scopes the TRADABLE set to the profile's asset class, but the SignalService built its
+# cross-section from the raw membership, so the carry feature asked the instrument store
+# for the funding interval of an equity — which on the trading host has no record at
+# all. The sleeve held its 30 July positions for 37 days. These tests pin the contract:
+# the signal cross-section is the sleeve's asset class, never the raw membership.
+
+EQUITY_WITH_RECORD = "XUSE:CASH:AALUSD"  # alphabetically first equity -> the one that raised
+EQUITY_WITHOUT_RECORD = "XUSE:CASH:ZZZUSD"  # the trading host's condition: no SCD2 row at all
+LEAKED = (EQUITY_WITH_RECORD, EQUITY_WITHOUT_RECORD)
+
+
+def _equity_instrument(instrument_id: str) -> Instrument:
+    return Instrument(
+        instrument_id=instrument_id,
+        asset_class=AssetClass.EQUITY,
+        market_type=MarketType.CASH,
+        base=instrument_id.split(":")[2].removesuffix("USD"),
+        quote="USD",
+        tick_size=0.01,
+        lot_size=1.0,
+        min_qty=1.0,
+        min_notional=0.0,
+        can_short=True,
+        maker_fee_bps=1.0,
+        taker_fee_bps=1.0,
+        funding_interval_hours=None,
+        listed_ts=T0 - 365 * 24 * HOUR,
+        delisted_ts=None,
+    )
+
+
+@pytest.fixture(scope="module")
+def leaked_env(tmp_path_factory: pytest.TempPathFactory) -> Iterator[Env]:
+    """The production shape: a cross-asset universe store over a crypto sleeve.
+
+    Membership = the crypto MEMBERS plus two equity ids. One has an EQUITY record
+    (the Mac's store), one has NO record (the trading host's pruned store). Neither
+    has bars on this lake, exactly like production.
+    """
+    tmp = tmp_path_factory.mktemp("signal_service_scope")
+    paths = LakePaths(tmp / "lake")
+    closes = {iid: _closes(300 + k, N_BARS, 50.0 * (k + 1)) for k, iid in enumerate(ALL_IDS)}
+    LakeWriter(paths).write(Dataset.OHLCV, _ohlcv_table(closes))
+
+    members = [*MEMBERS, *LEAKED]
+    universe = UniverseStore(paths)
+    universe.write_intervals(
+        pa.table(
+            {
+                "instrument_id": pa.array(members, type=pa.string()),
+                "effective_from": pa.array([T0] * len(members), type=pa.timestamp("ms", tz="UTC")),
+                "effective_to": pa.array([None] * len(members), type=pa.timestamp("ms", tz="UTC")),
+                "rank": pa.array([1] * len(members), type=pa.int32()),
+                "reason": pa.array(["enter_top40"] * len(members), type=pa.string()),
+            }
+        )
+    )
+
+    instruments = InstrumentStore(tmp / "instruments.db")
+    for iid in ALL_IDS:
+        instruments.upsert(_instrument(iid), as_of=T0 - 1000)
+    instruments.upsert(_equity_instrument(EQUITY_WITH_RECORD), as_of=T0 - 1000)
+    # EQUITY_WITHOUT_RECORD deliberately gets no row.
+
+    cfg = SignalsCfg()
+    engine = FeatureEngine(PITDataReader(paths), instruments, universe)
+    service = SignalService(engine, universe, _registry(), cfg, alpha_names=ALPHAS)
+    research = service.compute_research(START, END)
+    weights = service.estimate_weights(START, END)
+    yield Env(service=service, closes=closes, research=research, weights=weights, cfg=cfg)
+    instruments.close()
+
+
+class TestCrossSectionIsScopedToTheSleeve:
+    def test_live_cross_section_is_exactly_the_sleeve_members(self, leaked_env: Env) -> None:
+        """The decision row set equals the crypto members: the equity with a record
+        is excluded by asset class, the equity without one is excluded because it
+        cannot be resolved — and neither raises."""
+        as_of = T0 + (SAMPLE_BARS[0] + 1) * HOUR
+        live = leaked_env.service.on_bar_close(as_of, weights=leaked_env.weights)
+        assert set(live.index) == set(MEMBERS)
+        for leaked in LEAKED:
+            assert leaked not in live.index
+
+    def test_research_panel_excludes_leaked_ids(self, leaked_env: Env) -> None:
+        """Research and live are one seam: the batch panel is scoped the same way,
+        or the parity contract would compare a scoped live row set against an
+        unscoped research grid."""
+        ids = set(leaked_env.research.index.get_level_values("instrument_id"))
+        assert ids == set(MEMBERS)
+
+    def test_scoped_live_rows_still_reproduce_research(self, leaked_env: Env) -> None:
+        members = sorted(MEMBERS)
+        for k in SAMPLE_BARS:
+            t_star = T0 + k * HOUR
+            live = leaked_env.service.on_bar_close(t_star + HOUR, weights=leaked_env.weights)
+            research_rows = leaked_env.research.xs(t_star, level="ts_open").loc[members]
+            pd.testing.assert_frame_equal(live, research_rows, rtol=1e-9, atol=1e-12)
+
+    def test_a_universe_of_only_foreign_ids_refuses_loudly(self, tmp_path: Path) -> None:
+        """If scoping empties the cross-section the service must say so, not hold
+        silently: a silent hold is how 173 signal-dead cycles once read as
+        'carry compressed'."""
+        paths = LakePaths(tmp_path / "lake")
+        closes = {iid: _closes(900 + k, N_BARS, 50.0) for k, iid in enumerate(ALL_IDS)}
+        LakeWriter(paths).write(Dataset.OHLCV, _ohlcv_table(closes))
+        universe = UniverseStore(paths)
+        universe.write_intervals(
+            pa.table(
+                {
+                    "instrument_id": pa.array(list(LEAKED), type=pa.string()),
+                    "effective_from": pa.array([T0] * 2, type=pa.timestamp("ms", tz="UTC")),
+                    "effective_to": pa.array([None] * 2, type=pa.timestamp("ms", tz="UTC")),
+                    "rank": pa.array([1] * 2, type=pa.int32()),
+                    "reason": pa.array(["enter_top40"] * 2, type=pa.string()),
+                }
+            )
+        )
+        instruments = InstrumentStore(tmp_path / "instruments.db")
+        try:
+            instruments.upsert(_equity_instrument(EQUITY_WITH_RECORD), as_of=T0 - 1000)
+            engine = FeatureEngine(PITDataReader(paths), instruments, universe)
+            service = SignalService(engine, universe, _registry(), SignalsCfg(), alpha_names=ALPHAS)
+            with pytest.raises(ValueError, match=r"no .*members"):
+                service.on_bar_close(T0 + (SAMPLE_BARS[0] + 1) * HOUR)
+        finally:
+            instruments.close()

@@ -1,0 +1,154 @@
+{
+  "author": "Arhan Canli",
+  "causal_method": {
+    "allocator": "RankEqualVolFallback",
+    "observed_long_tail": [
+      "BINANCE:PERP:DOTUSDT",
+      "BINANCE:PERP:FTMUSDT",
+      "BINANCE:PERP:LRCUSDT",
+      "BINANCE:PERP:MANAUSDT",
+      "BINANCE:PERP:SANDUSDT"
+    ],
+    "observed_short_tail": [
+      "BINANCE:PERP:1000SHIBUSDT",
+      "BINANCE:PERP:GALAUSDT",
+      "BINANCE:PERP:LINKUSDT",
+      "BINANCE:PERP:LUNAUSDT",
+      "BINANCE:PERP:NEARUSDT"
+    ],
+    "synthetic_mu": "observed longs=+2, observed shorts=-2, unselected middle=0",
+    "why_exact": "The allocator uses only stable rank order; k=5 in both N=21 and N=22. All other sizing inputs are read through the production covariance, overlay, instrument-grid, and lot-rounding functions."
+  },
+  "conclusion": "The first-rebalance quantity drift is exactly caused by the mutable derived universe snapshot: restoring EOS to the otherwise current 21-name cross-section reproduces every historical order quantity. Later path drift remains a separate causal question, including the corrected realized-vol overlay.",
+  "content_hash": "sha256:6c5dd9216be1d511b4d1e05f38fc511f048d27fad37df37ff7779cb01b126da1",
+  "cross_section_difference": {
+    "current_eos_intervals": [
+      {
+        "effective_from": 1580515200000,
+        "effective_to": 1643673600000,
+        "rank": 4,
+        "reason": "exit_rank_29"
+      },
+      {
+        "effective_from": 1664582400000,
+        "effective_to": 1669852800000,
+        "rank": 6,
+        "reason": "exit_rank_32"
+      }
+    ],
+    "eos_is_member_in_current_derived_universe": false,
+    "replay_only": [],
+    "replay_size": 21,
+    "source_only": [
+      "BINANCE:PERP:EOSUSDT"
+    ],
+    "source_size": 22
+  },
+  "decision_ts": 1644282000000,
+  "new_trials": 0,
+  "reconstruction": {
+    "current_21_name_cross_section": {
+      "cross_section_size": 21,
+      "discretized_quantities": {
+        "BINANCE:PERP:1000SHIBUSDT": 191729.0,
+        "BINANCE:PERP:DOTUSDT": 349.90000000000003,
+        "BINANCE:PERP:FTMUSDT": 2440.0,
+        "BINANCE:PERP:GALAUSDT": 15550.0,
+        "BINANCE:PERP:LINKUSDT": 370.73,
+        "BINANCE:PERP:LRCUSDT": 4970.0,
+        "BINANCE:PERP:LUNAUSDT": 104.05707742,
+        "BINANCE:PERP:MANAUSDT": 2143.0,
+        "BINANCE:PERP:NEARUSDT": 424.0,
+        "BINANCE:PERP:SANDUSDT": 1479.0
+      },
+      "ex_ante_vol_ann": 0.11816510266917875,
+      "jointly_complete_size": 21,
+      "overlay_scale": 1.26941031329654,
+      "pre_overlay_gross": 0.5000000000000001,
+      "selected_weights": {
+        "BINANCE:PERP:1000SHIBUSDT": -0.06370983401765808,
+        "BINANCE:PERP:DOTUSDT": 0.07796319747163627,
+        "BINANCE:PERP:FTMUSDT": 0.0557280817960139,
+        "BINANCE:PERP:GALAUSDT": -0.05508018797807301,
+        "BINANCE:PERP:LINKUSDT": -0.06957213535560054,
+        "BINANCE:PERP:LRCUSDT": 0.05635121756297829,
+        "BINANCE:PERP:LUNAUSDT": -0.06117099353760659,
+        "BINANCE:PERP:MANAUSDT": 0.06963703086526742,
+        "BINANCE:PERP:NEARUSDT": -0.05693975961596875,
+        "BINANCE:PERP:SANDUSDT": 0.0685527184474673
+      },
+      "shrinkage_intensity": 0.31949451702792064,
+      "target_gross": 0.6347051566482702
+    },
+    "observed_replay_quantities": {
+      "BINANCE:PERP:1000SHIBUSDT": 191729.0,
+      "BINANCE:PERP:DOTUSDT": 349.90000000000003,
+      "BINANCE:PERP:FTMUSDT": 2440.0,
+      "BINANCE:PERP:GALAUSDT": 15550.0,
+      "BINANCE:PERP:LINKUSDT": 370.73,
+      "BINANCE:PERP:LRCUSDT": 4970.0,
+      "BINANCE:PERP:LUNAUSDT": 104.05707742,
+      "BINANCE:PERP:MANAUSDT": 2143.0,
+      "BINANCE:PERP:NEARUSDT": 424.0,
+      "BINANCE:PERP:SANDUSDT": 1479.0
+    },
+    "observed_source_quantities": {
+      "BINANCE:PERP:1000SHIBUSDT": 192328.0,
+      "BINANCE:PERP:DOTUSDT": 351.0,
+      "BINANCE:PERP:FTMUSDT": 2448.0,
+      "BINANCE:PERP:GALAUSDT": 15598.0,
+      "BINANCE:PERP:LINKUSDT": 371.89,
+      "BINANCE:PERP:LRCUSDT": 4985.0,
+      "BINANCE:PERP:LUNAUSDT": 104.38212949,
+      "BINANCE:PERP:MANAUSDT": 2150.0,
+      "BINANCE:PERP:NEARUSDT": 426.0,
+      "BINANCE:PERP:SANDUSDT": 1483.0
+    },
+    "replay_quantities_exact": true,
+    "source_22_name_cross_section_with_eos": {
+      "cross_section_size": 22,
+      "discretized_quantities": {
+        "BINANCE:PERP:1000SHIBUSDT": 192328.0,
+        "BINANCE:PERP:DOTUSDT": 351.0,
+        "BINANCE:PERP:FTMUSDT": 2448.0,
+        "BINANCE:PERP:GALAUSDT": 15598.0,
+        "BINANCE:PERP:LINKUSDT": 371.89,
+        "BINANCE:PERP:LRCUSDT": 4985.0,
+        "BINANCE:PERP:LUNAUSDT": 104.38212949,
+        "BINANCE:PERP:MANAUSDT": 2150.0,
+        "BINANCE:PERP:NEARUSDT": 426.0,
+        "BINANCE:PERP:SANDUSDT": 1483.0
+      },
+      "ex_ante_vol_ann": 0.11779712961391002,
+      "jointly_complete_size": 22,
+      "overlay_scale": 1.2733756797948947,
+      "pre_overlay_gross": 0.49999999999999994,
+      "selected_weights": {
+        "BINANCE:PERP:1000SHIBUSDT": -0.06390884992195883,
+        "BINANCE:PERP:DOTUSDT": 0.07820673783689117,
+        "BINANCE:PERP:FTMUSDT": 0.055902164412372696,
+        "BINANCE:PERP:GALAUSDT": -0.05525224671262363,
+        "BINANCE:PERP:LINKUSDT": -0.06978946383628824,
+        "BINANCE:PERP:LRCUSDT": 0.05652724672228566,
+        "BINANCE:PERP:LUNAUSDT": -0.0613620786468926,
+        "BINANCE:PERP:MANAUSDT": 0.06985456206565675,
+        "BINANCE:PERP:NEARUSDT": -0.05711762725485625,
+        "BINANCE:PERP:SANDUSDT": 0.06876686248762147
+      },
+      "shrinkage_intensity": 0.30357601748859636,
+      "target_gross": 0.6366878398974473
+    },
+    "source_quantities_exact": true
+  },
+  "replay_orders_binding": {
+    "path": "artifacts/probe/crypto_carry_frozen_current_code_replay/legs/leg_00/orders.parquet",
+    "sha256": "f3dc673e300e62d5c4c36448eee02a657faaf32458d63bf0f9001a351c9303df"
+  },
+  "schema": "canli.alphac-crypto-carry-first-rebalance-drift-audit.v1",
+  "scope": "first decision only; this does not attribute the full multi-year replay drift",
+  "source_orders_binding": {
+    "path": "artifacts/walkforward/crypto_carry_wk/legs/leg_00/orders.parquet",
+    "sha256": "b523bb61e579a05337c3b6ec35d1cfc9af06ef310d16c05aa0036a37c321a635"
+  },
+  "status": "PASS_FIRST_REBALANCE_CAUSE_EXACTLY_REPRODUCED"
+}

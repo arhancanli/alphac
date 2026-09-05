@@ -1,0 +1,216 @@
+{
+  "@context": "https://w3id.org/ro/crate/1.1/context",
+  "@graph": [
+    {
+      "@id": "ro-crate-metadata.json",
+      "@type": "CreativeWork",
+      "about": {
+        "@id": "./"
+      },
+      "conformsTo": {
+        "@id": "https://w3id.org/ro/crate/1.1"
+      }
+    },
+    {
+      "@id": "./",
+      "@type": "Dataset",
+      "author": {
+        "@id": "#arhan-canli"
+      },
+      "datePublished": "2026-08-23",
+      "hasPart": [
+        {
+          "@id": "CITATION.cff"
+        },
+        {
+          "@id": "CORRECTIONS.md"
+        },
+        {
+          "@id": "LICENSE"
+        },
+        {
+          "@id": "README.md"
+        },
+        {
+          "@id": "archival_visual_inspection_receipt.json"
+        },
+        {
+          "@id": "bundle_manifest.json"
+        },
+        {
+          "@id": "codemeta.json"
+        },
+        {
+          "@id": "data_manifest.json"
+        },
+        {
+          "@id": "evidence/family_result.json"
+        },
+        {
+          "@id": "evidence/proxy_metrics.json"
+        },
+        {
+          "@id": "internal_replay_receipt.json"
+        },
+        {
+          "@id": "isolated_replay_receipt.json"
+        },
+        {
+          "@id": "paper.html"
+        },
+        {
+          "@id": "paper.json"
+        },
+        {
+          "@id": "paper.md"
+        },
+        {
+          "@id": "paper.pdf"
+        },
+        {
+          "@id": "paper.tex"
+        },
+        {
+          "@id": "pdf_validation.json"
+        },
+        {
+          "@id": "references.bib"
+        },
+        {
+          "@id": "references.json"
+        },
+        {
+          "@id": "reproduction.json"
+        },
+        {
+          "@id": "sbom.spdx.json"
+        },
+        {
+          "@id": "trial_accounting.json"
+        }
+      ],
+      "name": "Crypto Volatility Risk Premium: One Proxy Trial and a Published Null",
+      "version": "0.1.0"
+    },
+    {
+      "@id": "#arhan-canli",
+      "@type": "Person",
+      "name": "Arhan Canli"
+    },
+    {
+      "@id": "CITATION.cff",
+      "@type": "File",
+      "sha256": "ce0a108ef87a8e8f467443982ce4d6d4ea5859dcb840b6567f00e68d35953a48"
+    },
+    {
+      "@id": "CORRECTIONS.md",
+      "@type": "File",
+      "sha256": "13c681270721765f806f7885e4894a1c3c23abe241e0ca830acb58237c781a0f"
+    },
+    {
+      "@id": "LICENSE",
+      "@type": "File",
+      "sha256": "e679ca02271c3b6ff38e197098b9260900656c23f06b787383624681f425fa26"
+    },
+    {
+      "@id": "README.md",
+      "@type": "File",
+      "sha256": "cce8f2ac01e9747c20374d31264330086d98a3e570c30c2530257ce21a9cac26"
+    },
+    {
+      "@id": "archival_visual_inspection_receipt.json",
+      "@type": "File",
+      "sha256": "7a40b8c55de12ec4dd2f93143810266ac8854dc14fdd2ac1a336f64ff9dd8578"
+    },
+    {
+      "@id": "bundle_manifest.json",
+      "@type": "File",
+      "sha256": "7db6fc5e7315c3fdab39a4de81123699cce5e5d72710633d3f4b2076e5cf1d65"
+    },
+    {
+      "@id": "codemeta.json",
+      "@type": "File",
+      "sha256": "27e58e95dceda69e204cd7766c559b790b07b82594d2db75e38b79f3173f1a80"
+    },
+    {
+      "@id": "data_manifest.json",
+      "@type": "File",
+      "sha256": "e38236dfab46c9e88f8f6f1b1cf071611c996bafd8ffa333e1951fbd2a0440b6"
+    },
+    {
+      "@id": "evidence/family_result.json",
+      "@type": "File",
+      "sha256": "9d77dc80850826988eab1f320a883b843a85f90b2ecf4cd642561b1304c7e05b"
+    },
+    {
+      "@id": "evidence/proxy_metrics.json",
+      "@type": "File",
+      "sha256": "f39839b1e05b33e718563984228ee4dba64e94bdbf10c1b174426c0bd880d3a4"
+    },
+    {
+      "@id": "internal_replay_receipt.json",
+      "@type": "File",
+      "sha256": "70ac0c8d8542294e02c396085216646208a786295c747940f0eb0f576010ec95"
+    },
+    {
+      "@id": "isolated_replay_receipt.json",
+      "@type": "File",
+      "sha256": "d0df878375d415986fa639487e4ccffc9cad6396dca9bde5f3be4a7fdf50b2ad"
+    },
+    {
+      "@id": "paper.html",
+      "@type": "File",
+      "sha256": "176da47636f53a8fe72870bc04fe81da386257e81a2e48b5b487056a8ffcc4f5"
+    },
+    {
+      "@id": "paper.json",
+      "@type": "File",
+      "sha256": "344005562f9fc841554a36f00c7e146b9b1f1479bfd8d9fdb7f39495a93fbcde"
+    },
+    {
+      "@id": "paper.md",
+      "@type": "File",
+      "sha256": "ec6af71089819e093c833d2f5b7ac63d80efe6517243314ebff207c3c4fa8fbd"
+    },
+    {
+      "@id": "paper.pdf",
+      "@type": "File",
+      "sha256": "a5aa2f50d89c01c4d415a895b62ec956ad187842895d397e58aba289e5bc5e73"
+    },
+    {
+      "@id": "paper.tex",
+      "@type": "File",
+      "sha256": "d9f45c82e84f4a1265ad989afda271c5250260e5ec5c3329ac54bd9b654c2225"
+    },
+    {
+      "@id": "pdf_validation.json",
+      "@type": "File",
+      "sha256": "42f675d51e24d977b1784d731bb64ac16f70785e91896b998de1210ff42aca68"
+    },
+    {
+      "@id": "references.bib",
+      "@type": "File",
+      "sha256": "a9a4805362fcfcae93401c37212c04e7d1d898fa57a7151c2a51b03bd560031b"
+    },
+    {
+      "@id": "references.json",
+      "@type": "File",
+      "sha256": "ff7246fdf4bf58d165a40f6ed3ab9862b68945336197ccd77444fb37dd99431b"
+    },
+    {
+      "@id": "reproduction.json",
+      "@type": "File",
+      "sha256": "8fb3aaf1524a769bfd2361060b6bc0898a07bc07564cd86707eaae302207ecde"
+    },
+    {
+      "@id": "sbom.spdx.json",
+      "@type": "File",
+      "sha256": "cec003ecbfbdf00bd0e7ef5aa60a2edb1a6bec967228fa19960b95e684101893"
+    },
+    {
+      "@id": "trial_accounting.json",
+      "@type": "File",
+      "sha256": "1d7a585cfa216fe87448e125b1ad03932dfa163295481ec816c8a720af880d40"
+    }
+  ]
+}

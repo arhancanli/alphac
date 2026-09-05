@@ -1,0 +1,86 @@
+name: External review or reproduction report
+description: Submit a structured critique of a public ALPHAC manuscript or evidence packet
+title: "review: "
+labels: ["research-evidence"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This form records criticism, not endorsement. Opening an issue does not make the author an assigned reviewer and does not establish peer review or independent replication. Do not include credentials, licensed data, private account information, or security vulnerabilities.
+  - type: dropdown
+    id: scope
+    attributes:
+      label: Review scope
+      options:
+        - Methods, statistics, econometrics, or quantitative finance
+        - Data lineage and reproducibility
+        - Both scopes
+    validations:
+      required: true
+  - type: input
+    id: manuscript
+    attributes:
+      label: Manuscript
+      description: Registry key, title, and version of the exact public manuscript reviewed.
+      placeholder: alphavintage_macro_surprise, v1.0.0
+    validations:
+      required: true
+  - type: input
+    id: binding
+    attributes:
+      label: Evidence binding
+      description: Manuscript, PDF, packet, or archive SHA-256 used for the review.
+      placeholder: sha256:...
+    validations:
+      required: true
+  - type: textarea
+    id: qualifications
+    attributes:
+      label: Relevant qualifications
+      description: Describe experience relevant to the selected scope and link public evidence where available.
+    validations:
+      required: true
+  - type: textarea
+    id: conflicts
+    attributes:
+      label: Relationships, conflicts, and compensation
+      description: Disclose personal, supervisory, business, coauthor, financial, or compensation relationships. State none when none exist.
+    validations:
+      required: true
+  - type: textarea
+    id: findings
+    attributes:
+      label: Numbered findings
+      description: Label every finding BLOCKING, MAJOR, MINOR, or QUESTION and identify the exact affected claim.
+      placeholder: |
+        1. MAJOR: ...
+        2. QUESTION: ...
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction environment and outcome
+      description: If execution was attempted, include environment, commands, hashes, deviations, and outcome. Otherwise state not attempted.
+    validations:
+      required: true
+  - type: textarea
+    id: tool_use
+    attributes:
+      label: Automated tool use
+      description: Disclose any automated assistance. An AI agent cannot be the purported independent reviewer.
+    validations:
+      required: true
+  - type: checkboxes
+    id: attestations
+    attributes:
+      label: Attestations
+      options:
+        - label: I am the human responsible for this review and can defend every finding.
+          required: true
+        - label: I reviewed the exact version and binding identified above.
+          required: true
+        - label: This report contains no credentials, licensed data, or private account information.
+          required: true
+        - label: I understand that editorial criticism is not independent replication unless I executed the protocol in an environment I control.
+          required: true

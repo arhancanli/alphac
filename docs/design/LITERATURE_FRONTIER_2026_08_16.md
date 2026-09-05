@@ -39,7 +39,10 @@ double-count families already in the queue.
 Literature strength alone cannot admit a sleeve. Every promoted idea still needs immutable
 point-in-time lineage, one locked return identity, realistic execution, capacity, deflated
 Sharpe, PBO, ordinary and stressed correlations, and leave-one-year-out book contribution.
-The portfolio Sharpe objective of 2.0–2.5 is not evidence and cannot lower those gates.
+At publication, the portfolio Sharpe objective was 2.0–2.5; it was not evidence and could not
+lower those gates. That target was withdrawn on 2026-08-21. The governing objective is now an
+honest forward Sharpe of 1.5, with a 2.25–3.0 in-sample support band after the disclosed haircut;
+it likewise is not admission evidence.
 
 ### Treasury auction concession
 

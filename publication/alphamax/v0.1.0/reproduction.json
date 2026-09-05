@@ -1,0 +1,52 @@
+{
+  "bundle_integrity_command": "sha256sum -c SHA256SUMS",
+  "clean_environment_reproduction_completed": false,
+  "code_bindings": {
+    "scripts/probe_alphamax_betaneutral.py": "e83ec84bb331316226bfa7a89088d4d9022debe8e2fc17af633e55e3bbc3c568",
+    "scripts/probe_alphamax_construction.py": "48e69c59d1678f261ff2df136cf4657dd8a42ec9e42aeb58a8362f8933c910ee",
+    "scripts/probe_alphamax_shorttail.py": "210b4d72de2a8e074b8bc097cceca16d881c0aaa02b6752bd544f81909a4aafc",
+    "scripts/probe_alphamax_weighting.py": "1076becce9012d1757691f89b30fc4ab1761750c8bd366bea1d6997112159938",
+    "src/alphaforge/features/library/equity_price.py": "50fddfdba9eb4cd7a37805133038ab6f2af44de33d0a460feba9de5a1e5e3c10"
+  },
+  "environment_bindings": {
+    "pyproject.toml": "ddaf8b60999275f6d3fb93b3073f256d75d1383bfc8bab14263dc58645841006",
+    "uv.lock": "5caca664242722a3a3112663d7a19b7b5000583e30ade3753e1b8ffdecfd6f06"
+  },
+  "expected_result_hashes": {
+    "artifacts/probe/alphamax_betaneutral/report.json": "4368fd9e70a6c0788286005d877bd6a6f8da6bceeac6804d8a87e307369a36b1",
+    "artifacts/probe/alphamax_shorttail/report.json": "022d843a1295f3cbae2fc3054e3618388184a86114efa561296855867ed9b436",
+    "artifacts/probe/alphamax_weighting/report.json": "4eb3a9dc4ad8e991679d2409c29c17925d52ddd7a97c4a36fb43e8ace2646f50",
+    "artifacts/publication/alphamax_upstream_clean_workspace.json": "ba3a2d2d005401276d6c3ee864a0c9f341cfe6f217f3c95efc0288ec20b1e41f",
+    "artifacts/publication/alphamax_upstream_replay_manifest.json": "46f5e79ebd6ec40952871faa2616499cda26a1a48905676b3fd57a978d32f1fc",
+    "artifacts/sweep/alphamax_construction/arms.json": "17884a560fc913b8e5b387b283074914d476f84314eeaea987fca28d55558124",
+    "artifacts/walkforward/k30_dn_63/walkforward.json": "229afe7244b582cd538252e8e2ab77a2c77effef82a8fbe19e366c6dcbea87e7"
+  },
+  "independent_human_reproduction_completed": false,
+  "internal_audit_replay": {
+    "audit_command_executed": false,
+    "bundle_path": "internal_replay_receipt.json",
+    "content_hash": "sha256:222201e3428e2cc75dd546d9205b15c17af4518038397983b171af2195b57b1d",
+    "sha256": "70ac0c8d8542294e02c396085216646208a786295c747940f0eb0f576010ec95",
+    "sleeve_status": "MAPPED_NOT_EXECUTED_RETURN_LEVEL_REPLAY_DEFERRED"
+  },
+  "isolated_frozen_dependency_replay": {
+    "audit_command_executed": false,
+    "bundle_path": "isolated_replay_receipt.json",
+    "content_hash": "sha256:cf5e340ae7a23fb8dc168b47af77055b981e2e9ef8a1bc467b523fb7e445a2ac",
+    "dependency_environment": "UV_ISOLATED_FROZEN",
+    "portable_clean_workspace_replay_completed": false,
+    "raw_input_portability_established": false,
+    "sha256": "d0df878375d415986fa639487e4ccffc9cad6396dca9bde5f3be4a7fdf50b2ad",
+    "sleeve_status": "MAPPED_NOT_EXECUTED_RETURN_LEVEL_REPLAY_DEFERRED"
+  },
+  "registry_key": "alphamax_equity_momentum",
+  "result_reproduction_commands": [
+    "uv run python scripts/probe_alphamax_construction.py",
+    "uv run python scripts/probe_alphamax_weighting.py",
+    "uv run python scripts/probe_alphamax_betaneutral.py",
+    "uv run python scripts/probe_alphamax_shorttail.py"
+  ],
+  "result_reproduction_mapping_complete": true,
+  "schema": "canli.alphac-publication-reproduction.v2",
+  "status": "MAPPED_NOT_CLEAN_ENVIRONMENT_REPLAYED"
+}

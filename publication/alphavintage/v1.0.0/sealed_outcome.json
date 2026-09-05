@@ -1,0 +1,25 @@
+{
+  "active_day_net_sharpe_superseded": 0.338207199401868,
+  "active_days": 5998,
+  "claim_boundary": "The figures the published correction paper quotes, recomputed from the probe's own artifacts so a reader can check them. It re-states a sealed result; it does not re-run it, re-open return data, or change any verdict. 0 trials.",
+  "equity_curve_rows": 6296,
+  "inputs": {
+    "equity_parquet": {
+      "path": "artifacts/probe/cpi_surprise_size/equity.parquet",
+      "sha256": "sha256:d277c63ddf2bed6e9314aa863dbbf6adf3f4adb55bd89e8166aee4a19aab415f"
+    },
+    "result_json": {
+      "path": "artifacts/probe/cpi_surprise_size/result.json",
+      "sha256": "sha256:686654b4617efb8322f6fda37f2e71a375423aecc6de03477a0186cf2844e509"
+    }
+  },
+  "max_drawdown": -0.2509779478479198,
+  "max_drawdown_definition": "peak-to-trough on the probe's own equity curve: min(equity / cummax(equity) - 1). RECOMPUTED here because result.json does not carry a drawdown; the paper quoted a figure no published artifact contained.",
+  "max_drawdown_pct": -25.1,
+  "net_sharpe": 0.2298358829229609,
+  "newey_west_t": 1.2673190577321936,
+  "portfolio_days": 6296,
+  "schema": "canli.alphac-alphavintage-sealed-outcome.v1",
+  "verdict": "KILLED",
+  "why_this_exists": "Two figures in that paper traced to nothing published: the superseded Sharpe lived only in an unpublished probe result, and the maximum drawdown was in no artifact at all. A correction paper whose own numbers cannot be checked asks for exactly the credence the original mistake did."
+}

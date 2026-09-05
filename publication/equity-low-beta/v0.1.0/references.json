@@ -1,0 +1,34 @@
+{
+  "author": "Arhan Canli",
+  "metadata_cache": {
+    "content_hash": "sha256:a2b17534e33c4c361cd515387b566cd1c2e352a1b970159e66c329c3519b99c4",
+    "path": "artifacts/research/publication_reference_metadata.json",
+    "sha256": "cc011d355b2613f1514889fe8076752c3de1c54e158e561db60da559d3f1469c"
+  },
+  "reference_count": 1,
+  "references": [
+    {
+      "authors": [
+        {
+          "family": "Frazzini",
+          "given": "Andrea"
+        },
+        {
+          "family": "Pedersen",
+          "given": "Lasse Heje"
+        }
+      ],
+      "citation_key": "frazzini2014betting_1ac18b",
+      "container_title": "Journal of Financial Economics",
+      "doi": "10.1016/j.jfineco.2013.10.005",
+      "metadata_authority": "CROSSREF_REST_API",
+      "title": "Betting against beta",
+      "url": "https://doi.org/10.1016/j.jfineco.2013.10.005",
+      "year": 2014
+    }
+  ],
+  "registry_key": "equity_low_beta",
+  "schema": "canli.alphac-sleeve-bibliography.v1",
+  "status": "COMPLETE_NORMALIZED_BIBLIOGRAPHY",
+  "unresolved_references": []
+}

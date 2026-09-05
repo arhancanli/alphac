@@ -1,0 +1,77 @@
+{
+  "archival_assets": {
+    "bibliography": {
+      "references.bib": {
+        "path": "references.bib",
+        "sha256": "a5fd6c102bdc19437173044d5ce563e0a81f3576b2966acd38b23bb9560b980c"
+      }
+    },
+    "html": {
+      "path": "paper.html",
+      "sha256": "ef5f7831b8782fbb7f58368f6c8b73afaf0444b14b1ed6307995c2494d8f01b9"
+    },
+    "latex": {
+      "path": "paper.tex",
+      "sha256": "927e56d0e9e7757c6c05c52a603a42cd3ed0411aafe3f2af29acea20bdcddbee"
+    },
+    "pdf": {
+      "machine_validation": "PASS",
+      "pages": 8,
+      "path": "paper.pdf",
+      "sha256": "1a008c6c32b3b8fc313515f636d986be678187ef92a44c0a9d6651585c790f47",
+      "visual_inspection": {
+        "path": "archival_visual_inspection_receipt.json",
+        "sha256": "7a40b8c55de12ec4dd2f93143810266ac8854dc14fdd2ac1a336f64ff9dd8578",
+        "status": "PASS_INTERNAL_VISUAL_INSPECTION_NOT_INDEPENDENT_REVIEW"
+      }
+    }
+  },
+  "author": "Arhan Canli",
+  "doi_claimed": false,
+  "external_submission_claimed": false,
+  "files_before_inventory": [
+    "CITATION.cff",
+    "CORRECTIONS.md",
+    "LICENSE",
+    "README.md",
+    "alpaca_paper_evidence.json",
+    "alphamax_upstream_clean_workspace_receipt.json",
+    "alphamax_upstream_replay_manifest.json",
+    "alphatrend_upstream_clean_workspace_receipt.json",
+    "alphatrend_upstream_replay_manifest.json",
+    "book_without_alphavintage.json",
+    "codemeta.json",
+    "core_portable_reproduction_receipt.json",
+    "current_book_diversification.json",
+    "data_manifest.json",
+    "full_decision_clean_workspace_receipt.json",
+    "full_decision_replay_attempt_ledger.json",
+    "internal_replay_receipt.json",
+    "isolated_replay_receipt.json",
+    "macro_family.json",
+    "paper.json",
+    "paper.md",
+    "prereg_investment_historical_lineage.json",
+    "prereg_investment_upstream_clean_workspace_receipt.json",
+    "prereg_investment_upstream_replay_manifest.json",
+    "references.bib",
+    "reproduction.json",
+    "result.json",
+    "rtdsm_portable_fetch_receipt.json",
+    "sbom.spdx.json",
+    "sealed_outcome.json",
+    "trial_accounting.json"
+  ],
+  "independent_replication_claimed": false,
+  "peer_review_claimed": false,
+  "registry_key": "alphavintage_macro_surprise",
+  "remaining_blockers": [
+    "DATA_LICENCE_REVIEW_REQUIRED",
+    "CLEAN_ENVIRONMENT_REPLAY_NOT_COMPLETED",
+    "INDEPENDENT_HUMAN_REPLICATION_MISSING"
+  ],
+  "schema": "canli.alphac-publication-bundle-manifest.v2",
+  "sleeve": "alphavintage",
+  "status": "BUNDLE_INCOMPLETE",
+  "version": "1.0.0"
+}

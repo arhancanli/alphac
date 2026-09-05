@@ -1,0 +1,794 @@
+{
+  "author": "Arhan Canli",
+  "claim_boundary": "This packet reconciles persisted historical simulations and their original DSR verdicts. It is not a forward return, capacity study, sleeve admission, or promise.",
+  "evidence_date": "2026-08-22",
+  "family_key": "crypto_momentum",
+  "identities": [
+    {
+      "alpha_names": [
+        "mom_ts_2160"
+      ],
+      "artifact_path": "artifacts/cpanel/L4_ts2160_w/walkforward.json",
+      "artifact_sha256": "ec0c35106b514a24b687a5d800ee9e753eec45cbbf29d76c1746808ec9d3b1ee",
+      "config_hash": "e53422547e5f126e",
+      "configuration": {
+        "allocator": "rank",
+        "embargo_bars": 168,
+        "instrument_count": 58,
+        "instrument_namespaces": [
+          "BINANCE"
+        ],
+        "n_legs": 25,
+        "purge_bars": 72,
+        "rebalance_bars": 168,
+        "test_bars": 1512,
+        "train_bars": 6048
+      },
+      "hypothesis_key": "131745bc21f41d5f",
+      "ledger_source_path": "var/experiments.jsonl",
+      "result": {
+        "annual_turnover": 21.735373682386747,
+        "annualized_sharpe": -0.1318479455037707,
+        "annualized_volatility": 0.11131306323154022,
+        "artifact_era_dsr": 0.0026028006866510704,
+        "artifact_era_n_trials": 50,
+        "cagr": -0.018413118543618157,
+        "clears_artifact_era_dsr_gate": false,
+        "end_ts": 1780272000000,
+        "fees_paid": 5026.619724780957,
+        "final_equity": 92298.57983103085,
+        "funding_net": 5294.7057803533535,
+        "initial_equity": 100000.0,
+        "maximum_drawdown": 0.26508264414622007,
+        "n_days": 1575,
+        "start_ts": 1644282000000,
+        "total_return": -0.07701420168969153
+      }
+    },
+    {
+      "alpha_names": [
+        "mom_ts_504",
+        "mom_xs_504_48"
+      ],
+      "artifact_path": "artifacts/cpanel/L4_blend21_w/walkforward.json",
+      "artifact_sha256": "6b5c368ca988cd84088ab8d944979d101c49bc6320d6008267e5b4aa34b8a6af",
+      "config_hash": "f1242127bf94971c",
+      "configuration": {
+        "allocator": "rank",
+        "embargo_bars": 168,
+        "instrument_count": 58,
+        "instrument_namespaces": [
+          "BINANCE"
+        ],
+        "n_legs": 25,
+        "purge_bars": 72,
+        "rebalance_bars": 168,
+        "test_bars": 1512,
+        "train_bars": 6048
+      },
+      "hypothesis_key": "29233f5e0132b584",
+      "ledger_source_path": "var/experiments.jsonl",
+      "result": {
+        "annual_turnover": 29.7961552306407,
+        "annualized_sharpe": 0.3296412947323435,
+        "annualized_volatility": 0.11980244191876672,
+        "artifact_era_dsr": 0.02775755852112552,
+        "artifact_era_n_trials": 61,
+        "cagr": 0.036402002643464826,
+        "clears_artifact_era_dsr_gate": false,
+        "end_ts": 1780272000000,
+        "fees_paid": 7169.38124691598,
+        "final_equity": 116670.51597362867,
+        "funding_net": -279.33939490072873,
+        "initial_equity": 100000.0,
+        "maximum_drawdown": 0.1881703228818602,
+        "n_days": 1575,
+        "start_ts": 1644282000000,
+        "total_return": 0.16670515973628675
+      }
+    },
+    {
+      "alpha_names": [
+        "mom_ts_504"
+      ],
+      "artifact_path": "artifacts/cpanel/L4_ts504_3d/walkforward.json",
+      "artifact_sha256": "0871190e3d4d641373644664a15505436de43353c4092ff94f442dea04e52818",
+      "config_hash": "dfaa7583d5d6ad64",
+      "configuration": {
+        "allocator": "rank",
+        "embargo_bars": 168,
+        "instrument_count": 58,
+        "instrument_namespaces": [
+          "BINANCE"
+        ],
+        "n_legs": 25,
+        "purge_bars": 72,
+        "rebalance_bars": 72,
+        "test_bars": 1512,
+        "train_bars": 6048
+      },
+      "hypothesis_key": "3854903ae853daf8",
+      "ledger_source_path": "var/experiments.jsonl",
+      "result": {
+        "annual_turnover": 48.473838726969724,
+        "annualized_sharpe": 0.2648482227762874,
+        "annualized_volatility": 0.11538782541000088,
+        "artifact_era_dsr": 0.01871795923747382,
+        "artifact_era_n_trials": 59,
+        "cagr": 0.026839725336863296,
+        "clears_artifact_era_dsr_gate": false,
+        "end_ts": 1780272000000,
+        "fees_paid": 10816.997097520336,
+        "final_equity": 112099.05373603269,
+        "funding_net": 1141.7684257770618,
+        "initial_equity": 100000.0,
+        "maximum_drawdown": 0.18108659782328163,
+        "n_days": 1575,
+        "start_ts": 1644282000000,
+        "total_return": 0.12099053736032683
+      }
+    },
+    {
+      "alpha_names": [
+        "mom_ts_168"
+      ],
+      "artifact_path": "artifacts/cpanel/L4_ts168_d/walkforward.json",
+      "artifact_sha256": "139867e04ce7fc8ed129affe3b96d09437ff445958c78c8dfb3bcaae758bac2d",
+      "config_hash": "04596e410e6518b3",
+      "configuration": {
+        "allocator": "rank",
+        "embargo_bars": 168,
+        "instrument_count": 58,
+        "instrument_namespaces": [
+          "BINANCE"
+        ],
+        "n_legs": 25,
+        "purge_bars": 72,
+        "rebalance_bars": 24,
+        "test_bars": 1512,
+        "train_bars": 6048
+      },
+      "hypothesis_key": "54b0a73551057e63",
+      "ledger_source_path": "var/experiments.jsonl",
+      "result": {
+        "annual_turnover": 130.5897407353743,
+        "annualized_sharpe": -0.8366462679529766,
+        "annualized_volatility": 0.10989971686036035,
+        "artifact_era_dsr": 6.297308667079858e-06,
+        "artifact_era_n_trials": 39,
+        "cagr": -0.09229170167657097,
+        "clears_artifact_era_dsr_gate": false,
+        "end_ts": 1780272000000,
+        "fees_paid": 24528.921620768375,
+        "final_equity": 65865.11363405743,
+        "funding_net": -1323.18581627199,
+        "initial_equity": 100000.0,
+        "maximum_drawdown": 0.4676394527684018,
+        "n_days": 1575,
+        "start_ts": 1644282000000,
+        "total_return": -0.34134886365942574
+      }
+    },
+    {
+      "alpha_names": [
+        "mom_ts_504"
+      ],
+      "artifact_path": "artifacts/cpanel/L4_ts504_2w/walkforward.json",
+      "artifact_sha256": "193b2bfe40050b7d8f416af6c21c5ca1c5fb1eca6a27b6297dfb5f0629493b00",
+      "config_hash": "5d10a366e984764b",
+      "configuration": {
+        "allocator": "rank",
+        "embargo_bars": 168,
+        "instrument_count": 58,
+        "instrument_namespaces": [
+          "BINANCE"
+        ],
+        "n_legs": 25,
+        "purge_bars": 72,
+        "rebalance_bars": 336,
+        "test_bars": 1512,
+        "train_bars": 6048
+      },
+      "hypothesis_key": "581babb3419fc331",
+      "ledger_source_path": "var/experiments.jsonl",
+      "result": {
+        "annual_turnover": 21.95936129776673,
+        "annualized_sharpe": 0.17330970264015091,
+        "annualized_volatility": 0.1175981725713106,
+        "artifact_era_dsr": 0.01203263865662678,
+        "artifact_era_n_trials": 60,
+        "cagr": 0.01617345125384806,
+        "clears_artifact_era_dsr_gate": false,
+        "end_ts": 1780272000000,
+        "fees_paid": 4986.481625584527,
+        "final_equity": 107163.4877716961,
+        "funding_net": 525.1628260573425,
+        "initial_equity": 100000.0,
+        "maximum_drawdown": 0.2020067041908573,
+        "n_days": 1575,
+        "start_ts": 1644282000000,
+        "total_return": 0.07163487771696109
+      }
+    },
+    {
+      "alpha_names": [
+        "mom_ts_2160"
+      ],
+      "artifact_path": "artifacts/cpanel/ts2160_long_d/walkforward.json",
+      "artifact_sha256": "bc854eebfcd7661cbcd9f55f408f962587941f5a43b9e0011e2c7872fc41200d",
+      "config_hash": "2c24d159ae76d638",
+      "configuration": {
+        "allocator": "rank_long",
+        "embargo_bars": 168,
+        "instrument_count": 58,
+        "instrument_namespaces": [
+          "BINANCE"
+        ],
+        "n_legs": 25,
+        "purge_bars": 72,
+        "rebalance_bars": 24,
+        "test_bars": 1512,
+        "train_bars": 6048
+      },
+      "hypothesis_key": "5b5a71b086289f8d",
+      "ledger_source_path": "var/experiments.jsonl",
+      "result": {
+        "annual_turnover": 3.7565627579599727,
+        "annualized_sharpe": -0.038404176008285405,
+        "annualized_volatility": 0.1187605279946685,
+        "artifact_era_dsr": 0.003982603580377427,
+        "artifact_era_n_trials": 45,
+        "cagr": -0.012365479494731324,
+        "clears_artifact_era_dsr_gate": false,
+        "end_ts": 1780272000000,
+        "fees_paid": 773.607552217841,
+        "final_equity": 94775.90038918733,
+        "funding_net": -3738.704863149446,
+        "initial_equity": 100000.0,
+        "maximum_drawdown": 0.18329652751844772,
+        "n_days": 1575,
+        "start_ts": 1644282000000,
+        "total_return": -0.052240996108126714
+      }
+    },
+    {
+      "alpha_names": [
+        "mom_ts_504"
+      ],
+      "artifact_path": "artifacts/cpanel/L4_ts504_h2/walkforward.json",
+      "artifact_sha256": "d5a40e23567cde9c45e6087219eee9ce64d6e13ca32ad9c6ff36998b18df9c20",
+      "config_hash": "c12d56041e36b861",
+      "configuration": {
+        "allocator": "rank",
+        "embargo_bars": 168,
+        "instrument_count": 45,
+        "instrument_namespaces": [
+          "BINANCE"
+        ],
+        "n_legs": 14,
+        "purge_bars": 72,
+        "rebalance_bars": 168,
+        "test_bars": 1512,
+        "train_bars": 6048
+      },
+      "hypothesis_key": "5d3e879373e9a0b8",
+      "ledger_source_path": "var/experiments.jsonl",
+      "result": {
+        "annual_turnover": 31.795337675305408,
+        "annualized_sharpe": -0.5879039726812368,
+        "annualized_volatility": 0.11528977681520983,
+        "artifact_era_dsr": 0.002055835931746386,
+        "artifact_era_n_trials": 63,
+        "cagr": -0.07116646843828389,
+        "clears_artifact_era_dsr_gate": false,
+        "end_ts": 1780272000000,
+        "fees_paid": 3491.1433377283442,
+        "final_equity": 84307.36388582824,
+        "funding_net": -380.3680119060973,
+        "initial_equity": 100000.0,
+        "maximum_drawdown": 0.26892489456803936,
+        "n_days": 845,
+        "start_ts": 1707354000000,
+        "total_return": -0.15692636114171765
+      }
+    },
+    {
+      "alpha_names": [
+        "mom_ts_504"
+      ],
+      "artifact_path": "artifacts/cpanel/L4_ts504_w/walkforward.json",
+      "artifact_sha256": "fa95a06720a22b76a1a99af2f115866149479215af3c1248768d7fe04df533cc",
+      "config_hash": "98cd0ca8949495c1",
+      "configuration": {
+        "allocator": "rank",
+        "embargo_bars": 168,
+        "instrument_count": 58,
+        "instrument_namespaces": [
+          "BINANCE"
+        ],
+        "n_legs": 25,
+        "purge_bars": 72,
+        "rebalance_bars": 168,
+        "test_bars": 1512,
+        "train_bars": 6048
+      },
+      "hypothesis_key": "63812ba59fb509bd",
+      "ledger_source_path": "var/experiments.jsonl",
+      "result": {
+        "annual_turnover": 30.318057054447568,
+        "annualized_sharpe": 0.4863178100386738,
+        "annualized_volatility": 0.1237728670910675,
+        "artifact_era_dsr": 0.06840297738134772,
+        "artifact_era_n_trials": 53,
+        "cagr": 0.05665510202574642,
+        "clears_artifact_era_dsr_gate": false,
+        "end_ts": 1780272000000,
+        "fees_paid": 7274.249513921918,
+        "final_equity": 126825.13379220686,
+        "funding_net": 975.1357973273114,
+        "initial_equity": 100000.0,
+        "maximum_drawdown": 0.17023180763640522,
+        "n_days": 1575,
+        "start_ts": 1644282000000,
+        "total_return": 0.26825133792206857
+      }
+    },
+    {
+      "alpha_names": [
+        "mom_ts_504"
+      ],
+      "artifact_path": "artifacts/cpanel/ts504_long_d/walkforward.json",
+      "artifact_sha256": "9e45b0316345de9e99e15dc37f8b7c3d0b1e51f52d145af53976c93ff4645998",
+      "config_hash": "599bf14bdc7f6616",
+      "configuration": {
+        "allocator": "rank_long",
+        "embargo_bars": 168,
+        "instrument_count": 58,
+        "instrument_namespaces": [
+          "BINANCE"
+        ],
+        "n_legs": 25,
+        "purge_bars": 72,
+        "rebalance_bars": 24,
+        "test_bars": 1512,
+        "train_bars": 6048
+      },
+      "hypothesis_key": "73aa637baa2b554d",
+      "ledger_source_path": "var/experiments.jsonl",
+      "result": {
+        "annual_turnover": 3.710941424476105,
+        "annualized_sharpe": 0.08209135319529275,
+        "annualized_volatility": 0.11902307860068023,
+        "artifact_era_dsr": 0.007965803342897338,
+        "artifact_era_n_trials": 44,
+        "cagr": 0.001861063216020975,
+        "clears_artifact_era_dsr_gate": false,
+        "end_ts": 1780272000000,
+        "fees_paid": 803.9797737842981,
+        "final_equity": 100805.00744481044,
+        "funding_net": -3942.3355939318785,
+        "initial_equity": 100000.0,
+        "maximum_drawdown": 0.15519676610686384,
+        "n_days": 1575,
+        "start_ts": 1644282000000,
+        "total_return": 0.00805007444810446
+      }
+    },
+    {
+      "alpha_names": [
+        "mom_ts_504"
+      ],
+      "artifact_path": "artifacts/cpanel/L4_ts504_d/walkforward.json",
+      "artifact_sha256": "43040964530ace6fa4a416043004fe76685e901718f15f12534cb60780272d5f",
+      "config_hash": "b8e9996aadf2189f",
+      "configuration": {
+        "allocator": "rank",
+        "embargo_bars": 168,
+        "instrument_count": 58,
+        "instrument_namespaces": [
+          "BINANCE"
+        ],
+        "n_legs": 25,
+        "purge_bars": 72,
+        "rebalance_bars": 24,
+        "test_bars": 1512,
+        "train_bars": 6048
+      },
+      "hypothesis_key": "757781cf1d69e68f",
+      "ledger_source_path": "var/experiments.jsonl",
+      "result": {
+        "annual_turnover": 83.75967450725244,
+        "annualized_sharpe": 0.1930966232923673,
+        "annualized_volatility": 0.1159759016576217,
+        "artifact_era_dsr": 0.014436801710770057,
+        "artifact_era_n_trials": 44,
+        "cagr": 0.0184329747830414,
+        "clears_artifact_era_dsr_gate": false,
+        "end_ts": 1780272000000,
+        "fees_paid": 18445.189452181115,
+        "final_equity": 108194.8121791661,
+        "funding_net": 1704.7004537726684,
+        "initial_equity": 100000.0,
+        "maximum_drawdown": 0.17576191950376285,
+        "n_days": 1575,
+        "start_ts": 1644282000000,
+        "total_return": 0.08194812179166089
+      }
+    },
+    {
+      "alpha_names": [
+        "mom_xs_504_48",
+        "mom_xs_2160_168",
+        "mom_ts_504"
+      ],
+      "artifact_path": "artifacts/exp1/20260625T075446Z/momentum/walkforward.json",
+      "artifact_sha256": "43e42651d655c9eaa1a32f068ee3ab1ff21d05d88b2b73196ee51090c8c16459",
+      "config_hash": "6165a159cad95a71",
+      "configuration": {
+        "allocator": "rank",
+        "embargo_bars": 168,
+        "instrument_count": 3358,
+        "instrument_namespaces": [
+          "BINANCE",
+          "XUSE"
+        ],
+        "n_legs": 18,
+        "purge_bars": 72,
+        "rebalance_bars": 72,
+        "test_bars": 2184,
+        "train_bars": 8760
+      },
+      "hypothesis_key": "827861e57050f162",
+      "ledger_source_path": "artifacts/exp1/20260625T075446Z/experiments.jsonl",
+      "result": {
+        "annual_turnover": 41.305292865584654,
+        "annualized_sharpe": 0.07797445933347988,
+        "annualized_volatility": 0.11403831167366314,
+        "artifact_era_dsr": 0.5607478481293614,
+        "artifact_era_n_trials": 2,
+        "cagr": 0.0019462400384793188,
+        "clears_artifact_era_dsr_gate": false,
+        "end_ts": 1780272000000,
+        "fees_paid": 8965.547265149107,
+        "final_equity": 100862.38465829041,
+        "funding_net": 3358.883913264427,
+        "initial_equity": 100000.0,
+        "maximum_drawdown": 0.2094391940859367,
+        "n_days": 1613,
+        "start_ts": 1640998800000,
+        "total_return": 0.008623846582904049
+      }
+    },
+    {
+      "alpha_names": [
+        "mom_ts_504"
+      ],
+      "artifact_path": "artifacts/cpanel/L4_ts504_h1/walkforward.json",
+      "artifact_sha256": "1e10ef933616adaff2ebd91a6cbd359fc04a07b3619faaa85f73232c37f261e4",
+      "config_hash": "76b93741bbe510c7",
+      "configuration": {
+        "allocator": "rank",
+        "embargo_bars": 168,
+        "instrument_count": 55,
+        "instrument_namespaces": [
+          "BINANCE"
+        ],
+        "n_legs": 11,
+        "purge_bars": 72,
+        "rebalance_bars": 168,
+        "test_bars": 1512,
+        "train_bars": 6048
+      },
+      "hypothesis_key": "949d33468f11327a",
+      "ledger_source_path": "var/experiments.jsonl",
+      "result": {
+        "annual_turnover": 30.0049811062466,
+        "annualized_sharpe": -0.1316725865821086,
+        "annualized_volatility": 0.11869022368173376,
+        "artifact_era_dsr": 0.03122179041155341,
+        "artifact_era_n_trials": 62,
+        "cagr": -0.01636673905241548,
+        "clears_artifact_era_dsr_gate": false,
+        "end_ts": 1701388800000,
+        "fees_paid": 2598.005453794107,
+        "final_equity": 97055.92392055888,
+        "funding_net": 528.7736343823877,
+        "initial_equity": 100000.0,
+        "maximum_drawdown": 0.17023180763640522,
+        "n_days": 662,
+        "start_ts": 1644282000000,
+        "total_return": -0.029440760794411158
+      }
+    },
+    {
+      "alpha_names": [
+        "mom_ts_504"
+      ],
+      "artifact_path": "artifacts/cpanel/ts504_long_w/walkforward.json",
+      "artifact_sha256": "e998c9c670eba1a2ca8119f7a01da4cd891cf23d346d6cbbaea564605d509c53",
+      "config_hash": "208f81cb34ef245c",
+      "configuration": {
+        "allocator": "rank_long",
+        "embargo_bars": 168,
+        "instrument_count": 58,
+        "instrument_namespaces": [
+          "BINANCE"
+        ],
+        "n_legs": 25,
+        "purge_bars": 72,
+        "rebalance_bars": 168,
+        "test_bars": 1512,
+        "train_bars": 6048
+      },
+      "hypothesis_key": "94a8bafd2d6af076",
+      "ledger_source_path": "var/experiments.jsonl",
+      "result": {
+        "annual_turnover": 2.8398365420773586,
+        "annualized_sharpe": 0.09789574575150448,
+        "annualized_volatility": 0.10708270358435602,
+        "artifact_era_dsr": 0.007319887783751849,
+        "artifact_era_n_trials": 40,
+        "cagr": 0.003954077872880601,
+        "clears_artifact_era_dsr_gate": false,
+        "end_ts": 1780272000000,
+        "fees_paid": 612.5935756556809,
+        "final_equity": 101716.2828380373,
+        "funding_net": -3755.4405386179947,
+        "initial_equity": 100000.0,
+        "maximum_drawdown": 0.16934673251700416,
+        "n_days": 1575,
+        "start_ts": 1644282000000,
+        "total_return": 0.017162828380372863
+      }
+    },
+    {
+      "alpha_names": [
+        "mom_xs_504_48"
+      ],
+      "artifact_path": "artifacts/cpanel/L4_xs504_w/walkforward.json",
+      "artifact_sha256": "27abe4fd96a01eaaa41cee80afba89deb78d20b40314fb876d2fd97ce2afd986",
+      "config_hash": "87cd67bd2f14fe25",
+      "configuration": {
+        "allocator": "rank",
+        "embargo_bars": 168,
+        "instrument_count": 58,
+        "instrument_namespaces": [
+          "BINANCE"
+        ],
+        "n_legs": 25,
+        "purge_bars": 72,
+        "rebalance_bars": 168,
+        "test_bars": 1512,
+        "train_bars": 6048
+      },
+      "hypothesis_key": "abc2f98882a8cb5d",
+      "ledger_source_path": "var/experiments.jsonl",
+      "result": {
+        "annual_turnover": 31.161907271985434,
+        "annualized_sharpe": 0.21785810590605312,
+        "annualized_volatility": 0.1265720578811083,
+        "artifact_era_dsr": 0.01870595117891878,
+        "artifact_era_n_trials": 48,
+        "cagr": 0.023104280180471726,
+        "clears_artifact_era_dsr_gate": false,
+        "end_ts": 1780272000000,
+        "fees_paid": 7211.426088300422,
+        "final_equity": 110351.11976057611,
+        "funding_net": 1191.5973359396169,
+        "initial_equity": 100000.0,
+        "maximum_drawdown": 0.1515061911142892,
+        "n_days": 1575,
+        "start_ts": 1644282000000,
+        "total_return": 0.10351119760576122
+      }
+    },
+    {
+      "alpha_names": [
+        "mom_ts_168",
+        "mom_ts_504",
+        "mom_ts_2160"
+      ],
+      "artifact_path": "artifacts/cpanel/L9_tsmom/walkforward.json",
+      "artifact_sha256": "dd871ef7e5694547e4fd7b25dfe27be5f6ee2772237fb6b5fdd0c49ccefffcbf",
+      "config_hash": "fac5643c9bee20fd",
+      "configuration": {
+        "allocator": "rank",
+        "embargo_bars": 168,
+        "instrument_count": 58,
+        "instrument_namespaces": [
+          "BINANCE"
+        ],
+        "n_legs": 25,
+        "purge_bars": 72,
+        "rebalance_bars": 24,
+        "test_bars": 1512,
+        "train_bars": 6048
+      },
+      "hypothesis_key": "b08b7841ef8beb6e",
+      "ledger_source_path": "var/experiments.jsonl",
+      "result": {
+        "annual_turnover": 83.60430125996095,
+        "annualized_sharpe": -0.23823627402806,
+        "annualized_volatility": 0.10755975648909821,
+        "artifact_era_dsr": 0.0009516605385190588,
+        "artifact_era_n_trials": 43,
+        "cagr": -0.02803012216866818,
+        "clears_artifact_era_dsr_gate": false,
+        "end_ts": 1780272000000,
+        "fees_paid": 16676.645681550202,
+        "final_equity": 88461.89726074101,
+        "funding_net": 567.9394873275345,
+        "initial_equity": 100000.0,
+        "maximum_drawdown": 0.25678066891958096,
+        "n_days": 1575,
+        "start_ts": 1644282000000,
+        "total_return": -0.11538102739258993
+      }
+    },
+    {
+      "alpha_names": [
+        "mom_xs_168_24"
+      ],
+      "artifact_path": "artifacts/cpanel/L4_xs168_d/walkforward.json",
+      "artifact_sha256": "6c4c2d8c175a6765985a57993479f6201aa9efd742bc43b67e7c2a91f56528b8",
+      "config_hash": "34f1100df83f093d",
+      "configuration": {
+        "allocator": "rank",
+        "embargo_bars": 168,
+        "instrument_count": 58,
+        "instrument_namespaces": [
+          "BINANCE"
+        ],
+        "n_legs": 25,
+        "purge_bars": 72,
+        "rebalance_bars": 24,
+        "test_bars": 1512,
+        "train_bars": 6048
+      },
+      "hypothesis_key": "bee03ca77096bf76",
+      "ledger_source_path": "var/experiments.jsonl",
+      "result": {
+        "annual_turnover": 129.01830311405405,
+        "annualized_sharpe": -1.1689936678238069,
+        "annualized_volatility": 0.1046917023805091,
+        "artifact_era_dsr": 1.6649509767125028e-07,
+        "artifact_era_n_trials": 32,
+        "cagr": -0.12006186605240599,
+        "clears_artifact_era_dsr_gate": false,
+        "end_ts": 1780272000000,
+        "fees_paid": 22178.226947570052,
+        "final_equity": 57605.73242843353,
+        "funding_net": -792.7651154718197,
+        "initial_equity": 100000.0,
+        "maximum_drawdown": 0.5064125418962655,
+        "n_days": 1575,
+        "start_ts": 1644282000000,
+        "total_return": -0.4239426757156647
+      }
+    },
+    {
+      "alpha_names": [
+        "mom_xs_504_48"
+      ],
+      "artifact_path": "artifacts/cpanel/L4_xs504_d/walkforward.json",
+      "artifact_sha256": "b0d4229988b628cb4870c44066304060ead4c50250d173ec19a70924ef4f41ae",
+      "config_hash": "71b39bedb3cc69a0",
+      "configuration": {
+        "allocator": "rank",
+        "embargo_bars": 168,
+        "instrument_count": 58,
+        "instrument_namespaces": [
+          "BINANCE"
+        ],
+        "n_legs": 25,
+        "purge_bars": 72,
+        "rebalance_bars": 24,
+        "test_bars": 1512,
+        "train_bars": 6048
+      },
+      "hypothesis_key": "f781fc9dac3d783d",
+      "ledger_source_path": "var/experiments.jsonl",
+      "result": {
+        "annual_turnover": 84.24721522084937,
+        "annualized_sharpe": -0.22450700069997623,
+        "annualized_volatility": 0.11367758334181392,
+        "artifact_era_dsr": 0.0009434141333436474,
+        "artifact_era_n_trials": 34,
+        "cagr": -0.028297416234597472,
+        "clears_artifact_era_dsr_gate": false,
+        "end_ts": 1780272000000,
+        "fees_paid": 17526.064882862276,
+        "final_equity": 88357.04076677919,
+        "funding_net": 125.44155309441135,
+        "initial_equity": 100000.0,
+        "maximum_drawdown": 0.275975711753631,
+        "n_days": 1575,
+        "start_ts": 1644282000000,
+        "total_return": -0.11642959233220818
+      }
+    },
+    {
+      "alpha_names": [
+        "mom_xs_2160_168"
+      ],
+      "artifact_path": "artifacts/walkforward/crypto_mom_base/walkforward.json",
+      "artifact_sha256": "d6c91d0cb238887b1263a1ca92cbd709ef060ce15a95f716770cc5025f06b112",
+      "config_hash": "98185811f024897a",
+      "configuration": {
+        "allocator": "rank",
+        "embargo_bars": 168,
+        "instrument_count": 58,
+        "instrument_namespaces": [
+          "BINANCE"
+        ],
+        "n_legs": 25,
+        "purge_bars": 72,
+        "rebalance_bars": 24,
+        "test_bars": 1512,
+        "train_bars": 6048
+      },
+      "hypothesis_key": "fb1358c08d36d128",
+      "ledger_source_path": "var/experiments.jsonl",
+      "result": {
+        "annual_turnover": 52.295686429676245,
+        "annualized_sharpe": -0.2761982378971514,
+        "annualized_volatility": 0.11280097991036178,
+        "artifact_era_dsr": 0.0011510960903652846,
+        "artifact_era_n_trials": 30,
+        "cagr": -0.0344743091710531,
+        "clears_artifact_era_dsr_gate": false,
+        "end_ts": 1780272000000,
+        "fees_paid": 11222.72345016578,
+        "final_equity": 85960.39104400229,
+        "funding_net": 2667.67279564837,
+        "initial_equity": 100000.0,
+        "maximum_drawdown": 0.31677380983899106,
+        "n_days": 1575,
+        "start_ts": 1644282000000,
+        "total_return": -0.14039608955997707
+      }
+    }
+  ],
+  "implementation": {
+    "cross_sectional_long_horizon_bars": [
+      168,
+      504,
+      2160
+    ],
+    "cross_sectional_skip_bars": [
+      24,
+      48,
+      168
+    ],
+    "time_series_horizon_bars": [
+      168,
+      504,
+      2160
+    ],
+    "volatility_normalization_bars": 168
+  },
+  "related_diversification_diagnostic": {
+    "combined_maximum_drawdown": 0.1282308056950059,
+    "combined_sharpe": 0.05556650237576491,
+    "decorrelated_sharpe_ceiling": 0.12061079053353506,
+    "full_sample_correlation": 0.044376730228028176,
+    "interpretation": "Low or negative correlation did not compensate for weak standalone edge; this diagnostic does not earn an independent sleeve slot.",
+    "momentum_artifact_era_dsr": 0.5607478481293614,
+    "momentum_sharpe": 0.07797445933347988,
+    "source_path": "artifacts/exp1/20260625T075446Z/exp1_metrics.json",
+    "source_sha256": "c97f84b706134f485a0eebae3fe4fe52b0e1054c1928aaad4607bba297585a0b",
+    "stress_correlation_book_worst_2_5pct": -0.5768489665446014,
+    "stress_correlation_either_sleeve_worst_2_5pct": -0.6289552969584538
+  },
+  "schema": "canli.alphac-crypto-momentum-family.v1",
+  "summary": {
+    "admission_status": "FAIL_RESEARCH_ONLY",
+    "artifact_era_dsr_gate_passes": 0,
+    "capacity_status": "UNMEASURED_NO_PERSISTED_MOMENTUM_CAPACITY_SWEEP",
+    "distinct_hypothesis_identities": 18,
+    "maximum_annualized_sharpe": 0.4863178100386738,
+    "maximum_maximum_drawdown": 0.5064125418962655,
+    "minimum_annualized_sharpe": -1.1689936678238069,
+    "minimum_maximum_drawdown": 0.1515061911142892
+  }
+}

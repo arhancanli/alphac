@@ -1,0 +1,148 @@
+{
+  "schema": "canli.eia-petroleum-inventory-probe.v1",
+  "preregistration": "docs/design/PREREG_EIA_PETROLEUM_INVENTORY.md",
+  "hypotheses_spent": 1,
+  "configuration": {
+    "mechanism": "eia_first_release_petroleum_inventory_scarcity",
+    "products": [
+      "USO",
+      "UGA"
+    ],
+    "seasonal_years": 5,
+    "scale_weeks": 52,
+    "score_clip": [
+      -3.0,
+      3.0
+    ],
+    "entry": "next_session_open_after_release",
+    "hedge": "trailing_252_session_dbc_beta_clamped_-3_3",
+    "costs": {
+      "USO": 0.0006,
+      "UGA": 0.001,
+      "DBC": 0.0003
+    },
+    "oos_start": "2016-01-01"
+  },
+  "pbo": "not defined for a one-configuration probe; no selection surface exists",
+  "data": {
+    "source": "EIA dated WPSR archive Table 4 first-release CSV files",
+    "discovered_releases": 783,
+    "accepted_releases": 782,
+    "rejected_releases": 1,
+    "score_rows": 1564,
+    "tradable_release_rows": 900,
+    "schedule_rejections": {
+      "not_both_products": 333,
+      "beta_history": 0,
+      "past_calendar": 0
+    }
+  },
+  "metrics": {
+    "observations": 2669,
+    "net_sharpe": -0.5892034349114502,
+    "newey_west_t": -1.844976942634086,
+    "dsr": 7.374195622900468e-11,
+    "psr": 0.02482129842667459,
+    "n_trials_union_including_candidate": 228,
+    "sr_trial_variance": 0.0008957471162984615,
+    "net_sharpe_at_2x_costs": -0.997659435817854,
+    "max_drawdown": -0.4105143659732944,
+    "skew": -1.5165106928321932,
+    "realized_dbc_beta": -0.013669372203866052,
+    "turnover_ann": 52.30382406002614,
+    "standalone_net_sharpe": {
+      "USO": -0.46027312477813864,
+      "UGA": -0.7425806749821852
+    },
+    "capacity": {
+      "p05_usd_at_1bp_adv": 149.19439128870977,
+      "median_usd_at_1bp_adv": 781.7687522336912,
+      "p05_usd_at_5bp_adv": 745.9719564435487,
+      "median_usd_at_5bp_adv": 3908.843761168456,
+      "p05_usd_at_10bp_adv": 1491.9439128870974,
+      "median_usd_at_10bp_adv": 7817.687522336912,
+      "p05_usd_at_1pct_adv": 14919.439128870974,
+      "median_usd_at_1pct_adv": 78176.87522336912
+    }
+  },
+  "correlation": {
+    "common_start": "2023-07-07",
+    "common_end": "2026-06-01",
+    "ordinary_by_sleeve": {
+      "AlphaForge": -0.010795800525604226,
+      "AlphaMax": -0.0025708335893531997,
+      "AlphaTrend": 0.03225901275187299,
+      "AlphaVintage": -0.014154726053463268
+    },
+    "average": 0.0011844131458630738,
+    "max_pair": 0.03225901275187299,
+    "stressed_by_sleeve": {
+      "AlphaForge": 0.07900573721652522,
+      "AlphaMax": -0.13591026125607392,
+      "AlphaTrend": -0.3019400115174747,
+      "AlphaVintage": -0.04350081538847962
+    },
+    "max_stressed": 0.07900573721652522
+  },
+  "book": {
+    "common_days": 728,
+    "base_sharpe": 1.223582316577314,
+    "candidate_10pct_sharpe": 1.2367825863003334,
+    "delta_sharpe": 0.013200269723019353,
+    "mean_zero_delta_sharpe": -0.013891130387520434,
+    "leave_one_year_out_delta": {
+      "2023": -0.05400812261435206,
+      "2024": 0.036709809889019285,
+      "2025": 0.028555013262600237,
+      "2026": 0.05202322804785153
+    },
+    "all_leave_one_year_out_positive": false
+  },
+  "gates": {
+    "net_sharpe_at_least_0_40": false,
+    "dsr_at_least_0_95": false,
+    "newey_west_t_at_least_2": false,
+    "net_sharpe_at_2x_costs_at_least_0_40": false,
+    "absolute_dbc_beta_at_most_0_10": true,
+    "average_correlation_at_most_0_15": true,
+    "max_pair_correlation_at_most_0_35": true,
+    "max_stressed_correlation_at_most_0_50": true,
+    "book_delta_positive": true,
+    "mean_zero_book_delta_positive": false,
+    "all_leave_one_year_out_positive": false,
+    "both_products_positive": false,
+    "proxy_capacity_p05_at_least_5m": false
+  },
+  "verdict": "KILL",
+  "admission_review": {
+    "contract_schema": "canli.alphac-sleeve-admission-contract.v6",
+    "contract_path": "config/sleeve_admission_contract.json",
+    "contract_sha256": "5f628a44ae73ed9c412b225ac9dc56c4e59c1bc0645e2ebde251501e938b9932",
+    "checks_required_for_technical_eligibility": 85,
+    "preregistered_research_checks": 13,
+    "preregistered_research_checks_passed": 5,
+    "status": "RESEARCH_SUBSET_FAILED",
+    "technically_eligible": false,
+    "claim_boundary": "This historical ETF feasibility probe failed its preregistered research gates. Binding it to the current v6 contract does not retroactively change those gates or make it technically eligible."
+  },
+  "lineage": {
+    "preregistration_sha256": "dc1f7dd8888a51c1b53fe3b04c4fd941d2027075e2b7150c72941736d740e66c",
+    "events_sha256": "031cf4a3178dfffb84d13f12a0b8a4b417914ddbc885e314bbf4ff6347de0bbc",
+    "first_release_manifest_sha256": "386577605c5bea567ce166efbf600419f79858ff20ed57a68b625bc1da4c9623",
+    "input_data_manifest_sha256": "80e62a4db5a79055b8899660d71e8e30b474e4af3172ff8aa6238efe61bddddd",
+    "runner_sha256": "7369f31b47adb04e401e85dd62f4c8acffb5e7c1fd768b7ed1beb54b4da8a00f",
+    "admission_contract_sha256": "5f628a44ae73ed9c412b225ac9dc56c4e59c1bc0645e2ebde251501e938b9932"
+  },
+  "reproduction": {
+    "command": "uv run python scripts/probe_eia_petroleum_inventory.py",
+    "python": "3.12.13 (main, Jun  2 2026, 22:42:28) [Clang 22.1.3 ]",
+    "numpy": "2.4.6",
+    "pandas": "3.0.3",
+    "pyproject_path": "pyproject.toml",
+    "pyproject_sha256": "ddaf8b60999275f6d3fb93b3073f256d75d1383bfc8bab14263dc58645841006",
+    "uv_lock_path": "uv.lock",
+    "uv_lock_sha256": "5caca664242722a3a3112663d7a19b7b5000583e30ade3753e1b8ffdecfd6f06",
+    "runner_path": "scripts/probe_eia_petroleum_inventory.py",
+    "runner_sha256": "7369f31b47adb04e401e85dd62f4c8acffb5e7c1fd768b7ed1beb54b4da8a00f"
+  }
+}

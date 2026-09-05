@@ -67,7 +67,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, Final
 
 if TYPE_CHECKING:
-    from collections.abc import Mapping, Sequence
+    from collections.abc import Collection, Mapping, Sequence
 
     from alphaforge.core.time import Ms
 
@@ -98,6 +98,21 @@ the deflation is not yet data-driven.
 
 _HASH_LEN: Final[int] = 16
 _HYPOTHESIS_WINDOW_KEYS: Final[frozenset[str]] = frozenset({"start", "end"})
+_REPO_ROOT: Final[Path] = Path(__file__).resolve().parents[3]
+
+
+def _is_canonical_return_ledger(path: Path) -> bool:
+    """True for selection ledgers owned by this repository, false for test/scratch logs."""
+    resolved = path.resolve()
+    try:
+        relative = resolved.relative_to(_REPO_ROOT)
+    except ValueError:
+        return False
+    return (
+        resolved.name == "experiments.jsonl"
+        and bool(relative.parts)
+        and (relative.parts[0].startswith("var") or relative.parts[0] == "artifacts")
+    )
 
 
 def config_hash(config: Mapping[str, Any]) -> str:
@@ -186,9 +201,7 @@ class ExperimentRecord:
         ``sharpe_per_path=None``; element ``null`` maps to ``nan``.
         """
         raw_paths = obj.get("sharpe_per_path")
-        sharpe_per_path = (
-            None if raw_paths is None else [_from_json_float(s) for s in raw_paths]
-        )
+        sharpe_per_path = None if raw_paths is None else [_from_json_float(s) for s in raw_paths]
         return cls(
             config_hash=str(obj["config_hash"]),
             config=dict(obj["config"]),
@@ -263,6 +276,39 @@ class ExperimentLog:
         """The set of config hashes already on the ledger (idempotency check)."""
         return {rec.config_hash for rec in self.all()}
 
+    def preflight_registration(
+        self,
+        config: Mapping[str, Any],
+        *,
+        reservation_path: Path | str | None = None,
+        _known_hypothesis_elsewhere: bool = False,
+    ) -> None:
+        """Fail before return compute when a canonical new identity is not reserved."""
+        existing_records = self.all()
+        if config_hash(config) in {record.config_hash for record in existing_records}:
+            return
+        hypothesis = self._hypothesis_key(config)
+        known_hypotheses = {self._hypothesis_key(record.config) for record in existing_records}
+        if (
+            hypothesis in known_hypotheses
+            or _known_hypothesis_elsewhere
+            or not _is_canonical_return_ledger(self._path)
+        ):
+            return
+        if reservation_path is None:
+            raise RuntimeError(
+                "new return hypothesis blocked: a forward trial reservation is required"
+            )
+        reservation_file = Path(reservation_path)
+        if not reservation_file.is_absolute():
+            reservation_file = _REPO_ROOT / reservation_file
+        if not reservation_file.is_file():
+            raise RuntimeError(f"forward trial reservation is missing: {reservation_file}")
+        from alphaforge.validation.trial_reservation import validate_reservation
+
+        payload = json.loads(reservation_file.read_text(encoding="utf-8"))
+        validate_reservation(payload, trial_config=dict(config), repo=_REPO_ROOT)
+
     def record(
         self,
         config: Mapping[str, Any],
@@ -274,6 +320,8 @@ class ExperimentLog:
         kurtosis: float,
         now_ms: Ms,
         path_sharpes: Sequence[float] | None = None,
+        reservation_path: Path | str | None = None,
+        _known_hypothesis_elsewhere: bool = False,
     ) -> ExperimentRecord:
         """Append one trial; idempotent on the config hash.
 
@@ -294,9 +342,15 @@ class ExperimentLog:
         here (determinism). All float arguments may be non-finite.
         """
         h = config_hash(config)
-        for existing in self.all():
+        existing_records = self.all()
+        for existing in existing_records:
             if existing.config_hash == h:
                 return existing
+        self.preflight_registration(
+            config,
+            reservation_path=reservation_path,
+            _known_hypothesis_elsewhere=_known_hypothesis_elsewhere,
+        )
         record = ExperimentRecord(
             config_hash=h,
             config=dict(config),
@@ -413,11 +467,13 @@ class ExperimentLog:
 
 
 class ExperimentUnion:
-    """Append to one profile while reading selection evidence across every profile.
+    """Append to one profile while reading every durable selection-evidence ledger.
 
     The active profile remains the sole write destination. Exact config hashes already present in
     any member are idempotent across the union. Audit rows and hypothesis identities are deduped
     deterministically, with the earliest immutable record representing each selection identity.
+    Discovery includes top-level research profiles and durable experiment ledgers filed beneath
+    ``artifacts/``; explicitly withdrawn archive paths never re-enter the selection denominator.
     """
 
     __slots__ = ("_active", "_members", "_root")
@@ -437,15 +493,25 @@ class ExperimentUnion:
 
     @classmethod
     def discover(cls, active_path: Path | str, root: Path | str) -> ExperimentUnion:
-        """Discover direct ``var*/experiments.jsonl`` ledgers under a verified repo root."""
+        """Discover durable experiment ledgers under a verified repository root.
+
+        Top-level ``var*`` profile ledgers are the normal write locations. Some legacy campaigns
+        filed their immutable ledgers with their result packets under ``artifacts/`` instead. Both
+        locations are selection evidence and therefore count. Paths containing an archive marker
+        are intentionally withdrawn evidence and remain excluded.
+        """
         base = Path(root).resolve()
         if not (base / "configs" / "base.yaml").is_file():
             raise ValueError(f"experiment-union root has no configs/base.yaml: {base}")
-        members = [
+        candidates = (
+            *base.glob("var*/experiments.jsonl"),
+            *base.glob("artifacts/**/experiments.jsonl"),
+        )
+        members = sorted(
             path
-            for path in base.glob("var*/experiments.jsonl")
+            for path in candidates
             if not any("archive" in part.casefold() for part in path.relative_to(base).parts)
-        ]
+        )
         return cls(active_path, members, root=base)
 
     @property
@@ -477,6 +543,7 @@ class ExperimentUnion:
         kurtosis: float,
         now_ms: Ms,
         path_sharpes: Sequence[float] | None = None,
+        reservation_path: Path | str | None = None,
     ) -> ExperimentRecord:
         """Append locally unless the exact configuration already exists anywhere."""
         h = config_hash(config)
@@ -502,6 +569,33 @@ class ExperimentUnion:
             kurtosis=kurtosis,
             now_ms=now_ms,
             path_sharpes=path_sharpes,
+            reservation_path=reservation_path,
+            _known_hypothesis_elsewhere=hypothesis in known_hypotheses,
+        )
+
+    def preflight_registration(
+        self,
+        config: Mapping[str, Any],
+        *,
+        reservation_path: Path | str | None = None,
+    ) -> None:
+        """Apply pause and reservation gates before any return compute is spent."""
+        records = self.all()
+        if config_hash(config) in {record.config_hash for record in records}:
+            return
+        hypothesis = self._active._hypothesis_key(config)
+        known_hypotheses = {self._active._hypothesis_key(record.config) for record in records}
+        if hypothesis not in known_hypotheses:
+            pause_status = self._research_pause_status()
+            if pause_status is not None:
+                raise RuntimeError(
+                    f"new return-hypothesis registration blocked by {pause_status}; "
+                    "see config/trial_accounting.json"
+                )
+        self._active.preflight_registration(
+            config,
+            reservation_path=reservation_path,
+            _known_hypothesis_elsewhere=hypothesis in known_hypotheses,
         )
 
     def preflight_hypotheses(self, configs: Sequence[Mapping[str, Any]]) -> None:
@@ -569,6 +663,23 @@ class ExperimentUnion:
     def hypothesis_sharpe_variance(self) -> float:
         """Union-wide DSR variance aligned to :meth:`n_hypotheses`."""
         return _sharpe_variance(self.hypothesis_records())
+
+    def hypothesis_selection_context(
+        self,
+        hypothesis_keys: Collection[str] | None = None,
+    ) -> tuple[int, float]:
+        """Return ``(N, V[SR])`` for the full union or an explicit frozen identity set."""
+        records = self.hypothesis_records()
+        if hypothesis_keys is None:
+            return len(records), _sharpe_variance(records)
+        requested = set(hypothesis_keys)
+        by_key = {self._active._hypothesis_key(record.config): record for record in records}
+        missing = requested - set(by_key)
+        if missing:
+            preview = ", ".join(sorted(missing)[:5])
+            raise ValueError(f"selection context is missing frozen identities: {preview}")
+        selected = [by_key[key] for key in sorted(requested)]
+        return len(selected), _sharpe_variance(selected)
 
 
 def _sharpe_variance(records: Sequence[ExperimentRecord]) -> float:

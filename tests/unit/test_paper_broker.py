@@ -128,6 +128,17 @@ def make_order(
     )
 
 
+def test_position_marks_reuse_account_snapshot_and_disclose_source() -> None:
+    broker, _, _ = make_broker()
+    broker.submit(make_order(qty=2.0))
+
+    account = broker.account_at(T0)
+    marks = broker.position_marks_at(T0)
+
+    assert account.positions[0].instrument_id == BTC
+    assert marks == {BTC: (100.5, "order_book_mid")}
+
+
 # ------------------------------------------------------------------- walk_book
 
 

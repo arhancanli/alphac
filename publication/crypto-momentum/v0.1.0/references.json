@@ -1,0 +1,126 @@
+{
+  "author": "Arhan Canli",
+  "metadata_cache": {
+    "content_hash": "sha256:a2b17534e33c4c361cd515387b566cd1c2e352a1b970159e66c329c3519b99c4",
+    "path": "artifacts/research/publication_reference_metadata.json",
+    "sha256": "cc011d355b2613f1514889fe8076752c3de1c54e158e561db60da559d3f1469c"
+  },
+  "reference_count": 5,
+  "references": [
+    {
+      "authors": [
+        {
+          "family": "Moskowitz",
+          "given": "Tobias J."
+        },
+        {
+          "family": "Ooi",
+          "given": "Yao Hua"
+        },
+        {
+          "family": "Pedersen",
+          "given": "Lasse Heje"
+        }
+      ],
+      "citation_key": "moskowitz2012time_f920fb",
+      "container_title": "Journal of Financial Economics",
+      "doi": "10.1016/j.jfineco.2011.11.003",
+      "metadata_authority": "CROSSREF_REST_API",
+      "title": "Time series momentum",
+      "url": "https://doi.org/10.1016/j.jfineco.2011.11.003",
+      "year": 2012
+    },
+    {
+      "authors": [
+        {
+          "family": "Liu",
+          "given": "Yukun"
+        },
+        {
+          "family": "Tsyvinski",
+          "given": "Aleh"
+        }
+      ],
+      "citation_key": "liu2021risks_0c3a60",
+      "container_title": "The Review of Financial Studies",
+      "doi": "10.1093/rfs/hhaa113",
+      "metadata_authority": "CROSSREF_REST_API",
+      "title": "Risks and Returns of Cryptocurrency",
+      "url": "https://doi.org/10.1093/rfs/hhaa113",
+      "year": 2021
+    },
+    {
+      "authors": [
+        {
+          "family": "LIU",
+          "given": "YUKUN"
+        },
+        {
+          "family": "TSYVINSKI",
+          "given": "ALEH"
+        },
+        {
+          "family": "WU",
+          "given": "XI"
+        }
+      ],
+      "citation_key": "liu2022common_5776ac",
+      "container_title": "The Journal of Finance",
+      "doi": "10.1111/jofi.13119",
+      "metadata_authority": "CROSSREF_REST_API",
+      "title": "Common Risk Factors in Cryptocurrency",
+      "url": "https://doi.org/10.1111/jofi.13119",
+      "year": 2022
+    },
+    {
+      "authors": [
+        {
+          "family": "Grobys",
+          "given": "Klaus"
+        },
+        {
+          "family": "Sapkota",
+          "given": "Niranjan"
+        }
+      ],
+      "citation_key": "grobys2019cryptocurrencies_14d243",
+      "container_title": "Economics Letters",
+      "doi": "10.1016/j.econlet.2019.03.028",
+      "metadata_authority": "CROSSREF_REST_API",
+      "title": "Cryptocurrencies and momentum",
+      "url": "https://doi.org/10.1016/j.econlet.2019.03.028",
+      "year": 2019
+    },
+    {
+      "authors": [
+        {
+          "family": "Chi",
+          "given": "Yeguang"
+        },
+        {
+          "family": "Hao",
+          "given": "Wenyan"
+        },
+        {
+          "family": "Hu",
+          "given": "Jiangdong"
+        },
+        {
+          "family": "Ran",
+          "given": "Zhenkai"
+        }
+      ],
+      "citation_key": "chi2023empirical_bead04",
+      "container_title": "Journal of Futures Markets",
+      "doi": "10.1002/fut.22425",
+      "metadata_authority": "CROSSREF_REST_API",
+      "title": "An empirical investigation on risk factors in cryptocurrency futures",
+      "url": "https://doi.org/10.1002/fut.22425",
+      "year": 2023
+    }
+  ],
+  "registry_key": "crypto_momentum",
+  "schema": "canli.alphac-sleeve-bibliography.v1",
+  "status": "COMPLETE_NORMALIZED_BIBLIOGRAPHY",
+  "unresolved_references": []
+}

@@ -1,0 +1,14 @@
+cff-version: 1.2.0
+message: "If you use this preparation bundle, please cite Arhan Canli."
+title: 'Equity Low Beta: Two Negative Identities and No Defensive Sleeve'
+type: article
+version: "0.1.0"
+date-released: "2026-08-23"
+authors:
+  - family-names: "Canli"
+    given-names: "Arhan"
+repository-code: "https://github.com/arhancanli/alphac"
+url: "https://canlicapital.com/research/equity-low-beta.html"
+abstract: >-
+  Incomplete working-paper preparation bundle. Not peer reviewed; no external submission,
+  DOI, independent replication, or investment-performance claim.

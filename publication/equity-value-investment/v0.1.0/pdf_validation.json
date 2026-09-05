@@ -1,0 +1,71 @@
+{
+  "author": "Arhan Canli",
+  "claim_boundary": "Machine validation proves page geometry, extractable text, metadata, font resources, and required disclosures. Visual inspection is separate and is not peer review, content validation, accessibility certification, or independent replication.",
+  "extractable_characters": 5636,
+  "failures": [],
+  "font_resources": [
+    "AAAAAA+Arial-BoldMT",
+    "BAAAAA+Georgia",
+    "CAAAAA+Georgia",
+    "DAAAAA+ArialMT",
+    "EAAAAA+Arial-BoldMT",
+    "FAAAAA+ArialMT",
+    "GAAAAA+ArialMT",
+    "HAAAAA+Arial-BoldMT",
+    "IAAAAA+ArialMT",
+    "JAAAAA+Menlo-Regular",
+    "KAAAAA+Georgia",
+    "LAAAAA+Georgia",
+    "MAAAAA+Arial-BoldMT",
+    "NAAAAA+ArialMT",
+    "OAAAAA+Georgia-Bold",
+    "PAAAAA+Georgia-Italic"
+  ],
+  "metadata": {
+    "author": "Arhan Canli",
+    "title": "Equity Value, Issuance, and Investment: Thirteen Identities and Unstable Evidence"
+  },
+  "minimum_extractable_characters_on_page": 527,
+  "page_height_points": [
+    841.92
+  ],
+  "page_width_points": [
+    594.96
+  ],
+  "pages": 4,
+  "passes": true,
+  "registry_key": "equity_value_investment",
+  "render_environment": {
+    "latex_compilation_validated": false,
+    "pdf_engine": "Google Chrome 151.0.7922.174",
+    "pdf_normalizer": "pypdf 6.16.1"
+  },
+  "schema": "canli.alphac-archival-pdf-validation.v1",
+  "source_bindings": {
+    "bibliography": {
+      "references.bib": {
+        "path": "references.bib",
+        "sha256": "a27cb6c87a6ceb156d079a973c6f8bba88e0f5fa5ac21c7ba271a19e8d064afe"
+      },
+      "references.json": {
+        "path": "references.json",
+        "sha256": "505b23b1eff3cc5ebafa2dc38db5129244b9a96bc9960667fc6617776f9b2e4e"
+      }
+    },
+    "paper_markdown": {
+      "path": "publication/equity-value-investment/v0.1.0/paper.md",
+      "sha256": "dd994a223a072aa3f3a68633ebf52552a308a569e60dc925066cc897b5cbde1d"
+    },
+    "renderer": {
+      "path": "scripts/build_archival_publication_papers.py",
+      "sha256": "d36584c93e00be6f75bc50da079d25a46d1da4e0d1b2d58b73661e3f527c9f3e"
+    },
+    "static_site_paper_html": {
+      "declared_markdown_sha256": "dd994a223a072aa3f3a68633ebf52552a308a569e60dc925066cc897b5cbde1d",
+      "matches_paper_markdown": true,
+      "path": "/Users/arhancanli/meridian/research/equity-value-investment-lineage.html",
+      "sha256": "3d6056abf1664582ea724c5e1ce0f0acb5cce11a32667f7e57cac21a61a6b2f2"
+    }
+  },
+  "status": "PASS_MACHINE_PDF_VALIDATION"
+}

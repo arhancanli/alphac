@@ -12,14 +12,17 @@
 # retraction, it is a footnote. So: WITHDRAWING A CLAIM MEANS ADDING A LINE HERE IN THE SAME
 # COMMIT. Nothing enforces that but this comment and the fact that the check runs before deploy.
 #
-# FORMAT — three "::"-separated fields (NOT "|": the patterns themselves contain alternation,
+# FORMAT — three required "::"-separated fields and one optional fourth field (NOT "|": the
+# patterns themselves contain alternation,
 # and splitting on "|" tore this file's own regexes in half the first time):
-#   <transparency-seq> :: <regex that must not be ASSERTED> :: <regex that makes it legitimate>
+#   <seq> :: <regex that must not be ASSERTED> :: <retraction regex> :: <local non-claim regex>
 #
 # The third field is what keeps this honest rather than merely silencing. A retracted number MUST
 # still be quotable inside its own retraction — deleting the history would be its own dishonesty.
 # So a match is a violation ONLY when the exemption pattern is absent from the surrounding window.
 # That means the check cannot be satisfied by hiding the number; it is satisfied by explaining it.
+# The optional fourth field is narrower. It may excuse only an unambiguous local metric assignment
+# that happens to share the digits, never a whole file or a nearby assertion.
 #
 # A blank exemption field means the claim may not appear at all, in any context.
 
@@ -56,3 +59,17 @@
 # definitionally a correction. No pattern in the SECOND field was touched; nothing that was
 # blocked before is permitted now except where a correction is present in the same window.
 # The rule was not weakened. The rule was taught the words we actually use to retract.
+
+# 2026-08-19 — ALPHAVINTAGE. Deployed 2026-08-10 at a quarter of the book on a verdict of ADD
+# (net Sharpe 0.3403, Newey-West t 1.82). Re-run 2026-08-16 with a calendar correction that
+# retains zero-exposure sessions: net Sharpe 0.2298, NW t 1.267, check `b_nw_t_ge_1p5` FALSE, and
+# artifacts/probe/cpi_surprise_size/result.json records `verdict: KILLED`. The published block in
+# scripts/paper_trading_state.py was hard-coded and never tracked the artifact, so the superseded
+# figures sat on the live site for three days describing a killed candidate as a validated one.
+# The numbers must remain quotable inside their own retraction; they may not be asserted bare.
+# The historical K30 curve legitimately contains `"gross_mean": 0.340330...`; that is neither
+# AlphaVintage nor Sharpe. The fourth field excludes only that exact local key/value assignment.
+# A `net_sharpe`, prose Sharpe, or any other bare 0.3403 remains blocked by the same second field.
+-- :: 0\.3403 :: withdraw|WITHDRAWN|superseded|KILLED|CORRECTION|we published|we said|not the :: ["']gross_mean["']\s*:\s*0\.3403
+-- :: Newey-West t of 1\.82 :: withdraw|WITHDRAWN|superseded|KILLED|CORRECTION|we published|we said
+-- :: net Sharpe 0\.34 with :: withdraw|WITHDRAWN|superseded|KILLED|CORRECTION|we published|we said

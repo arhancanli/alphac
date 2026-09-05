@@ -1,0 +1,189 @@
+{
+  "complete_recorded_union_extracted": true,
+  "distinct_recorded_hypothesis_identities": 2,
+  "every_identity_packet_complete": false,
+  "global_ledger": {
+    "path": "config/trial_accounting.json",
+    "sha256": "f15af7c989aded5da6c5259a7f7e5587377ab33977b5cd3c5b2395a84ea45043"
+  },
+  "identities": [
+    {
+      "candidate_match_is_verified": true,
+      "candidate_public_papers": [],
+      "completion_assessment": {
+        "blockers": [
+          {
+            "code": "IDENTITY_PREREGISTRATION_AND_ORIGINAL_ENVIRONMENT_NOT_BOUND",
+            "evidence": [
+              {
+                "path": "artifacts/research/equity_low_beta_family.json",
+                "sha256": "b51f32d5be62b777b27e3687c96c27fbe988a7d709b548b6ae850fd8d13c57cc"
+              },
+              {
+                "path": "var/experiments.jsonl",
+                "sha256": "b5a318c0997d980575f758451f509e0154eecbbb50d734e49a587d473062bd08"
+              }
+            ],
+            "finding": "The canonical family audit binds this identity to its immutable ledger measurement, but does not bind an identity-level preregistration, original code commit, runner hash, lockfile, and input snapshot. Those missing historical fields cannot be reconstructed from the family summary.",
+            "required_section": "preregistration_and_hashes"
+          },
+          {
+            "code": "IDENTITY_LEVEL_DECISION_PACKET_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/research/equity_low_beta_family.json",
+                "sha256": "b51f32d5be62b777b27e3687c96c27fbe988a7d709b548b6ae850fd8d13c57cc"
+              }
+            ],
+            "finding": "The family-level admission status is NOT_ESTABLISHED_RESEARCH_ONLY; it is not a preserved identity-level gate decision under the complete packet contract.",
+            "required_section": "admission_or_kill_decision"
+          },
+          {
+            "code": "IMMUTABLE_SUMMARY_LACKS_COMPLETE_IDENTITY_CURVE",
+            "evidence": [
+              {
+                "path": "artifacts/research/equity_low_beta_family.json",
+                "sha256": "b51f32d5be62b777b27e3687c96c27fbe988a7d709b548b6ae850fd8d13c57cc"
+              },
+              {
+                "path": "var/experiments.jsonl",
+                "sha256": "b5a318c0997d980575f758451f509e0154eecbbb50d734e49a587d473062bd08"
+              }
+            ],
+            "finding": "The immutable ledger summary preserves the first measurement but not the complete identity-level curve, uncertainty, stress, capacity, and diversification evidence required for packet completion.",
+            "required_section": "result_uncertainty_stress_capacity_and_diversification"
+          },
+          {
+            "code": "IDENTITY_CAPACITY_NOT_MEASURED",
+            "evidence": [
+              {
+                "path": "artifacts/research/equity_low_beta_family.json",
+                "sha256": "b51f32d5be62b777b27e3687c96c27fbe988a7d709b548b6ae850fd8d13c57cc"
+              }
+            ],
+            "finding": "The canonical family audit records capacity as UNMEASURED_OR_NOT_FAMILY_WIDE; no identity-level capacity evidence can be credited.",
+            "required_section": "result_uncertainty_stress_capacity_and_diversification"
+          }
+        ],
+        "config_hash": "e5596b16e4aa96da",
+        "evidence_grade": "immutable_ledger_summary_with_optional_family_artifact",
+        "family_audit": "artifacts/research/equity_low_beta_family.json",
+        "status": "AUDITED_NOT_CURRENTLY_COMPLETABLE"
+      },
+      "config_hash": "e5596b16e4aa96da",
+      "coverage_status": "VERIFIED_INCOMPLETE_IDENTITY_PACKET",
+      "family_paper_binding_status": "VERIFIED_TAXONOMY_BINDING",
+      "first_recorded_at": "2026-06-20T09:00:01.922000+00:00",
+      "hypothesis_key": "1db3096d8f18eef5",
+      "identity_packet_content_hash": "sha256:0431e3e8fb94d63a1135290503d8b5aa8d118a4de1b462df10eac451245abe79",
+      "identity_packet_status": "INCOMPLETE_BACKFILL_REQUIRED",
+      "label": "eq_bab_252",
+      "ledger_profile": "var",
+      "ledger_source_path": "var/experiments.jsonl",
+      "measurement": {
+        "annualized_sharpe": -0.5994729002572025,
+        "kurtosis": 6.834789178116851,
+        "observations": 728,
+        "skew": 0.2438756936624715
+      },
+      "missing_sections": [
+        "preregistration_and_hashes",
+        "point_in_time_data_and_survivorship_controls",
+        "execution_and_cost_model",
+        "result_uncertainty_stress_capacity_and_diversification",
+        "admission_or_kill_decision",
+        "code_environment_and_reproduction"
+      ],
+      "research_family_key": "equity_low_beta",
+      "research_family_title": "Equity low-beta and defensive factors",
+      "sleeve_context": "AlphaMax research",
+      "verified_family_paper_path": "/research/equity-low-beta-lineage.md",
+      "verified_packet_path": "/glassbox/trial-packets/1db3096d8f18eef5.json",
+      "verified_sections": [
+        "identity_and_authorship",
+        "economic_mechanism_and_falsifiable_hypothesis",
+        "literature_and_overlap_decision",
+        "family_and_union_trial_accounting",
+        "machine_readable_packet_and_stable_public_paper"
+      ]
+    },
+    {
+      "candidate_match_is_verified": true,
+      "candidate_public_papers": [],
+      "completion_assessment": {
+        "blockers": [
+          {
+            "code": "CURRENT_ENGINE_REJECTS_LEGACY_CROSS_ASSET_UNIVERSE",
+            "evidence": [
+              {
+                "alpha_names": [
+                  "eq_bab_252"
+                ],
+                "instrument_ids": 6880,
+                "ledger_config_hash": "bf2bfdac4d36238d",
+                "ledger_n_obs": 5384,
+                "ledger_sharpe_ann": -0.06791010404592955,
+                "non_equity_ids": 60,
+                "path": "artifacts/walkforward/prereg_bab/walkforward.json",
+                "sha256": "6ca535198369bb0fe094de8cf655c9df5fb6ee1647d805cc70ac721842e15ba5"
+              },
+              {
+                "path": "src/alphaforge/analytics/walkforward.py",
+                "sha256": "cd40981da0e9875e47bf8debd9eaf02deed1e45fc355d33572f2332f61e4cbab"
+              }
+            ],
+            "finding": "The frozen prereg_bab artifact contains 60 Binance perpetuals in an equity universe. Current code explicitly drops those ids under the 2026-07-18 shared-lake membership fix, so exact replay would require reintroducing a known universe-membership error.",
+            "required_section": "code_environment_and_reproduction"
+          }
+        ],
+        "config_hash": "bf2bfdac4d36238d",
+        "status": "AUDITED_NOT_CURRENTLY_COMPLETABLE"
+      },
+      "config_hash": "bf2bfdac4d36238d",
+      "coverage_status": "VERIFIED_INCOMPLETE_IDENTITY_PACKET",
+      "family_paper_binding_status": "VERIFIED_TAXONOMY_BINDING",
+      "first_recorded_at": "2026-06-21T09:35:02.235000+00:00",
+      "hypothesis_key": "6c08c11a04ef43c5",
+      "identity_packet_content_hash": "sha256:92aeb3c08a4ff96adcd59a47179f512257e4650b0acb7d290dadb59550f2f86b",
+      "identity_packet_status": "INCOMPLETE_BACKFILL_REQUIRED",
+      "label": "eq_bab_252",
+      "ledger_profile": "var",
+      "ledger_source_path": "var/experiments.jsonl",
+      "measurement": {
+        "annualized_sharpe": -0.06791010404592955,
+        "kurtosis": 311.7071306019138,
+        "observations": 5384,
+        "skew": 8.289812190867075
+      },
+      "missing_sections": [
+        "preregistration_and_hashes",
+        "point_in_time_data_and_survivorship_controls",
+        "execution_and_cost_model",
+        "result_uncertainty_stress_capacity_and_diversification",
+        "admission_or_kill_decision",
+        "code_environment_and_reproduction"
+      ],
+      "research_family_key": "equity_low_beta",
+      "research_family_title": "Equity low-beta and defensive factors",
+      "sleeve_context": "AlphaMax research",
+      "verified_family_paper_path": "/research/equity-low-beta-lineage.md",
+      "verified_packet_path": "/glassbox/trial-packets/6c08c11a04ef43c5.json",
+      "verified_sections": [
+        "identity_and_authorship",
+        "economic_mechanism_and_falsifiable_hypothesis",
+        "literature_and_overlap_decision",
+        "family_and_union_trial_accounting",
+        "machine_readable_packet_and_stable_public_paper"
+      ]
+    }
+  ],
+  "registry_key": "equity_low_beta",
+  "research_family_key": "equity_low_beta",
+  "schema": "canli.alphac-publication-trial-accounting-binding.v2",
+  "status": "COMPLETE_RECORDED_UNION_EXTRACTED_IDENTITY_PACKETS_MAY_BE_INCOMPLETE",
+  "trial_packet_manifest": {
+    "content_hash": "sha256:38758b89a1a5fa845487a640b1deab046fffcf61ede5ad3afb6371798b208371",
+    "path": "artifacts/research/trial_packet_manifest.json",
+    "sha256": "0147dd8e631ca24257e2db384bf01d4637a79371f1754b284f3f7e9637c1369c"
+  }
+}

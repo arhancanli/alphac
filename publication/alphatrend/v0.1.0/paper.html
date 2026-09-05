@@ -1,0 +1,341 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="author" content="Arhan Canli">
+<meta name="description" content="Archival preprint bundle by Arhan Canli. AlphaTrend is ALPHAC&#x27;s managed-futures trend program. It takes volatility-normalized directional positions from…">
+<meta name="generator" content="ALPHAC archival paper renderer">
+<link rel="canonical" href="https://canlicapital.com/publication/alphatrend/v0.1.0/paper">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Managed-Futures Trend as an Unresolved Diversifier: Complete Trial Lineage and Forward Burden of Proof">
+<meta property="og:description" content="Archival preprint bundle by Arhan Canli. AlphaTrend is ALPHAC&#x27;s managed-futures trend program. It takes volatility-normalized directional positions from…">
+<meta property="og:url" content="https://canlicapital.com/publication/alphatrend/v0.1.0/paper">
+<title>AlphaTrend: managed-futures trend lineage — archival paper</title><style>
+@page { size: A4; margin: 19mm 20mm 21mm; }
+* { box-sizing: border-box; }
+html { font-size: 10.6pt; }
+body { color: #17202a; font-family: Georgia, "Times New Roman", serif;
+       line-height: 1.46; margin: 0; }
+.cover { min-height: 247mm; display: flex; flex-direction: column;
+         justify-content: space-between; page-break-after: always; }
+.rule { width: 62px; height: 4px; background: #9a6b2f; margin: 8mm 0 14mm; }
+.kicker, .meta, .boundary { font-family: Arial, Helvetica, sans-serif; }
+.kicker { color: #6f532d; font-size: 8.4pt; font-weight: 700;
+          letter-spacing: .13em; text-transform: uppercase; }
+h1 { color: #111923; font-size: 29pt; font-weight: 500; line-height: 1.08;
+     margin: 0; max-width: 155mm; }
+.author { font-size: 14pt; margin-top: 13mm; }
+.affiliation { color: #53606d; font-family: Arial, Helvetica, sans-serif;
+               font-size: 9.4pt; }
+.meta { border-top: 1px solid #c8c1b5; color: #4b5661; display: grid;
+        font-size: 8.5pt; gap: 2mm; grid-template-columns: 34mm 1fr; padding-top: 6mm; }
+.meta strong { color: #202b36; letter-spacing: .04em; text-transform: uppercase; }
+.boundary { background: #f1eee8; border-left: 3px solid #9a6b2f; color: #35414c;
+            font-size: 8.7pt; margin-top: 8mm; padding: 4mm 5mm; }
+.paper { max-width: 170mm; }
+.paper > p:first-child { background: #f4f2ed; border: 1px solid #ddd7cc;
+                         font-family: Arial, Helvetica, sans-serif;
+                         font-size: 8.2pt; padding: 4mm; }
+h2 { border-bottom: .6pt solid #cfc8bc; color: #17202a; font-size: 16pt;
+     font-weight: 500; margin: 9mm 0 3mm; padding-bottom: 1.5mm;
+     page-break-after: avoid; }
+h3 { color: #263746; font-size: 12.5pt; margin: 6mm 0 2mm;
+     page-break-after: avoid; }
+p { margin: 0 0 3.2mm; orphans: 3; widows: 3; }
+ul, ol { margin: 2mm 0 4mm 6mm; padding-left: 5mm; }
+li { margin-bottom: 1.3mm; }
+.bibliography li { margin-bottom: 2.2mm; }
+.bibliography a { overflow-wrap: anywhere; word-break: break-word; }
+table { border-collapse: collapse; font-family: Arial, Helvetica, sans-serif;
+        font-size: 7.4pt; margin: 4mm 0 6mm; page-break-inside: avoid; width: 100%; }
+th { background: #e8e3da; color: #222d37; font-weight: 700; }
+th, td { border: .5pt solid #c8c1b5; padding: 1.5mm 1.8mm;
+         text-align: left; vertical-align: top; }
+code { background: #f0eee9; border-radius: 2px;
+       font-family: "SFMono-Regular", Consolas, monospace; font-size: 8.1pt;
+       padding: .2mm .7mm; }
+pre { background: #18222c; color: #edf1f4; font-size: 7.4pt; line-height: 1.35;
+      overflow-wrap: anywhere; padding: 4mm; white-space: pre-wrap; }
+a { color: #5f4828; text-decoration: underline; text-decoration-thickness: .5pt; }
+blockquote { border-left: 2pt solid #b48a50; color: #465461;
+             margin-left: 0; padding-left: 5mm; }
+</style></head><body>
+<section class="cover"><div><div class="kicker">Canli Capital Research / ALPHAC</div>
+<div class="rule"></div><h1>Managed-Futures Trend as an Unresolved Diversifier: Complete Trial Lineage and Forward Burden of Proof</h1><div class="author">Arhan Canli</div>
+<div class="affiliation">Founder, System Architect, and Quantitative Researcher<br>
+Canli Capital / AlphaC Algorithms</div></div><div><div class="meta">
+<strong>Version</strong><span>0.1.0</span>
+<strong>Released</strong><span>23 August 2026</span>
+<strong>Registry key</strong><span>alphatrend_managed_futures</span>
+<strong>Status</strong><span>Working paper preprint / not peer reviewed</span></div>
+<div class="boundary">Research simulation and, where explicitly identified, Alpaca paper
+evidence. No funded performance, peer review, independent replication, external acceptance, or
+future return is claimed.</div></div></section><article class="paper"><p><strong>Short title:</strong> AlphaTrend: managed-futures trend lineage<br><strong>Author:</strong> Arhan Canli, Founder, System Architect, and Quantitative Researcher, Canli Capital<br><strong>Research system:</strong> ALPHAC / AlphaForge<br><strong>Family key:</strong> <code>managed_futures_trend</code><br><strong>Status:</strong> public research record; not peer reviewed; not an investment solicitation<br><strong>Evidence date:</strong> 2026-08-22</p>
+<h2>Abstract</h2>
+<p>AlphaTrend is ALPHAC&#39;s managed-futures trend program. It takes volatility-normalized directional
+positions from medium- and long-horizon price trends across liquid exchange-traded market proxies,
+then combines them under a covariance-aware risk budget. This paper reconciles all 21 charged
+hypothesis identities in the family rather than presenting the strongest backtest alone.</p>
+<p>The result is promising as a diversifier but statistically unresolved. Nineteen identities have
+finite Sharpe estimates ranging from -0.238 to +0.345. Six identities retain complete
+walk-forward artifacts, seven retain source-bound summary reports, and eight retain immutable
+ledger summaries without full curves. Thirteen have persisted artifact-era DSR values; zero clear
+the 0.95 gate. The 17-market baseline had Sharpe 0.289 and 9.69% vol-matched maximum drawdown in a
+replica screen. Correlation whitening reduced Sharpe to 0.186, a single 110-session signal reached
+0.271, and expanding to 33 ETFs reduced Sharpe to 0.128 while worsening vol-matched drawdown to
+14.42%. AlphaTrend remains a paper evidence-collection sleeve, not an established forward result.</p>
+<h2>Claim boundary</h2>
+<p>This paper establishes the implemented hypothesis, complete family trial count, persisted results,
+evidence gaps, and historical decisions. It does not establish future return, an achieved forward
+Sharpe, expected maximum drawdown, capacity, live-money performance, or external attestation.
+Paper execution through Alpaca is clearly separated from historical simulation.</p>
+<h2>Economic hypothesis and literature</h2>
+<p>The falsifiable hypothesis is that the sign and magnitude of an asset&#39;s medium-horizon excess-price
+move contains information about its next return, and that combining trends across genuinely
+different markets improves risk-adjusted performance. Possible mechanisms include slow information
+diffusion, investor underreaction, positioning constraints, and compensation for bearing reversal
+risk. These mechanisms motivate a prior; they do not validate ALPHAC&#39;s implementation.</p>
+<ul>
+<li>Moskowitz, Ooi, and Pedersen document time-series momentum across futures and forward markets
+(<a href="https://doi.org/10.1016/j.jfineco.2011.11.003">Journal of Financial Economics, 2012</a>).</li>
+<li>Hurst, Ooi, and Pedersen examine long historical evidence for trend following
+(<a href="https://doi.org/10.3905/jpm.2017.44.1.015">Journal of Portfolio Management, 2017</a>).</li>
+<li>Lempérière and coauthors study trend following over roughly two centuries and emphasize crisis
+behavior and risk management
+(<a href="https://doi.org/10.21314/jois.2014.043">Journal of Investment Strategies, 2014</a>).</li>
+<li>Baltas and Kosowski analyze momentum and trend construction in futures markets
+(<a href="https://doi.org/10.2139/ssrn.1968996">SSRN working paper</a>).</li>
+</ul>
+<h2>ALPHAC implementation</h2>
+<p>The core signal blends three volatility-normalized price trends:</p>
+<pre><code class="language-text">trend(i,t,L) = [log P(i,t) - log P(i,t-L)] / [sigma(i,t) * sqrt(L)]
+signal(i,t)  = mean(trend(i,t,63), trend(i,t,126), trend(i,t,252))
+</code></pre>
+<p>Weights are determined from information available through session <code>t</code> and become effective on the
+next session. The principal ETF implementation uses 17 proxies spanning equities, rates,
+commodities, and currencies, a 33-session volatility estimate, covariance-aware allocation,
+monthly rebalancing, gross and name caps, 6 basis points per side, and 50 basis points annualized
+short borrow. The full walk-forward path uses purged anchored-expanding windows. A separate
+futures-proxy experiment is retained as a distinct identity because its instruments and data path
+are different.</p>
+<h2>Trial lineage</h2>
+<table>
+<thead>
+<tr>
+<th>Identity group</th>
+<th align="right">Charged identities</th>
+<th>Evidence retained</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Core signal/cadence/universe studies</td>
+<td align="right">14</td>
+<td>Six full walk-forwards; eight immutable ledger summaries</td>
+</tr>
+<tr>
+<td>Allocator and signal-horizon screen</td>
+<td align="right">3</td>
+<td>Source-bound summary report</td>
+</tr>
+<tr>
+<td>Fixed and selected breadth screen</td>
+<td align="right">4</td>
+<td>Source-bound summary report</td>
+</tr>
+<tr>
+<td><strong>Total</strong></td>
+<td align="right"><strong>21</strong></td>
+<td>Every identity remains in the family and union burden</td>
+</tr>
+</tbody></table>
+<p>The breadth count includes two post-hoc procedures: dropping the largest full-sample PnL
+contributor and greedily adding markets only when estimated effective breadth rises. These are not
+free diagnostics. They generated measured return configurations and are charged as selection
+identities. Rounded equality between the ARP baseline and breadth baseline is not used to collapse
+them because their exact return curves were not preserved together.</p>
+<p>The machine-readable source of truth is
+<a href="/glassbox/alphatrend_family.json"><code>/glassbox/alphatrend_family.json</code></a>. It binds every hypothesis
+key to the immutable ledger, strongest available artifact, source hash, exact configuration,
+evidence grade, and missing measurements.</p>
+<h2>Complete walk-forward evidence</h2>
+<table>
+<thead>
+<tr>
+<th>Configuration</th>
+<th align="right">Sharpe</th>
+<th align="right">Max DD</th>
+<th align="right">Turnover/yr</th>
+<th align="right">Artifact-era DSR</th>
+<th>Decision</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>63/126/252 blend, 17 ETFs, 21-session rebalance</td>
+<td align="right">0.263</td>
+<td align="right">10.29%</td>
+<td align="right">6.44×</td>
+<td align="right">~0.000</td>
+<td>Fail DSR</td>
+</tr>
+<tr>
+<td>126-session signal</td>
+<td align="right">0.175</td>
+<td align="right">13.32%</td>
+<td align="right">5.47×</td>
+<td align="right">0.704</td>
+<td>Fail DSR</td>
+</tr>
+<tr>
+<td>252-session signal</td>
+<td align="right">0.182</td>
+<td align="right">11.52%</td>
+<td align="right">4.93×</td>
+<td align="right">0.700</td>
+<td>Fail DSR</td>
+</tr>
+<tr>
+<td>Blend, 5-session rebalance</td>
+<td align="right">0.278</td>
+<td align="right">10.91%</td>
+<td align="right">12.31×</td>
+<td align="right">0.798</td>
+<td>Fail DSR</td>
+</tr>
+<tr>
+<td>Blend, 10-session rebalance</td>
+<td align="right">0.311</td>
+<td align="right">10.19%</td>
+<td align="right">9.39×</td>
+<td align="right">0.816</td>
+<td>Fail DSR</td>
+</tr>
+<tr>
+<td>Real-futures proxy path</td>
+<td align="right">-0.238</td>
+<td align="right">16.03%</td>
+<td align="right">8.97×</td>
+<td align="right">~0.000</td>
+<td>Fail DSR</td>
+</tr>
+</tbody></table>
+<p>The highest complete-artifact Sharpe is not adopted as proof. It was one of several cadence and
+signal choices, remained below the historical DSR gate, and increased turnover materially.</p>
+<h2>Allocator and signal-horizon screen</h2>
+<p>All three rows share 5,161 sessions and are historical summaries without daily curves or kurtosis.
+Maximum drawdown is shown after matching each stream to baseline realized volatility.</p>
+<table>
+<thead>
+<tr>
+<th>Variant</th>
+<th align="right">Sharpe</th>
+<th align="right">Realized vol</th>
+<th align="right">Vol-matched max DD</th>
+<th align="right">Turnover/yr</th>
+<th align="right">Artifact-era DSR</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Baseline 63/126/252 blend</td>
+<td align="right">0.289</td>
+<td align="right">4.49%</td>
+<td align="right">9.69%</td>
+<td align="right">4.65×</td>
+<td align="right">0.000</td>
+</tr>
+<tr>
+<td>Correlation-whitened allocator</td>
+<td align="right">0.186</td>
+<td align="right">2.75%</td>
+<td align="right">12.76%</td>
+<td align="right">7.79×</td>
+<td align="right">0.000</td>
+</tr>
+<tr>
+<td>Single 110-session signal</td>
+<td align="right">0.271</td>
+<td align="right">4.56%</td>
+<td align="right">10.57%</td>
+<td align="right">5.31×</td>
+<td align="right">0.000</td>
+</tr>
+</tbody></table>
+<p>Correlation whitening did not improve the baseline. The 110-session signal was close but weaker.
+Neither is promoted.</p>
+<h2>Breadth experiment</h2>
+<table>
+<thead>
+<tr>
+<th>Basket/procedure</th>
+<th align="right">Sharpe</th>
+<th align="right">N_eff</th>
+<th align="right">Avg. pair correlation</th>
+<th align="right">Vol-matched max DD</th>
+<th>Decision</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Baseline 17</td>
+<td align="right">0.289</td>
+<td align="right">13.52</td>
+<td align="right">0.127</td>
+<td align="right">9.69%</td>
+<td>Control</td>
+</tr>
+<tr>
+<td>Expanded 33</td>
+<td align="right">0.128</td>
+<td align="right">11.01</td>
+<td align="right">0.250</td>
+<td align="right">14.42%</td>
+<td>Reject</td>
+</tr>
+<tr>
+<td>Expanded minus largest contributor (SHY)</td>
+<td align="right">0.217</td>
+<td align="right">10.11</td>
+<td align="right">0.264</td>
+<td align="right">10.04%</td>
+<td>Reject</td>
+</tr>
+<tr>
+<td>Greedy N_eff-pruned 22</td>
+<td align="right">0.204</td>
+<td align="right">14.76</td>
+<td align="right">0.153</td>
+<td align="right">9.58%</td>
+<td>Reject</td>
+</tr>
+</tbody></table>
+<p>More tickers did not mean more independent bets. The 33-market expansion raised average
+correlation, reduced effective breadth, reduced Sharpe, and worsened drawdown. The selected
+22-market basket raised estimated N_eff relative to baseline but still reduced Sharpe. This is a
+useful null: breadth acquisition must be exposure-aware and independently validated, not counted by
+ticker quantity.</p>
+<h2>Uncertainty, missing evidence, and capacity</h2>
+<p>Eight identities have only immutable ledger summaries; two of those have non-finite Sharpe because
+their reduced instrument sets did not support a valid estimate. They remain charged and visible.
+Summary-only ARP and breadth reports preserve no exact daily curves or kurtosis, so current-union
+DSR cannot be honestly reconstructed for those rows. The family packet therefore reports original
+DSR only where it exists and never substitutes a rounded estimate.</p>
+<p>No persisted AlphaTrend capacity sweep measures market impact, ETF creation/redemption effects,
+borrow availability, or stressed liquidity across AUM. Capacity is <strong>unmeasured</strong>. A gross cap and
+liquid ticker list are implementation controls, not capacity evidence.</p>
+<h2>Paper execution and forward burden</h2>
+<p>AlphaTrend is one of the broker-executed Alpaca paper sleeves. Its public paper record is useful
+only if it remains continuous, broker-reconciled, and configuration-controlled. The record is too
+short to establish a forward Sharpe or the program&#39;s expected maximum-drawdown objective. Historical
+simulations selected from the 228-identity union cannot be relabelled as forward evidence.</p>
+<p>The family earns at most one sleeve slot. It remains in evidence collection because the mechanism
+is distinct and the paper program needs diversifiers, not because a backtest passed the governing
+standard. Any production change requires a versioned declaration; any future research variant must
+be registered before returns are inspected.</p>
+<h2>Reproduction and provenance</h2>
+<p>Run from the repository environment:</p>
+<pre><code class="language-text">uv run python scripts/audit_alphatrend_family.py
+uv run python scripts/build_trial_packet_manifest.py
+uv run pytest -q tests/unit/test_alphatrend_family.py tests/unit/test_trial_packet_manifest.py
+</code></pre>
+<p>The audit reads only immutable experiment ledgers and persisted artifacts. It opens no holdout,
+records no trial, and fails if identity count, artifact Sharpe, source hash, or evidence mapping
+drifts. Authorship and research leadership are credited to Arhan Canli; that credit does not alter
+the statistical claim boundary.</p><section class="bibliography"><h2>References</h2><ol><li>Tobias J. Moskowitz, Yao Hua Ooi, Lasse Heje Pedersen (2012). <em>Time series momentum</em>. Journal of Financial Economics. <a href="https://doi.org/10.1016/j.jfineco.2011.11.003">https://doi.org/10.1016/j.jfineco.2011.11.003</a></li><li>Brian Hurst, Yao Hua Ooi, Lasse Heje Pedersen (2017). <em>A Century of Evidence on Trend-Following Investing</em>. The Journal of Portfolio Management. <a href="https://doi.org/10.3905/jpm.2017.44.1.015">https://doi.org/10.3905/jpm.2017.44.1.015</a></li><li>Yves Lempérière, Cyril Deremble, Philip Seager, Marc Potters, Jean-Philippe Bouchaud (2014). <em>Two centuries of trend following</em>. The Journal of Investment Strategies. <a href="https://doi.org/10.21314/jois.2014.043">https://doi.org/10.21314/jois.2014.043</a></li><li>Nick Baltas, Robert Kosowski (2011). <em>Momentum Strategies in Futures Markets and Trend-following Funds</em>. . <a href="https://doi.org/10.2139/ssrn.1968996">https://doi.org/10.2139/ssrn.1968996</a></li></ol></section></article>
+</body></html>

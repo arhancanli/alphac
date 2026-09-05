@@ -1,0 +1,55 @@
+{
+  "abstract": "A point-in-time CPI-surprise IWM-minus-SPY strategy appeared to pass its locked rules, but missing-release and active-day calendar defects invalidated that reading. A sealed, untuned correction produced net Sharpe 0.2298, Newey-West t 1.2673 and maximum drawdown -25.1%, so the result is KILLED. The separately labelled Alpaca paper sleeve remains a frozen forward experiment rather than validated alpha.",
+  "authors": [
+    {
+      "affiliation": "Canli Capital / AlphaC Algorithms",
+      "family_name": "Canli",
+      "full_name": "Arhan Canli",
+      "given_name": "Arhan",
+      "roles": [
+        "CONCEPTUALIZATION",
+        "METHODOLOGY",
+        "SOFTWARE",
+        "VALIDATION",
+        "INVESTIGATION",
+        "DATA_CURATION",
+        "WRITING",
+        "PROJECT_ADMINISTRATION"
+      ]
+    }
+  ],
+  "capital_kind": "ALPACA_PAPER_AND_RESEARCH_SIMULATION_SEPARATELY_LABELLED",
+  "claim_boundary": "This release is a preparation bundle, not an external submission. It establishes no funded performance, DOI, peer review, citation, independent replication, or future return.",
+  "date": "2026-08-23",
+  "external_identifiers": [],
+  "failed_claims": [
+    "THE_CORRECTED_STANDALONE_SIGNAL_PASSES_THE_LOCKED_SIGNIFICANCE_GATE",
+    "ALPHAVINTAGE_IS_RESEARCH_ADMITTED",
+    "THE_ALPACA_PAPER_RECORD_ESTABLISHES_FORWARD_PERFORMANCE",
+    "HISTORICAL_DIVERSIFICATION_ESTABLISHES_PROSPECTIVE_DIVERSIFICATION"
+  ],
+  "keywords": [
+    "point-in-time data",
+    "inflation surprise",
+    "equity size spread",
+    "research reproducibility",
+    "backtest correction",
+    "deployment governance",
+    "quantitative finance"
+  ],
+  "language": "en",
+  "peer_reviewed": false,
+  "primary_decision": "KILLED",
+  "primary_measurements": {
+    "active_days": 5998,
+    "max_drawdown": -0.2509779478479198,
+    "net_sharpe": 0.2298358829229609,
+    "newey_west_t": 1.2673190577321936,
+    "portfolio_days": 6296
+  },
+  "schema": "canli.alphac-sleeve-paper.v1",
+  "short_title": "Point-in-time inflation surprise and the equity size spread",
+  "title": "Point-in-Time Inflation Surprise and the Equity Size Spread: A Corrected Null, a Deployment-Governance Failure, and a Frozen Forward Experiment",
+  "type": "WORKING_PAPER_PREPRINT_NOT_PEER_REVIEWED",
+  "version": "1.0.0"
+}

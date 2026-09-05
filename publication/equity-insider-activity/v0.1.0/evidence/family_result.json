@@ -1,0 +1,88 @@
+{
+  "author": "Arhan Canli",
+  "claim_boundary": "Immutable historical evidence only; no forward performance, admitted sleeve, live execution, or future-return claim.",
+  "evidence_date": "2026-08-22",
+  "family_key": "equity_insider_activity",
+  "identities": [
+    {
+      "config_hash": "a18b907b9b8b4002",
+      "configuration": {
+        "cluster_days": 30,
+        "costs": {
+          "issuer_oneway": 0.0006,
+          "spy_oneway": 0.0001
+        },
+        "filing_delay_sessions": 2,
+        "hedge": "trailing_252d_spy_beta_clamped_0_3",
+        "hold_sessions": 63,
+        "mechanism": "clustered_form4_open_market_purchases",
+        "min_insiders": 2,
+        "min_value": 100000.0,
+        "oos_start": "2016-01-01",
+        "positioning": "equal_notional_gross_1",
+        "prereg": "docs/design/PREREG_INSIDER_CLUSTERS.md",
+        "probe": "insider_purchase_clusters"
+      },
+      "evidence_grade": "immutable_ledger_summary_with_optional_family_artifact",
+      "hypothesis_key": "7c522581b35475e3",
+      "ledger_source_path": "var/experiments.jsonl",
+      "ledger_source_sha256": "b5a318c0997d980575f758451f509e0154eecbbb50d734e49a587d473062bd08",
+      "result": {
+        "annualized_sharpe": -0.9931387477992796,
+        "artifact_era_dsr": null,
+        "kurtosis": 16.467107498086687,
+        "maximum_drawdown": null,
+        "observations": 2669,
+        "skew": -0.3087967709985932
+      }
+    },
+    {
+      "config_hash": "89b95c2e97f2b7f2",
+      "configuration": {
+        "cluster_days": 30,
+        "costs": {
+          "issuer_oneway": 0.0006,
+          "spy_oneway": 0.0001
+        },
+        "filing_delay_sessions": 2,
+        "hedge": "trailing_252d_spy_beta_clamped_0_3",
+        "hold_sessions": 63,
+        "mechanism": "clustered_form4_open_market_purchases",
+        "min_insiders": 2,
+        "min_value": 100000.0,
+        "oos_start": "2016-01-01",
+        "positioning": "equal_notional_gross_1",
+        "prereg": "docs/design/PREREG_INSIDER_CLUSTERS.md",
+        "probe": "insider_purchase_clusters",
+        "return_aggregation": "weighted_simple_returns"
+      },
+      "evidence_grade": "immutable_ledger_summary_with_optional_family_artifact",
+      "hypothesis_key": "d614fdc1daa2906c",
+      "ledger_source_path": "var/experiments.jsonl",
+      "ledger_source_sha256": "b5a318c0997d980575f758451f509e0154eecbbb50d734e49a587d473062bd08",
+      "result": {
+        "annualized_sharpe": -0.24327562849906975,
+        "artifact_era_dsr": null,
+        "kurtosis": 17.101003848389343,
+        "maximum_drawdown": null,
+        "observations": 2669,
+        "skew": 0.2909259919436605
+      }
+    }
+  ],
+  "related_family_artifact": {
+    "path": "artifacts/probe/insider_purchase_clusters/result.json",
+    "sha256": "126ff81e3e47d96571095d7447d1f8fb9ce23737d8d6c4a7b7359a3a4982a97b"
+  },
+  "schema": "canli.alphac-equity-insider-activity-family.v1",
+  "summary": {
+    "admission_status": "NOT_ESTABLISHED_RESEARCH_ONLY",
+    "broker_reconciled_forward_status": "NOT_ESTABLISHED",
+    "capacity_status": "UNMEASURED_OR_NOT_FAMILY_WIDE",
+    "distinct_hypothesis_identities": 2,
+    "finite_sharpe_identities": 2,
+    "maximum_annualized_sharpe": -0.24327562849906975,
+    "minimum_annualized_sharpe": -0.9931387477992796,
+    "positive_sharpe_identities": 0
+  }
+}

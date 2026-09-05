@@ -175,11 +175,18 @@ silence. Those issuers remain in the frozen denominator.
   are imputed.
 - The frozen Item 703 sample is 240/240 collected with exact accession identity. The year-balanced
   60-document `labels.csv` is blank by design. No parser output or return data exists.
+- A deterministic offline reviewer bundle now preserves those 60 immutable source documents under
+  `artifacts/labeling/repurchase_item703_blind/`, with a blank shuffled review sheet and explicit
+  instructions. Its manifest content hash is
+  `sha256:0e70f38f7d07e2d22d5834ce1336401518f3704f29023097be3d973e14c928c8`.
+  The bundle contains no parser prediction, price, return, or aggregate machine result and spends
+  zero return identities.
 
-The only authorized next action is an independent reviewer completing
-`artifacts/feasibility/repurchase_issuance_flow/item703/labels.csv` from the linked filing documents
-without inspecting parser output. The seal command must run before parsing. Until then the honest
-decision is `BLIND_ITEM703_LABELING_REQUIRED`, not pass, kill, or return authorization.
+The only authorized next action is an independent reviewer completing the shuffled offline review
+sheet from its bundled filing documents, then transferring those source labels to
+`artifacts/feasibility/repurchase_issuance_flow/item703/labels.csv` without inspecting parser
+output. The seal command must run before parsing. Until then the honest decision is
+`BLIND_ITEM703_LABELING_REQUIRED`, not pass, kill, or return authorization.
 
 ```bash
 uv run python scripts/build_repurchase_issuance_manifest.py
@@ -190,7 +197,7 @@ uv run python scripts/audit_repurchase_issuance_semantics.py
 uv run python scripts/build_repurchase_item703_manifest.py
 uv run python scripts/collect_repurchase_item703_documents.py
 # Complete the frozen labels.csv independently; do not run or inspect parser output.
-uv run python scripts/seal_repurchase_item703_labels.py
+uv run python scripts/seal_repurchase_item703_labels.py --attestation completed_attestation.json
 uv run python scripts/parse_repurchase_item703_documents.py
 uv run python scripts/audit_repurchase_item703_extraction.py
 uv run python scripts/audit_repurchase_issuance_feasibility.py

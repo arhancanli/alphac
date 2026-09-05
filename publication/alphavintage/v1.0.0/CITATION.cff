@@ -1,0 +1,15 @@
+cff-version: 1.2.0
+message: "If you use this working paper or evidence bundle, please cite Arhan Canli."
+title: "Point-in-Time Inflation Surprise and the Equity Size Spread: A Corrected Null, a Deployment-Governance Failure, and a Frozen Forward Experiment"
+type: article
+version: "1.0.0"
+date-released: "2026-08-23"
+authors:
+  - family-names: "Canli"
+    given-names: "Arhan"
+repository-code: "https://github.com/arhancanli/alphac"
+url: "https://canlicapital.com/research/alphavintage-macro-surprise-lineage.md"
+abstract: >-
+  A corrected null and deployment-governance case study for a point-in-time CPI-surprise
+  IWM-minus-SPY strategy. Preprint; not peer reviewed; Alpaca paper and simulation evidence are
+  separately labelled.

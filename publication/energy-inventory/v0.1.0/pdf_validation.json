@@ -1,0 +1,71 @@
+{
+  "author": "Arhan Canli",
+  "claim_boundary": "Machine validation proves page geometry, extractable text, metadata, font resources, and required disclosures. Visual inspection is separate and is not peer review, content validation, accessibility certification, or independent replication.",
+  "extractable_characters": 5868,
+  "failures": [],
+  "font_resources": [
+    "AAAAAA+Arial-BoldMT",
+    "BAAAAA+Georgia",
+    "CAAAAA+Georgia",
+    "DAAAAA+ArialMT",
+    "EAAAAA+Arial-BoldMT",
+    "FAAAAA+ArialMT",
+    "GAAAAA+ArialMT",
+    "HAAAAA+Arial-BoldMT",
+    "IAAAAA+ArialMT",
+    "JAAAAA+Menlo-Regular",
+    "KAAAAA+Georgia",
+    "LAAAAA+Georgia",
+    "MAAAAA+Arial-BoldMT",
+    "NAAAAA+ArialMT",
+    "OAAAAA+Georgia-Bold",
+    "PAAAAA+Georgia-Italic"
+  ],
+  "metadata": {
+    "author": "Arhan Canli",
+    "title": "Petroleum Inventory Scarcity: One Negative Macro-Commodity Identity"
+  },
+  "minimum_extractable_characters_on_page": 506,
+  "page_height_points": [
+    841.92
+  ],
+  "page_width_points": [
+    594.96
+  ],
+  "pages": 4,
+  "passes": true,
+  "registry_key": "energy_inventory",
+  "render_environment": {
+    "latex_compilation_validated": false,
+    "pdf_engine": "Google Chrome 151.0.7922.174",
+    "pdf_normalizer": "pypdf 6.16.1"
+  },
+  "schema": "canli.alphac-archival-pdf-validation.v1",
+  "source_bindings": {
+    "bibliography": {
+      "references.bib": {
+        "path": "references.bib",
+        "sha256": "6c1645ac37ff57a5f48a32baa5f1c49bcd1979504be5f00515a5e2b01a82a9db"
+      },
+      "references.json": {
+        "path": "references.json",
+        "sha256": "842499a7709f59c61069ff2adb623a7b84bcd7ed81d3f916be4147859a5df307"
+      }
+    },
+    "paper_markdown": {
+      "path": "publication/energy-inventory/v0.1.0/paper.md",
+      "sha256": "cd042321f3001f1c65491ba33904075dde4a70b8f6d46765419557ac8ddfe519"
+    },
+    "renderer": {
+      "path": "scripts/build_archival_publication_papers.py",
+      "sha256": "d36584c93e00be6f75bc50da079d25a46d1da4e0d1b2d58b73661e3f527c9f3e"
+    },
+    "static_site_paper_html": {
+      "declared_markdown_sha256": "cd042321f3001f1c65491ba33904075dde4a70b8f6d46765419557ac8ddfe519",
+      "matches_paper_markdown": true,
+      "path": "/Users/arhancanli/meridian/research/energy-inventory-lineage.html",
+      "sha256": "cfb4f52b7db0a04a164468ad2473755042f28c20ae02e94e2a3aff569b3c984d"
+    }
+  },
+  "status": "PASS_MACHINE_PDF_VALIDATION"
+}

@@ -1,0 +1,73 @@
+{
+  "author": "Arhan Canli",
+  "claim_boundary": "This is a zero-new-trial replay against the current local state. It compares current behavior with the selected historical artifact, but it is not an exact software-only replay, a fully frozen-input replay, a fresh-data replication, or an independent replication.",
+  "comparison": {
+    "first_divergence": {
+      "delta_replay_minus_source": -0.08753026649355888,
+      "overlap_row_index": 1,
+      "replay_equity": 100088.83227235998,
+      "source_equity": 100088.91980262648,
+      "ts": 1644285600000
+    },
+    "max_absolute_equity_difference": 35442.22073910621,
+    "overlap_rows": 37776,
+    "replay_rows": 37776,
+    "replay_summary": {
+      "cagr": 0.00763704456570391,
+      "fees_paid": 6187.9259149451755,
+      "final_equity": 103335.15565193011,
+      "funding_net": 14668.27528924918,
+      "max_dd": 0.20982761399491723,
+      "sharpe": 0.10652337594597801
+    },
+    "source_rows": 37776,
+    "source_summary": {
+      "cagr": 0.07797864166745705,
+      "fees_paid": 7372.717709488011,
+      "final_equity": 138236.26519577613,
+      "funding_net": 19500.01981558874,
+      "max_dd": 0.19603715542855882,
+      "sharpe": 0.6766103810860954
+    },
+    "summary_deltas_replay_minus_source": {
+      "cagr": -0.07034159710175314,
+      "fees_paid": -1184.7917945428353,
+      "final_equity": -34901.10954384602,
+      "funding_net": -4831.74452633956,
+      "max_dd": 0.01379045856635841,
+      "sharpe": -0.5700870051401173
+    },
+    "timestamps_equal": true
+  },
+  "content_hash": "sha256:d1fb9ae03ca6b092a34e204450216f79cd5d7a96f84615c957f9b7f583c19eaf",
+  "exact_replay": false,
+  "experiment_ledger_lines_after": 226,
+  "experiment_ledger_lines_before": 226,
+  "independent_replication": false,
+  "input_freeze_audit": {
+    "conclusion": "The non-exact replay cannot be attributed to software drift alone. The source artifact did not bind every derived input consumed by the run.",
+    "historical_instrument_metadata_snapshot_bound_by_source": false,
+    "historical_universe_membership_snapshot_bound_by_source": false,
+    "market_rows_portability_manifest_available": true,
+    "observed_first_decision_cross_section": {
+      "replay_order_records": 21,
+      "source_only_instrument": "BINANCE:PERP:EOSUSDT",
+      "source_order_records": 22
+    }
+  },
+  "output_binding": {
+    "equity_sha256": "c2820be452d1687a329690671891f5c38b449b95991d6e38dd57e3e3460932c2",
+    "path": "artifacts/probe/crypto_carry_frozen_current_code_replay",
+    "walkforward_sha256": "0bcaddbbd75e3ae818303a3e577d7c8c8654f9e51358b70edf9c040d49b5ab50"
+  },
+  "replay_executed": true,
+  "schema": "canli.alphac-crypto-carry-current-state-replay.v2",
+  "source_binding": {
+    "equity_sha256": "37598579af6f34892e40902e2a357e4b07993b3e572012a1da311f7e91798a2a",
+    "path": "artifacts/walkforward/crypto_carry_wk/walkforward.json",
+    "sha256": "a72c11172a730536336a079d26394cd926f88df06ce36cb3b5483159a99464ee"
+  },
+  "status": "REPLAY_EXECUTED_MATERIAL_CODE_OR_MUTABLE_INPUT_DRIFT_QUANTIFIED",
+  "strategy_claim_changed": false,
+  "zero_new_trials": true
+}

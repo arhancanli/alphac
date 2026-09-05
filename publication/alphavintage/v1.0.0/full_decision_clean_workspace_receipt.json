@@ -1,0 +1,693 @@
+{
+  "acceptance_criterion": {
+    "all_four_gate_values_and_verdict_must_match": true,
+    "disclosure": "The engineering equivalence tolerance follows the already disclosed portable core receipt and cannot validate the hypothesis. Exact deltas are published.",
+    "exact_counts_required": true,
+    "metric_absolute_tolerance": 5e-05,
+    "prospectively_preregistered": false
+  },
+  "author": "Arhan Canli",
+  "benchmark_curve_redistribution_review_complete": false,
+  "claim_boundary": "An author-run temporary workspace freshly acquired the public macro and market inputs, regenerated AlphaVintage, and replayed all four locked decision gates. The three pre-existing benchmark strategy curves were hash-bound inputs copied from the author repository; their upstream strategies were not regenerated from raw inputs and their redistribution review is incomplete. This is therefore a full AlphaVintage decision replay, not a full multi-sleeve end-to-end reproduction, portable public bundle, or independent replication.",
+  "content_hash": "sha256:5fd834e91c921b10aedec8562d4d20bf092407c81f895c3c6d2c520a62a6a6dd",
+  "exact_decision_checks": {
+    "active_days": true,
+    "all_four_gate_values": true,
+    "four_gate_replay_declared": true,
+    "portfolio_days": true,
+    "upstream_benchmark_regeneration_not_overstated": true,
+    "verdict": true
+  },
+  "executed_at": "2026-08-24T03:22:31.996665+00:00",
+  "execution": {
+    "author_run_not_independent": true,
+    "dependency_environment": "PEP723_UV_ISOLATED_SCRIPTS",
+    "fresh_market_acquisition": true,
+    "fresh_official_macro_acquisition": true,
+    "records": [
+      {
+        "command": "uv run --isolated --script scripts/fetch_rtdsm_cpi_portable.py --output inputs/macro --vintage-cutoff 2026-07-15",
+        "exit_code": 0,
+        "stderr_sha256": "f6a10766bda37c1a677bf5443e699b8d467f9540ac205f3e310c77cba1d9aecc",
+        "stdout_sha256": "b70b26050823efe02c21dc450a7c5b8b50b12d56852e895a89dff3aa78ed0ade"
+      },
+      {
+        "command": "uv run --isolated --script scripts/fetch_yahoo_iwm_spy_portable.py --output inputs/market --start 2001-06-27 --end-exclusive 2026-08-22",
+        "exit_code": 0,
+        "stderr_sha256": "4da2349642c58d1d06963b1ea4066e37d0b62aafe092b384f2db7b1bb46d3a14",
+        "stdout_sha256": "c0614b1d8715ef66bec6697cb51dc65d9dcdf7e94ef6cc99e77cc436badb26af"
+      },
+      {
+        "command": "uv run --isolated --script scripts/reproduce_alphavintage_full_decision_portable.py --macro-dir inputs/macro --market-dir inputs/market --book-curve eq=inputs/book/eq.equity.parquet --book-curve mf=inputs/book/mf.equity.parquet --book-curve inv=inputs/book/inv.equity.parquet --output outputs/full_decision.json",
+        "exit_code": 0,
+        "stderr_sha256": "9c898f7fcd29986474e6b0d2655787ee778d0cf95c8b042afba455d2d89354c8",
+        "stdout_sha256": "c3afe037cc5baadd5d044e926a6e02c8f278636db3ebca8c9dba54063ad7eb61"
+      }
+    ],
+    "workspace_destroyed_after_execution": true,
+    "workspace_file_inventory": {
+      "inputs/book/eq.equity.parquet": "76f82c8df3726f049144d7699c0f13069db6a1e0d1f1e4570babd8d82a85cfc9",
+      "inputs/book/inv.equity.parquet": "e81f22c716da8590ee0a7129760ffa65f56b6967f8ef8c3c2ed86845cdf1645b",
+      "inputs/book/mf.equity.parquet": "e3ccf8948e3dd1626d1d7c089d4a301817cc4c7e9b55b87870b305e663669041",
+      "inputs/macro/PCPIX_vintage_long.parquet": "e764f0b4f68cbc77c2586d4ff9a298ec3ed7a80a5d93bab6216c6461cb6800ca",
+      "inputs/macro/PCPI_vintage_long.parquet": "387b8155f73d15a1a6b9ad8a4d3b9315ec03f1c8881f2fae0efe5ddc1290e0a4",
+      "inputs/macro/pcpiMvMd.xlsx": "11851cd13c73b743bc3be30564fc18283cedd11211a070a3a82ce6b64b6cca10",
+      "inputs/macro/pcpixMvMd.xlsx": "dcdab3493a10a880312164f8da7e1ac98c44b5c76080e9314c89dc74c9dd3e38",
+      "inputs/macro/source_manifest.json": "b70b26050823efe02c21dc450a7c5b8b50b12d56852e895a89dff3aa78ed0ade",
+      "inputs/market/IWM.adjusted_close.parquet": "bda6d8a253da410610207fa1f4d567e0b64621abc503dd69fe7a9caee67d1cc4",
+      "inputs/market/IWM.chart.json": "82420e9408716dabe4351b5d6bdc46afe4092f71a06013122167284dd2b9320d",
+      "inputs/market/QQQ.adjusted_close.parquet": "87615c7b044e88173f5b3facd5b00f5160e9bac046e6c72e04ca5081aba62c56",
+      "inputs/market/QQQ.chart.json": "1ac68deafd75bdcdd9877527016a65895550e7aaa721beb564a1317e7989e08b",
+      "inputs/market/SPY.adjusted_close.parquet": "17d215a66261db47f1ed236c6e8ec3f6f3d5b4029b10ad9982d75447a3bf2e90",
+      "inputs/market/SPY.chart.json": "6b027038ecab74e680d9308155f0322e767612973e74878c39d78d2a6fc9fed6",
+      "inputs/market/source_manifest.json": "c0614b1d8715ef66bec6697cb51dc65d9dcdf7e94ef6cc99e77cc436badb26af",
+      "outputs/full_decision.json": "c3afe037cc5baadd5d044e926a6e02c8f278636db3ebca8c9dba54063ad7eb61",
+      "scripts/fetch_rtdsm_cpi_portable.py": "c83c3658ce4babdc80046fd44caa6378e462e395acf80ba0fe70de74fa13412a",
+      "scripts/fetch_yahoo_iwm_spy_portable.py": "bd0ee4ca7fa9a1737d9c27b1759ca6538c1bfebe2702f267986a3dc945862f31",
+      "scripts/reproduce_alphavintage_full_decision_portable.py": "ff61ed0fce62b15f075246990fd57fa66df7c3a2622292a52df3e037230dbcf1"
+    },
+    "workspace_outside_repository": true
+  },
+  "fresh_result": {
+    "active_day_net_sharpe_superseded": 0.33820761713637004,
+    "active_days": 5998,
+    "all_four_preregistered_decision_gates_replayed": true,
+    "candidate_return_content_hash": "sha256:aa8b5236a1826f9b2dcbae7c432f7247dcbd3733f9863f69deb2dc909aca144a",
+    "checks": {
+      "a_clears_bar": true,
+      "b_nw_t_ge_1p5": false,
+      "c_benefit_is_the_mean": true,
+      "d_placebo_dead": true
+    },
+    "claim_boundary": "This standalone implementation regenerates AlphaVintage from freshly acquired CPI and ETF inputs and replays all four locked decision gates against three explicitly bound benchmark equity curves. It does not regenerate those upstream benchmark strategies from their raw inputs, grant redistribution rights, or constitute an independent human reproduction.",
+    "content_hash": "sha256:1ba1e1b4c2c6786288f742fbc3afb8ee3dfe2c126fa7acc0924420a864647529",
+    "diversification": {
+      "allocation_results": [
+        {
+          "allocation": 0.05,
+          "book_sharpe": 0.7734887908775533,
+          "book_sharpe_delta": 0.018800870234059963,
+          "mean_fraction_pct": 91.93526845361609,
+          "zeroed_delta": 0.0015162397127609362
+        },
+        {
+          "allocation": 0.1,
+          "book_sharpe": 0.7873996657271963,
+          "book_sharpe_delta": 0.032711745083703,
+          "mean_fraction_pct": 110.80444148233677,
+          "zeroed_delta": -0.003534321355419867
+        },
+        {
+          "allocation": 0.15,
+          "book_sharpe": 0.7941791622037726,
+          "book_sharpe_delta": 0.03949124156027928,
+          "mean_fraction_pct": 143.1511259407847,
+          "zeroed_delta": -0.017040915381255628
+        },
+        {
+          "allocation": 0.2,
+          "book_sharpe": 0.7916605033002259,
+          "book_sharpe_delta": 0.03697258265673253,
+          "mean_fraction_pct": 209.705704570966,
+          "zeroed_delta": -0.0405610323016512
+        }
+      ],
+      "best_allocation_result": {
+        "allocation": 0.15,
+        "book_sharpe": 0.7941791622037726,
+        "book_sharpe_delta": 0.03949124156027928,
+        "mean_fraction_pct": 143.1511259407847,
+        "zeroed_delta": -0.017040915381255628
+      },
+      "book_sharpe": 0.7546879206434933,
+      "candidate_book_correlation": -0.06660191579378298,
+      "candidate_join_sharpe": 0.19752366033727892,
+      "candidate_sharpe_hurdle": -0.050263661341283114,
+      "common_days": 728,
+      "first_date": "2023-07-07",
+      "last_date": "2026-06-01"
+    },
+    "full_multi_sleeve_end_to_end_reproduction_completed": false,
+    "gross_sharpe": 0.4410037625571632,
+    "independent_human_reproduction_completed": false,
+    "input_bindings": {
+      "benchmark_equity_curves": {
+        "eq": {
+          "return_content_hash": "sha256:abdf9626c2c8763bd64faabd795985356c9f9dc8f92c34d5b41a89530dec59d0",
+          "return_rows": 728,
+          "sha256": "76f82c8df3726f049144d7699c0f13069db6a1e0d1f1e4570babd8d82a85cfc9"
+        },
+        "inv": {
+          "return_content_hash": "sha256:7dd8fd8e6ccb35c71131b6fe3af76629650036fef1be03a938a74eeda229491a",
+          "return_rows": 5384,
+          "sha256": "e81f22c716da8590ee0a7129760ffa65f56b6967f8ef8c3c2ed86845cdf1645b"
+        },
+        "mf": {
+          "return_content_hash": "sha256:b5caaa05c22a7b4e8418ce8c1ec2b89253022f556add08ea77f60a6d6c6a6423",
+          "return_rows": 5190,
+          "sha256": "e3ccf8948e3dd1626d1d7c089d4a301817cc4c7e9b55b87870b305e663669041"
+        }
+      },
+      "macro": {
+        "PCPI": {
+          "sha256": "387b8155f73d15a1a6b9ad8a4d3b9315ec03f1c8881f2fae0efe5ddc1290e0a4",
+          "table_content_hash": "sha256:1e0284a66f96a1ef1799d5854e453ea0fde82fc30b5de880986cc0fc7f51050d"
+        },
+        "PCPIX": {
+          "sha256": "e764f0b4f68cbc77c2586d4ff9a298ec3ed7a80a5d93bab6216c6461cb6800ca",
+          "table_content_hash": "sha256:6cc69ec1ac788d0a0cbeb4e2b16034d1bc99670aeaa1a248e0cef4aa7534b70a"
+        }
+      },
+      "market": {
+        "IWM": {
+          "sha256": "bda6d8a253da410610207fa1f4d567e0b64621abc503dd69fe7a9caee67d1cc4",
+          "table_content_hash": "sha256:24be28bd1d93e1e45783565cead7b63b5850e6dfc9a360450b7edd40cecc4ac7"
+        },
+        "QQQ": {
+          "sha256": "87615c7b044e88173f5b3facd5b00f5160e9bac046e6c72e04ca5081aba62c56",
+          "table_content_hash": "sha256:2764c51f515c11f90deb472aa4794022c72f0bc812c98106945479850f18e3b9"
+        },
+        "SPY": {
+          "sha256": "17d215a66261db47f1ed236c6e8ec3f6f3d5b4029b10ad9982d75447a3bf2e90",
+          "table_content_hash": "sha256:fb3a7030631eacc38b69579e0408895ca57af9ac861ff2db3412db4bb69fb264"
+        }
+      }
+    },
+    "net_sharpe": 0.2298365157031493,
+    "nw_t": 1.2673240220573367,
+    "placebo_nw_t": -0.11699618193101761,
+    "placebo_sharpe": -0.020514545057089106,
+    "portfolio_days": 6296,
+    "schema": "canli.alphac-alphavintage-full-decision-reproduction.v1",
+    "signal_vintages": 331,
+    "spec": {
+      "allocation_grid": [
+        0.05,
+        0.1,
+        0.15,
+        0.2
+      ],
+      "ar_lags": 3,
+      "benchmark_curve_labels": [
+        "eq",
+        "mf",
+        "inv"
+      ],
+      "clip": 3.0,
+      "cost_oneway_bp": 5.999999999999999,
+      "instruments": [
+        "IWM",
+        "SPY"
+      ],
+      "placebo_instrument": "QQQ"
+    },
+    "upstream_benchmark_strategies_regenerated_from_raw_inputs": false,
+    "verdict": "KILLED"
+  },
+  "fresh_vs_sealed_input_comparisons": {
+    "macro": [
+      {
+        "fresh_rows_through_cutoff": 317682,
+        "keys_exact": true,
+        "max_absolute_value_difference": 0.0,
+        "sealed_input_binding": {
+          "path": "data/lake_macro_vintage/tier2_vintage/PCPI_vintage_long.parquet",
+          "sha256": "387b8155f73d15a1a6b9ad8a4d3b9315ec03f1c8881f2fae0efe5ddc1290e0a4"
+        },
+        "sealed_rows_through_cutoff": 317682,
+        "series": "PCPI",
+        "values_exact": true
+      },
+      {
+        "fresh_rows_through_cutoff": 317682,
+        "keys_exact": true,
+        "max_absolute_value_difference": 0.0,
+        "sealed_input_binding": {
+          "path": "data/lake_macro_vintage/tier2_vintage/PCPIX_vintage_long.parquet",
+          "sha256": "e764f0b4f68cbc77c2586d4ff9a298ec3ed7a80a5d93bab6216c6461cb6800ca"
+        },
+        "sealed_rows_through_cutoff": 317682,
+        "series": "PCPIX",
+        "values_exact": true
+      }
+    ],
+    "market": [
+      {
+        "dates_exact": true,
+        "first_date": "2001-06-27",
+        "fresh_rows": 6325,
+        "last_date": "2026-08-21",
+        "max_absolute_adjusted_close_difference": 0.0001068115234375,
+        "max_absolute_log_return_difference": 1.6436339080883045e-06,
+        "max_relative_adjusted_close_difference": 1.236717330419367e-06,
+        "overlap_rows": 6325,
+        "sealed_input_bindings": [
+          {
+            "path": "data/lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:IWMUSD/year=2001/data.parquet",
+            "sha256": "2a0d48f7bb52292a5a79f2d70ac32253e10b3830b5c44596ba9b8b86ae4aec70"
+          },
+          {
+            "path": "data/lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:IWMUSD/year=2002/data.parquet",
+            "sha256": "4bc8aec1a27a8e0409f2c6e4b0a9c1bb354e91e22787df688ab1736f23323f75"
+          },
+          {
+            "path": "data/lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:IWMUSD/year=2003/data.parquet",
+            "sha256": "2c21ea15b7cc72e5206c2d90ed43273e2c1fd342031f5dc589a35c4208b491b0"
+          },
+          {
+            "path": "data/lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:IWMUSD/year=2004/data.parquet",
+            "sha256": "e2e3946966afb1f2659c618a834adaa2373b0ca6e0a1dfcc072b51f087d6d67a"
+          },
+          {
+            "path": "data/lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:IWMUSD/year=2005/data.parquet",
+            "sha256": "d4c1faa3356e132142506a44ba7e23c5e73df91c90be3c2f2233fb647034f9ce"
+          },
+          {
+            "path": "data/lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:IWMUSD/year=2006/data.parquet",
+            "sha256": "466cd3aa5cf332a358a3c2b65f673779a5398d5cf5c1e3dca848ccce90a58fd9"
+          },
+          {
+            "path": "data/lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:IWMUSD/year=2007/data.parquet",
+            "sha256": "34173395ffbec4bb86f6317c56cafec15715cb36bb3c4e5b6cfa9de2472ebb4b"
+          },
+          {
+            "path": "data/lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:IWMUSD/year=2008/data.parquet",
+            "sha256": "8ce5a61255e6ff9b6a45e8d24e8ecc7401ccfebc993433f1e87fdd4ff41d4acf"
+          },
+          {
+            "path": "data/lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:IWMUSD/year=2009/data.parquet",
+            "sha256": "792b7957d348b3f1a561147706b2bad36d0303c62d44463a9ecf2f647938c0da"
+          },
+          {
+            "path": "data/lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:IWMUSD/year=2010/data.parquet",
+            "sha256": "a3f3634c681550a00d3d1c00a1f51ba5f01e5024682a955b3aa5507b70879438"
+          },
+          {
+            "path": "data/lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:IWMUSD/year=2011/data.parquet",
+            "sha256": "2b54f57e87dbbc573726f9bc88b75a45e9471dbb68d4d50d6854f5d732de303f"
+          },
+          {
+            "path": "data/lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:IWMUSD/year=2012/data.parquet",
+            "sha256": "fc8dd5690f00bf7ac224de57039b18f414a571f9a0b312c453dc98d86eb3cf0c"
+          },
+          {
+            "path": "data/lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:IWMUSD/year=2013/data.parquet",
+            "sha256": "39b50f5b962779039b951bb8d5fd73040156cb84bcc46f32624ad13ed4b55c01"
+          },
+          {
+            "path": "data/lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:IWMUSD/year=2014/data.parquet",
+            "sha256": "46f43aac6e000d8e11b5aa5ca32beecc4f44416aaa864d594e8363e3640bfb6c"
+          },
+          {
+            "path": "data/lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:IWMUSD/year=2015/data.parquet",
+            "sha256": "1ebfcebae7201538e19fb163ec90d5af5cba81d6c3589a3070056b33caf2a61f"
+          },
+          {
+            "path": "data/lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:IWMUSD/year=2016/data.parquet",
+            "sha256": "fd79c5946c59d1084e75a81fdf17af1b8901d71a234ed7d690ce8092315973b8"
+          },
+          {
+            "path": "data/lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:IWMUSD/year=2017/data.parquet",
+            "sha256": "34818d677bea312a6d1bbc276d728ad2ae06a967a105fcd4549af34d624031e1"
+          },
+          {
+            "path": "data/lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:IWMUSD/year=2018/data.parquet",
+            "sha256": "2927ca2f38fa2eeaadeccab729869135af4186fbb33e32d0d6cd58bc80b7bf92"
+          },
+          {
+            "path": "data/lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:IWMUSD/year=2019/data.parquet",
+            "sha256": "43e2f8c35323401a37c238bb45009d025bd3f766638591290be4fdb4f154726b"
+          },
+          {
+            "path": "data/lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:IWMUSD/year=2020/data.parquet",
+            "sha256": "bff9e769a60b2a311ae7fa09df2c2db88d44dce4719229bcd0eaee4b5ae6bf89"
+          },
+          {
+            "path": "data/lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:IWMUSD/year=2021/data.parquet",
+            "sha256": "2e67c023db922f5df6bba3cf301c08e412d9cd8b678760bdcae21b949889de5f"
+          },
+          {
+            "path": "data/lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:IWMUSD/year=2022/data.parquet",
+            "sha256": "75eb3622b6cf7b1f05169de8886ad4361723adda0e3abfa37f8dea09a690122c"
+          },
+          {
+            "path": "data/lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:IWMUSD/year=2023/data.parquet",
+            "sha256": "ce0261ad2690099399d426252a428f2b66b88aa596196c2874a9e6015bf075e1"
+          },
+          {
+            "path": "data/lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:IWMUSD/year=2024/data.parquet",
+            "sha256": "20cfb09402c3f27d059d01b350717bc36f284fb79d25841761902c7648673635"
+          },
+          {
+            "path": "data/lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:IWMUSD/year=2025/data.parquet",
+            "sha256": "2f03b3f2d58233d145cee9919e94f1ccf78e883dcf83fab3d318b8292d35739a"
+          },
+          {
+            "path": "data/lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:IWMUSD/year=2026/data.parquet",
+            "sha256": "02788b1e8d0142e56c57a46d56a83ebe6b68622906e84ec4ec13b3739d671963"
+          }
+        ],
+        "sealed_rows": 6325,
+        "symbol": "IWM",
+        "values_exact": false
+      },
+      {
+        "dates_exact": true,
+        "first_date": "2001-06-27",
+        "fresh_rows": 6325,
+        "last_date": "2026-08-21",
+        "max_absolute_adjusted_close_difference": 0.000213623046875,
+        "max_absolute_log_return_difference": 2.3529553505596823e-06,
+        "max_relative_adjusted_close_difference": 1.5173429889684337e-06,
+        "overlap_rows": 6325,
+        "sealed_input_bindings": [
+          {
+            "path": "data/lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:SPYUSD/year=2001/data.parquet",
+            "sha256": "dcc7a2a09c98b75557d44422bf2ce554dab156e9055691bb1af38592fcaa77bd"
+          },
+          {
+            "path": "data/lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:SPYUSD/year=2002/data.parquet",
+            "sha256": "f1d6e2a69c0109e9ffd28fbf0cdf350072a0d5bf3278badaacfedd56ef48dd01"
+          },
+          {
+            "path": "data/lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:SPYUSD/year=2003/data.parquet",
+            "sha256": "57a52fba9954bd07d5ab146ee08f6b8eced3c820d56e533b7158cb62bd07c6ee"
+          },
+          {
+            "path": "data/lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:SPYUSD/year=2004/data.parquet",
+            "sha256": "40adbca0468f30f392b8eca3bb057450e13e0d6071d94bd941629318d28506e5"
+          },
+          {
+            "path": "data/lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:SPYUSD/year=2005/data.parquet",
+            "sha256": "18efedde5e77bf3e3a646b4e10957fc377118f21e94d413b625c3d4873e1dab8"
+          },
+          {
+            "path": "data/lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:SPYUSD/year=2006/data.parquet",
+            "sha256": "0ead40ce5002c1e8584b70ad7bd5f6e45b13e7499a138ef3c80288b0a1f1c403"
+          },
+          {
+            "path": "data/lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:SPYUSD/year=2007/data.parquet",
+            "sha256": "7fcb3b3ab168e524867591afed8678d52e2e2f6cab11fb0018bbf0cbfaddc84b"
+          },
+          {
+            "path": "data/lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:SPYUSD/year=2008/data.parquet",
+            "sha256": "317ec17a1d1699074442caddaca646a7fd0b8b37388df21b9f2af63c7aad1d90"
+          },
+          {
+            "path": "data/lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:SPYUSD/year=2009/data.parquet",
+            "sha256": "5f884510f1764c010f6e83a5cdbe40d1aff255cf5e19e08083357ffadeea7fdb"
+          },
+          {
+            "path": "data/lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:SPYUSD/year=2010/data.parquet",
+            "sha256": "4a081eaafec27aa949e1640e73cd45b5d42177a0e152079d916a78a872d4bc9d"
+          },
+          {
+            "path": "data/lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:SPYUSD/year=2011/data.parquet",
+            "sha256": "f1095d26d80579b8138b53ba56d9e8ae333febc114bfa146e3ca3088d1aa7be7"
+          },
+          {
+            "path": "data/lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:SPYUSD/year=2012/data.parquet",
+            "sha256": "d5087aae66bc023bef4d5e5c5cd9e49c534f6fd495672d8507ded1b07b13d725"
+          },
+          {
+            "path": "data/lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:SPYUSD/year=2013/data.parquet",
+            "sha256": "cbfe8a65b1ba6f6233c0131bda8b8691b100985448fb58e379354f8c0b2f1168"
+          },
+          {
+            "path": "data/lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:SPYUSD/year=2014/data.parquet",
+            "sha256": "0fb67cb2ef3a55ac9c7f5f0d1984a443a56f9b0916c1c8839e023ddf944ef443"
+          },
+          {
+            "path": "data/lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:SPYUSD/year=2015/data.parquet",
+            "sha256": "5a08082b2ebab68948a539574c6fe020f485481f3d913c458b1374ed4cd830f7"
+          },
+          {
+            "path": "data/lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:SPYUSD/year=2016/data.parquet",
+            "sha256": "8bca19b427fdd36daf078ef9b5542214c2ed03010d7bf9aca217260e9df616f9"
+          },
+          {
+            "path": "data/lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:SPYUSD/year=2017/data.parquet",
+            "sha256": "1ec288345a9fd73665764bd0e6b81b0b31ee41a288a60c0f1b55bec8db0bc0a0"
+          },
+          {
+            "path": "data/lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:SPYUSD/year=2018/data.parquet",
+            "sha256": "2cab34101cb74e83fabcc7c02c82d9caa1b1f49ab38a3e3ba574d8d5bff5d58f"
+          },
+          {
+            "path": "data/lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:SPYUSD/year=2019/data.parquet",
+            "sha256": "e7ebb84c7575521c45a04406c67a7f053aaf58c23547defef9f1214b6614011d"
+          },
+          {
+            "path": "data/lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:SPYUSD/year=2020/data.parquet",
+            "sha256": "8fe225855a07a419ec33ee10ef56223c2d5987c546acba31d1a953ea4d6982b2"
+          },
+          {
+            "path": "data/lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:SPYUSD/year=2021/data.parquet",
+            "sha256": "dc5e09da760104665942ead3846d3a7f891e5efd43402ef8d2ec342975494099"
+          },
+          {
+            "path": "data/lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:SPYUSD/year=2022/data.parquet",
+            "sha256": "165a5fa80224f4f8a41f56a2586f17f97e5ca79f26cd564d908f6e6b85b61b1e"
+          },
+          {
+            "path": "data/lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:SPYUSD/year=2023/data.parquet",
+            "sha256": "1a928515c9ff2e6f7f905b5641af6b970e26dc25a002b42f8b41d26924e739ed"
+          },
+          {
+            "path": "data/lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:SPYUSD/year=2024/data.parquet",
+            "sha256": "5c4a99b503ce046e455e950bfca6ce174ebb41f3fe1f4ef267a12917b348ec1a"
+          },
+          {
+            "path": "data/lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:SPYUSD/year=2025/data.parquet",
+            "sha256": "bcef0905f6d098a67e6a726b63f0b14b6a7460dae35c2ad60e0e185bd9a7ab64"
+          },
+          {
+            "path": "data/lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:SPYUSD/year=2026/data.parquet",
+            "sha256": "0a837afd846c1854cf92601e05e2f84df9edc359b4419641036ffaef2f46d530"
+          }
+        ],
+        "sealed_rows": 6325,
+        "symbol": "SPY",
+        "values_exact": false
+      },
+      {
+        "dates_exact": true,
+        "first_date": "2001-06-27",
+        "fresh_rows": 6325,
+        "last_date": "2026-08-21",
+        "max_absolute_adjusted_close_difference": 0.00018310546875,
+        "max_absolute_log_return_difference": 2.2261863072969845e-06,
+        "max_relative_adjusted_close_difference": 1.4128945228319635e-06,
+        "overlap_rows": 6325,
+        "sealed_input_bindings": [
+          {
+            "path": "data/lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:QQQUSD/year=2001/data.parquet",
+            "sha256": "2f9517d66dbab978d6a7914676b86db0cd3316dc5bd13a4a3108f04e4fc0fdfc"
+          },
+          {
+            "path": "data/lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:QQQUSD/year=2002/data.parquet",
+            "sha256": "8e094f8d790954b366e15bd2bfe8c67b9268ded534bb4744788f034bd7441a71"
+          },
+          {
+            "path": "data/lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:QQQUSD/year=2003/data.parquet",
+            "sha256": "d84baeb82d9d155e9c2d647e8b2e0dff1abc008642f97c561212314eaf5bd272"
+          },
+          {
+            "path": "data/lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:QQQUSD/year=2004/data.parquet",
+            "sha256": "879a4c6947bddd4969172e7d1971dc26df5492712783536f47dfab0c2ef03c22"
+          },
+          {
+            "path": "data/lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:QQQUSD/year=2005/data.parquet",
+            "sha256": "026871b901a1d38650639c28293a383e53de8e6b388d3115e699557240a7062a"
+          },
+          {
+            "path": "data/lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:QQQUSD/year=2006/data.parquet",
+            "sha256": "4b9ae8ca9f486a9f88d48d6d0be2026168e91f5e53fb2b7f89ecb0fe9264fcf7"
+          },
+          {
+            "path": "data/lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:QQQUSD/year=2007/data.parquet",
+            "sha256": "217c69ea6fa45d030e411f62c54f7bed54b12af75ddbd4f3f6040f2b31c8c368"
+          },
+          {
+            "path": "data/lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:QQQUSD/year=2008/data.parquet",
+            "sha256": "891d5be274e08e7768ee0392c205754abd07441890e976326bcfa8ab03de6c38"
+          },
+          {
+            "path": "data/lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:QQQUSD/year=2009/data.parquet",
+            "sha256": "58b0086b5c99408b2ff9ab4a96f8849cb9756758dddf011d213b3a6f7947131a"
+          },
+          {
+            "path": "data/lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:QQQUSD/year=2010/data.parquet",
+            "sha256": "73546ad672d6daac1b5208ef8c5030875ea0d1c13c36b54c1e31bef83ab6fce4"
+          },
+          {
+            "path": "data/lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:QQQUSD/year=2011/data.parquet",
+            "sha256": "13a2157838ebc5dbfe69d16b2db6b799ae2783529703c8487a90991228115224"
+          },
+          {
+            "path": "data/lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:QQQUSD/year=2012/data.parquet",
+            "sha256": "581d27dc0b006972f32875760a05d4b3890ab32819bfd791957789a5b056bcb7"
+          },
+          {
+            "path": "data/lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:QQQUSD/year=2013/data.parquet",
+            "sha256": "8e01bcbd770ae9f4715fa49ea59de793ecd10771c311e1f478ae69f64daf5077"
+          },
+          {
+            "path": "data/lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:QQQUSD/year=2014/data.parquet",
+            "sha256": "f60364e3606fed7e9de3e474f8128de027d81a5479da67c17ceef8028a806709"
+          },
+          {
+            "path": "data/lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:QQQUSD/year=2015/data.parquet",
+            "sha256": "d953291c99a036962711a14e1e5f9eb4b1190e1a74a534679d791790f53dc9db"
+          },
+          {
+            "path": "data/lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:QQQUSD/year=2016/data.parquet",
+            "sha256": "28e6b8e8645d886ccf71cf445df86d2c1c910d5b4da3ec04affe8702a494df88"
+          },
+          {
+            "path": "data/lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:QQQUSD/year=2017/data.parquet",
+            "sha256": "ab4655dcf2f1a85e9712941f4f9ca9bef2f4896380474bfbb1800429a1b15d5b"
+          },
+          {
+            "path": "data/lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:QQQUSD/year=2018/data.parquet",
+            "sha256": "5ba2a84b4e04b7bdfd77d65fd54eb604814190f0e3dc5ce6a92f20bcfbb247da"
+          },
+          {
+            "path": "data/lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:QQQUSD/year=2019/data.parquet",
+            "sha256": "38f79e1df5903f7eacb848e46f7ba5d68d59ac067439f486423253c7f8eaca96"
+          },
+          {
+            "path": "data/lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:QQQUSD/year=2020/data.parquet",
+            "sha256": "10e1d71638eab8ec2e3a71d2cf59e3cf8dacfd948bf0dc3d47a8050ff7a6829b"
+          },
+          {
+            "path": "data/lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:QQQUSD/year=2021/data.parquet",
+            "sha256": "22cbcdd3fc9833cf01e4da4f7c58b6711768e54af961e36f9f93d00bd44081de"
+          },
+          {
+            "path": "data/lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:QQQUSD/year=2022/data.parquet",
+            "sha256": "d4ba68d5b6e3c9abc5c6057ca9fef37a7a304de3ed64ea91cadbfdaad32a2d33"
+          },
+          {
+            "path": "data/lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:QQQUSD/year=2023/data.parquet",
+            "sha256": "579c0c007901f2a6e842cdef2a8d559f11f225db325087886ad9809efae84abb"
+          },
+          {
+            "path": "data/lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:QQQUSD/year=2024/data.parquet",
+            "sha256": "cd2adbe8c25cb2731d43308f77cb5b5dcdb8fb94d2e5aebd2bb7555625128949"
+          },
+          {
+            "path": "data/lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:QQQUSD/year=2025/data.parquet",
+            "sha256": "9a46ab34c091ad7f562ba9fb069331c3f76d291b3a25488bfcdfc089b56bfcc8"
+          },
+          {
+            "path": "data/lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:QQQUSD/year=2026/data.parquet",
+            "sha256": "1bb6c7cdd3a58c15f2c59795aa540ee5b6493c90ff898da93e5ba424ce1209cf"
+          }
+        ],
+        "sealed_rows": 6325,
+        "symbol": "QQQ",
+        "values_exact": false
+      }
+    ]
+  },
+  "full_alphavintage_decision_clean_workspace_reproduction_completed": true,
+  "full_pipeline_clean_environment_reproduction_completed": false,
+  "independent_human_reproduction_completed": false,
+  "metric_comparisons": [
+    {
+      "absolute_delta": 6.327801884142836e-07,
+      "fresh_reproduction": 0.2298365157031493,
+      "metric": "net_sharpe",
+      "published": 0.2298358829229609,
+      "signed_delta": 6.327801884142836e-07,
+      "within_publication_display_precision": true
+    },
+    {
+      "absolute_delta": 4.964325143186343e-06,
+      "fresh_reproduction": 1.2673240220573367,
+      "metric": "nw_t",
+      "published": 1.2673190577321936,
+      "signed_delta": 4.964325143186343e-06,
+      "within_publication_display_precision": true
+    },
+    {
+      "absolute_delta": 4.177345020450751e-07,
+      "fresh_reproduction": 0.33820761713637004,
+      "metric": "active_day_net_sharpe_superseded",
+      "published": 0.338207199401868,
+      "signed_delta": 4.177345020450751e-07,
+      "within_publication_display_precision": true
+    },
+    {
+      "absolute_delta": 1.6247524009527226e-07,
+      "fresh_reproduction": 0.4410037625571632,
+      "metric": "gross_sharpe",
+      "published": 0.44100360008192313,
+      "signed_delta": 1.6247524009527226e-07,
+      "within_publication_display_precision": true
+    },
+    {
+      "absolute_delta": 2.368921914065042e-06,
+      "fresh_reproduction": -0.020514545057089106,
+      "metric": "placebo_sharpe",
+      "published": -0.02051691397900317,
+      "signed_delta": 2.368921914065042e-06,
+      "within_publication_display_precision": true
+    },
+    {
+      "absolute_delta": 1.345836069367723e-05,
+      "fresh_reproduction": -0.11699618193101761,
+      "metric": "placebo_nw_t",
+      "published": -0.11700964029171129,
+      "signed_delta": 1.345836069367723e-05,
+      "within_publication_display_precision": true
+    }
+  ],
+  "passes": true,
+  "portable_reviewer_replay_completed": false,
+  "raw_vendor_rows_released": false,
+  "receipt_integrity_passes": true,
+  "schema": "canli.alphac-alphavintage-full-decision-clean-workspace-receipt.v1",
+  "source_bindings": {
+    "benchmark_equity_curves": {
+      "eq": {
+        "copied_into_clean_workspace": true,
+        "path": "artifacts/walkforward/k30_dn_63/equity.parquet",
+        "sha256": "76f82c8df3726f049144d7699c0f13069db6a1e0d1f1e4570babd8d82a85cfc9",
+        "upstream_strategy_regenerated_from_raw_inputs": false
+      },
+      "inv": {
+        "copied_into_clean_workspace": true,
+        "path": "artifacts/walkforward/prereg_investment/equity.parquet",
+        "sha256": "e81f22c716da8590ee0a7129760ffa65f56b6967f8ef8c3c2ed86845cdf1645b",
+        "upstream_strategy_regenerated_from_raw_inputs": false
+      },
+      "mf": {
+        "copied_into_clean_workspace": true,
+        "path": "artifacts/walkforward/mf_live_fwd/equity.parquet",
+        "sha256": "e3ccf8948e3dd1626d1d7c089d4a301817cc4c7e9b55b87870b305e663669041",
+        "upstream_strategy_regenerated_from_raw_inputs": false
+      }
+    },
+    "published_result": {
+      "path": "artifacts/probe/cpi_surprise_size/result.json",
+      "sha256": "686654b4617efb8322f6fda37f2e71a375423aecc6de03477a0186cf2844e509"
+    },
+    "scripts": {
+      "full_decision_reproducer": {
+        "path": "scripts/reproduce_alphavintage_full_decision_portable.py",
+        "sha256": "ff61ed0fce62b15f075246990fd57fa66df7c3a2622292a52df3e037230dbcf1"
+      },
+      "macro_fetcher": {
+        "path": "scripts/fetch_rtdsm_cpi_portable.py",
+        "sha256": "c83c3658ce4babdc80046fd44caa6378e462e395acf80ba0fe70de74fa13412a"
+      },
+      "market_fetcher": {
+        "path": "scripts/fetch_yahoo_iwm_spy_portable.py",
+        "sha256": "bd0ee4ca7fa9a1737d9c27b1759ca6538c1bfebe2702f267986a3dc945862f31"
+      }
+    }
+  },
+  "status": "PASS_AUTHOR_CLEAN_WORKSPACE_ALL_FOUR_GATES_UPSTREAM_BENCHMARK_REGENERATION_INCOMPLETE"
+}
