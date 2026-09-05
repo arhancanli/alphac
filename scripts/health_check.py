@@ -420,6 +420,79 @@ def _latest_file_age_hours(directory: str, pattern: str = "*") -> tuple[float | 
     return age, str(latest)
 
 
+CRYPTO_REBALANCE_CADENCE_H = 168  # the blessed crypto carry cadence: weekly, epoch-anchored
+CRYPTO_REBALANCE_GRACE_H = 12       # a rebalance bar may land late (venue outage, retry)
+CRYPTO_FAILED_CYCLE_WINDOW_H = 8 * 24
+
+
+def check_crypto_rebalance(kill_on: bool = False):
+    """C6f: the crypto sleeve emitted a book within its weekly cadence.
+    C6g: no crypto cycle failed in the trailing window; a failure ON the rebalance
+    grid is red, a stray hourly failure is a warning.
+
+    Reads the trading DB directly (read-only URI), never the LATEST row: the checks
+    that read the latest row (C6b) were satisfied by the hourly hold that followed
+    each dead rebalance. 'A book was emitted' means a cycle finished ``ok`` with an
+    ``orders=`` detail -- every rebalance bar writes that, including a rebalance that
+    needed zero orders; hold bars write ``hold: ...``.
+    """
+    import sqlite3 as _sq
+    now_ms = int(NOW.timestamp() * 1000)
+    cadence_ms = CRYPTO_REBALANCE_CADENCE_H * 3_600_000
+    try:
+        con = _sq.connect(f"file:{CRYPTO_DB}?mode=ro", uri=True)
+        try:
+            row = con.execute(
+                "SELECT max(cycle_ts) FROM cycles WHERE status='ok' AND detail LIKE 'orders=%'"
+            ).fetchone()
+            last_book = int(row[0]) if row and row[0] is not None else None
+            failed = con.execute(
+                "SELECT cycle_ts, status, detail FROM cycles "
+                "WHERE status IN ('failed', 'halted') AND cycle_ts >= ? ORDER BY cycle_ts DESC",
+                (now_ms - CRYPTO_FAILED_CYCLE_WINDOW_H * 3_600_000,),
+            ).fetchall()
+        finally:
+            con.close()
+    except Exception as e:
+        add("C6f-crypto-rebalance", "loops", "crypto weekly rebalance emitted a book",
+            "FAIL", "high", observed="cannot read cycles table", expected="readable DB",
+            evidence=str(e)[:200])
+        add("C6g-crypto-failed-cycles", "loops", "no failed crypto cycles (8d)",
+            "FAIL", "high", observed="cannot read cycles table", expected="readable DB")
+        return
+
+    # C6f -- cadence
+    if kill_on:
+        add("C6f-crypto-rebalance", "loops", "crypto weekly rebalance emitted a book", "PASS",
+            "info", observed="KILL engaged", expected="intentional halt")
+    elif last_book is None:
+        add("C6f-crypto-rebalance", "loops", "crypto weekly rebalance emitted a book", "FAIL",
+            "high", observed="no cycle has ever emitted a book (no 'orders=' detail)",
+            expected=f"a book within {CRYPTO_REBALANCE_CADENCE_H}h")
+    else:
+        age_h = (now_ms - last_book) / 3_600_000.0
+        limit_h = CRYPTO_REBALANCE_CADENCE_H + CRYPTO_REBALANCE_GRACE_H
+        st = "PASS" if age_h <= limit_h else ("WARN" if age_h <= limit_h + 12 else "FAIL")
+        add("C6f-crypto-rebalance", "loops", "crypto weekly rebalance emitted a book", st,
+            "high", observed=f"last book {age_h / 24:.1f}d ago",
+            expected=f"<= {limit_h}h ({CRYPTO_REBALANCE_CADENCE_H}h cadence + grace)",
+            evidence=dt.datetime.fromtimestamp(last_book / 1000, dt.UTC).isoformat())
+
+    # C6g -- failures, graded by whether they sat on the rebalance grid
+    if not failed:
+        add("C6g-crypto-failed-cycles", "loops", "no failed crypto cycles (8d)", "PASS", "info",
+            observed="0 failed", expected="0")
+        return
+    phase = (last_book % cadence_ms) if last_book is not None else None
+    on_grid = [r for r in failed if phase is None or (int(r[0]) % cadence_ms) == phase]
+    latest_ts, latest_status, latest_detail = failed[0]
+    when = dt.datetime.fromtimestamp(int(latest_ts) / 1000, dt.UTC).isoformat()
+    st = "FAIL" if on_grid else "WARN"
+    add("C6g-crypto-failed-cycles", "loops", "no failed crypto cycles (8d)", st, "high",
+        observed=f"{len(failed)} failed/halted, {len(on_grid)} on the rebalance grid",
+        expected="0", evidence=f"{when} {latest_status}: {latest_detail}")
+
+
 def check_loops():
     kill_on = os.path.exists(KILL)
     add("S-kill", "safety", "kill-switch sentinel",
@@ -460,6 +533,11 @@ def check_loops():
     stt = out.strip().splitlines()[-1] if out.strip() else "?"
     add("C6b-cryptodb-status", "loops", "latest crypto cycle status ok",
         "PASS" if stt == "ok" else "WARN", "high", observed=stt, expected="ok")
+    # C6f/C6g: the weekly rebalance actually happened, and no cycle died on the way.
+    # C6a and C6b above are BLIND to a dead rebalance: hourly marks keep accruing and
+    # the next hourly 'ok' hold overwrites a failed weekly bar within the hour. That is
+    # how the crypto sleeve ran four crashed rebalances (2026-08-13..09-03) under green.
+    check_crypto_rebalance(kill_on=kill_on)
     # AlphaTrend (managed-futures) tick — previously a blind spot (no marker check at all)
     a, ts = _log_marker_age(f"{AF}/var/log/mf_tick.log", "mf_tick done")
     st = "PASS" if a is not None and a <= 26 else ("WARN" if a is not None and a <= 50 else "FAIL")

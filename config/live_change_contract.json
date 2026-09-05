@@ -81,6 +81,14 @@
       "evidence": "artifacts/engineering/live_config_fingerprint.json",
       "contaminates_forward_record": false,
       "note": "A coverage and claim-scope correction, not a trading change. The fingerprint moves because the previously omitted aggregation layer is now hashed."
+    },
+    {
+      "date": "2026-09-05",
+      "change": "two live-path defects fixed; the declared configuration is UNCHANGED and the fingerprint does not move. (1) SignalService now scopes its cross-section to the sleeve's asset class on both the research and the live path. It was the raw cross-asset universe membership, so the carry feature asked the instrument record for an equity's funding interval and the weekly rebalance raised KeyError on the trading host on 2026-08-13, 08-20, 08-27 and 09-03; the sleeve held its 2026-07-30 book for five weeks. (2) LiveLoop.recover_on_boot now replays the recorded equity curve through the DrawdownLadder. Under --once a fresh ladder was built every hour with HWM = current equity, so the declared 10% halve / 15% flatten brakes could never fire; on this sleeve the restored ladder enters HALF_GROSS (drawdown 10.9% from the recorded high-water mark, which it first crossed on 2026-08-26).",
+      "reason": "Both are the declared configuration finally executing, not a new configuration: the blessed weekly carry rebalance and the declared drawdown ladder were in the contract and were not running. Fixing them changes how the live book trades from the next cycle on (the crypto sleeve resumes weekly rebalancing and sizes at half gross until its drawdown recovers below the release depth), so it is declared here before it ships. Measured on the live path: the scoped cross-section on the real lake at the crashed timestamp yields the 20 perpetuals and drops 2,088 equities; the ladder replay over the real equity_curve lands in HALF_GROSS. Neither threshold, weight, composition nor overlay parameter was edited.",
+      "evidence": "tests/unit/test_signal_service.py::TestCrossSectionIsScopedToTheSleeve; tests/unit/test_live_loop.py::TestLadderRestoration; tests/unit/test_health_crypto_rebalance.py; the dated CORRECTION 2026-09-05 entry in scripts/paper_trading_state.py transparency_entries(); artifacts/engineering/live_config_fingerprint.json",
+      "contaminates_forward_record": false,
+      "note": "The contaminated window is BEFORE this change, not after it: from 2026-07-30 to the fix the crypto sleeve's marks are genuine but its positions were stale rather than chosen, and the ladder never acted. That window is disclosed in the transparency correction and stays in the record. A third finding is disclosed and NOT changed here: universe_refresher is never passed to LiveLoop in paper_cmds, so the monthly universe refresh has not run live (cross-section selected 2026-06-01). Re-wiring it changes the traded cross-section and is a separate declared change."
     }
   ]
 }

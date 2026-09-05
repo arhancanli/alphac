@@ -1534,3 +1534,28 @@ where it is.*
   **3. E6 fixed** — see the entry above. Two bugs, not the one I had diagnosed, and my
   BLOCKED-OWNER note was wrong because my probe had reproduced one of them.
   Site: **0 errors, 0 warnings, and the number-trace audit green for the first time.**
+- `2026-09-05 22:00` — **INCIDENT: the crypto sleeve did not rebalance for five weeks.** Its weekly
+  decision died on 2026-08-13/20/27 and 09-03 with `KeyError: instrument 'XUSE:CASH:AALUSD' is
+  unknown to the SCD2 store`. Root cause: `SignalService.on_bar_close` (and `_window_ids`) built the
+  cross-section from the RAW cross-asset universe membership (2,088 equities beside 20 perps on the
+  crypto lake); the loop's `_InstrumentsAdapter` scopes the tradable set by asset class, the signal
+  path did not, and the carry feature reads every member's funding interval from an instrument
+  record that on Frankfurt holds only perpetuals. The book opened 2026-07-30 sat unchanged (ZEC
+  short 463 → 1021); most of ALPHAC's forward loss is this defect. Three more found: the
+  `DrawdownLadder` is built fresh by every `--once` process so HWM = current equity and the 10%/15%
+  brakes could never fire (replaying the real curve puts it in HALF_GROSS since 2026-08-26);
+  `universe_refresher` is never passed to `LiveLoop`, so the monthly refresh (and its 08-11
+  "self-healing") is dead code live; the health monitor's C6a/C6b read hourly marks and the LATEST
+  cycle, so a failed weekly bar was overwritten by the next hourly hold within the hour. **Shipped
+  (branch `fix/crypto-sleeve-rebalance-and-ladder-20260905`):** `_scope_members` in the service
+  (mirrors `FeatureContext.instrument` resolution; logs dropped-by-reason), `FeatureEngine.instruments`,
+  `LiveLoop._restore_ladder` (replays `equity_curve` through `update()` on boot), health checks
+  `C6f-crypto-rebalance` + `C6g-crypto-failed-cycles` (both FAIL on today's real DB), dated
+  CORRECTION in `transparency_entries()` + the sleeve caveat, `live_change_contract` change_log entry
+  (fingerprint unchanged), deploy contract re-pinned to the reviewed `loop.py`. Tests: 4 + 3 + 5 new,
+  each failing before its fix. Probe on the real lake at the crashed bar: 20 kept / 2,088 dropped.
+  **Not shipped:** the universe refresher (changes the traded cross-section → owner decision); the
+  strategy's realized-vol leg is also process-local under `--once` and needs the per-bar scale
+  persisted (`_scale_hist`) before it can be seeded. **Deploy is owner-gated:** Frankfurt needs
+  `service.py`, `engine.py`, `loop.py`; SSH from this workstation is blocked by the Claude Code
+  classifier until the new allow rule loads. Next weekly bar: 2026-09-10 00:00Z.

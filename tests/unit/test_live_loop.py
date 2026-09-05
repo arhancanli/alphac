@@ -59,6 +59,7 @@ from alphaforge.live.loop import (
 )
 from alphaforge.live.store import TradingStore
 from alphaforge.risk import (
+    DDState,
     DrawdownLadder,
     KillSwitch,
     PreTradeChecker,
@@ -1015,5 +1016,78 @@ class TestLadderStatePersistence:
             assert rearmed.cycle_ts == T0 + HOUR
             assert rearmed.state == "normal"
             assert rearmed.gross_mult == 1.0
+        finally:
+            store.close()
+
+
+# ----------------------------------------------------- boot: restore the ladder
+
+
+class TestLadderRestoration:
+    """recover_on_boot must rebuild the drawdown ladder from the recorded equity curve.
+
+    Production runs ``af paper run --once``: a fresh process per hourly cycle. The
+    ladder lived only in memory, so every cycle started it pristine -- HWM = the
+    current equity, drawdown 0.0, NORMAL -- and the 10% halve / 15% flatten brakes
+    could never fire. Measured on the crypto sleeve 2026-09-05: equity 90,508 against
+    a recorded peak of 101,294 (a 10.6% drawdown) while the persisted ladder read
+    hwm=90,504 and drawdown=0.0. ``_restore_paper_state`` restored cash, positions and
+    fills, and never the ladder.
+
+    The equity curve is the ONE durable record of what the account did; replaying it
+    bar by bar through ``update()`` is exactly what a long-lived process would have
+    done, including the absorbing FLAT_HALTED state and its cooldown.
+    """
+
+    @staticmethod
+    def _record_curve(tmp_path: Path, curve: list[float]) -> None:
+        store = TradingStore(tmp_path / "trading.sqlite")
+        try:
+            for k, eq in enumerate(curve):
+                ts = T0 + k * HOUR
+                store.snapshot_equity(
+                    ts, AccountState(equity_quote=eq, cash_quote=eq, positions=(), ts=ts)
+                )
+        finally:
+            store.close()
+
+    def test_boot_replays_the_recorded_curve_into_the_ladder(self, tmp_path: Path) -> None:
+        curve = [100_000.0, 105_000.0, 101_294.66, 95_000.0, 90_508.42]  # peak, then -13.8%
+        self._record_curve(tmp_path, curve)
+        loop, store, _broker, _ = build_loop(
+            tmp_path, use_ladder=True, clock=Clock(T0 + len(curve) * HOUR)
+        )
+        try:
+            ladder = loop._ladder
+            assert ladder.hwm != ladder.hwm  # NaN: a fresh process, as every --once cycle is
+            loop.recover_on_boot()
+            assert ladder.hwm == max(curve)
+            assert ladder.drawdown == pytest.approx(1.0 - curve[-1] / max(curve))
+            assert ladder.state is DDState.HALF_GROSS  # 13.8% >= the 10% halve depth
+            assert ladder.gross_multiplier() == 0.5
+        finally:
+            store.close()
+
+    def test_boot_reproduces_the_absorbing_halt(self, tmp_path: Path) -> None:
+        """A recorded 20% fall must come back as FLAT_HALTED, not as a fresh NORMAL
+        ladder that would size the next cycle at full gross."""
+        curve = [100_000.0, 110_000.0, 88_000.0, 89_000.0]  # -20% from the peak
+        self._record_curve(tmp_path, curve)
+        loop, store, _broker, _ = build_loop(
+            tmp_path, use_ladder=True, clock=Clock(T0 + len(curve) * HOUR)
+        )
+        try:
+            loop.recover_on_boot()
+            assert loop._ladder.state is DDState.FLAT_HALTED
+            assert loop._ladder.gross_multiplier() == 0.0
+        finally:
+            store.close()
+
+    def test_fresh_boot_leaves_the_ladder_pristine(self, tmp_path: Path) -> None:
+        loop, store, _broker, _ = build_loop(tmp_path, use_ladder=True)
+        try:
+            loop.recover_on_boot()
+            assert loop._ladder.hwm != loop._ladder.hwm  # still NaN: nothing to replay
+            assert loop._ladder.state is DDState.NORMAL
         finally:
             store.close()

@@ -855,7 +855,12 @@ ALGOS = [
         "internal audit and fixed the same day — the loop now runs the exact blessed "
         "walk-forward configuration (carry_fund_21, weekly rebalance). No money was "
         "misreported (the sleeve genuinely held cash at $100k); the published "
-        "explanation was wrong, and we correct it here rather than rewrite it.",
+        "explanation was wrong, and we correct it here rather than rewrite it. "
+        "CORRECTION (2026-09-05): from 2026-07-30 the sleeve did not rebalance for five "
+        "weeks because its weekly decision crashed on an equity id leaking from the "
+        "shared universe store; the positions it held over that window were stale, not "
+        "chosen, and most of the flagship's forward loss in it traces to that defect. "
+        "Fixed and disclosed in the dated transparency entry.",
         "wf": CRYPTO_WF,
         "live_db": CRYPTO_LIVE_DB,
     },
@@ -1419,6 +1424,29 @@ def transparency_entries() -> list[str]:
         "mark to the cent, checks fill-reconciliation health and publishes hashed account identity "
         "at /glassbox/alpaca_broker_reconciliation.json. This is self-published broker-derived "
         "evidence, not independent third-party attestation and not real capital.",
+        "CORRECTION 2026-09-05 — the crypto sleeve did not rebalance for five weeks, and the cause "
+        "was our plumbing, not the market. Its weekly rebalance failed on 2026-08-13, 2026-08-20, "
+        "2026-08-27 and 2026-09-03 with one error: the signal cross-section was built from the "
+        "shared universe store, which carries the equity universe beside the crypto perpetuals, "
+        "and the carry feature asked the instrument record for an equity's funding interval on a "
+        "host whose record holds only perpetuals. The hourly cycles kept marking the book and "
+        "reporting a healthy hold, the health monitor read only the latest cycle and stayed green, "
+        "and the positions opened on 2026-07-30 sat unchanged while one short more than doubled "
+        "against the book. Most of the flagship's forward loss over this window is attributable to "
+        "that defect rather than to the carry strategy; the marks themselves are genuine, the "
+        "sleeve simply did not trade when it should have, so the record stands and this note is "
+        "added beside it. The same audit found two more. The drawdown ladder, the brake that "
+        "halves and then flattens a sleeve on deep drawdowns, was rebuilt from nothing by every "
+        "hourly process and so never saw a drawdown at all; replaying the recorded equity curve "
+        "through it shows it would have halved this sleeve's gross on 2026-08-26, and on restore "
+        "it enters that half-gross state. And the loop's monthly universe refresh was never "
+        "wired, so the traded cross-section has been the one selected on 2026-06-01. Fixed today: "
+        "the signal cross-section is scoped to the sleeve's asset class on both the research and "
+        "the live path, the ladder restores from the equity curve on boot, and the health monitor "
+        "now fails on a missed weekly rebalance or on a failed cycle on the rebalance grid. The "
+        "universe refresh is disclosed, not yet changed: re-wiring it changes the traded "
+        "cross-section, which is a live-configuration decision and is declared before it ships. "
+        "Per our append-only posture this correction is added to the record, not swapped into it.",
     ]
 
 

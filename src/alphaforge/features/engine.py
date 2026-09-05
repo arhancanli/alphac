@@ -95,6 +95,15 @@ class FeatureEngine:
         return self._anchor_tf
 
     @property
+    def instruments(self) -> InstrumentStore:
+        """The SCD2 instrument record every feature context reads. Exposed so the
+        :class:`~alphaforge.signals.service.SignalService` can scope its cross-section
+        with the SAME record the features resolve against — a member the record cannot
+        resolve would raise inside a feature (``carry`` reads the funding interval), so
+        it must be excluded BEFORE the engine runs, by the same lookup."""
+        return self._instruments
+
+    @property
     def calendar(self) -> TradingCalendar:
         """The sleeve's trading calendar (24/7 crypto / XNYS equity) — the session grid
         for every bar hop. Decision-bar and window arithmetic must hop this, never ``+Δ``."""
