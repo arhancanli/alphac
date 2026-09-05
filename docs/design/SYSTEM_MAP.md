@@ -8,7 +8,7 @@ line of its own docstring, each pipeline's steps are the scripts it actually inv
 contract's boundary is the boundary it states about itself. A script with no docstring appears as
 having none.
 
-At a glance: **343 Python scripts**, **17 shell entry points**,
+At a glance: **344 Python scripts**, **17 shell entry points**,
 **27 configuration contracts**, **29 engineering artifacts**,
 **397 unit test files**, **22 data directories**, **9 scheduled jobs**.
 
@@ -466,7 +466,7 @@ and is worth more than a hand-made taxonomy that would drift.
 | `check_live_change_declared.py` | Block the publish if the live trading configuration has changed without being declared. |
 | `check_retracted_claims.py` | Refuse to publish a claim this record has already withdrawn. |
 
-### `export_*` (13)
+### `export_*` (14)
 
 | script | first line of its docstring |
 |---|---|
@@ -483,6 +483,7 @@ and is worth more than a hand-made taxonomy that would drift.
 | `export_market_status_contract.py` | Emit the deterministic PIT market-status replay capability contract. |
 | `export_options_execution_contract.py` | Emit the deterministic options engineering capability contract. |
 | `export_prereg_parameters.py` | Publish the earnings-narrative-change pre-registration's parameters as data, not prose. |
+| `export_validation_api_vectors.py` | Parity vectors for the canlicapital validation API. |
 
 ### `run_*` (8)
 
