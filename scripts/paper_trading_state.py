@@ -1447,6 +1447,14 @@ def transparency_entries() -> list[str]:
         "universe refresh is disclosed, not yet changed: re-wiring it changes the traded "
         "cross-section, which is a live-configuration decision and is declared before it ships. "
         "Per our append-only posture this correction is added to the record, not swapped into it.",
+        "UPDATE 2026-09-06 — the universe refresh named in the correction above is now wired into the "
+        "live loop, through the same asset-class-scoped builder the research rebuild uses, with the "
+        "declared monthly cadence and the self-healing catch-up that repairs a missed month on the next "
+        "healthy cycle. It is declared in the live-change contract before it ships. Effect: on the first "
+        "cycle after deployment the crypto sleeve's cross-section moves from the names selected on "
+        "2026-06-01 to the current month's, and the turnover that a monthly-refreshing book would have "
+        "spread across three rebalances is booked as it happens, not smoothed. The window that traded "
+        "the stale cross-section stays in the record as disclosed.",
     ]
 
 
