@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>com.accapital.health</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/usr/bin/python3</string>
+    <string>/Users/arhancanli/alphaforge/scripts/health_check.py</string>
+  </array>
+  <key>StartCalendarInterval</key>
+  <!-- :32 so the run starts after the :25 tick and its worst case (5 min lock wait + 45 min
+       suite budget) ends before the next :25; pinned by tests/unit/test_health_schedule_clears_the_tick.py -->
+  <dict><key>Hour</key><integer>3</integer><key>Minute</key><integer>32</integer></dict>
+  <key>StandardOutPath</key><string>/Users/arhancanli/alphaforge/var/log/health.launchd.out</string>
+  <key>StandardErrorPath</key><string>/Users/arhancanli/alphaforge/var/log/health.launchd.err</string>
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>PATH</key><string>/Users/arhancanli/.local/bin:/Users/arhancanli/.nvm/versions/node/v20.20.2/bin:/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+    <key>HOME</key><string>/Users/arhancanli</string>
+  </dict>
+  <key>ProcessType</key><string>Background</string>
+  <key>RunAtLoad</key><false/>
+</dict>
+</plist>

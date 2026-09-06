@@ -107,7 +107,11 @@ PY
     local raw=""
     for attempt in 1 2 3; do
       # BOUNDED (see scripts/lib/bounded.sh): this exact call hung for 28h and blocked trading.
-      raw=$(run_bounded 600 vercel deploy --prod --yes 2>&1)
+      # --archive=tgz: upload one tarball instead of one request per file. On 2026-09-06 the
+      # landing upload reached Vercel's 15,000-file cap (agent worktrees and dist/ rode along;
+      # .vercelignore in the site repo now excludes them) and failed three times. The archive
+      # form has no such cap, so a future growth in pages cannot repeat the failure mode.
+      raw=$(run_bounded 600 vercel deploy --prod --yes --archive=tgz 2>&1)
       url=$(printf '%s\n' "$raw" | grep -oE "https://[a-z0-9-]+\.vercel\.app" | tail -1)
       if [ -n "$url" ]; then echo "  [$label] prod: $url (attempt $attempt)"; break; fi
       echo "  [$label] deploy attempt $attempt failed; retrying in $((attempt*8))s"

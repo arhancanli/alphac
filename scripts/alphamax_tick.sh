@@ -134,7 +134,11 @@ PY
     || echo "WARN: live_cycle (equity) returned non-zero (broker/market issue) — state still refreshes"
   kill "$_EQCYCWD" 2>/dev/null; wait "$_EQCYCWD" 2>/dev/null
 
-  echo "--- refresh published state now (the hourly tick also does this) ---"
-  uv run python scripts/paper_trading_state.py
+  # NO state refresh here (removed 2026-09-06). The header says this tick does not regenerate
+  # the published state, and the body did anyway: a standalone paper_trading_state.py run
+  # rewrites data/paper/state.json AFTER forward_evidence_maturity.json bound its hash, so
+  # every downstream freshness test was red until the next :25 tick. The hourly tick re-runs
+  # the whole chain in its load-bearing order within the hour. Pinned by
+  # tests/unit/test_single_writer_for_published_state.py.
   echo "=== alphamax_tick done $(date -u '+%Y-%m-%dT%H:%M:%SZ') ==="
 } >> var/log/alphamax_tick.log 2>&1

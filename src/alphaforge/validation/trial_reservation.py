@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Any, Final
 
 from alphaforge.validation.experiments import ExperimentLog, hypothesis_hash
+from alphaforge.validation.sleeve_admission import _matches_canonical_sha256
 
 SCHEMA: Final[str] = "canli.alphac-forward-trial-reservation.v1"
 STATUS: Final[str] = "RETURN_IDENTITY_RESERVED"
@@ -43,6 +44,8 @@ IDENTITY_PACKET_DIR: Final[Path] = Path("artifacts/research/trial_packets")
 ACTIVE_ADMISSION_CONTRACT: Final[Path] = Path("config/sleeve_admission_contract.json")
 ACTIVE_TRIAL_POLICY: Final[Path] = Path("config/trial_accounting.json")
 ADMISSION_PROMOTION_RECEIPT: Final[Path] = Path("config/admission_v7_promotion.json")
+SERIALITY_WAIVER_DIR: Final[Path] = Path("artifacts/research/seriality_waivers")
+SERIALITY_WAIVER_SCHEMA: Final[str] = "canli.alphac-seriality-waiver.v1"
 
 
 class ReservationError(ValueError):
@@ -362,6 +365,78 @@ def _validate_forward_epoch_serial_completion(
     }
 
 
+def _closure_path_from_packet(packet: dict[str, Any]) -> str:
+    """Find the admission-or-kill closure this packet's evidence points at.
+
+    Convention observed in `artifacts/research/trial_packets/da5f5f47f99f9bd2.json`: the
+    `admission_or_kill_decision` evidence list carries the sealed result receipt (keyed by
+    `source_path`/`public_path`) alongside the closure (keyed by `path`, ending
+    `_admission_closure.json`). Returns the first evidence entry whose `path` matches that
+    convention.
+    """
+    evidence = packet["required_sections"]["admission_or_kill_decision"]["evidence"]
+    for item in evidence:
+        path = item.get("path") if isinstance(item, dict) else None
+        if isinstance(path, str) and path.endswith("_admission_closure.json"):
+            return path
+    raise ReservationError("packet does not reference an admission-or-kill closure")
+
+
+def _validate_prior_identity_admission_disposition(
+    repo: Path,
+    identity: str,
+    packet: dict[str, Any],
+) -> None:
+    """Close the real seriality gap: a complete packet is not the same as a decided one.
+
+    Unwired: nothing in `validate_reservation` calls this yet (plan task 2, spec 2(b)).
+    `_validate_forward_epoch_serial_completion` unblocks the next reservation once a prior
+    packet has `complete: true` -- but packet completion records evidence accounting, not a gate
+    outcome, per that packet's own `governance_finding.seriality_interaction`. This requires,
+    for the prior identity's sealed closure, a disposition of ADMIT or KILL, or a signed waiver
+    bound to this exact packet's `content_hash` (so a re-seal invalidates the waiver).
+    """
+    closure_path = _repo_file(repo, _closure_path_from_packet(packet))
+    try:
+        closure = json.loads(closure_path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError) as error:
+        raise ReservationError(
+            f"prior identity admission closure is unreadable: {identity}"
+        ) from error
+    if closure.get("content_hash") != _observed_content_hash(closure):
+        raise ReservationError(
+            f"prior identity admission closure content hash mismatch: {identity}"
+        )
+    disposition = closure.get("decision", {}).get("disposition")
+    if disposition in {"ADMIT", "KILL"}:
+        return
+
+    waiver_path = repo / SERIALITY_WAIVER_DIR / f"{identity}.json"
+    if not waiver_path.is_file():
+        raise ReservationError(
+            f"prior forward identity {identity} closure disposition is neither ADMIT nor KILL "
+            "and no seriality waiver is on file"
+        )
+    try:
+        waiver = json.loads(waiver_path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError) as error:
+        raise ReservationError(f"seriality waiver is unreadable: {identity}") from error
+    if waiver.get("schema") != SERIALITY_WAIVER_SCHEMA:
+        raise ReservationError(f"seriality waiver schema mismatch: {identity}")
+    if waiver.get("waived_hypothesis_key") != identity:
+        raise ReservationError(f"seriality waiver does not name this identity: {identity}")
+    if waiver.get("waived_packet_content_hash") != packet["content_hash"]:
+        raise ReservationError(f"seriality waiver does not match the sealed packet: {identity}")
+    if waiver.get("content_hash") != _observed_content_hash(waiver):
+        raise ReservationError(f"seriality waiver content hash mismatch: {identity}")
+    reason = waiver.get("reason")
+    if not isinstance(reason, str) or len(reason.strip()) < 12:
+        raise ReservationError(f"seriality waiver reason is missing or too short: {identity}")
+    authorized_by = waiver.get("authorized_by")
+    if not isinstance(authorized_by, str) or not authorized_by.startswith("Arhan Canli, owner,"):
+        raise ReservationError(f"seriality waiver is not authorized by the owner: {identity}")
+
+
 def _effective_contract_hash(contract: dict[str, Any]) -> str:
     normalized = json.loads(json.dumps(contract))
     normalized["prospective_scope"]["effective_contract_content_hash"] = None
@@ -464,6 +539,90 @@ def _validate_governance_epoch(
         "promotion_receipt_sha256": _sha256(paths["promotion_receipt"]),
         "reservation_ordinal": ordinal,
     }
+
+
+DIAGNOSTIC_SCENARIO_CLASSES: Final[frozenset[str]] = frozenset(
+    {"cost_stress_scenarios", "execution_stress_scenarios", "capacity_scenarios"}
+)
+DIAGNOSTIC_SCENARIO_REQUIRED_FIELDS: Final[frozenset[str]] = frozenset(
+    {
+        "scenario_id",
+        "assumptions",
+        "assumptions_sha256",
+        "result",
+        "result_sha256",
+        "primary_decision_path_sha256",
+    }
+)
+
+
+def _validate_diagnostic_scenarios(
+    payload: dict[str, Any],
+    *,
+    sealed_primary_decision_path_sha256: str,
+) -> dict[str, Any]:
+    """A diagnostic reuses the sealed primary decision path; it never forks it (spec 2(a)).
+
+    Unwired: nothing in `validate_reservation` calls this yet (plan task 1). A diagnostic
+    scenario computes cost, execution, or capacity outcomes on top of the exact decisions already
+    sealed in a primary return path (same instrument weights, same entry and exit times); it
+    cannot alter which decisions were made and cannot spend a new hypothesis identity. Every
+    scenario must therefore carry a `primary_decision_path_sha256` bound to the one sealed path
+    supplied by the caller -- a mismatch means the scenario belongs to a different decision path
+    and must be classified as a new identity, not accepted as a diagnostic of this one.
+    """
+    diagnostic_scenarios = payload.get("diagnostic_scenarios")
+    if diagnostic_scenarios is None:
+        return {"diagnostic_scenario_count": 0}
+    if not isinstance(diagnostic_scenarios, dict) or not set(diagnostic_scenarios).issubset(
+        DIAGNOSTIC_SCENARIO_CLASSES
+    ):
+        raise ReservationError(
+            "diagnostic_scenarios must be keyed by a subset of: "
+            + ", ".join(sorted(DIAGNOSTIC_SCENARIO_CLASSES))
+        )
+    scenario_count = 0
+    for scenario_class, scenarios in diagnostic_scenarios.items():
+        if not isinstance(scenarios, list):
+            raise ReservationError(f"diagnostic scenario class must be a list: {scenario_class}")
+        for index, scenario in enumerate(scenarios):
+            has_required_fields = (
+                isinstance(scenario, dict) and set(scenario) == DIAGNOSTIC_SCENARIO_REQUIRED_FIELDS
+            )
+            if not has_required_fields:
+                raise ReservationError(
+                    f"diagnostic scenario {scenario_class}[{index}] must declare exactly: "
+                    + ", ".join(sorted(DIAGNOSTIC_SCENARIO_REQUIRED_FIELDS))
+                )
+            assumptions = scenario["assumptions"]
+            result = scenario["result"]
+            if not isinstance(assumptions, dict) or not assumptions:
+                raise ReservationError(
+                    f"diagnostic scenario {scenario_class}[{index}] assumptions must be a "
+                    "non-empty object"
+                )
+            if not _matches_canonical_sha256(scenario["assumptions_sha256"], assumptions):
+                raise ReservationError(
+                    f"diagnostic scenario {scenario_class}[{index}] assumptions_sha256 does not "
+                    "match the frozen assumptions"
+                )
+            if not isinstance(result, dict) or not result:
+                raise ReservationError(
+                    f"diagnostic scenario {scenario_class}[{index}] result must be a non-empty "
+                    "object"
+                )
+            if not _matches_canonical_sha256(scenario["result_sha256"], result):
+                raise ReservationError(
+                    f"diagnostic scenario {scenario_class}[{index}] result_sha256 does not match "
+                    "the frozen result"
+                )
+            if scenario["primary_decision_path_sha256"] != sealed_primary_decision_path_sha256:
+                raise ReservationError(
+                    f"diagnostic scenario {scenario_class}[{index}] primary_decision_path_sha256 "
+                    "does not match the sealed primary decision path"
+                )
+            scenario_count += 1
+    return {"diagnostic_scenario_count": scenario_count}
 
 
 def validate_reservation(

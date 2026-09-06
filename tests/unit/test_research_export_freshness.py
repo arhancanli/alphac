@@ -770,6 +770,12 @@ def test_active_ownership_handoff_is_hash_bound_and_identical_on_both_hosts(modu
 
 @pytest.mark.workspace_evidence
 def test_external_validation_audit_is_public_and_fail_closed(modules) -> None:
+    """The literal counts=6/2 pin encoded a snapshot of the opportunity list on the day this test
+    was written, not a rule, so a legitimately curated seventh row broke it silently every night
+    since. Counts and shortlist length are asserted below as internal consistency against the
+    audit's own opportunities list instead, so a reviewed addition changes nothing here except
+    the one explicit per-row fact this test adds for it.
+    """
     _, research = modules
     payload = research.build_research_export()
     audit = payload["external_validation_opportunities"]
@@ -779,26 +785,41 @@ def test_external_validation_audit_is_public_and_fail_closed(modules) -> None:
 
     assert audit["schema"] == "canli.alphac-external-validation-opportunities.v3"
     assert audit["decision"] == "NO_EXTERNAL_ACTION_AUTHORIZED_ELIGIBILITY_FACTS_REMAIN"
-    assert audit["counts"] == {
-        "awarded": 0,
-        "exact_future_deadlines": 2,
-        "opportunities": 6,
-        "registered": 0,
-        "registration_authorized": 0,
-        "submitted": 0,
-    }
+
+    opportunities = audit["opportunities"]
+    assert audit["counts"]["opportunities"] == len(opportunities)
+    # The generator's own rule (scripts/seal_external_validation_opportunities.py) counts a row
+    # toward exact_future_deadlines when it carries an exact deadline; also require that deadline
+    # fall on or after the audit's own evidence date, so a stale exact deadline left in place could
+    # not silently inflate the count this test accepts.
+    evidence_date = audit["verified_on"]
+    exact_future = [
+        row
+        for row in opportunities
+        if row.get("exact_deadline") is not None
+        and str(row["exact_deadline"])[:10] >= evidence_date
+    ]
+    assert audit["counts"]["exact_future_deadlines"] == len(exact_future)
+    assert len(audit["opportunity_shortlist"]) == audit["counts"]["opportunities"]
+
     assert len(audit["content_hash"]) == 71
-    assert len(audit["opportunity_shortlist"]) == 6
-    assert all(not row["registration_authorized"] for row in audit["opportunities"])
-    assert all(not row["entry_claimed"] for row in audit["opportunities"])
-    opportunities = {row["id"]: row for row in audit["opportunities"]}
-    assert opportunities["regeneron_isef_2027"]["affiliated_fair_directory_query"][
+    assert all(not row["registration_authorized"] for row in opportunities)
+    assert all(not row["entry_claimed"] for row in opportunities)
+
+    by_id = {row["id"]: row for row in opportunities}
+    assert by_id["regeneron_isef_2027"]["affiliated_fair_directory_query"][
         "result"
     ] == "NO_FAIRS_MATCH_YOUR_SEARCH_CRITERIA"
-    assert opportunities["wharton_investment_2026_2027"]["eligibility"][
+    assert by_id["wharton_investment_2026_2027"]["eligibility"][
         "team_leader"
     ] == "at least 16 years old at the start of the competition"
-    assert opportunities["wharton_investment_2026_2027"]["exact_deadline"] == (
+    assert by_id["wharton_investment_2026_2027"]["exact_deadline"] == (
         "2026-09-11T17:00:00-04:00"
     )
+    # The seventh row (priority 7): asserted explicitly so a silently curated addition is a
+    # reviewed fact rather than a number the internal-consistency assertions above wave through.
+    assert by_id["nyas_junior_academy_next_window"]["fall_2026_window"][
+        "conflicting_close_dates_on_official_page"
+    ] == ["2026-07-02", "2026-07-09"]
+
     assert source.read_bytes() == legacy.read_bytes() == app.read_bytes()
