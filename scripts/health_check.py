@@ -7,7 +7,7 @@ self-heals, writes an atomic status.json + human log + history snapshot, and
 alerts via Resend (osascript + log fallback). Stdlib only, so it never depends
 on the uv env to RUN (it shells out to `uv run pytest` for the test checks).
 launchd runs this file with /usr/bin/python3, which is 3.9 on the Mac, so nothing
-newer than 3.9 may appear here (ruff's UP017 is ignored for this file; the 2026-09-06
+newer than 3.9 may appear here (the `_UTC` alias carries `# noqa: UP017`; the 2026-09-06
 03:10 run died on `dt.UTC` before writing a status or sending an alert).
 
 ALERTING IS TRANSITION-AWARE (2026-08-01). The monitor used to email an
@@ -174,7 +174,8 @@ EXPECT_FORWARD = "0.3 to 0.9"
 EXPECT_GRADE = "C+"
 
 UV_ENV = dict(os.environ, PATH=f"{HOME}/.local/bin:" + os.environ.get("PATH", ""))
-NOW = dt.datetime.now(dt.timezone.utc)
+_UTC = dt.timezone.utc  # noqa: UP017 -- dt.UTC is 3.11+; launchd runs this under 3.9
+NOW = dt.datetime.now(_UTC)
 
 
 def iso(t: dt.datetime) -> str:
@@ -225,7 +226,7 @@ def age_hours(iso_ts: str) -> float | None:
     try:
         t = dt.datetime.fromisoformat(iso_ts.replace("Z", "+00:00"))
         if t.tzinfo is None:
-            t = t.replace(tzinfo=dt.timezone.utc)
+            t = t.replace(tzinfo=_UTC)
         return (NOW - t).total_seconds() / 3600.0
     except Exception:  # noqa: BLE001
         return None
@@ -502,7 +503,7 @@ def check_crypto_rebalance(kill_on: bool = False):
         add("C6f-crypto-rebalance", "loops", "crypto weekly rebalance emitted a book", st,
             "high", observed=f"last book {age_h / 24:.1f}d ago",
             expected=f"<= {limit_h}h ({CRYPTO_REBALANCE_CADENCE_H}h cadence + grace)",
-            evidence=dt.datetime.fromtimestamp(last_book / 1000, dt.timezone.utc).isoformat())
+            evidence=dt.datetime.fromtimestamp(last_book / 1000, _UTC).isoformat())
 
     # C6g -- failures, graded by whether they sat on the rebalance grid
     if not failed:
@@ -512,7 +513,7 @@ def check_crypto_rebalance(kill_on: bool = False):
     phase = (last_book % cadence_ms) if last_book is not None else None
     on_grid = [r for r in failed if phase is None or (int(r[0]) % cadence_ms) == phase]
     latest_ts, latest_status, latest_detail = failed[0]
-    when = dt.datetime.fromtimestamp(int(latest_ts) / 1000, dt.timezone.utc).isoformat()
+    when = dt.datetime.fromtimestamp(int(latest_ts) / 1000, _UTC).isoformat()
     st = "FAIL" if on_grid else "WARN"
     add("C6g-crypto-failed-cycles", "loops", "no failed crypto cycles (8d)", st, "high",
         observed=f"{len(failed)} failed/halted, {len(on_grid)} on the rebalance grid",
