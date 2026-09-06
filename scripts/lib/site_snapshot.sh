@@ -13,7 +13,8 @@ site_source_hash() {
        -o -path "$SITE_APP_SOURCE/artifacts" \
        -o -name node_modules -o -name dist -o -name .next -o -name .vercel \
        -o -name .git -o -name .bak \
-       -o -name .claude -o -name .firecrawl \) -prune -o \
+       -o -name .claude -o -name .firecrawl \
+       -o -name design-system -o -name .design-sync -o -name .ds-sync -o -name ds-bundle \) -prune -o \
     -type f -print0 2>/dev/null \
     | sort -z \
     | xargs -0 shasum -a 256 2>/dev/null \
@@ -41,6 +42,10 @@ _site_snapshot_copy() {
     --exclude '/.bak/' \
     --exclude '/.claude/' \
     --exclude '/.firecrawl/' \
+    --exclude '/design-system/' \
+    --exclude '/.design-sync/' \
+    --exclude '/.ds-sync/' \
+    --exclude '/ds-bundle/' \
     "$source_dir/" "$destination_dir/" || return 1
   mkdir -p "$destination_dir/.vercel" || return 1
   cp "$source_dir/.vercel/project.json" "$destination_dir/.vercel/project.json" || return 1
