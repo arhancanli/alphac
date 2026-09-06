@@ -612,6 +612,56 @@ MUTATIONS: tuple[Mutation, ...] = (
             '"decision": "MUTATED_DECISION",',
         ),
     ),
+    Mutation(
+        "test_trial_accounting_diagnostic_class.py",
+        "accept a diagnostic scenario bound to a different sealed primary decision path",
+        REPO / "src/alphaforge/validation/trial_reservation.py",
+        _replace(
+            "!= sealed_primary_decision_path_sha256",
+            "== sealed_primary_decision_path_sha256",
+        ),
+        notes=[
+            "Forward full-evidence reservation v2 stage 1 (plan task 1): the drafted diagnostic-"
+            "class function is unwired from validate_reservation, but its own decision-path "
+            "binding must still be provably able to fail.",
+        ],
+    ),
+    Mutation(
+        "test_crypto_position_attribution_vps_preflight.py",
+        "change one required-file desired hash in the crypto attribution VPS contract without "
+        "recording a matching desired_revisions entry",
+        REPO / "artifacts/engineering/crypto_position_attribution_vps_preflight.json",
+        _replace(
+            '"desired_sha256": '
+            '"975e5362afb144c083bc9f196a508af2d75d6492061b71f404dd9d5229d0c278"',
+            '"desired_sha256": '
+            '"0000000000000000000000000000000000000000000000000000000000000000"',
+        ),
+        notes=[
+            "Restructured 2026-09-06 after the original assertion became a gate nobody could "
+            "pass: it pinned a 2026-08-25 read-only preflight observation's contract binding to "
+            "the CURRENT contract hash forever, even though the contract is legitimately re-"
+            "pinned over time via desired_revisions. This mutation moves execution/paper.py's "
+            "desired_sha256 off the reviewed local file with no desired_revisions entry "
+            "documenting the change -- caught by the pre-existing local source-drift check in "
+            "test_vps_preflight_is_hash_locked_and_never_self_authorizes, which every restructured "
+            "assertion in this file sits alongside.",
+        ],
+    ),
+    Mutation(
+        "test_seriality_waiver.py",
+        "accept a seriality waiver bound to a stale packet content hash",
+        REPO / "src/alphaforge/validation/trial_reservation.py",
+        _replace(
+            'waiver.get("waived_packet_content_hash") != packet["content_hash"]',
+            'waiver.get("waived_packet_content_hash") == packet["content_hash"]',
+        ),
+        notes=[
+            "Forward full-evidence reservation v2 stage 2 (plan task 2): the drafted seriality "
+            "closure-disposition check is unwired from validate_reservation, but a waiver that "
+            "no longer matches the sealed packet must still be provably rejected.",
+        ],
+    ),
 )
 
 
@@ -643,9 +693,6 @@ def main(argv: list[str] | None = None) -> int:
 
     guards = discover_guards()
     mutated = {m.guard for m in MUTATIONS}
-    unknown = sorted(mutated - set(guards))
-    if unknown:
-        raise AssertionError(f"mutations registered for tests that do not exist: {unknown}")
 
     selected = MUTATIONS
     if args.only:
@@ -656,6 +703,16 @@ def main(argv: list[str] | None = None) -> int:
                 f"--only names guards with no registered mutation: {not_registered}"
             )
         selected = tuple(m for m in MUTATIONS if m.guard in only)
+        # A full run checks EVERY registered mutation against the derived guard list below; that
+        # invariant is unchanged. --only exists to prove one newly-registered mutation cheaply
+        # (see its help text), so it must not also require every OTHER, unrelated registration in
+        # this file to already be well-formed -- otherwise one broken entry blocks proving any
+        # other, defeating the point of a cheap, isolated proof.
+        unknown = sorted({m.guard for m in selected} - set(guards))
+    else:
+        unknown = sorted(mutated - set(guards))
+    if unknown:
+        raise AssertionError(f"mutations registered for tests that do not exist: {unknown}")
 
     rows: list[dict[str, Any]] = []
     survived: list[str] = []
