@@ -26,10 +26,21 @@ import pytest
 
 REPO = Path(__file__).resolve().parents[2]
 
-#: (producer, shared artifact, consumers that must run after it).
+#: (producer, shared artifact, consumers that must run after it, [pipelines this edge applies to]).
 #: A list, not a dict keyed by producer: paper_trading_state.py hands two DIFFERENT artifacts to
 #: two different sets of consumers, and a producer-keyed mapping silently loses the second edge.
-EDGES: tuple[tuple[str, str, tuple[str, ...]], ...] = (
+#:
+#: The optional 4th element scopes an edge to a subset of PIPELINES; omitting it (a 3-tuple, every
+#: edge above this comment) means "both". This exists for the sleeve-publication chain below: those
+#: producers run ONLY in live_publish.sh (they are near-static evidence audits, not hourly-moving
+#: state), so declaring them as bare 3-tuples would make
+#: test_the_pipeline_exists_and_invokes_every_producer fail for live_tick.sh -- not because the
+#: ordering is wrong, but because the check would be asking a pipeline to invoke a script that was
+#: never meant to run there. A gate that cannot be satisfied by a correct pipeline is not a
+#: stricter gate, it is a broken one; scoping the edge is what keeps it checking something real.
+EDGES: tuple[
+    tuple[str, str, tuple[str, ...]] | tuple[str, str, tuple[str, ...], tuple[str, ...]], ...
+] = (
     (
         "export_alpaca_broker_reconciliation.py",
         "var/trading_equity.sqlite",
@@ -146,6 +157,48 @@ EDGES: tuple[tuple[str, str, tuple[str, ...]], ...] = (
         "artifacts/analysis/next_sleeve_selection.json",
         ("research_export.py",),
     ),
+    # SLEEVE-PUBLICATION EVIDENCE CHAIN (added 2026-09-06). Each of these reads the previous
+    # one's output, and every one of them drifted silently for the same reason: nothing in
+    # either publish job ever ran them, so "persisted receipt matches current sources" tests
+    # went red the moment a tracked publication bundle was rebound underneath them. Publish-only
+    # (see the EDGES docstring above) because they audit near-static publication evidence, not
+    # state that moves hourly.
+    (
+        "package_all_sleeve_review_archives.py",
+        "artifacts/publication/all_sleeve_review_archives.json",
+        (
+            "audit_clean_workspace_reproduction_contracts.py",
+            "build_repository_submission_worksheets.py",
+            "build_stanford_evidence_map.py",
+        ),
+        ("scripts/live_publish.sh",),
+    ),
+    (
+        "audit_clean_workspace_reproduction_contracts.py",
+        "artifacts/publication/clean_workspace_reproduction_audit.json",
+        ("build_repository_submission_worksheets.py", "build_stanford_evidence_map.py"),
+        ("scripts/live_publish.sh",),
+    ),
+    (
+        "audit_wave1_data_rights.py",
+        "artifacts/publication/wave1_data_rights_audit.json",
+        ("package_wave1_release_candidates.py",),
+        ("scripts/live_publish.sh",),
+    ),
+    (
+        "build_repository_submission_worksheets.py",
+        "artifacts/publication/repository_submission_worksheets.json",
+        ("build_stanford_evidence_map.py",),
+        ("scripts/live_publish.sh",),
+    ),
+    # build_stanford_evidence_map.py runs in BOTH pipelines (its live counters -- broker,
+    # forward-evidence, mutation coverage -- move hourly), so this edge is a plain 3-tuple like
+    # the ones above it, not scoped like its Group-A inputs.
+    (
+        "build_stanford_evidence_map.py",
+        "artifacts/portfolio/stanford_cs_evidence_map.json",
+        ("research_export.py",),
+    ),
 )
 
 PIPELINES = ("scripts/live_tick.sh", "scripts/live_publish.sh")
@@ -155,6 +208,11 @@ def _invocation_lines(script: Path, name: str) -> list[int]:
     """Line numbers where `script` actually invokes `name` (not lines that merely mention it)."""
     pattern = re.compile(rf"^\s*[^#\n]*\bpython\s+scripts/{re.escape(name)}\b")
     return [n for n, line in enumerate(script.read_text().splitlines(), 1) if pattern.match(line)]
+
+
+def _edge_pipelines(edge: tuple) -> tuple[str, ...]:
+    """Which PIPELINES an EDGES entry applies to: its 4th element, or both if omitted."""
+    return edge[3] if len(edge) > 3 else PIPELINES
 
 
 def _references(source: str, artifact: str) -> bool:
@@ -174,7 +232,10 @@ def test_the_pipeline_exists_and_invokes_every_producer(pipeline: str) -> None:
     """Guards the guard: if the scan finds no invocation, every ordering case below is vacuous."""
     script = REPO / pipeline
     assert script.exists(), f"{pipeline} missing — this test cannot report a pass"
-    for producer, _artifact, _consumers in EDGES:
+    for edge in EDGES:
+        if pipeline not in _edge_pipelines(edge):
+            continue
+        producer = edge[0]
         assert _invocation_lines(script, producer), (
             f"{pipeline} never invokes {producer}; either the pipeline changed shape or the "
             f"invocation regex no longer matches it. Both make the ordering assertion vacuous."
@@ -184,7 +245,10 @@ def test_the_pipeline_exists_and_invokes_every_producer(pipeline: str) -> None:
 @pytest.mark.parametrize("pipeline", PIPELINES)
 def test_consumers_run_after_the_step_that_writes_their_input(pipeline: str) -> None:
     script = REPO / pipeline
-    for producer, artifact, consumers in EDGES:
+    for edge in EDGES:
+        if pipeline not in _edge_pipelines(edge):
+            continue
+        producer, artifact, consumers = edge[0], edge[1], edge[2]
         produced_at = _invocation_lines(script, producer)
         assert len(produced_at) == 1, (
             f"{pipeline} invokes {producer} {len(produced_at)} times at lines {produced_at}; "
@@ -206,7 +270,8 @@ def test_every_declared_edge_is_real() -> None:
     Without this, a stale entry would keep enforcing an order for a dependency that no longer
     exists, and a mis-declared one would enforce nothing at all while looking like coverage.
     """
-    for producer, artifact, consumers in EDGES:
+    for edge in EDGES:
+        producer, artifact, consumers = edge[0], edge[1], edge[2]
         producer_src = (REPO / "scripts" / producer).read_text()
         assert _references(producer_src, artifact), (
             f"{producer} does not reference {artifact}, which it is declared to write"

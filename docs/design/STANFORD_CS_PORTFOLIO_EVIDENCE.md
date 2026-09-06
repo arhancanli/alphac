@@ -82,8 +82,8 @@ Boundary: Archive integrity is not result replay or rights clearance; no DOI, ex
 
 ### The project refuses to infer success from an immature forward record.
 
-- `daily_return_observations`: 17
-- `cumulative_return`: -0.02213339999999997
+- `daily_return_observations`: 28
+- `cumulative_return`: -0.03193580000000007
 - `sharpe_status`: IMMATURE_RECORD_TOO_SHORT
 - `current_sleeves`: 4
 - `target_sleeves`: 14
@@ -139,7 +139,7 @@ A signed append-only record connects public claims to artifacts and corrections.
 
 Screen: `/founder#open-burden`
 
-The forward record has only 17 daily observations, external reviews remain at zero, and Foundry is planned not applied. The open burden is part of the result.
+The forward record has only 28 daily observations, external reviews remain at zero, and Foundry is planned not applied. The open burden is part of the result.
 
 This is a timed production script and evidence path. It is not a recorded video, proof that a viewer watched it or evidence of admissions impact.
 

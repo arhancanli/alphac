@@ -132,6 +132,15 @@ WATCHDOG_S=2400   # 40 min cap: hourly cache-hit cycles are ~3 min; the once-dai
   uv run python scripts/sync_readme_forward_evidence.py
   uv run python scripts/analyze_forward_sleeve_contribution.py
   uv run python scripts/audit_crypto_lab_carry_crash.py
+  # Stanford CS evidence map: the aggregator over the sleeve-publication evidence chain (see
+  # live_publish.sh, which owns steps 1-7 of that chain -- they are near-static publication
+  # audits, not hourly state) PLUS the live counters this tick just regenerated above (broker
+  # reconciliation, forward-evidence maturity, mutation coverage). Those live counters move
+  # hourly, so this step runs here too, not only in the nightly publish. Soft-fail: a stale
+  # portfolio evidence map must be loud, not a reason to block trading or the web deploy below.
+  # Pinned by tests/unit/test_publish_pipeline_order.py::EDGES.
+  uv run python scripts/build_stanford_evidence_map.py >/dev/null \
+    || echo "WARN: Stanford CS evidence map NOT rebuilt — publishing a stale portfolio evidence map"
   uv run python scripts/research_export.py
   # RETRACTED-CLAIM GATE. Runs after regeneration and BEFORE the deploy below, because a signed
   # retraction that only appends to the log is a footnote, not a retraction: AlphaTrend's DSR 0.83

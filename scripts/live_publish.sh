@@ -159,6 +159,44 @@ deploy_prod() {
     || { echo "analyze_forward_sleeve_contribution FAILED"; FAIL=1; }
   uv run python scripts/audit_crypto_lab_carry_crash.py \
     || { echo "audit_crypto_lab_carry_crash FAILED"; FAIL=1; }
+  # SLEEVE-PUBLICATION EVIDENCE CHAIN (added 2026-09-06). None of these seven ran from ANY
+  # publish job before today, so every "persisted receipt matches current sources" test bound
+  # to them went red the moment a tracked publication bundle was rebound underneath them
+  # (commit 12cc99c) or a config/doc they bind to changed. Soft-fail like the audits above:
+  # a stale evidence receipt must be loud, not a reason to block the track-record publish.
+  # ORDER IS LOAD-BEARING, same class as the paper-state/glassbox edge above: each step here
+  # reads the previous one's output on disk, and the dependency is invisible in this file
+  # because it is file-mediated. Pinned by tests/unit/test_publish_pipeline_order.py::EDGES.
+  # 1) 16 raw-row-free sleeve review archives; step 2, 5 and 8 below all read this receipt.
+  uv run python scripts/package_all_sleeve_review_archives.py \
+    || echo "WARN: all-sleeve review archives NOT rebuilt — publishing a receipt bound to stale archives"
+  # 2) clean-workspace reproduction audit; reads the archives step 1 just wrote.
+  uv run python scripts/audit_clean_workspace_reproduction_contracts.py \
+    || echo "WARN: clean-workspace reproduction audit NOT rebuilt — publishing a stale contract audit"
+  # 3) Wave 1 data-rights audit; reads external_submission_plan.json, which is rebuilt on its
+  # own schedule and has previously moved ahead of this audit.
+  uv run python scripts/audit_wave1_data_rights.py \
+    || echo "WARN: Wave 1 data-rights audit NOT rebuilt — publishing a receipt bound to a stale submission plan"
+  # 4) Wave 1 release-candidate archives; reads the rights audit step 3 just wrote.
+  uv run python scripts/package_wave1_release_candidates.py \
+    || echo "WARN: Wave 1 release candidates NOT repackaged — publishing archives bound to a stale rights audit"
+  # 5) repository submission worksheets; reads steps 1 AND 2 (archive bindings + reproduction
+  # contracts), so it must run after both.
+  uv run python scripts/build_repository_submission_worksheets.py \
+    || echo "WARN: repository submission worksheets NOT rebuilt — publishing a stale ARCHIVE_BINDING"
+  # 6) mechanical manuscript-style audit; independent of 1-5, bound to the publication standard
+  # doc and the papers themselves.
+  uv run python scripts/audit_publication_manuscript_style.py \
+    || echo "WARN: publication manuscript-style audit NOT rebuilt — publishing a stale style receipt"
+  # 7) inflation-breakeven source-feasibility audit; local-only read of the macro vintage lake,
+  # independent of 1-6.
+  uv run python scripts/audit_inflation_breakeven_feasibility.py \
+    || echo "WARN: inflation-breakeven feasibility audit NOT rebuilt — publishing a stale result"
+  # 8) Stanford CS evidence map: the aggregator. Reads steps 1, 2 and 5 above plus admission,
+  # broker, forward-evidence, mutation and legacy-closure artifacts that already moved earlier
+  # in this run, so it MUST run last among the eight. research_export.py copies its output on.
+  uv run python scripts/build_stanford_evidence_map.py \
+    || echo "WARN: Stanford CS evidence map NOT rebuilt — publishing a stale portfolio evidence map"
   uv run python scripts/research_export.py || { echo "research_export FAILED"; FAIL=1; }
   # publish the downloadable verifier, then SELF-CHECK that our own published record reproduces
   # (content hashes + signatures + golden master) before we ship it. A failure here means we'd be
