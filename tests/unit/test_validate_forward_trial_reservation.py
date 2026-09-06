@@ -8,6 +8,7 @@ from pathlib import Path
 import pytest
 
 from alphaforge.validation.experiments import ExperimentLog, hypothesis_hash
+from alphaforge.validation.trial_reservation import _validate_prior_identity_admission_disposition
 
 SCRIPT = Path(__file__).resolve().parents[2] / "scripts" / "validate_forward_trial_reservation.py"
 ROOT = SCRIPT.parents[1]
@@ -231,3 +232,74 @@ def test_reservation_rejects_path_escape(tmp_path: Path) -> None:
     evidence["runner"] = {"path": "../runner.py", "sha256": "0" * 64}
     with pytest.raises(ReservationError, match="escapes repository"):
         validate_reservation(reservation, trial_config=trial, repo=tmp_path)
+
+
+# Plan task 3: prove the drafted, unwired _validate_prior_identity_admission_disposition against
+# today's real sealed crypto_carry_portable_v1 state, replayed byte-for-byte rather than
+# reconstructed. validate_reservation itself is untouched by this task -- reserving ordinal 230
+# today still passes the seriality check (plan task 4, owner-gated, is what would change that).
+SEALED_V1_IDENTITY = "da5f5f47f99f9bd2"
+SEALED_V1_PACKET = Path("artifacts/research/trial_packets/da5f5f47f99f9bd2.json")
+SEALED_V1_CLOSURE = Path("artifacts/research/crypto_carry_portable_v1_admission_closure.json")
+
+
+def _replay_sealed_v1_state(tmp_path: Path) -> dict[str, object]:
+    """Copy the real, sealed crypto_carry_portable_v1 packet and closure byte-for-byte."""
+    packet_target = tmp_path / SEALED_V1_PACKET
+    closure_target = tmp_path / SEALED_V1_CLOSURE
+    packet_target.parent.mkdir(parents=True, exist_ok=True)
+    closure_target.parent.mkdir(parents=True, exist_ok=True)
+    packet_target.write_bytes((ROOT / SEALED_V1_PACKET).read_bytes())
+    closure_target.write_bytes((ROOT / SEALED_V1_CLOSURE).read_bytes())
+    return json.loads(packet_target.read_text(encoding="utf-8"))
+
+
+def _observed_content_hash(payload: dict[str, object]) -> str:
+    body = {key: value for key, value in payload.items() if key != "content_hash"}
+    canonical = json.dumps(body, sort_keys=True, separators=(",", ":")).encode()
+    return "sha256:" + hashlib.sha256(canonical).hexdigest()
+
+
+def test_prior_identity_admission_disposition_blocks_the_sealed_incomplete_v1_state(
+    tmp_path: Path,
+) -> None:
+    packet = _replay_sealed_v1_state(tmp_path)
+    assert packet["complete"] is True
+    assert packet["content_hash"] == (
+        "sha256:9ba408cb3c1d9accd91eddd25a079995a8d42aa6b7456dd6afd22539917ce40a"
+    )
+    closure = json.loads((tmp_path / SEALED_V1_CLOSURE).read_text(encoding="utf-8"))
+    assert closure["decision"]["disposition"] == "INCOMPLETE"
+    assert closure["content_hash"] == (
+        "sha256:ac2ef258f30ee20dc8a915866cbc72e52c3f5ae93a21fb336cdd627406c0d451"
+    )
+    with pytest.raises(ReservationError, match="neither ADMIT nor KILL"):
+        _validate_prior_identity_admission_disposition(tmp_path, SEALED_V1_IDENTITY, packet)
+
+
+def test_a_valid_seriality_waiver_unblocks_the_sealed_incomplete_v1_state(
+    tmp_path: Path,
+) -> None:
+    packet = _replay_sealed_v1_state(tmp_path)
+    waiver = {
+        "schema": "canli.alphac-seriality-waiver.v1",
+        "waived_hypothesis_key": SEALED_V1_IDENTITY,
+        "waived_packet_content_hash": packet["content_hash"],
+        "reason": (
+            "Owner accepts the nine unfrozen evidence fields as a permanent evidentiary gap for "
+            "this once-run identity and authorizes reserving the next ordinal without regrading "
+            "v1."
+        ),
+        "authorized_by": "Arhan Canli, owner, 2026-09-06",
+    }
+    assert waiver["waived_packet_content_hash"] == (
+        "sha256:9ba408cb3c1d9accd91eddd25a079995a8d42aa6b7456dd6afd22539917ce40a"
+    )
+    waiver["content_hash"] = _observed_content_hash(waiver)
+    waiver_path = (
+        tmp_path / "artifacts" / "research" / "seriality_waivers" / f"{SEALED_V1_IDENTITY}.json"
+    )
+    waiver_path.parent.mkdir(parents=True, exist_ok=True)
+    waiver_path.write_text(json.dumps(waiver), encoding="utf-8")
+
+    _validate_prior_identity_admission_disposition(tmp_path, SEALED_V1_IDENTITY, packet)
