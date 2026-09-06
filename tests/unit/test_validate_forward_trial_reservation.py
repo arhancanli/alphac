@@ -241,6 +241,14 @@ def test_reservation_rejects_path_escape(tmp_path: Path) -> None:
 SEALED_V1_IDENTITY = "da5f5f47f99f9bd2"
 SEALED_V1_PACKET = Path("artifacts/research/trial_packets/da5f5f47f99f9bd2.json")
 SEALED_V1_CLOSURE = Path("artifacts/research/crypto_carry_portable_v1_admission_closure.json")
+# artifacts/ is gitignored, so a clean checkout (CI) cannot read the sealed files. Byte-identical
+# copies live under tests/fixtures; the workspace_evidence test below keeps them bound to the
+# originals on the machine that holds them, so the fixture cannot drift from the seal.
+SEALED_V1_FIXTURES = (
+    Path(__file__).resolve().parent.parent / "fixtures" / "crypto_carry_portable_v1"
+)
+SEALED_V1_PACKET_FIXTURE = SEALED_V1_FIXTURES / SEALED_V1_PACKET.name
+SEALED_V1_CLOSURE_FIXTURE = SEALED_V1_FIXTURES / SEALED_V1_CLOSURE.name
 
 
 def _replay_sealed_v1_state(tmp_path: Path) -> dict[str, object]:
@@ -249,9 +257,18 @@ def _replay_sealed_v1_state(tmp_path: Path) -> dict[str, object]:
     closure_target = tmp_path / SEALED_V1_CLOSURE
     packet_target.parent.mkdir(parents=True, exist_ok=True)
     closure_target.parent.mkdir(parents=True, exist_ok=True)
-    packet_target.write_bytes((ROOT / SEALED_V1_PACKET).read_bytes())
-    closure_target.write_bytes((ROOT / SEALED_V1_CLOSURE).read_bytes())
+    packet_target.write_bytes(SEALED_V1_PACKET_FIXTURE.read_bytes())
+    closure_target.write_bytes(SEALED_V1_CLOSURE_FIXTURE.read_bytes())
     return json.loads(packet_target.read_text(encoding="utf-8"))
+
+
+@pytest.mark.workspace_evidence
+def test_the_sealed_v1_fixtures_are_byte_identical_to_the_originals() -> None:
+    """On the machine that holds artifacts/, the tracked fixtures must equal the sealed files
+    exactly; a fixture that drifted would let the replay above prove something about a state
+    that was never sealed."""
+    assert (ROOT / SEALED_V1_PACKET).read_bytes() == SEALED_V1_PACKET_FIXTURE.read_bytes()
+    assert (ROOT / SEALED_V1_CLOSURE).read_bytes() == SEALED_V1_CLOSURE_FIXTURE.read_bytes()
 
 
 def _observed_content_hash(payload: dict[str, object]) -> str:
