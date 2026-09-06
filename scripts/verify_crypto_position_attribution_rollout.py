@@ -13,6 +13,7 @@ import hashlib
 import importlib.util
 import json
 import sqlite3
+from datetime import UTC, datetime
 from pathlib import Path
 from types import ModuleType
 from typing import Any, Final
@@ -74,13 +75,23 @@ def no_deployment_receipt_document() -> dict[str, Any]:
     return document
 
 
-def is_frozen_success(document: dict[str, Any], *, receipt_sha256: str) -> bool:
+def is_frozen_success(
+    document: dict[str, Any], *, receipt_sha256: str, contract: dict[str, Any]
+) -> bool:
+    """A frozen success is terminal for the FIRST-NATURAL-CYCLE claim -- but only while it still
+    describes the currently declared desired source state. If the contract's required_files
+    desired_sha256 values move (a legitimate re-pin, e.g. desired_revisions), the frozen document
+    no longer proves anything about what is deployed NOW, so it must not shortcut a fresh remote
+    re-check.
+    """
     binding = document.get("source_binding") or {}
+    current_required = {item["path"]: item["desired_sha256"] for item in contract["required_files"]}
     return (
         document.get("schema") == SCHEMA
         and document.get("status") == "VERIFIED_FIRST_NATURAL_MARKED_CYCLE"
         and document.get("passes") is True
         and binding.get("deployment_receipt_sha256") == receipt_sha256
+        and binding.get("contract_required_files_desired_sha256") == current_required
         and document.get("content_hash") == _content_hash(document)
     )
 
@@ -128,12 +139,17 @@ def validate_receipt(receipt: dict[str, Any], contract: dict[str, Any], deploy: 
 def remote_latest_cycle(*, host: str, identity: Path, deploy: ModuleType) -> dict[str, Any]:
     required_columns = tuple(sorted(deploy.REQUIRED_COLUMNS))
     code = f"""
-import json, sqlite3, subprocess
+import hashlib, json, pathlib, sqlite3, subprocess
 db = {deploy.REMOTE_DB!r}
+root = pathlib.Path({deploy.REMOTE_ROOT!r})
+required_paths = {deploy.EXPECTED_PATHS!r}
 required = set({required_columns!r})
+def digest(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest() if path.is_file() else None
 def state(unit):
     result = subprocess.run(['systemctl', 'is-active', unit], text=True, capture_output=True)
     return result.stdout.strip() or 'unknown'
+files = {{rel: digest(root / rel) for rel in required_paths}}
 con = sqlite3.connect('file:' + db + '?mode=ro', uri=True)
 con.row_factory = sqlite3.Row
 try:
@@ -160,6 +176,7 @@ print(json.dumps({{
     'position_snapshot_columns': columns,
     'equity': equity,
     'positions': positions,
+    'files': files,
 }}, sort_keys=True))
 """.strip()
     result = deploy._run(
@@ -258,12 +275,16 @@ def build_document(
     else:
         status = "VERIFIED_FIRST_NATURAL_MARKED_CYCLE"
 
+    current_required_sha256 = {
+        item["path"]: item["desired_sha256"] for item in contract["required_files"]
+    }
     document = {
         "schema": SCHEMA,
         "author": "Arhan Canli",
         "status": status,
         "passes": status == "VERIFIED_FIRST_NATURAL_MARKED_CYCLE",
         "remote_query_performed": True,
+        "verified_at_utc": datetime.now(UTC).isoformat(),
         "deployment_boundary_cycle_ts": baseline,
         "natural_cycle_after_deployment": natural_cycle_after_deployment,
         "remote_timer_active": timer_active,
@@ -272,11 +293,16 @@ def build_document(
         "source_binding": {
             "deployment_receipt_sha256": receipt_sha256,
             "remote_query_payload_sha256": hashlib.sha256(_canonical(payload)).hexdigest(),
+            "remote_source_files": payload.get("files"),
+            "contract_required_files_desired_sha256": current_required_sha256,
             "scope": "one transactionally consistent latest equity row and same-cycle positions",
         },
         "claim_boundary": (
             "This verifies only prospective position-attribution operation on the first eligible "
-            "natural cycle. It is not a Sharpe estimate, return trial, or trading authorization."
+            "natural cycle. It is not a Sharpe estimate, return trial, or trading authorization. "
+            "remote_source_files proves only that these three paths hashed to these values on "
+            "Frankfurt AT verified_at_utc; it does not itself claim signal, weight, or risk-limit "
+            "equivalence -- that is the change_scope declaration in the preflight contract."
         ),
     }
     document["content_hash"] = _content_hash(document)
@@ -308,7 +334,7 @@ def main() -> int:
     receipt_sha256 = hashlib.sha256(receipt_bytes).hexdigest()
     if args.output.is_file():
         existing = json.loads(args.output.read_text(encoding="utf-8"))
-        if is_frozen_success(existing, receipt_sha256=receipt_sha256):
+        if is_frozen_success(existing, receipt_sha256=receipt_sha256, contract=contract):
             print(f"{existing['status']}: {args.output} (frozen first-cycle evidence)")
             return 0
     payload = remote_latest_cycle(host=args.host, identity=args.identity, deploy=deploy)
