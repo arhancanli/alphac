@@ -77,6 +77,13 @@ src = ["src", "tests"]
 select = ["E", "F", "W", "I", "UP", "B", "C4", "SIM", "RUF", "DTZ"]
 ignore = ["SIM108"]
 
+[tool.ruff.lint.per-file-ignores]
+# launchd starts the health monitor with /usr/bin/python3 (3.9 on the Mac), not the venv,
+# so it must stay 3.9-clean. UP017 would rewrite dt.timezone.utc to dt.UTC (3.11+), which is
+# exactly the AttributeError that silenced the 2026-09-06 03:10 run. Guarded by
+# tests/unit/test_health_check_runs_under_launchd_python.py.
+"scripts/health_check.py" = ["UP017"]
+
 [tool.mypy]
 python_version = "3.12"
 strict = true
