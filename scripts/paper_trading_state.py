@@ -1463,6 +1463,20 @@ def transparency_entries() -> list[str]:
         "unused rather than guessed, so the leg warms up from deployment forward. Where it binds, the "
         "book is sized smaller than it has been. Declared in the live-change contract; thresholds and "
         "parameters are unchanged.",
+        "CORRECTION 2026-09-06 (site) — the /progress roadmap said the next breadth would be "
+        "managed-futures trend, but that needs futures data we have not yet invested in. That "
+        "sentence was wrong from the day AlphaTrend, the managed-futures trend sleeve on "
+        "exchange-traded funds, entered the paper book, and it stayed on the page beside a "
+        "description that counted four live sleeves. The paragraph now says what is true: four "
+        "sleeves run on paper and the next admission is a gate, not a schedule, with no new "
+        "candidate admitted since the pre-registered contract took force. The retired sentence is "
+        "on the retracted-claims blocklist, so it cannot be republished without this note beside it.",
+        "CORRECTION 2026-09-06 (engine README) — the known-open defects list said the sizing "
+        "overlay's scale defect was open. The fix landed on 2026-08-18, the same day that entry was "
+        "written, with a test pinning the realized leg to the unlevered book; the leg's survival "
+        "across production restarts followed on 2026-09-06. The entry understated the code for "
+        "nineteen days and now records both dates; the estimated drawdown cost while it was open "
+        "is unchanged.",
     ]
 
 

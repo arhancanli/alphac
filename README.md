@@ -20,19 +20,19 @@ is worthless if the code is hidden.
 
 We run this on paper capital. No real money has been deployed.
 
-**Evidence snapshot:** 2026-09-05. Later marks must update this table through the same
+**Evidence snapshot:** 2026-09-06. Later marks must update this table through the same
 artifact-bound publication pipeline; this is not a real-time broker display.
 
 | | |
 |---|---|
 | Paper sleeves | **4 / 14 planned** — funding carry, equity momentum, managed-futures trend, PIT macro surprise |
-| Forward record | **27 daily returns** from 2026-08-07 through 2026-09-05; cumulative return **−2.53611%**; provenance currently passes the publication gate |
+| Forward record | **28 daily returns** from 2026-08-07 through 2026-09-06; cumulative return **−3.15947%**; provenance currently passes the publication gate |
 | Forward Sharpe | **Not reportable** — 252 observations are required for an estimate and 756 for the project's establishment test |
-| Drawdown | Realized **3.00024%** to date, descriptive only; the current-composition model estimates **9.318% expected / 16.451% p95**, neither established by live evidence |
+| Drawdown | Realized **3.26396%** to date, descriptive only; the current-composition model estimates **9.318% expected / 16.451% p95**, neither established by live evidence |
 | Diversification | Research-curve average pairwise correlation **+0.02483** across 4 sleeves; live-forward diversification is not established |
 | DSR policy | Mandatory to measure and publish; **0.95 is a full-union portfolio-maturity threshold, not a per-sleeve or incremental-admission gate** |
 
-No forward Sharpe or expected maximum drawdown is established. The 27-return record is too short, and its provenance gate currently passes.
+No forward Sharpe or expected maximum drawdown is established. The 28-return record is too short, and its provenance gate currently passes.
 Historical simulations, modeled risk and broker-derived paper marks remain separately labelled;
 none is a promise about future returns.
 
@@ -73,9 +73,15 @@ what this repo is really for, is the machinery that stops us fooling ourselves:
 
 Kept here rather than in an issue tracker nobody reads:
 
-1. **Overlay scale defect** (`portfolio` / `strategy.py:609`) — the realized-vol leg measures the
-   post-overlay equity curve while the ex-ante leg uses pre-overlay weights. Never the same scale.
-   Costs an estimated +0.6 to +2.2pp of expected max drawdown. **Open.**
+1. **Overlay scale defect** (`portfolio` / `strategy.py`) — the realized-vol leg measured the
+   post-overlay equity curve while the ex-ante leg used pre-overlay weights, never the same scale,
+   so the fast leg could not bind; estimated +0.6 to +2.2pp of expected max drawdown while open.
+   **Fixed 2026-08-18** (the realized leg is measured on the unlevered book; pinned by
+   `tests/unit/test_overlay_realized_leg_scale.py`) and **made to survive production on
+   2026-09-06** (under `--once` the leg's history lived in the process and restarted empty every
+   hour; each cycle now records its overlay scale and the strategy is re-seeded on boot). This
+   entry said "Open" from 2026-08-18 to 2026-09-06, written the same day the fix landed and
+   never updated; the transparency log carries the correction.
 2. **AlphaLedger's pre-registration may be void.** `PREREG_SLEEVE4_INVESTMENT.md` pins the universe
    to a frozen 8,017-id allowlist; the run that produced its headline evidence (21y Sharpe 0.83,
    NW t +3.19) resolved the universe dynamically and used 6,880 ids. The corrected re-run is

@@ -144,3 +144,34 @@ def test_local_nonclaim_collision_cannot_launder_a_sharpe_assertion(tmp_path: Pa
     assert violations, "a local gross_mean exclusion must not excuse a nearby net Sharpe claim"
     assert len(violations) == 1, "only the net Sharpe use should remain a violation"
     assert violations[0][1].pattern.pattern == r"0\.3403"
+
+
+def test_the_stale_breadth_sentence_is_caught_bare_and_passes_inside_its_correction(
+    tmp_path: Path,
+) -> None:
+    """2026-09-06: /progress said the next breadth 'would be managed-futures trend, but that
+    needs futures data we have not yet invested in' while the same page's description counted
+    four live sleeves, one of them the managed-futures trend sleeve. A sentence-class rule keeps
+    the retired roadmap line from being pasted back in; the correction entry that quotes it must
+    still pass, because the record explains rather than deletes."""
+    rules = GATE.load_rules()
+
+    bare = tmp_path / "roadmap.html"
+    bare.write_text(
+        "<p>The next breadth would be managed-futures trend, but that needs futures data we "
+        "have not yet invested in, so for now it stays a research question.</p>"
+    )
+    hits = GATE.scan(tmp_path, rules)
+    assert hits, "the retired roadmap sentence must be caught when asserted bare"
+    assert {rule.seq for _p, rule, _s in hits} == {"--"}, hits
+
+    bare.unlink()
+    disclosed = tmp_path / "paper-state.json"
+    disclosed.write_text(
+        '{"transparency": ["CORRECTION 2026-09-06 \\u2014 the roadmap said the next breadth '
+        "would be managed-futures trend, but that needs futures data we have not yet invested "
+        'in. That sentence was wrong from the day the managed-futures trend sleeve entered the book."]}'
+    )
+    assert not GATE.scan(tmp_path, rules), (
+        "the retired sentence quoted inside a dated CORRECTION must PASS: disclosure, not deletion"
+    )

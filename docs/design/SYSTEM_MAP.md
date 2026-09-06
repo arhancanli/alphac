@@ -22,7 +22,7 @@ At a glance: **344 Python scripts**, **17 shell entry points**,
 | com.accapital.alphavintage | `alphavintage_tick.sh` | 10:00 daily |
 | com.accapital.deribit | `deribit_capture.py` | 13:00 daily |
 | com.accapital.eia930 | `eia930_sweep.sh` | 4 times daily |
-| com.accapital.health | `health_check.py` | 03:10 daily |
+| com.accapital.health | `health_check.py` | 03:32 daily |
 | com.accapital.livetick | `live_tick.sh` | 0*:25 daily |
 | com.accapital.macrovintage | `macro_vintage_tick.sh` | 08:20 daily |
 | com.accapital.publish | `live_publish.sh` | 02:10 daily |
