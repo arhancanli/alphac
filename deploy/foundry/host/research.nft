@@ -1,0 +1,43 @@
+#!/usr/sbin/nft -f
+
+flush ruleset
+
+table inet foundry_filter {
+    set private_database_ports {
+        type inet_service
+        elements = { 25060 }
+    }
+
+    chain input {
+        type filter hook input priority filter; policy drop;
+        ct state invalid drop
+        ct state established,related accept
+        iifname "lo" accept
+        ip saddr 10.44.0.0/20 tcp dport 22 accept
+        meta l4proto icmp accept
+    }
+
+    chain forward {
+        type filter hook forward priority filter; policy drop;
+    }
+
+    chain output {
+        type filter hook output priority filter; policy drop;
+        ct state invalid drop
+        ct state established,related accept
+        oifname "lo" accept
+
+        meta skuid 0 udp dport { 53, 123 } accept
+        meta skuid 0 tcp dport { 53, 443 } accept
+
+        meta skuid "researchd" ip daddr 10.44.0.0/20 tcp dport @private_database_ports accept
+        meta skuid "foundryworker" ip daddr 10.44.0.0/20 tcp dport @private_database_ports accept
+        meta skuid "foundryvalidator" ip daddr 10.44.0.0/20 tcp dport @private_database_ports accept
+        meta skuid "foundrypublisher" ip daddr 10.44.0.0/20 tcp dport @private_database_ports accept
+        meta skuid "foundrymigrator" ip daddr 10.44.0.0/20 tcp dport @private_database_ports accept
+        meta skuid "foundrysentinel" ip daddr 10.44.0.0/20 tcp dport @private_database_ports accept
+
+        meta skuid "foundryegress" udp dport 53 accept
+        meta skuid "foundryegress" tcp dport { 53, 443 } accept
+    }
+}

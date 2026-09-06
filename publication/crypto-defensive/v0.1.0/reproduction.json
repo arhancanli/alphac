@@ -1,0 +1,39 @@
+{
+  "bundle_integrity_command": "sha256sum -c SHA256SUMS",
+  "clean_environment_reproduction_completed": false,
+  "code_bindings": {
+    "scripts/audit_remaining_research_families.py": "6cc4907faeb84268bdd2ee3d1527321d48f62d098302cf37af03352c33ba7554"
+  },
+  "environment_bindings": {
+    "pyproject.toml": "ddaf8b60999275f6d3fb93b3073f256d75d1383bfc8bab14263dc58645841006",
+    "uv.lock": "5caca664242722a3a3112663d7a19b7b5000583e30ade3753e1b8ffdecfd6f06"
+  },
+  "expected_result_hashes": {
+    "artifacts/research/crypto_defensive_family.json": "5bf4fef10142747c084d97f39b67674f3be74aa47ccc6405ab44c64a29bb70df"
+  },
+  "independent_human_reproduction_completed": false,
+  "internal_audit_replay": {
+    "audit_command_executed": true,
+    "bundle_path": "internal_replay_receipt.json",
+    "content_hash": "sha256:222201e3428e2cc75dd546d9205b15c17af4518038397983b171af2195b57b1d",
+    "sha256": "70ac0c8d8542294e02c396085216646208a786295c747940f0eb0f576010ec95",
+    "sleeve_status": "AUDIT_COMMAND_EXECUTED_ALL_RELEASED_RESULT_HASHES_STABLE"
+  },
+  "isolated_frozen_dependency_replay": {
+    "audit_command_executed": true,
+    "bundle_path": "isolated_replay_receipt.json",
+    "content_hash": "sha256:cf5e340ae7a23fb8dc168b47af77055b981e2e9ef8a1bc467b523fb7e445a2ac",
+    "dependency_environment": "UV_ISOLATED_FROZEN",
+    "portable_clean_workspace_replay_completed": false,
+    "raw_input_portability_established": false,
+    "sha256": "d0df878375d415986fa639487e4ccffc9cad6396dca9bde5f3be4a7fdf50b2ad",
+    "sleeve_status": "ISOLATED_FROZEN_DEPENDENCY_AUDIT_EXECUTED_ALL_RELEASED_RESULT_HASHES_STABLE"
+  },
+  "registry_key": "crypto_defensive",
+  "result_reproduction_commands": [
+    "uv run python scripts/audit_remaining_research_families.py"
+  ],
+  "result_reproduction_mapping_complete": true,
+  "schema": "canli.alphac-publication-reproduction.v2",
+  "status": "MAPPED_NOT_CLEAN_ENVIRONMENT_REPLAYED"
+}

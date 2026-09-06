@@ -1,8 +1,8 @@
 # ALPHAC sleeve-discovery program
 
-The portfolio objective is an honest out-of-sample Sharpe of 2.0 to 2.5 across up to 14 economically distinct sleeves, with approximately 11% maximum drawdown as a research objective. Fourteen is reached only if at least ten new identities independently pass every gate; otherwise the book remains smaller. These are research targets, not forecasts or promises. Results outside the ranges are published as measured.
+The governing objective is an honest forward Sharpe of 1.5 across up to 14 economically distinct sleeves, with approximately 11% expected maximum drawdown as a research objective. The implied in-sample support band is 2.25 to 3.0 after applying the book's published backtest-to-forward haircut; it is not a second forward target. Fourteen is reached only if at least ten new identities independently pass every gate; otherwise the book remains smaller. These are research targets, not forecasts, promises, or admission evidence. Results outside the ranges are published as measured. The previous 2.0 to 2.5 target was withdrawn on 2026-08-21 because its units were ambiguous and its forward interpretation was not reachable at measured sleeve quality.
 
-The current four-sleeve book has measured average pairwise correlation of +0.0274 on its common window. That creates mathematical room for a stronger portfolio, but it does not prove that future correlations remain low. New sleeves must add a return source, not merely another parameterization of price momentum.
+The exact current-composition study measures average pairwise correlation of +0.0248 over 1,061 synchronized rows, with a 95% moving-block-bootstrap upper bound of +0.0487. The uncertainty ceiling passes, but the governing point gate of 0.00 does not, and this retrospective research study does not establish live-forward diversification. That creates mathematical room for a stronger portfolio, but it does not prove that future correlations remain low. New sleeves must add a return source, not merely another parameterization of price momentum.
 
 ## Admission sequence
 
@@ -16,7 +16,7 @@ The current four-sleeve book has measured average pairwise correlation of +0.027
 
 ## Diversification gates
 
-The ordinary common-window average pairwise correlation must be at most 0.15, no pair may exceed 0.35, and stressed pairwise correlation must remain at most 0.50. The 95% upper confidence bounds must independently remain below the pair and stressed ceilings, with at least 252 aligned OOS and 63 stressed observations. Those are admission ceilings rather than optimizer targets. Crisis-conditional dependence and co-tail loss are mandatory; a low unconditional point estimate cannot pass.
+The ordinary common-window average pairwise correlation must be at most 0.00, no pair may exceed 0.35, and stressed pairwise correlation must remain at most 0.50. The average-correlation 95% upper bound must be at most 0.10; the pair and stressed upper bounds must independently remain below their 0.35 and 0.50 ceilings, with at least 504 aligned correlation observations, 756 OOS observations and 63 stressed observations. These are admission ceilings rather than optimizer targets. The portfolio objective is an average pairwise correlation near -0.03, but that objective is not a gate and cannot qualify a result. Crisis-conditional dependence and co-tail loss are mandatory; a low unconditional point estimate cannot pass.
 
 Every execution `TESTED_PASS` is hash-bound to evidence and at least three scenarios. Capacity is
 reconciled to a strictly increasing curve whose points carry capital, net Sharpe, stressed fill
@@ -91,17 +91,26 @@ The follow-on historical screen audit then disproved the apparent 22-identity he
 complete `alphamax_construction` walk-forward arms and sixteen persisted
 `alphamax_weighting` grid cells had explicitly reported zero trials burned despite measuring
 distinct return configurations. All 24 are now charged through an idempotent forensic import;
-none collided with the existing union. The ledger therefore stands at 229 immutable records and
-162 hypothesis identities. The fixed 160-identity campaign budget was not moved, so new return
-hypotheses are machine-blocked while the remaining historical screen debt is reconciled. Existing
-hypotheses may still be reproduced and operationally remeasured, and engineering, data-lineage,
-execution and publication work continues. The source hashes, evidence grades and imported record
-hashes are preserved in `artifacts/audit/trial_debt_reconciliation.json`.
+none collided with the existing union. That correction produced the historical 162-identity
+snapshot preserved in `artifacts/audit/trial_debt_reconciliation.json`.
+
+On 2026-08-22, a second scope audit found four durable experiment ledgers filed beneath
+`artifacts/` that the canonical `var*` discovery glob had omitted. Restoring their 12 existing
+hypotheses—without running an experiment—brings the current union to 244 immutable records and
+174 identities across 14 families. A third source-bound audit then recovered 54 additional named
+parameter configurations from seven persisted summary-only studies, including 32 return-generating
+AlphaMax robustness cells and two post-hoc AlphaTrend selector procedures. No experiment was rerun.
+The current union is 298 immutable records and 228 identities; the owner-authorized prospective
+v7 ceiling is 400, leaving 172 identities, with hard reviews staged at 320, 360 and 400 and research
+status `ACTIVE_STAGED_PROSPECTIVE_BUDGET`. The superseded 320 ceiling would have left 92 identities;
+it remains in the audit rationale rather than being presented as current. Both corrections and the
+prospective promotion are machine-readable in `config/trial_accounting.json`, and withdrawn
+archive-broken-price ledgers remain excluded.
 
 The first legacy-DSR restatement is now complete without opening a holdout or registering another
 hypothesis. Persisted daily return series supported a current-union recomputation for 33 variants
-across five historical families. All 33 fail the DSR 0.95 gate at N=162 and identity-aligned
-`V[SR]=0.0009605969`. Seven other families retain summary statistics but not their variant-level
+across five historical families. All 33 fail the DSR 0.95 gate at current N=228 and
+identity-aligned `V[SR]=0.0008957471`. Seven other families retain summary statistics but not their variant-level
 return series; their historical DSR claims are retired rather than approximated because DSR also
 depends on observations, skew and kurtosis. Original artifacts remain unchanged. The complete
 hash-linked correction table and evidence gaps are published locally in
@@ -139,14 +148,21 @@ It scanned 2,794,953 cached official SEC filing records and found 1,965 high-pre
 anchors across 1,798 CIKs. Later Item 2.01/1.02 outcome coverage was 91.76%, but only 67.02% linked
 to the locked prior Item 1.01 announcement window, below the declared 80% gate. Target tender
 filings performed better (86.65%), but the aggregate protocol was not narrowed after observation.
-A future tender-only document contract or licensed PIT deal database must be declared separately.
+That failed result is unchanged. A materially new v2 identity is now frozen before opening its
+confirmation corpus. It searches a declared SEC source set for the earliest qualifying acceptance
+timestamp, preserves `DEFM14A` and `SC 14D9` as separately gated strata, and reserves 2006–2015 as
+a disjoint 400-anchor confirmation panel. The technical design passes its no-return structural
+audit, but it remains `AUTHOR_APPROVAL_REQUIRED`: Arhan has not approved the exact draft, zero
+confirmation documents or labels have been opened, and no return preregistration is authorized.
+The protocol is `docs/design/FEASIBILITY_MERGER_ANNOUNCEMENT_IDENTITY_V2.md`.
 
 That separate tender-only contract has now also closed `DATA_GATED`. On the frozen 100-file
 `SC 14D9` sample, immutable downloads and Item 4 extraction passed, but only 10.64% of extracted
 sections yielded a unique canonical cash price, 74.47% were ambiguous, and recommendation posture
 resolved in only 22.34%. The parser was not retuned after the result. Merger arbitrage therefore
-still requires a licensed point-in-time deal-state source or an independently labelled extraction
-program before any spread return may be opened; this branch also spent zero return identities.
+still requires either the approved v2 disjoint confirmation program or a licensed point-in-time
+deal-state source before any spread return may be opened; this branch also spent zero return
+identities.
 
 The active-ownership escalation family has passed a separately declared schema-aware metadata
 gate without opening documents or returns. Its first protocol correctly failed after exposing the

@@ -1,0 +1,30 @@
+{
+  "author": "Arhan Canli",
+  "metadata_cache": {
+    "content_hash": "sha256:a2b17534e33c4c361cd515387b566cd1c2e352a1b970159e66c329c3519b99c4",
+    "path": "artifacts/research/publication_reference_metadata.json",
+    "sha256": "cc011d355b2613f1514889fe8076752c3de1c54e158e561db60da559d3f1469c"
+  },
+  "reference_count": 1,
+  "references": [
+    {
+      "authors": [
+        {
+          "family": "JEGADEESH",
+          "given": "NARASIMHAN"
+        }
+      ],
+      "citation_key": "jegadeesh1990evidence_44157f",
+      "container_title": "The Journal of Finance",
+      "doi": "10.1111/j.1540-6261.1990.tb05110.x",
+      "metadata_authority": "CROSSREF_REST_API",
+      "title": "Evidence of Predictable Behavior of Security Returns",
+      "url": "https://doi.org/10.1111/j.1540-6261.1990.tb05110.x",
+      "year": 1990
+    }
+  ],
+  "registry_key": "crypto_reversal",
+  "schema": "canli.alphac-sleeve-bibliography.v1",
+  "status": "COMPLETE_NORMALIZED_BIBLIOGRAPHY",
+  "unresolved_references": []
+}

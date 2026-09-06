@@ -1,0 +1,30 @@
+{
+  "abstract": "This record reconciles two cross-sectional defensive-factor identities in crypto perpetual futures: 720-hour low beta and 720-hour low realized volatility. The immutable ledger summaries report annualized Sharpe ratios of 0.6295 and 0.6946 over 1,247 observations. Those are positive historical summaries, but they are not admission results. Neither identity retains a complete identity-matched curve, maximum drawdown, current-union deflated Sharpe ratio, capacity study, or broker-reconciled forward record. A later low-volatility reopening reproduced a lower Sharpe of 0.5229 and passed four diversification diagnostics, but its venue-reality gate remained outstanding and its DSR remained 0.04. The family therefore contributes zero sleeves.",
+  "authors": [
+    {
+      "affiliation": "Canli Capital / AlphaC Algorithms",
+      "full_name": "Arhan Canli",
+      "roles": [
+        "CONCEPTUALIZATION",
+        "METHODOLOGY",
+        "SOFTWARE",
+        "VALIDATION",
+        "INVESTIGATION",
+        "WRITING",
+        "PROJECT_ADMINISTRATION"
+      ]
+    }
+  ],
+  "capital_kind": "RESEARCH_SIMULATION_ONLY",
+  "claim_boundary": "This is an incomplete preparation bundle. It proves no external submission, DOI, peer review, independent replication, funded performance, or future return.",
+  "date": "2026-08-23",
+  "external_identifiers": [],
+  "language": "en",
+  "peer_reviewed": false,
+  "registry_key": "crypto_defensive",
+  "result_release_complete": true,
+  "schema": "canli.alphac-sleeve-paper.v1",
+  "title": "Crypto Defensive Factors: Two Positive Summaries Without Admission Evidence",
+  "type": "WORKING_PAPER_PREPRINT_NOT_PEER_REVIEWED",
+  "version": "0.1.0"
+}

@@ -1,5 +1,7 @@
 # Active ownership escalation — Schedule 13D Item 4 source-schema v3
 
+**Short title:** Active ownership Item 4 v3
+**Author:** Arhan Canli
 **Declared:** 2026-08-16 after v2 closed `DATA_GATED` and before running v3 aggregate results.
 **Stage:** document/classifier feasibility only. Prices, returns, event outcomes, and portfolio data
 remain forbidden; zero return identities are spent.
@@ -38,6 +40,48 @@ erase either failed result.
 Machine success with incomplete labels is `HUMAN_AUDIT_REQUIRED`, not a pass to returns. Any machine
 failure is `DATA_GATED`. The unchanged sample may be used as a source-schema regression corpus; a
 future return protocol still requires a disjoint untouched event holdout.
+
+## Pre-label scoring clarification — 2026-08-22
+
+The original scorer left `ownership_exact_rate` permanently null, making the declared ownership
+gate impossible to pass even after all labels were complete. Before any of the 48 human labels was
+opened, the scoring contract was therefore completed as follows: the frozen machine percentage
+output is the sole candidate when exactly one candidate exists, and `unresolved` otherwise. Exact
+agreement requires equality to the human percentage or agreement on `unresolved`; there is no
+tolerance, inference, summation, or post-label rule selection. This clarification does not alter the
+regex, corpus, thresholds, classifier, or machine results and can make the gate fail.
+
+The blind packet under `artifacts/labeling/active_ownership_13d_item4_v3_blind/` contains all 48
+source excerpts, an empty review sheet, a blank independence-attestation template, exact frozen
+labeling rules, and a standard-library-only verifier in deterministic shuffled order. The
+authoritative packet identity is the self-verifying `content_hash` in `manifest.json`; no copied
+hash in this prose may supersede it. Before labeling, the independent reviewer runs
+`python3 verify_review.py` and proceeds only on `PACKET_VALID`. After completing copies named
+`completed_labels.csv` and `completed_attestation.json`, the reviewer reruns the verifier and
+returns exactly those two files only on `REVIEW_RETURN_VALID`.
+
+The governed importer independently verifies the manifest, source lineage, immutable row metadata,
+templates, completed files, and independence attestation before it can alter the canonical frozen
+labels. The packet and its deterministic handoff archive deliberately exclude machine
+classifications, matched sentences, percentage candidates, prices, and returns. Structural
+verification cannot itself prove reviewer independence or label correctness; those remain the
+reviewer's attested responsibility and the subsequent frozen scoring gate.
+
+## Prospective gate-interpretation audit — 2026-08-26
+
+Before any human labels or return data were opened, the discrete reachability and statistical
+meaning of the 48-row gate were audited in
+`docs/design/ACTIVE_OWNERSHIP_HUMAN_GATE_AUDIT.md`. The existing 95% precision, 80% recall, and 90%
+ownership point thresholds remain unchanged. They govern eligibility to proceed to return
+preregistration; they do not, by themselves, establish confidence-bound classifier accuracy.
+
+The frozen packet contains eight machine-predicted positives, so the precision point gate requires
+8/8 and fails on one false positive. Even 8/8 has a one-sided 95% exact lower bound of only about
+68.8%. Any passing report must therefore publish raw confusion counts, point metrics, and exact
+confidence bounds. Before sleeve admission, a disjoint independent confirmatory corpus must meet
+the same thresholds on one-sided 95% exact lower bounds. This interpretation was fixed while all
+48 human labels remained blank and zero return identities had been spent; it cannot rescue a known
+classification or investment outcome.
 
 ## Machine outputs
 

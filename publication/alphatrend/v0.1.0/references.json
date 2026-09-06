@@ -1,0 +1,111 @@
+{
+  "author": "Arhan Canli",
+  "metadata_cache": {
+    "content_hash": "sha256:a2b17534e33c4c361cd515387b566cd1c2e352a1b970159e66c329c3519b99c4",
+    "path": "artifacts/research/publication_reference_metadata.json",
+    "sha256": "cc011d355b2613f1514889fe8076752c3de1c54e158e561db60da559d3f1469c"
+  },
+  "reference_count": 4,
+  "references": [
+    {
+      "authors": [
+        {
+          "family": "Moskowitz",
+          "given": "Tobias J."
+        },
+        {
+          "family": "Ooi",
+          "given": "Yao Hua"
+        },
+        {
+          "family": "Pedersen",
+          "given": "Lasse Heje"
+        }
+      ],
+      "citation_key": "moskowitz2012time_f920fb",
+      "container_title": "Journal of Financial Economics",
+      "doi": "10.1016/j.jfineco.2011.11.003",
+      "metadata_authority": "CROSSREF_REST_API",
+      "title": "Time series momentum",
+      "url": "https://doi.org/10.1016/j.jfineco.2011.11.003",
+      "year": 2012
+    },
+    {
+      "authors": [
+        {
+          "family": "Hurst",
+          "given": "Brian"
+        },
+        {
+          "family": "Ooi",
+          "given": "Yao Hua"
+        },
+        {
+          "family": "Pedersen",
+          "given": "Lasse Heje"
+        }
+      ],
+      "citation_key": "hurst2017century_57322c",
+      "container_title": "The Journal of Portfolio Management",
+      "doi": "10.3905/jpm.2017.44.1.015",
+      "metadata_authority": "CROSSREF_REST_API",
+      "title": "A Century of Evidence on Trend-Following Investing",
+      "url": "https://doi.org/10.3905/jpm.2017.44.1.015",
+      "year": 2017
+    },
+    {
+      "authors": [
+        {
+          "family": "Lempérière",
+          "given": "Yves"
+        },
+        {
+          "family": "Deremble",
+          "given": "Cyril"
+        },
+        {
+          "family": "Seager",
+          "given": "Philip"
+        },
+        {
+          "family": "Potters",
+          "given": "Marc"
+        },
+        {
+          "family": "Bouchaud",
+          "given": "Jean-Philippe"
+        }
+      ],
+      "citation_key": "lemprire2014centuries_884ec8",
+      "container_title": "The Journal of Investment Strategies",
+      "doi": "10.21314/jois.2014.043",
+      "metadata_authority": "CROSSREF_REST_API",
+      "title": "Two centuries of trend following",
+      "url": "https://doi.org/10.21314/jois.2014.043",
+      "year": 2014
+    },
+    {
+      "authors": [
+        {
+          "family": "Baltas",
+          "given": "Nick"
+        },
+        {
+          "family": "Kosowski",
+          "given": "Robert"
+        }
+      ],
+      "citation_key": "baltas2011momentum_a30137",
+      "container_title": "",
+      "doi": "10.2139/ssrn.1968996",
+      "metadata_authority": "CROSSREF_REST_API",
+      "title": "Momentum Strategies in Futures Markets and Trend-following Funds",
+      "url": "https://doi.org/10.2139/ssrn.1968996",
+      "year": 2011
+    }
+  ],
+  "registry_key": "alphatrend_managed_futures",
+  "schema": "canli.alphac-sleeve-bibliography.v1",
+  "status": "COMPLETE_NORMALIZED_BIBLIOGRAPHY",
+  "unresolved_references": []
+}

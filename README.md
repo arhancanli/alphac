@@ -1,5 +1,7 @@
 # ALPHAC — the quant engine behind [canlicapital.com](https://canlicapital.com)
 
+[![ci](https://github.com/arhancanli/alphac/actions/workflows/ci.yml/badge.svg)](https://github.com/arhancanli/alphac/actions/workflows/ci.yml) [![license: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE) [![python 3.12](https://img.shields.io/badge/python-3.12-blue.svg)](pyproject.toml) [![live record](https://img.shields.io/badge/live%20record-paper%2C%20since%202026--08--07-orange.svg)](https://canlicapital.com/performance)
+
 ALPHAC is a cross-asset, market-neutral research and trading system, and this is all of it:
 the data lake, the point-in-time reader, the backtester, the walk-forward harness, the
 multiple-testing machinery, the portfolio optimizer, the live broker loop, and every design
@@ -18,24 +20,21 @@ is worthless if the code is hidden.
 
 We run this on paper capital. No real money has been deployed.
 
+**Evidence snapshot:** 2026-09-05. Later marks must update this table through the same
+artifact-bound publication pipeline; this is not a real-time broker display.
+
 | | |
 |---|---|
-| Live sleeves | **4** — funding carry, equity momentum, managed-futures trend, PIT macro surprise |
-| Forward record | began **2026-08-07** on separate $1M Alpaca paper accounts, one per sleeve |
-| Average pairwise correlation | **+0.0274** — *positive*. We used to call the sleeves "uncorrelated" and call that the edge. It is real diversification, but smaller than we said. |
-| In-sample Sharpe | 1.78 book / 1.38 neutral core — **in-sample, and therefore not evidence** |
-| Honest forward Sharpe | **0.3 to 0.9**, with a real chance of ~0 in year one |
-| Deflated Sharpe (gate 0.95) | AlphaMax **0.213** · AlphaForge **0.052** · AlphaTrend **0.000** |
-| Grade | **C+** |
+| Paper sleeves | **4 / 14 planned** — funding carry, equity momentum, managed-futures trend, PIT macro surprise |
+| Forward record | **27 daily returns** from 2026-08-07 through 2026-09-05; cumulative return **−2.53611%**; provenance currently passes the publication gate |
+| Forward Sharpe | **Not reportable** — 252 observations are required for an estimate and 756 for the project's establishment test |
+| Drawdown | Realized **3.00024%** to date, descriptive only; the current-composition model estimates **9.318% expected / 16.451% p95**, neither established by live evidence |
+| Diversification | Research-curve average pairwise correlation **+0.02483** across 4 sleeves; live-forward diversification is not established |
+| DSR policy | Mandatory to measure and publish; **0.95 is a full-union portfolio-maturity threshold, not a per-sleeve or incremental-admission gate** |
 
-**Not one sleeve is statistically distinguishable from luck once its own search is accounted
-for.** That is not a marketing frame, it is the measurement. It does not mean the strategies are
-worthless — it means the *backtest* evidence cannot carry them, and only a long forward record
-can settle it. That record began on 2026-08-07.
-
-Maximum drawdown reads −4.5%, but that is the live-overlap window only (2023-07 onward). It
-excludes 2022 and Covid and **is not a risk estimate**. The realistic worst case, including the
-disclosed strategic-long overlay's crash tail, is **−22% to −28%**.
+No forward Sharpe or expected maximum drawdown is established. The 27-return record is too short, and its provenance gate currently passes.
+Historical simulations, modeled risk and broker-derived paper marks remain separately labelled;
+none is a promise about future returns.
 
 ## What is actually interesting here
 
@@ -44,10 +43,11 @@ time-series trend, macro-surprise rotation. We are not claiming a secret. What t
 what this repo is really for, is the machinery that stops us fooling ourselves:
 
 - **A union trial ledger.** Deflated-Sharpe correction counts every hypothesis ever tested across
-  every research profile, deduplicated — 162 distinct identities. Which directory a trial landed
-  in is a filing convention; multiple-testing correction does not care. Research is currently
-  **paused at 162 against a 160 budget** pending a formal decision, because adding hypotheses
-  raises the bar for everything already in the book.
+  every durable research ledger, deduplicated — **229 total identities**: 228 retired legacy
+  identities plus one sealed prospective identity that ended incomplete and was not admitted.
+  Which directory a trial landed in is a filing convention; multiple-testing correction does not
+  care. Prospective research has a staged **400-identity ceiling**, with hard reviews at 320, 360
+  and 400. The remaining capacity buys permission to test, never permission to admit.
 - **Pre-registration that can be voided.** Each candidate names its mechanism, data vintages,
   costs, variants and kill condition *before* the holdout is read. `docs/design/PREREG_*.md`.
   A run that deviates from its own document is not quietly accepted.
@@ -56,10 +56,11 @@ what this repo is really for, is the machinery that stops us fooling ourselves:
   clustered insider purchases, crypto VRP, eight AlphaMax construction variants.
 - **`docs/retracted_claims.txt`.** Numbers we published and later found wrong, with the correction
   and the date. Two of the largest: average pairwise correlation was published as ~−0.02 when the
-  three-sleeve book measured **+0.0723** (the current four-sleeve book measures +0.0274), and
+  three-sleeve book measured **+0.0723** (the current four-sleeve research study measures
+  **+0.02483**), and
   AlphaTrend was called our soundest sleeve at DSR 0.83 when its honest DSR is **0.000** — it had
   been graded with a variance input ~80x too small, an easier exam than its siblings.
-- **A signed, Bitcoin-anchored transparency chain** — 239 entries across 39 distinct dates. An
+- **A signed, Bitcoin-anchored transparency chain.** An
   append-only hash chain over the published record, so a past claim cannot be silently rewritten.
   The verifier and anchoring scripts are here; the log itself is operational state, published at
   [canlicapital.com/open](https://canlicapital.com/open) rather than committed.
@@ -80,10 +81,11 @@ Kept here rather than in an issue tracker nobody reads:
    NW t +3.19) resolved the universe dynamically and used 6,880 ids. The corrected re-run is
    written (`scripts/rerun_alphaledger_pinned.py`) and **has not been executed**. The sleeve is
    plumbed but is **not** in the live book, and will not be until this is settled.
-3. **The diversification gate bars its own target.** `config/sleeve_discovery.json` declares a
-   2.0–2.5 Sharpe objective and an `average_pairwise_correlation_max` of 0.15. At measured sleeve
-   quality that ceiling caps the book at **1.37** — a candidate can pass every evidence check and
-   the book still cannot reach the target at any sleeve count.
+3. **Trial-packet backfill is mostly incomplete.** The public corpus contains 101 research papers
+   and the one-to-one manifest publishes a packet for all 228 hypothesis identities, but only 2
+   packets currently contain every required protocol, result, lineage and correction section; 226
+   remain incomplete. Family-paper coverage is not exact-trial reproducibility, so the project
+   explicitly does not claim a complete paper and evidence packet for every trial.
 
 ## Reproducing
 
@@ -97,6 +99,18 @@ The Parquet data lake (`data/`, ~26GB) and run artifacts (`artifacts/`) are not 
 re-derivable from the exchange and vendor sources the ingest scripts name. Published numbers and
 their inputs are mirrored as machine-readable artifacts under
 [canlicapital.com/open](https://canlicapital.com/open).
+
+Every tracked sleeve-publication bundle can also be checked before the Python environment is
+installed:
+
+```sh
+python scripts/verify_publication_clean_checkout.py --receipt publication-integrity.json
+```
+
+That clean-checkout check currently covers 16 incomplete preparation bundles, 402
+checksum-bound files and 80 machine-validated PDF pages. It verifies archive integrity,
+authorship, current code/environment bindings and fail-closed publication claims. It does not
+regenerate returns, clear data rights, establish independent replication or claim submission.
 
 ## Not investment advice
 

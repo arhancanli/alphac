@@ -287,6 +287,29 @@ def main() -> int:
             "cost_per_side": COST_PER_SIDE,
             "borrow_ann": BORROW_ANN,
         },
+        "EXPANDED_MINUS_LARGEST_CONTRIBUTOR": {
+            "basket": "EXPANDED_MINUS_LARGEST_CONTRIBUTOR",
+            "candidate_tickers": list(EXPANDED),
+            "selection_rule": "drop_largest_full_sample_pnl_contributor",
+            "signal": "blend_63_126_252",
+            "vol_span": VOL_SPAN,
+            "rebalance_bars": REBALANCE,
+            "gross_max": GROSS_MAX,
+            "cost_per_side": COST_PER_SIDE,
+            "borrow_ann": BORROW_ANN,
+        },
+        "GREEDY_NEFF_PRUNED": {
+            "basket": "GREEDY_NEFF_PRUNED",
+            "base_tickers": list(BASE17),
+            "candidate_additions": list(ADD16),
+            "selection_rule": "greedy_add_only_if_neff_gain_gt_0",
+            "signal": "blend_63_126_252",
+            "vol_span": VOL_SPAN,
+            "rebalance_bars": REBALANCE,
+            "gross_max": GROSS_MAX,
+            "cost_per_side": COST_PER_SIDE,
+            "borrow_ann": BORROW_ANN,
+        },
     }
     union = ExperimentUnion.discover(LEDGER, REPO)
     union.preflight_hypotheses(
@@ -310,44 +333,9 @@ def main() -> int:
     # SPY return stream for corr-to-SPY
     spy_ret = panel_exp["SPY"].pct_change()
 
-    audit_before = union.n_trials()
-    for name, returns in (("BASE_17", rb), ("EXPANDED_33", re_)):
-        record_probe_trial(
-            "alphatrend_breadth",
-            configs[name],
-            returns,
-            now_ms=now_ms(),
-            periods_per_year=int(ANN),
-            experiment_log=union,
-        )
-    trials_logged = union.n_trials() - audit_before
-    n_trials = union.n_hypotheses()
-    sr_var = union.hypothesis_sharpe_variance()
-
     # breadth of each basket over the common window (raw ETF returns, pairwise-complete corr)
     rhobar_b, neff_b, N_b = breadth(panel_base.pct_change().reindex(common))
     rhobar_e, neff_e, N_e = breadth(panel_exp.pct_change().reindex(common))
-
-    def row(name: str, r: pd.Series, rhobar: float, neff: float, N: int, dg: dict) -> dict:
-        rm = to_vol(r, match_vol)
-        dsr = dsr_from_returns(rm, max(2, n_trials), sr_var, ANN)
-        return {
-            "basket": name,
-            "N": N,
-            "net_sharpe": round(sharpe(r), 3),
-            "DSR@N": round(float(dsr.dsr), 3),
-            "vol_ann": round(vol_ann(r), 4),
-            "maxDD_vm": round(maxdd(rm), 4),
-            "skew": round(skew(r), 3),
-            "sortino": round(sortino(r), 3),
-            "corr_SPY": round(spy_corr(r, spy_ret), 3),
-            "turn_ann": round(dg["turnover_ann"], 2),
-            "rhobar": round(rhobar, 3),
-            "N_eff": round(neff, 2),
-        }
-
-    rows = [row("BASE_17", rb, rhobar_b, neff_b, N_b, dg_base),
-            row("EXPANDED_33", re_, rhobar_e, neff_e, N_e, dg_exp)]
 
     # ---- per-candidate decorrelation screen + greedy N_eff-maximizing pruned basket ----
     # The step-2 mandate: DROP additions that duplicate an existing exposure. Measure each
@@ -396,14 +384,57 @@ def main() -> int:
     net_loo, dg_loo, _ = build_book(panel_loo)
     rl = net_loo.loc[net_loo.index.intersection(common)]
     rhobar_l, neff_l, N_l = breadth(panel_loo.pct_change().reindex(rl.index))
-    rows.append(row(f"EXP_minus_{biggest}", rl, rhobar_l, neff_l, N_l, dg_loo))
 
     # ---- the greedy N_eff-maximizing PRUNED basket (best-case decorrelated expansion) ----
     panel_pruned = load_panel(pruned_tickers)
     net_pruned, dg_pruned, _ = build_book(panel_pruned)
     rp = net_pruned.loc[net_pruned.index.intersection(common)]
     rhobar_p, neff_p, N_p = breadth(panel_pruned.pct_change().reindex(rp.index))
-    rows.append(row(f"PRUNED_{N_p}", rp, rhobar_p, neff_p, N_p, dg_pruned))
+
+    audit_before = union.n_trials()
+    measured = {
+        "BASE_17": rb,
+        "EXPANDED_33": re_,
+        "EXPANDED_MINUS_LARGEST_CONTRIBUTOR": rl,
+        "GREEDY_NEFF_PRUNED": rp,
+    }
+    for name, returns in measured.items():
+        record_probe_trial(
+            "alphatrend_breadth",
+            configs[name],
+            returns,
+            now_ms=now_ms(),
+            periods_per_year=int(ANN),
+            experiment_log=union,
+        )
+    trials_logged = union.n_trials() - audit_before
+    n_trials = union.n_hypotheses()
+    sr_var = union.hypothesis_sharpe_variance()
+
+    def row(name: str, r: pd.Series, rhobar: float, neff: float, N: int, dg: dict) -> dict:
+        rm = to_vol(r, match_vol)
+        dsr = dsr_from_returns(rm, max(2, n_trials), sr_var, ANN)
+        return {
+            "basket": name,
+            "N": N,
+            "net_sharpe": round(sharpe(r), 3),
+            "DSR@N": round(float(dsr.dsr), 3),
+            "vol_ann": round(vol_ann(r), 4),
+            "maxDD_vm": round(maxdd(rm), 4),
+            "skew": round(skew(r), 3),
+            "sortino": round(sortino(r), 3),
+            "corr_SPY": round(spy_corr(r, spy_ret), 3),
+            "turn_ann": round(dg["turnover_ann"], 2),
+            "rhobar": round(rhobar, 3),
+            "N_eff": round(neff, 2),
+        }
+
+    rows = [
+        row("BASE_17", rb, rhobar_b, neff_b, N_b, dg_base),
+        row("EXPANDED_33", re_, rhobar_e, neff_e, N_e, dg_exp),
+        row(f"EXP_minus_{biggest}", rl, rhobar_l, neff_l, N_l, dg_loo),
+        row(f"PRUNED_{N_p}", rp, rhobar_p, neff_p, N_p, dg_pruned),
+    ]
 
     tab = pd.DataFrame(rows).set_index("basket")
     b = tab.loc["BASE_17"]
@@ -418,7 +449,7 @@ def main() -> int:
     say("=" * 92)
     say("ALPHATREND BREADTH EXPANSION A/B — 17-ETF baseline vs 33-ETF expanded universe")
     say(f"window {common.min().date()}..{common.max().date()}  n={len(common)} sessions  "
-        f"| ledger N={n_trials} (0 trials logged by this screen)")
+        f"| ledger N={n_trials} ({trials_logged} trials logged by this screen)")
     say(f"added ({len(ADD16)}): {' '.join(ADD16)}")
     if dropped:
         say(f"DROPPED (insufficient history/liquidity): {' '.join(dropped)}")
@@ -485,6 +516,7 @@ def main() -> int:
         "window": [str(common.min().date()), str(common.max().date())],
         "n_sessions": len(common), "ledger_N": int(n_trials),
         "trials_logged_this_run": trials_logged,
+        "trial_configs": configs,
         "added": ADD16, "dropped": dropped,
         "breadth": {"base": {"rhobar": rhobar_b, "N_eff": neff_b, "N": N_b},
                     "expanded": {"rhobar": rhobar_e, "N_eff": neff_e, "N": N_e}},

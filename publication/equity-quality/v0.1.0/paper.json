@@ -1,0 +1,30 @@
+{
+  "abstract": "ALPHAC recorded 11 distinct equity-quality return identities spanning gross profitability, operating margin, return on equity, a quality composite, and a growth/profitability/earnings quality composite. Immutable annualized Sharpe measurements range from -0.8316 to +0.7643. Nine of 11 are negative. The two positives are both operating-margin variants over the shortest 2022–2026 history; the same signal over 2000–2026 is -0.4174. No family-wide persisted curves, drawdowns, DSR values, capacity sweep, or broker-reconciled forward record survive for these identities. The correct status is research-only, not a validated sleeve.",
+  "authors": [
+    {
+      "affiliation": "Canli Capital / AlphaC Algorithms",
+      "full_name": "Arhan Canli",
+      "roles": [
+        "CONCEPTUALIZATION",
+        "METHODOLOGY",
+        "SOFTWARE",
+        "VALIDATION",
+        "INVESTIGATION",
+        "WRITING",
+        "PROJECT_ADMINISTRATION"
+      ]
+    }
+  ],
+  "capital_kind": "RESEARCH_SIMULATION_ONLY",
+  "claim_boundary": "This is an incomplete preparation bundle. It proves no external submission, DOI, peer review, independent replication, funded performance, or future return.",
+  "date": "2026-08-23",
+  "external_identifiers": [],
+  "language": "en",
+  "peer_reviewed": false,
+  "registry_key": "equity_quality",
+  "result_release_complete": true,
+  "schema": "canli.alphac-sleeve-paper.v1",
+  "title": "Equity Fundamental Quality: Eleven Identities and No Validated Sleeve",
+  "type": "WORKING_PAPER_PREPRINT_NOT_PEER_REVIEWED",
+  "version": "0.1.0"
+}

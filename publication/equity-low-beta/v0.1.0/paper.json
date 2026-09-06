@@ -1,0 +1,30 @@
+{
+  "abstract": "Two historical identities test a 252-session equity beta rank. The implemented portfolio seeks a long-low-beta, short-high-beta spread under rank allocation. The shorter configuration reports annualized Sharpe -0.5995 over 728 observations. A deep-history configuration reports -0.0679 over 5,384 observations, with skew 8.2898 and kurtosis 311.7071. Neither estimate supports a defensive sleeve. The extreme higher moments in the longer summary also make a curve-level audit mandatory; they are not treated as evidence of an attractive positive tail. Exact curves, maximum drawdown, current-union DSR, capacity, and forward execution are not established. The family contributes zero sleeves.",
+  "authors": [
+    {
+      "affiliation": "Canli Capital / AlphaC Algorithms",
+      "full_name": "Arhan Canli",
+      "roles": [
+        "CONCEPTUALIZATION",
+        "METHODOLOGY",
+        "SOFTWARE",
+        "VALIDATION",
+        "INVESTIGATION",
+        "WRITING",
+        "PROJECT_ADMINISTRATION"
+      ]
+    }
+  ],
+  "capital_kind": "RESEARCH_SIMULATION_ONLY",
+  "claim_boundary": "This is an incomplete preparation bundle. It proves no external submission, DOI, peer review, independent replication, funded performance, or future return.",
+  "date": "2026-08-23",
+  "external_identifiers": [],
+  "language": "en",
+  "peer_reviewed": false,
+  "registry_key": "equity_low_beta",
+  "result_release_complete": true,
+  "schema": "canli.alphac-sleeve-paper.v1",
+  "title": "Equity Low Beta: Two Negative Identities and No Defensive Sleeve",
+  "type": "WORKING_PAPER_PREPRINT_NOT_PEER_REVIEWED",
+  "version": "0.1.0"
+}

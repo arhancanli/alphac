@@ -1,0 +1,20 @@
+{
+  "license_review_complete": false,
+  "registry_key": "equity_value_investment",
+  "released_data_objects": [],
+  "released_result_objects": [
+    {
+      "bundle_path": "evidence/family_result.json",
+      "byte_identical_to_source": true,
+      "role": "complete value/investment identity family",
+      "sha256": "98f702f2f804b2267c54e4697ab54a75586b97dda61213eef1985bd84a128c5b",
+      "source_path": "artifacts/research/equity_value_investment_family.json"
+    }
+  ],
+  "schema": "canli.alphac-publication-data-manifest.v1",
+  "source_paper": {
+    "path": "docs/research/EQUITY_VALUE_INVESTMENT_LINEAGE.md",
+    "sha256": "dd994a223a072aa3f3a68633ebf52552a308a569e60dc925066cc897b5cbde1d"
+  },
+  "status": "RESULT_OBJECTS_RELEASED_RAW_INPUT_INVENTORY_INCOMPLETE"
+}

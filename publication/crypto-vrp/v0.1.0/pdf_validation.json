@@ -1,0 +1,71 @@
+{
+  "author": "Arhan Canli",
+  "claim_boundary": "Machine validation proves page geometry, extractable text, metadata, font resources, and required disclosures. Visual inspection is separate and is not peer review, content validation, accessibility certification, or independent replication.",
+  "extractable_characters": 7332,
+  "failures": [],
+  "font_resources": [
+    "AAAAAA+Arial-BoldMT",
+    "BAAAAA+Georgia",
+    "CAAAAA+Georgia",
+    "DAAAAA+ArialMT",
+    "EAAAAA+Arial-BoldMT",
+    "FAAAAA+ArialMT",
+    "GAAAAA+ArialMT",
+    "HAAAAA+Arial-BoldMT",
+    "IAAAAA+ArialMT",
+    "JAAAAA+Menlo-Regular",
+    "KAAAAA+Georgia",
+    "LAAAAA+Georgia",
+    "MAAAAA+Georgia-Bold",
+    "NAAAAA+Arial-BoldMT",
+    "OAAAAA+ArialMT",
+    "PAAAAA+Georgia-Italic"
+  ],
+  "metadata": {
+    "author": "Arhan Canli",
+    "title": "Crypto Volatility Risk Premium: One Proxy Trial and a Published Null"
+  },
+  "minimum_extractable_characters_on_page": 501,
+  "page_height_points": [
+    841.92
+  ],
+  "page_width_points": [
+    594.96
+  ],
+  "pages": 4,
+  "passes": true,
+  "registry_key": "crypto_vrp",
+  "render_environment": {
+    "latex_compilation_validated": false,
+    "pdf_engine": "Google Chrome 151.0.7922.174",
+    "pdf_normalizer": "pypdf 6.16.1"
+  },
+  "schema": "canli.alphac-archival-pdf-validation.v1",
+  "source_bindings": {
+    "bibliography": {
+      "references.bib": {
+        "path": "references.bib",
+        "sha256": "a9a4805362fcfcae93401c37212c04e7d1d898fa57a7151c2a51b03bd560031b"
+      },
+      "references.json": {
+        "path": "references.json",
+        "sha256": "ff7246fdf4bf58d165a40f6ed3ab9862b68945336197ccd77444fb37dd99431b"
+      }
+    },
+    "paper_markdown": {
+      "path": "publication/crypto-vrp/v0.1.0/paper.md",
+      "sha256": "ec6af71089819e093c833d2f5b7ac63d80efe6517243314ebff207c3c4fa8fbd"
+    },
+    "renderer": {
+      "path": "scripts/build_archival_publication_papers.py",
+      "sha256": "d36584c93e00be6f75bc50da079d25a46d1da4e0d1b2d58b73661e3f527c9f3e"
+    },
+    "static_site_paper_html": {
+      "declared_markdown_sha256": "ec6af71089819e093c833d2f5b7ac63d80efe6517243314ebff207c3c4fa8fbd",
+      "matches_paper_markdown": true,
+      "path": "/Users/arhancanli/meridian/research/crypto-vrp-lineage.html",
+      "sha256": "4aafbb4af4645e10f013314bdbc97caede7cb30b5440217e515034fec5742a7f"
+    }
+  },
+  "status": "PASS_MACHINE_PDF_VALIDATION"
+}

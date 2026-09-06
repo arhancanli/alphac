@@ -1,0 +1,71 @@
+{
+  "author": "Arhan Canli",
+  "claim_boundary": "Machine validation proves page geometry, extractable text, metadata, font resources, and required disclosures. Visual inspection is separate and is not peer review, content validation, accessibility certification, or independent replication.",
+  "extractable_characters": 10074,
+  "failures": [],
+  "font_resources": [
+    "AAAAAA+Arial-BoldMT",
+    "BAAAAA+Georgia",
+    "CAAAAA+Georgia",
+    "DAAAAA+ArialMT",
+    "EAAAAA+Arial-BoldMT",
+    "FAAAAA+ArialMT",
+    "GAAAAA+ArialMT",
+    "HAAAAA+Arial-BoldMT",
+    "IAAAAA+ArialMT",
+    "JAAAAA+Menlo-Regular",
+    "KAAAAA+Georgia",
+    "LAAAAA+Georgia",
+    "MAAAAA+Arial-BoldMT",
+    "NAAAAA+ArialMT",
+    "OAAAAA+Georgia-Bold",
+    "PAAAAA+Georgia-Italic"
+  ],
+  "metadata": {
+    "author": "Arhan Canli",
+    "title": "Managed-Futures Trend as an Unresolved Diversifier: Complete Trial Lineage and Forward Burden of Proof"
+  },
+  "minimum_extractable_characters_on_page": 352,
+  "page_height_points": [
+    841.92
+  ],
+  "page_width_points": [
+    594.96
+  ],
+  "pages": 6,
+  "passes": true,
+  "registry_key": "alphatrend_managed_futures",
+  "render_environment": {
+    "latex_compilation_validated": false,
+    "pdf_engine": "Google Chrome 151.0.7922.174",
+    "pdf_normalizer": "pypdf 6.16.1"
+  },
+  "schema": "canli.alphac-archival-pdf-validation.v1",
+  "source_bindings": {
+    "bibliography": {
+      "references.bib": {
+        "path": "references.bib",
+        "sha256": "a38921248f9d6b9fd144f966238057914c39441a95421177a9454c065299ccbf"
+      },
+      "references.json": {
+        "path": "references.json",
+        "sha256": "1453d961f4a2cde20cc0607405c47191857364e094c2076768b172c66513991a"
+      }
+    },
+    "paper_markdown": {
+      "path": "publication/alphatrend/v0.1.0/paper.md",
+      "sha256": "b3907e279cc289e3009e477e5c2d0124e7a16685fc53f9cc6f1c596ab3aa657b"
+    },
+    "renderer": {
+      "path": "scripts/build_archival_publication_papers.py",
+      "sha256": "d36584c93e00be6f75bc50da079d25a46d1da4e0d1b2d58b73661e3f527c9f3e"
+    },
+    "static_site_paper_html": {
+      "declared_markdown_sha256": "b3907e279cc289e3009e477e5c2d0124e7a16685fc53f9cc6f1c596ab3aa657b",
+      "matches_paper_markdown": true,
+      "path": "/Users/arhancanli/meridian/research/alphatrend-managed-futures-lineage.html",
+      "sha256": "75852314f750d03bd3eee99b520c97b88537245e15e108a343d92352dfc0ec6b"
+    }
+  },
+  "status": "PASS_MACHINE_PDF_VALIDATION"
+}

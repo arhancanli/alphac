@@ -10,7 +10,7 @@ import re
 import sys
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Final
+from typing import Any, Final, cast
 
 import pandas as pd
 
@@ -104,7 +104,7 @@ def exact_primary_documents(raw: bytes, form: str) -> list[tuple[str, bytes]]:
 
 
 def extract_item4(text: str) -> str | None:
-    return _span(text, ITEM4_START, ITEM4_END, minimum_words=50)
+    return cast(str | None, _span(text, ITEM4_START, ITEM4_END, minimum_words=50))
 
 
 def active_sentences(section: str) -> list[str]:
@@ -142,10 +142,10 @@ def build_labels(sample: pd.DataFrame, path: Path) -> None:
     labels.to_csv(path, index=False)
 
 
-def score_labels(rows: pd.DataFrame, path: Path) -> dict:
+def score_labels(rows: pd.DataFrame, path: Path) -> dict[str, Any]:
     if not path.exists():
         return {"complete": False, "labeled": 0, "required": 48}
-    labels = pd.read_csv(path, keep_default_na=False)
+    labels = pd.read_csv(path, dtype=str, keep_default_na=False)
     valid_binary = labels["human_specific_active_intent"].isin(["true", "false"])
     required_text = labels["human_representative_sentence"].ne("")
     required_pct = labels["human_aggregate_ownership_pct_or_unresolved"].ne("")
@@ -162,17 +162,66 @@ def score_labels(rows: pd.DataFrame, path: Path) -> dict:
     true_positive = int((truth & prediction).sum())
     precision = true_positive / int(prediction.sum()) if prediction.any() else 0.0
     recall = true_positive / int(truth.sum()) if truth.any() else 0.0
+    human_ownership = merged["human_aggregate_ownership_pct_or_unresolved"].map(
+        lambda value: str(value).strip().lower()
+    )
+
+    def ownership_matches(row: pd.Series) -> bool:
+        candidates = [float(value) for value in row["ownership_pct_candidates"]]
+        human = str(row["human_aggregate_ownership_pct_or_unresolved"]).strip().lower()
+        if len(candidates) != 1:
+            return human == "unresolved"
+        try:
+            return float(human) == candidates[0]
+        except ValueError:
+            return False
+
+    valid_ownership = human_ownership.eq("unresolved") | pd.to_numeric(
+        human_ownership, errors="coerce"
+    ).notna()
+    if not bool(valid_ownership.all()):
+        return {
+            "complete": False,
+            "labeled": int(valid_ownership.sum()),
+            "required": len(merged),
+            "error": "ownership labels must be a plain number or unresolved",
+        }
+    ownership_exact_rate = float(merged.apply(ownership_matches, axis=1).mean())
     return {
         "complete": True,
         "labeled": len(merged),
         "required": len(merged),
         "positive_precision": precision,
         "positive_recall": recall,
-        "ownership_exact_rate": None,
+        "ownership_exact_rate": ownership_exact_rate,
+        "ownership_machine_rule": "sole_candidate_else_unresolved",
     }
 
 
-def run(args: argparse.Namespace) -> dict:
+def validate_import_receipt(labels_path: Path, receipt_path: Path) -> None:
+    if not receipt_path.is_file():
+        raise ValueError("completed human labels lack a sealed import receipt")
+    receipt = cast(dict[str, Any], json.loads(receipt_path.read_text()))
+    body = {key: value for key, value in receipt.items() if key != "content_hash"}
+    encoded = json.dumps(body, sort_keys=True, separators=(",", ":")).encode()
+    expected_hash = "sha256:" + hashlib.sha256(encoded).hexdigest()
+    if receipt.get("content_hash") != expected_hash:
+        raise ValueError("human-label import receipt content hash mismatch")
+    if receipt.get("canonical_labels_after_sha256") != hashlib.sha256(
+        labels_path.read_bytes()
+    ).hexdigest():
+        raise ValueError("completed human labels do not match the sealed import receipt")
+    if receipt.get("rows_imported") != 48 or receipt.get("prediction_blind_attested") is not True:
+        raise ValueError("human-label import receipt does not prove the governed blind review")
+    return_boundary_broken = (
+        receipt.get("return_hypotheses_spent") != 0
+        or receipt.get("return_data_opened") is not False
+    )
+    if return_boundary_broken:
+        raise ValueError("human-label import receipt violates the no-return boundary")
+
+
+def run(args: argparse.Namespace) -> dict[str, Any]:
     sample = locked_sample(pd.read_parquet(args.source), args.sample_per_year)
     sample["submission_url"] = sample["index_filename"].map(
         lambda path: f"https://www.sec.gov/Archives/{path}"
@@ -185,9 +234,10 @@ def run(args: argparse.Namespace) -> dict:
     build_labels(sample, labels_path)
 
     client = SecClient(raw_dir / "network_metadata_cache")
-    rows: list[dict] = []
+    rows: list[dict[str, Any]] = []
     try:
-        for index, record in enumerate(sample.to_dict("records"), 1):
+        for index, raw_record in enumerate(sample.to_dict("records"), 1):
+            record = cast(dict[str, Any], raw_record)
             accession = str(record["accession"])
             cache = raw_dir / f"{accession}.txt.gz"
             try:
@@ -256,6 +306,16 @@ def run(args: argparse.Namespace) -> dict:
         "positive_class_rate_between_0_10_and_0_90": 0.10 <= positive_rate <= 0.90,
     }
     accuracy = score_labels(frame, labels_path)
+    if accuracy.get("complete"):
+        try:
+            validate_import_receipt(labels_path, out / "human_label_import_receipt.json")
+        except ValueError as error:
+            accuracy = {
+                "complete": False,
+                "labeled": accuracy.get("labeled", 0),
+                "required": accuracy.get("required", 48),
+                "error": str(error),
+            }
     machine_pass = all(gates.values())
     accuracy_pass = bool(
         accuracy.get("complete")

@@ -1,0 +1,30 @@
+{
+  "abstract": "AlphaForge studies cross-sectional carry in USDT-margined perpetual futures, ranking contracts by the negative trailing mean of observed funding: expensive longs rank as shorts and negative-funding contracts as longs. This paper reconciles all 25 charged hypothesis identities. The historical `carry_fund_21` walk-forward grew a simulated $100,000 to $138,236.27 from 2022-02-08 through 2026-06-01, with Sharpe 0.6766 and maximum drawdown 19.60%, but failed its DSR gate. A later eight-configuration matrix reported PBO 0.8818, no deflated winner, and a capacity sweep context rather than carry capacity; the sole carry-tilted arm had Sharpe 0.0618. An exact-timestamp current-state replay on 2026-08-23 does not reproduce the selection: final equity is $103,335.16, Sharpe 0.1065, and maximum drawdown 20.98%. At the first decision, the historical 22 names included EOS while the current 21 did not; restoring EOS reproduces all ten historical order quantities. A zero-trial audit binds every surviving ledger: overlapping prices, position and funding marks, and funding rates agree, but holdings and state paths diverge. Because the historical run sealed neither its exact code nor derived-input snapshots, a unique additive attribution of the multi-year gap is structurally unidentifiable. Prospective private snapshots are now enforced but cannot repair that omission. The material correction therefore remains open and external submission is blocked. The forward record is weaker: AlphaForge is a local simulated paper broker, not an Alpaca account or externally attested record. Its first configuration was signal-dead; funding cashflows were omitted until a forward-only repair; fewer than half of intended hourly cycles completed; and the stored universe remains frozen at 2026-06-01. Crypto carry is therefore an incumbent experiment with a plausible mechanism, severe selection and capacity evidence, known operational defects, and an unmet forward burden of proof, not a validated sleeve.",
+  "authors": [
+    {
+      "affiliation": "Canli Capital / AlphaC Algorithms",
+      "full_name": "Arhan Canli",
+      "roles": [
+        "CONCEPTUALIZATION",
+        "METHODOLOGY",
+        "SOFTWARE",
+        "VALIDATION",
+        "INVESTIGATION",
+        "WRITING",
+        "PROJECT_ADMINISTRATION"
+      ]
+    }
+  ],
+  "capital_kind": "LOCAL_SIMULATED_PAPER_NOT_ALPACA",
+  "claim_boundary": "This is an incomplete preparation bundle. It proves no external submission, DOI, peer review, independent replication, funded performance, or future return.",
+  "date": "2026-08-23",
+  "external_identifiers": [],
+  "language": "en",
+  "peer_reviewed": false,
+  "registry_key": "alphaforge_crypto_carry",
+  "result_release_complete": true,
+  "schema": "canli.alphac-sleeve-paper.v1",
+  "title": "Crypto Perpetual Carry: Trial Lineage, Capacity Failure, and Live Evidence Boundary",
+  "type": "WORKING_PAPER_PREPRINT_NOT_PEER_REVIEWED",
+  "version": "0.1.0"
+}

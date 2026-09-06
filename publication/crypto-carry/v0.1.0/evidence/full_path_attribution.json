@@ -1,0 +1,928 @@
+{
+  "author": "Arhan Canli",
+  "bindings": {
+    "current_state_replay": {
+      "bytes": 19211093,
+      "directory": "artifacts/probe/crypto_carry_frozen_current_code_replay",
+      "equity_sha256": "c2820be452d1687a329690671891f5c38b449b95991d6e38dd57e3e3460932c2",
+      "files": 177,
+      "legs": 25,
+      "required_ledgers_per_leg": [
+        "equity.parquet",
+        "fills.parquet",
+        "funding.parquet",
+        "orders.parquet",
+        "positions.parquet"
+      ],
+      "root_sha256": "53aef4da6ed09f20b18834dd5f77701f19e402362f9cc40e95b12a7efd8bf6e1",
+      "walkforward_sha256": "0bcaddbbd75e3ae818303a3e577d7c8c8654f9e51358b70edf9c040d49b5ab50"
+    },
+    "first_decision_attribution": {
+      "content_hash": "sha256:6c5dd9216be1d511b4d1e05f38fc511f048d27fad37df37ff7779cb01b126da1",
+      "path": "artifacts/probe/crypto_carry_replay_drift/first_rebalance_attribution.json",
+      "sha256": "3beefed135322c4617ca5e547eea20423a90b2fb07e02b60a53b6dbacb3616b4"
+    },
+    "historical_artifact": {
+      "bytes": 16076880,
+      "directory": "artifacts/walkforward/crypto_carry_wk",
+      "equity_sha256": "37598579af6f34892e40902e2a357e4b07993b3e572012a1da311f7e91798a2a",
+      "files": 127,
+      "legs": 25,
+      "required_ledgers_per_leg": [
+        "equity.parquet",
+        "fills.parquet",
+        "funding.parquet",
+        "orders.parquet",
+        "positions.parquet"
+      ],
+      "root_sha256": "1dcc04fb0b24c7cddfcff61406d25dd4cd3ade9a9ed9d19f592452bbff957008",
+      "walkforward_sha256": "a72c11172a730536336a079d26394cd926f88df06ce36cb3b5483159a99464ee"
+    },
+    "replay_receipt": {
+      "content_hash": "sha256:d1fb9ae03ca6b092a34e204450216f79cd5d7a96f84615c957f9b7f583c19eaf",
+      "path": "artifacts/probe/crypto_carry_frozen_current_code_replay/replay_receipt.json",
+      "sha256": "bad33660d9f783779cb2ad38017839e2c35ad2c83cf31ae620b30663741f0dd1"
+    }
+  },
+  "causal_evidence": {
+    "exactly_established": [
+      {
+        "detail": "EOS is the sole source-only first-decision member; restoring it to the otherwise current cross-section reproduces all ten historical quantities.",
+        "finding": "FIRST_DECISION_MUTABLE_UNIVERSE_CAUSE"
+      },
+      {
+        "detail": "Every comparable order decision price, position mark, funding mark and funding rate is byte-numerically equal. This rules out value drift on overlapping records, not missing rows or membership-state drift.",
+        "finding": "OVERLAPPING_EXOGENOUS_MARKS_AND_FUNDING_RATES_EXACT"
+      },
+      {
+        "detail": "The replay records realized_leg_bound on 71 of 224 rebalances; the historical artifact predates and lacks that counter.",
+        "finding": "CURRENT_REALIZED_VOL_LEG_EXECUTED"
+      }
+    ],
+    "missing_counterfactual_cells": [
+      "historical exact code x historical exact derived-input snapshot",
+      "current code x the same historical exact derived-input snapshot",
+      "historical exact code x current derived-input snapshot",
+      "current code x current derived-input snapshot"
+    ],
+    "not_identifiable_from_surviving_evidence": [
+      "exact standalone terminal-equity or Sharpe contribution of universe drift",
+      "exact standalone terminal-equity or Sharpe contribution of the realized-vol correction",
+      "interaction contribution between changed holdings, costs, funding, drawdown state and overlay state",
+      "byte-exact source tree used by the historical execution"
+    ],
+    "recoverability": "The current/current cell exists. The historical/historical output exists, but its exact code and derived inputs do not. Because the missing historical snapshots were never sealed, the other cells cannot now be made exact by rerunning the same command.",
+    "why_additive_decomposition_is_invalid": "Orders change holdings; holdings change funding, costs, equity, realized volatility and drawdown state; those states change later orders. With only two realized paths, the counterfactual cells and their interactions are absent. Subtracting aggregate metrics cannot identify causal component effects."
+  },
+  "claim_boundary": "This audit proves where the surviving paths agree, where they diverge, one exact initial cause, and why the total metric delta cannot be uniquely split among causes. It does not estimate unobserved counterfactual performance or rehabilitate either result.",
+  "code_archaeology": {
+    "claim_boundary": "Repository history proves the correction exists and identifies a plausible June repository state. It does not prove the byte-exact source tree used by either unbound execution.",
+    "current_replay_exact_source_tree_bound": false,
+    "historical_run_exact_commit_bound": false,
+    "realized_vol_overlay_correction": {
+      "commit": "dd35711497d0e551d61d3593f7fd395a33b0c7b4",
+      "committed_at": "2026-08-18T22:35:47+04:00",
+      "current_audit_strategy_sha256": "e2e247cf5d32fa707f813b11ff8afe32cd01b3d46a831d25f030810a4f3bc1f4",
+      "current_replay_realized_leg_bound_counter": true,
+      "historical_candidate_strategy_git_blob": "8693bcd00e5a9ca2bf9ea2fd1807af64346d4d15",
+      "subject": "fix(overlay): measure the realized vol leg on the unlevered book"
+    },
+    "repository_state_candidate_not_run_authority": {
+      "artifact_filesystem_mtime": "2026-06-20T15:24:49.816414356+00:00",
+      "commit": "fd3e930f41b0a62b222ecda4ab83bae21a4ce9f2",
+      "committed_at": "2026-06-20T14:15:36+04:00",
+      "selection_method": "last repository commit preceding the preserved walkforward.json filesystem mtime; this cannot exclude uncommitted or alternate-branch state",
+      "strategy_git_blob": "8693bcd00e5a9ca2bf9ea2fd1807af64346d4d15",
+      "subject": "feat(equity): dollar-neutral L/S option (Sigma w=0) \u2014 removes the inverse-vol net tilt"
+    }
+  },
+  "content_hash": "sha256:1992e5bb6027222bc82ab1a66bb179c2c74b0d0cec62ba43d0baf12cd1fd5bfa",
+  "decision": {
+    "exact_additive_causal_decomposition_possible": false,
+    "external_submission_block_should_remain": true,
+    "full_path_drift_quantified": true,
+    "historical_result_should_remain_preserved_with_correction": true,
+    "repeat_current_state_replay_would_resolve_missing_history": false,
+    "surviving_evidence_exhausted": true
+  },
+  "declared_run_alignment": {
+    "declared_instrument_count": 58,
+    "instrument_ids_exactly_equal": true,
+    "leg_boundaries_exactly_equal": true,
+    "leg_count": 25,
+    "n_rebalances_replay": 224,
+    "n_rebalances_source": 224
+  },
+  "observed_path": {
+    "equity": {
+      "first_divergence": {
+        "delta_replay_minus_source": -0.08753026649355888,
+        "replay_equity": 100088.83227235998,
+        "row": 1,
+        "source_equity": 100088.91980262648,
+        "ts": 1644285600000
+      },
+      "maximum_absolute_difference": 35442.22073910621,
+      "rows": 37776,
+      "terminal_difference": -34901.10954384602,
+      "timestamps_exactly_equal": true,
+      "unequal_equity_rows": 37775
+    },
+    "funding": {
+      "columns": {
+        "mark_price": {
+          "all_finite_pairs_exact": true,
+          "exact_pairs": 32841,
+          "finite_pairs": 32841,
+          "maximum_absolute_difference": 0.0
+        },
+        "payment_quote": {
+          "all_finite_pairs_exact": false,
+          "exact_pairs": 1479,
+          "finite_pairs": 32841,
+          "maximum_absolute_difference": 35.658297
+        },
+        "position_qty": {
+          "all_finite_pairs_exact": false,
+          "exact_pairs": 190,
+          "finite_pairs": 32841,
+          "maximum_absolute_difference": 4973717.0
+        },
+        "rate": {
+          "all_finite_pairs_exact": true,
+          "exact_pairs": 32841,
+          "finite_pairs": 32841,
+          "maximum_absolute_difference": 0.0
+        }
+      },
+      "comparison_key": [
+        "leg",
+        "ts_funding",
+        "instrument_id"
+      ],
+      "overlap_keys": 32841,
+      "replay_only_keys": 11797,
+      "replay_rows": 44638,
+      "source_only_keys": 19987,
+      "source_rows": 52828
+    },
+    "orders": {
+      "columns": {
+        "decision_price": {
+          "all_finite_pairs_exact": true,
+          "exact_pairs": 40042,
+          "finite_pairs": 40042,
+          "maximum_absolute_difference": 0.0
+        },
+        "qty": {
+          "all_finite_pairs_exact": false,
+          "exact_pairs": 22813,
+          "finite_pairs": 40480,
+          "maximum_absolute_difference": 4755665.0
+        }
+      },
+      "comparison_key": [
+        "leg",
+        "decision_ts",
+        "instrument_id",
+        "side"
+      ],
+      "overlap_keys": 40480,
+      "replay_only_keys": 292449,
+      "replay_rows": 332929,
+      "source_only_keys": 77730,
+      "source_rows": 118210
+    },
+    "per_leg": [
+      {
+        "leg": 0,
+        "risk_counter_delta_replay_minus_source": {
+          "bars_half_gross": 8,
+          "bars_halted_flat": 0,
+          "hold_between_rebalance": -8,
+          "hold_cov_cold_start": 0,
+          "hold_degenerate_xsection": 0,
+          "hold_stale_signal": 0,
+          "n_auto_rearms": 0,
+          "n_fallback_used": 0,
+          "n_rebalances": 0,
+          "realized_leg_bound": 4
+        },
+        "summary_delta_replay_minus_source": {
+          "cagr": -0.035176893477977034,
+          "fees_paid": 14.547661953342924,
+          "final_equity": -947.0765560004656,
+          "funding_net": -3.8218715998887802,
+          "max_dd": 0.009890700195925861,
+          "sharpe": -0.008276756129279583,
+          "turnover_ann": 1.908810173694988
+        },
+        "test_end": 1649721600000,
+        "test_start": 1644278400000
+      },
+      {
+        "leg": 1,
+        "risk_counter_delta_replay_minus_source": {
+          "bars_half_gross": -538,
+          "bars_halted_flat": 336,
+          "hold_between_rebalance": 201,
+          "hold_cov_cold_start": 0,
+          "hold_degenerate_xsection": 0,
+          "hold_stale_signal": 0,
+          "n_auto_rearms": 1,
+          "n_fallback_used": -1,
+          "n_rebalances": -1,
+          "realized_leg_bound": 1
+        },
+        "summary_delta_replay_minus_source": {
+          "cagr": 0.07325865816004817,
+          "fees_paid": -15.75184596853083,
+          "final_equity": 387.6189648065483,
+          "funding_net": 9.975086839115761,
+          "max_dd": 0.01634649569541291,
+          "sharpe": 0.5771618837204918,
+          "turnover_ann": -1.6858530494731383
+        },
+        "test_end": 1655164800000,
+        "test_start": 1649721600000
+      },
+      {
+        "leg": 2,
+        "risk_counter_delta_replay_minus_source": {
+          "bars_half_gross": -1479,
+          "bars_halted_flat": -33,
+          "hold_between_rebalance": 1503,
+          "hold_cov_cold_start": 0,
+          "hold_degenerate_xsection": 0,
+          "hold_stale_signal": 0,
+          "n_auto_rearms": 0,
+          "n_fallback_used": 0,
+          "n_rebalances": 0,
+          "realized_leg_bound": 9
+        },
+        "summary_delta_replay_minus_source": {
+          "cagr": 0.023746563691835032,
+          "fees_paid": -6.597053531002189,
+          "final_equity": 797.9979247597512,
+          "funding_net": 717.9431077336071,
+          "max_dd": 0.02868260610499862,
+          "sharpe": 1.4584529440389895,
+          "turnover_ann": -1.2613216875172917
+        },
+        "test_end": 1660608000000,
+        "test_start": 1655164800000
+      },
+      {
+        "leg": 3,
+        "risk_counter_delta_replay_minus_source": {
+          "bars_half_gross": 0,
+          "bars_halted_flat": -303,
+          "hold_between_rebalance": 302,
+          "hold_cov_cold_start": 0,
+          "hold_degenerate_xsection": 0,
+          "hold_stale_signal": 0,
+          "n_auto_rearms": -1,
+          "n_fallback_used": 1,
+          "n_rebalances": 1,
+          "realized_leg_bound": 7
+        },
+        "summary_delta_replay_minus_source": {
+          "cagr": 0.1414080438230676,
+          "fees_paid": 29.395008151992926,
+          "final_equity": 2760.9095567570184,
+          "funding_net": 119.63441731749208,
+          "max_dd": -0.007595121072106914,
+          "sharpe": 1.8349962185129574,
+          "turnover_ann": 3.264702020201316
+        },
+        "test_end": 1666051200000,
+        "test_start": 1660608000000
+      },
+      {
+        "leg": 4,
+        "risk_counter_delta_replay_minus_source": {
+          "bars_half_gross": 1233,
+          "bars_halted_flat": 0,
+          "hold_between_rebalance": -1226,
+          "hold_cov_cold_start": 0,
+          "hold_degenerate_xsection": 0,
+          "hold_stale_signal": 0,
+          "n_auto_rearms": 0,
+          "n_fallback_used": 0,
+          "n_rebalances": 0,
+          "realized_leg_bound": 3
+        },
+        "summary_delta_replay_minus_source": {
+          "cagr": -0.3011067688009219,
+          "fees_paid": -5.917015404373672,
+          "final_equity": -3470.886771105579,
+          "funding_net": -447.86765238926,
+          "max_dd": 0.04236535581739986,
+          "sharpe": -2.6112943873794734,
+          "turnover_ann": -0.4332955259053861
+        },
+        "test_end": 1671494400000,
+        "test_start": 1666051200000
+      },
+      {
+        "leg": 5,
+        "risk_counter_delta_replay_minus_source": {
+          "bars_half_gross": 1462,
+          "bars_halted_flat": 0,
+          "hold_between_rebalance": -1454,
+          "hold_cov_cold_start": 0,
+          "hold_degenerate_xsection": 0,
+          "hold_stale_signal": 0,
+          "n_auto_rearms": 0,
+          "n_fallback_used": 0,
+          "n_rebalances": 0,
+          "realized_leg_bound": 0
+        },
+        "summary_delta_replay_minus_source": {
+          "cagr": -0.28951019248530496,
+          "fees_paid": -3.21549429419872,
+          "final_equity": -6966.952049857515,
+          "funding_net": -719.3008601030471,
+          "max_dd": -0.0014908059813159014,
+          "sharpe": -1.3298869949340877,
+          "turnover_ann": 1.0484454413948079
+        },
+        "test_end": 1676937600000,
+        "test_start": 1671494400000
+      },
+      {
+        "leg": 6,
+        "risk_counter_delta_replay_minus_source": {
+          "bars_half_gross": 1216,
+          "bars_halted_flat": 0,
+          "hold_between_rebalance": -1209,
+          "hold_cov_cold_start": 0,
+          "hold_degenerate_xsection": 0,
+          "hold_stale_signal": 0,
+          "n_auto_rearms": 0,
+          "n_fallback_used": 0,
+          "n_rebalances": 0,
+          "realized_leg_bound": 1
+        },
+        "summary_delta_replay_minus_source": {
+          "cagr": -0.06938775858457724,
+          "fees_paid": -42.96526619215342,
+          "final_equity": -8025.608117705109,
+          "funding_net": -278.1148013946279,
+          "max_dd": 0.01693006132171493,
+          "sharpe": -1.3073382725218416,
+          "turnover_ann": -3.2365105472072493
+        },
+        "test_end": 1682380800000,
+        "test_start": 1676937600000
+      },
+      {
+        "leg": 7,
+        "risk_counter_delta_replay_minus_source": {
+          "bars_half_gross": 1512,
+          "bars_halted_flat": 0,
+          "hold_between_rebalance": -1503,
+          "hold_cov_cold_start": 0,
+          "hold_degenerate_xsection": 0,
+          "hold_stale_signal": 0,
+          "n_auto_rearms": 0,
+          "n_fallback_used": 0,
+          "n_rebalances": 0,
+          "realized_leg_bound": 0
+        },
+        "summary_delta_replay_minus_source": {
+          "cagr": 0.0989792809609834,
+          "fees_paid": -118.14659748310811,
+          "final_equity": -6370.005973955107,
+          "funding_net": -420.6498533009873,
+          "max_dd": -0.02357848268682583,
+          "sharpe": 0.8961059978959885,
+          "turnover_ann": -12.828476744500094
+        },
+        "test_end": 1687824000000,
+        "test_start": 1682380800000
+      },
+      {
+        "leg": 8,
+        "risk_counter_delta_replay_minus_source": {
+          "bars_half_gross": 1512,
+          "bars_halted_flat": 0,
+          "hold_between_rebalance": -1503,
+          "hold_cov_cold_start": 0,
+          "hold_degenerate_xsection": 0,
+          "hold_stale_signal": 0,
+          "n_auto_rearms": 0,
+          "n_fallback_used": 0,
+          "n_rebalances": 0,
+          "realized_leg_bound": 0
+        },
+        "summary_delta_replay_minus_source": {
+          "cagr": -0.010350669814244928,
+          "fees_paid": -101.05184452469939,
+          "final_equity": -6508.775231472595,
+          "funding_net": -386.1398106064248,
+          "max_dd": -0.02048129456463188,
+          "sharpe": -0.1543887358681346,
+          "turnover_ann": -11.88880225249369
+        },
+        "test_end": 1693267200000,
+        "test_start": 1687824000000
+      },
+      {
+        "leg": 9,
+        "risk_counter_delta_replay_minus_source": {
+          "bars_half_gross": 1373,
+          "bars_halted_flat": 0,
+          "hold_between_rebalance": -1365,
+          "hold_cov_cold_start": 0,
+          "hold_degenerate_xsection": 0,
+          "hold_stale_signal": 0,
+          "n_auto_rearms": 0,
+          "n_fallback_used": 0,
+          "n_rebalances": 0,
+          "realized_leg_bound": 0
+        },
+        "summary_delta_replay_minus_source": {
+          "cagr": -0.18055543055135037,
+          "fees_paid": -114.05463129483806,
+          "final_equity": -9119.147339573348,
+          "funding_net": -772.53304599631,
+          "max_dd": -0.00364928222220684,
+          "sharpe": -1.5187293635188834,
+          "turnover_ann": -11.578122291306453
+        },
+        "test_end": 1698710400000,
+        "test_start": 1693267200000
+      },
+      {
+        "leg": 10,
+        "risk_counter_delta_replay_minus_source": {
+          "bars_half_gross": 1258,
+          "bars_halted_flat": 0,
+          "hold_between_rebalance": -1250,
+          "hold_cov_cold_start": 0,
+          "hold_degenerate_xsection": 0,
+          "hold_stale_signal": 0,
+          "n_auto_rearms": 0,
+          "n_fallback_used": 0,
+          "n_rebalances": 0,
+          "realized_leg_bound": 0
+        },
+        "summary_delta_replay_minus_source": {
+          "cagr": 0.08044010763868326,
+          "fees_paid": -11.179654744573384,
+          "final_equity": -7935.6413600512315,
+          "funding_net": -100.4927950288943,
+          "max_dd": -0.011483233035193163,
+          "sharpe": 0.49735349316796834,
+          "turnover_ann": 1.9977142816402562
+        },
+        "test_end": 1704153600000,
+        "test_start": 1698710400000
+      },
+      {
+        "leg": 11,
+        "risk_counter_delta_replay_minus_source": {
+          "bars_half_gross": 1496,
+          "bars_halted_flat": 0,
+          "hold_between_rebalance": -1487,
+          "hold_cov_cold_start": 0,
+          "hold_degenerate_xsection": 0,
+          "hold_stale_signal": 0,
+          "n_auto_rearms": 0,
+          "n_fallback_used": 0,
+          "n_rebalances": 0,
+          "realized_leg_bound": 0
+        },
+        "summary_delta_replay_minus_source": {
+          "cagr": 0.15844269722527393,
+          "fees_paid": -51.69282134015464,
+          "final_equity": -6013.6893941666785,
+          "funding_net": -255.67164337445575,
+          "max_dd": -0.02652225308560585,
+          "sharpe": 2.4768178481003806,
+          "turnover_ann": -5.346686623776716
+        },
+        "test_end": 1709596800000,
+        "test_start": 1704153600000
+      },
+      {
+        "leg": 12,
+        "risk_counter_delta_replay_minus_source": {
+          "bars_half_gross": 114,
+          "bars_halted_flat": 0,
+          "hold_between_rebalance": -114,
+          "hold_cov_cold_start": 0,
+          "hold_degenerate_xsection": 0,
+          "hold_stale_signal": 0,
+          "n_auto_rearms": 0,
+          "n_fallback_used": 0,
+          "n_rebalances": 0,
+          "realized_leg_bound": 3
+        },
+        "summary_delta_replay_minus_source": {
+          "cagr": 0.14417176264834763,
+          "fees_paid": 16.189159928351785,
+          "final_equity": -4425.038215680135,
+          "funding_net": -115.01660768123782,
+          "max_dd": -0.010849631834054074,
+          "sharpe": 1.5500492863045348,
+          "turnover_ann": 4.696198169980331
+        },
+        "test_end": 1715040000000,
+        "test_start": 1709596800000
+      },
+      {
+        "leg": 13,
+        "risk_counter_delta_replay_minus_source": {
+          "bars_half_gross": 0,
+          "bars_halted_flat": 0,
+          "hold_between_rebalance": 0,
+          "hold_cov_cold_start": 0,
+          "hold_degenerate_xsection": 0,
+          "hold_stale_signal": 0,
+          "n_auto_rearms": 0,
+          "n_fallback_used": 0,
+          "n_rebalances": 0,
+          "realized_leg_bound": 3
+        },
+        "summary_delta_replay_minus_source": {
+          "cagr": 0.2496666022833025,
+          "fees_paid": -7.306768431201078,
+          "final_equity": -1596.9221084969904,
+          "funding_net": 78.76634069392935,
+          "max_dd": 0.005931995636729637,
+          "sharpe": 0.7900265002798026,
+          "turnover_ann": -0.21976304308278571
+        },
+        "test_end": 1720483200000,
+        "test_start": 1715040000000
+      },
+      {
+        "leg": 14,
+        "risk_counter_delta_replay_minus_source": {
+          "bars_half_gross": 0,
+          "bars_halted_flat": 0,
+          "hold_between_rebalance": 0,
+          "hold_cov_cold_start": 0,
+          "hold_degenerate_xsection": 0,
+          "hold_stale_signal": 0,
+          "n_auto_rearms": 0,
+          "n_fallback_used": 0,
+          "n_rebalances": 0,
+          "realized_leg_bound": 3
+        },
+        "summary_delta_replay_minus_source": {
+          "cagr": -0.07216236627594041,
+          "fees_paid": -44.652273611290695,
+          "final_equity": -2806.895540631973,
+          "funding_net": -232.24668135903153,
+          "max_dd": -0.02014807004791963,
+          "sharpe": -0.4207278816877156,
+          "turnover_ann": -3.874647885664011
+        },
+        "test_end": 1725926400000,
+        "test_start": 1720483200000
+      },
+      {
+        "leg": 15,
+        "risk_counter_delta_replay_minus_source": {
+          "bars_half_gross": 0,
+          "bars_halted_flat": 0,
+          "hold_between_rebalance": 0,
+          "hold_cov_cold_start": 0,
+          "hold_degenerate_xsection": 0,
+          "hold_stale_signal": 0,
+          "n_auto_rearms": 0,
+          "n_fallback_used": 0,
+          "n_rebalances": 0,
+          "realized_leg_bound": 6
+        },
+        "summary_delta_replay_minus_source": {
+          "cagr": -0.3799165356271492,
+          "fees_paid": -43.3785309134945,
+          "final_equity": -8193.910928329991,
+          "funding_net": 178.7370530909443,
+          "max_dd": 0.045511551689489504,
+          "sharpe": -2.290181336523299,
+          "turnover_ann": -3.976693193064893
+        },
+        "test_end": 1731369600000,
+        "test_start": 1725926400000
+      },
+      {
+        "leg": 16,
+        "risk_counter_delta_replay_minus_source": {
+          "bars_half_gross": 909,
+          "bars_halted_flat": 0,
+          "hold_between_rebalance": -904,
+          "hold_cov_cold_start": 0,
+          "hold_degenerate_xsection": 0,
+          "hold_stale_signal": 0,
+          "n_auto_rearms": 0,
+          "n_fallback_used": 0,
+          "n_rebalances": 0,
+          "realized_leg_bound": 2
+        },
+        "summary_delta_replay_minus_source": {
+          "cagr": -0.7092287576969494,
+          "fees_paid": -23.127539917325976,
+          "final_equity": -18112.73299688648,
+          "funding_net": -60.391761631279365,
+          "max_dd": 0.021293873182735235,
+          "sharpe": -3.40664985890718,
+          "turnover_ann": 1.7095756288462631
+        },
+        "test_end": 1736812800000,
+        "test_start": 1731369600000
+      },
+      {
+        "leg": 17,
+        "risk_counter_delta_replay_minus_source": {
+          "bars_half_gross": 0,
+          "bars_halted_flat": 0,
+          "hold_between_rebalance": 0,
+          "hold_cov_cold_start": 0,
+          "hold_degenerate_xsection": 0,
+          "hold_stale_signal": 0,
+          "n_auto_rearms": 0,
+          "n_fallback_used": 0,
+          "n_rebalances": 0,
+          "realized_leg_bound": 7
+        },
+        "summary_delta_replay_minus_source": {
+          "cagr": -0.06068002738011069,
+          "fees_paid": -54.049065967432796,
+          "final_equity": -19412.451521331866,
+          "funding_net": -61.440147716180775,
+          "max_dd": 0.012140679600604054,
+          "sharpe": -0.6219905959964128,
+          "turnover_ann": -1.060212127380698
+        },
+        "test_end": 1742256000000,
+        "test_start": 1736812800000
+      },
+      {
+        "leg": 18,
+        "risk_counter_delta_replay_minus_source": {
+          "bars_half_gross": 549,
+          "bars_halted_flat": 0,
+          "hold_between_rebalance": -546,
+          "hold_cov_cold_start": 0,
+          "hold_degenerate_xsection": 0,
+          "hold_stale_signal": 0,
+          "n_auto_rearms": 0,
+          "n_fallback_used": 0,
+          "n_rebalances": 0,
+          "realized_leg_bound": 6
+        },
+        "summary_delta_replay_minus_source": {
+          "cagr": -0.2200374836574409,
+          "fees_paid": -96.27485892671746,
+          "final_equity": -23544.155090225613,
+          "funding_net": -169.17945814453367,
+          "max_dd": 0.02687620373374555,
+          "sharpe": -2.1871741920244783,
+          "turnover_ann": -3.7502370647856935
+        },
+        "test_end": 1747699200000,
+        "test_start": 1742256000000
+      },
+      {
+        "leg": 19,
+        "risk_counter_delta_replay_minus_source": {
+          "bars_half_gross": 1512,
+          "bars_halted_flat": 0,
+          "hold_between_rebalance": -1503,
+          "hold_cov_cold_start": 0,
+          "hold_degenerate_xsection": 0,
+          "hold_stale_signal": 0,
+          "n_auto_rearms": 0,
+          "n_fallback_used": 0,
+          "n_rebalances": 0,
+          "realized_leg_bound": 0
+        },
+        "summary_delta_replay_minus_source": {
+          "cagr": 0.10922061722473952,
+          "fees_paid": -179.74445590119865,
+          "final_equity": -21466.866387725255,
+          "funding_net": -262.99392527637553,
+          "max_dd": -0.022831975899062718,
+          "sharpe": 1.2204756187319594,
+          "turnover_ann": -12.013250386159179
+        },
+        "test_end": 1753142400000,
+        "test_start": 1747699200000
+      },
+      {
+        "leg": 20,
+        "risk_counter_delta_replay_minus_source": {
+          "bars_half_gross": 1176,
+          "bars_halted_flat": 0,
+          "hold_between_rebalance": -1169,
+          "hold_cov_cold_start": 0,
+          "hold_degenerate_xsection": 0,
+          "hold_stale_signal": 0,
+          "n_auto_rearms": 0,
+          "n_fallback_used": 0,
+          "n_rebalances": 0,
+          "realized_leg_bound": 0
+        },
+        "summary_delta_replay_minus_source": {
+          "cagr": 0.21619055038100243,
+          "fees_paid": -115.39236805082186,
+          "final_equity": -16539.858178847775,
+          "funding_net": -75.94009592805807,
+          "max_dd": -0.059439660192362354,
+          "sharpe": 1.3882460602667646,
+          "turnover_ann": -5.727169883942786
+        },
+        "test_end": 1758585600000,
+        "test_start": 1753142400000
+      },
+      {
+        "leg": 21,
+        "risk_counter_delta_replay_minus_source": {
+          "bars_half_gross": -115,
+          "bars_halted_flat": 0,
+          "hold_between_rebalance": 114,
+          "hold_cov_cold_start": 0,
+          "hold_degenerate_xsection": 0,
+          "hold_stale_signal": 0,
+          "n_auto_rearms": 0,
+          "n_fallback_used": 0,
+          "n_rebalances": 0,
+          "realized_leg_bound": 4
+        },
+        "summary_delta_replay_minus_source": {
+          "cagr": -0.2740295907879782,
+          "fees_paid": -10.879861466052887,
+          "final_equity": -21290.312714472762,
+          "funding_net": -123.60647168827217,
+          "max_dd": -0.0009576982473920026,
+          "sharpe": -2.021597541041797,
+          "turnover_ann": 3.917218513608713
+        },
+        "test_end": 1764028800000,
+        "test_start": 1758585600000
+      },
+      {
+        "leg": 22,
+        "risk_counter_delta_replay_minus_source": {
+          "bars_half_gross": 0,
+          "bars_halted_flat": 0,
+          "hold_between_rebalance": 0,
+          "hold_cov_cold_start": 0,
+          "hold_degenerate_xsection": 0,
+          "hold_stale_signal": 0,
+          "n_auto_rearms": 0,
+          "n_fallback_used": 0,
+          "n_rebalances": 0,
+          "realized_leg_bound": 4
+        },
+        "summary_delta_replay_minus_source": {
+          "cagr": -0.19046204958981505,
+          "fees_paid": -119.64279449397085,
+          "final_equity": -25130.70465492856,
+          "funding_net": -129.5217834336164,
+          "max_dd": 0.016048799490892218,
+          "sharpe": -1.8117684776043304,
+          "turnover_ann": -5.975252410882316
+        },
+        "test_end": 1769472000000,
+        "test_start": 1764028800000
+      },
+      {
+        "leg": 23,
+        "risk_counter_delta_replay_minus_source": {
+          "bars_half_gross": 0,
+          "bars_halted_flat": 0,
+          "hold_between_rebalance": 0,
+          "hold_cov_cold_start": 0,
+          "hold_degenerate_xsection": 0,
+          "hold_stale_signal": 0,
+          "n_auto_rearms": 0,
+          "n_fallback_used": 0,
+          "n_rebalances": 0,
+          "realized_leg_bound": 1
+        },
+        "summary_delta_replay_minus_source": {
+          "cagr": -0.16855531115587818,
+          "fees_paid": -45.81038723227283,
+          "final_equity": -29286.314068885855,
+          "funding_net": -683.9068811817633,
+          "max_dd": 0.010602914423776588,
+          "sharpe": -0.8869191849328297,
+          "turnover_ann": 4.2832632652522165
+        },
+        "test_end": 1774915200000,
+        "test_start": 1769472000000
+      },
+      {
+        "leg": 24,
+        "risk_counter_delta_replay_minus_source": {
+          "bars_half_gross": 0,
+          "bars_halted_flat": 0,
+          "hold_between_rebalance": 0,
+          "hold_cov_cold_start": 0,
+          "hold_degenerate_xsection": 0,
+          "hold_stale_signal": 0,
+          "n_auto_rearms": 0,
+          "n_fallback_used": 0,
+          "n_rebalances": 0,
+          "realized_leg_bound": 7
+        },
+        "summary_delta_replay_minus_source": {
+          "cagr": -0.26487907212545136,
+          "fees_paid": -34.09249488711163,
+          "final_equity": -34901.10954384602,
+          "funding_net": -637.9643841804052,
+          "max_dd": 0.01909828521457113,
+          "sharpe": -4.496463119843352,
+          "turnover_ann": 6.97160982848262
+        },
+        "test_end": 1780272000000,
+        "test_start": 1774915200000
+      }
+    ],
+    "positions": {
+      "columns": {
+        "mark": {
+          "all_finite_pairs_exact": true,
+          "exact_pairs": 256859,
+          "finite_pairs": 256859,
+          "maximum_absolute_difference": 0.0
+        },
+        "qty": {
+          "all_finite_pairs_exact": false,
+          "exact_pairs": 1542,
+          "finite_pairs": 256859,
+          "maximum_absolute_difference": 4983487.0
+        },
+        "weight": {
+          "all_finite_pairs_exact": false,
+          "exact_pairs": 0,
+          "finite_pairs": 256859,
+          "maximum_absolute_difference": 0.15228303080008096
+        }
+      },
+      "comparison_key": [
+        "leg",
+        "ts",
+        "instrument_id"
+      ],
+      "overlap_keys": 256859,
+      "replay_only_keys": 94736,
+      "replay_rows": 351595,
+      "source_only_keys": 158012,
+      "source_rows": 414871
+    },
+    "risk_counters": {
+      "delta_replay_minus_source": {
+        "bars_half_gross": 13198,
+        "bars_halted_flat": 0,
+        "hold_between_rebalance": -13121,
+        "hold_cov_cold_start": 0,
+        "hold_degenerate_xsection": 0,
+        "hold_stale_signal": 0,
+        "n_auto_rearms": 0,
+        "n_fallback_used": 0,
+        "n_rebalances": 0,
+        "realized_leg_bound": 71
+      },
+      "replay": {
+        "bars_half_gross": 17489,
+        "bars_halted_flat": 336,
+        "hold_between_rebalance": 19829,
+        "hold_cov_cold_start": 0,
+        "hold_degenerate_xsection": 0,
+        "hold_stale_signal": 0,
+        "n_auto_rearms": 1,
+        "n_fallback_used": 224,
+        "n_rebalances": 224,
+        "realized_leg_bound": 71
+      },
+      "source": {
+        "bars_half_gross": 4291,
+        "bars_halted_flat": 336,
+        "hold_between_rebalance": 32950,
+        "hold_cov_cold_start": 0,
+        "hold_degenerate_xsection": 0,
+        "hold_stale_signal": 0,
+        "n_auto_rearms": 1,
+        "n_fallback_used": 224,
+        "n_rebalances": 224
+      }
+    }
+  },
+  "required_governance_change": "Future measured results must atomically bind the exact derived signal frame, universe intervals, complete SCD2 metadata, market/funding partitions, source tree, lockfile and configuration before the output can be called reproducible.",
+  "schema": "canli.alphac-crypto-carry-full-path-drift-audit.v1",
+  "scope": "zero-new-trial forensic comparison of the complete surviving source and replay output paths; not a return experiment, counterfactual backtest, or replication",
+  "status": "PASS_SURVIVING_EVIDENCE_EXHAUSTED_EXACT_ADDITIVE_CAUSAL_SPLIT_NOT_IDENTIFIABLE",
+  "trial_accounting": {
+    "classification": "OUTPUT_FORENSICS_AND_IDENTIFIABILITY_AUDIT_ONLY",
+    "full_walkforward_reruns": 0,
+    "new_return_hypotheses": 0,
+    "new_trials": 0
+  }
+}

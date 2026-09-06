@@ -1,0 +1,72 @@
+{
+  "author": "Arhan Canli",
+  "claim_boundary": "Machine validation proves page geometry, extractable text, metadata, font resources, and required disclosures. Visual inspection is separate and is not peer review, content validation, accessibility certification, or independent replication.",
+  "extractable_characters": 18700,
+  "failures": [],
+  "font_resources": [
+    "AAAAAA+Arial-BoldMT",
+    "BAAAAA+Georgia",
+    "CAAAAA+Georgia",
+    "DAAAAA+ArialMT",
+    "EAAAAA+Arial-BoldMT",
+    "FAAAAA+ArialMT",
+    "GAAAAA+ArialMT",
+    "HAAAAA+Arial-BoldMT",
+    "IAAAAA+ArialMT",
+    "JAAAAA+Georgia-Bold",
+    "KAAAAA+Georgia",
+    "LAAAAA+Menlo-Regular",
+    "MAAAAA+Georgia",
+    "NAAAAA+Arial-BoldMT",
+    "OAAAAA+ArialMT",
+    "PAAAAA+Georgia-Bold",
+    "QAAAAA+Georgia-Italic"
+  ],
+  "metadata": {
+    "author": "Arhan Canli",
+    "title": "Equity Momentum Under Complete Trial Accounting: A Selected Survivor and Failed Deep-History Replication"
+  },
+  "minimum_extractable_characters_on_page": 551,
+  "page_height_points": [
+    841.92
+  ],
+  "page_width_points": [
+    594.96
+  ],
+  "pages": 8,
+  "passes": true,
+  "registry_key": "alphamax_equity_momentum",
+  "render_environment": {
+    "latex_compilation_validated": false,
+    "pdf_engine": "Google Chrome 151.0.7922.174",
+    "pdf_normalizer": "pypdf 6.16.1"
+  },
+  "schema": "canli.alphac-archival-pdf-validation.v1",
+  "source_bindings": {
+    "bibliography": {
+      "references.bib": {
+        "path": "references.bib",
+        "sha256": "f93a842ab0da6608d632af980a23693bccde40e3cf5282bb46f4af2831a438b8"
+      },
+      "references.json": {
+        "path": "references.json",
+        "sha256": "6a8dd290d102071306c78bb949ecd56cc9793ec7ac93a3c560325a734007898f"
+      }
+    },
+    "paper_markdown": {
+      "path": "publication/alphamax/v0.1.0/paper.md",
+      "sha256": "b2ccb4db05766124a984eb3ebb6c42930542a596e0491363b899ff06feea375f"
+    },
+    "renderer": {
+      "path": "scripts/build_archival_publication_papers.py",
+      "sha256": "d36584c93e00be6f75bc50da079d25a46d1da4e0d1b2d58b73661e3f527c9f3e"
+    },
+    "static_site_paper_html": {
+      "declared_markdown_sha256": "b2ccb4db05766124a984eb3ebb6c42930542a596e0491363b899ff06feea375f",
+      "matches_paper_markdown": true,
+      "path": "/Users/arhancanli/meridian/research/alphamax-equity-momentum-lineage.html",
+      "sha256": "e531d152c66204a9c7593154624f9846d49c740cbfec4e0d9f5bdbf83500c126"
+    }
+  },
+  "status": "PASS_MACHINE_PDF_VALIDATION"
+}

@@ -1,0 +1,267 @@
+{
+  "acceptance_tolerance_changed_between_attempts": false,
+  "attempts": [
+    {
+      "all_exact_decision_checks": {
+        "active_days": true,
+        "all_four_gate_values": true,
+        "four_gate_replay_declared": true,
+        "portfolio_days": true,
+        "upstream_benchmark_regeneration_not_overstated": true,
+        "verdict": true
+      },
+      "all_four_gate_values_stable": true,
+      "attempt": 1,
+      "command_exit_code": 1,
+      "executed_at": "2026-08-24T03:19:38.958Z",
+      "execution_records": [
+        {
+          "command": "uv run --isolated --script scripts/fetch_rtdsm_cpi_portable.py --output inputs/macro --vintage-cutoff 2026-07-15",
+          "exit_code": 0,
+          "stderr_sha256": "879cc14045540ebed3c368bd4500a6ed9c28ac8a3e8259402ad28be2af10c37c",
+          "stdout_sha256": "b70b26050823efe02c21dc450a7c5b8b50b12d56852e895a89dff3aa78ed0ade"
+        },
+        {
+          "command": "uv run --isolated --script scripts/fetch_yahoo_iwm_spy_portable.py --output inputs/market --start 2001-06-27 --end-exclusive 2026-08-22",
+          "exit_code": 0,
+          "stderr_sha256": "4da2349642c58d1d06963b1ea4066e37d0b62aafe092b384f2db7b1bb46d3a14",
+          "stdout_sha256": "73bffc2e96b99c275355dc5985e7edce471c017bde28b80634a213efbd5fc7f6"
+        },
+        {
+          "command": "uv run --isolated --script scripts/reproduce_alphavintage_full_decision_portable.py --macro-dir inputs/macro --market-dir inputs/market --book-curve eq=inputs/book/eq.equity.parquet --book-curve mf=inputs/book/mf.equity.parquet --book-curve inv=inputs/book/inv.equity.parquet --output outputs/full_decision.json",
+          "exit_code": 0,
+          "stderr_sha256": "1159569a525a271a199a4bd81301c11a3b050f5a2d061b3d56efdfa6e748a33e",
+          "stdout_sha256": "04882f57e740669de3e5df4806faa24d92e7f4666305f5dc1a7333852571068c"
+        }
+      ],
+      "failed_metric": "placebo_nw_t",
+      "failed_metric_absolute_delta": 6.245716285778469e-05,
+      "fixed_tolerance": 5e-05,
+      "fresh_checks": {
+        "a_clears_bar": true,
+        "b_nw_t_ge_1p5": false,
+        "c_benefit_is_the_mean": true,
+        "d_placebo_dead": true
+      },
+      "fresh_diversification": {
+        "allocation_results": [
+          {
+            "allocation": 0.05,
+            "book_sharpe": 0.7734889524621783,
+            "book_sharpe_delta": 0.018801031818684977,
+            "mean_fraction_pct": 91.93501772276193,
+            "zeroed_delta": 0.0015162998841148356
+          },
+          {
+            "allocation": 0.1,
+            "book_sharpe": 0.787399975090915,
+            "book_sharpe_delta": 0.032712054447421646,
+            "mean_fraction_pct": 110.80404889314492,
+            "zeroed_delta": -0.0035342263564516196
+          },
+          {
+            "allocation": 0.15,
+            "book_sharpe": 0.7941795898381612,
+            "book_sharpe_delta": 0.039491669194667844,
+            "mean_fraction_pct": 143.15042244204787,
+            "zeroed_delta": -0.017040822086915264
+          },
+          {
+            "allocation": 0.2,
+            "book_sharpe": 0.7916610054805953,
+            "book_sharpe_delta": 0.03697308483710193,
+            "mean_fraction_pct": 209.7040841295113,
+            "zeroed_delta": -0.04056098409496989
+          }
+        ],
+        "best_allocation_result": {
+          "allocation": 0.15,
+          "book_sharpe": 0.7941795898381612,
+          "book_sharpe_delta": 0.039491669194667844,
+          "mean_fraction_pct": 143.15042244204787,
+          "zeroed_delta": -0.017040822086915264
+        },
+        "book_sharpe": 0.7546879206434933,
+        "candidate_book_correlation": -0.06660286921109604,
+        "candidate_join_sharpe": 0.19752436581620375,
+        "candidate_sharpe_hurdle": -0.05026438087381261,
+        "common_days": 728,
+        "first_date": "2023-07-07",
+        "last_date": "2026-06-01"
+      },
+      "fresh_verdict": "KILLED",
+      "full_first_receipt_archived": false,
+      "metric_comparisons": [
+        {
+          "absolute_delta": 1.4221638204303666e-06,
+          "fresh_reproduction": 0.22983730508678132,
+          "metric": "net_sharpe",
+          "published": 0.2298358829229609,
+          "signed_delta": 1.4221638204303666e-06,
+          "within_publication_display_precision": true
+        },
+        {
+          "absolute_delta": 9.527865284297832e-06,
+          "fresh_reproduction": 1.2673285855974779,
+          "metric": "nw_t",
+          "published": 1.2673190577321936,
+          "signed_delta": 9.527865284297832e-06,
+          "within_publication_display_precision": true
+        },
+        {
+          "absolute_delta": 1.259659634100796e-06,
+          "fresh_reproduction": 0.3382084590615021,
+          "metric": "active_day_net_sharpe_superseded",
+          "published": 0.338207199401868,
+          "signed_delta": 1.259659634100796e-06,
+          "within_publication_display_precision": true
+        },
+        {
+          "absolute_delta": 1.0443210666788438e-06,
+          "fresh_reproduction": 0.4410046444029898,
+          "metric": "gross_sharpe",
+          "published": 0.44100360008192313,
+          "signed_delta": 1.0443210666788438e-06,
+          "within_publication_display_precision": true
+        },
+        {
+          "absolute_delta": 1.0930760959596691e-05,
+          "fresh_reproduction": -0.020505983218043575,
+          "metric": "placebo_sharpe",
+          "published": -0.02051691397900317,
+          "signed_delta": 1.0930760959596691e-05,
+          "within_publication_display_precision": true
+        },
+        {
+          "absolute_delta": 6.245716285778469e-05,
+          "fresh_reproduction": -0.11694718312885351,
+          "metric": "placebo_nw_t",
+          "published": -0.11700964029171129,
+          "signed_delta": 6.245716285778469e-05,
+          "within_publication_display_precision": false
+        }
+      ],
+      "numeric_equivalence_acceptance_passes": false,
+      "receipt_content_hash_before_overwrite": "sha256:970b4404798c43cf70e1d69b083ae37e47a3df3bed4e49fad61c5c58dcefa3cb",
+      "receipt_status_before_overwrite": "FAIL",
+      "recovered_evidence_scope": "EXACT_FIELDS_PRINTED_BEFORE_RECEIPT_WAS_OVERWRITTEN"
+    },
+    {
+      "all_exact_decision_checks": {
+        "active_days": true,
+        "all_four_gate_values": true,
+        "four_gate_replay_declared": true,
+        "portfolio_days": true,
+        "upstream_benchmark_regeneration_not_overstated": true,
+        "verdict": true
+      },
+      "all_four_gate_values_stable": true,
+      "attempt": 2,
+      "executed_at": "2026-08-24T03:22:31.996665+00:00",
+      "fresh_checks": {
+        "a_clears_bar": true,
+        "b_nw_t_ge_1p5": false,
+        "c_benefit_is_the_mean": true,
+        "d_placebo_dead": true
+      },
+      "fresh_verdict": "KILLED",
+      "metric_comparisons": [
+        {
+          "absolute_delta": 6.327801884142836e-07,
+          "fresh_reproduction": 0.2298365157031493,
+          "metric": "net_sharpe",
+          "published": 0.2298358829229609,
+          "signed_delta": 6.327801884142836e-07,
+          "within_publication_display_precision": true
+        },
+        {
+          "absolute_delta": 4.964325143186343e-06,
+          "fresh_reproduction": 1.2673240220573367,
+          "metric": "nw_t",
+          "published": 1.2673190577321936,
+          "signed_delta": 4.964325143186343e-06,
+          "within_publication_display_precision": true
+        },
+        {
+          "absolute_delta": 4.177345020450751e-07,
+          "fresh_reproduction": 0.33820761713637004,
+          "metric": "active_day_net_sharpe_superseded",
+          "published": 0.338207199401868,
+          "signed_delta": 4.177345020450751e-07,
+          "within_publication_display_precision": true
+        },
+        {
+          "absolute_delta": 1.6247524009527226e-07,
+          "fresh_reproduction": 0.4410037625571632,
+          "metric": "gross_sharpe",
+          "published": 0.44100360008192313,
+          "signed_delta": 1.6247524009527226e-07,
+          "within_publication_display_precision": true
+        },
+        {
+          "absolute_delta": 2.368921914065042e-06,
+          "fresh_reproduction": -0.020514545057089106,
+          "metric": "placebo_sharpe",
+          "published": -0.02051691397900317,
+          "signed_delta": 2.368921914065042e-06,
+          "within_publication_display_precision": true
+        },
+        {
+          "absolute_delta": 1.345836069367723e-05,
+          "fresh_reproduction": -0.11699618193101761,
+          "metric": "placebo_nw_t",
+          "published": -0.11700964029171129,
+          "signed_delta": 1.345836069367723e-05,
+          "within_publication_display_precision": true
+        }
+      ],
+      "numeric_equivalence_acceptance_passes": true,
+      "receipt": {
+        "content_hash": "sha256:5fd834e91c921b10aedec8562d4d20bf092407c81f895c3c6d2c520a62a6a6dd",
+        "path": "artifacts/publication/alphavintage_full_decision_clean_workspace.json",
+        "sha256": "0245d65d319f52267a269659d4f80d957788f167d12af30f756a41b63a1e4e7d",
+        "status": "PASS_AUTHOR_CLEAN_WORKSPACE_ALL_FOUR_GATES_UPSTREAM_BENCHMARK_REGENERATION_INCOMPLETE"
+      },
+      "receipt_integrity_passes": true
+    }
+  ],
+  "author": "Arhan Canli",
+  "claim_boundary": "Two consecutive author-run fresh-source attempts are disclosed. The first missed the unchanged numeric-equivalence tolerance on placebo Newey-West t while preserving all four gates and the KILLED verdict; the second passed that tolerance. This tiny sample does not estimate vendor reliability, erase the failed attempt, establish a portable public bundle, regenerate upstream benchmark strategies, or constitute independent replication.",
+  "content_hash": "sha256:8007aae7e69a7c08e691a162caec00e9250d7236f0fd1ec9c7a3be1e649aec4b",
+  "counts": {
+    "all_four_gate_values_stable": 2,
+    "attempts_disclosed": 2,
+    "numeric_equivalence_acceptance_passes": 1,
+    "verdicts_killed": 2
+  },
+  "current_receipt_path_was_overwritten_by_second_attempt": true,
+  "first_failed_attempt_disclosed": true,
+  "schema": "canli.alphac-alphavintage-full-decision-attempt-ledger.v1",
+  "source_bindings": {
+    "current_receipt": {
+      "path": "artifacts/publication/alphavintage_full_decision_clean_workspace.json",
+      "sha256": "0245d65d319f52267a269659d4f80d957788f167d12af30f756a41b63a1e4e7d"
+    },
+    "first_attempt_transcript": {
+      "path": "/Users/arhancanli/.codex/sessions/2026/08/22/rollout-2026-08-22T12-21-36-01a0288f-9e88-7ff3-b55c-e7eee2a26de0.jsonl",
+      "records": [
+        {
+          "jsonl_line_number": 48373,
+          "ordinal": 48372,
+          "purpose": "FIRST_EXECUTION_EXIT_AND_RECEIPT_HASH",
+          "record_sha256": "236779444233275ae886a42b88a3915e8e71ed01056ecce7ffcfc5e8b452022e",
+          "timestamp": "2026-08-24T03:19:38.958Z"
+        },
+        {
+          "jsonl_line_number": 48381,
+          "ordinal": 48380,
+          "purpose": "FIRST_EXECUTION_EXACT_SELECTED_RESULT_FIELDS",
+          "record_sha256": "5a9ef38dcbfdc36f12f8102c43046b89f97d5aeb230d2d486ad96d140c1c77fc",
+          "timestamp": "2026-08-24T03:19:46.117Z"
+        }
+      ],
+      "whole_file_sha256_intentionally_omitted": "The active append-only session transcript continues to grow; exact immutable record bytes are bound instead."
+    }
+  },
+  "status": "PASS_BOTH_ATTEMPTS_DISCLOSED_MIXED_NUMERIC_EQUIVALENCE_GATE_STABLE"
+}

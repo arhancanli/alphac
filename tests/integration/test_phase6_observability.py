@@ -229,6 +229,11 @@ _EXPECTED_COUNTER_KEYS = {
     "bars_halted_flat",
     "bars_half_gross",
     "n_auto_rearms",
+    # Added 2026-08-18 with the overlay realized-leg fix. This set is asserted EXACTLY on
+    # purpose: the counters are the operator's confession, and silently gaining or losing one
+    # changes what the run tells you about itself. Adding a key is therefore supposed to fail
+    # here and be acknowledged, which is what happened.
+    "realized_leg_bound",
 }
 
 

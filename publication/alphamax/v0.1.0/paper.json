@@ -1,0 +1,30 @@
+{
+  "abstract": "AlphaMax is ALPHAC's US-equity long/short momentum program. Its canonical signal is 12-minus-1 cross-sectional momentum: rank securities by split-adjusted return from approximately twelve months ago through one month ago, then hold a dollar-neutral long/short portfolio. This paper does not present a single favourable backtest as proof. It reconciles the entire charged family: 115 distinct hypothesis identities recorded from 2026-06-20 through 2026-08-17 across the primary and Sharadar research ledgers. The evidence is deliberately uncomfortable. A frozen 2023–2026 construction reported net Sharpe 0.91 and maximum drawdown 8.68% in the persisted deployed-path artifact. The later, preregistered 2005–2026 replication reported net Sharpe approximately -0.05 and a drawdown exceeding one third, failing its DSR and return gates. Construction studies did not rescue the family: a 4-by-4 weighting and breadth grid failed its family-wise Reality Check, and beta-neutral, volatility-scaling, and short-tail modifications were not adopted. The correct claim is therefore not “momentum is proven.” It is that AlphaMax is a live paper research sleeve with a plausible mechanism, a selected short-window survivor, a failed deep-history replication, and an explicit forward burden of proof.",
+  "authors": [
+    {
+      "affiliation": "Canli Capital / AlphaC Algorithms",
+      "full_name": "Arhan Canli",
+      "roles": [
+        "CONCEPTUALIZATION",
+        "METHODOLOGY",
+        "SOFTWARE",
+        "VALIDATION",
+        "INVESTIGATION",
+        "WRITING",
+        "PROJECT_ADMINISTRATION"
+      ]
+    }
+  ],
+  "capital_kind": "ALPACA_PAPER_AND_RESEARCH_SIMULATION_SEPARATELY_LABELLED",
+  "claim_boundary": "This is an incomplete preparation bundle. It proves no external submission, DOI, peer review, independent replication, funded performance, or future return.",
+  "date": "2026-08-23",
+  "external_identifiers": [],
+  "language": "en",
+  "peer_reviewed": false,
+  "registry_key": "alphamax_equity_momentum",
+  "result_release_complete": true,
+  "schema": "canli.alphac-sleeve-paper.v1",
+  "title": "Equity Momentum Under Complete Trial Accounting: A Selected Survivor and Failed Deep-History Replication",
+  "type": "WORKING_PAPER_PREPRINT_NOT_PEER_REVIEWED",
+  "version": "0.1.0"
+}

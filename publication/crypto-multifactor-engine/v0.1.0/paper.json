@@ -1,0 +1,30 @@
+{
+  "abstract": "AlphaForge ran a historical robustness matrix over crypto perpetual futures from 2021-01-01 through 2026-06-01. Seven charged identities belong to the broad multi-factor engine: a baseline rank allocator; ML, regime, and combined overlays; daily rebalancing; a tighter no-trade band; and mean-variance allocation. An eighth matrix identity explicitly selected carry and residual reversal and is accounted for in the separate `crypto_carry` family. None of the seven engine identities cleared its artifact-era DSR gate. Annualized Sharpe ranged from -0.7901 to +0.0424 and maximum drawdown from 13.59% to 33.93%. The four baseline/overlay arms all produced the same Sharpe 0.0424 and DSR 0.2112. Cross-sectional combinatorially symmetric validation across all eight matrix trials reported PBO 0.8818 against a gate below 0.20 and no deflated winner. The matrix verdict was **NO-DEPLOY**. A capital sweep on the regime-gated engine showed Sharpe 0.4009 at $100,000, 0.0424 at $1 million, and -0.3720 at $10 million under the committed impact model. This is useful capacity-failure evidence, not a promise that the $100,000 result is repeatable. The family has no admitted sleeve and no broker-reconciled forward record.",
+  "authors": [
+    {
+      "affiliation": "Canli Capital / AlphaC Algorithms",
+      "full_name": "Arhan Canli",
+      "roles": [
+        "CONCEPTUALIZATION",
+        "METHODOLOGY",
+        "SOFTWARE",
+        "VALIDATION",
+        "INVESTIGATION",
+        "WRITING",
+        "PROJECT_ADMINISTRATION"
+      ]
+    }
+  ],
+  "capital_kind": "RESEARCH_SIMULATION_ONLY",
+  "claim_boundary": "This is an incomplete preparation bundle. It proves no external submission, DOI, peer review, independent replication, funded performance, or future return.",
+  "date": "2026-08-23",
+  "external_identifiers": [],
+  "language": "en",
+  "peer_reviewed": false,
+  "registry_key": "crypto_multifactor_engine",
+  "result_release_complete": true,
+  "schema": "canli.alphac-sleeve-paper.v1",
+  "title": "Crypto Multi-Factor Engine: Seven Trials, Capacity Decay, and No-Deploy Verdict",
+  "type": "WORKING_PAPER_PREPRINT_NOT_PEER_REVIEWED",
+  "version": "0.1.0"
+}

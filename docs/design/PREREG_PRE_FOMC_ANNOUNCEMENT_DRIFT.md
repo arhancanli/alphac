@@ -34,7 +34,8 @@ a kill; 1994–2015 is not opened as a rescue sample.
   the next executable quote. It is never filled from a bar close or midpoint.
 - Baseline adds 0.5 bp adverse latency/slippage per side beyond observed bid/ask and statutory
   sale fees. Stress scenarios use 1.0, 2.0, and 5.0 bp per side, 1/5/30-second latency, and
-  100%/75%/50% fill ratios. Partial fills retain proportional P&L; rejected orders remain flat.
+  100%/75%/50% fill ratios. Partial fills retain proportional profit and loss; rejected orders
+  remain flat.
 - An exchange halt carries the actual position until the first executable quote. An outage before
   entry means no trade. SPY splits and distributions are applied from point-in-time corporate
   actions; an unresolved action fails the run.

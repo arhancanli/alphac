@@ -34,6 +34,7 @@ dependencies = [
     "databento>=0.80.0",
     "pypdf>=6.16.1",
     "xlrd>=2.0.2",
+    "openpyxl>=3.1.5",
 ]
 
 [project.urls]
@@ -57,6 +58,7 @@ dev = [
     # Direct (was transitive via scikit-learn): used by the reference-hash
     # regression to assert BLAS/OpenMP pools are pinned to a single thread.
     "threadpoolctl>=3.5",
+    "pytest-xdist>=3.8.0",
 ]
 
 [build-system]
@@ -102,7 +104,11 @@ testpaths = ["tests"]
 # floor is set yet: an aspirational threshold would red CI without measuring
 # the true baseline first. Once a baseline is observed, pin a floor at or just
 # below it here, e.g.  # --cov-fail-under=85
-addopts = "-q --strict-markers -m 'not network' --cov=alphaforge --cov-branch"
+# Correctness tests run in parallel; wall-clock performance guards do not. A
+# benchmark measured while 17 sibling workers contend for the same machine is a
+# scheduler benchmark, not an engine benchmark. CI runs the mandatory ``slow``
+# lane separately with ``-n0`` and preserves its original wall/memory budgets.
+addopts = "-q --strict-markers -m 'not network and not slow' --cov=alphaforge --cov-branch -n auto --dist loadfile"
 markers = [
     "network: tests that hit live exchange APIs (deselected in CI)",
     "workspace_evidence: offline integration checks that require git-ignored evidence or sibling site workspaces",

@@ -283,7 +283,12 @@ def test_weekly_job_contains_no_trading_step() -> None:
 
 def test_no_trading_tick_invokes_the_weekly_job() -> None:
     """...and symmetrically, no tick may call this job inline and inherit its runtime."""
-    for script in sorted((REPO / "scripts").glob("*.sh")):
+    scripts = sorted((REPO / "scripts").glob("*.sh"))
+    assert len(scripts) >= 10, (
+        f"only {len(scripts)} shell scripts found — the glob has stopped matching and every "
+        "assertion below it would pass without checking anything"
+    )
+    for script in scripts:
         if script == WEEKLY:
             continue
         assert "corp_actions_weekly" not in script.read_text(), (

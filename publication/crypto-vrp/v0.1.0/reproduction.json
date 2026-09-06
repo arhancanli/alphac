@@ -1,0 +1,41 @@
+{
+  "bundle_integrity_command": "sha256sum -c SHA256SUMS",
+  "clean_environment_reproduction_completed": false,
+  "code_bindings": {
+    "scripts/audit_crypto_vrp_family.py": "0fcf828aecc82518bb7ff7eaa79d9edd42f8c110b79040fcdaf52541bbe7543c",
+    "scripts/exp2_crypto_vrp.py": "12cc277a6c84a136dcd819d9297d4e117c52e4bfdfbba50601e15c279cb101b0"
+  },
+  "environment_bindings": {
+    "pyproject.toml": "ddaf8b60999275f6d3fb93b3073f256d75d1383bfc8bab14263dc58645841006",
+    "uv.lock": "5caca664242722a3a3112663d7a19b7b5000583e30ade3753e1b8ffdecfd6f06"
+  },
+  "expected_result_hashes": {
+    "artifacts/exp2/20260625T094710Z/exp2_metrics.json": "f39839b1e05b33e718563984228ee4dba64e94bdbf10c1b174426c0bd880d3a4",
+    "artifacts/research/crypto_vrp_family.json": "9d77dc80850826988eab1f320a883b843a85f90b2ecf4cd642561b1304c7e05b"
+  },
+  "independent_human_reproduction_completed": false,
+  "internal_audit_replay": {
+    "audit_command_executed": true,
+    "bundle_path": "internal_replay_receipt.json",
+    "content_hash": "sha256:222201e3428e2cc75dd546d9205b15c17af4518038397983b171af2195b57b1d",
+    "sha256": "70ac0c8d8542294e02c396085216646208a786295c747940f0eb0f576010ec95",
+    "sleeve_status": "AUDIT_COMMAND_EXECUTED_ALL_RELEASED_RESULT_HASHES_STABLE"
+  },
+  "isolated_frozen_dependency_replay": {
+    "audit_command_executed": true,
+    "bundle_path": "isolated_replay_receipt.json",
+    "content_hash": "sha256:cf5e340ae7a23fb8dc168b47af77055b981e2e9ef8a1bc467b523fb7e445a2ac",
+    "dependency_environment": "UV_ISOLATED_FROZEN",
+    "portable_clean_workspace_replay_completed": false,
+    "raw_input_portability_established": false,
+    "sha256": "d0df878375d415986fa639487e4ccffc9cad6396dca9bde5f3be4a7fdf50b2ad",
+    "sleeve_status": "ISOLATED_FROZEN_DEPENDENCY_AUDIT_EXECUTED_ALL_RELEASED_RESULT_HASHES_STABLE"
+  },
+  "registry_key": "crypto_vrp",
+  "result_reproduction_commands": [
+    "uv run python scripts/audit_crypto_vrp_family.py"
+  ],
+  "result_reproduction_mapping_complete": true,
+  "schema": "canli.alphac-publication-reproduction.v2",
+  "status": "MAPPED_NOT_CLEAN_ENVIRONMENT_REPLAYED"
+}

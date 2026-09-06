@@ -211,6 +211,20 @@ def walkforward(
         str | None,
         typer.Option("--profile", help="Config profile overlay (configs/<profile>.yaml)."),
     ] = None,
+    trial_reservation: Annotated[
+        Path | None,
+        typer.Option(
+            "--trial-reservation",
+            help="Hash-bound pre-result reservation required for a genuinely new hypothesis.",
+        ),
+    ] = None,
+    baseline_trial_reservation: Annotated[
+        Path | None,
+        typer.Option(
+            "--baseline-trial-reservation",
+            help="Separate reservation if a gated run also creates a new baseline identity.",
+        ),
+    ] = None,
 ) -> None:
     """Run the purged walk-forward and persist stitched equity + per-leg artifacts."""
     # Argument parsing FIRST — bad input must exit before any filesystem touch.
@@ -310,6 +324,8 @@ def walkforward(
                 alpha_names=alpha_names,
                 ml=ml,
                 regime=regime,
+                trial_reservation=trial_reservation,
+                baseline_trial_reservation=baseline_trial_reservation,
             )
         except ValueError as exc:
             typer.echo(f"error: {exc}", err=True)

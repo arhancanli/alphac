@@ -10,12 +10,13 @@ experiment ledger exactly once.
 from __future__ import annotations
 
 import glob
+import hashlib
 import json
 import math
 import sys
 from collections import deque
 from pathlib import Path
-from typing import Final
+from typing import Any, Final
 
 import numpy as np
 import pandas as pd
@@ -27,10 +28,11 @@ for _path in (_SRC, _SCRIPTS):
     if str(_path) not in sys.path:
         sys.path.insert(0, str(_path))
 
-from lib.px_adjust import adjusted_log_returns  # noqa: E402
+from lib.px_adjust import adjusted_log_returns, load_actions  # noqa: E402
 
 from alphaforge.analytics.curve_store import read_curve, write_curve  # noqa: E402
 from alphaforge.validation.dsr import dsr_from_returns  # noqa: E402
+from alphaforge.validation.experiments import hypothesis_hash  # noqa: E402
 from alphaforge.validation.prereg import assert_matches  # noqa: E402
 from alphaforge.validation.probe_ledger import record_probe_trial, selection_context  # noqa: E402
 
@@ -40,6 +42,11 @@ EQUITY_PRICE_ROOT: Final[Path] = Path("data/lake_sharadar/ohlcv_1d")
 SPY_PRICE_ROOT: Final[Path] = Path("data/lake_mf/ohlcv_1d")
 CORPORATE_ACTION_ROOT: Final[Path] = Path("data/lake_sharadar/corporate_actions")
 OUT: Final[Path] = Path("artifacts/probe/insider_purchase_clusters")
+INPUT_MANIFEST: Final[Path] = OUT / "input_data_manifest.json"
+RUNNER: Final[Path] = Path(__file__).resolve()
+PYPROJECT: Final[Path] = Path("pyproject.toml")
+UV_LOCK: Final[Path] = Path("uv.lock")
+ADMISSION_CONTRACT: Final[Path] = Path("config/sleeve_admission_contract.json")
 OOS_START: Final[pd.Timestamp] = pd.Timestamp("2016-01-01")
 CLUSTER_DAYS: Final[int] = 30
 MIN_INSIDERS: Final[int] = 2
@@ -58,6 +65,174 @@ SLEEVE_CURVES: Final[dict[str, str]] = {
     "AlphaTrend": "artifacts/walkforward/managed_futures/equity.parquet",
     "AlphaVintage": "artifacts/probe/cpi_surprise_size/equity.parquet",
 }
+
+
+def file_sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def content_hash(payload: dict[str, Any]) -> str:
+    canonical = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode()
+    return "sha256:" + hashlib.sha256(canonical).hexdigest()
+
+
+def trial_configuration() -> dict[str, object]:
+    return {
+        "mechanism": "clustered_form4_open_market_purchases",
+        "cluster_days": CLUSTER_DAYS,
+        "min_insiders": MIN_INSIDERS,
+        "min_value": MIN_VALUE,
+        "hold_sessions": HOLD_SESSIONS,
+        "filing_delay_sessions": FILING_DELAY_SESSIONS,
+        "hedge": "trailing_252d_spy_beta_clamped_0_3",
+        "positioning": "equal_notional_gross_1",
+        "return_aggregation": "weighted_simple_returns",
+        "costs": {"issuer_oneway": ISSUER_COST, "spy_oneway": SPY_COST},
+        "oos_start": str(OOS_START.date()),
+    }
+
+
+def market_frame_sha256(frame: pd.DataFrame) -> str:
+    """Hash exact loaded market semantics, including timestamps and missingness."""
+    ordered = frame[["open", "close", "volume"]].astype(float)
+    values = ordered.to_numpy(dtype="<f8", copy=True)
+    missing = np.isnan(values)
+    values[missing] = 0.0
+    digest = hashlib.sha256()
+    digest.update(b"open\0close\0volume\n")
+    digest.update(pd.DatetimeIndex(ordered.index).asi8.astype("<i8").tobytes())
+    digest.update(missing.astype(np.uint8).tobytes())
+    digest.update(values.tobytes())
+    return digest.hexdigest()
+
+
+def action_data_manifest(symbols: set[str]) -> dict[str, object]:
+    actions = load_actions(symbols, ca_dir=CORPORATE_ACTION_ROOT, strict=True)
+    if actions.empty:
+        canonical = b"[]"
+        start = end = None
+    else:
+        actions = actions.sort_values(
+            ["symbol", "ex_date", "action_type", "ratio", "cash_amount"],
+            na_position="first",
+        ).reset_index(drop=True)
+        canonical = actions.to_json(
+            orient="records", date_format="iso", date_unit="ns", double_precision=15
+        ).encode()
+        start = str(actions["ex_date"].min().date())
+        end = str(actions["ex_date"].max().date())
+    return {
+        "sha256": hashlib.sha256(canonical).hexdigest(),
+        "rows": len(actions),
+        "start": start,
+        "end": end,
+        "symbols_with_actions": int(actions["symbol"].nunique()) if len(actions) else 0,
+    }
+
+
+def build_input_manifest(
+    event_paths: list[Path],
+    market_sources: dict[str, object],
+    action_sources: dict[str, object],
+) -> dict[str, Any]:
+    payload: dict[str, Any] = {
+        "schema": "canli.insider-cluster-input-manifest.v1",
+        "preregistration_path": str(PREREG),
+        "preregistration_sha256": file_sha256(PREREG),
+        "event_partitions": [
+            {"path": str(path), "bytes": path.stat().st_size, "sha256": file_sha256(path)}
+            for path in event_paths
+        ],
+        "market_data": market_sources,
+        "corporate_actions": action_sources,
+        "diversification_curves": {
+            name: {"path": path, "sha256": file_sha256(Path(path))}
+            for name, path in SLEEVE_CURVES.items()
+        },
+    }
+    payload["content_hash"] = content_hash(payload)
+    return payload
+
+
+def reproduction_environment() -> dict[str, object]:
+    return {
+        "command": "uv run python scripts/probe_insider_clusters.py",
+        "python": sys.version,
+        "numpy": np.__version__,
+        "pandas": pd.__version__,
+        "pyproject_path": str(PYPROJECT),
+        "pyproject_sha256": file_sha256(PYPROJECT),
+        "uv_lock_path": str(UV_LOCK),
+        "uv_lock_sha256": file_sha256(UV_LOCK),
+        "runner_path": str(RUNNER.relative_to(_ROOT)),
+        "runner_sha256": file_sha256(RUNNER),
+    }
+
+
+def admission_review(gates: dict[str, bool]) -> dict[str, object]:
+    contract = json.loads(ADMISSION_CONTRACT.read_text())
+    if contract.get("schema") != "canli.alphac-sleeve-admission-contract.v6":
+        raise RuntimeError("unexpected sleeve admission contract schema")
+    required = int(contract.get("evidence_checks_per_candidate", 0))
+    if required != 85:
+        raise RuntimeError("v6 sleeve admission contract must retain exactly 85 checks")
+    return {
+        "contract_schema": contract["schema"],
+        "contract_path": str(ADMISSION_CONTRACT),
+        "contract_sha256": file_sha256(ADMISSION_CONTRACT),
+        "checks_required_for_technical_eligibility": required,
+        "preregistered_research_checks": len(gates),
+        "preregistered_research_checks_passed": sum(gates.values()),
+        "status": "RESEARCH_SUBSET_FAILED",
+        "technically_eligible": False,
+        "claim_boundary": (
+            "This corrected historical probe failed its preregistered research gates. Binding "
+            "it to v6 does not retroactively change those gates or establish eligibility."
+        ),
+    }
+
+
+def reconcile_ledger_measurement(record: Any, returns: pd.Series) -> dict[str, object]:
+    """Distinguish an exact first-measurement replay from a later OOS extension."""
+    observations = int(returns.notna().sum())
+    sample_sharpe = sharpe(returns)
+    population_sharpe = (
+        sample_sharpe * math.sqrt(observations / (observations - 1))
+        if observations > 1
+        else 0.0
+    )
+    exact = observations == record.n_obs and math.isclose(
+        population_sharpe,
+        record.sharpe_ann,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
+    return {
+        "hypothesis_key": hypothesis_hash(record.config),
+        "config_hash": record.config_hash,
+        "immutable_first_measurement": {
+            "observations": record.n_obs,
+            "annualized_sharpe_population_std": record.sharpe_ann,
+            "recorded_at_unix_ms": record.now_ms,
+        },
+        "current_replay": {
+            "observations": observations,
+            "annualized_sharpe_sample_std": sample_sharpe,
+            "annualized_sharpe_population_std": population_sharpe,
+        },
+        "observation_delta": observations - record.n_obs,
+        "exact_first_measurement_reproduced": exact,
+        "relation": "EXACT_REPRODUCTION" if exact else "OOS_EXTENSION_NOT_EXACT_REPRODUCTION",
+        "packet_completion_eligible": exact,
+        "claim_boundary": (
+            "A later replay on an advanced data lake may audit the unchanged implementation, "
+            "but it cannot substitute for the exact curve behind the immutable first measurement."
+        ),
+    }
 
 
 def load_events() -> pd.DataFrame:
@@ -116,8 +291,8 @@ def load_symbol(symbol: str) -> pd.DataFrame | None:
     for path in paths:
         try:
             pieces.append(pd.read_parquet(path, columns=["ts_open", "open", "close", "volume"]))
-        except Exception:
-            continue
+        except Exception as error:
+            raise RuntimeError(f"unreadable price partition for {symbol}: {path}") from error
     if not pieces:
         return None
     frame = pd.concat(pieces, ignore_index=True).drop_duplicates("ts_open", keep="last")
@@ -128,10 +303,13 @@ def load_symbol(symbol: str) -> pd.DataFrame | None:
     return frame.sort_index()[~frame.sort_index().index.duplicated(keep="last")]
 
 
-def load_panels(symbols: set[str]) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+def load_panels(
+    symbols: set[str],
+) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, dict[str, object]]:
     opens: dict[str, pd.Series] = {}
     closes: dict[str, pd.Series] = {}
     dollar_volume: dict[str, pd.Series] = {}
+    source_symbols: dict[str, dict[str, object]] = {}
     for number, symbol in enumerate(sorted(symbols | {SPY}), start=1):
         frame = load_symbol(symbol)
         if frame is None:
@@ -139,12 +317,24 @@ def load_panels(symbols: set[str]) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataF
         opens[symbol] = frame["open"].astype(float)
         closes[symbol] = frame["close"].astype(float)
         dollar_volume[symbol] = (frame["close"] * frame["volume"]).astype(float)
+        source_symbols[symbol] = {
+            "sha256": market_frame_sha256(frame),
+            "rows": len(frame),
+            "start": str(frame.index.min().date()),
+            "end": str(frame.index.max().date()),
+        }
         if number % 500 == 0:
             print(f"loaded {number:,}/{len(symbols) + 1:,} symbol paths", flush=True)
     return (
         pd.DataFrame(opens).sort_index(),
         pd.DataFrame(closes).sort_index(),
         pd.DataFrame(dollar_volume).sort_index(),
+        {
+            "requested_symbols": len(symbols | {SPY}),
+            "loaded_symbols": len(source_symbols),
+            "missing_symbols": sorted((symbols | {SPY}) - set(source_symbols)),
+            "symbols": source_symbols,
+        },
     )
 
 
@@ -316,7 +506,7 @@ def correlation_report(
     candidate: pd.Series,
 ) -> tuple[dict[str, float], float, float, dict[str, float]]:
     sleeves = {name: read_curve(path) for name, path in SLEEVE_CURVES.items()}
-    joined = pd.concat({"candidate": np.log1p(candidate), **sleeves}, axis=1).dropna()
+    joined = pd.concat({"candidate": np.log1p(candidate), **sleeves}, axis=1, sort=True).dropna()
     ordinary = {name: float(joined["candidate"].corr(joined[name])) for name in sleeves}
     base = joined[list(sleeves)].mean(axis=1)
     stress = joined[base <= base.quantile(0.10)]
@@ -328,7 +518,7 @@ def correlation_report(
 
 def marginal_book_report(candidate: pd.Series) -> dict[str, object]:
     sleeves = {name: read_curve(path) for name, path in SLEEVE_CURVES.items()}
-    joined = pd.concat({"candidate": np.log1p(candidate), **sleeves}, axis=1).dropna()
+    joined = pd.concat({"candidate": np.log1p(candidate), **sleeves}, axis=1, sort=True).dropna()
     simple = np.expm1(joined)
     base = simple[list(sleeves)].mean(axis=1)
     with_candidate = simple[list(sleeves)].sum(axis=1) * 0.225 + simple["candidate"] * 0.10
@@ -371,7 +561,7 @@ def main() -> None:
     clusters = build_cluster_dates(events)
     symbols = set(clusters["ticker"].dropna().astype(str))
     print(f"events {len(events):,}; raw cluster dates {len(clusters):,}; tickers {len(symbols):,}")
-    opens, closes, dollar_volume = load_panels(symbols)
+    opens, closes, dollar_volume, market_sources = load_panels(symbols)
     if SPY not in opens:
         raise SystemExit("SPY price series is required for the pre-registered hedge")
     calendar = opens[SPY].dropna().index
@@ -393,24 +583,16 @@ def main() -> None:
     net = (gross - costs).fillna(0.0).loc[OOS_START:]
 
     OUT.mkdir(parents=True, exist_ok=True)
+    event_paths = sorted(Path(path) for path in glob.glob(EVENT_GLOB))
+    action_sources = action_data_manifest(set(closes) - {SPY})
+    input_manifest = build_input_manifest(event_paths, market_sources, action_sources)
+    INPUT_MANIFEST.write_text(json.dumps(input_manifest, indent=2) + "\n")
     write_curve(net, OUT)
     scheduled.to_parquet(OUT / "events.parquet", index=False)
     weights.loc[:, (weights != 0).any()].to_parquet(OUT / "weights.parquet")
 
-    trial_config = {
-        "mechanism": "clustered_form4_open_market_purchases",
-        "cluster_days": CLUSTER_DAYS,
-        "min_insiders": MIN_INSIDERS,
-        "min_value": MIN_VALUE,
-        "hold_sessions": HOLD_SESSIONS,
-        "filing_delay_sessions": FILING_DELAY_SESSIONS,
-        "hedge": "trailing_252d_spy_beta_clamped_0_3",
-        "positioning": "equal_notional_gross_1",
-        "return_aggregation": "weighted_simple_returns",
-        "costs": {"issuer_oneway": ISSUER_COST, "spy_oneway": SPY_COST},
-        "oos_start": str(OOS_START.date()),
-    }
-    record_probe_trial(
+    trial_config = trial_configuration()
+    ledger_record = record_probe_trial(
         "insider_purchase_clusters",
         trial_config,
         net,
@@ -435,9 +617,10 @@ def main() -> None:
     capacity = capacity_report(scheduled, weights)
     net_2x_costs = (gross - 2.0 * costs).fillna(0.0).loc[OOS_START:]
     result = {
-        "schema": "canli.insider-cluster-probe.v2",
+        "schema": "canli.insider-cluster-probe.v3",
         "preregistration": str(PREREG),
         "hypotheses_spent": 1,
+        "configuration": trial_config,
         "pbo": "not defined for a one-configuration probe; no selection surface exists",
         "implementation_correction": {
             "status": "corrected_before_publication",
@@ -462,6 +645,7 @@ def main() -> None:
             "rejections": rejection,
         },
         "metrics": {
+            "observations": int(net.notna().sum()),
             "net_sharpe": sharpe(net),
             "newey_west_t": nw_t(net),
             "dsr": dsr.dsr,
@@ -504,6 +688,20 @@ def main() -> None:
     }
     result["gates"] = gates
     result["verdict"] = "ADD_TO_SHADOW" if all(gates.values()) else "KILL"
+    result["admission_review"] = admission_review(gates)
+    result["lineage"] = {
+        "preregistration_sha256": file_sha256(PREREG),
+        "input_data_manifest_sha256": file_sha256(INPUT_MANIFEST),
+        "runner_sha256": file_sha256(RUNNER),
+        "admission_contract_sha256": file_sha256(ADMISSION_CONTRACT),
+    }
+    result["ledger_reconciliation"] = reconcile_ledger_measurement(ledger_record, net)
+    result["reproduction"] = reproduction_environment() | {
+        "scope": "current_input_snapshot_replay",
+        "exact_first_measurement_reproduced": result["ledger_reconciliation"][
+            "exact_first_measurement_reproduced"
+        ],
+    }
     (OUT / "result.json").write_text(json.dumps(result, indent=2) + "\n")
     print(json.dumps(result, indent=2))
 

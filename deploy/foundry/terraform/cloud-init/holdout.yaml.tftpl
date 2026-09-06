@@ -1,0 +1,62 @@
+#cloud-config
+package_update: true
+package_upgrade: true
+packages:
+  - ca-certificates
+  - curl
+  - fuse-overlayfs
+  - jq
+  - nftables
+  - podman
+  - slirp4netns
+  - squid
+  - uidmap
+
+users:
+  - default
+  - name: foundryholdout
+    lock_passwd: true
+    create_home: true
+    shell: /usr/sbin/nologin
+  - name: foundryholdoutegress
+    lock_passwd: true
+    create_home: true
+    shell: /usr/sbin/nologin
+
+ssh_pwauth: false
+disable_root: true
+
+write_files:
+  - path: /etc/sysctl.d/90-foundry-rootless.conf
+    owner: root:root
+    permissions: '0644'
+    content: |
+      kernel.unprivileged_userns_clone=1
+  - path: /etc/foundry/DEPLOYMENT_STATUS
+    owner: root:root
+    permissions: '0644'
+    content: |
+      HOLDOUT_HOST_BOOTSTRAPPED_APPLICATION_NOT_DEPLOYED
+  - path: /etc/nftables.conf
+    owner: root:root
+    permissions: '0600'
+    content: |
+${indent(6, nftables_config)}
+  - path: /etc/squid/squid.conf
+    owner: root:root
+    permissions: '0600'
+    content: |
+${indent(6, squid_config)}
+
+runcmd:
+  - [nft, --check, --file, /etc/nftables.conf]
+  - [squid, -k, parse]
+  - [systemctl, enable, --now, nftables]
+  - [systemctl, enable, --now, squid]
+  - [sysctl, --system]
+  - [loginctl, enable-linger, foundryholdout]
+  - [loginctl, enable-linger, foundryholdoutegress]
+  - [install, -d, -m, '0700', -o, foundryholdout, -g, foundryholdout, /var/lib/foundry/holdout]
+  - [install, -d, -m, '0700', -o, foundryholdoutegress, -g, foundryholdoutegress, /var/lib/foundry/holdout-egress]
+
+final_message: "Foundry holdout host bootstrap finished. No holdout object or secret was deployed."

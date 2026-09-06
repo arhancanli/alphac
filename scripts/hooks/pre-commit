@@ -1,0 +1,57 @@
+#!/bin/sh
+# =============================================================================
+# CANLI CAPITAL / pre-commit
+# -----------------------------------------------------------------------------
+# Regenerate the derived artifacts that a source edit invalidates, and stage
+# them with the commit that invalidated them.
+#
+# WHY. The lint-debt contract records a sha256 of every source file it covers,
+# so ANY script edit makes the committed copy stale — and the guard that pins it
+# then fails for a completely benign reason. It was hand-resynced roughly ten
+# times in one day. A test that routinely fails for a benign reason trains its
+# reader to ignore a real one, which is the same defect as a warning that fires
+# on every build.
+#
+# This does NOT weaken the guard. The guard still compares the committed
+# contract against a freshly built one and still fails on a real change: a
+# production lint violation appearing, or the artifact being edited by hand.
+# What the hook removes is the class of failure that carries no information.
+#
+# Install with: scripts/install_hooks.sh
+# =============================================================================
+set -e
+
+REPO=$(git rev-parse --show-toplevel)
+PYTHON="$REPO/.venv/bin/python"
+[ -x "$PYTHON" ] || PYTHON=python3
+
+CONTRACT="artifacts/engineering/lint_debt_contract.json"
+
+# Only when a source file the contract covers is part of this commit. A docs-only commit should
+# not pay for a ruff pass over the repository.
+if git diff --cached --name-only | grep -qE '\.py$|\.sh$|^pyproject\.toml$|^config/.*\.json$'; then
+  before=$( [ -f "$REPO/$CONTRACT" ] && shasum -a 256 "$REPO/$CONTRACT" | cut -d' ' -f1 || echo none )
+  if "$PYTHON" "$REPO/scripts/export_lint_debt_contract.py" >/dev/null 2>&1; then
+    after=$(shasum -a 256 "$REPO/$CONTRACT" | cut -d' ' -f1)
+    if [ "$before" != "$after" ]; then
+      # artifacts/ is gitignored here, so there is nothing to stage — the point is that the file
+      # on disk matches the source being committed, which is what the guard reads.
+      echo "pre-commit: lint-debt contract regenerated for this commit's source changes"
+    fi
+  else
+    echo "pre-commit: WARNING — could not regenerate the lint-debt contract; its guard will fail"
+  fi
+
+  # The system map is generated from the same files: a new script, a renamed pipeline step or a
+  # changed contract all move it. Regenerating here is what stops its currency guard becoming the
+  # kind of failure a reader learns to ignore.
+  MAP="docs/design/SYSTEM_MAP.md"
+  if "$PYTHON" "$REPO/scripts/build_system_map.py" >/dev/null 2>&1; then
+    if ! git -C "$REPO" diff --quiet -- "$MAP" 2>/dev/null; then
+      git -C "$REPO" add "$MAP"
+      echo "pre-commit: system map regenerated and staged"
+    fi
+  else
+    echo "pre-commit: WARNING — could not regenerate the system map; its guard will fail"
+  fi
+fi

@@ -1,0 +1,1104 @@
+{
+  "complete_recorded_union_extracted": true,
+  "distinct_recorded_hypothesis_identities": 11,
+  "every_identity_packet_complete": false,
+  "global_ledger": {
+    "path": "config/trial_accounting.json",
+    "sha256": "f15af7c989aded5da6c5259a7f7e5587377ab33977b5cd3c5b2395a84ea45043"
+  },
+  "identities": [
+    {
+      "candidate_match_is_verified": true,
+      "candidate_public_papers": [
+        "/research/alphamax-equity-momentum-lineage.md",
+        "/research/equity-quality-lineage.md"
+      ],
+      "completion_assessment": {
+        "blockers": [
+          {
+            "code": "IDENTITY_PREREGISTRATION_AND_ORIGINAL_ENVIRONMENT_NOT_BOUND",
+            "evidence": [
+              {
+                "path": "artifacts/research/equity_quality_family.json",
+                "sha256": "340015469ffde06ddab3b45a0d4d1f33ac539299779aa8dfb433aaf5f6a78c6c"
+              },
+              {
+                "path": "var/experiments.jsonl",
+                "sha256": "b5a318c0997d980575f758451f509e0154eecbbb50d734e49a587d473062bd08"
+              }
+            ],
+            "finding": "The canonical family audit binds this identity to its immutable ledger measurement, but does not bind an identity-level preregistration, original code commit, runner hash, lockfile, and input snapshot. Those missing historical fields cannot be reconstructed from the family summary.",
+            "required_section": "preregistration_and_hashes"
+          },
+          {
+            "code": "IDENTITY_LEVEL_DECISION_PACKET_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/research/equity_quality_family.json",
+                "sha256": "340015469ffde06ddab3b45a0d4d1f33ac539299779aa8dfb433aaf5f6a78c6c"
+              }
+            ],
+            "finding": "The family-level admission status is NOT_ESTABLISHED_RESEARCH_ONLY; it is not a preserved identity-level gate decision under the complete packet contract.",
+            "required_section": "admission_or_kill_decision"
+          },
+          {
+            "code": "IMMUTABLE_SUMMARY_LACKS_COMPLETE_IDENTITY_CURVE",
+            "evidence": [
+              {
+                "path": "artifacts/research/equity_quality_family.json",
+                "sha256": "340015469ffde06ddab3b45a0d4d1f33ac539299779aa8dfb433aaf5f6a78c6c"
+              },
+              {
+                "path": "var/experiments.jsonl",
+                "sha256": "b5a318c0997d980575f758451f509e0154eecbbb50d734e49a587d473062bd08"
+              }
+            ],
+            "finding": "The immutable ledger summary preserves the first measurement but not the complete identity-level curve, uncertainty, stress, capacity, and diversification evidence required for packet completion.",
+            "required_section": "result_uncertainty_stress_capacity_and_diversification"
+          },
+          {
+            "code": "IDENTITY_CAPACITY_NOT_MEASURED",
+            "evidence": [
+              {
+                "path": "artifacts/research/equity_quality_family.json",
+                "sha256": "340015469ffde06ddab3b45a0d4d1f33ac539299779aa8dfb433aaf5f6a78c6c"
+              }
+            ],
+            "finding": "The canonical family audit records capacity as UNMEASURED_NO_FAMILY_CAPACITY_SWEEP; no identity-level capacity evidence can be credited.",
+            "required_section": "result_uncertainty_stress_capacity_and_diversification"
+          }
+        ],
+        "config_hash": "3728f0c44c0eb91f",
+        "evidence_grade": "immutable_ledger_summary_only",
+        "family_audit": "artifacts/research/equity_quality_family.json",
+        "status": "AUDITED_NOT_CURRENTLY_COMPLETABLE"
+      },
+      "config_hash": "3728f0c44c0eb91f",
+      "coverage_status": "VERIFIED_INCOMPLETE_IDENTITY_PACKET",
+      "family_paper_binding_status": "VERIFIED_TAXONOMY_BINDING",
+      "first_recorded_at": "2026-06-20T06:56:42.517000+00:00",
+      "hypothesis_key": "62330828c7820481",
+      "identity_packet_content_hash": "sha256:825f2d72a14f389b5f64c1e8286dc356ce818be724e12f7941526da678393286",
+      "identity_packet_status": "INCOMPLETE_BACKFILL_REQUIRED",
+      "label": "eq_operating_margin",
+      "ledger_profile": "var",
+      "ledger_source_path": "var/experiments.jsonl",
+      "measurement": {
+        "annualized_sharpe": 0.7643251407333953,
+        "kurtosis": 4.307467975242712,
+        "observations": 728,
+        "skew": -0.16905943797036324
+      },
+      "missing_sections": [
+        "preregistration_and_hashes",
+        "point_in_time_data_and_survivorship_controls",
+        "execution_and_cost_model",
+        "result_uncertainty_stress_capacity_and_diversification",
+        "admission_or_kill_decision",
+        "code_environment_and_reproduction"
+      ],
+      "research_family_key": "equity_fundamental_quality",
+      "research_family_title": "Equity fundamental quality",
+      "sleeve_context": "AlphaMax research",
+      "verified_family_paper_path": "/research/equity-quality-lineage.md",
+      "verified_packet_path": "/glassbox/trial-packets/62330828c7820481.json",
+      "verified_sections": [
+        "identity_and_authorship",
+        "economic_mechanism_and_falsifiable_hypothesis",
+        "literature_and_overlap_decision",
+        "family_and_union_trial_accounting",
+        "machine_readable_packet_and_stable_public_paper"
+      ]
+    },
+    {
+      "candidate_match_is_verified": true,
+      "candidate_public_papers": [
+        "/research/alphamax-equity-momentum-lineage.md",
+        "/research/equity-quality-lineage.md"
+      ],
+      "completion_assessment": {
+        "blockers": [
+          {
+            "code": "IDENTITY_PREREGISTRATION_AND_ORIGINAL_ENVIRONMENT_NOT_BOUND",
+            "evidence": [
+              {
+                "path": "artifacts/research/equity_quality_family.json",
+                "sha256": "340015469ffde06ddab3b45a0d4d1f33ac539299779aa8dfb433aaf5f6a78c6c"
+              },
+              {
+                "path": "var/experiments.jsonl",
+                "sha256": "b5a318c0997d980575f758451f509e0154eecbbb50d734e49a587d473062bd08"
+              }
+            ],
+            "finding": "The canonical family audit binds this identity to its immutable ledger measurement, but does not bind an identity-level preregistration, original code commit, runner hash, lockfile, and input snapshot. Those missing historical fields cannot be reconstructed from the family summary.",
+            "required_section": "preregistration_and_hashes"
+          },
+          {
+            "code": "IDENTITY_LEVEL_DECISION_PACKET_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/research/equity_quality_family.json",
+                "sha256": "340015469ffde06ddab3b45a0d4d1f33ac539299779aa8dfb433aaf5f6a78c6c"
+              }
+            ],
+            "finding": "The family-level admission status is NOT_ESTABLISHED_RESEARCH_ONLY; it is not a preserved identity-level gate decision under the complete packet contract.",
+            "required_section": "admission_or_kill_decision"
+          },
+          {
+            "code": "IMMUTABLE_SUMMARY_LACKS_COMPLETE_IDENTITY_CURVE",
+            "evidence": [
+              {
+                "path": "artifacts/research/equity_quality_family.json",
+                "sha256": "340015469ffde06ddab3b45a0d4d1f33ac539299779aa8dfb433aaf5f6a78c6c"
+              },
+              {
+                "path": "var/experiments.jsonl",
+                "sha256": "b5a318c0997d980575f758451f509e0154eecbbb50d734e49a587d473062bd08"
+              }
+            ],
+            "finding": "The immutable ledger summary preserves the first measurement but not the complete identity-level curve, uncertainty, stress, capacity, and diversification evidence required for packet completion.",
+            "required_section": "result_uncertainty_stress_capacity_and_diversification"
+          },
+          {
+            "code": "IDENTITY_CAPACITY_NOT_MEASURED",
+            "evidence": [
+              {
+                "path": "artifacts/research/equity_quality_family.json",
+                "sha256": "340015469ffde06ddab3b45a0d4d1f33ac539299779aa8dfb433aaf5f6a78c6c"
+              }
+            ],
+            "finding": "The canonical family audit records capacity as UNMEASURED_NO_FAMILY_CAPACITY_SWEEP; no identity-level capacity evidence can be credited.",
+            "required_section": "result_uncertainty_stress_capacity_and_diversification"
+          }
+        ],
+        "config_hash": "3ac6925b5539e432",
+        "evidence_grade": "immutable_ledger_summary_only",
+        "family_audit": "artifacts/research/equity_quality_family.json",
+        "status": "AUDITED_NOT_CURRENTLY_COMPLETABLE"
+      },
+      "config_hash": "3ac6925b5539e432",
+      "coverage_status": "VERIFIED_INCOMPLETE_IDENTITY_PACKET",
+      "family_paper_binding_status": "VERIFIED_TAXONOMY_BINDING",
+      "first_recorded_at": "2026-06-20T06:59:01.465000+00:00",
+      "hypothesis_key": "eaf0ec15d78128b1",
+      "identity_packet_content_hash": "sha256:6f92de4ca829fe89be052582a79cf2ba2622e6669f99d5fd0a5a3e999c253a7d",
+      "identity_packet_status": "INCOMPLETE_BACKFILL_REQUIRED",
+      "label": "eq_operating_margin",
+      "ledger_profile": "var",
+      "ledger_source_path": "var/experiments.jsonl",
+      "measurement": {
+        "annualized_sharpe": 0.12287099610801668,
+        "kurtosis": 15.99092876739609,
+        "observations": 728,
+        "skew": -1.5762323066101855
+      },
+      "missing_sections": [
+        "preregistration_and_hashes",
+        "point_in_time_data_and_survivorship_controls",
+        "execution_and_cost_model",
+        "result_uncertainty_stress_capacity_and_diversification",
+        "admission_or_kill_decision",
+        "code_environment_and_reproduction"
+      ],
+      "research_family_key": "equity_fundamental_quality",
+      "research_family_title": "Equity fundamental quality",
+      "sleeve_context": "AlphaMax research",
+      "verified_family_paper_path": "/research/equity-quality-lineage.md",
+      "verified_packet_path": "/glassbox/trial-packets/eaf0ec15d78128b1.json",
+      "verified_sections": [
+        "identity_and_authorship",
+        "economic_mechanism_and_falsifiable_hypothesis",
+        "literature_and_overlap_decision",
+        "family_and_union_trial_accounting",
+        "machine_readable_packet_and_stable_public_paper"
+      ]
+    },
+    {
+      "candidate_match_is_verified": true,
+      "candidate_public_papers": [
+        "/research/equity-quality-lineage.md"
+      ],
+      "completion_assessment": {
+        "blockers": [
+          {
+            "code": "IDENTITY_PREREGISTRATION_AND_ORIGINAL_ENVIRONMENT_NOT_BOUND",
+            "evidence": [
+              {
+                "path": "artifacts/research/equity_quality_family.json",
+                "sha256": "340015469ffde06ddab3b45a0d4d1f33ac539299779aa8dfb433aaf5f6a78c6c"
+              },
+              {
+                "path": "var/experiments.jsonl",
+                "sha256": "b5a318c0997d980575f758451f509e0154eecbbb50d734e49a587d473062bd08"
+              }
+            ],
+            "finding": "The canonical family audit binds this identity to its immutable ledger measurement, but does not bind an identity-level preregistration, original code commit, runner hash, lockfile, and input snapshot. Those missing historical fields cannot be reconstructed from the family summary.",
+            "required_section": "preregistration_and_hashes"
+          },
+          {
+            "code": "IDENTITY_LEVEL_DECISION_PACKET_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/research/equity_quality_family.json",
+                "sha256": "340015469ffde06ddab3b45a0d4d1f33ac539299779aa8dfb433aaf5f6a78c6c"
+              }
+            ],
+            "finding": "The family-level admission status is NOT_ESTABLISHED_RESEARCH_ONLY; it is not a preserved identity-level gate decision under the complete packet contract.",
+            "required_section": "admission_or_kill_decision"
+          },
+          {
+            "code": "IMMUTABLE_SUMMARY_LACKS_COMPLETE_IDENTITY_CURVE",
+            "evidence": [
+              {
+                "path": "artifacts/research/equity_quality_family.json",
+                "sha256": "340015469ffde06ddab3b45a0d4d1f33ac539299779aa8dfb433aaf5f6a78c6c"
+              },
+              {
+                "path": "var/experiments.jsonl",
+                "sha256": "b5a318c0997d980575f758451f509e0154eecbbb50d734e49a587d473062bd08"
+              }
+            ],
+            "finding": "The immutable ledger summary preserves the first measurement but not the complete identity-level curve, uncertainty, stress, capacity, and diversification evidence required for packet completion.",
+            "required_section": "result_uncertainty_stress_capacity_and_diversification"
+          },
+          {
+            "code": "IDENTITY_CAPACITY_NOT_MEASURED",
+            "evidence": [
+              {
+                "path": "artifacts/research/equity_quality_family.json",
+                "sha256": "340015469ffde06ddab3b45a0d4d1f33ac539299779aa8dfb433aaf5f6a78c6c"
+              }
+            ],
+            "finding": "The canonical family audit records capacity as UNMEASURED_NO_FAMILY_CAPACITY_SWEEP; no identity-level capacity evidence can be credited.",
+            "required_section": "result_uncertainty_stress_capacity_and_diversification"
+          }
+        ],
+        "config_hash": "6646dd02763b76cd",
+        "evidence_grade": "immutable_ledger_summary_only",
+        "family_audit": "artifacts/research/equity_quality_family.json",
+        "status": "AUDITED_NOT_CURRENTLY_COMPLETABLE"
+      },
+      "config_hash": "6646dd02763b76cd",
+      "coverage_status": "VERIFIED_INCOMPLETE_IDENTITY_PACKET",
+      "family_paper_binding_status": "VERIFIED_TAXONOMY_BINDING",
+      "first_recorded_at": "2026-06-20T16:47:40.632000+00:00",
+      "hypothesis_key": "6fd59c804837ff70",
+      "identity_packet_content_hash": "sha256:55cdb0091f42f8b4530771f50ba581e24add12d6f869285af498c088a0420847",
+      "identity_packet_status": "INCOMPLETE_BACKFILL_REQUIRED",
+      "label": "eq_gross_profitability",
+      "ledger_profile": "var",
+      "ledger_source_path": "var/experiments.jsonl",
+      "measurement": {
+        "annualized_sharpe": -0.8213505064305828,
+        "kurtosis": 5.117489044163149,
+        "observations": 980,
+        "skew": -0.07405014137329309
+      },
+      "missing_sections": [
+        "preregistration_and_hashes",
+        "point_in_time_data_and_survivorship_controls",
+        "execution_and_cost_model",
+        "result_uncertainty_stress_capacity_and_diversification",
+        "admission_or_kill_decision",
+        "code_environment_and_reproduction"
+      ],
+      "research_family_key": "equity_fundamental_quality",
+      "research_family_title": "Equity fundamental quality",
+      "sleeve_context": "AlphaMax research",
+      "verified_family_paper_path": "/research/equity-quality-lineage.md",
+      "verified_packet_path": "/glassbox/trial-packets/6fd59c804837ff70.json",
+      "verified_sections": [
+        "identity_and_authorship",
+        "economic_mechanism_and_falsifiable_hypothesis",
+        "literature_and_overlap_decision",
+        "family_and_union_trial_accounting",
+        "machine_readable_packet_and_stable_public_paper"
+      ]
+    },
+    {
+      "candidate_match_is_verified": true,
+      "candidate_public_papers": [
+        "/research/equity-quality-lineage.md"
+      ],
+      "completion_assessment": {
+        "blockers": [
+          {
+            "code": "CURRENT_ENGINE_REJECTS_LEGACY_CROSS_ASSET_UNIVERSE",
+            "evidence": [
+              {
+                "alpha_names": [
+                  "eq_quality_composite"
+                ],
+                "instrument_ids": 6880,
+                "ledger_config_hash": "3ac56002be0d45c5",
+                "ledger_n_obs": 5384,
+                "ledger_sharpe_ann": -0.8316487495972936,
+                "non_equity_ids": 60,
+                "path": "artifacts/walkforward/prereg_quality/walkforward.json",
+                "sha256": "a31832362844d7d3b14ab2e547a950843c1158ad4e5f4fa8c3a62833781699ab"
+              },
+              {
+                "path": "src/alphaforge/analytics/walkforward.py",
+                "sha256": "cd40981da0e9875e47bf8debd9eaf02deed1e45fc355d33572f2332f61e4cbab"
+              }
+            ],
+            "finding": "The frozen prereg_quality artifact contains 60 Binance perpetuals in an equity universe. Current code explicitly drops those ids under the 2026-07-18 shared-lake membership fix, so exact replay would require reintroducing a known universe-membership error.",
+            "required_section": "code_environment_and_reproduction"
+          }
+        ],
+        "config_hash": "3ac56002be0d45c5",
+        "status": "AUDITED_NOT_CURRENTLY_COMPLETABLE"
+      },
+      "config_hash": "3ac56002be0d45c5",
+      "coverage_status": "VERIFIED_INCOMPLETE_IDENTITY_PACKET",
+      "family_paper_binding_status": "VERIFIED_TAXONOMY_BINDING",
+      "first_recorded_at": "2026-06-21T06:36:32.305000+00:00",
+      "hypothesis_key": "97dec5f23e5fcf27",
+      "identity_packet_content_hash": "sha256:f7cd9855953bb2afcd1547d272b516c480fc04294e19ea1691ab92aafa39da59",
+      "identity_packet_status": "INCOMPLETE_BACKFILL_REQUIRED",
+      "label": "eq_quality_composite",
+      "ledger_profile": "var",
+      "ledger_source_path": "var/experiments.jsonl",
+      "measurement": {
+        "annualized_sharpe": -0.8316487495972936,
+        "kurtosis": 521.6898833322874,
+        "observations": 5384,
+        "skew": -14.027053710644177
+      },
+      "missing_sections": [
+        "preregistration_and_hashes",
+        "point_in_time_data_and_survivorship_controls",
+        "execution_and_cost_model",
+        "result_uncertainty_stress_capacity_and_diversification",
+        "admission_or_kill_decision",
+        "code_environment_and_reproduction"
+      ],
+      "research_family_key": "equity_fundamental_quality",
+      "research_family_title": "Equity fundamental quality",
+      "sleeve_context": "AlphaMax research",
+      "verified_family_paper_path": "/research/equity-quality-lineage.md",
+      "verified_packet_path": "/glassbox/trial-packets/97dec5f23e5fcf27.json",
+      "verified_sections": [
+        "identity_and_authorship",
+        "economic_mechanism_and_falsifiable_hypothesis",
+        "literature_and_overlap_decision",
+        "family_and_union_trial_accounting",
+        "machine_readable_packet_and_stable_public_paper"
+      ]
+    },
+    {
+      "candidate_match_is_verified": true,
+      "candidate_public_papers": [
+        "/research/equity-quality-lineage.md"
+      ],
+      "completion_assessment": {
+        "blockers": [
+          {
+            "code": "IDENTITY_PREREGISTRATION_AND_ORIGINAL_ENVIRONMENT_NOT_BOUND",
+            "evidence": [
+              {
+                "path": "artifacts/research/equity_quality_family.json",
+                "sha256": "340015469ffde06ddab3b45a0d4d1f33ac539299779aa8dfb433aaf5f6a78c6c"
+              },
+              {
+                "path": "var/experiments.jsonl",
+                "sha256": "b5a318c0997d980575f758451f509e0154eecbbb50d734e49a587d473062bd08"
+              }
+            ],
+            "finding": "The canonical family audit binds this identity to its immutable ledger measurement, but does not bind an identity-level preregistration, original code commit, runner hash, lockfile, and input snapshot. Those missing historical fields cannot be reconstructed from the family summary.",
+            "required_section": "preregistration_and_hashes"
+          },
+          {
+            "code": "IDENTITY_LEVEL_DECISION_PACKET_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/research/equity_quality_family.json",
+                "sha256": "340015469ffde06ddab3b45a0d4d1f33ac539299779aa8dfb433aaf5f6a78c6c"
+              }
+            ],
+            "finding": "The family-level admission status is NOT_ESTABLISHED_RESEARCH_ONLY; it is not a preserved identity-level gate decision under the complete packet contract.",
+            "required_section": "admission_or_kill_decision"
+          },
+          {
+            "code": "IMMUTABLE_SUMMARY_LACKS_COMPLETE_IDENTITY_CURVE",
+            "evidence": [
+              {
+                "path": "artifacts/research/equity_quality_family.json",
+                "sha256": "340015469ffde06ddab3b45a0d4d1f33ac539299779aa8dfb433aaf5f6a78c6c"
+              },
+              {
+                "path": "var/experiments.jsonl",
+                "sha256": "b5a318c0997d980575f758451f509e0154eecbbb50d734e49a587d473062bd08"
+              }
+            ],
+            "finding": "The immutable ledger summary preserves the first measurement but not the complete identity-level curve, uncertainty, stress, capacity, and diversification evidence required for packet completion.",
+            "required_section": "result_uncertainty_stress_capacity_and_diversification"
+          },
+          {
+            "code": "IDENTITY_CAPACITY_NOT_MEASURED",
+            "evidence": [
+              {
+                "path": "artifacts/research/equity_quality_family.json",
+                "sha256": "340015469ffde06ddab3b45a0d4d1f33ac539299779aa8dfb433aaf5f6a78c6c"
+              }
+            ],
+            "finding": "The canonical family audit records capacity as UNMEASURED_NO_FAMILY_CAPACITY_SWEEP; no identity-level capacity evidence can be credited.",
+            "required_section": "result_uncertainty_stress_capacity_and_diversification"
+          }
+        ],
+        "config_hash": "35cb4d8e42044060",
+        "evidence_grade": "immutable_ledger_summary_only",
+        "family_audit": "artifacts/research/equity_quality_family.json",
+        "status": "AUDITED_NOT_CURRENTLY_COMPLETABLE"
+      },
+      "config_hash": "35cb4d8e42044060",
+      "coverage_status": "VERIFIED_INCOMPLETE_IDENTITY_PACKET",
+      "family_paper_binding_status": "VERIFIED_TAXONOMY_BINDING",
+      "first_recorded_at": "2026-06-22T05:43:07.244000+00:00",
+      "hypothesis_key": "2c54b1c8e6ab55b0",
+      "identity_packet_content_hash": "sha256:341cbabcc3071ed2a09a4d44075abe435c4208bc93e17e41d99b7bec9c492189",
+      "identity_packet_status": "INCOMPLETE_BACKFILL_REQUIRED",
+      "label": "eq_quality_composite",
+      "ledger_profile": "var",
+      "ledger_source_path": "var/experiments.jsonl",
+      "measurement": {
+        "annualized_sharpe": -0.5925614483801909,
+        "kurtosis": 969.4616095482781,
+        "observations": 5285,
+        "skew": -24.48926257243091
+      },
+      "missing_sections": [
+        "preregistration_and_hashes",
+        "point_in_time_data_and_survivorship_controls",
+        "execution_and_cost_model",
+        "result_uncertainty_stress_capacity_and_diversification",
+        "admission_or_kill_decision",
+        "code_environment_and_reproduction"
+      ],
+      "research_family_key": "equity_fundamental_quality",
+      "research_family_title": "Equity fundamental quality",
+      "sleeve_context": "AlphaMax research",
+      "verified_family_paper_path": "/research/equity-quality-lineage.md",
+      "verified_packet_path": "/glassbox/trial-packets/2c54b1c8e6ab55b0.json",
+      "verified_sections": [
+        "identity_and_authorship",
+        "economic_mechanism_and_falsifiable_hypothesis",
+        "literature_and_overlap_decision",
+        "family_and_union_trial_accounting",
+        "machine_readable_packet_and_stable_public_paper"
+      ]
+    },
+    {
+      "candidate_match_is_verified": true,
+      "candidate_public_papers": [
+        "/research/equity-quality-lineage.md"
+      ],
+      "completion_assessment": {
+        "blockers": [
+          {
+            "code": "IDENTITY_PREREGISTRATION_AND_ORIGINAL_ENVIRONMENT_NOT_BOUND",
+            "evidence": [
+              {
+                "path": "artifacts/research/equity_quality_family.json",
+                "sha256": "340015469ffde06ddab3b45a0d4d1f33ac539299779aa8dfb433aaf5f6a78c6c"
+              },
+              {
+                "path": "var_sharadar/experiments.jsonl",
+                "sha256": "69db2f32ea0aa16b47f7315139760312bb65ac03e480060deb91a1320bc18ae2"
+              }
+            ],
+            "finding": "The canonical family audit binds this identity to its immutable ledger measurement, but does not bind an identity-level preregistration, original code commit, runner hash, lockfile, and input snapshot. Those missing historical fields cannot be reconstructed from the family summary.",
+            "required_section": "preregistration_and_hashes"
+          },
+          {
+            "code": "IDENTITY_LEVEL_DECISION_PACKET_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/research/equity_quality_family.json",
+                "sha256": "340015469ffde06ddab3b45a0d4d1f33ac539299779aa8dfb433aaf5f6a78c6c"
+              }
+            ],
+            "finding": "The family-level admission status is NOT_ESTABLISHED_RESEARCH_ONLY; it is not a preserved identity-level gate decision under the complete packet contract.",
+            "required_section": "admission_or_kill_decision"
+          },
+          {
+            "code": "IMMUTABLE_SUMMARY_LACKS_COMPLETE_IDENTITY_CURVE",
+            "evidence": [
+              {
+                "path": "artifacts/research/equity_quality_family.json",
+                "sha256": "340015469ffde06ddab3b45a0d4d1f33ac539299779aa8dfb433aaf5f6a78c6c"
+              },
+              {
+                "path": "var_sharadar/experiments.jsonl",
+                "sha256": "69db2f32ea0aa16b47f7315139760312bb65ac03e480060deb91a1320bc18ae2"
+              }
+            ],
+            "finding": "The immutable ledger summary preserves the first measurement but not the complete identity-level curve, uncertainty, stress, capacity, and diversification evidence required for packet completion.",
+            "required_section": "result_uncertainty_stress_capacity_and_diversification"
+          },
+          {
+            "code": "IDENTITY_CAPACITY_NOT_MEASURED",
+            "evidence": [
+              {
+                "path": "artifacts/research/equity_quality_family.json",
+                "sha256": "340015469ffde06ddab3b45a0d4d1f33ac539299779aa8dfb433aaf5f6a78c6c"
+              }
+            ],
+            "finding": "The canonical family audit records capacity as UNMEASURED_NO_FAMILY_CAPACITY_SWEEP; no identity-level capacity evidence can be credited.",
+            "required_section": "result_uncertainty_stress_capacity_and_diversification"
+          }
+        ],
+        "config_hash": "048774bc51f2d094",
+        "evidence_grade": "immutable_ledger_summary_only",
+        "family_audit": "artifacts/research/equity_quality_family.json",
+        "status": "AUDITED_NOT_CURRENTLY_COMPLETABLE"
+      },
+      "config_hash": "048774bc51f2d094",
+      "coverage_status": "VERIFIED_INCOMPLETE_IDENTITY_PACKET",
+      "family_paper_binding_status": "VERIFIED_TAXONOMY_BINDING",
+      "first_recorded_at": "2026-06-25T21:10:18.870000+00:00",
+      "hypothesis_key": "8dcb3a18bd569762",
+      "identity_packet_content_hash": "sha256:8cd2ab57263748c563e7473c35c8ab4f69d587416a086f506703f5087b09b5ad",
+      "identity_packet_status": "INCOMPLETE_BACKFILL_REQUIRED",
+      "label": "eq_quality_composite",
+      "ledger_profile": "var_sharadar",
+      "ledger_source_path": "var_sharadar/experiments.jsonl",
+      "measurement": {
+        "annualized_sharpe": -0.7705523517741937,
+        "kurtosis": 257.971723931502,
+        "observations": 3873,
+        "skew": -8.673303579520233
+      },
+      "missing_sections": [
+        "preregistration_and_hashes",
+        "point_in_time_data_and_survivorship_controls",
+        "execution_and_cost_model",
+        "result_uncertainty_stress_capacity_and_diversification",
+        "admission_or_kill_decision",
+        "code_environment_and_reproduction"
+      ],
+      "research_family_key": "equity_fundamental_quality",
+      "research_family_title": "Equity fundamental quality",
+      "sleeve_context": "AlphaMax research",
+      "verified_family_paper_path": "/research/equity-quality-lineage.md",
+      "verified_packet_path": "/glassbox/trial-packets/8dcb3a18bd569762.json",
+      "verified_sections": [
+        "identity_and_authorship",
+        "economic_mechanism_and_falsifiable_hypothesis",
+        "literature_and_overlap_decision",
+        "family_and_union_trial_accounting",
+        "machine_readable_packet_and_stable_public_paper"
+      ]
+    },
+    {
+      "candidate_match_is_verified": true,
+      "candidate_public_papers": [
+        "/research/equity-quality-lineage.md"
+      ],
+      "completion_assessment": {
+        "blockers": [
+          {
+            "code": "IDENTITY_PREREGISTRATION_AND_ORIGINAL_ENVIRONMENT_NOT_BOUND",
+            "evidence": [
+              {
+                "path": "artifacts/research/equity_quality_family.json",
+                "sha256": "340015469ffde06ddab3b45a0d4d1f33ac539299779aa8dfb433aaf5f6a78c6c"
+              },
+              {
+                "path": "var_sharadar/experiments.jsonl",
+                "sha256": "69db2f32ea0aa16b47f7315139760312bb65ac03e480060deb91a1320bc18ae2"
+              }
+            ],
+            "finding": "The canonical family audit binds this identity to its immutable ledger measurement, but does not bind an identity-level preregistration, original code commit, runner hash, lockfile, and input snapshot. Those missing historical fields cannot be reconstructed from the family summary.",
+            "required_section": "preregistration_and_hashes"
+          },
+          {
+            "code": "IDENTITY_LEVEL_DECISION_PACKET_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/research/equity_quality_family.json",
+                "sha256": "340015469ffde06ddab3b45a0d4d1f33ac539299779aa8dfb433aaf5f6a78c6c"
+              }
+            ],
+            "finding": "The family-level admission status is NOT_ESTABLISHED_RESEARCH_ONLY; it is not a preserved identity-level gate decision under the complete packet contract.",
+            "required_section": "admission_or_kill_decision"
+          },
+          {
+            "code": "IMMUTABLE_SUMMARY_LACKS_COMPLETE_IDENTITY_CURVE",
+            "evidence": [
+              {
+                "path": "artifacts/research/equity_quality_family.json",
+                "sha256": "340015469ffde06ddab3b45a0d4d1f33ac539299779aa8dfb433aaf5f6a78c6c"
+              },
+              {
+                "path": "var_sharadar/experiments.jsonl",
+                "sha256": "69db2f32ea0aa16b47f7315139760312bb65ac03e480060deb91a1320bc18ae2"
+              }
+            ],
+            "finding": "The immutable ledger summary preserves the first measurement but not the complete identity-level curve, uncertainty, stress, capacity, and diversification evidence required for packet completion.",
+            "required_section": "result_uncertainty_stress_capacity_and_diversification"
+          },
+          {
+            "code": "IDENTITY_CAPACITY_NOT_MEASURED",
+            "evidence": [
+              {
+                "path": "artifacts/research/equity_quality_family.json",
+                "sha256": "340015469ffde06ddab3b45a0d4d1f33ac539299779aa8dfb433aaf5f6a78c6c"
+              }
+            ],
+            "finding": "The canonical family audit records capacity as UNMEASURED_NO_FAMILY_CAPACITY_SWEEP; no identity-level capacity evidence can be credited.",
+            "required_section": "result_uncertainty_stress_capacity_and_diversification"
+          }
+        ],
+        "config_hash": "2beefb08ad4a00ec",
+        "evidence_grade": "immutable_ledger_summary_only",
+        "family_audit": "artifacts/research/equity_quality_family.json",
+        "status": "AUDITED_NOT_CURRENTLY_COMPLETABLE"
+      },
+      "config_hash": "2beefb08ad4a00ec",
+      "coverage_status": "VERIFIED_INCOMPLETE_IDENTITY_PACKET",
+      "family_paper_binding_status": "VERIFIED_TAXONOMY_BINDING",
+      "first_recorded_at": "2026-06-25T21:42:35.445000+00:00",
+      "hypothesis_key": "4a4da0a907579767",
+      "identity_packet_content_hash": "sha256:50b4dfb91b5e3bbf3f8fafd6f7872abc45e6a3786a640e49fd229ac2a11223c6",
+      "identity_packet_status": "INCOMPLETE_BACKFILL_REQUIRED",
+      "label": "eq_gross_profitability",
+      "ledger_profile": "var_sharadar",
+      "ledger_source_path": "var_sharadar/experiments.jsonl",
+      "measurement": {
+        "annualized_sharpe": -0.6564097565045365,
+        "kurtosis": 216.5834332307634,
+        "observations": 3873,
+        "skew": -8.060578479396245
+      },
+      "missing_sections": [
+        "preregistration_and_hashes",
+        "point_in_time_data_and_survivorship_controls",
+        "execution_and_cost_model",
+        "result_uncertainty_stress_capacity_and_diversification",
+        "admission_or_kill_decision",
+        "code_environment_and_reproduction"
+      ],
+      "research_family_key": "equity_fundamental_quality",
+      "research_family_title": "Equity fundamental quality",
+      "sleeve_context": "AlphaMax research",
+      "verified_family_paper_path": "/research/equity-quality-lineage.md",
+      "verified_packet_path": "/glassbox/trial-packets/4a4da0a907579767.json",
+      "verified_sections": [
+        "identity_and_authorship",
+        "economic_mechanism_and_falsifiable_hypothesis",
+        "literature_and_overlap_decision",
+        "family_and_union_trial_accounting",
+        "machine_readable_packet_and_stable_public_paper"
+      ]
+    },
+    {
+      "candidate_match_is_verified": true,
+      "candidate_public_papers": [
+        "/research/equity-quality-lineage.md"
+      ],
+      "completion_assessment": {
+        "blockers": [
+          {
+            "code": "IDENTITY_PREREGISTRATION_AND_ORIGINAL_ENVIRONMENT_NOT_BOUND",
+            "evidence": [
+              {
+                "path": "artifacts/research/equity_quality_family.json",
+                "sha256": "340015469ffde06ddab3b45a0d4d1f33ac539299779aa8dfb433aaf5f6a78c6c"
+              },
+              {
+                "path": "var_sharadar/experiments.jsonl",
+                "sha256": "69db2f32ea0aa16b47f7315139760312bb65ac03e480060deb91a1320bc18ae2"
+              }
+            ],
+            "finding": "The canonical family audit binds this identity to its immutable ledger measurement, but does not bind an identity-level preregistration, original code commit, runner hash, lockfile, and input snapshot. Those missing historical fields cannot be reconstructed from the family summary.",
+            "required_section": "preregistration_and_hashes"
+          },
+          {
+            "code": "IDENTITY_LEVEL_DECISION_PACKET_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/research/equity_quality_family.json",
+                "sha256": "340015469ffde06ddab3b45a0d4d1f33ac539299779aa8dfb433aaf5f6a78c6c"
+              }
+            ],
+            "finding": "The family-level admission status is NOT_ESTABLISHED_RESEARCH_ONLY; it is not a preserved identity-level gate decision under the complete packet contract.",
+            "required_section": "admission_or_kill_decision"
+          },
+          {
+            "code": "IMMUTABLE_SUMMARY_LACKS_COMPLETE_IDENTITY_CURVE",
+            "evidence": [
+              {
+                "path": "artifacts/research/equity_quality_family.json",
+                "sha256": "340015469ffde06ddab3b45a0d4d1f33ac539299779aa8dfb433aaf5f6a78c6c"
+              },
+              {
+                "path": "var_sharadar/experiments.jsonl",
+                "sha256": "69db2f32ea0aa16b47f7315139760312bb65ac03e480060deb91a1320bc18ae2"
+              }
+            ],
+            "finding": "The immutable ledger summary preserves the first measurement but not the complete identity-level curve, uncertainty, stress, capacity, and diversification evidence required for packet completion.",
+            "required_section": "result_uncertainty_stress_capacity_and_diversification"
+          },
+          {
+            "code": "IDENTITY_CAPACITY_NOT_MEASURED",
+            "evidence": [
+              {
+                "path": "artifacts/research/equity_quality_family.json",
+                "sha256": "340015469ffde06ddab3b45a0d4d1f33ac539299779aa8dfb433aaf5f6a78c6c"
+              }
+            ],
+            "finding": "The canonical family audit records capacity as UNMEASURED_NO_FAMILY_CAPACITY_SWEEP; no identity-level capacity evidence can be credited.",
+            "required_section": "result_uncertainty_stress_capacity_and_diversification"
+          }
+        ],
+        "config_hash": "f7f3402a023dc055",
+        "evidence_grade": "immutable_ledger_summary_only",
+        "family_audit": "artifacts/research/equity_quality_family.json",
+        "status": "AUDITED_NOT_CURRENTLY_COMPLETABLE"
+      },
+      "config_hash": "f7f3402a023dc055",
+      "coverage_status": "VERIFIED_INCOMPLETE_IDENTITY_PACKET",
+      "family_paper_binding_status": "VERIFIED_TAXONOMY_BINDING",
+      "first_recorded_at": "2026-06-25T22:46:52.170000+00:00",
+      "hypothesis_key": "4a76eafa9d283198",
+      "identity_packet_content_hash": "sha256:eddc66d03de95d6afb017fe88c9cc73fcce9c491301df0edd3049fbd9c8cf261",
+      "identity_packet_status": "INCOMPLETE_BACKFILL_REQUIRED",
+      "label": "eq_roe",
+      "ledger_profile": "var_sharadar",
+      "ledger_source_path": "var_sharadar/experiments.jsonl",
+      "measurement": {
+        "annualized_sharpe": -0.7288900532303486,
+        "kurtosis": 285.7600124681065,
+        "observations": 3873,
+        "skew": -9.747199914028904
+      },
+      "missing_sections": [
+        "preregistration_and_hashes",
+        "point_in_time_data_and_survivorship_controls",
+        "execution_and_cost_model",
+        "result_uncertainty_stress_capacity_and_diversification",
+        "admission_or_kill_decision",
+        "code_environment_and_reproduction"
+      ],
+      "research_family_key": "equity_fundamental_quality",
+      "research_family_title": "Equity fundamental quality",
+      "sleeve_context": "AlphaMax research",
+      "verified_family_paper_path": "/research/equity-quality-lineage.md",
+      "verified_packet_path": "/glassbox/trial-packets/4a76eafa9d283198.json",
+      "verified_sections": [
+        "identity_and_authorship",
+        "economic_mechanism_and_falsifiable_hypothesis",
+        "literature_and_overlap_decision",
+        "family_and_union_trial_accounting",
+        "machine_readable_packet_and_stable_public_paper"
+      ]
+    },
+    {
+      "candidate_match_is_verified": true,
+      "candidate_public_papers": [
+        "/research/equity-quality-lineage.md"
+      ],
+      "completion_assessment": {
+        "blockers": [
+          {
+            "code": "IDENTITY_PREREGISTRATION_AND_ORIGINAL_ENVIRONMENT_NOT_BOUND",
+            "evidence": [
+              {
+                "path": "artifacts/research/equity_quality_family.json",
+                "sha256": "340015469ffde06ddab3b45a0d4d1f33ac539299779aa8dfb433aaf5f6a78c6c"
+              },
+              {
+                "path": "var_sharadar/experiments.jsonl",
+                "sha256": "69db2f32ea0aa16b47f7315139760312bb65ac03e480060deb91a1320bc18ae2"
+              }
+            ],
+            "finding": "The canonical family audit binds this identity to its immutable ledger measurement, but does not bind an identity-level preregistration, original code commit, runner hash, lockfile, and input snapshot. Those missing historical fields cannot be reconstructed from the family summary.",
+            "required_section": "preregistration_and_hashes"
+          },
+          {
+            "code": "IDENTITY_LEVEL_DECISION_PACKET_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/research/equity_quality_family.json",
+                "sha256": "340015469ffde06ddab3b45a0d4d1f33ac539299779aa8dfb433aaf5f6a78c6c"
+              }
+            ],
+            "finding": "The family-level admission status is NOT_ESTABLISHED_RESEARCH_ONLY; it is not a preserved identity-level gate decision under the complete packet contract.",
+            "required_section": "admission_or_kill_decision"
+          },
+          {
+            "code": "IMMUTABLE_SUMMARY_LACKS_COMPLETE_IDENTITY_CURVE",
+            "evidence": [
+              {
+                "path": "artifacts/research/equity_quality_family.json",
+                "sha256": "340015469ffde06ddab3b45a0d4d1f33ac539299779aa8dfb433aaf5f6a78c6c"
+              },
+              {
+                "path": "var_sharadar/experiments.jsonl",
+                "sha256": "69db2f32ea0aa16b47f7315139760312bb65ac03e480060deb91a1320bc18ae2"
+              }
+            ],
+            "finding": "The immutable ledger summary preserves the first measurement but not the complete identity-level curve, uncertainty, stress, capacity, and diversification evidence required for packet completion.",
+            "required_section": "result_uncertainty_stress_capacity_and_diversification"
+          },
+          {
+            "code": "IDENTITY_CAPACITY_NOT_MEASURED",
+            "evidence": [
+              {
+                "path": "artifacts/research/equity_quality_family.json",
+                "sha256": "340015469ffde06ddab3b45a0d4d1f33ac539299779aa8dfb433aaf5f6a78c6c"
+              }
+            ],
+            "finding": "The canonical family audit records capacity as UNMEASURED_NO_FAMILY_CAPACITY_SWEEP; no identity-level capacity evidence can be credited.",
+            "required_section": "result_uncertainty_stress_capacity_and_diversification"
+          }
+        ],
+        "config_hash": "204f56ea597f36d3",
+        "evidence_grade": "immutable_ledger_summary_only",
+        "family_audit": "artifacts/research/equity_quality_family.json",
+        "status": "AUDITED_NOT_CURRENTLY_COMPLETABLE"
+      },
+      "config_hash": "204f56ea597f36d3",
+      "coverage_status": "VERIFIED_INCOMPLETE_IDENTITY_PACKET",
+      "family_paper_binding_status": "VERIFIED_TAXONOMY_BINDING",
+      "first_recorded_at": "2026-06-26T16:58:10.245000+00:00",
+      "hypothesis_key": "13e52a1a345bcfbd",
+      "identity_packet_content_hash": "sha256:bc9b1c89ea3707e16ae06afbddfe9b8e4e9874b7aac8157b158c3cd823184678",
+      "identity_packet_status": "INCOMPLETE_BACKFILL_REQUIRED",
+      "label": "eq_qual_gpe",
+      "ledger_profile": "var_sharadar",
+      "ledger_source_path": "var_sharadar/experiments.jsonl",
+      "measurement": {
+        "annualized_sharpe": -0.585598022483844,
+        "kurtosis": 166.77046635072688,
+        "observations": 3256,
+        "skew": -6.977715294809307
+      },
+      "missing_sections": [
+        "preregistration_and_hashes",
+        "point_in_time_data_and_survivorship_controls",
+        "execution_and_cost_model",
+        "result_uncertainty_stress_capacity_and_diversification",
+        "admission_or_kill_decision",
+        "code_environment_and_reproduction"
+      ],
+      "research_family_key": "equity_fundamental_quality",
+      "research_family_title": "Equity fundamental quality",
+      "sleeve_context": "AlphaMax research",
+      "verified_family_paper_path": "/research/equity-quality-lineage.md",
+      "verified_packet_path": "/glassbox/trial-packets/13e52a1a345bcfbd.json",
+      "verified_sections": [
+        "identity_and_authorship",
+        "economic_mechanism_and_falsifiable_hypothesis",
+        "literature_and_overlap_decision",
+        "family_and_union_trial_accounting",
+        "machine_readable_packet_and_stable_public_paper"
+      ]
+    },
+    {
+      "candidate_match_is_verified": true,
+      "candidate_public_papers": [
+        "/research/equity-quality-lineage.md"
+      ],
+      "completion_assessment": {
+        "blockers": [
+          {
+            "code": "EXACT_CURRENT_ENGINE_REPLAY_FAILED_DATA_QUALITY",
+            "evidence": [
+              {
+                "instrument_ids": 6820,
+                "ledger_n_obs": 5384,
+                "ledger_sharpe_ann": -0.2634896853104074,
+                "non_equity_ids": 0,
+                "path": "artifacts/walkforward/single_gross_profitability/walkforward.json",
+                "sha256": "c9df75bea8d36f37f95120fd043dc737f4786504be88a153a58fc8b8fa14a429"
+              },
+              {
+                "commit": "eefb04a10bc8e98981506667289aa66b206ec133",
+                "committed_at": "2026-08-04T16:21:49+00:00",
+                "measured_at": "2026-08-04T20:42:02.767000+00:00"
+              },
+              {
+                "path": "artifacts/probe/fundamental_single_replays/1d2924f28fe31a9a/curve_evidence.json",
+                "public_path": "/glassbox/fundamental_single_gross_profitability_curve_evidence.json",
+                "sha256": "4f2c92006f20a6d5e3d2f3c3d2db5f8438f5ecd61ed140c600ca0cca915d7839"
+              },
+              {
+                "path": "artifacts/probe/fundamental_single_replays/1d2924f28fe31a9a/diversification.json",
+                "public_path": "/glassbox/fundamental_single_gross_profitability_diversification.json",
+                "sha256": "306c27a152d5766dd1d184015127fe35dbec5182b537842a764250ec905b166f"
+              },
+              {
+                "path": "artifacts/probe/fundamental_single_replays/1d2924f28fe31a9a/input_data_manifest.json",
+                "public_path": "/glassbox/fundamental_single_gross_profitability_input_data_manifest.json",
+                "sha256": "1e03a7a05d72fa3ab64c87572e4cbc0bf11f36e3fc319250bf974219ba2a813b"
+              },
+              {
+                "path": "artifacts/probe/fundamental_single_replays/1d2924f28fe31a9a/market_evidence.json",
+                "public_path": "/glassbox/fundamental_single_gross_profitability_market_evidence.json",
+                "sha256": "79d000f6a45a3a17cb5e692d652f58cb5ab2a453e27cff7ef024bdf7779315ae"
+              },
+              {
+                "path": "artifacts/probe/fundamental_single_replays/1d2924f28fe31a9a/replay_environment.json",
+                "public_path": "/glassbox/fundamental_single_gross_profitability_replay_environment.json",
+                "sha256": "551296ff6cfcb86da8e8fe18afbc3051303be6f7e6f040c6991dddf9ff2b2ed5"
+              },
+              {
+                "path": "artifacts/probe/fundamental_single_replays/1d2924f28fe31a9a/replay_failure.json",
+                "public_path": "/glassbox/fundamental_single_gross_profitability_replay_failure.json",
+                "sha256": "73fe648acffd9bdca07ac7aaa493d29bfd9ff3a37e46d25fce693eefa5f55f7f"
+              }
+            ],
+            "finding": "The input snapshot, curve uncertainty, canonical diversification, execution stress, capacity, and source environment are complete. The exact replay failed closed on the sole non-positive dividend row in the current Sharadar corporate-action lake; no result or equity curve was produced.",
+            "required_section": "code_environment_and_reproduction"
+          }
+        ],
+        "config_hash": "f1022dd8a765480d",
+        "status": "AUDITED_EXACT_REPLAY_FAILED_DATA_QUALITY"
+      },
+      "config_hash": "f1022dd8a765480d",
+      "coverage_status": "VERIFIED_INCOMPLETE_IDENTITY_PACKET",
+      "family_paper_binding_status": "VERIFIED_TAXONOMY_BINDING",
+      "first_recorded_at": "2026-08-04T20:42:02.767000+00:00",
+      "hypothesis_key": "1d2924f28fe31a9a",
+      "identity_packet_content_hash": "sha256:285dc39132890f927305bcc1ba28a71f3d61cb1e5bbae631213adbb956ac8dd7",
+      "identity_packet_status": "INCOMPLETE_BACKFILL_REQUIRED",
+      "label": "eq_gross_profitability",
+      "ledger_profile": "var",
+      "ledger_source_path": "var/experiments.jsonl",
+      "measurement": {
+        "annualized_sharpe": -0.2634896853104074,
+        "kurtosis": 629.6644403874781,
+        "observations": 5384,
+        "skew": -15.05864468972888
+      },
+      "missing_sections": [
+        "preregistration_and_hashes",
+        "point_in_time_data_and_survivorship_controls",
+        "execution_and_cost_model",
+        "result_uncertainty_stress_capacity_and_diversification",
+        "admission_or_kill_decision",
+        "code_environment_and_reproduction"
+      ],
+      "research_family_key": "equity_fundamental_quality",
+      "research_family_title": "Equity fundamental quality",
+      "sleeve_context": "AlphaMax research",
+      "verified_family_paper_path": "/research/equity-quality-lineage.md",
+      "verified_packet_path": "/glassbox/trial-packets/1d2924f28fe31a9a.json",
+      "verified_sections": [
+        "identity_and_authorship",
+        "economic_mechanism_and_falsifiable_hypothesis",
+        "literature_and_overlap_decision",
+        "family_and_union_trial_accounting",
+        "machine_readable_packet_and_stable_public_paper"
+      ]
+    },
+    {
+      "candidate_match_is_verified": true,
+      "candidate_public_papers": [
+        "/research/alphamax-equity-momentum-lineage.md",
+        "/research/equity-quality-lineage.md"
+      ],
+      "completion_assessment": {
+        "blockers": [
+          {
+            "code": "CORRECTED_REPLAY_EXECUTION_STRESS_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/audit/operating_margin_corrected_reproduction.json",
+                "public_path": "/glassbox/operating_margin_corrected_reproduction.json",
+                "sha256": "ba428993f028dacd7278d086cc5f48355ff2d0eed555bfd89e96be6b7f175a17"
+              },
+              {
+                "path": "artifacts/probe/fundamental_single_replays/e5f48adc25065ce9/corrected_corporate_actions_f812e1576bf430ee/result.json",
+                "sha256": "ec8d2959a1eb91d96162c35ab762dd36636da91157fcd238fedaf10bd840dc0b"
+              },
+              {
+                "path": "artifacts/probe/fundamental_single_replays/e5f48adc25065ce9/corrected_corporate_actions_f812e1576bf430ee/replay_environment.json",
+                "sha256": "dc007cb1c3b121222da021a60f532cab3b9fc754d8eab15fe67990e926283963"
+              },
+              {
+                "path": "artifacts/probe/fundamental_single_replays/e5f48adc25065ce9/corrected_corporate_actions_f812e1576bf430ee/equity.parquet",
+                "sha256": "9897daecdf992a999f794bf43e8b9a671be489c3a68517503dcc9edf7f2b69e4"
+              }
+            ],
+            "finding": "The corrected replay records fees and turnover, but no fill-level corrected execution receipt or 2x-cost stress was preserved. The section remains incomplete.",
+            "required_section": "execution_and_cost_model"
+          },
+          {
+            "code": "CORRECTED_REPLAY_RISK_AND_DIVERSIFICATION_PACKET_PENDING",
+            "evidence": [
+              {
+                "path": "artifacts/audit/operating_margin_corrected_reproduction.json",
+                "public_path": "/glassbox/operating_margin_corrected_reproduction.json",
+                "sha256": "ba428993f028dacd7278d086cc5f48355ff2d0eed555bfd89e96be6b7f175a17"
+              },
+              {
+                "path": "artifacts/probe/fundamental_single_replays/e5f48adc25065ce9/corrected_corporate_actions_f812e1576bf430ee/result.json",
+                "sha256": "ec8d2959a1eb91d96162c35ab762dd36636da91157fcd238fedaf10bd840dc0b"
+              },
+              {
+                "path": "artifacts/probe/fundamental_single_replays/e5f48adc25065ce9/corrected_corporate_actions_f812e1576bf430ee/replay_environment.json",
+                "sha256": "dc007cb1c3b121222da021a60f532cab3b9fc754d8eab15fe67990e926283963"
+              },
+              {
+                "path": "artifacts/probe/fundamental_single_replays/e5f48adc25065ce9/corrected_corporate_actions_f812e1576bf430ee/equity.parquet",
+                "sha256": "9897daecdf992a999f794bf43e8b9a671be489c3a68517503dcc9edf7f2b69e4"
+              }
+            ],
+            "finding": "The corrected equity curve and negative KILL result are sealed, but corrected DSR/PSR, block-bootstrap diversification, and fail-closed capacity evidence are not preserved.",
+            "required_section": "result_uncertainty_stress_capacity_and_diversification"
+          }
+        ],
+        "config_hash": "fb1c1bb857e08760",
+        "status": "AUDITED_CORRECTED_REPRODUCTION_KILL_PRESERVED"
+      },
+      "config_hash": "fb1c1bb857e08760",
+      "coverage_status": "VERIFIED_INCOMPLETE_IDENTITY_PACKET",
+      "family_paper_binding_status": "VERIFIED_TAXONOMY_BINDING",
+      "first_recorded_at": "2026-08-05T09:08:20.067000+00:00",
+      "hypothesis_key": "e5f48adc25065ce9",
+      "identity_packet_content_hash": "sha256:94f05e1523ba25f669d662bd9fb4a60087b6270c95a143d97a5eeb8768ed1fe4",
+      "identity_packet_status": "INCOMPLETE_BACKFILL_REQUIRED",
+      "label": "eq_operating_margin",
+      "ledger_profile": "var",
+      "ledger_source_path": "var/experiments.jsonl",
+      "measurement": {
+        "annualized_sharpe": -0.4173809362582861,
+        "kurtosis": 187.40323766398092,
+        "observations": 5384,
+        "skew": -5.916378193284215
+      },
+      "missing_sections": [
+        "execution_and_cost_model",
+        "result_uncertainty_stress_capacity_and_diversification"
+      ],
+      "research_family_key": "equity_fundamental_quality",
+      "research_family_title": "Equity fundamental quality",
+      "sleeve_context": "AlphaMax research",
+      "verified_family_paper_path": "/research/equity-quality-lineage.md",
+      "verified_packet_path": "/glassbox/trial-packets/e5f48adc25065ce9.json",
+      "verified_sections": [
+        "identity_and_authorship",
+        "economic_mechanism_and_falsifiable_hypothesis",
+        "literature_and_overlap_decision",
+        "family_and_union_trial_accounting",
+        "machine_readable_packet_and_stable_public_paper",
+        "preregistration_and_hashes",
+        "point_in_time_data_and_survivorship_controls",
+        "admission_or_kill_decision",
+        "code_environment_and_reproduction"
+      ]
+    }
+  ],
+  "registry_key": "equity_quality",
+  "research_family_key": "equity_fundamental_quality",
+  "schema": "canli.alphac-publication-trial-accounting-binding.v2",
+  "status": "COMPLETE_RECORDED_UNION_EXTRACTED_IDENTITY_PACKETS_MAY_BE_INCOMPLETE",
+  "trial_packet_manifest": {
+    "content_hash": "sha256:38758b89a1a5fa845487a640b1deab046fffcf61ede5ad3afb6371798b208371",
+    "path": "artifacts/research/trial_packet_manifest.json",
+    "sha256": "0147dd8e631ca24257e2db384bf01d4637a79371f1754b284f3f7e9637c1369c"
+  }
+}

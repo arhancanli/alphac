@@ -1,0 +1,30 @@
+{
+  "abstract": "ALPHAC recorded 13 equity value/investment identities: book-to-price, earnings yield, sales-to-price, accruals, asset growth, net issuance, investment-to-revenue, a value composite, and 52-week-high context. Eleven have finite immutable Sharpe measurements ranging from -0.9676 to +0.8276; nine of those 11 are negative. Accruals and one net-issuance run are non-finite. Asset growth flips from -0.6858 over 2018–2021 to +0.8276 over 2000–2026, while both book-to-price runs are negative. This is specification and data-instability evidence, not a validated return family.",
+  "authors": [
+    {
+      "affiliation": "Canli Capital / AlphaC Algorithms",
+      "full_name": "Arhan Canli",
+      "roles": [
+        "CONCEPTUALIZATION",
+        "METHODOLOGY",
+        "SOFTWARE",
+        "VALIDATION",
+        "INVESTIGATION",
+        "WRITING",
+        "PROJECT_ADMINISTRATION"
+      ]
+    }
+  ],
+  "capital_kind": "RESEARCH_SIMULATION_ONLY",
+  "claim_boundary": "This is an incomplete preparation bundle. It proves no external submission, DOI, peer review, independent replication, funded performance, or future return.",
+  "date": "2026-08-23",
+  "external_identifiers": [],
+  "language": "en",
+  "peer_reviewed": false,
+  "registry_key": "equity_value_investment",
+  "result_release_complete": true,
+  "schema": "canli.alphac-sleeve-paper.v1",
+  "title": "Equity Value, Issuance, and Investment: Thirteen Identities and Unstable Evidence",
+  "type": "WORKING_PAPER_PREPRINT_NOT_PEER_REVIEWED",
+  "version": "0.1.0"
+}

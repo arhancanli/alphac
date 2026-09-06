@@ -50,6 +50,20 @@ TREASURY_REVISION_RESULT = (
     / "treasury_auction_concession"
     / "calendar_revision_audit.json"
 )
+TREASURY_STATE_MACHINE_RESULT = (
+    Path(__file__).resolve().parents[2]
+    / "artifacts"
+    / "feasibility"
+    / "treasury_auction_concession"
+    / "schedule_state_machine_audit.json"
+)
+MERGER_ANNOUNCEMENT_DESIGN_RESULT = (
+    Path(__file__).resolve().parents[2]
+    / "artifacts"
+    / "feasibility"
+    / "merger_arbitrage"
+    / "announcement_confirmatory_design.json"
+)
 PRE_FOMC_RESULT = (
     Path(__file__).resolve().parents[2]
     / "artifacts"
@@ -346,6 +360,34 @@ def test_retired_candidates_are_not_relisted_as_fresh_research() -> None:
     assert all(candidate["verdict"] == "KILLED" for candidate in data["retired_candidates"])
 
 
+def test_merger_v2_is_a_disjoint_unopened_identity_redesign() -> None:
+    program = json.loads(PROGRAM.read_text())
+    result = json.loads(MERGER_ANNOUNCEMENT_DESIGN_RESULT.read_text())
+    candidate = next(
+        item for item in program["candidates"] if item["id"] == "merger_arbitrage"
+    )
+    redesign = candidate["announcement_identity_v2"]
+
+    assert candidate["status"] == "identity-redesign-required"
+    assert redesign["technical_decision"] == result["technical_decision"]
+    assert redesign["governance_decision"] == result["governance_decision"]
+    assert redesign["exploration_period"] == result["exploration_period"]
+    assert redesign["confirmation_period"] == result["confirmation_period"]
+    assert redesign["confirmation_target_rows"] == result["selection"]["target_rows"] == 400
+    assert redesign["rows_per_stratum"] == result["selection"]["rows_per_stratum"] == 200
+    assert redesign["strata"] == result["strata"]["values"] == ["DEFM14A", "SC 14D9"]
+    assert redesign["technical_authorship_approved"] is False
+    assert redesign["confirmation_corpus_opened"] is False
+    assert redesign["return_data_opened"] is False
+    assert redesign["return_hypotheses_spent"] == 0
+    review = json.loads(
+        (Path(__file__).resolve().parents[2] / redesign["author_review_packet"]).read_text()
+    )
+    assert redesign["author_review_packet_content_hash"] == review["content_hash"]
+    assert review["author_approval_claimed"] is False
+    assert redesign["content_hash"] == result["content_hash"]
+
+
 @pytest.mark.workspace_evidence
 def test_treasury_feasibility_matches_the_sealed_result() -> None:
     program = json.loads(PROGRAM.read_text())
@@ -385,6 +427,32 @@ def test_treasury_feasibility_matches_the_sealed_result() -> None:
     )
     assert revision["unresolved_auction_dates"] == revision_result["unresolved_auction_dates"]
     assert revision["return_hypotheses_spent"] == 0
+
+    state_result = json.loads(TREASURY_STATE_MACHINE_RESULT.read_text())
+    state_machine = candidate["schedule_state_machine"]
+    assert (
+        state_machine["technical_decision"]
+        == state_result["technical_decision"]
+        == "PASS_NO_RETURN_STATE_MACHINE_AUDIT"
+    )
+    assert (
+        state_machine["governance_decision"]
+        == state_result["governance_decision"]
+        == "AUTHOR_APPROVAL_REQUIRED"
+    )
+    assert state_machine["eligible_events"] == state_result["summary"]["eligible_events"]
+    assert state_machine["events_with_pre_leg"] == state_result["summary"]["events_with_pre_leg"]
+    assert state_machine["events_post_only"] == state_result["summary"]["events_post_only"]
+    assert state_machine["author_technical_approval"] is False
+    assert state_machine["return_preregistration_authorized"] is False
+    assert state_machine["return_data_opened"] is False
+    assert state_machine["return_hypotheses_spent"] == 0
+    review = json.loads(
+        (Path(__file__).resolve().parents[2] / state_machine["author_review_packet"]).read_text()
+    )
+    assert state_machine["author_review_packet_content_hash"] == review["content_hash"]
+    assert review["author_approval_claimed"] is False
+    assert state_machine["content_hash"] == state_result["content_hash"]
 
 
 @pytest.mark.workspace_evidence
@@ -489,9 +557,11 @@ def test_admission_gates_preserve_statistical_honesty() -> None:
     assert gates["point_in_time_data"] is True
     assert gates["net_of_costs"] is True
     assert gates["walk_forward_only"] is True
-    assert gates["deflated_sharpe_min"] >= 0.95
+    assert gates["deflated_sharpe_must_be_measured"] is True
+    assert gates["book_deflated_sharpe_must_be_measured"] is True
     assert gates["pbo_max"] <= 0.20
-    assert gates["average_pairwise_correlation_max"] <= 0.15
+    assert gates["candidate_average_correlation_to_existing_book_max"] <= 0.0
+    assert gates["book_average_pairwise_correlation_delta_max_exclusive"] == 0.0
     assert gates["stressed_pairwise_correlation_max"] <= 0.50
 
 
@@ -505,7 +575,7 @@ def test_retired_insider_metrics_match_the_preserved_result() -> None:
         if candidate["id"] == "insider_purchase_clusters"
     )
 
-    assert result["schema"] == "canli.insider-cluster-probe.v2"
+    assert result["schema"] == "canli.insider-cluster-probe.v3"
     assert result["verdict"] == "KILL"
     assert retired["net_sharpe"] == result["metrics"]["net_sharpe"]
     assert retired["dsr"] == result["metrics"]["dsr"]
