@@ -73,7 +73,8 @@ CRYPTO_DB = os.path.join(AF, "var", "trading_crypto_perp.sqlite")  # the ONLY li
 # failure ("forward evidence maturity source drift"), which is what C7b did every night from
 # 03:10. So: wait (bounded) for the lock before starting, and schedule the start so the
 # worst case (wait + budget) ends before the next :25. The arithmetic is pinned by
-# tests/unit/test_health_schedule_clears_the_tick.py against deploy/com.accapital.health.plist.template.
+# tests/unit/test_health_schedule_clears_the_tick.py against
+# deploy/com.accapital.health.plist.template.
 TICK_LOCK = os.path.join(AF, "var", "locks", "live_tick.lock")
 TICK_MINUTE = 25             # com.accapital.livetick fires at :25 every hour
 TICK_LOCK_MAX_WAIT_S = 300   # a tick is ~5 min; still held 5 min later = something else is wrong
@@ -275,10 +276,23 @@ def check_validation_api():
     """C10: the keyed validation API answers and can reach its store. Also the daily keep-alive
     that stops the free-tier Supabase project from pausing after a week idle."""
     status, body = _http_json(f"{LANDING}/api/v1/validate/status")
-    reachable = bool(isinstance(body, dict) and (body.get("data") or {}).get("store_reachable"))
+    data = (body.get("data") or {}) if isinstance(body, dict) else {}
+    reachable = bool(data.get("store_reachable"))
     st = "PASS" if status == 200 and reachable else "FAIL"
+    # Usage is aggregate-only (usage_summary RPC, 2026-09-06) and is how the owner measures
+    # whether anyone arrives at the key product. Carry it into the observation so the nightly
+    # mail shows it; name its absence rather than printing zeros that would read as "nobody came".
+    usage = data.get("usage")
+    if isinstance(usage, dict):
+        usage_text = ", ".join(
+            f"{k}={usage.get(k)}"
+            for k in ("validations_today", "validations_total", "keys_issued_today")
+        )
+    else:
+        usage_text = "usage unavailable"
     add("C10-validation-api", "sites", "validation API status + store reachable", st, "high",
-        observed=f"http {status}, store_reachable={reachable}", expected="200 and true")
+        observed=f"http {status}, store_reachable={reachable}, {usage_text}",
+        expected="200 and true")
 
 
 def add(id, group, title, status, severity, observed="", expected="", evidence=""):
