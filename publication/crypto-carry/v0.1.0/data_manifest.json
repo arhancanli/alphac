@@ -1,0 +1,76 @@
+{
+  "license_review_complete": false,
+  "registry_key": "alphaforge_crypto_carry",
+  "released_data_objects": [],
+  "released_result_objects": [
+    {
+      "bundle_path": "evidence/selected_walkforward.json",
+      "byte_identical_to_source": true,
+      "role": "selected weekly carry walk-forward",
+      "sha256": "a72c11172a730536336a079d26394cd926f88df06ce36cb3b5483159a99464ee",
+      "source_path": "artifacts/walkforward/crypto_carry_wk/walkforward.json"
+    },
+    {
+      "bundle_path": "evidence/grand_matrix.json",
+      "byte_identical_to_source": true,
+      "role": "complete multi-factor matrix and PBO context",
+      "sha256": "786c580d478f7912aa61886e8b1271faa706fe723ff35423ef1c27d7018ba32c",
+      "source_path": "artifacts/grand_backtest/20260616T143620Z/matrix.json"
+    },
+    {
+      "bundle_path": "evidence/tail_stress_2022.json",
+      "byte_identical_to_source": true,
+      "role": "persisted 2022 tail diagnosis",
+      "sha256": "c4e2abced387e8b8c1934d3e70817bf551d28168d4c771575024cb494118a1ad",
+      "source_path": "artifacts/research/crypto_carry_2022_tail.json"
+    },
+    {
+      "bundle_path": "evidence/current_state_replay.json",
+      "byte_identical_to_source": true,
+      "role": "materially divergent current-code/current-derived-input replay",
+      "sha256": "0bcaddbbd75e3ae818303a3e577d7c8c8654f9e51358b70edf9c040d49b5ab50",
+      "source_path": "artifacts/probe/crypto_carry_frozen_current_code_replay/walkforward.json"
+    },
+    {
+      "bundle_path": "evidence/current_state_replay_receipt.json",
+      "byte_identical_to_source": true,
+      "role": "truthful non-exact replay receipt and input-freeze audit",
+      "sha256": "bad33660d9f783779cb2ad38017839e2c35ad2c83cf31ae620b30663741f0dd1",
+      "source_path": "artifacts/probe/crypto_carry_frozen_current_code_replay/replay_receipt.json"
+    },
+    {
+      "bundle_path": "evidence/first_rebalance_attribution.json",
+      "byte_identical_to_source": true,
+      "role": "exact first-decision universe-drift attribution",
+      "sha256": "3beefed135322c4617ca5e547eea20423a90b2fb07e02b60a53b6dbacb3616b4",
+      "source_path": "artifacts/probe/crypto_carry_replay_drift/first_rebalance_attribution.json"
+    },
+    {
+      "bundle_path": "evidence/full_path_attribution.json",
+      "byte_identical_to_source": true,
+      "role": "complete surviving-ledger comparison and causal-identifiability boundary",
+      "sha256": "f85ced2598b88241f1b8458ecc16cddc2c850c1dd815affa167dac94627d540a",
+      "source_path": "artifacts/probe/crypto_carry_replay_drift/full_path_attribution.json"
+    },
+    {
+      "bundle_path": "evidence/prospective_input_snapshot_protocol.json",
+      "byte_identical_to_source": true,
+      "role": "prospective immutable private input-snapshot enforcement receipt",
+      "sha256": "44bf99842fb6097755b8c28e95e4431e80433b12a84c717b889957d49bada007",
+      "source_path": "artifacts/audit/walkforward_input_snapshot_protocol.json"
+    },
+    {
+      "bundle_path": "evidence/open_replay_correction.json",
+      "byte_identical_to_source": true,
+      "role": "material correction and external-submission blocker",
+      "sha256": "3ec388e9b09b9e3d37af3116830fef2ff51dd648ceb098ce83ece0e1764b25fc",
+      "source_path": "artifacts/publication/crypto_carry_replay_correction.json"
+    }
+  ],
+  "schema": "canli.alphac-publication-data-manifest.v1",
+  "source_paper": {
+    "path": "docs/research/CRYPTO_CARRY_LINEAGE.md",
+    "sha256": "10cef060051ebd54c9e79c292295370aa7b2c2ef9232292e07f7f992fa69679b"
+  },
+  "status": "RESULT_OBJECTS_RELEASED_RAW_INPUT_INVENTORY_INCOMPLETE"
+}

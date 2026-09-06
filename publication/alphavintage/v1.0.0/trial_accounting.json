@@ -1,0 +1,14 @@
+{
+  "global_ledger": {
+    "path": "config/trial_accounting.json",
+    "sha256": "f15af7c989aded5da6c5259a7f7e5587377ab33977b5cd3c5b2395a84ea45043"
+  },
+  "registry_key": "alphavintage_macro_surprise",
+  "schema": "canli.alphac-publication-trial-accounting-binding.v1",
+  "sleeve_complete_union_extracted": true,
+  "sleeve_family_result": {
+    "path": "artifacts/research/macro_economic_trend_family.json",
+    "sha256": "db6cb64852e242ce696bc090c11ceec6ad10561e7c8529b2348e418f5572300c"
+  },
+  "status": "BOUND_TO_RELEASED_FAMILY_RESULT"
+}

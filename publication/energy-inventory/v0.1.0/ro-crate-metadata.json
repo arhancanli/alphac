@@ -1,0 +1,216 @@
+{
+  "@context": "https://w3id.org/ro/crate/1.1/context",
+  "@graph": [
+    {
+      "@id": "ro-crate-metadata.json",
+      "@type": "CreativeWork",
+      "about": {
+        "@id": "./"
+      },
+      "conformsTo": {
+        "@id": "https://w3id.org/ro/crate/1.1"
+      }
+    },
+    {
+      "@id": "./",
+      "@type": "Dataset",
+      "author": {
+        "@id": "#arhan-canli"
+      },
+      "datePublished": "2026-08-23",
+      "hasPart": [
+        {
+          "@id": "CITATION.cff"
+        },
+        {
+          "@id": "CORRECTIONS.md"
+        },
+        {
+          "@id": "LICENSE"
+        },
+        {
+          "@id": "README.md"
+        },
+        {
+          "@id": "archival_visual_inspection_receipt.json"
+        },
+        {
+          "@id": "bundle_manifest.json"
+        },
+        {
+          "@id": "codemeta.json"
+        },
+        {
+          "@id": "data_manifest.json"
+        },
+        {
+          "@id": "evidence/family_result.json"
+        },
+        {
+          "@id": "evidence/probe_result.json"
+        },
+        {
+          "@id": "internal_replay_receipt.json"
+        },
+        {
+          "@id": "isolated_replay_receipt.json"
+        },
+        {
+          "@id": "paper.html"
+        },
+        {
+          "@id": "paper.json"
+        },
+        {
+          "@id": "paper.md"
+        },
+        {
+          "@id": "paper.pdf"
+        },
+        {
+          "@id": "paper.tex"
+        },
+        {
+          "@id": "pdf_validation.json"
+        },
+        {
+          "@id": "references.bib"
+        },
+        {
+          "@id": "references.json"
+        },
+        {
+          "@id": "reproduction.json"
+        },
+        {
+          "@id": "sbom.spdx.json"
+        },
+        {
+          "@id": "trial_accounting.json"
+        }
+      ],
+      "name": "Petroleum Inventory Scarcity: One Negative Macro-Commodity Identity",
+      "version": "0.1.0"
+    },
+    {
+      "@id": "#arhan-canli",
+      "@type": "Person",
+      "name": "Arhan Canli"
+    },
+    {
+      "@id": "CITATION.cff",
+      "@type": "File",
+      "sha256": "aac9031fce09dc4207363d081efba24341ea21d79ff0b819a78679d340bd08d8"
+    },
+    {
+      "@id": "CORRECTIONS.md",
+      "@type": "File",
+      "sha256": "86496c40a53008a22cb5c3b0d7e2543e4cc7f46c5df14c5f9deb9fc5c315e695"
+    },
+    {
+      "@id": "LICENSE",
+      "@type": "File",
+      "sha256": "e679ca02271c3b6ff38e197098b9260900656c23f06b787383624681f425fa26"
+    },
+    {
+      "@id": "README.md",
+      "@type": "File",
+      "sha256": "cef93156710a71b7b7b933c9fce66e108d2fca6d40b7696d65955312e703e323"
+    },
+    {
+      "@id": "archival_visual_inspection_receipt.json",
+      "@type": "File",
+      "sha256": "7a40b8c55de12ec4dd2f93143810266ac8854dc14fdd2ac1a336f64ff9dd8578"
+    },
+    {
+      "@id": "bundle_manifest.json",
+      "@type": "File",
+      "sha256": "e94296c5b027f8687a25eb02185dfe7a649a4fa82ec667577592ce581aa4665b"
+    },
+    {
+      "@id": "codemeta.json",
+      "@type": "File",
+      "sha256": "87fdad6edfb46b7c9cdf306867c5817e0bec7cf3fd738a75953211dba78ed066"
+    },
+    {
+      "@id": "data_manifest.json",
+      "@type": "File",
+      "sha256": "36bee0902ed38add6c4fd8e92765f2e2bebb8569beb5eee7b7c9b77fdd4c639c"
+    },
+    {
+      "@id": "evidence/family_result.json",
+      "@type": "File",
+      "sha256": "08c6f4a10208a27d019ffeb98254f5fe35367f87986585785488a50372052ff9"
+    },
+    {
+      "@id": "evidence/probe_result.json",
+      "@type": "File",
+      "sha256": "949f2b073b96fd8068519dca06ff9a54ed79778535b67ad66da4b23e06ae8694"
+    },
+    {
+      "@id": "internal_replay_receipt.json",
+      "@type": "File",
+      "sha256": "70ac0c8d8542294e02c396085216646208a786295c747940f0eb0f576010ec95"
+    },
+    {
+      "@id": "isolated_replay_receipt.json",
+      "@type": "File",
+      "sha256": "d0df878375d415986fa639487e4ccffc9cad6396dca9bde5f3be4a7fdf50b2ad"
+    },
+    {
+      "@id": "paper.html",
+      "@type": "File",
+      "sha256": "d266767ecc3560d70846bf6228886a5ec37fceb539b5b6f3da34c463b76618d0"
+    },
+    {
+      "@id": "paper.json",
+      "@type": "File",
+      "sha256": "3917979b857aca3e32ea07c9d20227a794f669fd3455decaee614f147413d09a"
+    },
+    {
+      "@id": "paper.md",
+      "@type": "File",
+      "sha256": "cd042321f3001f1c65491ba33904075dde4a70b8f6d46765419557ac8ddfe519"
+    },
+    {
+      "@id": "paper.pdf",
+      "@type": "File",
+      "sha256": "70e32c1d040c1ac58b07e1ee0d04b6ae924150873d6e43100a4c1a4982391b0a"
+    },
+    {
+      "@id": "paper.tex",
+      "@type": "File",
+      "sha256": "8e0154bea81cf80fcec5b15a49bdda5b42ef0d1fa456f926efd8bc1840570f96"
+    },
+    {
+      "@id": "pdf_validation.json",
+      "@type": "File",
+      "sha256": "f2870c327377c7b2fe8a3860f0582bd96df2fbc69e362a3a375637254b2a9fca"
+    },
+    {
+      "@id": "references.bib",
+      "@type": "File",
+      "sha256": "6c1645ac37ff57a5f48a32baa5f1c49bcd1979504be5f00515a5e2b01a82a9db"
+    },
+    {
+      "@id": "references.json",
+      "@type": "File",
+      "sha256": "842499a7709f59c61069ff2adb623a7b84bcd7ed81d3f916be4147859a5df307"
+    },
+    {
+      "@id": "reproduction.json",
+      "@type": "File",
+      "sha256": "f8fb92c514fbedd58b935e1a723130f65478480e4381ccc51d6b9ad497e54843"
+    },
+    {
+      "@id": "sbom.spdx.json",
+      "@type": "File",
+      "sha256": "7ea6cc380c8b08b450134839603bf2df4c6435889e6db2f811866c49aea0ac6a"
+    },
+    {
+      "@id": "trial_accounting.json",
+      "@type": "File",
+      "sha256": "c6064a5b3a807c2139ad295294e8e5587999698a1a4bf43b536e3f72bd871ae6"
+    }
+  ]
+}

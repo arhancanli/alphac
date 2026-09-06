@@ -272,8 +272,8 @@ def test_research_subset_never_claims_full_technical_eligibility(
     contract.write_text(
         json.dumps(
             {
-                "schema": "canli.alphac-sleeve-admission-contract.v4",
-                "evidence_checks_per_candidate": 75,
+                "schema": "canli.alphac-sleeve-admission-contract.v6",
+                "evidence_checks_per_candidate": 85,
                 "claim_boundary": "Research gates are not an admission decision.",
             }
         )
@@ -283,12 +283,24 @@ def test_research_subset_never_claims_full_technical_eligibility(
     passing = MODULE.admission_review({"one": True, "two": True}, "abc123")
     failing = MODULE.admission_review({"one": True, "two": False}, "abc123")
 
-    assert passing["status"] == "PENDING_FULL_75_CHECK_REVIEW"
+    assert passing["status"] == "PENDING_FULL_85_CHECK_REVIEW"
     assert passing["technically_eligible"] is False
     assert passing["research_subset_passed"] == 2
-    assert passing["checks_required_for_technical_eligibility"] == 75
+    assert passing["checks_required_for_technical_eligibility"] == 85
     assert failing["status"] == "RESEARCH_SUBSET_FAILED"
     assert failing["technically_eligible"] is False
+
+
+def test_reproduction_environment_binds_runner_and_lockfiles() -> None:
+    evidence = MODULE.reproduction_environment()
+
+    assert evidence["command"] == "uv run python scripts/probe_earnings_narrative_change.py"
+    assert evidence["runner_sha256"] == MODULE.file_sha256(MODULE.RUNNER)
+    assert evidence["pyproject_sha256"] == MODULE.file_sha256(MODULE.PYPROJECT)
+    assert evidence["uv_lock_sha256"] == MODULE.file_sha256(MODULE.UV_LOCK)
+    assert evidence["python"]
+    assert evidence["numpy"]
+    assert evidence["pandas"]
 
 
 def test_hypothesis_hash_ignores_only_evaluation_window() -> None:

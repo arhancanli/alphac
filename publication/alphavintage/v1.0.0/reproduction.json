@@ -1,0 +1,159 @@
+{
+  "code_bindings": {
+    "scripts/analyze_book_without_alphavintage.py": "f655cfd1dde21eb093b92088c9b86a88572c56e9d584ec4bb063181c46830f8d",
+    "scripts/analyze_current_book_diversification.py": "8309f592bfca5c1c011d60013bc0a65bdd4fb6bf83f26347c817151fb71aa6f2",
+    "scripts/export_alphavintage_sealed_outcome.py": "d00a6bddb211fb7746e1b269c5b6e9fc333b7b3a74e786626259f7b4c1c17fb2",
+    "scripts/probe_cpi_surprise_size.py": "80b55488c7caab97dcf121c7d0f744a05d80981f75aaa6529dc17613808c48ed"
+  },
+  "commands": [
+    "uv sync --frozen",
+    "uv run python scripts/probe_cpi_surprise_size.py",
+    "uv run python scripts/export_alphavintage_sealed_outcome.py",
+    "uv run python scripts/analyze_current_book_diversification.py",
+    "uv run python scripts/analyze_book_without_alphavintage.py"
+  ],
+  "core_clean_environment_reproduction_completed": true,
+  "environment_bindings": {
+    "pyproject.toml": "ddaf8b60999275f6d3fb93b3073f256d75d1383bfc8bab14263dc58645841006",
+    "uv.lock": "5caca664242722a3a3112663d7a19b7b5000583e30ade3753e1b8ffdecfd6f06"
+  },
+  "expected_output_bindings": {
+    "artifacts/analysis/book_without_alphavintage/result.json": "b62046344cdfd7dda640305539a6eddebe5d49d8a714847221332de989b94865",
+    "artifacts/analysis/current_book_diversification/result.json": "043431eb3548d925cfb52efcf6fb9a3c2fcbc0aeed869e6d3fa1ae0c6f7ac04b",
+    "artifacts/engineering/alphavintage_sealed_outcome.json": "f51cc701cecadb1ab09e7ac4eeda07af762e9f384706d47ef242d52a3093564c",
+    "artifacts/probe/cpi_surprise_size/result.json": "686654b4617efb8322f6fda37f2e71a375423aecc6de03477a0186cf2844e509",
+    "artifacts/research/macro_economic_trend_family.json": "db6cb64852e242ce696bc090c11ceec6ad10561e7c8529b2348e418f5572300c"
+  },
+  "full_decision_clean_environment_reproduction_completed": true,
+  "full_pipeline_clean_environment_reproduction_completed": false,
+  "independent_human_reproduction_completed": false,
+  "internal_audit_replay": {
+    "bundle_path": "internal_replay_receipt.json",
+    "content_hash": "sha256:222201e3428e2cc75dd546d9205b15c17af4518038397983b171af2195b57b1d",
+    "replay_catalog_family_key": "macro_economic_trend",
+    "sha256": "70ac0c8d8542294e02c396085216646208a786295c747940f0eb0f576010ec95",
+    "sleeve_status": "AUDIT_COMMAND_EXECUTED_ALL_RELEASED_RESULT_HASHES_STABLE"
+  },
+  "isolated_frozen_dependency_replay": {
+    "bundle_path": "isolated_replay_receipt.json",
+    "content_hash": "sha256:cf5e340ae7a23fb8dc168b47af77055b981e2e9ef8a1bc467b523fb7e445a2ac",
+    "dependency_environment": "UV_ISOLATED_FROZEN",
+    "portable_clean_workspace_replay_completed": false,
+    "raw_input_portability_established": false,
+    "replay_catalog_family_key": "macro_economic_trend",
+    "sha256": "d0df878375d415986fa639487e4ccffc9cad6396dca9bde5f3be4a7fdf50b2ad",
+    "sleeve_status": "ISOLATED_FROZEN_DEPENDENCY_AUDIT_EXECUTED_ALL_RELEASED_RESULT_HASHES_STABLE"
+  },
+  "platform": "Python 3.12 via uv",
+  "portable_core_reproduction": {
+    "bundle_path": "core_portable_reproduction_receipt.json",
+    "content_hash": "sha256:b739ac3b86c42841b1f079d9376fae89e2823e54b5791cecf6c9dce7719ddf50",
+    "exact_decision_checks": {
+      "active_days": true,
+      "placebo_gate": true,
+      "portfolio_days": true,
+      "significance_gate": true,
+      "verdict": true
+    },
+    "full_diversification_checks_replayed": false,
+    "independent_human_reproduction_completed": false,
+    "sha256": "20ecf970bc4f71cd5272fe4dd336a31813869bb9967b346423e3ebd18cb9745a",
+    "status": "PASS_DECISION_REPRODUCTION_NUMERICALLY_NEAR_IDENTICAL_CORE_ONLY"
+  },
+  "portable_full_decision_reproduction": {
+    "all_four_preregistered_decision_gates_replayed": true,
+    "attempt_ledger": {
+      "attempts_disclosed": 2,
+      "bundle_path": "full_decision_replay_attempt_ledger.json",
+      "content_hash": "sha256:8007aae7e69a7c08e691a162caec00e9250d7236f0fd1ec9c7a3be1e649aec4b",
+      "numeric_equivalence_acceptance_passes": 1,
+      "sha256": "1e8c12409c96222982b01867770aec307b45eb975f852c0440b1d27abc711656"
+    },
+    "bundle_path": "full_decision_clean_workspace_receipt.json",
+    "content_hash": "sha256:5fd834e91c921b10aedec8562d4d20bf092407c81f895c3c6d2c520a62a6a6dd",
+    "exact_decision_checks": {
+      "active_days": true,
+      "all_four_gate_values": true,
+      "four_gate_replay_declared": true,
+      "portfolio_days": true,
+      "upstream_benchmark_regeneration_not_overstated": true,
+      "verdict": true
+    },
+    "independent_human_reproduction_completed": false,
+    "numeric_equivalence_acceptance_passes": true,
+    "receipt_integrity_passes": true,
+    "sha256": "0245d65d319f52267a269659d4f80d957788f167d12af30f756a41b63a1e4e7d",
+    "status": "PASS_AUTHOR_CLEAN_WORKSPACE_ALL_FOUR_GATES_UPSTREAM_BENCHMARK_REGENERATION_INCOMPLETE",
+    "upstream_benchmark_strategies_regenerated_from_raw_inputs": false
+  },
+  "public_macro_input_reacquisition": {
+    "bundle_path": "rtdsm_portable_fetch_receipt.json",
+    "content_hash": "sha256:753770632177dec33bb9e53798a725fbaebc468563f9b25138016bb0cce52912",
+    "sha256": "0d9377ccc8aafd82b425ef6af96c5aa78cdd8ae458627dd45b97c1c54ce35c8e",
+    "status": "PASS_PUBLIC_MACRO_COMPONENT_PORTABLE"
+  },
+  "schema": "canli.alphac-publication-reproduction.v1",
+  "upstream_benchmark_strategy_reproduction": {
+    "all_benchmark_replay_attempts_completed": true,
+    "all_historical_benchmark_outputs_exact": false,
+    "alphamax_k30_dn_63": {
+      "fresh_vendor_replay_dsr_gate_passed": false,
+      "fresh_vendor_strategy_replay_completed": true,
+      "historical_dsr_gate_passed": false,
+      "historical_input_state_exact": false,
+      "historical_strategy_output_equivalence_established": false,
+      "independent_human_reproduction_completed": false,
+      "manifest_bundle_path": "alphamax_upstream_replay_manifest.json",
+      "manifest_content_hash": "sha256:a9f5cf59f270244030662e3ce334362e0dc91518885653e2b30ad17ec8a3ae97",
+      "manifest_sha256": "46f5e79ebd6ec40952871faa2616499cda26a1a48905676b3fd57a978d32f1fc",
+      "receipt_bundle_path": "alphamax_upstream_clean_workspace_receipt.json",
+      "receipt_content_hash": "sha256:a847a2716c859a438c0d6a4ac2906dc459f4830ea5df5917d3002a2c336db14a",
+      "receipt_sha256": "ba3a2d2d005401276d6c3ee864a0c9f341cfe6f217f3c95efc0288ec20b1e41f",
+      "status": "FAIL_UPSTREAM_STRATEGY_REPLAY_FRESH_VENDOR_INPUTS_DIFFER",
+      "stored_historical_result_regraded": false
+    },
+    "alphatrend_mf_live_fwd": {
+      "byte_exact_output_files": 466,
+      "equity_curve_byte_exact": true,
+      "fresh_vendor_reacquisition_completed": false,
+      "historical_dsr_selection_context_reproduced": false,
+      "independent_human_reproduction_completed": false,
+      "manifest_bundle_path": "alphatrend_upstream_replay_manifest.json",
+      "manifest_content_hash": "sha256:cfb84152dbea31f4aac60c393ee7c857fc39e0b3165483b787e86899e879c934",
+      "manifest_sha256": "cfc0a8c21906d220436289801f288048a163b4fb26eadf38ec6b60f1d8312b0b",
+      "output_files": 467,
+      "receipt_bundle_path": "alphatrend_upstream_clean_workspace_receipt.json",
+      "receipt_content_hash": "sha256:d08c185f8549861b01243aff6f7a5a1e40e18906bc6384245460533bda31782b",
+      "receipt_sha256": "c44c07d8ee87f3857a8deeb844653326d6b950f2313f7e1afa99e190f4a18c41",
+      "status": "PASS_UPSTREAM_STRATEGY_CURVE_BYTE_EXACT_DSR_CONTEXT_NOT_REPRODUCED"
+    },
+    "benchmark_strategies_total": 3,
+    "completed_author_run_strategy_replays": 3,
+    "historical_strategy_output_equivalence_established": 2,
+    "prereg_investment": {
+      "byte_exact_output_files": 779,
+      "historical_full_artifact_byte_exact": true,
+      "historical_pre_registration_covered_the_run": false,
+      "historical_result_regraded": false,
+      "historical_source_tree_exact": false,
+      "independent_human_reproduction_completed": false,
+      "input_manifest_bundle_path": "prereg_investment_upstream_replay_manifest.json",
+      "input_manifest_content_hash": "sha256:0031026aa3d618ae78ef3632f958253363b3e8a270b349c34910a21251dd58e3",
+      "input_manifest_sha256": "86f9f1146601eebc3cbef1db12bedbc490df3bbfdf466d52fa1ca2e436096769",
+      "input_manifest_status": "SEALED_PRIVATE_RAW_INPUTS_WITH_ARTIFACT_INFORMED_ZERO_HELD_CRYPTO_MEMBERSHIP_REPLAY_PENDING",
+      "lineage_bundle_path": "prereg_investment_historical_lineage.json",
+      "lineage_content_hash": "sha256:9fc6f1c67b3aad0a5c5d0060d740535f7a1de91c83665dd66584ae43edace81b",
+      "lineage_sha256": "1b6a17c6424698b807646684692eda9767fb3cd14559f573feac6467c876a6d1",
+      "lineage_status": "HISTORICAL_LINEAGE_RECOVERED_UPSTREAM_REPLAY_PENDING",
+      "not_a_sleeve": true,
+      "output_files": 779,
+      "raw_archive_normalization_replay_adjudicated": true,
+      "raw_to_strategy_pipeline_replay_completed": true,
+      "receipt_bundle_path": "prereg_investment_upstream_clean_workspace_receipt.json",
+      "receipt_content_hash": "sha256:3017c1611ece9b66041c8f14026b4b8b5ce1565a4f61fea3fb7cb5a00bb73b3a",
+      "receipt_sha256": "3c49bf6a710a20a7116e2fbf8b9655c7a72f6298ed3ecc1fc19b825016160ec7",
+      "receipt_status": "PASS_FULL_RAW_TO_ARTIFACT_BYTE_EXACT",
+      "strategy_curve_regenerated": true
+    }
+  }
+}

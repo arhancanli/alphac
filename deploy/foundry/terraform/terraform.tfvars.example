@@ -1,0 +1,6 @@
+spaces_bucket_prefix = "replace-with-unique-canli-foundry"
+
+# Keep disabled except during a dated maintenance window.
+enable_ephemeral_bastion       = false
+operator_cidr                  = ""
+operator_ssh_key_fingerprints = ["replace-with-dedicated-foundry-key-fingerprint"]

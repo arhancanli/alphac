@@ -1,0 +1,58 @@
+{
+  "author": "Arhan Canli",
+  "bindings": {
+    "src/alphaforge/analytics/walkforward.py": {
+      "bytes": 80475,
+      "sha256": "cd40981da0e9875e47bf8debd9eaf02deed1e45fc355d33572f2332f61e4cbab"
+    },
+    "src/alphaforge/data/store/reader.py": {
+      "bytes": 16829,
+      "sha256": "3438b524af4047765b4175f807cada85f8de9a0fb43e8d3e548fa81970b93bfd"
+    },
+    "src/alphaforge/validation/input_snapshot.py": {
+      "bytes": 14306,
+      "sha256": "c0a3f5842a3387f0f5922b87fcd31495181e32e67b458597f0105eae6ac93533"
+    },
+    "tests/unit/test_walkforward.py": {
+      "bytes": 15497,
+      "sha256": "4e3b2a9b638300d9becb57849d201faa36963f686c6440993dbb79645556e3d2"
+    },
+    "tests/unit/test_walkforward_input_snapshot.py": {
+      "bytes": 6081,
+      "sha256": "907393a4ea0e6a2d9fb57bea3ceb59b4fc91c6629c57565751b94015152860f7"
+    }
+  },
+  "claim_boundary": "This receipt proves the control exists in the bound source and is structurally invoked before persisted walk-forward execution. Focused tests separately exercise atomicity, lake-replacement immunity, tamper failure and result binding. It is not a performance result or a retroactive historical snapshot.",
+  "content_hash": "sha256:84d48c7cbba5d6c307d27f15ade8ac491bb56efcbf377bdefa5c006a5c34576f",
+  "enforcement": {
+    "atomic_sibling_directory_promotion": true,
+    "automatic_for_every_persisted_walkforward": true,
+    "existing_snapshot_overwrite_refused": true,
+    "first_execution_call_line": 1033,
+    "manifest_bound_into_walkforward_config": true,
+    "payloads": [
+      "exact derived signal frame",
+      "overlapping point-in-time universe intervals",
+      "complete SCD2 history for every declared instrument",
+      "hard-linked or copied execution OHLCV/funding/corporate-action partitions",
+      "resolved settings and declared run parameters",
+      "dirty local Python source tree, YAML profiles, pyproject and uv.lock"
+    ],
+    "private_data_rights_default": true,
+    "sealed_before_first_execution_leg": true,
+    "snapshot_call_line": 1000,
+    "validator_rehashes_every_payload": true
+  },
+  "retroactivity": {
+    "authorizes_historical_exact_replay_claim": false,
+    "reason": "A prospective control cannot reconstruct bytes that a historical run never sealed.",
+    "repairs_historical_missing_snapshot": false
+  },
+  "schema": "canli.alphac-walkforward-input-snapshot-protocol-receipt.v1",
+  "status": "PASS_PROSPECTIVE_PRIVATE_INPUT_SNAPSHOT_ENFORCED",
+  "trial_accounting": {
+    "classification": "REPRODUCIBILITY_INFRASTRUCTURE_ONLY",
+    "new_return_hypotheses": 0,
+    "new_trials": 0
+  }
+}

@@ -13,9 +13,9 @@
     "scripts/probe_alphamax_hyst_live.py": "Every arm now preflights and registers through the union; current pause blocks its unregistered identities before data work.",
     "scripts/probe_alphamax_turnover.py": "Every cadence-arm cell now preflights and registers through the union; current pause blocks unregistered identities before data work.",
     "scripts/probe_alphamax_volscale.py": "Five already-booked overlays now record and deflate through the identity-aligned union.",
-    "scripts/probe_alphamax_weighting.py": "Sixteen forensically booked cells now preflight against their immutable configs and use union DSR.",
+    "scripts/probe_alphamax_weighting.py": "All 48 forensically booked return configurations (primary, no-drift, and volatility-guard grids) now preflight against immutable configs and use union DSR.",
     "scripts/probe_alphatrend_arp.py": "Every construction arm now preflights and registers through the union; current pause blocks unregistered identities before data work.",
-    "scripts/probe_alphatrend_breadth.py": "Both breadth arms now preflight and register through the union; current pause blocks unregistered identities before data work."
+    "scripts/probe_alphatrend_breadth.py": "Both fixed baskets and both post-hoc selector procedures now preflight and register through the union; current pause blocks unregistered identities before data work."
   },
   "union_registration_paths": [
     "scripts/exp2_crypto_vrp.py",

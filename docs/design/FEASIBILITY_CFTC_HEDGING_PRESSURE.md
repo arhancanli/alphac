@@ -33,3 +33,20 @@ known disruptions, but it must do so before returns are opened. Kill if release 
 unverifiable, contract mapping is unstable, lagged positions add nothing beyond trend and curve
 carry, stressed costs fail, or correlation to AlphaTrend exceeds 0.35. No failed return identity
 may be rescued by changing the sign, lag, normalization or market set.
+
+## Reachability audit — 2026-08-22
+
+The exact-release gate is now measured unreachable as preregistered. CFTC's
+[COT documentation](https://www.cftc.gov/MarketReports/CommitmentsofTraders/index.htm) states
+that no historical release-date list exists and only 13 months of release dates are available.
+Even granting exact timestamps to every observation in that full window, only 8.37% of the
+183,676 metadata rows could be covered, versus the locked 95% requirement. CFTC's
+[special announcements](https://www.cftc.gov/MarketReports/CommitmentsofTraders/HistoricalSpecialAnnouncements/index.htm)
+also document holiday, incident, and shutdown delays that make a universal Friday timestamp
+false.
+
+Building the fixed tradable-contract map is therefore not authorized for this protocol: it cannot
+rescue the independent release-lineage failure, and the family registry already binds this
+mechanism to the retired killed `cot_positioning` campaign. A future conservative-lag redesign
+would require a new preregistered identity and a documented novelty distinction. It cannot be
+called completion of this candidate.

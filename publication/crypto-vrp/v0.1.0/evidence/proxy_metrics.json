@@ -1,0 +1,37 @@
+{
+  "run_ts": "20260625T094710Z",
+  "label": "SIGNAL VALIDITY ONLY \u2014 DVOL proxy understates gap losses; not a deployable P&L curve",
+  "window": {
+    "start": "2021-03-24",
+    "end": "2026-06-01"
+  },
+  "currencies": [
+    "BTC",
+    "ETH"
+  ],
+  "oos_days": 1492,
+  "standalone": {
+    "net_sharpe_oos": -0.633,
+    "deflated_sharpe": 0.0,
+    "psr": 0.066,
+    "n_trials_global": 84,
+    "skew": -9.517,
+    "kurtosis_raw": 132.65
+  },
+  "boring_true_fact_diagnostics": {
+    "BTC": {
+      "mean_vrp_volpts": 0.044,
+      "frac_days_vrp_positive": 0.7299,
+      "naive_always_short_sharpe": 2.4818,
+      "naive_always_short_skew": -5.4874
+    },
+    "ETH": {
+      "mean_vrp_volpts": -0.0008,
+      "frac_days_vrp_positive": 0.6525,
+      "naive_always_short_sharpe": 0.5309,
+      "naive_always_short_skew": -10.6795
+    }
+  },
+  "decorrelation_vs_live_sleeves": "PENDING \u2014 read from exp1 carry/momentum OOS curves once exp1 finishes",
+  "decision_rule": "deploy slot ONLY if deflated Sharpe clears ~0.95 AND skew is not deeply negative AND it decorrelates (calm+stress) from carry/momentum. Prior: positive raw, fails DSR, left-skewed -> publish the null."
+}

@@ -1,0 +1,122 @@
+{
+  "author": "Arhan Canli",
+  "bindings": {
+    "current_state_replay": {
+      "path": "artifacts/probe/crypto_carry_frozen_current_code_replay/walkforward.json",
+      "sha256": "0bcaddbbd75e3ae818303a3e577d7c8c8654f9e51358b70edf9c040d49b5ab50"
+    },
+    "first_rebalance_attribution": {
+      "content_hash": "sha256:6c5dd9216be1d511b4d1e05f38fc511f048d27fad37df37ff7779cb01b126da1",
+      "path": "artifacts/probe/crypto_carry_replay_drift/first_rebalance_attribution.json",
+      "sha256": "3beefed135322c4617ca5e547eea20423a90b2fb07e02b60a53b6dbacb3616b4"
+    },
+    "full_path_attribution": {
+      "content_hash": "sha256:1992e5bb6027222bc82ab1a66bb179c2c74b0d0cec62ba43d0baf12cd1fd5bfa",
+      "path": "artifacts/probe/crypto_carry_replay_drift/full_path_attribution.json",
+      "sha256": "f85ced2598b88241f1b8458ecc16cddc2c850c1dd815affa167dac94627d540a"
+    },
+    "prospective_input_snapshot_protocol": {
+      "content_hash": "sha256:84d48c7cbba5d6c307d27f15ade8ac491bb56efcbf377bdefa5c006a5c34576f",
+      "path": "artifacts/audit/walkforward_input_snapshot_protocol.json",
+      "sha256": "44bf99842fb6097755b8c28e95e4431e80433b12a84c717b889957d49bada007"
+    },
+    "selected_historical_artifact": {
+      "path": "artifacts/walkforward/crypto_carry_wk/walkforward.json",
+      "sha256": "a72c11172a730536336a079d26394cd926f88df06ce36cb3b5483159a99464ee"
+    },
+    "truthful_replay_receipt": {
+      "content_hash": "sha256:d1fb9ae03ca6b092a34e204450216f79cd5d7a96f84615c957f9b7f583c19eaf",
+      "path": "artifacts/probe/crypto_carry_frozen_current_code_replay/replay_receipt.json",
+      "sha256": "bad33660d9f783779cb2ad38017839e2c35ad2c83cf31ae620b30663741f0dd1"
+    }
+  },
+  "causal_findings": {
+    "first_rebalance": {
+      "cause": "The historical decision cross-section contained EOS while the current derived-universe snapshot did not. Restoring EOS exactly reproduces all ten historical discretized quantities.",
+      "replay_cross_section_size": 21,
+      "source_cross_section_size": 22,
+      "source_only": [
+        "BINANCE:PERP:EOSUSDT"
+      ],
+      "status": "EXACTLY_ATTRIBUTED"
+    },
+    "full_path": {
+      "claim_boundary": "The complete surviving output path has been compared. Overlapping decision prices, position marks, funding marks and funding rates are exact; holdings and state paths are not. Because the historical run omitted its exact code and derived-input snapshots, no unique additive dollar or Sharpe split among causes exists from the surviving two paths.",
+      "confirmed_contributors": [
+        "MUTABLE_DERIVED_UNIVERSE_NOT_BOUND_BY_HISTORICAL_ARTIFACT",
+        "CURRENT_REALIZED_VOL_OVERLAY_DIFFERS_FROM_HISTORICAL_IMPLEMENTATION"
+      ],
+      "observed_current_realized_leg_bound_rebalances": 71,
+      "software_correction_commit": "dd35711497d0e551d61d3593f7fd395a33b0c7b4",
+      "status": "SURVIVING_EVIDENCE_EXHAUSTED_EXACT_ADDITIVE_SPLIT_NOT_IDENTIFIABLE"
+    }
+  },
+  "claim_boundary": "This incident proves a material non-reproduction, exactly attributes the first sizing difference, exhausts the surviving full-path evidence, and proves why an additive causal split is not identifiable. It does not prove that either performance record will persist, repair the omitted historical snapshots, or constitute an independent replication.",
+  "content_hash": "sha256:d71a5044369d3544c314fe83eab1a36b58a086fdabf3c945db6f4706d43243ca",
+  "historical_artifact_policy": "PRESERVE_DO_NOT_OVERWRITE_OR_DELETE",
+  "incident_date": "2026-08-23",
+  "material_difference": {
+    "current_state_replay_summary": {
+      "cagr": 0.00763704456570391,
+      "fees_paid": 6187.9259149451755,
+      "final_equity": 103335.15565193011,
+      "funding_net": 14668.27528924918,
+      "max_dd": 0.20982761399491723,
+      "sharpe": 0.10652337594597801
+    },
+    "delta_replay_minus_historical": {
+      "cagr": -0.07034159710175314,
+      "fees_paid": -1184.7917945428353,
+      "final_equity": -34901.10954384602,
+      "funding_net": -4831.74452633956,
+      "max_dd": 0.01379045856635841,
+      "sharpe": -0.5700870051401173
+    },
+    "first_equity_divergence": {
+      "delta_replay_minus_source": -0.08753026649355888,
+      "overlap_row_index": 1,
+      "replay_equity": 100088.83227235998,
+      "source_equity": 100088.91980262648,
+      "ts": 1644285600000
+    },
+    "maximum_absolute_equity_difference": 35442.22073910621,
+    "selected_historical_summary": {
+      "cagr": 0.07797864166745705,
+      "fees_paid": 7372.717709488011,
+      "final_equity": 138236.26519577613,
+      "funding_net": 19500.01981558874,
+      "max_dd": 0.19603715542855882,
+      "sharpe": 0.6766103810860954
+    }
+  },
+  "publication_decision": {
+    "external_submission_allowed": false,
+    "required_label": "HISTORICAL ARTIFACT; NOT CURRENTLY EXACTLY REPRODUCIBLE; OPEN CORRECTION",
+    "selected_historical_artifact_may_be_called_validated": false,
+    "superseding_current_numbers_may_be_called_replication": false,
+    "website_may_present_historical_numbers": true
+  },
+  "remediation_progress": {
+    "exact_additive_split_structurally_identifiable": false,
+    "first_decision_exactly_attributed": true,
+    "fresh_preregistered_snapshot_bound_run_completed": false,
+    "independent_review_completed": false,
+    "prospective_private_input_snapshot_enforced": true,
+    "surviving_full_path_evidence_exhausted": true
+  },
+  "required_remediation": [
+    "Keep this correction and full-path identifiability audit beside every historical table.",
+    "Keep the enforced prospective snapshot control mandatory for every persisted walk-forward result; never treat it as retroactive historical evidence.",
+    "Build a portable fresh-data lake and run the preregistered current implementation only after its exact pre-run snapshot is sealed.",
+    "Keep the family NO-DEPLOY and external-submission blocked until the corrected paper and release bundle are rebuilt and independently reviewed."
+  ],
+  "root_governance_failure": "The 2026-06-20 artifact sealed outputs and strategy parameters but did not seal the exact derived universe-membership and instrument-metadata snapshots consumed. A later run therefore could not isolate code drift from mutable-input drift.",
+  "schema": "canli.alphac-crypto-carry-replay-correction.v1",
+  "severity": "MATERIAL_RESEARCH_REPRODUCIBILITY_FAILURE",
+  "status": "OPEN_CORRECTION_EXTERNAL_SUBMISSION_BLOCKED",
+  "trial_accounting": {
+    "classification": "REPRODUCIBILITY_CORRECTION_AND_CAUSAL_DIAGNOSTIC_ONLY",
+    "new_return_hypotheses": 0,
+    "new_trials": 0
+  }
+}

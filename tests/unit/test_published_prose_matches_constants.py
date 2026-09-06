@@ -89,3 +89,71 @@ def test_no_hand_typed_weight_split_survives_in_a_published_string() -> None:
         + "\n  ".join(f"line {n}: {t}" for n, t in offenders)
         + "\nUse the derived WEIGHTS_PROSE instead, or scope the sentence to the historical book."
     )
+
+
+# --------------------------------------------------------------------------------------------
+# The gauntlet sentence must keep naming multiple-testing DEFLATION.
+#
+# health_check.py pins this as keystone C4d, but that check only runs once a day and only emails.
+# On 2026-08-15 the word "deflation" fell out of the published sentence in a large checkpoint
+# rewrite, C4d went red, and the site published a weaker claim than the record supports for five
+# days because a daily red email is not a gate. This is the same claim enforced where it actually
+# blocks: CI, on a clean checkout, with no workspace evidence required.
+# --------------------------------------------------------------------------------------------
+
+_DEFLATION_TERMS = ("deflation", "multiple-testing")
+
+
+def _published_literal(key: str) -> str:
+    """Return the string literal published under ``key`` in the generator's metrics dict.
+
+    Read from the SOURCE by AST rather than from a generated artifact, so the check is portable:
+    it needs no data lake, no live state.json and no sibling site workspace.
+    """
+    import ast
+
+    tree = ast.parse(_GEN.read_text(encoding="utf-8"))
+    found: list[str] = []
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.Dict):
+            continue
+        # strict=True: ast.Dict always pairs keys with values, so a length mismatch is a bug in
+        # our assumption about the tree, not a case to tolerate silently.
+        for k, v in zip(node.keys, node.values, strict=True):
+            if not (isinstance(k, ast.Constant) and k.value == key):
+                continue
+            if isinstance(v, ast.Constant) and isinstance(v.value, str):
+                found.append(v.value)
+    assert found, (
+        f"no published string literal found for {key!r} in {_GEN.name}. If the value became an "
+        "f-string or was moved to a helper, RETARGET this check — do not delete it. A scan that "
+        "matches nothing passes silently, which is exactly the failure it exists to prevent."
+    )
+    assert len(found) == 1, f"{key!r} is published from {len(found)} places: {found}"
+    return found[0]
+
+
+def _names_deflation(sentence: str) -> bool:
+    low = sentence.lower()
+    return all(term in low for term in _DEFLATION_TERMS)
+
+
+def test_gauntlet_sentence_names_multiple_testing_deflation() -> None:
+    sentence = _published_literal("gauntlet_pass")
+    assert _names_deflation(sentence), (
+        "the published gauntlet sentence no longer names multiple-testing deflation:\n  "
+        f"{sentence!r}\nThe deflated Sharpe is what the grade is ABOUT. Softening the wording "
+        "publishes a stronger claim than the record supports."
+    )
+
+
+def test_the_deflation_check_can_fail() -> None:
+    """A guard that cannot fail is worse than no guard: prove this one distinguishes."""
+    assert _names_deflation(
+        "real but modest; no sleeve clears the multiple-testing deflation gate in-sample"
+    )
+    # the exact 2026-08-15 regression this test exists to catch
+    assert not _names_deflation(
+        "real but modest; no sleeve clears the multiple-testing gate in-sample"
+    )
+    assert not _names_deflation("real but modest")

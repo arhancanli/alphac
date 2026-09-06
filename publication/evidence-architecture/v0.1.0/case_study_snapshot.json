@@ -1,0 +1,81 @@
+{
+  "schema": "canli.alphac-evidence-architecture-case-study.v1",
+  "snapshot_date": "2026-08-26",
+  "status": "AUTHOR_REVIEW_DRAFT_NOT_SUBMITTED_NOT_PEER_REVIEWED",
+  "author": "Arhan Canli",
+  "affiliation": "Independent Researcher",
+  "claim_boundary": "Self-published research-simulation and paper-trading evidence. This snapshot establishes no funded performance, mature Sharpe estimate, live expected maximum drawdown, independent attestation, independent replication, peer review, acceptance, or future return.",
+  "source_commits": {
+    "research_engine": "0b0ae0c12e042f20a9fff06d83255274804a3619",
+    "public_site": "9da32baf2bb75a76faca684e31034f2d5d1f7924"
+  },
+  "forward_record": {
+    "capital_kind": "PAPER_ONLY",
+    "first_mark": "2026-08-07",
+    "last_mark": "2026-08-26",
+    "curve_points": 18,
+    "daily_return_observations": 17,
+    "cumulative_return": -0.0246046,
+    "realized_max_drawdown": 0.02565708521654919,
+    "sharpe_status": "IMMATURE_RECORD_TOO_SHORT",
+    "annualized_sharpe_point_estimate": null,
+    "minimum_returns_for_estimate": 252,
+    "minimum_returns_for_establishment": 756,
+    "forward_sharpe_target": 1.5
+  },
+  "provenance": {
+    "mandatory_checks": 44,
+    "passing_checks": 44,
+    "failed_checks": 0,
+    "broker": "Alpaca",
+    "broker_capital_kind": "PAPER_ONLY",
+    "dedicated_broker_accounts_expected": 3,
+    "dedicated_broker_accounts_reconciled": 3,
+    "broker_accounts_unique": true,
+    "open_positions_at_snapshot": 193,
+    "open_orders_at_snapshot": 149,
+    "reconciliation_method": "GET_ONLY_ACCOUNT_POSITIONS_PORTFOLIO_HISTORY_OPEN_ORDERS",
+    "broker_boundary": "Broker-derived, operator-transformed, and self-published; not an independent third-party attestation."
+  },
+  "transparency_chain": {
+    "schema": "glassbox.transparency_log/2",
+    "entries": 502,
+    "last_sequence": 501,
+    "first_disclosed_sequence": 436,
+    "disclosed_payload_entries": 66,
+    "opaque_historical_entries": 436,
+    "head_payload_matches_canonical_state": true,
+    "historical_limitation": "Opaque entries contain signed payload hashes but no canonical public payload. Their contents cannot be reconstructed from this public chain."
+  },
+  "mutation_evaluation": {
+    "guards_over_published_claims": 48,
+    "guards_mutated": 48,
+    "intended_mutations_caught": 48,
+    "negative_controls": 1,
+    "negative_controls_survived": 1,
+    "all_targets_restored_byte_identical": true,
+    "boundary": "Designed project-internal semantic mutations; not exhaustive mutation coverage or independent replication."
+  },
+  "modeled_risk": {
+    "expected_max_drawdown_objective": 0.11,
+    "current_composition_modeled_expected_max_drawdown": 0.09318244551248031,
+    "current_composition_modeled_p95_max_drawdown": 0.16451438864694068,
+    "live_expected_max_drawdown_established": false,
+    "current_sleeves": 4,
+    "target_sleeves": 14,
+    "research_average_pairwise_correlation": 0.024827414293607856,
+    "research_average_pairwise_correlation_upper_95": 0.04870778381377487,
+    "live_forward_diversification_established": false
+  },
+  "source_bindings": {
+    "config/forward_evidence_contract.json": "d1b0c97921d9c8b96de7af275b18b9d0ffbfe1332a078061135e8d044ba3981a",
+    "artifacts/engineering/forward_evidence_maturity.json": "367b0ca154c27be0cba361c7d08ea9aeed7b31a517123536f064ac77a828c249",
+    "artifacts/engineering/alpaca_broker_reconciliation.json": "2d7f187d002ae9c908182b845c61a3e91deb92953302f9b9eeb7265e59bc61cc",
+    "artifacts/engineering/record_continuity.json": "3b0b9be4c28ed6541ead3d1a00d0b435d5f6bbcfac861a5c5e1940dfff21da30",
+    "artifacts/engineering/mutation_ledger.json": "7068686b9aa8a0f78b9e0f84ec7b2ba5d7de9a29b9c756c22d8dfa91031864a2",
+    "docs/research/FORWARD_SHARPE_EVIDENCE_STANDARD.md": "aeba2fc6ff13effd1a363119f883bf4f56948e0bb5395f659632d2a67517571c",
+    "meridian/public/glassbox/transparency_log.json": "70fd17e8f46818a6c1562000a0ae0a725e17fb699471f7b7f83c760ac59ded28",
+    "meridian/public/glassbox/program_status.json": "6a2da79a06d4893fb4d7e996c1924a61f8f25756b1280502eb7a2842fe3fecc4",
+    "meridian/public/glassbox/trial_accounting.json": "f15af7c989aded5da6c5259a7f7e5587377ab33977b5cd3c5b2395a84ea45043"
+  }
+}

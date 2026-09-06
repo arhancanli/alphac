@@ -26,6 +26,7 @@ import argparse
 import zipfile
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import Any, cast
 
 import numpy as np
 import pandas as pd
@@ -52,10 +53,10 @@ def _inner_csv(name: str) -> tuple[zipfile.ZipFile, str]:
     return z, next(n for n in z.namelist() if n.endswith(".csv"))
 
 
-def _read_zip_csv(name: str, **kw: object) -> pd.DataFrame:
+def _read_zip_csv(name: str, **kw: Any) -> pd.DataFrame:
     z, inner = _inner_csv(name)
     with z.open(inner) as fh:
-        return pd.read_csv(fh, **kw)  # type: ignore[arg-type]
+        return cast(pd.DataFrame, pd.read_csv(fh, **kw))
 
 
 def _canon(ticker: str) -> str:
@@ -65,7 +66,7 @@ def _canon(ticker: str) -> str:
 
 
 def _eid(ticker: str) -> str:
-    return SymbolMapper.equity_instrument_id(EQUITY_MIC, _canon(ticker))
+    return cast(str, SymbolMapper.equity_instrument_id(EQUITY_MIC, _canon(ticker)))
 
 
 def _ids_vec(tickers: pd.Series) -> pd.Series:
@@ -102,7 +103,7 @@ def load_sep(writer: LakeWriter, candidates: set[str], now: int, *, min_dollar: 
     z, inner = _inner_csv("SEP")
     parts: list[pd.DataFrame] = []
     with z.open(inner) as fh:
-        for ch in pd.read_csv(fh, usecols=cols, chunksize=chunk):  # type: ignore[arg-type]
+        for ch in pd.read_csv(fh, usecols=cols, chunksize=chunk):
             ch = ch[ch["ticker"].astype(str).str.upper().isin(candidates)]
             # Prices must be finite + positive (the backtest's BarView rejects non-finite OHLC);
             # wide survivorship-free names have halted/gappy bars the top-200 large-caps did not.
@@ -141,7 +142,7 @@ def load_sep(writer: LakeWriter, candidates: set[str], now: int, *, min_dollar: 
         g = g.sort_values("ts_open")
         m = len(g)
         tbl = pa.table({
-            "instrument_id": pa.array([_eid(tu)] * m, pa.string()),
+            "instrument_id": pa.array([_eid(str(tu))] * m, pa.string()),
             "ts_open": pa.array(g["ts_open"].to_numpy(), _TS),
             "open": pa.array(g["o"].to_numpy(), pa.float64()),
             "high": pa.array(g["h"].to_numpy(), pa.float64()),
@@ -215,13 +216,26 @@ def load_sf1(writer: LakeWriter, keep: set[str], now: int) -> None:
     print(f"SF1: wrote {tbl.num_rows:,} ARQ fundamental rows", flush=True)
 
 
+def _require_positive_action_values(df: pd.DataFrame) -> np.ndarray:
+    """Return numeric values only when every executable action is economically valid."""
+    val = pd.to_numeric(df["value"], errors="coerce").to_numpy()
+    invalid = ~np.isfinite(val) | (val <= 0.0)
+    if invalid.any():
+        bad = df.loc[invalid, ["date", "action", "ticker", "value"]].to_dict("records")
+        raise ValueError(
+            "Sharadar executable split/dividend values must be finite and > 0; "
+            f"quarantine or independently correct these source rows: {bad[:10]}"
+        )
+    return val
+
+
 def load_actions(writer: LakeWriter, keep: set[str], now: int) -> None:
     df = _read_zip_csv("ACTIONS")
     df = df[df["action"].isin(["split", "dividend", "adrratiosplit"])
             & df["ticker"].astype(str).str.upper().isin(keep)].dropna(subset=["date", "value"])
     is_split = df["action"].isin(["split", "adrratiosplit"]).to_numpy()
     t = _ms_vec(df["date"])
-    val = pd.to_numeric(df["value"], errors="coerce").to_numpy()
+    val = _require_positive_action_values(df)
     tbl = pa.table({
         "instrument_id": pa.array(_ids_vec(df["ticker"]).to_numpy(), pa.string()),
         "action_type": pa.array(np.where(is_split, "split", "dividend"), pa.string()),

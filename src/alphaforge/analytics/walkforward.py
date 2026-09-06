@@ -98,6 +98,7 @@ from alphaforge.regime.hmm import (
 from alphaforge.signals.gating import gate_signal_frame
 from alphaforge.validation.concentration import concentration_report
 from alphaforge.validation.experiments import ExperimentLog, ExperimentUnion
+from alphaforge.validation.input_snapshot import seal_walkforward_input_snapshot
 from alphaforge.validation.splits import PurgedWalkForward
 
 if TYPE_CHECKING:
@@ -451,8 +452,8 @@ class WalkForwardResult:
         #
         # So the concentration screen now renders beside the Sharpe on every run, whether anyone
         # asks for it or not. A screen that must be remembered is a screen that will be forgotten
-        # the one time it matters — the same reason the split sanity guard logs loudly rather than
-        # silently skipping. This is disclosure, not enforcement: it never blocks a run, it just
+        # the one time it matters — the same reason the split sanity guard fails closed. This is
+        # disclosure, not enforcement: it never blocks a run, it just
         # makes the shape of the P&L impossible to not see.
         summary_text = render_text(self.summary)
         try:
@@ -507,6 +508,7 @@ def compute_validation(
     *,
     dsr_fn: Callable[..., DSRReport] | None = None,
     with_provenance: bool = False,
+    reservation_path: Path | str | None = None,
 ) -> ValidationReport | None:
     """Record this trial on ``log`` and build its :class:`ValidationReport`.
 
@@ -569,6 +571,7 @@ def compute_validation(
         skew=skew,
         kurtosis=kurt,
         now_ms=now_ms,
+        reservation_path=reservation_path,
     )
 
     # Read N / V[SR] AFTER recording, so the DSR is deflated against the ledger N as
@@ -750,6 +753,8 @@ class WalkForwardRunner:
         daily_btc_reader: optional source of the daily BTC OHLC the HMM regime gate
             fits on (Phase 12, D3 expanding window). Required only for ``regime=True``;
             ``None`` on the OFF path.
+        verified_split_events: optional exact issuer-verified split map forwarded to
+            every engine leg. The default empty map leaves normal runs unchanged.
     """
 
     def __init__(
@@ -767,6 +772,7 @@ class WalkForwardRunner:
         regime_n_states: int = _REGIME_N_STATES,
         regime_lag_days: int = _REGIME_LAG_DAYS,
         fill_model_factory: Callable[[TransactionCostModel], FillModel] | None = None,
+        verified_split_events: Mapping[tuple[str, Ms], float] | None = None,
     ) -> None:
         self._reader = reader
         self._instruments = instruments
@@ -791,6 +797,7 @@ class WalkForwardRunner:
         # golden path; byte-identical). A factory (e.g. MakerFill) is research-only injection
         # for the maker-execution screen — it never alters a default run.
         self._fill_model_factory = fill_model_factory
+        self._verified_split_events = dict(verified_split_events or {})
 
     def run(
         self,
@@ -806,7 +813,7 @@ class WalkForwardRunner:
         rebalance_bars: int = 24,
         no_trade_band: float | None = None,
         cov_window_bars: int = 720,
-        cov_halflife_bars: int = 720,
+        cov_halflife_days: float | None = None,
         cov_min_periods: int = 240,
         out_dir: Path | None = None,
         now_ms: Ms | None = None,
@@ -815,6 +822,8 @@ class WalkForwardRunner:
         dsr_fn: Callable[..., DSRReport] | None = None,
         ml: bool = False,
         regime: bool = False,
+        trial_reservation: Path | str | None = None,
+        baseline_trial_reservation: Path | str | None = None,
     ) -> WalkForwardResult:
         """Run every leg over ``[start, end)``; return (and optionally save) the result.
 
@@ -883,6 +892,36 @@ class WalkForwardRunner:
         # 10bps default lets through trades that can't clear their own cost hurdle).
         band = self._settings.portfolio.no_trade_band if no_trade_band is None else no_trade_band
 
+        validation_log: ExperimentLog | ExperimentUnion | None = None
+        base_trial_config: dict[str, object] | None = None
+        variant_trial_config: dict[str, object] | None = None
+        if now_ms is not None:
+            validation_log = experiment_log if experiment_log is not None else self._default_log()
+            base_trial_config = {
+                "start": start,
+                "end": end,
+                "train_bars": train_bars,
+                "test_bars": test_bars,
+                "allocator": allocator,
+                "rebalance_bars": rebalance_bars,
+                "no_trade_band": band,
+                "instrument_ids": list(ids),
+                "alpha_names": list(alpha_names) if alpha_names is not None else None,
+            }
+            variant_trial_config = {
+                **base_trial_config,
+                **self._gate_trial_config(ml=ml, regime=regime),
+            }
+            validation_log.preflight_registration(
+                variant_trial_config,
+                reservation_path=trial_reservation,
+            )
+            if ml or regime:
+                validation_log.preflight_registration(
+                    base_trial_config,
+                    reservation_path=baseline_trial_reservation,
+                )
+
         splitter = PurgedWalkForward.from_settings(
             self._settings, train_bars=train_bars, test_bars=test_bars, embargo_bars=embargo_bars
         )
@@ -929,6 +968,50 @@ class WalkForwardRunner:
         full_frame = self._signals.compute_research(start, end)
         full_ts = full_frame.index.get_level_values("ts_open").to_numpy(dtype=np.int64)
 
+        # A persisted performance result without its exact derived inputs is not an
+        # exact-replay artifact. Seal the private input state BEFORE the first leg can
+        # trade: signal frame, PIT universe rows, SCD2 metadata, execution partitions,
+        # resolved settings, dirty source tree, and lockfile. WalkForwardResult.save()
+        # later preserves this directory and binds its manifest into walkforward.json.
+        input_snapshot_binding: dict[str, object] | None = None
+        if out_dir is not None:
+            declared_snapshot_run: dict[str, object] = {
+                "start": start,
+                "end": end,
+                "train_bars": train_bars,
+                "test_bars": test_bars,
+                "allocator": allocator,
+                "embargo_bars": embargo_bars,
+                "initial_cash": initial_cash,
+                "instrument_ids": list(ids),
+                "rebalance_bars": rebalance_bars,
+                "no_trade_band": band,
+                "cov_window_bars": cov_window_bars,
+                "cov_halflife_days": cov_halflife_days,
+                "cov_min_periods": cov_min_periods,
+                "alpha_names": list(alpha_names) if alpha_names is not None else None,
+                "ml": ml,
+                "regime": regime,
+                "verified_split_events": sorted(
+                    (iid, timestamp, float(ratio))
+                    for (iid, timestamp), ratio in self._verified_split_events.items()
+                ),
+            }
+            input_snapshot_binding = seal_walkforward_input_snapshot(
+                out_dir / "input_snapshot",
+                signal_frame=full_frame,
+                instrument_ids=list(ids),
+                universe=self._universe,
+                instruments=self._instruments,
+                lake_paths=self._reader.lake_paths,
+                start=start,
+                end=end,
+                timeframe=tf,
+                asset_class=self._sleeve.asset_class,
+                declared_run=declared_snapshot_run,
+                resolved_settings=self._settings.model_dump(mode="json"),
+            )
+
         # Phase 12 gates (D7: this whole block is dead on the OFF path). When ml or
         # regime is on, each leg trains a meta-model on its purged train window
         # [train_start, test_start) (D4) and refits the HMM on an EXPANDING daily-BTC
@@ -958,7 +1041,7 @@ class WalkForwardRunner:
             band=band,
             rebalance_bars=rebalance_bars,
             cov_window_bars=cov_window_bars,
-            cov_halflife_bars=cov_halflife_bars,
+            cov_halflife_days=cov_halflife_days,
             cov_min_periods=cov_min_periods,
             initial_cash=initial_cash,
             ml=ml,
@@ -993,11 +1076,25 @@ class WalkForwardRunner:
             # as hold_stale_signal, distinct from hold_between_rebalance.
             "risk_counters": risk_counters_total,
         }
+        if input_snapshot_binding is not None:
+            config["input_snapshot"] = input_snapshot_binding
         if alpha_names is not None:
             config["alpha_names"] = list(alpha_names)
         # D6/D7: the gate flags + their params enter the artifact echo ONLY when a gate
         # is on, so the OFF config dict (and walkforward.json) is byte-identical to today.
         config.update(self._gate_config(ml=ml, regime=regime))
+        if self._verified_split_events:
+            canonical_verified_splits = json.dumps(
+                sorted(
+                    (iid, ex_date, float(ratio))
+                    for (iid, ex_date), ratio in self._verified_split_events.items()
+                ),
+                separators=(",", ":"),
+            ).encode()
+            config["verified_split_events_count"] = len(self._verified_split_events)
+            config["verified_split_events_sha256"] = hashlib.sha256(
+                canonical_verified_splits
+            ).hexdigest()
 
         # Anti-overfit verdict (alphaDesign.md section 7.4): record THIS trial on
         # the experiment ledger and attach the PSR/DSR report. The trial config
@@ -1007,28 +1104,21 @@ class WalkForwardRunner:
         # cash is the SAME trial and must not inflate N).
         validation: ValidationReport | None = None
         if now_ms is not None:
-            log = experiment_log if experiment_log is not None else self._default_log()
-            base_trial_config = {
-                "start": start,
-                "end": end,
-                "train_bars": train_bars,
-                "test_bars": test_bars,
-                "allocator": allocator,
-                "rebalance_bars": rebalance_bars,
-                "no_trade_band": band,
-                "instrument_ids": list(ids),
-                "alpha_names": list(alpha_names) if alpha_names is not None else None,
-            }
+            if (
+                validation_log is None or base_trial_config is None or variant_trial_config is None
+            ):  # pragma: no cover - guarded by the same now_ms condition above
+                raise RuntimeError("trial preflight state is missing")
             # D6: when a gate is on, the trial identity hashes the ACTUAL gate params
             # (not two booleans), so a tuned gated variant is a DISTINCT DSR trial. With
             # both off these keys are ABSENT, so the config_hash is byte-identical to
             # today's HEAD ledger (D7) and OFF==identity holds on the ledger too.
-            variant_trial_config = {
-                **base_trial_config,
-                **self._gate_trial_config(ml=ml, regime=regime),
-            }
             validation = compute_validation(
-                equity, variant_trial_config, log, now_ms, dsr_fn=dsr_fn
+                equity,
+                variant_trial_config,
+                validation_log,
+                now_ms,
+                dsr_fn=dsr_fn,
+                reservation_path=trial_reservation,
             )
             if validation is not None and gated:
                 # D5 / 3g: the gated variant must BEAT the blend-only baseline measured on
@@ -1046,7 +1136,7 @@ class WalkForwardRunner:
                     band=band,
                     rebalance_bars=rebalance_bars,
                     cov_window_bars=cov_window_bars,
-                    cov_halflife_bars=cov_halflife_bars,
+                    cov_halflife_days=cov_halflife_days,
                     cov_min_periods=cov_min_periods,
                     initial_cash=initial_cash,
                     ml=False,
@@ -1056,7 +1146,12 @@ class WalkForwardRunner:
                 base_equity = pd.concat([leg.result.equity for leg in base_legs])
                 base_equity.name = "equity"
                 baseline = compute_validation(
-                    base_equity, base_trial_config, log, now_ms, dsr_fn=dsr_fn
+                    base_equity,
+                    base_trial_config,
+                    validation_log,
+                    now_ms,
+                    dsr_fn=dsr_fn,
+                    reservation_path=baseline_trial_reservation,
                 )
                 n_legs = len(legs)
                 validation = dataclasses.replace(
@@ -1098,7 +1193,7 @@ class WalkForwardRunner:
         band: float,
         rebalance_bars: int,
         cov_window_bars: int,
-        cov_halflife_bars: int,
+        cov_halflife_days: float | None,
         cov_min_periods: int,
         initial_cash: float,
         ml: bool,
@@ -1178,7 +1273,7 @@ class WalkForwardRunner:
                     allocator=allocator,
                     rebalance_bars=rebalance_bars,
                     cov_window_bars=cov_window_bars,
-                    cov_halflife_bars=cov_halflife_bars,
+                    cov_halflife_days=cov_halflife_days,
                     cov_min_periods=cov_min_periods,
                 )
             else:
@@ -1203,6 +1298,7 @@ class WalkForwardRunner:
                     "train_start": train_start,
                     "allocator": allocator,
                 },
+                verified_split_events=self._verified_split_events,
             )
             result = engine.run(strategy, ids, start=test_start, end=test_end, initial_cash=cash)
             cash = float(result.equity.iloc[-1])

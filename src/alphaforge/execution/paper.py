@@ -365,6 +365,11 @@ class PaperBroker(Broker):
             self._state = PaperState(initial_cash=initial_cash, cash=initial_cash)
         else:
             self._state = state.copy()
+        # Ephemeral cache of the exact marks used by the latest account snapshot.
+        # The durable live store consumes this immediately after ``account_at`` so
+        # attribution never fetches a second, potentially different order book.
+        self._last_mark_ts: Ms | None = None
+        self._last_position_marks: dict[str, tuple[float, str]] = {}
 
     # ------------------------------------------------------------------ accessors
 
@@ -568,11 +573,15 @@ class PaperBroker(Broker):
         """
         equity = self._state.cash
         positions: list[Position] = []
+        marks: dict[str, tuple[float, str]] = {}
         for iid in sorted(self._state.positions):
             pos = self._state.positions[iid]
-            mid = self._mid_or_entry(iid, pos, ts)
+            mid, source = self._mark_or_entry(iid, pos, ts)
             equity += pos.qty * mid
             positions.append(pos.to_position())
+            marks[iid] = (mid, source)
+        self._last_mark_ts = ts
+        self._last_position_marks = marks
         _require_finite("PaperBroker.account equity", equity)
         return AccountState(
             equity_quote=equity,
@@ -580,6 +589,18 @@ class PaperBroker(Broker):
             positions=tuple(positions),
             ts=ts,
         )
+
+    def position_marks_at(self, ts: Ms) -> dict[str, tuple[float, str]]:
+        """Return the exact per-position marks used for ``account_at(ts)``.
+
+        Reuses the latest account snapshot when possible. If called for another
+        timestamp it marks the account once, then returns a defensive copy.
+        Values are ``(mark_price, source)`` where source distinguishes a real
+        order-book mid from the explicit missing-book entry-price fallback.
+        """
+        if self._last_mark_ts != ts:
+            self.account_at(ts)
+        return dict(self._last_position_marks)
 
     def order_book(self, instrument_id: str, *, depth: int = _DEFAULT_BOOK_DEPTH) -> OrderBook:
         """Proxy the configured :class:`OrderBookSource` snapshot for ``instrument_id``.
@@ -594,13 +615,15 @@ class PaperBroker(Broker):
 
     # ------------------------------------------------------------------ internals
 
-    def _mid_or_entry(self, instrument_id: str, pos: PaperPosition, ts: Ms) -> float:
-        """Mid price from a fresh book at ``ts``; fall back to avg_entry on absence."""
+    def _mark_or_entry(
+        self, instrument_id: str, pos: PaperPosition, ts: Ms
+    ) -> tuple[float, str]:
+        """Return mark and provenance; fall back explicitly when a book is absent."""
         try:
             book = self._book_source.snapshot(instrument_id, ts=ts)
         except KeyError:
-            return pos.avg_entry_price
-        return _book_mid(book, fallback=pos.avg_entry_price)
+            return pos.avg_entry_price, "entry_fallback_missing_book"
+        return _book_mid(book, fallback=pos.avg_entry_price), "order_book_mid"
 
     def _book_fill(
         self,

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 from runpy import run_path
 
@@ -25,10 +26,14 @@ def test_atlas_is_broad_unique_and_family_accounted() -> None:
 
 def test_atlas_is_fail_closed_before_returns() -> None:
     atlas = build_atlas()
+    contract_objective = json.loads(
+        (Path(__file__).parents[2] / "config" / "sleeve_admission_contract.json").read_text()
+    )["objective"]
 
     assert atlas["objective"]["target_total_sleeves"] == 14
     assert atlas["objective"]["minimum_new_sleeves"] == 10
     assert atlas["objective"]["targets_are_promises"] is False
+    assert {key: atlas["objective"][key] for key in contract_objective} == contract_objective
     assert atlas["governance"]["family_wise_accounting"] is True
     assert atlas["governance"]["cell_is_independent_trial"] is False
     assert atlas["summary"]["return_data_opened"] == 0
@@ -36,10 +41,10 @@ def test_atlas_is_fail_closed_before_returns() -> None:
     assert atlas["summary"]["family_return_data_opened"] == 1
     assert atlas["summary"]["family_return_hypotheses_spent"] == 1
     assert atlas["summary"]["lineage_classifications"] == {
-        "ACTIVE_FEASIBILITY": 9,
+        "ACTIVE_FEASIBILITY": 10,
         "DUPLICATE_OVERLAP": 7,
         "IDENTITY_REDESIGN_REQUIRED": 2,
-        "NOVEL_ATLAS": 17,
+        "NOVEL_ATLAS": 16,
         "RETIRED_KILLED": 5,
     }
     narrative = [
@@ -63,19 +68,18 @@ def test_historical_aliases_cannot_be_presented_as_novel() -> None:
         "commodity_inventory_seasonal"
     ]
     assert (
-        families["customer_supplier_propagation"]["lineage_classification"]
-        == "ACTIVE_FEASIBILITY"
+        families["customer_supplier_propagation"]["lineage_classification"] == "ACTIVE_FEASIBILITY"
     )
-    assert (
-        families["bond_etf_nav_dislocation"]["lineage_classification"]
-        == "ACTIVE_FEASIBILITY"
-    )
+    assert families["bond_etf_nav_dislocation"]["lineage_classification"] == "ACTIVE_FEASIBILITY"
     assert families["merger_arbitrage"]["lineage_classification"] == "ACTIVE_FEASIBILITY"
     assert families["tender_offer_spread"]["lineage_classification"] == "ACTIVE_FEASIBILITY"
+    assert families["active_ownership_escalation"]["lineage_classification"] == "ACTIVE_FEASIBILITY"
     assert (
-        families["active_ownership_escalation"]["lineage_classification"]
+        families["inflation_breakeven_relative_value"]["lineage_classification"]
         == "ACTIVE_FEASIBILITY"
     )
+    assert families["inflation_breakeven_relative_value"]["literature_status"] == "SOURCE_REVIEWED"
+    assert families["inflation_breakeven_relative_value"]["program_status"] == "ACTIVE_FEASIBILITY"
     assert families["cftc_hedging_pressure"]["lineage_aliases"] == ["cot_positioning"]
     assert families["crypto_cross_venue_basis"]["lineage_classification"] == "RETIRED_KILLED"
     assert (
@@ -83,8 +87,7 @@ def test_historical_aliases_cannot_be_presented_as_novel() -> None:
         == "IDENTITY_REDESIGN_REQUIRED"
     )
     assert (
-        families["spin_off_dislocation"]["lineage_classification"]
-        == "IDENTITY_REDESIGN_REQUIRED"
+        families["spin_off_dislocation"]["lineage_classification"] == "IDENTITY_REDESIGN_REQUIRED"
     )
     assert families["earnings_narrative_change"]["return_outcome"]["verdict"] == "KILL"
 

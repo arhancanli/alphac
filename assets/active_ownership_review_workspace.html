@@ -1,0 +1,510 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>ALPHAC · Active Ownership Blind Review</title>
+  <style>
+    :root {
+      --carbon: #17242d;
+      --slate: #405461;
+      --docket: #245a78;
+      --docket-soft: #dceaf1;
+      --signal: #d65745;
+      --signal-soft: #f9e6e2;
+      --verified: #2d7157;
+      --verified-soft: #dff0e8;
+      --surface: #eef2f4;
+      --paper: #ffffff;
+      --line: #c9d3d9;
+      --muted: #6f7e87;
+      --shadow: 0 18px 50px rgba(23, 36, 45, 0.12);
+      --radius: 14px;
+      font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--carbon);
+      background: var(--surface);
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body { min-height: 100vh; }
+    button, input, textarea { font: inherit; }
+    button, a, input, textarea { outline-offset: 3px; }
+    button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visible {
+      outline: 3px solid rgba(36, 90, 120, 0.35);
+    }
+    button { cursor: pointer; }
+    .shell { min-height: 100vh; display: grid; grid-template-rows: auto 1fr; }
+    .masthead {
+      display: grid;
+      grid-template-columns: minmax(260px, 1fr) auto;
+      gap: 24px;
+      align-items: end;
+      padding: 20px 26px 18px;
+      background: var(--carbon);
+      color: #fff;
+      border-bottom: 5px solid var(--docket);
+    }
+    .brandline { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+    .monogram {
+      display: grid; place-items: center; width: 34px; height: 34px;
+      border: 1px solid rgba(255,255,255,.45); border-radius: 50%;
+      font: 700 12px/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+      letter-spacing: .08em;
+    }
+    .eyebrow {
+      margin: 0; color: #b9c8d0; font: 700 11px/1.2 ui-monospace, SFMono-Regular, Menlo, monospace;
+      letter-spacing: .12em; text-transform: uppercase;
+    }
+    h1 { margin: 0; font: 650 clamp(24px, 3vw, 38px)/1.08 ui-serif, Georgia, serif; letter-spacing: -.02em; }
+    .subtitle { max-width: 760px; margin: 8px 0 0; color: #cbd6dc; font-size: 13px; line-height: 1.5; }
+    .progress-block { min-width: 240px; }
+    .progress-copy { display: flex; justify-content: space-between; gap: 16px; margin-bottom: 8px; font-size: 12px; }
+    .progress-copy strong { font: 700 18px/1 ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .progress-track { height: 8px; background: rgba(255,255,255,.14); border-radius: 999px; overflow: hidden; }
+    .progress-fill { height: 100%; width: 0; background: #72c49f; transition: width .22s ease; }
+    .workspace {
+      min-height: 0; display: grid; grid-template-columns: 250px minmax(340px, 1.25fr) minmax(330px, .9fr);
+      gap: 1px; background: var(--line);
+    }
+    .rail, .document-panel, .review-panel { min-width: 0; background: var(--surface); }
+    .rail { display: grid; grid-template-rows: auto 1fr auto; min-height: 0; }
+    .rail-tools { padding: 16px; border-bottom: 1px solid var(--line); background: #f7f9fa; }
+    .field-label {
+      display: block; margin: 0 0 7px; color: var(--slate);
+      font: 700 11px/1.25 ui-monospace, SFMono-Regular, Menlo, monospace;
+      letter-spacing: .06em; text-transform: uppercase;
+    }
+    .search, .text-input, .text-area {
+      width: 100%; border: 1px solid #afbdc5; border-radius: 9px; background: #fff; color: var(--carbon);
+      padding: 10px 11px; box-shadow: inset 0 1px 2px rgba(23,36,45,.04);
+    }
+    .text-area { min-height: 90px; resize: vertical; line-height: 1.45; }
+    .docket-list { min-height: 0; overflow: auto; padding: 8px; }
+    .docket-tab {
+      width: 100%; display: grid; grid-template-columns: 7px 1fr auto; gap: 10px; align-items: center;
+      margin: 0 0 5px; padding: 10px 10px 10px 8px; border: 1px solid transparent; border-radius: 9px;
+      background: transparent; color: var(--carbon); text-align: left;
+    }
+    .docket-tab:hover { background: #fff; border-color: var(--line); }
+    .docket-tab[aria-current="true"] { background: #fff; border-color: #8caaba; box-shadow: 0 3px 10px rgba(23,36,45,.08); }
+    .status-stroke { width: 7px; height: 30px; border-radius: 999px; background: #aebac0; }
+    .docket-tab.is-complete .status-stroke { background: var(--verified); }
+    .docket-tab.is-started .status-stroke { background: var(--signal); }
+    .tab-id { display: block; font: 700 12px/1.25 ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .tab-meta { display: block; color: var(--muted); font-size: 11px; margin-top: 3px; }
+    .tab-mark { color: var(--verified); font-weight: 800; }
+    .rail-foot { padding: 12px 16px; border-top: 1px solid var(--line); background: #f7f9fa; color: var(--muted); font-size: 11px; line-height: 1.45; }
+    .document-panel { min-height: 0; display: grid; grid-template-rows: auto 1fr; background: #dfe6ea; }
+    .document-head { padding: 15px 20px; background: #f7f9fa; border-bottom: 1px solid var(--line); }
+    .document-title { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; }
+    .document-title h2 { margin: 0; font: 650 20px/1.2 ui-serif, Georgia, serif; }
+    .source-link { color: var(--docket); font-size: 12px; font-weight: 700; text-underline-offset: 3px; }
+    .source-meta { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 10px; }
+    .chip { padding: 4px 7px; border-radius: 5px; background: var(--docket-soft); color: #204c64; font: 650 10px/1.25 ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .document-scroll { min-height: 0; overflow: auto; padding: 26px clamp(18px, 4vw, 50px) 70px; }
+    .filing-sheet {
+      max-width: 830px; min-height: 100%; margin: 0 auto; padding: clamp(24px, 4vw, 54px);
+      background: var(--paper); border: 1px solid #d0d8dd; border-top: 7px solid var(--docket);
+      border-radius: 3px 3px 9px 9px; box-shadow: var(--shadow);
+    }
+    .filing-sheet::before {
+      content: "SOURCE EXCERPT · BLIND REVIEW COPY"; display: block; margin-bottom: 28px; color: var(--muted);
+      font: 700 10px/1.2 ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .13em;
+    }
+    .filing-text {
+      margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; color: #1e2930;
+      font: 15px/1.72 ui-serif, Georgia, serif; user-select: text;
+    }
+    .review-panel { min-height: 0; overflow: auto; background: #f8fafb; }
+    .review-inner { padding: 20px; }
+    .review-kicker { margin: 0 0 5px; color: var(--docket); font: 800 11px/1.2 ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .09em; text-transform: uppercase; }
+    .review-heading { margin: 0 0 6px; font: 650 24px/1.15 ui-serif, Georgia, serif; }
+    .review-help { margin: 0 0 20px; color: var(--muted); font-size: 12px; line-height: 1.5; }
+    .form-group { margin: 0 0 18px; }
+    .choice-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .choice { position: relative; }
+    .choice input { position: absolute; opacity: 0; pointer-events: none; }
+    .choice span {
+      display: block; padding: 12px; border: 1px solid #afbdc5; border-radius: 9px; background: #fff;
+      text-align: center; font-weight: 750; font-size: 13px;
+    }
+    .choice input:checked + span { border-color: var(--docket); background: var(--docket-soft); color: #19445b; box-shadow: inset 0 0 0 1px var(--docket); }
+    .choice input:focus-visible + span { outline: 3px solid rgba(36,90,120,.35); outline-offset: 3px; }
+    .capture-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 7px; }
+    .capture-row .field-label { margin: 0; }
+    .mini-button, .secondary-button, .primary-button, .danger-button {
+      border-radius: 8px; font-weight: 750; transition: transform .12s ease, box-shadow .12s ease;
+    }
+    .mini-button { padding: 6px 8px; border: 1px solid #9bb0bc; background: #fff; color: var(--docket); font-size: 11px; }
+    .secondary-button { padding: 10px 12px; border: 1px solid #9bb0bc; background: #fff; color: var(--carbon); }
+    .primary-button { padding: 11px 14px; border: 1px solid var(--docket); background: var(--docket); color: #fff; box-shadow: 0 5px 14px rgba(36,90,120,.2); }
+    .danger-button { padding: 9px 11px; border: 1px solid #d7a39b; background: #fff; color: #9d382b; font-size: 12px; }
+    button:hover:not(:disabled) { transform: translateY(-1px); }
+    button:disabled { cursor: not-allowed; opacity: .48; }
+    .error { min-height: 18px; margin-top: 5px; color: #a33d31; font-size: 11px; }
+    .nav-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding-top: 4px; }
+    .divider { margin: 24px 0; border: 0; border-top: 1px solid var(--line); }
+    .attestation { padding: 16px; border: 1px solid #b8c9d2; border-radius: var(--radius); background: #edf4f7; }
+    .attestation h3 { margin: 0 0 6px; font: 700 16px/1.2 ui-serif, Georgia, serif; }
+    .attestation p { margin: 0 0 14px; color: var(--slate); font-size: 11px; line-height: 1.5; }
+    .check { display: grid; grid-template-columns: auto 1fr; gap: 8px; align-items: start; margin: 9px 0; font-size: 12px; line-height: 1.4; }
+    .check input { margin-top: 2px; accent-color: var(--docket); }
+    .export-row { display: grid; gap: 8px; margin-top: 16px; }
+    .status-box { margin-top: 14px; padding: 11px; border-radius: 9px; background: #edf1f3; color: var(--slate); font-size: 12px; line-height: 1.45; }
+    .status-box.good { background: var(--verified-soft); color: #235c46; }
+    .status-box.bad { background: var(--signal-soft); color: #8c382d; }
+    .credit { margin-top: 20px; color: var(--muted); font-size: 10px; line-height: 1.5; }
+    .empty-filter { padding: 24px 12px; color: var(--muted); font-size: 12px; text-align: center; }
+    @media (max-width: 1080px) {
+      .workspace { grid-template-columns: 210px 1fr 360px; }
+    }
+    @media (max-width: 820px) {
+      .shell, .masthead, .workspace, .rail { width: 100%; max-width: 100vw; min-width: 0; }
+      .masthead { grid-template-columns: 1fr; }
+      .masthead > *, .subtitle, .progress-block { min-width: 0; max-width: 100%; }
+      .workspace { display: block; }
+      .rail { display: block; position: sticky; top: 0; z-index: 5; overflow: hidden; }
+      .rail-tools { display: none; }
+      .docket-list { display: flex; width: 100%; max-width: 100vw; overflow-x: auto; padding: 8px; border-bottom: 1px solid var(--line); background: #f7f9fa; }
+      .docket-tab { flex: 0 0 126px; margin: 0 5px 0 0; }
+      .rail-foot { display: none; }
+      .document-panel { min-height: 62vh; }
+      .document-scroll { max-height: 62vh; }
+      .review-panel { overflow: visible; }
+      .review-inner { max-width: 680px; margin: 0 auto; padding: 24px 18px 50px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header class="masthead">
+      <div>
+        <div class="brandline"><span class="monogram">AC</span><p class="eyebrow">ALPHAC · Independent source audit</p></div>
+        <h1>Active Ownership Evidence Desk</h1>
+        <p class="subtitle">Review 48 frozen Schedule 13D Item 4 excerpts without machine predictions, prices, returns, or portfolio outputs.</p>
+      </div>
+      <div class="progress-block" aria-label="Review progress">
+        <div class="progress-copy"><span>Source decisions complete</span><strong id="progressCount">0 / 48</strong></div>
+        <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+      </div>
+    </header>
+    <section class="workspace">
+      <aside class="rail" aria-label="Filing docket">
+        <div class="rail-tools">
+          <label class="field-label" for="search">Filter docket</label>
+          <input class="search" id="search" type="search" placeholder="ID, ticker, year" autocomplete="off">
+        </div>
+        <nav class="docket-list" id="docketList" aria-label="48 blind filing records"></nav>
+        <div class="rail-foot">Green = complete · coral = started<br>Alt + ← / → moves between filings.</div>
+      </aside>
+      <section class="document-panel" aria-label="Source filing">
+        <div class="document-head">
+          <div class="document-title">
+            <h2 id="documentId">AO13D-001</h2>
+            <a class="source-link" id="sourceLink" target="_blank" rel="noreferrer">Open official SEC filing ↗</a>
+          </div>
+          <div class="source-meta" id="sourceMeta"></div>
+        </div>
+        <div class="document-scroll" id="documentScroll">
+          <article class="filing-sheet"><pre class="filing-text" id="filingText"></pre></article>
+        </div>
+      </section>
+      <aside class="review-panel" aria-label="Human review form">
+        <div class="review-inner">
+          <p class="review-kicker" id="reviewPacketId">AO13D-001</p>
+          <h2 class="review-heading">Record the source judgment</h2>
+          <p class="review-help">Autosaved only in this browser. Decisions remain local until you export the two governed return files.</p>
+          <div class="form-group">
+            <span class="field-label">Specific current active intent</span>
+            <div class="choice-grid">
+              <label class="choice"><input type="radio" name="intent" value="true"><span>Yes, specific</span></label>
+              <label class="choice"><input type="radio" name="intent" value="false"><span>No, generic/passive</span></label>
+            </div>
+            <div class="error" id="intentError"></div>
+          </div>
+          <div class="form-group">
+            <div class="capture-row">
+              <label class="field-label" for="sentence">Representative source sentence</label>
+              <button class="mini-button" id="captureSelection" type="button">Use selected text</button>
+            </div>
+            <textarea class="text-area" id="sentence" placeholder="Select a sentence in the filing, then use selected text."></textarea>
+            <div class="error" id="sentenceError"></div>
+          </div>
+          <div class="form-group">
+            <label class="field-label" for="ownership">Aggregate ownership % or “unresolved”</label>
+            <input class="text-input" id="ownership" inputmode="decimal" placeholder="Example: 7.5 or unresolved" autocomplete="off">
+            <div class="error" id="ownershipError"></div>
+          </div>
+          <div class="form-group">
+            <label class="field-label" for="notes">Ambiguity or document-location notes</label>
+            <textarea class="text-area" id="notes" placeholder="Optional. Do not put labels here."></textarea>
+          </div>
+          <div class="nav-row">
+            <button class="secondary-button" id="previous" type="button">← Previous</button>
+            <button class="primary-button" id="nextIncomplete" type="button">Next incomplete →</button>
+          </div>
+          <hr class="divider">
+          <section class="attestation" aria-labelledby="attestationHeading">
+            <h3 id="attestationHeading">Independent reviewer attestation</h3>
+            <p>Complete this only after personally reviewing all 48 records. The packet hash is copied from <code>manifest.json</code>.</p>
+            <div class="form-group"><label class="field-label" for="reviewerName">Reviewer name</label><input class="text-input" id="reviewerName" autocomplete="name"></div>
+            <div class="form-group"><label class="field-label" for="reviewerRole">Reviewer role</label><input class="text-input" id="reviewerRole" placeholder="Source document reviewer"></div>
+            <div class="form-group"><label class="field-label" for="reviewerAffiliation">Reviewer affiliation</label><input class="text-input" id="reviewerAffiliation" placeholder="Organization, school, independent, or none"></div>
+            <div class="form-group"><label class="field-label" for="reviewerRelationship">Relationship to Arhan Canli</label><input class="text-input" id="reviewerRelationship" placeholder="State the relationship, or none"></div>
+            <div class="form-group"><label class="field-label" for="reviewerCompensation">Compensation or incentive</label><input class="text-input" id="reviewerCompensation" placeholder="State fixed compensation, or none"></div>
+            <div class="form-group"><label class="field-label" for="reviewerConflicts">Conflicts of interest</label><input class="text-input" id="reviewerConflicts" placeholder="Disclose any conflict, or none"></div>
+            <div class="form-group"><label class="field-label" for="packetHash">Packet manifest content hash</label><input class="text-input" id="packetHash" placeholder="sha256:…" spellcheck="false"></div>
+            <label class="check"><input id="flagIndependent" type="checkbox"><span>I was independent of parser development.</span></label>
+            <label class="check"><input id="flagResearchIndependent" type="checkbox"><span>I was independent of the research design and frozen hypotheses.</span></label>
+            <label class="check"><input id="flagMachine" type="checkbox"><span>I did not consult machine outputs.</span></label>
+            <label class="check"><input id="flagReturns" type="checkbox"><span>I did not consult prices or returns.</span></label>
+            <label class="check"><input id="flagNoAutomation" type="checkbox"><span>I used no generative AI, classifier, script, or other automated assistance to make or draft labels.</span></label>
+            <label class="check"><input id="flagNoOutcomePay" type="checkbox"><span>I received no outcome-contingent compensation or incentive.</span></label>
+            <label class="check"><input id="flagConflicts" type="checkbox"><span>I completely disclosed my relationship, compensation, incentives, and conflicts above.</span></label>
+            <label class="check"><input id="flagPersonal" type="checkbox"><span>I personally reviewed every label.</span></label>
+            <div class="export-row">
+              <button class="primary-button" id="exportLabels" type="button">Download completed_labels.csv</button>
+              <button class="secondary-button" id="exportAttestation" type="button">Download completed_attestation.json</button>
+              <button class="danger-button" id="clearProgress" type="button">Clear local progress</button>
+            </div>
+            <div class="status-box" id="statusBox" role="status" aria-live="polite">Review has not started.</div>
+          </section>
+          <p class="credit">Research system and packet authored by Arhan Canli. Human labels must be completed and attested by an independent reviewer.</p>
+        </div>
+      </aside>
+    </section>
+  </main>
+  <script>
+    "use strict";
+    const PACKET = __PACKET_DATA__;
+    const HUMAN_FIELDS = ["human_specific_active_intent", "human_representative_sentence", "human_aggregate_ownership_pct_or_unresolved", "human_notes"];
+    const STORAGE_KEY = `alphac-active-ownership-review:${PACKET.packet_key}`;
+    const blank = () => ({human_specific_active_intent: "", human_representative_sentence: "", human_aggregate_ownership_pct_or_unresolved: "", human_notes: ""});
+    const saved = (() => { try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}"); } catch { return {}; } })();
+    const state = { index: 0, labels: {}, reviewer: saved.reviewer || {} };
+    for (const row of PACKET.rows) state.labels[row.packet_id] = {...blank(), ...(saved.labels?.[row.packet_id] || {})};
+    const $ = (id) => document.getElementById(id);
+    const controls = {
+      search: $("search"), list: $("docketList"), documentId: $("documentId"), sourceLink: $("sourceLink"),
+      sourceMeta: $("sourceMeta"), filingText: $("filingText"), reviewPacketId: $("reviewPacketId"),
+      sentence: $("sentence"), ownership: $("ownership"), notes: $("notes"), progressCount: $("progressCount"),
+      progressFill: $("progressFill"), status: $("statusBox"), reviewerName: $("reviewerName"),
+      reviewerRole: $("reviewerRole"), reviewerAffiliation: $("reviewerAffiliation"),
+      reviewerRelationship: $("reviewerRelationship"), reviewerCompensation: $("reviewerCompensation"),
+      reviewerConflicts: $("reviewerConflicts"), packetHash: $("packetHash"),
+      flagIndependent: $("flagIndependent"), flagResearchIndependent: $("flagResearchIndependent"),
+      flagMachine: $("flagMachine"), flagReturns: $("flagReturns"), flagNoAutomation: $("flagNoAutomation"),
+      flagNoOutcomePay: $("flagNoOutcomePay"), flagConflicts: $("flagConflicts"), flagPersonal: $("flagPersonal")
+    };
+    function ownershipValid(value) {
+      const clean = value.trim().toLowerCase();
+      if (clean === "unresolved") return true;
+      if (clean === "" || !/^\d+(\.\d+)?$/.test(clean)) return false;
+      const numeric = Number(clean);
+      return Number.isFinite(numeric) && numeric > 0 && numeric < 100;
+    }
+    function sentenceInFrozenSource(label, row) {
+      const sentence = label.human_representative_sentence.replace(/\s+/g, " ").trim();
+      const source = row.document_text.replace(/\s+/g, " ").trim();
+      return sentence !== "" && source.includes(sentence);
+    }
+    function complete(label, row) {
+      return ["true", "false"].includes(label.human_specific_active_intent)
+        && sentenceInFrozenSource(label, row)
+        && ownershipValid(label.human_aggregate_ownership_pct_or_unresolved);
+    }
+    function started(label) { return HUMAN_FIELDS.some((field) => String(label[field] || "").trim() !== ""); }
+    function save() {
+      state.reviewer = {
+        reviewer_name: controls.reviewerName.value, reviewer_role: controls.reviewerRole.value,
+        reviewer_affiliation: controls.reviewerAffiliation.value,
+        relationship_to_researcher: controls.reviewerRelationship.value,
+        compensation_or_incentive: controls.reviewerCompensation.value,
+        conflicts_of_interest: controls.reviewerConflicts.value,
+        packet_manifest_content_hash: controls.packetHash.value,
+        independent_of_parser_development: controls.flagIndependent.checked,
+        independent_of_research_design: controls.flagResearchIndependent.checked,
+        machine_outputs_not_consulted: controls.flagMachine.checked,
+        prices_and_returns_not_consulted: controls.flagReturns.checked,
+        no_automated_or_ai_labeling_assistance: controls.flagNoAutomation.checked,
+        no_outcome_contingent_compensation: controls.flagNoOutcomePay.checked,
+        conflicts_disclosed_completely: controls.flagConflicts.checked,
+        all_labels_are_personally_reviewed: controls.flagPersonal.checked
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({labels: state.labels, reviewer: state.reviewer}));
+      updateProgress();
+    }
+    function updateCurrentFromForm() {
+      const row = PACKET.rows[state.index];
+      const checked = document.querySelector('input[name="intent"]:checked');
+      state.labels[row.packet_id] = {
+        human_specific_active_intent: checked?.value || "",
+        human_representative_sentence: controls.sentence.value,
+        human_aggregate_ownership_pct_or_unresolved: controls.ownership.value.trim().toLowerCase(),
+        human_notes: controls.notes.value
+      };
+      save();
+    }
+    function renderList() {
+      const query = controls.search.value.trim().toLowerCase();
+      controls.list.replaceChildren();
+      let visible = 0;
+      PACKET.rows.forEach((row, index) => {
+        const haystack = `${row.packet_id} ${row.ticker} ${row.year}`.toLowerCase();
+        if (query && !haystack.includes(query)) return;
+        visible += 1;
+        const label = state.labels[row.packet_id];
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = `docket-tab ${complete(label, row) ? "is-complete" : started(label) ? "is-started" : ""}`;
+        button.setAttribute("aria-current", index === state.index ? "true" : "false");
+        button.innerHTML = `<span class="status-stroke"></span><span><span class="tab-id">${row.packet_id}</span><span class="tab-meta">${row.ticker} · ${row.year}</span></span><span class="tab-mark">${complete(label, row) ? "✓" : ""}</span>`;
+        button.addEventListener("click", () => go(index));
+        controls.list.appendChild(button);
+      });
+      if (!visible) { const empty = document.createElement("div"); empty.className = "empty-filter"; empty.textContent = "No docket records match this filter."; controls.list.appendChild(empty); }
+    }
+    function renderRecord() {
+      const row = PACKET.rows[state.index];
+      const label = state.labels[row.packet_id];
+      controls.documentId.textContent = row.packet_id;
+      controls.reviewPacketId.textContent = row.packet_id;
+      controls.sourceLink.href = row.submission_url;
+      controls.sourceMeta.replaceChildren();
+      for (const value of [`${row.year}`, row.ticker, `Accession ${row.accession}`, `Item 4 ${row.item4_sha256.slice(0, 12)}…`]) {
+        const chip = document.createElement("span"); chip.className = "chip"; chip.textContent = value; controls.sourceMeta.appendChild(chip);
+      }
+      controls.filingText.textContent = row.document_text;
+      document.querySelectorAll('input[name="intent"]').forEach((input) => { input.checked = input.value === label.human_specific_active_intent; });
+      controls.sentence.value = label.human_representative_sentence;
+      controls.ownership.value = label.human_aggregate_ownership_pct_or_unresolved;
+      controls.notes.value = label.human_notes;
+      $("documentScroll").scrollTop = 0;
+      renderList();
+      validateCurrent(false);
+    }
+    function go(index) { updateCurrentFromForm(); state.index = (index + PACKET.rows.length) % PACKET.rows.length; renderRecord(); }
+    function updateProgress() {
+      const count = PACKET.rows.filter((row) => complete(state.labels[row.packet_id], row)).length;
+      controls.progressCount.textContent = `${count} / ${PACKET.rows.length}`;
+      controls.progressFill.style.width = `${count / PACKET.rows.length * 100}%`;
+      renderList();
+      if (count === PACKET.rows.length) setStatus("All 48 source decisions are complete. Finish the attestation and export both files.", "good");
+      else if (count > 0) setStatus(`${count} complete; ${PACKET.rows.length - count} remain. Progress is autosaved in this browser.`, "");
+      else setStatus("Review has not started.", "");
+    }
+    function validateCurrent(show) {
+      const row = PACKET.rows[state.index];
+      const label = state.labels[row.packet_id];
+      const normalizedSource = row.document_text.replace(/\s+/g, " ").trim();
+      const normalizedSentence = label.human_representative_sentence.replace(/\s+/g, " ").trim();
+      const errors = {
+        intent: ["true", "false"].includes(label.human_specific_active_intent) ? "" : "Choose yes or no.",
+        sentence: !normalizedSentence ? "A representative source sentence is required."
+          : normalizedSource.includes(normalizedSentence) ? "" : "Copy a verbatim sentence from the frozen source excerpt.",
+        ownership: ownershipValid(label.human_aggregate_ownership_pct_or_unresolved) ? "" : "Enter unresolved or a number strictly between 0 and 100."
+      };
+      $("intentError").textContent = show ? errors.intent : "";
+      $("sentenceError").textContent = show ? errors.sentence : "";
+      $("ownershipError").textContent = show ? errors.ownership : "";
+      return !Object.values(errors).some(Boolean);
+    }
+    function setStatus(message, kind) { controls.status.textContent = message; controls.status.className = `status-box ${kind || ""}`; }
+    function nextIncomplete() {
+      updateCurrentFromForm();
+      validateCurrent(true);
+      for (let offset = 1; offset <= PACKET.rows.length; offset += 1) {
+        const candidate = (state.index + offset) % PACKET.rows.length;
+        if (!complete(state.labels[PACKET.rows[candidate].packet_id], PACKET.rows[candidate])) { state.index = candidate; renderRecord(); return; }
+      }
+      setStatus("Every source decision is complete. Finish the attestation and export both files.", "good");
+    }
+    function csvCell(value) { return `"${String(value ?? "").replaceAll('"', '""')}"`; }
+    function labelsCsv() {
+      const columns = [...PACKET.immutable_columns, ...HUMAN_FIELDS];
+      const lines = [columns.map(csvCell).join(",")];
+      for (const row of PACKET.rows) {
+        const values = [...PACKET.immutable_columns.map((column) => row[column]), ...HUMAN_FIELDS.map((column) => state.labels[row.packet_id][column])];
+        lines.push(values.map(csvCell).join(","));
+      }
+      return `${lines.join("\r\n")}\r\n`;
+    }
+    function download(name, type, content) {
+      const url = URL.createObjectURL(new Blob([content], {type}));
+      const anchor = document.createElement("a"); anchor.href = url; anchor.download = name; document.body.appendChild(anchor); anchor.click(); anchor.remove(); URL.revokeObjectURL(url);
+    }
+    function allComplete() { return PACKET.rows.every((row) => complete(state.labels[row.packet_id], row)); }
+    function exportLabels() {
+      updateCurrentFromForm();
+      if (!allComplete()) { setStatus("Complete all 48 decisions before exporting the governed label file.", "bad"); return; }
+      download("completed_labels.csv", "text/csv;charset=utf-8", labelsCsv());
+      setStatus("Downloaded completed_labels.csv. Export the matching attestation next.", "good");
+    }
+    function attestationValid() {
+      const hash = controls.packetHash.value.trim();
+      return controls.reviewerName.value.trim() && controls.reviewerRole.value.trim()
+        && controls.reviewerAffiliation.value.trim() && controls.reviewerRelationship.value.trim()
+        && controls.reviewerCompensation.value.trim() && controls.reviewerConflicts.value.trim()
+        && /^sha256:[0-9a-f]{64}$/.test(hash)
+        && controls.flagIndependent.checked && controls.flagResearchIndependent.checked
+        && controls.flagMachine.checked && controls.flagReturns.checked && controls.flagNoAutomation.checked
+        && controls.flagNoOutcomePay.checked && controls.flagConflicts.checked && controls.flagPersonal.checked;
+    }
+    function exportAttestation() {
+      save();
+      if (!allComplete()) { setStatus("Complete all 48 source decisions before exporting the attestation.", "bad"); return; }
+      if (!attestationValid()) { setStatus("Complete every reviewer disclosure, the exact packet hash, and all eight attestations.", "bad"); return; }
+      const attestation = {
+        reviewer_name: controls.reviewerName.value.trim(), reviewer_role: controls.reviewerRole.value.trim(), completed_at: new Date().toISOString(),
+        reviewer_affiliation: controls.reviewerAffiliation.value.trim(), relationship_to_researcher: controls.reviewerRelationship.value.trim(),
+        compensation_or_incentive: controls.reviewerCompensation.value.trim(), conflicts_of_interest: controls.reviewerConflicts.value.trim(),
+        packet_manifest_content_hash: controls.packetHash.value.trim(), independent_of_parser_development: true,
+        independent_of_research_design: true, machine_outputs_not_consulted: true,
+        prices_and_returns_not_consulted: true, no_automated_or_ai_labeling_assistance: true,
+        no_outcome_contingent_compensation: true, conflicts_disclosed_completely: true,
+        all_labels_are_personally_reviewed: true
+      };
+      download("completed_attestation.json", "application/json", `${JSON.stringify(attestation, null, 2)}\n`);
+      setStatus("Downloaded completed_attestation.json. Run verify_review.py before returning both files.", "good");
+    }
+    function captureSelection() {
+      const selection = window.getSelection();
+      const text = selection?.toString().replace(/\s+/g, " ").trim() || "";
+      if (!text || !selection.anchorNode || !controls.filingText.contains(selection.anchorNode)) { setStatus("Select text inside the source excerpt first.", "bad"); return; }
+      controls.sentence.value = text; updateCurrentFromForm(); validateCurrent(false); setStatus("Copied the selected source text into the representative-sentence field.", "good");
+    }
+    function restoreReviewer() {
+      controls.reviewerName.value = state.reviewer.reviewer_name || "";
+      controls.reviewerRole.value = state.reviewer.reviewer_role || "";
+      controls.reviewerAffiliation.value = state.reviewer.reviewer_affiliation || "";
+      controls.reviewerRelationship.value = state.reviewer.relationship_to_researcher || "";
+      controls.reviewerCompensation.value = state.reviewer.compensation_or_incentive || "";
+      controls.reviewerConflicts.value = state.reviewer.conflicts_of_interest || "";
+      controls.packetHash.value = state.reviewer.packet_manifest_content_hash || "";
+      controls.flagIndependent.checked = !!state.reviewer.independent_of_parser_development;
+      controls.flagResearchIndependent.checked = !!state.reviewer.independent_of_research_design;
+      controls.flagMachine.checked = !!state.reviewer.machine_outputs_not_consulted;
+      controls.flagReturns.checked = !!state.reviewer.prices_and_returns_not_consulted;
+      controls.flagNoAutomation.checked = !!state.reviewer.no_automated_or_ai_labeling_assistance;
+      controls.flagNoOutcomePay.checked = !!state.reviewer.no_outcome_contingent_compensation;
+      controls.flagConflicts.checked = !!state.reviewer.conflicts_disclosed_completely;
+      controls.flagPersonal.checked = !!state.reviewer.all_labels_are_personally_reviewed;
+    }
+    controls.search.addEventListener("input", renderList);
+    document.querySelectorAll('input[name="intent"]').forEach((input) => input.addEventListener("change", updateCurrentFromForm));
+    for (const control of [controls.sentence, controls.ownership, controls.notes, controls.reviewerName, controls.reviewerRole, controls.reviewerAffiliation, controls.reviewerRelationship, controls.reviewerCompensation, controls.reviewerConflicts, controls.packetHash, controls.flagIndependent, controls.flagResearchIndependent, controls.flagMachine, controls.flagReturns, controls.flagNoAutomation, controls.flagNoOutcomePay, controls.flagConflicts, controls.flagPersonal]) control.addEventListener("input", updateCurrentFromForm);
+    $("captureSelection").addEventListener("click", captureSelection);
+    $("previous").addEventListener("click", () => go(state.index - 1));
+    $("nextIncomplete").addEventListener("click", nextIncomplete);
+    $("exportLabels").addEventListener("click", exportLabels);
+    $("exportAttestation").addEventListener("click", exportAttestation);
+    $("clearProgress").addEventListener("click", () => { if (confirm("Clear every local label and reviewer field for this packet?")) { localStorage.removeItem(STORAGE_KEY); location.reload(); } });
+    document.addEventListener("keydown", (event) => { if (!event.altKey) return; if (event.key === "ArrowLeft") { event.preventDefault(); go(state.index - 1); } if (event.key === "ArrowRight") { event.preventDefault(); go(state.index + 1); } });
+    restoreReviewer(); renderRecord(); updateProgress();
+  </script>
+</body>
+</html>

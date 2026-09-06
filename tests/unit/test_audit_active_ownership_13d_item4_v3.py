@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+import json
 import sys
 from pathlib import Path
 
@@ -50,3 +51,22 @@ def test_structured_parser_unwraps_edgar_xml_envelope() -> None:
 
 def test_non_xml_document_falls_back() -> None:
     assert MODULE.structured_item_text_v3(b"<html>legacy filing</html>") is None
+
+
+def test_persisted_v3_result_is_hash_bound_and_stops_at_human_audit() -> None:
+    result_path = (
+        SCRIPT.parents[1]
+        / "artifacts"
+        / "feasibility"
+        / "active_ownership_13d_item4_v3"
+        / "result.json"
+    )
+    result = json.loads(result_path.read_text())
+    assert result["decision"] == "HUMAN_AUDIT_REQUIRED"
+    assert result["successful_submissions"] == 160
+    assert result["item4_extracted"] == 150
+    assert result["item4_extraction_rate"] == 0.9375
+    assert result["human_accuracy_audit"] == {"complete": False, "labeled": 0, "required": 48}
+    assert result["return_data_opened"] is False
+    assert result["return_hypotheses_spent"] == 0
+    assert result["content_hash"] == MODULE.content_hash(result)

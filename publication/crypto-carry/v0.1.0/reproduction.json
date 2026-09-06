@@ -1,0 +1,61 @@
+{
+  "bundle_integrity_command": "sha256sum -c SHA256SUMS",
+  "clean_environment_reproduction_completed": false,
+  "code_bindings": {
+    "scripts/audit_crypto_carry_2022_tail.py": "8d180ce4e9f0623ac3270bd1df49ba555a4049b19a9f9d0acb18caa350fb2f1b",
+    "scripts/audit_crypto_carry_first_rebalance_drift.py": "ca3baeac1a1fe519015c496cff5e16819a057cf9b169bf2c54ae1ed6f0c2bd49",
+    "scripts/audit_crypto_carry_full_path_drift.py": "9d4fd928d61ae548a3caceaff3420e7ef0c0dbc7220286692c1ac22e09a315a5",
+    "scripts/replay_crypto_carry_frozen_inputs.py": "c3dbee32fa97d3cf50d3cce702645aeef939f9e00d2be5b3fa0e9511b0b3b4dd",
+    "scripts/seal_crypto_carry_replay_correction.py": "98c8e16b022186dd529e0b8e7ac898f6e2d8c3fd060bb0aa61cb2679d697693f",
+    "scripts/seal_walkforward_input_snapshot_protocol.py": "e43fa6f89eba61cfb769ee407c3190569c3e8aa9a86aa0e284abc194c2e5fc28",
+    "src/alphaforge/execution/paper.py": "975e5362afb144c083bc9f196a508af2d75d6492061b71f404dd9d5229d0c278",
+    "src/alphaforge/features/library/carry.py": "c51f8faeb8456302692a55f28a0f59e87eaff1816d25b19ee5c1ce8767a1dc90",
+    "src/alphaforge/portfolio/strategy.py": "e1308c8bf6560a759983d1bd2fbef505050340ccce4ef42499d6943c559d5263",
+    "src/alphaforge/validation/input_snapshot.py": "c0a3f5842a3387f0f5922b87fcd31495181e32e67b458597f0105eae6ac93533"
+  },
+  "environment_bindings": {
+    "pyproject.toml": "ddaf8b60999275f6d3fb93b3073f256d75d1383bfc8bab14263dc58645841006",
+    "uv.lock": "5caca664242722a3a3112663d7a19b7b5000583e30ade3753e1b8ffdecfd6f06"
+  },
+  "expected_result_hashes": {
+    "artifacts/audit/walkforward_input_snapshot_protocol.json": "44bf99842fb6097755b8c28e95e4431e80433b12a84c717b889957d49bada007",
+    "artifacts/grand_backtest/20260616T143620Z/matrix.json": "786c580d478f7912aa61886e8b1271faa706fe723ff35423ef1c27d7018ba32c",
+    "artifacts/probe/crypto_carry_frozen_current_code_replay/replay_receipt.json": "bad33660d9f783779cb2ad38017839e2c35ad2c83cf31ae620b30663741f0dd1",
+    "artifacts/probe/crypto_carry_frozen_current_code_replay/walkforward.json": "0bcaddbbd75e3ae818303a3e577d7c8c8654f9e51358b70edf9c040d49b5ab50",
+    "artifacts/probe/crypto_carry_replay_drift/first_rebalance_attribution.json": "3beefed135322c4617ca5e547eea20423a90b2fb07e02b60a53b6dbacb3616b4",
+    "artifacts/probe/crypto_carry_replay_drift/full_path_attribution.json": "f85ced2598b88241f1b8458ecc16cddc2c850c1dd815affa167dac94627d540a",
+    "artifacts/publication/crypto_carry_replay_correction.json": "3ec388e9b09b9e3d37af3116830fef2ff51dd648ceb098ce83ece0e1764b25fc",
+    "artifacts/research/crypto_carry_2022_tail.json": "c4e2abced387e8b8c1934d3e70817bf551d28168d4c771575024cb494118a1ad",
+    "artifacts/walkforward/crypto_carry_wk/walkforward.json": "a72c11172a730536336a079d26394cd926f88df06ce36cb3b5483159a99464ee"
+  },
+  "independent_human_reproduction_completed": false,
+  "internal_audit_replay": {
+    "audit_command_executed": true,
+    "bundle_path": "internal_replay_receipt.json",
+    "content_hash": "sha256:222201e3428e2cc75dd546d9205b15c17af4518038397983b171af2195b57b1d",
+    "sha256": "70ac0c8d8542294e02c396085216646208a786295c747940f0eb0f576010ec95",
+    "sleeve_status": "AUDIT_COMMAND_EXECUTED_ALL_RELEASED_RESULT_HASHES_STABLE"
+  },
+  "isolated_frozen_dependency_replay": {
+    "audit_command_executed": true,
+    "bundle_path": "isolated_replay_receipt.json",
+    "content_hash": "sha256:cf5e340ae7a23fb8dc168b47af77055b981e2e9ef8a1bc467b523fb7e445a2ac",
+    "dependency_environment": "UV_ISOLATED_FROZEN",
+    "portable_clean_workspace_replay_completed": false,
+    "raw_input_portability_established": false,
+    "sha256": "d0df878375d415986fa639487e4ccffc9cad6396dca9bde5f3be4a7fdf50b2ad",
+    "sleeve_status": "ISOLATED_FROZEN_DEPENDENCY_AUDIT_EXECUTED_ALL_RELEASED_RESULT_HASHES_STABLE"
+  },
+  "registry_key": "alphaforge_crypto_carry",
+  "result_reproduction_commands": [
+    "uv run python scripts/audit_crypto_carry_2022_tail.py",
+    "uv run python scripts/replay_crypto_carry_frozen_inputs.py --seal-existing",
+    "uv run python scripts/audit_crypto_carry_first_rebalance_drift.py",
+    "uv run python scripts/audit_crypto_carry_full_path_drift.py",
+    "uv run python scripts/seal_walkforward_input_snapshot_protocol.py",
+    "uv run python scripts/seal_crypto_carry_replay_correction.py"
+  ],
+  "result_reproduction_mapping_complete": true,
+  "schema": "canli.alphac-publication-reproduction.v2",
+  "status": "MAPPED_NOT_CLEAN_ENVIRONMENT_REPLAYED"
+}

@@ -1,5 +1,7 @@
 # Options dispersion: locked no-return data and execution-feasibility protocol
 
+**Short title:** Options dispersion: feasibility protocol
+
 **Declared:** 2026-08-16  
 **Return data:** prohibited  
 **Hypotheses spent:** zero  

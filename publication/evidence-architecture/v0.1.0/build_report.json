@@ -1,0 +1,70 @@
+{
+  "schema": "canli.alphac-arxiv-build-report.v1",
+  "status": "PASS_LOCAL_PREFLIGHT_AUTHOR_ARXIV_RENDER_REQUIRED",
+  "built_at": "2026-08-26T11:25:03Z",
+  "title": "From Backtest to Public Record: A Fail-Closed Evidence Architecture for Prospective Validation of Systematic Trading Systems",
+  "author": "Arhan Canli",
+  "version": "0.1.0",
+  "submission_state": "AUTHOR_REVIEW_DRAFT_NOT_SUBMITTED_NOT_PEER_REVIEWED",
+  "compiler": {
+    "name": "Tectonic",
+    "version": "0.17.0",
+    "engine_family": "XeTeX",
+    "warnings": 0,
+    "errors": 0,
+    "note": "Local preflight only. The author must inspect the PDF produced by arXiv's selected TeX Live 2025 processor before submission."
+  },
+  "pdf": {
+    "path": "paper.pdf",
+    "sha256": "1efc1d82be1ac36322753fe578fb32ddff621dd7b038c802b705dffd43361545",
+    "pages": 14,
+    "page_size_points": [612.0, 792.0],
+    "encrypted": false,
+    "attachments": 0,
+    "embedded_javascript": false,
+    "replacement_characters_in_extracted_text": 0,
+    "metadata_title_matches": true,
+    "metadata_author_matches": true,
+    "visual_inspection": {
+      "status": "PASS_INTERNAL_NOT_INDEPENDENT_REVIEW",
+      "pages_inspected": 14,
+      "clipping_detected": false,
+      "broken_tables_detected": false,
+      "broken_figures_detected": false,
+      "unreadable_glyphs_detected": false,
+      "semantic_float_order_passes": true
+    }
+  },
+  "source": {
+    "paper.tex": "de48956305ad26a33dfae25a1e21b3d1cc61e4ab8f00ef1560745f743c30a283",
+    "references.bib": "dc16f81225022805933588638c04fb03a3d114ff153e95b4d80d3fd43adc0247",
+    "case_study_equity.csv": "5c88cd5067238747111b763a84f65bbccf0ba512d0dcd6b418b3355fb1276b58"
+  },
+  "upload_archive": {
+    "path": "arxiv-upload-v0.1.0.zip",
+    "sha256": "27bb82d95469a8c8e1fd3185cd3e8d4c667bcb39d50d1575c299853650c869d6",
+    "entries": [
+      "paper.tex",
+      "references.bib",
+      "case_study_equity.csv",
+      "anc/",
+      "anc/case_study_snapshot.json"
+    ],
+    "archive_test": "PASS",
+    "hidden_files": 0,
+    "extraneous_build_files": 0,
+    "tex_comments": 0
+  },
+  "hygiene": {
+    "credential_pattern_scan": "PASS",
+    "full_broker_account_identifiers": 0,
+    "arxiv_account_username_in_source": false,
+    "personal_email_in_source": false,
+    "private_keys_in_source": false,
+    "vendor_raw_rows_in_source": false,
+    "claim_boundary_present": true,
+    "ai_assistance_disclosure_present": true,
+    "external_submission_authorized": false
+  },
+  "claim_boundary": "Successful compilation and internal visual inspection do not constitute author approval, arXiv moderation, endorsement, submission, peer review, independent replication, or validation of investment performance."
+}

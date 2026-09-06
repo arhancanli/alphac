@@ -146,3 +146,32 @@ def test_this_check_can_fail(levered_run) -> None:
     returns = np.asarray(equity[1:]) / np.asarray(equity[:-1]) - 1.0
     unlevered_direct = _naive_vol(_equity_from(returns / s))
     assert naive == pytest.approx(unlevered_direct * s, rel=0.05)
+
+
+def test_scale_history_stays_index_aligned_with_equity_history() -> None:
+    """The alignment invariant the whole correction rests on.
+
+    `_scale_hist` is appended at the same site as `_equity_hist`, before a rebalance can
+    overwrite `_last_scale`. If the two ever drift the de-levering divides returns by the
+    wrong bar's scale, which is silent and worse than the original defect. `load_leg`
+    preserves both; nothing resets either.
+    """
+    import inspect
+
+    from alphaforge.portfolio import strategy as strat_mod
+
+    src = inspect.getsource(strat_mod.BlendStrategy.on_bar_close)
+    eq_at = src.index("_equity_hist.append")
+    sc_at = src.index("_scale_hist.append")
+    assert sc_at > eq_at, "scale must be appended alongside equity"
+    between = src[eq_at:sc_at]
+    assert "_rebalance(" not in between and "_last_scale =" not in between, (
+        "nothing may update _last_scale between the two appends"
+    )
+    # and neither is ever cleared
+    whole = inspect.getsource(strat_mod)
+    for field in ("_equity_hist", "_scale_hist"):
+        assert f"self.{field}.clear()" not in whole
+        assert whole.count(f"self.{field}: list[float] = []") == 1, (
+            f"{field} must be initialised exactly once, never re-initialised mid-run"
+        )

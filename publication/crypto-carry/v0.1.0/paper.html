@@ -1,0 +1,469 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="author" content="Arhan Canli">
+<meta name="description" content="Archival preprint bundle by Arhan Canli. AlphaForge studies cross-sectional carry in USDT-margined perpetual futures, ranking contracts by the negative…">
+<meta name="generator" content="ALPHAC archival paper renderer">
+<link rel="canonical" href="https://canlicapital.com/publication/crypto-carry/v0.1.0/paper">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Crypto Perpetual Carry: Trial Lineage, Capacity Failure, and Live Evidence Boundary">
+<meta property="og:description" content="Archival preprint bundle by Arhan Canli. AlphaForge studies cross-sectional carry in USDT-margined perpetual futures, ranking contracts by the negative…">
+<meta property="og:url" content="https://canlicapital.com/publication/crypto-carry/v0.1.0/paper">
+<title>AlphaForge crypto carry: complete trial lineage — archival paper</title><style>
+@page { size: A4; margin: 19mm 20mm 21mm; }
+* { box-sizing: border-box; }
+html { font-size: 10.6pt; }
+body { color: #17202a; font-family: Georgia, "Times New Roman", serif;
+       line-height: 1.46; margin: 0; }
+.cover { min-height: 247mm; display: flex; flex-direction: column;
+         justify-content: space-between; page-break-after: always; }
+.rule { width: 62px; height: 4px; background: #9a6b2f; margin: 8mm 0 14mm; }
+.kicker, .meta, .boundary { font-family: Arial, Helvetica, sans-serif; }
+.kicker { color: #6f532d; font-size: 8.4pt; font-weight: 700;
+          letter-spacing: .13em; text-transform: uppercase; }
+h1 { color: #111923; font-size: 29pt; font-weight: 500; line-height: 1.08;
+     margin: 0; max-width: 155mm; }
+.author { font-size: 14pt; margin-top: 13mm; }
+.affiliation { color: #53606d; font-family: Arial, Helvetica, sans-serif;
+               font-size: 9.4pt; }
+.meta { border-top: 1px solid #c8c1b5; color: #4b5661; display: grid;
+        font-size: 8.5pt; gap: 2mm; grid-template-columns: 34mm 1fr; padding-top: 6mm; }
+.meta strong { color: #202b36; letter-spacing: .04em; text-transform: uppercase; }
+.boundary { background: #f1eee8; border-left: 3px solid #9a6b2f; color: #35414c;
+            font-size: 8.7pt; margin-top: 8mm; padding: 4mm 5mm; }
+.paper { max-width: 170mm; }
+.paper > p:first-child { background: #f4f2ed; border: 1px solid #ddd7cc;
+                         font-family: Arial, Helvetica, sans-serif;
+                         font-size: 8.2pt; padding: 4mm; }
+h2 { border-bottom: .6pt solid #cfc8bc; color: #17202a; font-size: 16pt;
+     font-weight: 500; margin: 9mm 0 3mm; padding-bottom: 1.5mm;
+     page-break-after: avoid; }
+h3 { color: #263746; font-size: 12.5pt; margin: 6mm 0 2mm;
+     page-break-after: avoid; }
+p { margin: 0 0 3.2mm; orphans: 3; widows: 3; }
+ul, ol { margin: 2mm 0 4mm 6mm; padding-left: 5mm; }
+li { margin-bottom: 1.3mm; }
+.bibliography li { margin-bottom: 2.2mm; }
+.bibliography a { overflow-wrap: anywhere; word-break: break-word; }
+table { border-collapse: collapse; font-family: Arial, Helvetica, sans-serif;
+        font-size: 7.4pt; margin: 4mm 0 6mm; page-break-inside: avoid; width: 100%; }
+th { background: #e8e3da; color: #222d37; font-weight: 700; }
+th, td { border: .5pt solid #c8c1b5; padding: 1.5mm 1.8mm;
+         text-align: left; vertical-align: top; }
+code { background: #f0eee9; border-radius: 2px;
+       font-family: "SFMono-Regular", Consolas, monospace; font-size: 8.1pt;
+       padding: .2mm .7mm; }
+pre { background: #18222c; color: #edf1f4; font-size: 7.4pt; line-height: 1.35;
+      overflow-wrap: anywhere; padding: 4mm; white-space: pre-wrap; }
+a { color: #5f4828; text-decoration: underline; text-decoration-thickness: .5pt; }
+blockquote { border-left: 2pt solid #b48a50; color: #465461;
+             margin-left: 0; padding-left: 5mm; }
+</style></head><body>
+<section class="cover"><div><div class="kicker">Canli Capital Research / ALPHAC</div>
+<div class="rule"></div><h1>Crypto Perpetual Carry: Trial Lineage, Capacity Failure, and Live Evidence Boundary</h1><div class="author">Arhan Canli</div>
+<div class="affiliation">Founder, System Architect, and Quantitative Researcher<br>
+Canli Capital / AlphaC Algorithms</div></div><div><div class="meta">
+<strong>Version</strong><span>0.1.0</span>
+<strong>Released</strong><span>23 August 2026</span>
+<strong>Registry key</strong><span>alphaforge_crypto_carry</span>
+<strong>Status</strong><span>Working paper preprint / not peer reviewed</span></div>
+<div class="boundary">Research simulation and, where explicitly identified, Alpaca paper
+evidence. No funded performance, peer review, independent replication, external acceptance, or
+future return is claimed.</div></div></section><article class="paper"><p><strong>Short title:</strong> AlphaForge crypto carry: complete trial lineage</p>
+<p><strong>Author:</strong> Arhan Canli, Founder, System Architect, and Quantitative Researcher, Canli Capital<br><strong>Research system:</strong> ALPHAC / AlphaForge<br><strong>Family key:</strong> <code>crypto_carry</code><br><strong>Status:</strong> public research record; not peer reviewed; not an investment solicitation<br><strong>Evidence date:</strong> 2026-08-24</p>
+<h2>Abstract</h2>
+<p>AlphaForge studies cross-sectional carry in USDT-margined perpetual futures, ranking contracts by
+the negative trailing mean of observed funding: expensive longs rank as shorts and
+negative-funding contracts as longs. This paper reconciles all 25 charged hypothesis identities.</p>
+<p>The historical <code>carry_fund_21</code> walk-forward grew a simulated $100,000 to $138,236.27 from
+2022-02-08 through 2026-06-01, with Sharpe 0.6766 and maximum drawdown 19.60%, but failed its DSR
+gate. A later eight-configuration matrix reported PBO 0.8818, no deflated winner, and a
+<strong>NO-DEPLOY</strong> verdict. Seven identities belong to a broader multi-factor engine, making their
+capacity sweep context rather than carry capacity; the sole carry-tilted arm had Sharpe 0.0618.</p>
+<p>An exact-timestamp current-state replay on 2026-08-23 does not reproduce the selection: final
+equity is $103,335.16, Sharpe 0.1065, and maximum drawdown 20.98%. At the first decision, the
+historical 22 names included EOS while the current 21 did not; restoring EOS reproduces all ten
+historical order quantities. A zero-trial audit binds every surviving ledger: overlapping prices,
+position and funding marks, and funding rates agree, but holdings and state paths diverge. Because
+the historical run sealed
+neither its exact code nor derived-input snapshots, a unique additive attribution of the multi-year
+gap is structurally unidentifiable. Prospective private snapshots are now enforced but cannot
+repair that omission. The material correction therefore remains open and external submission is
+blocked.</p>
+<p>The forward record is weaker: AlphaForge is a local simulated paper broker, not an Alpaca account
+or externally attested record. Its first configuration was signal-dead; funding cashflows were
+omitted until a forward-only repair; fewer than half of intended hourly cycles completed; and the
+stored universe remains frozen at 2026-06-01. Crypto carry is therefore an incumbent experiment
+with a plausible mechanism, severe selection and capacity evidence, known operational defects,
+and an unmet forward burden of proof, not a validated sleeve.</p>
+<h2>Claim boundary</h2>
+<p>This paper supports six claims only:</p>
+<ol>
+<li>The funding-carry hypothesis and point-in-time implementation can be stated precisely.</li>
+<li>Every charged family identity is enumerated in a public machine-readable manifest.</li>
+<li>The selected positive artifact and later negative carry/blend evidence are published together.</li>
+<li>A related multi-factor engine&#39;s capacity degradation is contextual evidence only and is not
+presented as carry capacity or investable capacity.</li>
+<li>The paper record, defects, corrections, and unresolved production gaps are disclosed.</li>
+<li>The selected artifact is preserved as a historical result, but its current exact
+reproducibility is disproved and the open correction is machine-verifiable.</li>
+</ol>
+<p>It does <strong>not</strong> establish a forward Sharpe, expected maximum drawdown, future return, live-money
+performance, riskless arbitrage, or externally verified execution. It does not establish that the
+current live universe is the same strategy as the selected historical artifact.</p>
+<h2>Economic mechanism and falsifiable hypothesis</h2>
+<p>Perpetual futures have no expiry date, so exchanges use recurring funding transfers to pull the
+contract toward its reference index. When the funding rate is positive, long holders pay short
+holders; when it is negative, shorts pay longs. A cross-sectional carry strategy therefore takes
+the opposite side of expensive positioning: it shorts persistently positive-funding contracts and
+buys persistently negative-funding contracts.</p>
+<p>The mechanism is compensation for constrained arbitrage, speculative demand, margin and
+liquidation risk, not a guaranteed convergence trade. It is falsified for this implementation if a
+point-in-time, net-of-fee, impact-aware walk-forward cannot remain positive after the complete
+search is charged, if the return disappears at useful capital, or if operational constraints make
+the intended decisions untradeable.</p>
+<p>The literature supplies a prior, never proof of this implementation:</p>
+<ul>
+<li>He, Manela, Ross, and von Wachter show how funding anchors perpetuals to spot while margin,
+liquidation, and trading frictions prevent a riskless arbitrage interpretation
+(<a href="https://arxiv.org/abs/2212.06888">Fundamentals of Perpetual Futures</a>).</li>
+<li>Ackerer, Hugonnier, and Jermann develop no-arbitrage pricing for perpetual futures and the
+funding mechanism (<a href="https://doi.org/10.3386/w32936">NBER working paper</a>).</li>
+<li>Schmeling, Schrimpf, and Todorov document large, time-varying crypto carry and connect it to
+trend chasing and scarce arbitrage capital
+(<a href="https://doi.org/10.2139/ssrn.4268371">Crypto Carry</a>).</li>
+<li>Gornall, Rinaldi, and Xiao emphasize basis risk, constrained arbitrage capital, and speculative
+demand in perpetual markets
+(<a href="https://doi.org/10.2139/ssrn.5036933">Funding Payments Crisis-Proofed Bitcoin&#39;s Perpetual Futures</a>).</li>
+<li>Chi and coauthors find that basis is the strongest of the crypto-futures cross-sectional
+signals they study, while signal frequency matters
+(<a href="https://doi.org/10.1002/fut.22425">Journal of Futures Markets, 2023</a>).</li>
+</ul>
+<p>These sources do not validate ALPHAC&#39;s market data, universe, costs, trial selection, or paper
+execution.</p>
+<h2>Exact ALPHAC implementation</h2>
+<p>For instrument <code>i</code>, decision time <code>t</code>, and the last <code>K</code> funding settlements known by <code>t</code>, the
+historical feature is:</p>
+<pre><code class="language-text">carry(i,t) = -mean(funding_rate(i, settlements &lt;= t)) * 3 * 365
+</code></pre>
+<p>The negative sign makes a high positive funding rate unattractive to a long position. The factor
+uses a backward point-in-time as-of join: only settlements whose stored publication timestamp is
+available by <code>t</code> may enter the feature. <code>carry_fund_21</code> uses 21 settlements, historically about
+seven days at three settlements per day; <code>carry_fund_90</code> uses 90 settlements, historically about
+30 days.</p>
+<p>The <code>3 * 365</code> annualization is an implementation assumption, not a universal exchange rule.
+Binance exposes <code>fundingIntervalHours</code> because intervals can be adjusted. Its official market-data
+API separately exposes funding history and current interval information
+(<a href="https://developers.binance.com/docs/derivatives/usds-margined-futures/market-data/rest-api/Get-Funding-Rate-History">Binance USD-M Futures market data</a>).
+The ranking sign and settlement count remain meaningful when intervals change, but the annualized
+scale is then approximate unless the contemporaneous interval is applied. This limitation is
+disclosed rather than silently treating every period as eight hours.</p>
+<p>The selected artifact uses rank allocation, 25 legs, weekly rebalancing (168 hourly bars), a
+10-basis-point no-trade band, 6,048 training bars, 1,512 test bars, 72 purge bars, and 168 embargo
+bars across 58 Binance perpetual instruments. Other charged identities change the funding horizon,
+blend, cadence, allocator, no-trade band, or regime treatment. Each change remains a distinct
+hypothesis identity even though all belong to one economic family.</p>
+<h2>Trial lineage</h2>
+<p>The public manifest binds 25 distinct return identities to <code>crypto_carry</code>. The labels below sum
+exactly to the family total; they are an accounting view and do not collapse the trial denominator.</p>
+<table>
+<thead>
+<tr>
+<th>Machine-label group</th>
+<th align="right">Charged identities</th>
+<th>Research question</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>carry_fund_21</code></td>
+<td align="right">10</td>
+<td>Primary seven-day funding rank under cadence, allocator, band, and regime changes</td>
+</tr>
+<tr>
+<td><code>carry_fund_21 + carry_fund_90 + carry_z_252</code></td>
+<td align="right">3</td>
+<td>Whether three carry horizons improve robustness</td>
+</tr>
+<tr>
+<td><code>carry_fund_21 + carry_fund_90 + carry_z_252 + carry_mom_21_63</code></td>
+<td align="right">6</td>
+<td>Whether carry dynamics add information across the original and recovered legacy ledgers</td>
+</tr>
+<tr>
+<td><code>carry_fund_90</code></td>
+<td align="right">2</td>
+<td>Whether a slower funding window is more persistent</td>
+</tr>
+<tr>
+<td><code>carry_z_252</code></td>
+<td align="right">2</td>
+<td>Whether long-window normalization improves ranking</td>
+</tr>
+<tr>
+<td><code>carry_fund_21 + carry_fund_90 + carry_mom_21_63</code></td>
+<td align="right">1</td>
+<td>Whether a reduced dynamic blend improves carry</td>
+</tr>
+<tr>
+<td><code>carry_fund_21 + carry_fund_90 + mr_res_72</code></td>
+<td align="right">1</td>
+<td>Whether a carry-plus-residual-reversal tilt improves the multi-factor engine</td>
+</tr>
+<tr>
+<td><strong>Total</strong></td>
+<td align="right"><strong>25</strong></td>
+<td>Every identity remains charged to the union search burden</td>
+</tr>
+</tbody></table>
+<p>Twenty-one identities use the original crypto-perpetual research profiles. Four recovered legacy
+identities were filed with their durable result artifacts: one original carry experiment, two
+shorter-window carry experiments, and the grand matrix&#39;s carry-plus-reversal tilt. Their recorded
+annualized Sharpe observations range from -1.3945 to +0.6766. That range is not a confidence
+interval; it is direct evidence of specification sensitivity.</p>
+<p>The machine-readable source of truth is
+<a href="/glassbox/trial_packet_manifest.json"><code>/glassbox/trial_packet_manifest.json</code></a>. Select identities
+where <code>research_family_key</code> equals <code>crypto_carry</code>; each row includes its exact hypothesis key,
+immutable first measurement, source ledger, paper binding, and missing packet sections.</p>
+<h2>Results and decisions</h2>
+<h3>Selected historical survivor</h3>
+<blockquote>
+<p><strong>Open material correction (2026-08-23).</strong> The table below reports the immutable selected
+historical artifact, not current-code performance. A current-state replay reports Sharpe 0.1065
+and 20.98% maximum drawdown, and the original run did not bind every derived input. The result is
+therefore labelled <strong>historical artifact; not currently exactly reproducible; open correction</strong>.
+It must not be described as validated or submission-ready.</p>
+</blockquote>
+<p>The persisted <code>crypto_carry_wk</code> artifact covers 1,575 daily observations from 2022-02-08 through
+2026-06-01. It reports:</p>
+<table>
+<thead>
+<tr>
+<th>Measure</th>
+<th align="right">Persisted value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Initial / final simulated equity</td>
+<td align="right">$100,000 / $138,236.27</td>
+</tr>
+<tr>
+<td>Total return / CAGR</td>
+<td align="right">38.24% / 7.80%</td>
+</tr>
+<tr>
+<td>Annualized Sharpe / volatility</td>
+<td align="right">0.6766 / 11.83%</td>
+</tr>
+<tr>
+<td>Maximum drawdown</td>
+<td align="right">19.60%</td>
+</tr>
+<tr>
+<td>Annual turnover</td>
+<td align="right">33.22x</td>
+</tr>
+<tr>
+<td>Fees paid</td>
+<td align="right">$7,372.72</td>
+</tr>
+<tr>
+<td>Net funding cashflow</td>
+<td align="right">$19,500.02</td>
+</tr>
+<tr>
+<td>DSR / DSR gate</td>
+<td align="right">0.0386 / failed</td>
+</tr>
+</tbody></table>
+<p>Funding contributed roughly half of the artifact&#39;s dollar gain. The result is therefore
+mechanically dependent on accurate funding settlement and cannot be validated by a live ledger
+that records price and fees but omits funding. The full-history Sharpe also hides a severe 2022
+tail: the recorded 2022 segment was approximately -1.63 Sharpe and the full artifact&#39;s maximum
+drawdown was 19.60% around the LUNA/FTX period.</p>
+<h3>Related system-level robustness study</h3>
+<p>The later grand backtest used a 2021-01-01 through 2026-06-01 window and eight distinct
+configurations. It must not be described as a pure carry replication. Seven configurations use
+the engine&#39;s default, broad crypto multi-factor signal set (<code>alpha_names: null</code>) while varying ML,
+regime, cadence, band, or allocator. Only the eighth explicitly tilts to
+<code>carry_fund_21 + carry_fund_90 + mr_res_72</code>, and that arm reported Sharpe 0.0618. The seven
+multi-factor configurations belong to the separate <code>crypto_multifactor_engine</code> research family;
+the carry-tilted arm remains charged to <code>crypto_carry</code> because carry is its primary named input.</p>
+<p>All four Block A multi-factor variants produced the same Sharpe 0.0424 and DSR 0.2112 at
+$1 million. Other multi-factor variants reported annualized Sharpes of -0.7901 for daily
+rebalancing, -0.1994 for the tighter 10-basis-point band arm, and -0.0946 for MVO. None cleared
+DSR 0.95.</p>
+<p>Cross-sectional-combinatorial validation reported PBO 0.8818 against a gate below 0.20. There was
+no deflated winner and the persisted verdict is <strong>NO-DEPLOY (honest null)</strong>. Regime and ML labels
+did not rescue the result; the regime path was substantially inactive during cold-start periods,
+so equality of outcomes is not evidence that regimes never matter.</p>
+<p>The selected carry artifact and broad multi-factor matrix are not interchangeable. The matrix is
+preserved because it contains one carry-tilted arm and valuable system-level stress evidence, but
+its baseline, PBO, winner decision, and capacity curve cannot be represented as a direct
+institutional re-grade of <code>carry_fund_21</code>. The carry-specific conclusion comes from the weak
+0.0618 tilted arm, the recovered legacy carry experiments, the complete 25-identity lineage, and
+the failed selected-artifact DSR, not from relabelling a broader system as carry.</p>
+<h2>Capacity: related-system decay, not measured carry capacity</h2>
+<p>The grand matrix&#39;s capacity sweep varies capital for its default broad multi-factor configuration
+without adding a new return hypothesis:</p>
+<table>
+<thead>
+<tr>
+<th align="right">Initial capital</th>
+<th align="right">Sharpe</th>
+<th align="right">DSR</th>
+<th align="right">Maximum drawdown</th>
+<th align="right">Final equity</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="right">$100,000</td>
+<td align="right">0.4009</td>
+<td align="right">0.4803</td>
+<td align="right">13.14%</td>
+<td align="right">$118,509.86</td>
+</tr>
+<tr>
+<td align="right">$1,000,000</td>
+<td align="right">0.0424</td>
+<td align="right">0.2112</td>
+<td align="right">13.59%</td>
+<td align="right">$993,219.39</td>
+</tr>
+<tr>
+<td align="right">$10,000,000</td>
+<td align="right">-0.3720</td>
+<td align="right">0.0460</td>
+<td align="right">22.69%</td>
+<td align="right">$8,043,578.96</td>
+</tr>
+</tbody></table>
+<p>This is evidence that the related engine is highly sensitive to market impact, not a measurement
+of pure carry capacity. The broad engine&#39;s edge is almost absent at $1 million and negative at
+$10 million under the committed model. Carry capacity is <strong>unmeasured</strong>: no persisted
+carry-specific capital sweep exists. It remains unestablished until a preregistered carry sweep
+and forward fills, order-book depth, venue fragmentation, and financing are observed at the
+intended scale.</p>
+<h2>Forward paper record and dated corrections</h2>
+<p>AlphaForge uses <code>ALPHAFORGE_PAPERBROKER</code>: locally simulated fills against live exchange order
+books with a local ledger. It is paper-only, not an Alpaca account, not live money, and not
+externally attested. ALPHAC&#39;s public composite is derived from its sleeves and is not itself a
+broker account.</p>
+<p>The following defects materially limit interpretation:</p>
+<ul>
+<li><p><strong>Historical replay divergence, correction opened 2026-08-23.</strong> A zero-new-trial replay on the
+current local state retained all 37,776 timestamps; the replay-minus-historical final-equity
+delta was -34,901.11 dollars. Sharpe fell from 0.6766 to 0.1065 and maximum drawdown rose from
+19.60% to 20.98%.
+The old receipt wording incorrectly said the run isolated software drift and gave the non-exact
+outcome a <code>PASS</code> label. It has been re-sealed without rerunning as
+<code>REPLAY_EXECUTED_MATERIAL_CODE_OR_MUTABLE_INPUT_DRIFT_QUANTIFIED</code>. The first sizing difference
+is exactly attributable to mutable universe membership: EOS was present in the historical
+decision set and absent today. The corrected realized-vol overlay also changes the later path
+and bound 71 rebalances. The complete surviving path audit shows exact overlapping exogenous
+values but divergent quantities and risk states. It also proves why the omitted historical code,
+universe, metadata, and signal snapshots prevent a unique additive attribution of the terminal
+gap. Repeating the current-state replay cannot restore missing history. A prospective control now
+atomically freezes the exact signal frame, universe intervals, SCD2 metadata, execution partitions,
+resolved settings, dirty source tree, and lockfile before every persisted walk-forward. That
+control is deliberately not presented as retroactive evidence. The original artifact remains
+preserved; no historical number is silently overwritten.</p>
+</li>
+<li><p><strong>Signal-dead start, corrected 2026-07-05.</strong> From 2026-06-23 through 2026-07-05 the public
+explanation said carry was compressed. The actual cause was a wiring bug that blended
+equity-fundamental factors, undefined for crypto, into the signal and invalidated every cycle.
+The loop was then restricted to <code>carry_fund_21</code> with weekly rebalancing and signal-health logs.</p>
+</li>
+<li><p><strong>Funding omitted, repaired forward-only.</strong> The live paper broker initially moved cash only on
+fills, so the mechanism&#39;s funding cashflows never reached the account. A live settlement path
+was added with point-in-time publication filtering and tests. Historical marks were not
+restated, which preserves continuity but leaves the early record economically incomplete.</p>
+</li>
+<li><p><strong>Structural venue availability.</strong> As of the evidence date, the loop had completed fewer than
+half of its expected hourly cycles. The current machine-readable paper state publishes the exact
+rolling count. A strategy that is unmanaged for most intended cycles is not meaningfully
+continuous even when its observed marks are retained.</p>
+</li>
+<li><p><strong>Commodity contamination remains unresolved.</strong> The 2026-08-22 store still contains a
+20-member universe effective from 2026-06-01. Four contracts, XAU, XAG, CL, and BZ, reference
+gold, silver, WTI, and Brent rather than cryptoassets. Removing them would change the strategy
+and therefore requires preregistration and remeasurement, not a silent filter.</p>
+</li>
+<li><p><strong>Universe refresh remains unresolved.</strong> The newest stored crypto membership decision is
+2026-06-01; the July and August decisions are absent. Catch-up logic exists in <code>LiveLoop</code>, but
+the production constructor does not pass a universe refresher. The current live book therefore
+remains based on stale liquidity membership. No missed historical rebalance is reconstructed.</p>
+</li>
+</ul>
+<p>These corrections are evidence about process quality only if they remain visible and are pinned by
+tests. They are not evidence that the return process is profitable.</p>
+<h2>Selection, diversification, and governing targets</h2>
+<p>The family is one economic sleeve candidate, not 21 independent sources of alpha. Every return
+hypothesis remains charged to the union ledger. It also cannot receive diversification credit from
+old correlations measured before commodity-linked contracts overlapped AlphaTrend&#39;s metals and
+energy exposures. Correlation must be remeasured on the actual contemporaneous books and stressed
+in risk-off periods before any sleeve-count or diversification claim is made.</p>
+<p>The governing objective is an honest forward Sharpe of 1.5, expected maximum drawdown near 11%,
+and a diversified book of up to 14 sleeves. Crypto carry has established none of those targets.
+Its selected historical maximum drawdown already exceeds the program objective, its institutional
+re-grade is a null, and its forward execution record is too short and discontinuous to estimate a
+reliable Sharpe.</p>
+<h2>Reproduction map</h2>
+<p>Primary implementation and evidence paths:</p>
+<ul>
+<li><code>src/alphaforge/features/library/carry.py</code>: point-in-time funding features.</li>
+<li><code>src/alphaforge/data/sources/ccxt_source.py</code>: funding interval metadata ingestion.</li>
+<li><code>src/alphaforge/execution/paper.py</code> and <code>src/alphaforge/live/loop.py</code>: paper fills and live
+funding settlement.</li>
+<li><code>docs/design/alphaDesign.md</code>: original signal and annualization contract.</li>
+<li><code>var*/experiments.jsonl</code> and the four recovered <code>artifacts/**/experiments.jsonl</code> ledgers ,
+immutable charged identities in the canonical durable union.</li>
+<li><code>artifacts/walkforward/crypto_carry_wk/walkforward.json</code>: selected historical survivor.</li>
+<li><code>artifacts/probe/crypto_carry_frozen_current_code_replay/replay_receipt.json</code>: truthful
+current-state non-reproduction receipt, metric deltas, and input-freeze audit.</li>
+<li><code>artifacts/probe/crypto_carry_replay_drift/first_rebalance_attribution.json</code>: exact causal
+reconstruction of the EOS membership effect on every first-decision order quantity.</li>
+<li><code>artifacts/probe/crypto_carry_replay_drift/full_path_attribution.json</code>: exhaustive surviving
+ledger comparison, code archaeology, and machine-readable non-identifiability proof.</li>
+<li><code>artifacts/audit/walkforward_input_snapshot_protocol.json</code> and
+<code>src/alphaforge/validation/input_snapshot.py</code>: prospective pre-run snapshot enforcement,
+atomicity, private data-rights boundary, and tamper validation.</li>
+<li><code>artifacts/publication/crypto_carry_replay_correction.json</code>: open material correction,
+publication decision, remediation, and zero-new-trial classification.</li>
+<li><code>artifacts/grand_backtest/20260616T143620Z/matrix.json</code> and <code>verdict.md</code>: related multi-factor
+robustness, PBO, capacity, and no-deploy context; only <code>C_carry</code> is carry-tilted.</li>
+<li><code>artifacts/research/trial_packet_manifest.json</code>: exact family/identity join and packet debt.</li>
+<li><a href="/glassbox/crypto_carry_selected_walkforward.json"><code>/glassbox/crypto_carry_selected_walkforward.json</code></a>
+ : public selected-artifact payload.</li>
+<li><a href="/glassbox/crypto_carry_grand_matrix.json"><code>/glassbox/crypto_carry_grand_matrix.json</code></a>: public
+grand-matrix payload.</li>
+<li><a href="/glassbox/crypto_carry_2022_tail.json"><code>/glassbox/crypto_carry_2022_tail.json</code></a>: reproducible
+UTC-daily 2022 tail derivation.</li>
+</ul>
+<p>Reproduction requires the pinned project environment and the underlying market-data lake. Public
+artifacts permit claim auditing; they do not imply that every venue dataset can be redistributed.
+The full current-state equity Parquet remains local and is bound by its SHA-256 in the replay
+receipt; it is withheld from the public bundle under the conservative source-rights policy because
+it is a row-level derived series.</p>
+<h2>Packet completeness and legacy limitations</h2>
+<p>This family paper verifies shared identity, authorship, mechanism, literature, family accounting,
+and stable-publication sections for 25 identities. Its 2026-08-23 correction proves that the
+selected output is not currently exactly reproducible; this is a publication blocker, not a 26th
+return identity. It does not retroactively manufacture
+identity-level preregistrations, return series, exact environment snapshots, or complete rerunnable
+data bundles. The manifest must therefore continue to mark all 25 trial packets incomplete until
+every missing required section is proved. A family-paper binding is not a completed packet.</p>
+<h2>Decision</h2>
+<p><strong>Research decision:</strong> retain AlphaForge only as an incumbent paper experiment under observation;
+do not describe the historical edge as validated; do not claim positive $10 million capacity; and
+do not admit this family under the current evidence.</p>
+<p><strong>Operational decision:</strong> fail closed on promotion while the live universe is stale, commodity
+classification is unresolved, and intended-cycle continuity remains structurally weak. Preserve
+all prior marks and corrections; repair forward without reconstructing decisions that never ran.</p>
+<p><strong>Publication decision:</strong> preserve the positive survivor, failed DSR, current-state replay,
+first-decision attribution, weak carry-tilted matrix arm, the broader engine&#39;s PBO 0.8818 and
+capacity decay, live execution provenance, and unresolved defects together under Arhan Canli&#39;s
+authorship. External submission is blocked while the material replay correction is open. A
+corrected release must present the historical and current-state results side by side, bind every
+derived input, and undergo independent scrutiny; no more favourable retrospective window may
+replace either result.</p><section class="bibliography"><h2>References</h2><ol><li>Damien Ackerer, Julien Hugonnier, Urban Jermann (2024). <em>Perpetual Futures Pricing</em>. . <a href="https://doi.org/10.3386/w32936">https://doi.org/10.3386/w32936</a></li><li>Maik Schmeling, Andreas Schrimpf, Karamfil Todorov (2022). <em>Crypto Carry</em>. . <a href="https://doi.org/10.2139/ssrn.4268371">https://doi.org/10.2139/ssrn.4268371</a></li><li>Will Gornall, Juan Martin Rinaldi, Yizhou Xiao (2025). <em>Funding Payments Crisis-Proofed Bitcoin&#x27;s Perpetual Futures</em>. . <a href="https://doi.org/10.2139/ssrn.5036933">https://doi.org/10.2139/ssrn.5036933</a></li><li>Yeguang Chi, Wenyan Hao, Jiangdong Hu, Zhenkai Ran (2023). <em>An empirical investigation on risk factors in cryptocurrency futures</em>. Journal of Futures Markets. <a href="https://doi.org/10.1002/fut.22425">https://doi.org/10.1002/fut.22425</a></li><li>Songrun He, Asaf Manela, Omri Ross, Victor von Wachter (2022). <em>Fundamentals of Perpetual Futures</em>. arXiv. <a href="https://arxiv.org/abs/2212.06888">https://arxiv.org/abs/2212.06888</a></li><li>Binance (2026). <em>Get Funding Rate History</em>. Official documentation. <a href="https://developers.binance.com/docs/derivatives/usds-margined-futures/market-data/rest-api/Get-Funding-Rate-History">https://developers.binance.com/docs/derivatives/usds-margined-futures/market-data/rest-api/Get-Funding-Rate-History</a></li></ol></section></article>
+</body></html>

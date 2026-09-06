@@ -34,21 +34,53 @@ BLOCKLIST = _REPO / "docs" / "retracted_claims.txt"
 #: elsewhere on the page cannot launder an assertion at the top.
 WINDOW = 400
 
+#: A fourth, optional rule field can identify a locally unambiguous non-claim use of the same
+#: digits. This window is deliberately much smaller than ``WINDOW``: a legitimate metric name
+#: may excuse only the number assigned to that metric, not a withdrawn assertion elsewhere in
+#: the same JSON object or paragraph.
+LOCAL_CONTEXT_WINDOW = 80
+
 SCAN_SUFFIXES = {".html", ".json", ".js", ".txt", ".md"}
 SKIP_DIRS = {"node_modules", ".git", ".vercel", "assets"}
 
-#: Files that legitimately hold the full history and are exempt wholesale: the signed chain and
-#: any artifact whose PURPOSE is to record what was withdrawn.
-EXEMPT_NAMES = {"paper-state.json", "track_record.json", "transparency.json"}
+#: The ONLY file exempt wholesale: the signed append-only chain. It is exempt because it cannot be
+#: repaired -- an entry is hash-linked and signed the moment it is written, so a bare assertion
+#: inside it can only be answered by APPENDING a retraction the 400-byte window will never see.
+#: Failing forever on an un-editable file does not protect the record; it pressures someone into
+#: weakening the rule, which this file warns against in its own header.
+#:
+#: NARROWED 2026-08-19, and this is the point of the change. The set previously read
+#: {"paper-state.json", "track_record.json", "transparency.json"} -- three entries, none of them
+#: right. "transparency.json" MATCHES NO FILE: the chain is published as transparency_log.json, so
+#: the one exemption that was justified was never in force (the chain passed on its merits, which
+#: is how nobody noticed). The two that WERE in force are the two published surfaces the whole
+#: dashboard renders from, and they are regenerated from source every hour -- so a bare claim in
+#: them is always fixable, and exempting them is what let AlphaVintage's withdrawn 0.3403 sit on
+#: canlicapital.com in the single most-read file on the site while this gate reported a pass.
+#:
+#: The rule is now: an IMMUTABLE copy is exempt, every MUTABLE copy is scanned. Because the
+#: mutable copies are generated from the same prose that later gets signed into the chain, a bare
+#: assertion is caught before it can ever reach the copy that cannot be fixed.
+EXEMPT_NAMES = {"transparency_log.json"}
 
 
 class Rule:
-    __slots__ = ("seq", "pattern", "exempt", "raw")
+    __slots__ = ("exempt", "ignore_local", "pattern", "raw", "seq")
 
-    def __init__(self, seq: str, pattern: str, exempt: str, raw: str) -> None:
+    def __init__(
+        self,
+        seq: str,
+        pattern: str,
+        exempt: str,
+        ignore_local: str,
+        raw: str,
+    ) -> None:
         self.seq = seq
         self.pattern = re.compile(pattern, re.IGNORECASE)
         self.exempt = re.compile(exempt, re.IGNORECASE) if exempt.strip() else None
+        self.ignore_local = (
+            re.compile(ignore_local, re.IGNORECASE) if ignore_local.strip() else None
+        )
         self.raw = raw
 
 
@@ -64,11 +96,12 @@ def load_rules() -> list[Rule]:
         # own regexes mid-group and every one of them failed to compile -- the guard against
         # unenforced rules was itself unenforceable on its first run.
         parts = [p.strip() for p in s.split("::")]
-        if len(parts) < 2:
+        if len(parts) < 2 or len(parts) > 4:
             raise SystemExit(f"FAIL: {BLOCKLIST}:{n} unparseable: {line!r}")
         seq, pattern = parts[0], parts[1]
         exempt = parts[2] if len(parts) > 2 else ""
-        rules.append(Rule(seq, pattern, exempt, s))
+        ignore_local = parts[3] if len(parts) > 3 else ""
+        rules.append(Rule(seq, pattern, exempt, ignore_local, s))
     if not rules:
         raise SystemExit("FAIL: blocklist parsed to zero rules — that is not a passing state")
     return rules
@@ -87,6 +120,16 @@ def scan(root: Path, rules: list[Rule]) -> list[tuple[Path, Rule, str]]:
             continue
         for rule in rules:
             for m in rule.pattern.finditer(text):
+                local_start = max(0, m.start() - LOCAL_CONTEXT_WINDOW)
+                local_context = text[
+                    local_start : m.end() + LOCAL_CONTEXT_WINDOW
+                ]
+                relative_match = (m.start() - local_start, m.end() - local_start)
+                if rule.ignore_local is not None and any(
+                    ignored.start() <= relative_match[0] and ignored.end() >= relative_match[1]
+                    for ignored in rule.ignore_local.finditer(local_context)
+                ):
+                    continue
                 window = text[max(0, m.start() - WINDOW) : m.end() + WINDOW]
                 if rule.exempt is not None and rule.exempt.search(window):
                     continue  # quoted inside its own retraction — that is the correct usage
@@ -111,7 +154,8 @@ def main() -> int:
         if r.exists():
             all_v.extend(scan(r, rules))
 
-    print(f"retracted-claims check: {len(rules)} rules over {len([r for r in roots if r.exists()])} root(s)")
+    existing_root_count = len([root for root in roots if root.exists()])
+    print(f"retracted-claims check: {len(rules)} rules over {existing_root_count} root(s)")
     if not all_v:
         print("  PASS — no withdrawn claim is asserted anywhere in the publish set")
         return 0

@@ -19,6 +19,8 @@ AF="$HOME/alphaforge"
 cd "$AF" || exit 1
 mkdir -p var/log
 . "$HOME/alphaforge/scripts/lib/bounded.sh"
+. "$HOME/alphaforge/scripts/lib/indexnow.sh"
+. "$HOME/alphaforge/scripts/lib/site_snapshot.sh"
 LOG="var/log/live_deploy.log"
 HASH_FILE="var/last_web_deploy.hash"
 
@@ -61,11 +63,12 @@ PY
   # dashboard-only changes (the +20% overlay finally rendered, a live dot that stopped pulsing
   # over a dark sleeve) deployed nothing. This script deploys TWO projects; it must watch both.
   # Also excludes .next and .vercel, which are build/CI output for the Next.js app.
-  NEW_HASH=$(find "$HOME/meridian" "$HOME/meridian-app" \
-                \( -name node_modules -o -name dist -o -name .next -o -name .vercel \
-                   -o -name .git -o -name .bak \) -prune -o \
-                -type f -print0 2>/dev/null \
-              | sort -z | xargs -0 shasum -a 256 2>/dev/null | shasum -a 256 | cut -d' ' -f1)
+  # FIFTH fix, 2026-08-23: each site's root artifacts/ directory contains unserved QA and SEO
+  # receipts. IndexNow writes a timestamped receipt there after deploy; hashing that receipt made
+  # the next hourly run see a source change, redeploy, and submit the same URL set again forever.
+  # Exclude only the two unserved ROOT artifact directories. A public/artifacts directory, if one
+  # is ever added, remains covered because it can reach visitors.
+  NEW_HASH=$(site_source_hash)
   OLD_HASH=$(cat "$HASH_FILE" 2>/dev/null)
   if [ -n "$NEW_HASH" ] && [ "$NEW_HASH" = "$OLD_HASH" ]; then
     echo "no data or source change since last deploy — skipping"
@@ -78,7 +81,18 @@ PY
     echo "SKIP: nightly publish holds the deploy lock — next hour retries"
     exit 0
   fi
-  trap 'deploy_lock_release' EXIT
+  SNAPSHOT_TEMP=$(mktemp -d "${TMPDIR:-/tmp}/canli-publish.XXXXXX") || {
+    echo "SKIP: could not create a temporary publication snapshot"
+    exit 1
+  }
+  trap 'site_snapshot_cleanup "$SNAPSHOT_TEMP"; deploy_lock_release' EXIT
+  if ! site_snapshot_create "$SNAPSHOT_TEMP"; then
+    echo "SKIP: site source changed continuously while taking a publication snapshot"
+    exit 1
+  fi
+  # Stamp the exact frozen source deployed below. If the working trees change after this point,
+  # their new hash remains different and the next hourly run publishes the newer snapshot.
+  NEW_HASH="$SITE_SNAPSHOT_HASH"
 
   FAIL=0
   deploy_prod() {
@@ -107,8 +121,20 @@ PY
     return 0
   }
 
-  deploy_prod "$HOME/meridian" "landing" "ac-capital.vercel.app" "meridian-pearl-mu.vercel.app"
-  deploy_prod "$HOME/meridian-app" "app" "ac-capital-app.vercel.app"
+  deploy_prod "$SITE_SNAPSHOT_ROOT/meridian" "landing" "ac-capital.vercel.app" "meridian-pearl-mu.vercel.app"
+  LANDING_OK=$?
+  deploy_prod "$SITE_SNAPSHOT_ROOT/meridian-app" "app" "ac-capital-app.vercel.app"
+
+  # Tell the search engines, but ONLY if the landing deploy actually succeeded: submitting URLs
+  # against a deploy that failed would advertise pages that may not be there. Loud on failure,
+  # never fatal — see scripts/lib/indexnow.sh for why that is the right shape here and how a
+  # persistent failure stops being silent.
+  if [ "$LANDING_OK" = "0" ]; then
+    indexnow_submit "$SITE_SNAPSHOT_ROOT/meridian"
+  else
+    echo "  [indexnow] skipped: the landing deploy failed, so there is nothing new to announce"
+  fi
+  indexnow_warn_if_stale
 
   if [ "$FAIL" = "0" ]; then
     echo "$NEW_HASH" > "$AF/$HASH_FILE"

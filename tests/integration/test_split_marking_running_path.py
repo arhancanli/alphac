@@ -19,8 +19,8 @@ Pinned defects (adjudicated 4-agent diagnostic):
 
 2. **Bogus HON split record (ratio 0.5, no real split)** — a stored split whose
    price did NOT move must be rejected by the sanity guard
-   (``|log((open_ex/close_pre)·ratio)| > 0.30``), logged loudly, and NOT applied:
-   the position stays unconverted and the equity curve stays continuous.
+   (``|log((open_ex/close_pre)·ratio)| > 0.30``). An exposed run fails closed;
+   continuing with either the wrong conversion or no conversion can fabricate P&L.
 
 3. Crypto instruments (``asset_class=CRYPTO_PERP``) never touch the corporate-
    actions read — the golden master (tests/integration/test_golden_master.py) pins
@@ -29,7 +29,6 @@ Pinned defects (adjudicated 4-agent diagnostic):
 
 from __future__ import annotations
 
-import logging
 import math
 from pathlib import Path
 
@@ -164,7 +163,13 @@ def _build_lake(
     return PITDataReader(paths), store
 
 
-def _run(reader: PITDataReader, store: InstrumentStore, weight: float) -> object:
+def _run(
+    reader: PITDataReader,
+    store: InstrumentStore,
+    weight: float,
+    *,
+    verified_split_events: dict[tuple[str, Ms], float] | None = None,
+) -> object:
     engine = EventDrivenBacktester(
         reader,
         store,
@@ -172,6 +177,7 @@ def _run(reader: PITDataReader, store: InstrumentStore, weight: float) -> object
         tf=Timeframe.D1,
         asset_class=AssetClass.EQUITY,
         cost_inputs=StaticCostInputs(adv_quote=ADV, sigma_daily=SIGMA),
+        verified_split_events=verified_split_events,
     )
     # Decide at the close of the Jan-2 bar (= Jan-3 00:00 UTC); fill at the Jan-3 open;
     # hold across the Jan-8 ex-date to the end of the run.
@@ -238,34 +244,57 @@ def test_reverse_split_produces_no_phantom_pnl(tmp_path: Path, weight: float) ->
     assert post_unreal == pytest.approx(pre_unreal, rel=1e-9)
 
 
-def test_bogus_split_record_skipped_by_sanity_guard(
-    tmp_path: Path, caplog: pytest.LogCaptureFixture
-) -> None:
-    """A split record whose price did NOT move (the bogus HON ratio-0.5 row) is
-    logged + skipped: no conversion, no equity jump, lake untouched."""
+def test_bogus_split_record_fails_closed_at_sanity_guard(tmp_path: Path) -> None:
+    """A bogus exposed split aborts instead of leaving holdings unconverted."""
     flat = dict.fromkeys(SESSIONS, (PRE_PRICE, PRE_PRICE))  # no split in the prices
     reader, store = _build_lake(tmp_path, flat, [("split", EX_DATE, 0.5, None)])
-    with caplog.at_level(logging.WARNING, logger="alphaforge.backtest.engine"):
-        result = _run(reader, store, 0.1)
+    with pytest.raises(ValueError, match="refusing to continue with an unconverted exposed"):
+        _run(reader, store, 0.1)
     store.close()
 
-    # The guard fired loudly.
-    warnings = [r for r in caplog.records if "sanity guard" in r.getMessage()]
-    assert warnings, "expected a WARNING from the split sanity guard"
-    assert SPLT in warnings[0].getMessage()
 
-    # No conversion: share count unchanged across the (bogus) ex boundary.
-    pos = result.positions
-    pre_qty = float(pos.loc[pos["ts"] == S[8], "qty"].iloc[0])
-    post_qty = float(pos.loc[pos["ts"] == S[9], "qty"].iloc[0])
-    assert post_qty == pytest.approx(pre_qty, rel=1e-12)
+def test_exact_issuer_verified_split_may_bypass_price_gap_heuristic(tmp_path: Path) -> None:
+    """Only an exact instrument/date/ratio tuple bypasses an extreme overnight gap."""
+    prices = _split_prices()
+    prices[EX_DATE] = (POST_PRICE * 0.6, POST_PRICE * 0.6)
+    reader, store = _build_lake(
+        tmp_path,
+        prices,
+        [("split", EX_DATE, REVERSE_RATIO, None)],
+    )
+    result = _run(
+        reader,
+        store,
+        0.1,
+        verified_split_events={(SPLT, EX_DATE): REVERSE_RATIO},
+    )
+    store.close()
+    assert result.config["verified_split_events_count"] == 1
+    assert len(result.config["verified_split_events_sha256"]) == 64
 
-    # No equity jump: flat prices -> flat curve after entry.
-    equity = result.equity
-    post_entry = equity[equity.index >= S[4]]
-    ref = float(post_entry.iloc[0])
-    for val in post_entry:
-        assert val == pytest.approx(ref, rel=1e-9)
+
+@pytest.mark.parametrize(
+    "verification",
+    [
+        {(SPLT, EX_DATE + DAY): REVERSE_RATIO},
+        {(SPLT, EX_DATE): REVERSE_RATIO * 2.0},
+    ],
+    ids=["wrong-date", "wrong-ratio"],
+)
+def test_non_exact_split_verification_still_fails_closed(
+    tmp_path: Path,
+    verification: dict[tuple[str, Ms], float],
+) -> None:
+    prices = _split_prices()
+    prices[EX_DATE] = (POST_PRICE * 0.6, POST_PRICE * 0.6)
+    reader, store = _build_lake(
+        tmp_path,
+        prices,
+        [("split", EX_DATE, REVERSE_RATIO, None)],
+    )
+    with pytest.raises(ValueError, match="refusing to continue with an unconverted exposed"):
+        _run(reader, store, 0.1, verified_split_events=verification)
+    store.close()
 
 
 def test_genuine_split_with_dividend_rows_present(tmp_path: Path) -> None:
@@ -313,6 +342,20 @@ def test_cash_dividend_charges_a_short_position(tmp_path: Path) -> None:
     assert dividend["cashflow_quote"] == pytest.approx(
         dividend["position_qty_before"] * dividend["cash_amount"]
     )
+
+
+def test_cash_dividend_larger_than_pre_ex_share_value_fails_closed(tmp_path: Path) -> None:
+    """A vendor-unit/lifecycle defect cannot manufacture cash inside the backtest."""
+    flat = dict.fromkeys(SESSIONS, (PRE_PRICE, PRE_PRICE))
+    reader, store = _build_lake(tmp_path, flat, [("dividend", S[4], 1.0, PRE_PRICE * 2.0)])
+    try:
+        with pytest.raises(
+            ValueError,
+            match="refusing unverified dividend units/lifecycle semantics",
+        ):
+            _run(reader, store, 0.1)
+    finally:
+        store.close()
 
 
 def test_pre_ex_queued_order_is_rescaled_even_when_book_is_flat(tmp_path: Path) -> None:

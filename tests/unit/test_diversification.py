@@ -109,3 +109,28 @@ def test_alignment_and_stress_masks_cannot_be_repaired_silently() -> None:
             candidate_weight=0.10,
             bootstrap_samples=300,
         )
+
+
+def test_sparse_valid_returns_retry_degenerate_bootstrap_draws() -> None:
+    rng = np.random.default_rng(21)
+    observations = 300
+    candidate = np.zeros(observations)
+    candidate[::17] = rng.normal(0.001, 0.01, len(candidate[::17]))
+    sleeves = {
+        "alpha": rng.normal(0.0002, 0.006, observations),
+        "beta": rng.normal(0.0001, 0.007, observations),
+    }
+    book = 0.5 * sleeves["alpha"] + 0.5 * sleeves["beta"]
+    stress = book <= np.quantile(book, 0.10)
+    result = diversification_report(
+        candidate,
+        sleeves,
+        book,
+        stress_mask=stress,
+        period_labels=[str(2023 + index // 100) for index in range(observations)],
+        candidate_weight=0.10,
+        bootstrap_samples=300,
+        bootstrap_block_size=7,
+    )
+    assert np.isfinite(result.max_pairwise_correlation_upper_95)
+    assert np.isfinite(result.max_stressed_pairwise_correlation_upper_95)

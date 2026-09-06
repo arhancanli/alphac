@@ -1,0 +1,30 @@
+{
+  "schema": "canli.crypto-carry-tail-audit.v1",
+  "claim_boundary": "Derived historical simulation statistic for the selected artifact; not forward, live-money, or externally attested performance.",
+  "source": {
+    "path": "artifacts/walkforward/crypto_carry_wk/equity.parquet",
+    "sha256": "37598579af6f34892e40902e2a357e4b07993b3e572012a1da311f7e91798a2a"
+  },
+  "window": {
+    "requested_start": "2022-01-01",
+    "requested_end_exclusive": "2023-01-01",
+    "first_observation": "2022-02-08T01:00:00Z",
+    "last_observation": "2022-12-31T23:00:00Z",
+    "hourly_equity_points": 7847,
+    "daily_return_observations": 326
+  },
+  "method": {
+    "equity_aggregation": "UTC day last observation",
+    "return_type": "simple percentage return",
+    "annualization_days": 365.0,
+    "sharpe_formula": "mean(daily_return)/sample_std(daily_return)*sqrt(365)"
+  },
+  "result": {
+    "annualized_sharpe": -1.633149959992421,
+    "annualized_sharpe_rounded_2dp": -1.63,
+    "total_return": -0.16185387181025845,
+    "maximum_drawdown": 0.19751235757481445,
+    "drawdown_peak": "2022-02-11T04:00:00Z",
+    "drawdown_trough": "2022-11-30T04:00:00Z"
+  }
+}

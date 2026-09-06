@@ -1,0 +1,216 @@
+{
+  "@context": "https://w3id.org/ro/crate/1.1/context",
+  "@graph": [
+    {
+      "@id": "ro-crate-metadata.json",
+      "@type": "CreativeWork",
+      "about": {
+        "@id": "./"
+      },
+      "conformsTo": {
+        "@id": "https://w3id.org/ro/crate/1.1"
+      }
+    },
+    {
+      "@id": "./",
+      "@type": "Dataset",
+      "author": {
+        "@id": "#arhan-canli"
+      },
+      "datePublished": "2026-08-23",
+      "hasPart": [
+        {
+          "@id": "CITATION.cff"
+        },
+        {
+          "@id": "CORRECTIONS.md"
+        },
+        {
+          "@id": "LICENSE"
+        },
+        {
+          "@id": "README.md"
+        },
+        {
+          "@id": "archival_visual_inspection_receipt.json"
+        },
+        {
+          "@id": "bundle_manifest.json"
+        },
+        {
+          "@id": "codemeta.json"
+        },
+        {
+          "@id": "data_manifest.json"
+        },
+        {
+          "@id": "evidence/family_result.json"
+        },
+        {
+          "@id": "evidence/probe_result.json"
+        },
+        {
+          "@id": "internal_replay_receipt.json"
+        },
+        {
+          "@id": "isolated_replay_receipt.json"
+        },
+        {
+          "@id": "paper.html"
+        },
+        {
+          "@id": "paper.json"
+        },
+        {
+          "@id": "paper.md"
+        },
+        {
+          "@id": "paper.pdf"
+        },
+        {
+          "@id": "paper.tex"
+        },
+        {
+          "@id": "pdf_validation.json"
+        },
+        {
+          "@id": "references.bib"
+        },
+        {
+          "@id": "references.json"
+        },
+        {
+          "@id": "reproduction.json"
+        },
+        {
+          "@id": "sbom.spdx.json"
+        },
+        {
+          "@id": "trial_accounting.json"
+        }
+      ],
+      "name": "Annual Risk-Factor Narrative Stability: A Preregistered Null",
+      "version": "0.1.0"
+    },
+    {
+      "@id": "#arhan-canli",
+      "@type": "Person",
+      "name": "Arhan Canli"
+    },
+    {
+      "@id": "CITATION.cff",
+      "@type": "File",
+      "sha256": "1cdb1b53aff1608f24732bcf87cfb59ef8125889faf3cf97f100851d671211f0"
+    },
+    {
+      "@id": "CORRECTIONS.md",
+      "@type": "File",
+      "sha256": "7525e3372b66a5f71ebf270ccd884e5819a7547954813dc3adf15a206df6513a"
+    },
+    {
+      "@id": "LICENSE",
+      "@type": "File",
+      "sha256": "e679ca02271c3b6ff38e197098b9260900656c23f06b787383624681f425fa26"
+    },
+    {
+      "@id": "README.md",
+      "@type": "File",
+      "sha256": "3c05509d4ebcfe66e4db21849e81593b5163cfd62a4efb26a0d067847c2ac59f"
+    },
+    {
+      "@id": "archival_visual_inspection_receipt.json",
+      "@type": "File",
+      "sha256": "7a40b8c55de12ec4dd2f93143810266ac8854dc14fdd2ac1a336f64ff9dd8578"
+    },
+    {
+      "@id": "bundle_manifest.json",
+      "@type": "File",
+      "sha256": "8bf4246842e65e2477c170086c7b9ef89f8b4a91c2404293029553b92d7e4d68"
+    },
+    {
+      "@id": "codemeta.json",
+      "@type": "File",
+      "sha256": "9e6722921d5dcfff62a439873d36378ee319d54546b8e2dc2efb23b87a7cc3e9"
+    },
+    {
+      "@id": "data_manifest.json",
+      "@type": "File",
+      "sha256": "e05b04d3904615448fec7b5e8495ff14d5a8d41461ac1c1f2bfa89c282eb7b40"
+    },
+    {
+      "@id": "evidence/family_result.json",
+      "@type": "File",
+      "sha256": "8866ac188a6613e0b8d9b7abb21433d1a8e6a218b28464b709b664c3c33a6102"
+    },
+    {
+      "@id": "evidence/probe_result.json",
+      "@type": "File",
+      "sha256": "8e416ba075894a67eb74e262d74f467127a6274ae9e78d59d66b35822068a091"
+    },
+    {
+      "@id": "internal_replay_receipt.json",
+      "@type": "File",
+      "sha256": "70ac0c8d8542294e02c396085216646208a786295c747940f0eb0f576010ec95"
+    },
+    {
+      "@id": "isolated_replay_receipt.json",
+      "@type": "File",
+      "sha256": "d0df878375d415986fa639487e4ccffc9cad6396dca9bde5f3be4a7fdf50b2ad"
+    },
+    {
+      "@id": "paper.html",
+      "@type": "File",
+      "sha256": "1451f936fe7bb9805fa2d43fea8ab658fc641ee4b43b77b00d320b852ab296cd"
+    },
+    {
+      "@id": "paper.json",
+      "@type": "File",
+      "sha256": "f9f1b8a144afcce41577f5c48d30b95dbfc4c1d0badde6224d6bdc6a02b6434e"
+    },
+    {
+      "@id": "paper.md",
+      "@type": "File",
+      "sha256": "1f6ee039603a462ba3af1d8cf188a539f1f0f33748f41ba664d1eaea9745736b"
+    },
+    {
+      "@id": "paper.pdf",
+      "@type": "File",
+      "sha256": "66e24f148b7b560328fc4495092d5ce81cbcc25a6fc0199ad1abb7521a2e2099"
+    },
+    {
+      "@id": "paper.tex",
+      "@type": "File",
+      "sha256": "d2fbf2ddb2cd96b2a1ce468f5e19792c45c2628ffd3a340e7cadfb7d05dc0396"
+    },
+    {
+      "@id": "pdf_validation.json",
+      "@type": "File",
+      "sha256": "20292dba7af7ef0ec7bc63cbc039bb17ce81e5310174d9f40d2885ebdd24e9f5"
+    },
+    {
+      "@id": "references.bib",
+      "@type": "File",
+      "sha256": "7a0eb953540b095de6db48ed2e5a6d27ba96d0760f6347c7f911943525f6caf9"
+    },
+    {
+      "@id": "references.json",
+      "@type": "File",
+      "sha256": "e4e4466fad326c656672c89f6805ab7d16a2e504629a9d8f9b1d00e3b503263f"
+    },
+    {
+      "@id": "reproduction.json",
+      "@type": "File",
+      "sha256": "76d5acb19a407681f219f71c3304f854be6f646c9914758aedd427714ea7a78a"
+    },
+    {
+      "@id": "sbom.spdx.json",
+      "@type": "File",
+      "sha256": "8e918396a0e7573f21e5bfa3479693e92e13892eb02a7d618344f024dacc5389"
+    },
+    {
+      "@id": "trial_accounting.json",
+      "@type": "File",
+      "sha256": "72f2efe0c0516c8266c816385d6b3bb56f8b261f85e40d93221a5846bfafe929"
+    }
+  ]
+}

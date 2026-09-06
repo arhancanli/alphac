@@ -1,0 +1,48 @@
+{
+  "archival_assets": {
+    "bibliography": {
+      "references.bib": {
+        "path": "references.bib",
+        "sha256": "7a0eb953540b095de6db48ed2e5a6d27ba96d0760f6347c7f911943525f6caf9"
+      },
+      "references.json": {
+        "path": "references.json",
+        "sha256": "e4e4466fad326c656672c89f6805ab7d16a2e504629a9d8f9b1d00e3b503263f"
+      }
+    },
+    "html": {
+      "path": "paper.html",
+      "sha256": "1451f936fe7bb9805fa2d43fea8ab658fc641ee4b43b77b00d320b852ab296cd"
+    },
+    "latex": {
+      "path": "paper.tex",
+      "sha256": "d2fbf2ddb2cd96b2a1ce468f5e19792c45c2628ffd3a340e7cadfb7d05dc0396"
+    },
+    "pdf": {
+      "machine_validation": "PASS",
+      "pages": 3,
+      "path": "paper.pdf",
+      "sha256": "66e24f148b7b560328fc4495092d5ce81cbcc25a6fc0199ad1abb7521a2e2099",
+      "visual_inspection": {
+        "path": "archival_visual_inspection_receipt.json",
+        "sha256": "7a40b8c55de12ec4dd2f93143810266ac8854dc14fdd2ac1a336f64ff9dd8578",
+        "status": "PASS_INTERNAL_VISUAL_INSPECTION_NOT_INDEPENDENT_REVIEW"
+      }
+    }
+  },
+  "author": "Arhan Canli",
+  "doi_claimed": false,
+  "external_submission_claimed": false,
+  "independent_replication_claimed": false,
+  "peer_review_claimed": false,
+  "registry_key": "equity_narrative_change",
+  "remaining_blockers": [
+    "REDISTRIBUTION_SAFE_RAW_DATA_INVENTORY_INCOMPLETE",
+    "CLEAN_ENVIRONMENT_REPLAY_NOT_COMPLETED",
+    "INDEPENDENT_HUMAN_REPLICATION_MISSING"
+  ],
+  "schema": "canli.alphac-publication-bundle-manifest.v2",
+  "sleeve": "equity-narrative-change",
+  "status": "BUNDLE_INCOMPLETE",
+  "version": "0.1.0"
+}

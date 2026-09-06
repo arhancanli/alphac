@@ -1,0 +1,201 @@
+{
+  "artifact": {
+    "historical_metrics_preserved_not_regraded": {
+      "cagr": 0.06007701531534382,
+      "dsr": 0.0005828431220353194,
+      "final_equity": 348904.5817590885,
+      "max_dd": 0.19027855149454598,
+      "n_trials": 75,
+      "sharpe": 0.8276265361207937
+    },
+    "instrument_ids": 6880,
+    "instrument_ids_by_venue": {
+      "BINANCE": 60,
+      "XUSE": 6820
+    },
+    "leg_files": 774,
+    "legs": 86,
+    "n_days": 5385,
+    "n_periods": 5384,
+    "root_file_sha256": {
+      "equity.parquet": "e81f22c716da8590ee0a7129760ffa65f56b6967f8ef8c3c2ed86845cdf1645b",
+      "summary.txt": "a52cbc9604cd015f6d3557582bdeb01e538752baba6eacc5cd021b8bf33d4376",
+      "tearsheet.png": "ee2a150c4e1e4f9f597bd25d225903e6f8d24df7f7389f2ed48949c3240ef37f",
+      "tearsheet.txt": "a52cbc9604cd015f6d3557582bdeb01e538752baba6eacc5cd021b8bf33d4376",
+      "walkforward.json": "fb11cba28271462444de855e2da294d026bcffdfd7176ec9a4ffabe7be46485f"
+    }
+  },
+  "author": "Arhan Canli",
+  "claim_boundary": "This receipt establishes recoverable lineage and surviving local state. It does not establish an exact upstream reproduction, independent verification, valid prospective pre-registration, sleeve admission, or corrected performance. The stored historical metrics are preserved without regrading.",
+  "classification": {
+    "admitted_sleeve": false,
+    "artifact_role": "HISTORICAL_GATE_INPUT_ONLY",
+    "not_a_sleeve": true,
+    "reason": "The run dynamically resolved 6,880 ids and predates the later declaration; it cannot be relabeled as prospective evidence.",
+    "valid_execution_of_later_preregistration": false
+  },
+  "content_hash": "sha256:9fc6f1c67b3aad0a5c5d0060d740535f7a1de91c83665dd66584ae43edace81b",
+  "evidence_date": "2026-08-24",
+  "historical_experiment_context": {
+    "context_reconstructable_without_regrading": true,
+    "distinct_trials_through_target": 75,
+    "numpy_sample_variance": 0.0011398070210704527,
+    "statistics_sample_variance": 0.001139807021070453,
+    "stored_artifact_sample_variance": 0.0011398070210704527,
+    "target_config_hash": "e8c9b78fb4f7c195",
+    "target_line": 75,
+    "target_now_ms": 1782027281509
+  },
+  "historical_run": {
+    "command_recovered_from_private_execution_record": true,
+    "expanded_strategy_command": "uv run af research walkforward --profile equity --allocator rank --rebalance-bars 63 --start 2000-01-01 --end 2026-06-01 --train-days 252 --test-days 63 --alphas eq_asset_growth --out artifacts/walkforward/prereg_investment",
+    "successful_orchestration_launched_utc": "2026-06-21T05:21:24.293000+00:00",
+    "trial_now_ms": 1782027281509
+  },
+  "preserved_raw_vendor_archives": {
+    "bytes": 1179163817,
+    "claim_boundary": "The current local bytes are hash-bound and their filesystem timestamps predate the run. No pre-run hash commitment survives, so exact historical equivalence remains clean-replay adjudicated.",
+    "files": 4,
+    "hashes_were_precommitted_before_historical_run": false,
+    "raw_archives_redistributed": false,
+    "records": [
+      {
+        "bytes": 9766443,
+        "filesystem_modified_at_utc": "2026-06-20T18:13:13.909953+00:00",
+        "name": "ACTIONS.zip",
+        "predates_successful_rerun": true,
+        "sha256": "166d6ae17921b6a3a1f13a734e43bfd32ca5d9e88398030290a5246c89d7185c"
+      },
+      {
+        "bytes": 994782292,
+        "filesystem_modified_at_utc": "2026-06-20T18:18:03.637771+00:00",
+        "name": "SEP.zip",
+        "predates_successful_rerun": true,
+        "sha256": "d537322141302331cc3dc43f4eefe1222057e329525a835cc93bd0a079db92b3"
+      },
+      {
+        "bytes": 170695165,
+        "filesystem_modified_at_utc": "2026-06-20T18:14:15.428236+00:00",
+        "name": "SF1.zip",
+        "predates_successful_rerun": true,
+        "sha256": "701c3ac5ea8c65c6621461f51d4ff23358c46a3b019c6acf3a1e85ee2998487a"
+      },
+      {
+        "bytes": 3919917,
+        "filesystem_modified_at_utc": "2026-06-20T18:13:01.169923+00:00",
+        "name": "TICKERS.zip",
+        "predates_successful_rerun": true,
+        "sha256": "8f3e03012dd25d0a2fb3950e39d81f1ddff106391cd20eb9e547cd53f92525f5"
+      }
+    ],
+    "status": "FOUR_LOCAL_LICENSED_BULK_ARCHIVES_HASH_BOUND"
+  },
+  "private_execution_record": {
+    "events": {
+      "feature_edit": {
+        "event_uuid": "fcd9a370-9c80-4c8b-8c60-39b9e5d82eb2",
+        "line_number_private_record": 10658,
+        "new_sha256": "5d1d739db7f3ebca7ba147b6470945a628d2a0e1fa0b803afe6f2240ec5aca6e",
+        "old_sha256": "cfad6f02f963867ff71df100b01dafe85b6fb1fad206e3e11f382ab632304e02",
+        "path": "src/alphaforge/features/library/equity_fundamental.py",
+        "timestamp": "2026-06-21T05:18:19.015Z"
+      },
+      "launch": {
+        "background": true,
+        "event_uuid": "9469099c-806d-43e3-8e23-d6537b9b4ea5",
+        "line_number_private_record": 10683,
+        "timestamp": "2026-06-21T05:21:24.293Z"
+      },
+      "loader_edit": {
+        "event_uuid": "dff8a8af-163a-43d8-8698-786920daa8a3",
+        "line_number_private_record": 10674,
+        "new_sha256": "4103b29393d85fc0290afa654fad7ecbe1c9a4a0299539b4c0a23077848fc44b",
+        "old_sha256": "f72db45e6195828a7be2fa8a00c7f2634f3d9bbb7dd552a2f19797b61f6e4115",
+        "path": "scripts/sharadar_load.py",
+        "timestamp": "2026-06-21T05:20:34.845Z"
+      },
+      "measured_output": {
+        "event_uuid": "d56f70d8-98d8-4e96-bdcf-1780100c3c0a",
+        "line_number_private_record": 10890,
+        "output_sha256": "2eeb7f3bbb111cf5a81ccfca4d1e005981bc2c2912237ab6eaab645e01441455",
+        "timestamp": "2026-06-21T10:25:25.259Z"
+      },
+      "orchestration": {
+        "command_sha256": "b54884e0b8b3e792f8d3e941a1b0cf4949ca9409d0477e28b4fb2eec05ec9a7d",
+        "event_uuid": "57d7d4e3-81c5-4149-843e-8590071650e2",
+        "expands_to_expected_strategy_command": true,
+        "line_number_private_record": 10681,
+        "timestamp": "2026-06-21T05:21:04.262Z"
+      }
+    },
+    "limitation": "Absence of a tracked Edit event is not proof of a globally clean historical worktree. Source equivalence remains replay-adjudicated.",
+    "record_type": "private_local_conversation_record",
+    "redistributed": false,
+    "sha256": "a9dfd8aad3a27530293130fc43240782f4813d7c53fe3a00948b190331b337df",
+    "tracked_edit_events_during_investment_run": 0
+  },
+  "replay_gate": {
+    "artifact_equivalence_established": false,
+    "clean_workspace_replay_completed": false,
+    "historical_corporate_action_input_exact": false,
+    "historical_source_tree_exact": false,
+    "raw_corporate_action_archive_locally_preserved": true,
+    "required_next_evidence": "Build a rights-withheld private minimal input snapshot, run the recovered strategy in a clean workspace, and compare every surviving output file and equity return before changing this status.",
+    "status": "PENDING"
+  },
+  "rights_and_release": {
+    "hash_and_aggregate_receipt_may_be_public": true,
+    "market_source": "Sharadar SEP/SF1/ACTIONS under the owner's local license",
+    "private_conversation_publication_authorized": false,
+    "raw_or_normalized_rows_publication_authorized": false
+  },
+  "schema": "canli.alphac-prereg-investment-historical-lineage.v1",
+  "source": {
+    "classification": "PREDECESSOR_COMMIT_PLUS_RUN_CRITICAL_FILES_RECOVERED_FROM_FIRST_POST_RUN_COMMIT",
+    "equivalence_requires_clean_replay": true,
+    "feature_file_after_patch_sha256": "803cb64a60deb602dca8a365513dfed9fb917fdef5bea60bb7117976024e392a",
+    "first_post_run_commit": "6aa26b55254ce33ed6ca3a817ce52433924a71ed",
+    "full_historical_dirty_source_tree_exactly_recovered": false,
+    "loader_file_after_patch_sha256": "ef825a5773147c4a7ef6f9feaa2c81a05c4f1bbf4904b197e5c9c5d9d3f7c648",
+    "predecessor_commit": "8417cb850a27306b30f6c70365c3565f3d209ddf",
+    "recovered_run_critical_file_sha256": {
+      "configs/equity.yaml": "5db15b29f53764e882a70cfaabb09d725d4fb429d6e73a20a74c6f5e790aff26",
+      "scripts/sharadar_load.py": "d438167baafdf125afd6b5826af025ca69f6387e7a810e48a83e7cfe7b5b03c7",
+      "src/alphaforge/features/library/equity_fundamental.py": "803cb64a60deb602dca8a365513dfed9fb917fdef5bea60bb7117976024e392a"
+    },
+    "recovery_basis": "The first post-run commit was authored the following morning and contains the wide-universe profile and complete loader state required by the historical 6,835-equity membership counts. The first clean attempt using only the predecessor profile failed before strategy execution with 1,050 equities. This correction is source-lineage adjudication, not a return-threshold or performance regrade."
+  },
+  "status": "HISTORICAL_LINEAGE_RECOVERED_UPSTREAM_REPLAY_PENDING",
+  "surviving_market_data_state": {
+    "corporate_actions": {
+      "classification": "RAW_ARCHIVE_PRESERVED_NORMALIZED_REPLAY_NOT_YET_ADJUDICATED",
+      "exact_historical_normalized_input_claimed": false,
+      "preserved_rows_still_carrying_original_ingestion_date": 158708,
+      "preserved_splits_still_carrying_original_ingestion_date": 4512,
+      "raw_actions_archive_locally_preserved": true
+    },
+    "load_ingested_at_utc": "2026-06-21T05:23:11.023000+00:00",
+    "loader_reported_counts_from_private_execution_record": {
+      "corporate_action_rows": 172200,
+      "fundamental_rows": 392229,
+      "splits": 5079
+    },
+    "preserved_exactly_timestamp_identifiable": {
+      "fundamental_instrument_ids": 8082,
+      "fundamental_rows_stored": 380878,
+      "ohlcv_instrument_ids": 8436,
+      "ohlcv_rows": 24085990
+    },
+    "raw_rows_redistributed": false
+  },
+  "surviving_membership_state": {
+    "instrument_ids": 6835,
+    "intervals": 11359,
+    "matches_original_rebuild_output_counts": true,
+    "max_effective_from": "2026-06-01T00:00:00+00:00",
+    "max_effective_to": "2026-06-01T00:00:00+00:00",
+    "min_effective_from": "2000-01-01T00:00:00+00:00",
+    "open_intervals": 2088,
+    "parquet_files": 11047
+  }
+}

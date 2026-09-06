@@ -1,0 +1,88 @@
+{
+  "alignment": "alphaforge.portfolio.book.combine_book, the production path: contiguous epoch-day index, an absent day treated as FLAT, pairwise correlation on days where both sleeves are genuinely active.",
+  "claim_boundary": "A measurement of two allocations on one common window, both reported. Opens no new data, registers no hypothesis identity, changes no allocation and recommends nothing. 0 trials.",
+  "common_window_days": 1061,
+  "deltas": {
+    "book_max_drawdown": -0.010553717680605756,
+    "book_sharpe_equal_risk": 0.0062571302080682845,
+    "projected_book_sharpe_at_14_sleeves": -0.014045510490330537,
+    "rho_bar": 0.046335519577918094,
+    "s_bar": 0.09050742076468105
+  },
+  "schema": "canli.alphac-book-without-alphavintage.v1",
+  "what_this_does_not_settle": "Removing a sleeve raises s_bar mechanically whenever the sleeve is below average, and that is not evidence the remaining sleeves are better. It also measures both allocations on the window used to compare them, which is in-sample by construction for the comparison itself. The drawdown and correlation effects are the parts that carry information; the s_bar arithmetic is bookkeeping.",
+  "window_note": "Bounded by the BLESSED research curves, which are frozen by disclosure protocol and end 2026-06-01 by design. This is not the live record and cannot be extended by re-running anything.",
+  "with_alphavintage": {
+    "book_max_drawdown": -0.027531208618643443,
+    "book_sharpe_equal_risk": 1.0374404169652185,
+    "book_vol": 0.03365583500999034,
+    "diversification_ratio": 1.9427290802285424,
+    "n": 4,
+    "n_days": 1061,
+    "pairwise_correlations": {
+      "AlphaForge|AlphaMax": -0.015769890554217854,
+      "AlphaForge|AlphaTrend": 0.022859622846078544,
+      "AlphaForge|AlphaVintage": 0.04554952785731474,
+      "AlphaMax|AlphaTrend": 0.21003647886971527,
+      "AlphaMax|AlphaVintage": -0.06216919926552442,
+      "AlphaTrend|AlphaVintage": -0.044267234897722905
+    },
+    "per_sleeve_sharpe": {
+      "AlphaForge": 1.1180545274138174,
+      "AlphaMax": 0.7594696554530772,
+      "AlphaTrend": -0.1992641821836501,
+      "AlphaVintage": 0.1973903171690239
+    },
+    "projected_book_sharpe_at_14_sleeves": 1.516504535329405,
+    "rho_bar": 0.026039884142607227,
+    "rho_bar_required_at_14": {
+      "2.25": -0.03014919505410216,
+      "3.0": -0.050612768371778624
+    },
+    "s_bar": 0.46891257946306714,
+    "s_bar_required_at_14_at_this_rho": {
+      "2.25": 0.6957139126278507,
+      "3.0": 0.9276185501704676
+    },
+    "sleeves": [
+      "AlphaForge",
+      "AlphaMax",
+      "AlphaTrend",
+      "AlphaVintage"
+    ]
+  },
+  "without_alphavintage": {
+    "book_max_drawdown": -0.0380849262992492,
+    "book_sharpe_equal_risk": 1.0436975471732868,
+    "book_vol": 0.04010312884110022,
+    "diversification_ratio": 1.6425384253390243,
+    "n": 3,
+    "n_days": 1061,
+    "pairwise_correlations": {
+      "AlphaForge|AlphaMax": -0.015769890554217854,
+      "AlphaForge|AlphaTrend": 0.022859622846078544,
+      "AlphaMax|AlphaTrend": 0.21003647886971527
+    },
+    "per_sleeve_sharpe": {
+      "AlphaForge": 1.1180545274138174,
+      "AlphaMax": 0.7594696554530772,
+      "AlphaTrend": -0.1992641821836501
+    },
+    "projected_book_sharpe_at_14_sleeves": 1.5024590248390746,
+    "rho_bar": 0.07237540372052532,
+    "rho_bar_required_at_14": {
+      "2.25": -0.010350460578653102,
+      "3.0": -0.03947598022933853
+    },
+    "s_bar": 0.5594200002277482,
+    "s_bar_required_at_14_at_this_rho": {
+      "2.25": 0.8377566241097655,
+      "3.0": 1.117008832146354
+    },
+    "sleeves": [
+      "AlphaForge",
+      "AlphaMax",
+      "AlphaTrend"
+    ]
+  }
+}

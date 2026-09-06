@@ -1,0 +1,20 @@
+{
+  "license_review_complete": false,
+  "registry_key": "crypto_defensive",
+  "released_data_objects": [],
+  "released_result_objects": [
+    {
+      "bundle_path": "evidence/family_result.json",
+      "byte_identical_to_source": true,
+      "role": "complete defensive-factor identity family",
+      "sha256": "5bf4fef10142747c084d97f39b67674f3be74aa47ccc6405ab44c64a29bb70df",
+      "source_path": "artifacts/research/crypto_defensive_family.json"
+    }
+  ],
+  "schema": "canli.alphac-publication-data-manifest.v1",
+  "source_paper": {
+    "path": "docs/research/CRYPTO_DEFENSIVE_LINEAGE.md",
+    "sha256": "395c5662df14296a60786402d911f32409b5db95ce64feed05eddeca99297c37"
+  },
+  "status": "RESULT_OBJECTS_RELEASED_RAW_INPUT_INVENTORY_INCOMPLETE"
+}

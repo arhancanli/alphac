@@ -1,5 +1,7 @@
 # Electricity load/weather dislocation: literature and implementation boundary
 
+**Short title:** Electricity load and weather: literature
+
 **Reviewed:** 2026-08-16  
 **Family:** `electricity_load_weather_spread`  
 **Claim state:** mechanism supported; investable return untested  

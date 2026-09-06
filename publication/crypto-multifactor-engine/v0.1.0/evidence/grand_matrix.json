@@ -1,0 +1,308 @@
+{
+  "capacity_curve": [
+    {
+      "dsr": 0.48027444571189165,
+      "final_equity": 118509.86213982201,
+      "initial_cash": 100000.0,
+      "max_dd": 0.13136426372649812,
+      "sr_ann": 0.40094434633223386,
+      "turnover": 44.53110619575417
+    },
+    {
+      "dsr": 0.21122272275883525,
+      "final_equity": 993219.3914215431,
+      "initial_cash": 1000000.0,
+      "max_dd": 0.1358739427457838,
+      "sr_ann": 0.0424294798491386,
+      "turnover": 39.743039521697064
+    },
+    {
+      "dsr": 0.0459516113520736,
+      "final_equity": 8043578.963984171,
+      "initial_cash": 10000000.0,
+      "max_dd": 0.22694468906769127,
+      "sr_ann": -0.3719955489234715,
+      "turnover": 44.314895816335685
+    }
+  ],
+  "configs": [
+    {
+      "baseline_dsr": null,
+      "block": "A",
+      "clears_baseline_gate": false,
+      "clears_dsr_gate": false,
+      "config_id": "A_blend",
+      "dsr": 0.21122272275883525,
+      "is_distinct_trial": true,
+      "knobs": {
+        "allocator": "rank",
+        "alpha_names": null,
+        "initial_cash": 1000000.0,
+        "ml": false,
+        "no_trade_band": 0.003,
+        "rebalance_bars": 72,
+        "regime": false
+      },
+      "max_dd": 0.1358739427457838,
+      "psr": 0.5354740048821097,
+      "runtime_dsr": 6.292523923908449e-96,
+      "sr_ann": 0.0424294798491386,
+      "turnover": 39.743039521697064
+    },
+    {
+      "baseline_dsr": 0.21122272275883525,
+      "block": "A",
+      "clears_baseline_gate": false,
+      "clears_dsr_gate": false,
+      "config_id": "A_ml",
+      "dsr": 0.21122272275883525,
+      "is_distinct_trial": true,
+      "knobs": {
+        "allocator": "rank",
+        "alpha_names": null,
+        "initial_cash": 1000000.0,
+        "ml": true,
+        "no_trade_band": 0.003,
+        "rebalance_bars": 72,
+        "regime": false
+      },
+      "max_dd": 0.1358739427457838,
+      "psr": 0.5354740048821097,
+      "runtime_dsr": 0.5354740048821097,
+      "sr_ann": 0.0424294798491386,
+      "turnover": 39.743039521697064
+    },
+    {
+      "baseline_dsr": 0.21122272275883525,
+      "block": "A",
+      "clears_baseline_gate": false,
+      "clears_dsr_gate": false,
+      "config_id": "A_regime",
+      "dsr": 0.21122272275883525,
+      "is_distinct_trial": true,
+      "knobs": {
+        "allocator": "rank",
+        "alpha_names": null,
+        "initial_cash": 1000000.0,
+        "ml": false,
+        "no_trade_band": 0.003,
+        "rebalance_bars": 72,
+        "regime": true
+      },
+      "max_dd": 0.1358739427457838,
+      "psr": 0.5354740048821097,
+      "runtime_dsr": 0.5354740048821097,
+      "sr_ann": 0.0424294798491386,
+      "turnover": 39.743039521697064
+    },
+    {
+      "baseline_dsr": 0.21122272275883525,
+      "block": "A",
+      "clears_baseline_gate": false,
+      "clears_dsr_gate": false,
+      "config_id": "A_ml_regime",
+      "dsr": 0.21122272275883525,
+      "is_distinct_trial": true,
+      "knobs": {
+        "allocator": "rank",
+        "alpha_names": null,
+        "initial_cash": 1000000.0,
+        "ml": true,
+        "no_trade_band": 0.003,
+        "rebalance_bars": 72,
+        "regime": true
+      },
+      "max_dd": 0.1358739427457838,
+      "psr": 0.5354740048821097,
+      "runtime_dsr": 0.5354740048821097,
+      "sr_ann": 0.0424294798491386,
+      "turnover": 39.743039521697064
+    },
+    {
+      "baseline_dsr": null,
+      "block": "C",
+      "clears_baseline_gate": false,
+      "clears_dsr_gate": false,
+      "config_id": "C_rebal24",
+      "dsr": 0.004895541812456751,
+      "is_distinct_trial": true,
+      "knobs": {
+        "allocator": "rank",
+        "alpha_names": null,
+        "initial_cash": 1000000.0,
+        "ml": false,
+        "no_trade_band": 0.003,
+        "rebalance_bars": 24,
+        "regime": false
+      },
+      "max_dd": 0.339342767165307,
+      "psr": 0.04647417142322905,
+      "runtime_dsr": 0.004342532727794164,
+      "sr_ann": -0.7900923793610648,
+      "turnover": 80.57809064272644
+    },
+    {
+      "baseline_dsr": null,
+      "block": "C",
+      "clears_baseline_gate": false,
+      "clears_dsr_gate": false,
+      "config_id": "C_band10",
+      "dsr": 0.09348534007208298,
+      "is_distinct_trial": true,
+      "knobs": {
+        "allocator": "rank",
+        "alpha_names": null,
+        "initial_cash": 1000000.0,
+        "ml": false,
+        "no_trade_band": 0.001,
+        "rebalance_bars": 72,
+        "regime": false
+      },
+      "max_dd": 0.13890666826719655,
+      "psr": 0.33663904277138745,
+      "runtime_dsr": 0.08996749334318027,
+      "sr_ann": -0.1994291526209954,
+      "turnover": 40.74876292610767
+    },
+    {
+      "baseline_dsr": null,
+      "block": "C",
+      "clears_baseline_gate": false,
+      "clears_dsr_gate": false,
+      "config_id": "C_mvo",
+      "dsr": 0.1372897101769705,
+      "is_distinct_trial": true,
+      "knobs": {
+        "allocator": "mvo",
+        "alpha_names": null,
+        "initial_cash": 1000000.0,
+        "ml": false,
+        "no_trade_band": 0.003,
+        "rebalance_bars": 72,
+        "regime": false
+      },
+      "max_dd": 0.15943114486457577,
+      "psr": 0.4210953561561836,
+      "runtime_dsr": 0.1376413411667935,
+      "sr_ann": -0.09463401806531034,
+      "turnover": 15.18745681189936
+    },
+    {
+      "baseline_dsr": null,
+      "block": "C",
+      "clears_baseline_gate": false,
+      "clears_dsr_gate": false,
+      "config_id": "C_carry",
+      "dsr": 0.22290583056557928,
+      "is_distinct_trial": true,
+      "knobs": {
+        "allocator": "rank",
+        "alpha_names": [
+          "carry_fund_21",
+          "carry_fund_90",
+          "mr_res_72"
+        ],
+        "initial_cash": 1000000.0,
+        "ml": false,
+        "no_trade_band": 0.003,
+        "rebalance_bars": 72,
+        "regime": false
+      },
+      "max_dd": 0.19415986265790985,
+      "psr": 0.5516435457698787,
+      "runtime_dsr": 0.22290583056557928,
+      "sr_ann": 0.06179135928285124,
+      "turnover": 71.87633467546117
+    },
+    {
+      "baseline_dsr": null,
+      "block": "B",
+      "clears_baseline_gate": false,
+      "clears_dsr_gate": false,
+      "config_id": "B_cap_100k",
+      "dsr": 0.48027444571189165,
+      "is_distinct_trial": false,
+      "knobs": {
+        "allocator": "rank",
+        "alpha_names": null,
+        "initial_cash": 100000.0,
+        "ml": false,
+        "no_trade_band": 0.003,
+        "rebalance_bars": 72,
+        "regime": true
+      },
+      "max_dd": 0.13136426372649812,
+      "psr": 0.7981169526783536,
+      "runtime_dsr": 0.48027444571189165,
+      "sr_ann": 0.40094434633223386,
+      "turnover": 44.53110619575417
+    },
+    {
+      "baseline_dsr": null,
+      "block": "B",
+      "clears_baseline_gate": false,
+      "clears_dsr_gate": false,
+      "config_id": "B_cap_1M",
+      "dsr": 0.21122272275883525,
+      "is_distinct_trial": false,
+      "knobs": {
+        "allocator": "rank",
+        "alpha_names": null,
+        "initial_cash": 1000000.0,
+        "ml": false,
+        "no_trade_band": 0.003,
+        "rebalance_bars": 72,
+        "regime": true
+      },
+      "max_dd": 0.1358739427457838,
+      "psr": 0.5354740048821097,
+      "runtime_dsr": 0.21122272275883525,
+      "sr_ann": 0.0424294798491386,
+      "turnover": 39.743039521697064
+    },
+    {
+      "baseline_dsr": null,
+      "block": "B",
+      "clears_baseline_gate": false,
+      "clears_dsr_gate": false,
+      "config_id": "B_cap_10M",
+      "dsr": 0.0459516113520736,
+      "is_distinct_trial": false,
+      "knobs": {
+        "allocator": "rank",
+        "alpha_names": null,
+        "initial_cash": 10000000.0,
+        "ml": false,
+        "no_trade_band": 0.003,
+        "rebalance_bars": 72,
+        "regime": true
+      },
+      "max_dd": 0.22694468906769127,
+      "psr": 0.2156486670222466,
+      "runtime_dsr": 0.0459516113520736,
+      "sr_ann": -0.3719955489234715,
+      "turnover": 44.314895816335685
+    }
+  ],
+  "git_sha": "03c0188",
+  "matrix": {
+    "clears_pbo_gate": false,
+    "deflated_winner": null,
+    "deployment_verdict": false,
+    "expected_max_sr": 0.022229732554506054,
+    "n_trials": 8,
+    "pbo": 0.8818,
+    "pbo_n_combinations": 5000,
+    "pbo_n_configs": 8,
+    "pbo_n_obs": 1612,
+    "sr_trials_variance": 0.0002321397492477993
+  },
+  "run_ts": "20260616T143620Z",
+  "schema_version": 1,
+  "window": {
+    "end_iso": "2026-06-01",
+    "end_ms": 1780272000000,
+    "start_iso": "2021-01-01",
+    "start_ms": 1609459200000
+  }
+}

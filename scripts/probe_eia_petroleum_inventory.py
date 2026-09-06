@@ -4,11 +4,12 @@
 from __future__ import annotations
 
 import glob
+import hashlib
 import json
 import math
 import sys
 from pathlib import Path
-from typing import Final
+from typing import Any, Final
 
 import numpy as np
 import pandas as pd
@@ -28,6 +29,11 @@ EVENTS: Final[Path] = Path("data/lake_inventory_releases/events.parquet")
 MANIFEST: Final[Path] = Path("data/lake_inventory_releases/manifest.json")
 PRICE_ROOT: Final[Path] = Path("data/lake_inventory/ohlcv_1d")
 OUT: Final[Path] = Path("artifacts/probe/eia_petroleum_inventory")
+INPUT_MANIFEST: Final[Path] = OUT / "input_data_manifest.json"
+RUNNER: Final[Path] = Path(__file__).resolve()
+PYPROJECT: Final[Path] = Path("pyproject.toml")
+UV_LOCK: Final[Path] = Path("uv.lock")
+ADMISSION_CONTRACT: Final[Path] = Path("config/sleeve_admission_contract.json")
 PRODUCTS: Final[tuple[str, ...]] = ("USO", "UGA")
 HEDGE: Final[str] = "DBC"
 SEASONAL_YEARS: Final[int] = 5
@@ -41,6 +47,127 @@ SLEEVE_CURVES: Final[dict[str, str]] = {
     "AlphaTrend": "artifacts/walkforward/managed_futures/equity.parquet",
     "AlphaVintage": "artifacts/probe/cpi_surprise_size/equity.parquet",
 }
+
+
+def file_sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def content_hash(payload: dict[str, Any]) -> str:
+    canonical = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode()
+    return "sha256:" + hashlib.sha256(canonical).hexdigest()
+
+
+def trial_configuration() -> dict[str, object]:
+    return {
+        "mechanism": "eia_first_release_petroleum_inventory_scarcity",
+        "products": list(PRODUCTS),
+        "seasonal_years": SEASONAL_YEARS,
+        "scale_weeks": SCALE_WEEKS,
+        "score_clip": [-3.0, 3.0],
+        "entry": "next_session_open_after_release",
+        "hedge": "trailing_252_session_dbc_beta_clamped_-3_3",
+        "costs": COSTS,
+        "oos_start": str(OOS_START.date()),
+    }
+
+
+def validate_archive_manifest(manifest: dict[str, Any]) -> None:
+    """Require every dated first-release file to match the persisted source manifest."""
+    if manifest.get("schema") != "canli.eia-wpsr-vintage-manifest.v1":
+        raise RuntimeError("unexpected EIA first-release manifest schema")
+    files = manifest.get("files")
+    if not isinstance(files, list) or len(files) != manifest.get("discovered_releases"):
+        raise RuntimeError("EIA first-release manifest inventory is incomplete")
+    for item in files:
+        path = Path(str(item.get("path", "")))
+        expected = item.get("sha256")
+        if not path.is_file() or not isinstance(expected, str):
+            raise RuntimeError(f"EIA first-release source is missing: {path}")
+        observed = file_sha256(path)
+        if observed != expected:
+            raise RuntimeError(f"EIA first-release source hash mismatch: {path}")
+
+
+def _partition_inventory(symbol: str) -> list[dict[str, object]]:
+    root = PRICE_ROOT / f"instrument_id=XUSE:CASH:{symbol}USD"
+    paths = sorted(Path(path) for path in glob.glob(glob.escape(str(root)) + "/*/*.parquet"))
+    if not paths:
+        raise FileNotFoundError(f"missing price series {symbol}")
+    return [
+        {
+            "path": str(path),
+            "bytes": path.stat().st_size,
+            "sha256": file_sha256(path),
+        }
+        for path in paths
+    ]
+
+
+def build_input_manifest(source_manifest: dict[str, Any]) -> dict[str, Any]:
+    payload: dict[str, Any] = {
+        "schema": "canli.eia-petroleum-inventory-input-manifest.v1",
+        "preregistration_path": str(PREREG),
+        "preregistration_sha256": file_sha256(PREREG),
+        "events_path": str(EVENTS),
+        "events_sha256": file_sha256(EVENTS),
+        "first_release_manifest_path": str(MANIFEST),
+        "first_release_manifest_sha256": file_sha256(MANIFEST),
+        "first_release_files_validated": len(source_manifest["files"]),
+        "market_data_partitions": {
+            symbol: _partition_inventory(symbol) for symbol in (*PRODUCTS, HEDGE)
+        },
+        "diversification_curves": {
+            name: {"path": path, "sha256": file_sha256(Path(path))}
+            for name, path in SLEEVE_CURVES.items()
+        },
+    }
+    payload["content_hash"] = content_hash(payload)
+    return payload
+
+
+def reproduction_environment() -> dict[str, object]:
+    return {
+        "command": "uv run python scripts/probe_eia_petroleum_inventory.py",
+        "python": sys.version,
+        "numpy": np.__version__,
+        "pandas": pd.__version__,
+        "pyproject_path": str(PYPROJECT),
+        "pyproject_sha256": file_sha256(PYPROJECT),
+        "uv_lock_path": str(UV_LOCK),
+        "uv_lock_sha256": file_sha256(UV_LOCK),
+        "runner_path": str(RUNNER.relative_to(_ROOT)),
+        "runner_sha256": file_sha256(RUNNER),
+    }
+
+
+def admission_review(gates: dict[str, bool]) -> dict[str, object]:
+    """Bind the historical kill to the current contract without claiming eligibility."""
+    contract = json.loads(ADMISSION_CONTRACT.read_text())
+    if contract.get("schema") != "canli.alphac-sleeve-admission-contract.v6":
+        raise RuntimeError("unexpected sleeve admission contract schema")
+    required = int(contract.get("evidence_checks_per_candidate", 0))
+    if required != 85:
+        raise RuntimeError("v6 sleeve admission contract must retain exactly 85 checks")
+    return {
+        "contract_schema": contract["schema"],
+        "contract_path": str(ADMISSION_CONTRACT),
+        "contract_sha256": file_sha256(ADMISSION_CONTRACT),
+        "checks_required_for_technical_eligibility": required,
+        "preregistered_research_checks": len(gates),
+        "preregistered_research_checks_passed": sum(gates.values()),
+        "status": "RESEARCH_SUBSET_FAILED",
+        "technically_eligible": False,
+        "claim_boundary": (
+            "This historical ETF feasibility probe failed its preregistered research gates. "
+            "Binding it to the current v6 contract does not retroactively change those gates or "
+            "make it technically eligible."
+        ),
+    }
 
 
 def load_symbol(symbol: str) -> pd.DataFrame:
@@ -282,6 +409,7 @@ def main() -> None:
     events["period_end"] = pd.to_datetime(events["period_end"]).dt.normalize()
     scores = build_scores(events)
     manifest = json.loads(MANIFEST.read_text())
+    validate_archive_manifest(manifest)
     all_releases = [pd.Timestamp(item["release_date"]) for item in manifest["files"]]
 
     frames = {symbol: load_symbol(symbol) for symbol in (*PRODUCTS, HEDGE)}
@@ -302,21 +430,13 @@ def main() -> None:
     net_2x = simulate(weights, open_returns, cost_multiplier=2.0).loc[OOS_START:]
 
     OUT.mkdir(parents=True, exist_ok=True)
+    input_manifest = build_input_manifest(manifest)
+    INPUT_MANIFEST.write_text(json.dumps(input_manifest, indent=2) + "\n")
     write_curve(net, OUT)
     scores.to_parquet(OUT / "scores.parquet", index=False)
     weights.loc[:, (weights != 0).any()].to_parquet(OUT / "weights.parquet")
 
-    trial_config = {
-        "mechanism": "eia_first_release_petroleum_inventory_scarcity",
-        "products": list(PRODUCTS),
-        "seasonal_years": SEASONAL_YEARS,
-        "scale_weeks": SCALE_WEEKS,
-        "score_clip": [-3.0, 3.0],
-        "entry": "next_session_open_after_release",
-        "hedge": "trailing_252_session_dbc_beta_clamped_-3_3",
-        "costs": COSTS,
-        "oos_start": str(OOS_START.date()),
-    }
+    trial_config = trial_configuration()
     record_probe_trial(
         "eia_petroleum_inventory",
         trial_config,
@@ -358,6 +478,7 @@ def main() -> None:
         "schema": "canli.eia-petroleum-inventory-probe.v1",
         "preregistration": str(PREREG),
         "hypotheses_spent": 1,
+        "configuration": trial_config,
         "pbo": "not defined for a one-configuration probe; no selection surface exists",
         "data": {
             "source": "EIA dated WPSR archive Table 4 first-release CSV files",
@@ -369,6 +490,7 @@ def main() -> None:
             "schedule_rejections": rejections,
         },
         "metrics": {
+            "observations": int(net.notna().sum()),
             "net_sharpe": sharpe(net),
             "newey_west_t": nw_t(net),
             "dsr": dsr.dsr,
@@ -411,6 +533,16 @@ def main() -> None:
     else:
         verdict = "KILL"
     result["verdict"] = verdict
+    result["admission_review"] = admission_review(result["gates"])
+    result["lineage"] = {
+        "preregistration_sha256": file_sha256(PREREG),
+        "events_sha256": file_sha256(EVENTS),
+        "first_release_manifest_sha256": file_sha256(MANIFEST),
+        "input_data_manifest_sha256": file_sha256(INPUT_MANIFEST),
+        "runner_sha256": file_sha256(RUNNER),
+        "admission_contract_sha256": file_sha256(ADMISSION_CONTRACT),
+    }
+    result["reproduction"] = reproduction_environment()
     (OUT / "result.json").write_text(json.dumps(result, indent=2) + "\n")
     print(json.dumps(result, indent=2))
 

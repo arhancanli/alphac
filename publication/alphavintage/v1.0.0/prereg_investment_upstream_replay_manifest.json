@@ -1,0 +1,106 @@
+{
+  "author": "Arhan Canli",
+  "claim_boundary": "This public manifest binds a private raw-input packet and comparison target without redistributing licensed rows. The 60 zero-held Binance membership intervals are artifact-informed minimal reconstructions. The manifest does not establish exact historical input recovery, strategy-output equivalence, valid prospective evidence, sleeve admission, or independent reproduction.",
+  "classification": {
+    "artifact_role": "HISTORICAL_GATE_INPUT_ONLY",
+    "later_preregistration_covered_historical_run": false,
+    "not_a_sleeve": true
+  },
+  "content_hash": "sha256:0031026aa3d618ae78ef3632f958253363b3e8a270b349c34910a21251dd58e3",
+  "evidence_date": "2026-08-24",
+  "historical_run": {
+    "source": {
+      "classification": "PREDECESSOR_COMMIT_PLUS_RUN_CRITICAL_FILES_RECOVERED_FROM_FIRST_POST_RUN_COMMIT",
+      "equivalence_requires_clean_replay": true,
+      "feature_file_after_patch_sha256": "803cb64a60deb602dca8a365513dfed9fb917fdef5bea60bb7117976024e392a",
+      "first_post_run_commit": "6aa26b55254ce33ed6ca3a817ce52433924a71ed",
+      "full_historical_dirty_source_tree_exactly_recovered": false,
+      "loader_file_after_patch_sha256": "ef825a5773147c4a7ef6f9feaa2c81a05c4f1bbf4904b197e5c9c5d9d3f7c648",
+      "predecessor_commit": "8417cb850a27306b30f6c70365c3565f3d209ddf",
+      "recovered_run_critical_file_sha256": {
+        "configs/equity.yaml": "5db15b29f53764e882a70cfaabb09d725d4fb429d6e73a20a74c6f5e790aff26",
+        "scripts/sharadar_load.py": "d438167baafdf125afd6b5826af025ca69f6387e7a810e48a83e7cfe7b5b03c7",
+        "src/alphaforge/features/library/equity_fundamental.py": "803cb64a60deb602dca8a365513dfed9fb917fdef5bea60bb7117976024e392a"
+      },
+      "recovery_basis": "The first post-run commit was authored the following morning and contains the wide-universe profile and complete loader state required by the historical 6,835-equity membership counts. The first clean attempt using only the predecessor profile failed before strategy execution with 1,050 equities. This correction is source-lineage adjudication, not a return-threshold or performance regrade."
+    },
+    "strategy_command": "uv run af research walkforward --profile equity --allocator rank --rebalance-bars 63 --start 2000-01-01 --end 2026-06-01 --train-days 252 --test-days 63 --alphas eq_asset_growth --out artifacts/walkforward/prereg_investment",
+    "upstream_replay_commands": [
+      "uv run python scripts/sharadar_load.py --min-dollar 500000",
+      "uv run af universe rebuild --profile equity --start 2000-01-01 --end 2026-06-01",
+      "uv run af research walkforward --profile equity --allocator rank --rebalance-bars 63 --start 2000-01-01 --end 2026-06-01 --train-days 252 --test-days 63 --alphas eq_asset_growth --out artifacts/walkforward/prereg_investment"
+    ]
+  },
+  "lineage_binding": {
+    "content_hash": "sha256:9fc6f1c67b3aad0a5c5d0060d740535f7a1de91c83665dd66584ae43edace81b",
+    "path": "artifacts/publication/prereg_investment_historical_lineage.json",
+    "sha256": "1b6a17c6424698b807646684692eda9767fb3cd14559f573feac6467c876a6d1"
+  },
+  "private_input_snapshot": {
+    "bytes": 1191066275,
+    "crypto_membership": {
+      "classification": "ARTIFACT_INFORMED_MINIMAL_ZERO_HELD_RECONSTRUCTION",
+      "historical_membership_intervals_exact": false,
+      "instrument_ids": 60,
+      "intervals": 60,
+      "source": "artifact_config_instrument_ids"
+    },
+    "experiment_context": {
+      "distinct_trials": 75,
+      "sample_variance": 0.0011398070210704527,
+      "sha256": "7f2edd2ecc4f2a1875322eb92b72119494782d71606232d4ca345e388bc02177"
+    },
+    "files": 424,
+    "instrument_state": {
+      "rows": 16613,
+      "rows_by_venue": {
+        "BINANCE": 777,
+        "XUSE": 15836
+      },
+      "sha256": "9d6682c566e7526b3d71951b5885df7a7ebdbf780979c9daf7d0f7ecaa7ce8a6"
+    },
+    "inventory_sha256": "7fbfde5639a17aa5a7cc4d0e54c8d77319132efb5943050909a15166f570ad08",
+    "raw_or_normalized_rows_redistributed": false,
+    "raw_vendor_archives": [
+      {
+        "bytes": 9766443,
+        "name": "ACTIONS.zip",
+        "sha256": "166d6ae17921b6a3a1f13a734e43bfd32ca5d9e88398030290a5246c89d7185c"
+      },
+      {
+        "bytes": 994782292,
+        "name": "SEP.zip",
+        "sha256": "d537322141302331cc3dc43f4eefe1222057e329525a835cc93bd0a079db92b3"
+      },
+      {
+        "bytes": 170695165,
+        "name": "SF1.zip",
+        "sha256": "701c3ac5ea8c65c6621461f51d4ff23358c46a3b019c6acf3a1e85ee2998487a"
+      },
+      {
+        "bytes": 3919917,
+        "name": "TICKERS.zip",
+        "sha256": "8f3e03012dd25d0a2fb3950e39d81f1ddff106391cd20eb9e547cd53f92525f5"
+      }
+    ],
+    "tree_hash": "sha256:b20a763bb01d07944bedf01fded761a1f94755924ddc25c6cae8f03f6856baa5"
+  },
+  "private_reference_output": {
+    "bytes": 71947399,
+    "equity_sha256": "e81f22c716da8590ee0a7129760ffa65f56b6967f8ef8c3c2ed86845cdf1645b",
+    "files": 779,
+    "redistributed": false
+  },
+  "replay_status": {
+    "clean_workspace_completed": false,
+    "independent_human_reproduction_completed": false,
+    "strategy_output_equivalence_established": false
+  },
+  "rights_and_release": {
+    "aggregate_hash_receipt_may_be_public": true,
+    "private_snapshot_publication_authorized": false,
+    "raw_vendor_rows_publication_authorized": false
+  },
+  "schema": "canli.alphac-prereg-investment-upstream-replay-manifest.v1",
+  "status": "SEALED_PRIVATE_RAW_INPUTS_WITH_ARTIFACT_INFORMED_ZERO_HELD_CRYPTO_MEMBERSHIP_REPLAY_PENDING"
+}

@@ -4,7 +4,9 @@
 /data/
 /var/
 /artifacts/
-.env
+# Local credentials and runtime configuration. A placeholder-only example may be committed.
+.env*
+!.env.example
 
 # python
 __pycache__/
@@ -39,3 +41,10 @@ htmlcov/
 /scratch/
 /scratchpad/
 *.bak
+
+# Local agent tooling config — not part of the published engine.
+.claude/
+docs/design/LANE_CONTRACT_CLAUDE_CODEX.md
+docs/design/CLAUDE_HISTORY_RECONCILIATION_2026_08_16.md
+.claude-flow/
+ruvector.db

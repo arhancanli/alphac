@@ -25,7 +25,17 @@ ever suspected (``PYTHONHASHSEED=0 uv run pytest``).
 
 from __future__ import annotations
 
+import json
 import os
+from pathlib import Path
+
+_ROOT = Path(__file__).resolve().parents[1]
+_CLEAN_CHECKOUT_POLICY = (
+    _ROOT / "config" / "clean_checkout_workspace_evidence_policy.json"
+)
+_WORKSPACE_EVIDENCE_MODULES = frozenset(
+    json.loads(_CLEAN_CHECKOUT_POLICY.read_text())["test_modules"]
+)
 
 # Pin every BLAS/OpenMP backend to a single thread BEFORE NumPy is imported.
 # Each variable is read once at backend import; setdefault leaves an explicit
@@ -37,3 +47,36 @@ for _var in (
     "MKL_NUM_THREADS",
 ):
     os.environ.setdefault(_var, "1")
+
+
+def pytest_collection_modifyitems(config, items) -> None:
+    """Apply the clean-checkout policy and repair ``no_cover`` without coverage.
+
+    Artifact-bound modules are centrally classified as ``workspace_evidence`` so
+    GitHub's clean checkout can deselect them explicitly. They still run in the
+    ordinary local suite, where the ignored research corpus is available. The
+    policy is about input availability; deselection is never reported as a pass.
+
+    pytest-cov's ``no_cover`` handling calls ``self.cov_controller.pause()``, and under
+    ``--no-cov`` that controller is ``None`` — so the marker raises
+    ``AttributeError: 'NoneType' object has no attribute 'pause'`` and the test FAILS for a
+    reason that has nothing to do with the test. There is nothing to pause when coverage is
+    already off, so the marker is simply removed.
+
+    This is not cosmetic. ``tests/integration/test_scale_guard.py`` passes under the default
+    (coverage-on) invocation and fails under ``uv run pytest --no-cov`` — the fast invocation
+    anyone reaches for. It was recorded in a 2026-08-18 commit message as a genuine outstanding
+    failure inherited from another lane. It was neither: it was the flag.
+    """
+    for item in items:
+        module_path = Path(str(item.path)).resolve().relative_to(_ROOT).as_posix()
+        if module_path in _WORKSPACE_EVIDENCE_MODULES:
+            item.add_marker("workspace_evidence")
+
+    if config.pluginmanager.hasplugin("_cov"):
+        cov = config.pluginmanager.getplugin("_cov")
+        if getattr(cov, "cov_controller", None) is not None:
+            return
+    for item in items:
+        if item.get_closest_marker("no_cover") is not None:
+            item.own_markers = [m for m in item.own_markers if m.name != "no_cover"]

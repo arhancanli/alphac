@@ -1,0 +1,135 @@
+{
+  "schema": "canli.foundry-legacy-killed-migration.v1",
+  "status": "PREPARED_NOT_IMPORTED_OR_REPLAYED",
+  "claim_boundary": "This packet selects and hash-binds one complete historical killed identity for the first Foundry migration. It does not claim that DigitalOcean infrastructure exists, that the identity has been imported, that Foundry replayed it, or that a sanitized packet was published.",
+  "migration_key": "legacy-eia-petroleum-inventory-v1",
+  "selection_rationale": "The identity is one of two records in the 228-identity union classified COMPLETE_EVIDENCED_KILL. Its negative outcome makes it a strict test that Foundry preserves failures instead of selecting flattering survivors.",
+  "trial": {
+    "database_id": "a9ae69f6-bc4a-5269-bfa3-00af807d24da",
+    "public_trial_id": "ft_a9ae69f6bc4a5269",
+    "historical_identity_key": "8446702cb8dd1768",
+    "historical_config_hash": "ccde1e9dc1523998",
+    "private_hypothesis_hash": "sha256:8e044d8e41a29edc469806da98d989b52db854842b5b60aa1f2eadb1d111d895",
+    "state": "KILLED",
+    "identity_spent": true,
+    "foundry_identity_ordinal": null,
+    "migrated_legacy": true,
+    "historical_recorded_at": "2026-08-15T16:26:36.211000Z",
+    "holdout_consumptions": 0
+  },
+  "source_bindings": [
+    {
+      "name": "publication_trial_accounting",
+      "path": "publication/energy-inventory/v0.1.0/trial_accounting.json",
+      "sha256": "c6064a5b3a807c2139ad295294e8e5587999698a1a4bf43b536e3f72bd871ae6",
+      "availability": "TRACKED"
+    },
+    {
+      "name": "complete_identity_packet",
+      "path": "artifacts/research/trial_packets/8446702cb8dd1768.json",
+      "sha256": "839e9dcb3b50b82142dac31258866c7b3ed1eafd7494a33ba3dfdae21d193ee8",
+      "semantic_content_hash": "sha256:8e044d8e41a29edc469806da98d989b52db854842b5b60aa1f2eadb1d111d895",
+      "availability": "PRIVATE_SNAPSHOT_REQUIRED"
+    },
+    {
+      "name": "preregistration",
+      "path": "docs/design/PREREG_EIA_PETROLEUM_INVENTORY.md",
+      "sha256": "dc1f7dd8888a51c1b53fe3b04c4fd941d2027075e2b7150c72941736d740e66c",
+      "availability": "TRACKED"
+    },
+    {
+      "name": "historical_result",
+      "path": "publication/energy-inventory/v0.1.0/evidence/probe_result.json",
+      "sha256": "949f2b073b96fd8068519dca06ff9a54ed79778535b67ad66da4b23e06ae8694",
+      "availability": "TRACKED"
+    },
+    {
+      "name": "prior_isolated_replay_receipt",
+      "path": "publication/energy-inventory/v0.1.0/isolated_replay_receipt.json",
+      "sha256": "d0df878375d415986fa639487e4ccffc9cad6396dca9bde5f3be4a7fdf50b2ad",
+      "semantic_content_hash": "sha256:cf5e340ae7a23fb8dc168b47af77055b981e2e9ef8a1bc467b523fb7e445a2ac",
+      "availability": "TRACKED"
+    },
+    {
+      "name": "reproduction_contract",
+      "path": "publication/energy-inventory/v0.1.0/reproduction.json",
+      "sha256": "f8fb92c514fbedd58b935e1a723130f65478480e4381ccc51d6b9ad497e54843",
+      "availability": "TRACKED"
+    },
+    {
+      "name": "runner",
+      "path": "scripts/probe_eia_petroleum_inventory.py",
+      "sha256": "7369f31b47adb04e401e85dd62f4c8acffb5e7c1fd768b7ed1beb54b4da8a00f",
+      "availability": "TRACKED"
+    },
+    {
+      "name": "python_project",
+      "path": "pyproject.toml",
+      "sha256": "ddaf8b60999275f6d3fb93b3073f256d75d1383bfc8bab14263dc58645841006",
+      "availability": "TRACKED"
+    },
+    {
+      "name": "research_lockfile",
+      "path": "uv.lock",
+      "sha256": "5caca664242722a3a3112663d7a19b7b5000583e30ade3753e1b8ffdecfd6f06",
+      "availability": "TRACKED"
+    }
+  ],
+  "private_input_snapshot": {
+    "manifest_path": "artifacts/probe/eia_petroleum_inventory/input_data_manifest.json",
+    "manifest_sha256": "80e62a4db5a79055b8899660d71e8e30b474e4af3172ff8aa6238efe61bddddd",
+    "semantic_content_hash": "sha256:70fab9c75c78c7102661ab1d2f9ca02834554f6d1342d3b68db8242c2f2d33ec",
+    "availability": "PRIVATE_SNAPSHOT_REQUIRED",
+    "validation": "EXPAND_AND_HASH_EVERY_REFERENCED_OBJECT"
+  },
+  "replay": {
+    "status": "NOT_RUN_IN_FOUNDRY",
+    "argv": [
+      "uv",
+      "run",
+      "python",
+      "scripts/probe_eia_petroleum_inventory.py"
+    ],
+    "shell": false,
+    "network_policy": "NONE",
+    "workspace": "DISPOSABLE_COPY_WITH_READ_ONLY_INPUT_SNAPSHOT",
+    "historical_ledger_mode": "COPY_EXACT_LEDGER_AND_REQUIRE_IDEMPOTENT_EXISTING_IDENTITY",
+    "expected_result_path": "artifacts/probe/eia_petroleum_inventory/result.json",
+    "expected_result_sha256": "949f2b073b96fd8068519dca06ff9a54ed79778535b67ad66da4b23e06ae8694",
+    "expected_verdict": "KILL",
+    "max_attempts": 1,
+    "quota": {
+      "cpu_millis": 2000,
+      "memory_mebibytes": 4096,
+      "process_limit": 128,
+      "disk_mebibytes": 16384,
+      "wall_seconds": 3600
+    }
+  },
+  "publication": {
+    "status": "NOT_SANITIZED_OR_PUBLISHED_BY_FOUNDRY",
+    "public_fields_only": [
+      "public_trial_id",
+      "state",
+      "identity_spent",
+      "reserved_at",
+      "updated_at",
+      "artifact_hash",
+      "replay_status"
+    ],
+    "required_replay_status": "PASS",
+    "forbidden_claims": [
+      "independent replication",
+      "portable clean-workspace replay",
+      "admission",
+      "future performance"
+    ]
+  },
+  "security": {
+    "broker_credentials_allowed": false,
+    "execution_network_reachable": false,
+    "holdout_access_allowed": false,
+    "new_identity_spend_allowed": false,
+    "historical_identity_reopening_allowed": false
+  }
+}

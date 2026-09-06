@@ -151,7 +151,9 @@ def main() -> int:
 
     n_target = int(obj["target_sleeve_count"])
     lo, hi = (float(x) for x in obj["portfolio_sharpe_target"])
-    rho_gate = float(gates["average_pairwise_correlation_max"])
+    candidate_rho_gate = float(gates["candidate_average_correlation_to_existing_book_max"])
+    book_delta_gate = float(gates["book_average_pairwise_correlation_delta_max_exclusive"])
+    zero_global_reference = 0.0
 
     # Sleeve quality: the measured 3-sleeve s_bar (0.529) and the 4-sleeve mean of the published
     # standalone Sharpes. Both are stated, neither is chosen to flatter.
@@ -161,18 +163,17 @@ def main() -> int:
     print(f"  BREADTH ACQUISITION ORDERING — objective {lo}-{hi} Sharpe across {n_target} sleeves")
     print("=" * 100)
 
-    print("\n[1] DOES THE ADMISSION GATE PERMIT THE OBJECTIVE?")
-    print(f"    admission gate average_pairwise_correlation_max = {rho_gate}")
+    print("\n[1] WHAT DO THE INCREMENTAL ADMISSION GATES ESTABLISH?")
+    print(f"    candidate average correlation gate = {candidate_rho_gate}")
+    print(f"    book average-correlation delta must be < {book_delta_gate}")
+    print("    These gates force every admission to improve diversification; they do not impose a")
+    print("    global point ceiling or establish the final objective by themselves.")
     print(f"    PSD floor on average pairwise correlation at N={n_target}: {-1/(n_target-1):+.4f}")
     gate_rows = []
     for s in (0.40, 0.464, 0.529, 0.60, 0.70, 0.80, 0.90):
-        b = book_sharpe(s, rho_gate, n_target)
-        gate_rows.append({"s_bar": s, "book_sharpe_at_gate_ceiling": b, "reaches_low_target": b >= lo})
-        print(f"      s_bar {s:.3f} -> book Sharpe {b:.3f} at rho_bar={rho_gate}   reaches {lo}? {'YES' if b>=lo else 'NO'}")
-    if not any(r["reaches_low_target"] for r in gate_rows):
-        print(f"    *** THE GATE BARS ITS OWN OBJECTIVE. At rho_bar={rho_gate} no sleeve quality in this")
-        print(f"        range reaches {lo} at N={n_target}. A candidate can pass every evidence check and")
-        print(f"        the book still cannot reach the target. The honest correction TIGHTENS this bar.")
+        b = book_sharpe(s, zero_global_reference, n_target)
+        gate_rows.append({"s_bar": s, "book_sharpe_at_zero_global_correlation": b, "reaches_low_target": b >= lo})
+        print(f"      s_bar {s:.3f} -> book Sharpe {b:.3f} at the zero-global-correlation reference")
 
     print("\n[2] REQUIRED rho_bar AT N=14 (this is the whole program)")
     req = {}
@@ -191,8 +192,9 @@ def main() -> int:
     print(f"    {'CANDIDATE':<32} {'DATA':<12} {'RISK ITS OWN KILL NAMES':<24} {'HYP':<4} STATUS")
     print("    " + "-" * 108)
     for r in rows:
+        budget = r["hypothesis_budget"] or 0
         print(f"    {r['id']:<32} {'PUBLIC' if r['public_primary_source'] else 'INSTITUTIONAL':<12} "
-              f"{r['diversification_risk_named_by_its_own_kill']:<24} {str(r['hypothesis_budget'] or 0):<4} {r['status']}")
+              f"{r['diversification_risk_named_by_its_own_kill']:<24} {budget!s:<4} {r['status']}")
 
     pub = [r for r in rows if r["public_primary_source"]]
     inst = [r for r in rows if not r["public_primary_source"]]
@@ -203,10 +205,14 @@ def main() -> int:
 
     out = {
         "objective": obj,
-        "admission_gate_average_pairwise_correlation_max": rho_gate,
+        "incremental_admission_gates": {
+            "candidate_average_correlation_to_existing_book_max": candidate_rho_gate,
+            "book_average_pairwise_correlation_delta_max_exclusive": book_delta_gate,
+        },
+        "zero_global_correlation_reference_is_not_a_gate": zero_global_reference,
         "psd_floor_at_target_n": -1.0 / (n_target - 1),
-        "gate_permits_objective": any(r["reaches_low_target"] for r in gate_rows),
-        "book_sharpe_at_gate_ceiling": gate_rows,
+        "incremental_gates_alone_establish_objective": False,
+        "book_sharpe_at_zero_global_correlation_reference": gate_rows,
         "required_rho_bar": req,
         "queue_ordered": rows,
         "counts": {

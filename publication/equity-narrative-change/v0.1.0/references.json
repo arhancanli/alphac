@@ -1,0 +1,38 @@
+{
+  "author": "Arhan Canli",
+  "metadata_cache": {
+    "content_hash": "sha256:a2b17534e33c4c361cd515387b566cd1c2e352a1b970159e66c329c3519b99c4",
+    "path": "artifacts/research/publication_reference_metadata.json",
+    "sha256": "cc011d355b2613f1514889fe8076752c3de1c54e158e561db60da559d3f1469c"
+  },
+  "reference_count": 1,
+  "references": [
+    {
+      "authors": [
+        {
+          "family": "Cohen",
+          "given": "Lauren"
+        },
+        {
+          "family": "Malloy",
+          "given": "Christopher"
+        },
+        {
+          "family": "Nguyen",
+          "given": "Quoc"
+        }
+      ],
+      "citation_key": "cohen2018lazy_025963",
+      "container_title": "",
+      "doi": "10.3386/w25084",
+      "metadata_authority": "CROSSREF_REST_API",
+      "title": "Lazy Prices",
+      "url": "https://doi.org/10.3386/w25084",
+      "year": 2018
+    }
+  ],
+  "registry_key": "equity_narrative_change",
+  "schema": "canli.alphac-sleeve-bibliography.v1",
+  "status": "COMPLETE_NORMALIZED_BIBLIOGRAPHY",
+  "unresolved_references": []
+}

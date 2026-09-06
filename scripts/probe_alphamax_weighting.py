@@ -559,7 +559,12 @@ def main(argv=None) -> int:
     t_wall = time.time()
     settings = load_settings(a.profile)
     union = ExperimentUnion.discover(settings.paths.var_dir / "experiments.jsonl", _REPO)
-    expected_variants = {f"{scheme}_K{k}" for scheme in SCHEMES for k in BREADTHS}
+    primary_variants = {f"{scheme}_K{k}" for scheme in SCHEMES for k in BREADTHS}
+    expected_variants = {
+        *primary_variants,
+        *(f"no_drift_{variant}" for variant in primary_variants),
+        *(f"volatility_guard_{variant}" for variant in primary_variants),
+    }
     configs = {
         str(record.config["variant"]): dict(record.config)
         for record in union.all()
@@ -883,8 +888,17 @@ def _analyse(
     for scheme, k in arms:
         sim = simulate(mom, ret, member, vol, beta, dates, t0, k, scheme, drift=False)
         met = _metrics(sim["net"], sim["gross"], spy, ew)
-        nod[f"{scheme}_K{k}"] = {**met, **{kk2: vv for kk2, vv in sim.items() if kk2 not in ("net", "gross")},
-                                 "_net": sim["net"]}
+        key = f"{scheme}_K{k}"
+        record_probe_trial(
+            "forensic_alphamax_weighting",
+            {name: value for name, value in configs[f"no_drift_{key}"].items() if name != "probe"},
+            sim["net"],
+            now_ms=now_ms(),
+            periods_per_year=int(ANN),
+            experiment_log=union,
+        )
+        nod[key] = {**met, **{kk2: vv for kk2, vv in sim.items() if kk2 not in ("net", "gross")},
+                    "_net": sim["net"]}
     n_aligned = pd.concat([nod[kk]["_net"].rename(kk) for kk in keys], axis=1).dropna()
     n_boot = _paired_bootstrap(n_aligned.to_numpy(dtype=np.float64).T, live_row,
                                np.random.default_rng(BOOT_SEED))
@@ -907,8 +921,21 @@ def _analyse(
     for scheme, k in arms:
         sim = simulate(mom, ret, member, vol, beta, dates, t0, k, scheme, vol_guard=VOL_GUARD)
         met = _metrics(sim["net"], sim["gross"], spy, ew)
-        hyg[f"{scheme}_K{k}"] = {**met, **{kk2: vv for kk2, vv in sim.items() if kk2 not in ("net", "gross")},
-                                 "_net": sim["net"]}
+        key = f"{scheme}_K{k}"
+        record_probe_trial(
+            "forensic_alphamax_weighting",
+            {
+                name: value
+                for name, value in configs[f"volatility_guard_{key}"].items()
+                if name != "probe"
+            },
+            sim["net"],
+            now_ms=now_ms(),
+            periods_per_year=int(ANN),
+            experiment_log=union,
+        )
+        hyg[key] = {**met, **{kk2: vv for kk2, vv in sim.items() if kk2 not in ("net", "gross")},
+                    "_net": sim["net"]}
     h_aligned = pd.concat([hyg[kk]["_net"].rename(kk) for kk in keys], axis=1).dropna()
     h_boot = _paired_bootstrap(h_aligned.to_numpy(dtype=np.float64).T, live_row,
                                np.random.default_rng(BOOT_SEED))
@@ -1045,8 +1072,9 @@ def _analyse(
         "dsr_readonly": dsr_view,
         "selection_union": {"N": n_led, "var_sr": var_sr},
         "trials_logged_this_run": trials_logged,
-        "note": ("All sixteen measured cells are union-registered before DSR. Promotion would require "
-                 "a separate full walk-forward and a human decision."),
+        "note": ("All 48 measured return configurations (16 primary, 16 no-drift, and 16 "
+                 "volatility-guard) are union-registered. Promotion would require a separate "
+                 "full walk-forward and a human decision."),
     }
     (OUT_DIR / "report.json").write_text(json.dumps(payload, indent=2, default=float) + "\n", encoding="utf-8")
     print(f"\npersisted: {OUT_DIR / 'report.json'}")

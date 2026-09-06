@@ -1,0 +1,2313 @@
+{
+  "complete_recorded_union_extracted": true,
+  "distinct_recorded_hypothesis_identities": 25,
+  "every_identity_packet_complete": false,
+  "global_ledger": {
+    "path": "config/trial_accounting.json",
+    "sha256": "f15af7c989aded5da6c5259a7f7e5587377ab33977b5cd3c5b2395a84ea45043"
+  },
+  "identities": [
+    {
+      "candidate_match_is_verified": true,
+      "candidate_public_papers": [
+        "/research/crypto-carry-lineage.md"
+      ],
+      "completion_assessment": {
+        "artifact_recoverability_class": "UNIQUE_EXACT_ARTIFACT_BINDING",
+        "blockers": [
+          {
+            "code": "EXACT_ARTIFACT_LACKS_ORIGINAL_ENVIRONMENT_STAMP",
+            "evidence": [
+              {
+                "path": "artifacts/grand_backtest/20260616T143620Z/configs/C_carry/walkforward.json",
+                "sha256": "9d204b5eaabef15ccab71f43e6ceb56808addce0ba769cb76190b96d60440bcc"
+              },
+              {
+                "path": "artifacts/grand_backtest/20260616T143620Z/configs/C_carry/equity.parquet",
+                "sha256": "e495a4d9c1db101887f4e0dbe7ba8586f8fb4ffdbc3b220f06e205e2a7ee4bfa"
+              },
+              {
+                "config_hash": "bfda9feb19d72ae9",
+                "path": "artifacts/grand_backtest/20260616T143620Z/experiments.jsonl",
+                "sha256": "04f997da63092be453c339e0bf25b5ea700f11f79eeadb8d2c48d312ac3dae8f"
+              }
+            ],
+            "finding": "One persisted walk-forward artifact and equity curve uniquely match every identity-bearing ledger field and the immutable measurement. The artifact does not preserve the original code commit, runner hash, lockfile, and input manifest.",
+            "required_section": "code_environment_and_reproduction"
+          },
+          {
+            "code": "IDENTITY_PREREGISTRATION_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/grand_backtest/20260616T143620Z/configs/C_carry/walkforward.json",
+                "sha256": "9d204b5eaabef15ccab71f43e6ceb56808addce0ba769cb76190b96d60440bcc"
+              }
+            ],
+            "finding": "No identity-level preregistration and immutable pre-result hash are bound to this historical measurement.",
+            "required_section": "preregistration_and_hashes"
+          },
+          {
+            "code": "IDENTITY_LEVEL_DECISION_PACKET_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/grand_backtest/20260616T143620Z/configs/C_carry/walkforward.json",
+                "sha256": "9d204b5eaabef15ccab71f43e6ceb56808addce0ba769cb76190b96d60440bcc"
+              }
+            ],
+            "finding": "No complete identity-level admission or kill packet under the current contract is preserved for this historical measurement.",
+            "required_section": "admission_or_kill_decision"
+          }
+        ],
+        "config_hash": "bfda9feb19d72ae9",
+        "status": "AUDITED_NOT_CURRENTLY_COMPLETABLE",
+        "walkforward_corpus_hash": "sha256:100f6051fcadd89a33412ec317f982f17023bb8fe18b879116d5b16955bcb7c7"
+      },
+      "config_hash": "bfda9feb19d72ae9",
+      "coverage_status": "VERIFIED_INCOMPLETE_IDENTITY_PACKET",
+      "family_paper_binding_status": "VERIFIED_TAXONOMY_BINDING",
+      "first_recorded_at": "2026-06-16T14:36:20.756000+00:00",
+      "hypothesis_key": "05908a8a641400e2",
+      "identity_packet_content_hash": "sha256:e8c34b4c37eda2330de9fdc966221f4f60d9bef02896169a27f1a23638fb8e19",
+      "identity_packet_status": "INCOMPLETE_BACKFILL_REQUIRED",
+      "label": "carry_fund_21 + carry_fund_90 + mr_res_72",
+      "ledger_profile": "20260616T143620Z",
+      "ledger_source_path": "artifacts/grand_backtest/20260616T143620Z/experiments.jsonl",
+      "measurement": {
+        "annualized_sharpe": 0.06179135928285124,
+        "kurtosis": 6.439223591785881,
+        "observations": 1612,
+        "skew": -0.0022780920400598545
+      },
+      "missing_sections": [
+        "preregistration_and_hashes",
+        "point_in_time_data_and_survivorship_controls",
+        "execution_and_cost_model",
+        "result_uncertainty_stress_capacity_and_diversification",
+        "admission_or_kill_decision",
+        "code_environment_and_reproduction"
+      ],
+      "research_family_key": "crypto_carry",
+      "research_family_title": "Crypto perpetual-futures carry",
+      "sleeve_context": "AlphaForge",
+      "verified_family_paper_path": "/research/crypto-carry-lineage.md",
+      "verified_packet_path": "/glassbox/trial-packets/05908a8a641400e2.json",
+      "verified_sections": [
+        "identity_and_authorship",
+        "economic_mechanism_and_falsifiable_hypothesis",
+        "literature_and_overlap_decision",
+        "family_and_union_trial_accounting",
+        "machine_readable_packet_and_stable_public_paper"
+      ]
+    },
+    {
+      "candidate_match_is_verified": true,
+      "candidate_public_papers": [
+        "/research/crypto-carry-lineage.md"
+      ],
+      "completion_assessment": {
+        "artifact_recoverability_class": "AMBIGUOUS_EXACT_ARTIFACT_MATCHES",
+        "blockers": [
+          {
+            "code": "MULTIPLE_BYTE_DISTINCT_ARTIFACTS_MATCH_IDENTITY",
+            "evidence": [
+              {
+                "path": "artifacts/cpanel/L5_carry21_d/walkforward.json",
+                "sha256": "5987715b1877cbd63ce178525ff0099c706692e05c38a1f27e8549bb1accc042"
+              },
+              {
+                "path": "artifacts/cpanel/carry21_d/walkforward.json",
+                "sha256": "e888ea0a1de9eeac6b9bd433fa841c748a0451a8d175765d0bb520b80a03c80d"
+              },
+              {
+                "path": "artifacts/cpanel/carry21_d_rank/walkforward.json",
+                "sha256": "afc7a8e6cec0e82ef9d9580521e012279adf0f9ac345cf0c6b41ead1a4075405"
+              },
+              {
+                "path": "artifacts/cpanel/carry21_daily/walkforward.json",
+                "sha256": "a4e3b350d1aeb29202a0516cde454146f3e7c737fcf93db1d39237c1a1f5027f"
+              },
+              {
+                "path": "artifacts/cpanel/carry_base/walkforward.json",
+                "sha256": "6747d2b43f846b4380a4155717223630fcc49dff27d4ae25abc0ef254e0b04c5"
+              },
+              {
+                "path": "artifacts/cpanel/carry_fund_21_daily/walkforward.json",
+                "sha256": "a4e3b350d1aeb29202a0516cde454146f3e7c737fcf93db1d39237c1a1f5027f"
+              },
+              {
+                "path": "artifacts/cpanel/carry_regime/walkforward.json",
+                "sha256": "f681d643b1359f51a385639703d571ee7f0682a94c06dbc53963c26b20391a1f"
+              }
+            ],
+            "finding": "7 byte-distinct walk-forward artifacts match every ledger identity field and immutable measurement. The original source cannot be selected without inventing lineage.",
+            "required_section": "code_environment_and_reproduction"
+          },
+          {
+            "code": "IDENTITY_PREREGISTRATION_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/cpanel/L5_carry21_d/walkforward.json",
+                "sha256": "5987715b1877cbd63ce178525ff0099c706692e05c38a1f27e8549bb1accc042"
+              }
+            ],
+            "finding": "No identity-level preregistration and immutable pre-result hash are bound to this historical measurement.",
+            "required_section": "preregistration_and_hashes"
+          },
+          {
+            "code": "IDENTITY_LEVEL_DECISION_PACKET_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/cpanel/L5_carry21_d/walkforward.json",
+                "sha256": "5987715b1877cbd63ce178525ff0099c706692e05c38a1f27e8549bb1accc042"
+              }
+            ],
+            "finding": "No complete identity-level admission or kill packet under the current contract is preserved for this historical measurement.",
+            "required_section": "admission_or_kill_decision"
+          }
+        ],
+        "config_hash": "a11d761ab3bcba1c",
+        "status": "AUDITED_NOT_CURRENTLY_COMPLETABLE",
+        "walkforward_corpus_hash": "sha256:100f6051fcadd89a33412ec317f982f17023bb8fe18b879116d5b16955bcb7c7"
+      },
+      "config_hash": "a11d761ab3bcba1c",
+      "coverage_status": "VERIFIED_INCOMPLETE_IDENTITY_PACKET",
+      "family_paper_binding_status": "VERIFIED_TAXONOMY_BINDING",
+      "first_recorded_at": "2026-06-20T13:11:25.122000+00:00",
+      "hypothesis_key": "f45ffeade4dae695",
+      "identity_packet_content_hash": "sha256:26334d2f7629664dbc88f6f31680a556ed24962ffb2247ce7a673b4d62a7c19e",
+      "identity_packet_status": "INCOMPLETE_BACKFILL_REQUIRED",
+      "label": "carry_fund_21",
+      "ledger_profile": "var",
+      "ledger_source_path": "var/experiments.jsonl",
+      "measurement": {
+        "annualized_sharpe": 0.43423973892121237,
+        "kurtosis": 7.967080643393149,
+        "observations": 1574,
+        "skew": -0.16081833690710043
+      },
+      "missing_sections": [
+        "preregistration_and_hashes",
+        "point_in_time_data_and_survivorship_controls",
+        "execution_and_cost_model",
+        "result_uncertainty_stress_capacity_and_diversification",
+        "admission_or_kill_decision",
+        "code_environment_and_reproduction"
+      ],
+      "research_family_key": "crypto_carry",
+      "research_family_title": "Crypto perpetual-futures carry",
+      "sleeve_context": "AlphaForge",
+      "verified_family_paper_path": "/research/crypto-carry-lineage.md",
+      "verified_packet_path": "/glassbox/trial-packets/f45ffeade4dae695.json",
+      "verified_sections": [
+        "identity_and_authorship",
+        "economic_mechanism_and_falsifiable_hypothesis",
+        "literature_and_overlap_decision",
+        "family_and_union_trial_accounting",
+        "machine_readable_packet_and_stable_public_paper"
+      ]
+    },
+    {
+      "candidate_match_is_verified": true,
+      "candidate_public_papers": [
+        "/research/crypto-carry-lineage.md"
+      ],
+      "completion_assessment": {
+        "artifact_recoverability_class": "LEDGER_SUMMARY_ONLY_NO_ARTIFACT_MATCH",
+        "blockers": [
+          {
+            "code": "NO_MATCHING_PERSISTED_WALKFORWARD_ARTIFACT",
+            "evidence": [
+              {
+                "path": "var/experiments.jsonl",
+                "sha256": "b5a318c0997d980575f758451f509e0154eecbbb50d734e49a587d473062bd08"
+              },
+              {
+                "walkforward_corpus_hash": "sha256:100f6051fcadd89a33412ec317f982f17023bb8fe18b879116d5b16955bcb7c7",
+                "walkforward_files_scanned": 580
+              }
+            ],
+            "finding": "The immutable ledger summary is preserved, but no walk-forward artifact in the declared byte-hashed corpus matches its alpha list, observation count, and exact annualized Sharpe. The missing curve cannot be reconstructed.",
+            "required_section": "result_uncertainty_stress_capacity_and_diversification"
+          },
+          {
+            "code": "IDENTITY_PREREGISTRATION_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "var/experiments.jsonl",
+                "sha256": "b5a318c0997d980575f758451f509e0154eecbbb50d734e49a587d473062bd08"
+              }
+            ],
+            "finding": "No identity-level preregistration and immutable pre-result hash are bound to this historical measurement.",
+            "required_section": "preregistration_and_hashes"
+          },
+          {
+            "code": "IDENTITY_LEVEL_DECISION_PACKET_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "var/experiments.jsonl",
+                "sha256": "b5a318c0997d980575f758451f509e0154eecbbb50d734e49a587d473062bd08"
+              }
+            ],
+            "finding": "No complete identity-level admission or kill packet under the current contract is preserved for this historical measurement.",
+            "required_section": "admission_or_kill_decision"
+          }
+        ],
+        "config_hash": "b82c3497ba549c9e",
+        "status": "AUDITED_NOT_CURRENTLY_COMPLETABLE",
+        "walkforward_corpus_hash": "sha256:100f6051fcadd89a33412ec317f982f17023bb8fe18b879116d5b16955bcb7c7"
+      },
+      "config_hash": "b82c3497ba549c9e",
+      "coverage_status": "VERIFIED_INCOMPLETE_IDENTITY_PACKET",
+      "family_paper_binding_status": "VERIFIED_TAXONOMY_BINDING",
+      "first_recorded_at": "2026-06-20T13:12:16.592000+00:00",
+      "hypothesis_key": "337e75745bd4a1a8",
+      "identity_packet_content_hash": "sha256:e28c63608ee96ee569b9002ebc0522261dabc545dc561687eca469745f509da3",
+      "identity_packet_status": "INCOMPLETE_BACKFILL_REQUIRED",
+      "label": "carry_fund_21 + carry_fund_90 + carry_z_252",
+      "ledger_profile": "var",
+      "ledger_source_path": "var/experiments.jsonl",
+      "measurement": {
+        "annualized_sharpe": 0.272090945115818,
+        "kurtosis": 8.267525814913858,
+        "observations": 1574,
+        "skew": 0.04169186852103596
+      },
+      "missing_sections": [
+        "preregistration_and_hashes",
+        "point_in_time_data_and_survivorship_controls",
+        "execution_and_cost_model",
+        "result_uncertainty_stress_capacity_and_diversification",
+        "admission_or_kill_decision",
+        "code_environment_and_reproduction"
+      ],
+      "research_family_key": "crypto_carry",
+      "research_family_title": "Crypto perpetual-futures carry",
+      "sleeve_context": "AlphaForge",
+      "verified_family_paper_path": "/research/crypto-carry-lineage.md",
+      "verified_packet_path": "/glassbox/trial-packets/337e75745bd4a1a8.json",
+      "verified_sections": [
+        "identity_and_authorship",
+        "economic_mechanism_and_falsifiable_hypothesis",
+        "literature_and_overlap_decision",
+        "family_and_union_trial_accounting",
+        "machine_readable_packet_and_stable_public_paper"
+      ]
+    },
+    {
+      "candidate_match_is_verified": true,
+      "candidate_public_papers": [
+        "/research/crypto-carry-lineage.md"
+      ],
+      "completion_assessment": {
+        "artifact_recoverability_class": "AMBIGUOUS_EXACT_ARTIFACT_MATCHES",
+        "blockers": [
+          {
+            "code": "MULTIPLE_BYTE_DISTINCT_ARTIFACTS_MATCH_IDENTITY",
+            "evidence": [
+              {
+                "path": "artifacts/cpanel/L5_carryblend_d/walkforward.json",
+                "sha256": "11f7d5c84b9bd633670ed51b2c2891fb1480b8f41ed37818221adc88d547726f"
+              },
+              {
+                "path": "artifacts/cpanel/L9_carry/walkforward.json",
+                "sha256": "05a236b6e0ac528821df30a6be3341abead33918afcaab5d502a4868120da7d5"
+              },
+              {
+                "path": "artifacts/cpanel/carry_daily/walkforward.json",
+                "sha256": "22dcfd77713493eee99932972bafaa9790523c6b4bd9df4a182a622e11efa311"
+              }
+            ],
+            "finding": "3 byte-distinct walk-forward artifacts match every ledger identity field and immutable measurement. The original source cannot be selected without inventing lineage.",
+            "required_section": "code_environment_and_reproduction"
+          },
+          {
+            "code": "IDENTITY_PREREGISTRATION_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/cpanel/L5_carryblend_d/walkforward.json",
+                "sha256": "11f7d5c84b9bd633670ed51b2c2891fb1480b8f41ed37818221adc88d547726f"
+              }
+            ],
+            "finding": "No identity-level preregistration and immutable pre-result hash are bound to this historical measurement.",
+            "required_section": "preregistration_and_hashes"
+          },
+          {
+            "code": "IDENTITY_LEVEL_DECISION_PACKET_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/cpanel/L5_carryblend_d/walkforward.json",
+                "sha256": "11f7d5c84b9bd633670ed51b2c2891fb1480b8f41ed37818221adc88d547726f"
+              }
+            ],
+            "finding": "No complete identity-level admission or kill packet under the current contract is preserved for this historical measurement.",
+            "required_section": "admission_or_kill_decision"
+          }
+        ],
+        "config_hash": "edb71da669291985",
+        "status": "AUDITED_NOT_CURRENTLY_COMPLETABLE",
+        "walkforward_corpus_hash": "sha256:100f6051fcadd89a33412ec317f982f17023bb8fe18b879116d5b16955bcb7c7"
+      },
+      "config_hash": "edb71da669291985",
+      "coverage_status": "VERIFIED_INCOMPLETE_IDENTITY_PACKET",
+      "family_paper_binding_status": "VERIFIED_TAXONOMY_BINDING",
+      "first_recorded_at": "2026-06-20T13:12:45.057000+00:00",
+      "hypothesis_key": "401ee607f8d11e02",
+      "identity_packet_content_hash": "sha256:fc2f81685f3349c63bb7e2321ab5621de63f309b5b1cb389f319da94463d4346",
+      "identity_packet_status": "INCOMPLETE_BACKFILL_REQUIRED",
+      "label": "carry_fund_21 + carry_fund_90 + carry_z_252 + carry_mom_21_63",
+      "ledger_profile": "var",
+      "ledger_source_path": "var/experiments.jsonl",
+      "measurement": {
+        "annualized_sharpe": 0.33787800214680547,
+        "kurtosis": 8.233447671642995,
+        "observations": 1574,
+        "skew": -0.16104489494307622
+      },
+      "missing_sections": [
+        "preregistration_and_hashes",
+        "point_in_time_data_and_survivorship_controls",
+        "execution_and_cost_model",
+        "result_uncertainty_stress_capacity_and_diversification",
+        "admission_or_kill_decision",
+        "code_environment_and_reproduction"
+      ],
+      "research_family_key": "crypto_carry",
+      "research_family_title": "Crypto perpetual-futures carry",
+      "sleeve_context": "AlphaForge",
+      "verified_family_paper_path": "/research/crypto-carry-lineage.md",
+      "verified_packet_path": "/glassbox/trial-packets/401ee607f8d11e02.json",
+      "verified_sections": [
+        "identity_and_authorship",
+        "economic_mechanism_and_falsifiable_hypothesis",
+        "literature_and_overlap_decision",
+        "family_and_union_trial_accounting",
+        "machine_readable_packet_and_stable_public_paper"
+      ]
+    },
+    {
+      "candidate_match_is_verified": true,
+      "candidate_public_papers": [
+        "/research/crypto-carry-lineage.md"
+      ],
+      "completion_assessment": {
+        "blockers": [
+          {
+            "code": "PREREGISTRATION_POSTDATES_FIRST_MEASUREMENT",
+            "evidence": [
+              {
+                "ledger_recorded_at": "2026-06-20T13:16:33.123000+00:00"
+              },
+              {
+                "commit": "098deec4c283433cb2771884150f8d07e90713ee",
+                "committed_at": "2026-06-20T18:32:16+00:00",
+                "path": "docs/design/PRE_REGISTRATION.md"
+              }
+            ],
+            "finding": "The immutable first measurement predates the campaign preregistration commit; the later document cannot be applied retroactively.",
+            "required_section": "preregistration_and_hashes"
+          },
+          {
+            "code": "ORIGINAL_RUN_LACKS_CODE_AND_ENVIRONMENT_STAMP",
+            "evidence": [
+              {
+                "path": "artifacts/walkforward/crypto_carry_wk/walkforward.json",
+                "sha256": "a72c11172a730536336a079d26394cd926f88df06ce36cb3b5483159a99464ee"
+              }
+            ],
+            "finding": "The exact result is preserved, but walkforward.json contains no Git SHA, runner hash, lockfile hash, or input-data manifest for the original run.",
+            "required_section": "code_environment_and_reproduction"
+          },
+          {
+            "code": "CARRY_SPECIFIC_CAPACITY_UNMEASURED",
+            "evidence": [
+              {
+                "path": "docs/research/CRYPTO_CARRY_LINEAGE.md",
+                "sha256": "52be66f53fb245fa9b2c9c5816d2edf2f95ebeb205c9d14fbbb41537855da1f2"
+              }
+            ],
+            "finding": "The family paper correctly treats the later multi-factor capacity sweep as context, not proof of carry-specific capacity.",
+            "required_section": "result_uncertainty_stress_capacity_and_diversification"
+          }
+        ],
+        "config_hash": "34e792f7bb231949",
+        "status": "AUDITED_NOT_CURRENTLY_COMPLETABLE"
+      },
+      "config_hash": "34e792f7bb231949",
+      "coverage_status": "VERIFIED_INCOMPLETE_IDENTITY_PACKET",
+      "family_paper_binding_status": "VERIFIED_TAXONOMY_BINDING",
+      "first_recorded_at": "2026-06-20T13:16:33.123000+00:00",
+      "hypothesis_key": "6d151a184bf3e743",
+      "identity_packet_content_hash": "sha256:f8da1c921eafc8716ea7d4cc982d1de04f17d8ee4bb3f20b9d99b5a7f87228bc",
+      "identity_packet_status": "INCOMPLETE_BACKFILL_REQUIRED",
+      "label": "carry_fund_21",
+      "ledger_profile": "var",
+      "ledger_source_path": "var/experiments.jsonl",
+      "measurement": {
+        "annualized_sharpe": 0.6766103810860954,
+        "kurtosis": 12.429745446680178,
+        "observations": 1574,
+        "skew": -0.5965925879770567
+      },
+      "missing_sections": [
+        "preregistration_and_hashes",
+        "point_in_time_data_and_survivorship_controls",
+        "execution_and_cost_model",
+        "result_uncertainty_stress_capacity_and_diversification",
+        "admission_or_kill_decision",
+        "code_environment_and_reproduction"
+      ],
+      "research_family_key": "crypto_carry",
+      "research_family_title": "Crypto perpetual-futures carry",
+      "sleeve_context": "AlphaForge",
+      "verified_family_paper_path": "/research/crypto-carry-lineage.md",
+      "verified_packet_path": "/glassbox/trial-packets/6d151a184bf3e743.json",
+      "verified_sections": [
+        "identity_and_authorship",
+        "economic_mechanism_and_falsifiable_hypothesis",
+        "literature_and_overlap_decision",
+        "family_and_union_trial_accounting",
+        "machine_readable_packet_and_stable_public_paper"
+      ]
+    },
+    {
+      "candidate_match_is_verified": true,
+      "candidate_public_papers": [
+        "/research/crypto-carry-lineage.md"
+      ],
+      "completion_assessment": {
+        "artifact_recoverability_class": "AMBIGUOUS_EXACT_ARTIFACT_MATCHES",
+        "blockers": [
+          {
+            "code": "MULTIPLE_BYTE_DISTINCT_ARTIFACTS_MATCH_IDENTITY",
+            "evidence": [
+              {
+                "path": "artifacts/cpanel/carry90_w_rank/walkforward.json",
+                "sha256": "5162b24a157bd75355af48ba5b0b31457ae7eeab32ac00d0447357a7558c153c"
+              },
+              {
+                "path": "artifacts/cpanel/carry90_weekly/walkforward.json",
+                "sha256": "125124b781219f6af9b9d96a3e0d52db10fe404a0ee0e14949cdd6a9d6eedb92"
+              }
+            ],
+            "finding": "2 byte-distinct walk-forward artifacts match every ledger identity field and immutable measurement. The original source cannot be selected without inventing lineage.",
+            "required_section": "code_environment_and_reproduction"
+          },
+          {
+            "code": "IDENTITY_PREREGISTRATION_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/cpanel/carry90_w_rank/walkforward.json",
+                "sha256": "5162b24a157bd75355af48ba5b0b31457ae7eeab32ac00d0447357a7558c153c"
+              }
+            ],
+            "finding": "No identity-level preregistration and immutable pre-result hash are bound to this historical measurement.",
+            "required_section": "preregistration_and_hashes"
+          },
+          {
+            "code": "IDENTITY_LEVEL_DECISION_PACKET_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/cpanel/carry90_w_rank/walkforward.json",
+                "sha256": "5162b24a157bd75355af48ba5b0b31457ae7eeab32ac00d0447357a7558c153c"
+              }
+            ],
+            "finding": "No complete identity-level admission or kill packet under the current contract is preserved for this historical measurement.",
+            "required_section": "admission_or_kill_decision"
+          }
+        ],
+        "config_hash": "ef1f9e3bacb8e02b",
+        "status": "AUDITED_NOT_CURRENTLY_COMPLETABLE",
+        "walkforward_corpus_hash": "sha256:100f6051fcadd89a33412ec317f982f17023bb8fe18b879116d5b16955bcb7c7"
+      },
+      "config_hash": "ef1f9e3bacb8e02b",
+      "coverage_status": "VERIFIED_INCOMPLETE_IDENTITY_PACKET",
+      "family_paper_binding_status": "VERIFIED_TAXONOMY_BINDING",
+      "first_recorded_at": "2026-06-20T13:16:43.100000+00:00",
+      "hypothesis_key": "c8408da906327943",
+      "identity_packet_content_hash": "sha256:15af95e82ae6c58cd514319b96bea7d23fc2f254343e5afa02923995329f5668",
+      "identity_packet_status": "INCOMPLETE_BACKFILL_REQUIRED",
+      "label": "carry_fund_90",
+      "ledger_profile": "var",
+      "ledger_source_path": "var/experiments.jsonl",
+      "measurement": {
+        "annualized_sharpe": 0.033908110245709056,
+        "kurtosis": 8.600562551714916,
+        "observations": 1574,
+        "skew": -0.4334999768411426
+      },
+      "missing_sections": [
+        "preregistration_and_hashes",
+        "point_in_time_data_and_survivorship_controls",
+        "execution_and_cost_model",
+        "result_uncertainty_stress_capacity_and_diversification",
+        "admission_or_kill_decision",
+        "code_environment_and_reproduction"
+      ],
+      "research_family_key": "crypto_carry",
+      "research_family_title": "Crypto perpetual-futures carry",
+      "sleeve_context": "AlphaForge",
+      "verified_family_paper_path": "/research/crypto-carry-lineage.md",
+      "verified_packet_path": "/glassbox/trial-packets/c8408da906327943.json",
+      "verified_sections": [
+        "identity_and_authorship",
+        "economic_mechanism_and_falsifiable_hypothesis",
+        "literature_and_overlap_decision",
+        "family_and_union_trial_accounting",
+        "machine_readable_packet_and_stable_public_paper"
+      ]
+    },
+    {
+      "candidate_match_is_verified": true,
+      "candidate_public_papers": [
+        "/research/crypto-carry-lineage.md"
+      ],
+      "completion_assessment": {
+        "artifact_recoverability_class": "UNIQUE_EXACT_ARTIFACT_BINDING",
+        "blockers": [
+          {
+            "code": "EXACT_ARTIFACT_LACKS_ORIGINAL_ENVIRONMENT_STAMP",
+            "evidence": [
+              {
+                "path": "artifacts/cpanel/carry21_d_long/walkforward.json",
+                "sha256": "230dabfa364a9f72588f51e6ef16d439a248496d98d56d5b6e9542edcfe30c93"
+              },
+              {
+                "path": "artifacts/cpanel/carry21_d_long/equity.parquet",
+                "sha256": "1bedead0374eb67a78c124373d5ea12bf83efb1e0edae6fecb229c22ab3f40cb"
+              },
+              {
+                "config_hash": "bafd4c3d8810fbf5",
+                "path": "var/experiments.jsonl",
+                "sha256": "b5a318c0997d980575f758451f509e0154eecbbb50d734e49a587d473062bd08"
+              }
+            ],
+            "finding": "One persisted walk-forward artifact and equity curve uniquely match every identity-bearing ledger field and the immutable measurement. The artifact does not preserve the original code commit, runner hash, lockfile, and input manifest.",
+            "required_section": "code_environment_and_reproduction"
+          },
+          {
+            "code": "IDENTITY_PREREGISTRATION_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/cpanel/carry21_d_long/walkforward.json",
+                "sha256": "230dabfa364a9f72588f51e6ef16d439a248496d98d56d5b6e9542edcfe30c93"
+              }
+            ],
+            "finding": "No identity-level preregistration and immutable pre-result hash are bound to this historical measurement.",
+            "required_section": "preregistration_and_hashes"
+          },
+          {
+            "code": "IDENTITY_LEVEL_DECISION_PACKET_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/cpanel/carry21_d_long/walkforward.json",
+                "sha256": "230dabfa364a9f72588f51e6ef16d439a248496d98d56d5b6e9542edcfe30c93"
+              }
+            ],
+            "finding": "No complete identity-level admission or kill packet under the current contract is preserved for this historical measurement.",
+            "required_section": "admission_or_kill_decision"
+          }
+        ],
+        "config_hash": "bafd4c3d8810fbf5",
+        "status": "AUDITED_NOT_CURRENTLY_COMPLETABLE",
+        "walkforward_corpus_hash": "sha256:100f6051fcadd89a33412ec317f982f17023bb8fe18b879116d5b16955bcb7c7"
+      },
+      "config_hash": "bafd4c3d8810fbf5",
+      "coverage_status": "VERIFIED_INCOMPLETE_IDENTITY_PACKET",
+      "family_paper_binding_status": "VERIFIED_TAXONOMY_BINDING",
+      "first_recorded_at": "2026-06-20T13:17:03.584000+00:00",
+      "hypothesis_key": "9f0b751a921df354",
+      "identity_packet_content_hash": "sha256:26e3241625ba4adf1af070d73802351a7b61d398450d6a74c39a4482a9e42f2a",
+      "identity_packet_status": "INCOMPLETE_BACKFILL_REQUIRED",
+      "label": "carry_fund_21",
+      "ledger_profile": "var",
+      "ledger_source_path": "var/experiments.jsonl",
+      "measurement": {
+        "annualized_sharpe": 0.08135198779394846,
+        "kurtosis": 12.136405977383141,
+        "observations": 1574,
+        "skew": -0.9349188643391932
+      },
+      "missing_sections": [
+        "preregistration_and_hashes",
+        "point_in_time_data_and_survivorship_controls",
+        "execution_and_cost_model",
+        "result_uncertainty_stress_capacity_and_diversification",
+        "admission_or_kill_decision",
+        "code_environment_and_reproduction"
+      ],
+      "research_family_key": "crypto_carry",
+      "research_family_title": "Crypto perpetual-futures carry",
+      "sleeve_context": "AlphaForge",
+      "verified_family_paper_path": "/research/crypto-carry-lineage.md",
+      "verified_packet_path": "/glassbox/trial-packets/9f0b751a921df354.json",
+      "verified_sections": [
+        "identity_and_authorship",
+        "economic_mechanism_and_falsifiable_hypothesis",
+        "literature_and_overlap_decision",
+        "family_and_union_trial_accounting",
+        "machine_readable_packet_and_stable_public_paper"
+      ]
+    },
+    {
+      "candidate_match_is_verified": true,
+      "candidate_public_papers": [
+        "/research/crypto-carry-lineage.md"
+      ],
+      "completion_assessment": {
+        "artifact_recoverability_class": "AMBIGUOUS_EXACT_ARTIFACT_MATCHES",
+        "blockers": [
+          {
+            "code": "MULTIPLE_BYTE_DISTINCT_ARTIFACTS_MATCH_IDENTITY",
+            "evidence": [
+              {
+                "path": "artifacts/cpanel/carry90_d_rank/walkforward.json",
+                "sha256": "aeb625a34f32d8b85e70059a47ef26577bfb4f005d2feec1ae0915d7cc3cf441"
+              },
+              {
+                "path": "artifacts/cpanel/carry90_daily/walkforward.json",
+                "sha256": "f086b5cd3461e774ad362f73d8de612b159b6366bbb8564ba456c0a26b24e21c"
+              }
+            ],
+            "finding": "2 byte-distinct walk-forward artifacts match every ledger identity field and immutable measurement. The original source cannot be selected without inventing lineage.",
+            "required_section": "code_environment_and_reproduction"
+          },
+          {
+            "code": "IDENTITY_PREREGISTRATION_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/cpanel/carry90_d_rank/walkforward.json",
+                "sha256": "aeb625a34f32d8b85e70059a47ef26577bfb4f005d2feec1ae0915d7cc3cf441"
+              }
+            ],
+            "finding": "No identity-level preregistration and immutable pre-result hash are bound to this historical measurement.",
+            "required_section": "preregistration_and_hashes"
+          },
+          {
+            "code": "IDENTITY_LEVEL_DECISION_PACKET_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/cpanel/carry90_d_rank/walkforward.json",
+                "sha256": "aeb625a34f32d8b85e70059a47ef26577bfb4f005d2feec1ae0915d7cc3cf441"
+              }
+            ],
+            "finding": "No complete identity-level admission or kill packet under the current contract is preserved for this historical measurement.",
+            "required_section": "admission_or_kill_decision"
+          }
+        ],
+        "config_hash": "9558ecc62789b2c3",
+        "status": "AUDITED_NOT_CURRENTLY_COMPLETABLE",
+        "walkforward_corpus_hash": "sha256:100f6051fcadd89a33412ec317f982f17023bb8fe18b879116d5b16955bcb7c7"
+      },
+      "config_hash": "9558ecc62789b2c3",
+      "coverage_status": "VERIFIED_INCOMPLETE_IDENTITY_PACKET",
+      "family_paper_binding_status": "VERIFIED_TAXONOMY_BINDING",
+      "first_recorded_at": "2026-06-20T13:17:06.390000+00:00",
+      "hypothesis_key": "d1f9fc2e0af67426",
+      "identity_packet_content_hash": "sha256:292cd8e3a05f50e397d048163ddbb288c67860866dc47b7f4f7688340932f012",
+      "identity_packet_status": "INCOMPLETE_BACKFILL_REQUIRED",
+      "label": "carry_fund_90",
+      "ledger_profile": "var",
+      "ledger_source_path": "var/experiments.jsonl",
+      "measurement": {
+        "annualized_sharpe": 0.061179779908692465,
+        "kurtosis": 7.475773377057644,
+        "observations": 1574,
+        "skew": -0.5179534387474054
+      },
+      "missing_sections": [
+        "preregistration_and_hashes",
+        "point_in_time_data_and_survivorship_controls",
+        "execution_and_cost_model",
+        "result_uncertainty_stress_capacity_and_diversification",
+        "admission_or_kill_decision",
+        "code_environment_and_reproduction"
+      ],
+      "research_family_key": "crypto_carry",
+      "research_family_title": "Crypto perpetual-futures carry",
+      "sleeve_context": "AlphaForge",
+      "verified_family_paper_path": "/research/crypto-carry-lineage.md",
+      "verified_packet_path": "/glassbox/trial-packets/d1f9fc2e0af67426.json",
+      "verified_sections": [
+        "identity_and_authorship",
+        "economic_mechanism_and_falsifiable_hypothesis",
+        "literature_and_overlap_decision",
+        "family_and_union_trial_accounting",
+        "machine_readable_packet_and_stable_public_paper"
+      ]
+    },
+    {
+      "candidate_match_is_verified": true,
+      "candidate_public_papers": [
+        "/research/crypto-carry-lineage.md"
+      ],
+      "completion_assessment": {
+        "artifact_recoverability_class": "UNIQUE_EXACT_ARTIFACT_BINDING",
+        "blockers": [
+          {
+            "code": "EXACT_ARTIFACT_LACKS_ORIGINAL_ENVIRONMENT_STAMP",
+            "evidence": [
+              {
+                "path": "artifacts/cpanel/carry_weekly/walkforward.json",
+                "sha256": "b302cc2bed072e9516b7172099ab22b053bd1191f3277fd1fd173e3b073204d5"
+              },
+              {
+                "path": "artifacts/cpanel/carry_weekly/equity.parquet",
+                "sha256": "f1657f1ffded95282cd02ed94a78a68430abdf11ebf7b515faa61f5134c985cf"
+              },
+              {
+                "config_hash": "1578de850080ae28",
+                "path": "var/experiments.jsonl",
+                "sha256": "b5a318c0997d980575f758451f509e0154eecbbb50d734e49a587d473062bd08"
+              }
+            ],
+            "finding": "One persisted walk-forward artifact and equity curve uniquely match every identity-bearing ledger field and the immutable measurement. The artifact does not preserve the original code commit, runner hash, lockfile, and input manifest.",
+            "required_section": "code_environment_and_reproduction"
+          },
+          {
+            "code": "IDENTITY_PREREGISTRATION_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/cpanel/carry_weekly/walkforward.json",
+                "sha256": "b302cc2bed072e9516b7172099ab22b053bd1191f3277fd1fd173e3b073204d5"
+              }
+            ],
+            "finding": "No identity-level preregistration and immutable pre-result hash are bound to this historical measurement.",
+            "required_section": "preregistration_and_hashes"
+          },
+          {
+            "code": "IDENTITY_LEVEL_DECISION_PACKET_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/cpanel/carry_weekly/walkforward.json",
+                "sha256": "b302cc2bed072e9516b7172099ab22b053bd1191f3277fd1fd173e3b073204d5"
+              }
+            ],
+            "finding": "No complete identity-level admission or kill packet under the current contract is preserved for this historical measurement.",
+            "required_section": "admission_or_kill_decision"
+          }
+        ],
+        "config_hash": "1578de850080ae28",
+        "status": "AUDITED_NOT_CURRENTLY_COMPLETABLE",
+        "walkforward_corpus_hash": "sha256:100f6051fcadd89a33412ec317f982f17023bb8fe18b879116d5b16955bcb7c7"
+      },
+      "config_hash": "1578de850080ae28",
+      "coverage_status": "VERIFIED_INCOMPLETE_IDENTITY_PACKET",
+      "family_paper_binding_status": "VERIFIED_TAXONOMY_BINDING",
+      "first_recorded_at": "2026-06-20T13:17:46.007000+00:00",
+      "hypothesis_key": "7fa29a6dec0e5eb3",
+      "identity_packet_content_hash": "sha256:f919297e25266e712bf15e834de1474618b666767375dc496b7f721ca1e33920",
+      "identity_packet_status": "INCOMPLETE_BACKFILL_REQUIRED",
+      "label": "carry_fund_21 + carry_fund_90 + carry_z_252",
+      "ledger_profile": "var",
+      "ledger_source_path": "var/experiments.jsonl",
+      "measurement": {
+        "annualized_sharpe": 0.6482967148491433,
+        "kurtosis": 7.7512131453155515,
+        "observations": 1574,
+        "skew": 0.07948580999020027
+      },
+      "missing_sections": [
+        "preregistration_and_hashes",
+        "point_in_time_data_and_survivorship_controls",
+        "execution_and_cost_model",
+        "result_uncertainty_stress_capacity_and_diversification",
+        "admission_or_kill_decision",
+        "code_environment_and_reproduction"
+      ],
+      "research_family_key": "crypto_carry",
+      "research_family_title": "Crypto perpetual-futures carry",
+      "sleeve_context": "AlphaForge",
+      "verified_family_paper_path": "/research/crypto-carry-lineage.md",
+      "verified_packet_path": "/glassbox/trial-packets/7fa29a6dec0e5eb3.json",
+      "verified_sections": [
+        "identity_and_authorship",
+        "economic_mechanism_and_falsifiable_hypothesis",
+        "literature_and_overlap_decision",
+        "family_and_union_trial_accounting",
+        "machine_readable_packet_and_stable_public_paper"
+      ]
+    },
+    {
+      "candidate_match_is_verified": true,
+      "candidate_public_papers": [
+        "/research/crypto-carry-lineage.md"
+      ],
+      "completion_assessment": {
+        "artifact_recoverability_class": "METRIC_MATCH_CONFIG_MISMATCH",
+        "blockers": [
+          {
+            "code": "METRIC_MATCHES_BUT_IDENTITY_CONFIG_DIFFERS",
+            "evidence": [
+              {
+                "path": "artifacts/cpanel/L5_carry21_d/walkforward.json",
+                "sha256": "5987715b1877cbd63ce178525ff0099c706692e05c38a1f27e8549bb1accc042"
+              },
+              {
+                "path": "artifacts/cpanel/carry21_d/walkforward.json",
+                "sha256": "e888ea0a1de9eeac6b9bd433fa841c748a0451a8d175765d0bb520b80a03c80d"
+              },
+              {
+                "path": "artifacts/cpanel/carry21_d_rank/walkforward.json",
+                "sha256": "afc7a8e6cec0e82ef9d9580521e012279adf0f9ac345cf0c6b41ead1a4075405"
+              },
+              {
+                "path": "artifacts/cpanel/carry21_daily/walkforward.json",
+                "sha256": "a4e3b350d1aeb29202a0516cde454146f3e7c737fcf93db1d39237c1a1f5027f"
+              },
+              {
+                "path": "artifacts/cpanel/carry_base/walkforward.json",
+                "sha256": "6747d2b43f846b4380a4155717223630fcc49dff27d4ae25abc0ef254e0b04c5"
+              },
+              {
+                "path": "artifacts/cpanel/carry_fund_21_daily/walkforward.json",
+                "sha256": "a4e3b350d1aeb29202a0516cde454146f3e7c737fcf93db1d39237c1a1f5027f"
+              },
+              {
+                "path": "artifacts/cpanel/carry_regime/walkforward.json",
+                "sha256": "f681d643b1359f51a385639703d571ee7f0682a94c06dbc53963c26b20391a1f"
+              }
+            ],
+            "finding": "7 artifact(s) match the alpha list and immutable measurement, but none preserve every identity-bearing ledger field. Metric equality cannot repair a configuration-lineage mismatch.",
+            "required_section": "code_environment_and_reproduction"
+          },
+          {
+            "code": "IDENTITY_PREREGISTRATION_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/cpanel/L5_carry21_d/walkforward.json",
+                "sha256": "5987715b1877cbd63ce178525ff0099c706692e05c38a1f27e8549bb1accc042"
+              }
+            ],
+            "finding": "No identity-level preregistration and immutable pre-result hash are bound to this historical measurement.",
+            "required_section": "preregistration_and_hashes"
+          },
+          {
+            "code": "IDENTITY_LEVEL_DECISION_PACKET_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/cpanel/L5_carry21_d/walkforward.json",
+                "sha256": "5987715b1877cbd63ce178525ff0099c706692e05c38a1f27e8549bb1accc042"
+              }
+            ],
+            "finding": "No complete identity-level admission or kill packet under the current contract is preserved for this historical measurement.",
+            "required_section": "admission_or_kill_decision"
+          }
+        ],
+        "config_hash": "d27a9d4315d337ae",
+        "status": "AUDITED_NOT_CURRENTLY_COMPLETABLE",
+        "walkforward_corpus_hash": "sha256:100f6051fcadd89a33412ec317f982f17023bb8fe18b879116d5b16955bcb7c7"
+      },
+      "config_hash": "d27a9d4315d337ae",
+      "coverage_status": "VERIFIED_INCOMPLETE_IDENTITY_PACKET",
+      "family_paper_binding_status": "VERIFIED_TAXONOMY_BINDING",
+      "first_recorded_at": "2026-06-20T13:18:48.172000+00:00",
+      "hypothesis_key": "ed905a766147d2de",
+      "identity_packet_content_hash": "sha256:b2b7a787745b061731bd322f3e82f2388d0381906f66124228a3d59923989462",
+      "identity_packet_status": "INCOMPLETE_BACKFILL_REQUIRED",
+      "label": "carry_fund_21",
+      "ledger_profile": "var",
+      "ledger_source_path": "var/experiments.jsonl",
+      "measurement": {
+        "annualized_sharpe": 0.43423973892121237,
+        "kurtosis": 7.967080643393149,
+        "observations": 1574,
+        "skew": -0.16081833690710043
+      },
+      "missing_sections": [
+        "preregistration_and_hashes",
+        "point_in_time_data_and_survivorship_controls",
+        "execution_and_cost_model",
+        "result_uncertainty_stress_capacity_and_diversification",
+        "admission_or_kill_decision",
+        "code_environment_and_reproduction"
+      ],
+      "research_family_key": "crypto_carry",
+      "research_family_title": "Crypto perpetual-futures carry",
+      "sleeve_context": "AlphaForge",
+      "verified_family_paper_path": "/research/crypto-carry-lineage.md",
+      "verified_packet_path": "/glassbox/trial-packets/ed905a766147d2de.json",
+      "verified_sections": [
+        "identity_and_authorship",
+        "economic_mechanism_and_falsifiable_hypothesis",
+        "literature_and_overlap_decision",
+        "family_and_union_trial_accounting",
+        "machine_readable_packet_and_stable_public_paper"
+      ]
+    },
+    {
+      "candidate_match_is_verified": true,
+      "candidate_public_papers": [
+        "/research/crypto-carry-lineage.md"
+      ],
+      "completion_assessment": {
+        "artifact_recoverability_class": "UNIQUE_EXACT_ARTIFACT_BINDING",
+        "blockers": [
+          {
+            "code": "EXACT_ARTIFACT_LACKS_ORIGINAL_ENVIRONMENT_STAMP",
+            "evidence": [
+              {
+                "path": "artifacts/cpanel/carryblend_w_rank/walkforward.json",
+                "sha256": "2a13910d74608d0d0783ad6d8a38de2a339056569176fcc7c6c14a8daa8e6864"
+              },
+              {
+                "path": "artifacts/cpanel/carryblend_w_rank/equity.parquet",
+                "sha256": "9a56fbeb409b0ba2baa623bfffc9ae50afb4ed4d3e10f73c8e56ca2eb2c9c70e"
+              },
+              {
+                "config_hash": "50e3e94352a635cb",
+                "path": "var/experiments.jsonl",
+                "sha256": "b5a318c0997d980575f758451f509e0154eecbbb50d734e49a587d473062bd08"
+              }
+            ],
+            "finding": "One persisted walk-forward artifact and equity curve uniquely match every identity-bearing ledger field and the immutable measurement. The artifact does not preserve the original code commit, runner hash, lockfile, and input manifest.",
+            "required_section": "code_environment_and_reproduction"
+          },
+          {
+            "code": "IDENTITY_PREREGISTRATION_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/cpanel/carryblend_w_rank/walkforward.json",
+                "sha256": "2a13910d74608d0d0783ad6d8a38de2a339056569176fcc7c6c14a8daa8e6864"
+              }
+            ],
+            "finding": "No identity-level preregistration and immutable pre-result hash are bound to this historical measurement.",
+            "required_section": "preregistration_and_hashes"
+          },
+          {
+            "code": "IDENTITY_LEVEL_DECISION_PACKET_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/cpanel/carryblend_w_rank/walkforward.json",
+                "sha256": "2a13910d74608d0d0783ad6d8a38de2a339056569176fcc7c6c14a8daa8e6864"
+              }
+            ],
+            "finding": "No complete identity-level admission or kill packet under the current contract is preserved for this historical measurement.",
+            "required_section": "admission_or_kill_decision"
+          }
+        ],
+        "config_hash": "50e3e94352a635cb",
+        "status": "AUDITED_NOT_CURRENTLY_COMPLETABLE",
+        "walkforward_corpus_hash": "sha256:100f6051fcadd89a33412ec317f982f17023bb8fe18b879116d5b16955bcb7c7"
+      },
+      "config_hash": "50e3e94352a635cb",
+      "coverage_status": "VERIFIED_INCOMPLETE_IDENTITY_PACKET",
+      "family_paper_binding_status": "VERIFIED_TAXONOMY_BINDING",
+      "first_recorded_at": "2026-06-20T13:19:49.199000+00:00",
+      "hypothesis_key": "9b3ea423a0f3568b",
+      "identity_packet_content_hash": "sha256:d131dd485aa3cf20d148d99ae93d656eb6e4a27da3820619e427256a78721937",
+      "identity_packet_status": "INCOMPLETE_BACKFILL_REQUIRED",
+      "label": "carry_fund_21 + carry_fund_90 + carry_mom_21_63",
+      "ledger_profile": "var",
+      "ledger_source_path": "var/experiments.jsonl",
+      "measurement": {
+        "annualized_sharpe": 0.10456968836486681,
+        "kurtosis": 9.247421752526591,
+        "observations": 1574,
+        "skew": -0.4110012473650939
+      },
+      "missing_sections": [
+        "preregistration_and_hashes",
+        "point_in_time_data_and_survivorship_controls",
+        "execution_and_cost_model",
+        "result_uncertainty_stress_capacity_and_diversification",
+        "admission_or_kill_decision",
+        "code_environment_and_reproduction"
+      ],
+      "research_family_key": "crypto_carry",
+      "research_family_title": "Crypto perpetual-futures carry",
+      "sleeve_context": "AlphaForge",
+      "verified_family_paper_path": "/research/crypto-carry-lineage.md",
+      "verified_packet_path": "/glassbox/trial-packets/9b3ea423a0f3568b.json",
+      "verified_sections": [
+        "identity_and_authorship",
+        "economic_mechanism_and_falsifiable_hypothesis",
+        "literature_and_overlap_decision",
+        "family_and_union_trial_accounting",
+        "machine_readable_packet_and_stable_public_paper"
+      ]
+    },
+    {
+      "candidate_match_is_verified": true,
+      "candidate_public_papers": [
+        "/research/crypto-carry-lineage.md"
+      ],
+      "completion_assessment": {
+        "artifact_recoverability_class": "UNIQUE_EXACT_ARTIFACT_BINDING",
+        "blockers": [
+          {
+            "code": "EXACT_ARTIFACT_LACKS_ORIGINAL_ENVIRONMENT_STAMP",
+            "evidence": [
+              {
+                "path": "artifacts/cpanel/carryz_w_rank/walkforward.json",
+                "sha256": "deaf466094bedfa53d5278c45eec17f05a514e3387f733d5551c826c72cb7592"
+              },
+              {
+                "path": "artifacts/cpanel/carryz_w_rank/equity.parquet",
+                "sha256": "9e89ccd4a6b7353dc58dfec3d7ad990219b6ae169bd8ede68067017fe6c5c828"
+              },
+              {
+                "config_hash": "73bebf36850c9fa1",
+                "path": "var/experiments.jsonl",
+                "sha256": "b5a318c0997d980575f758451f509e0154eecbbb50d734e49a587d473062bd08"
+              }
+            ],
+            "finding": "One persisted walk-forward artifact and equity curve uniquely match every identity-bearing ledger field and the immutable measurement. The artifact does not preserve the original code commit, runner hash, lockfile, and input manifest.",
+            "required_section": "code_environment_and_reproduction"
+          },
+          {
+            "code": "IDENTITY_PREREGISTRATION_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/cpanel/carryz_w_rank/walkforward.json",
+                "sha256": "deaf466094bedfa53d5278c45eec17f05a514e3387f733d5551c826c72cb7592"
+              }
+            ],
+            "finding": "No identity-level preregistration and immutable pre-result hash are bound to this historical measurement.",
+            "required_section": "preregistration_and_hashes"
+          },
+          {
+            "code": "IDENTITY_LEVEL_DECISION_PACKET_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/cpanel/carryz_w_rank/walkforward.json",
+                "sha256": "deaf466094bedfa53d5278c45eec17f05a514e3387f733d5551c826c72cb7592"
+              }
+            ],
+            "finding": "No complete identity-level admission or kill packet under the current contract is preserved for this historical measurement.",
+            "required_section": "admission_or_kill_decision"
+          }
+        ],
+        "config_hash": "73bebf36850c9fa1",
+        "status": "AUDITED_NOT_CURRENTLY_COMPLETABLE",
+        "walkforward_corpus_hash": "sha256:100f6051fcadd89a33412ec317f982f17023bb8fe18b879116d5b16955bcb7c7"
+      },
+      "config_hash": "73bebf36850c9fa1",
+      "coverage_status": "VERIFIED_INCOMPLETE_IDENTITY_PACKET",
+      "family_paper_binding_status": "VERIFIED_TAXONOMY_BINDING",
+      "first_recorded_at": "2026-06-20T13:19:49.968000+00:00",
+      "hypothesis_key": "61db97abbbc4076f",
+      "identity_packet_content_hash": "sha256:8d4557a09e2ba3b204fa678792e162a9f547cbb63e86b73dabde2d09cfe20e88",
+      "identity_packet_status": "INCOMPLETE_BACKFILL_REQUIRED",
+      "label": "carry_z_252",
+      "ledger_profile": "var",
+      "ledger_source_path": "var/experiments.jsonl",
+      "measurement": {
+        "annualized_sharpe": 0.06805326746728567,
+        "kurtosis": 11.920221281341856,
+        "observations": 1574,
+        "skew": 0.2375225955599229
+      },
+      "missing_sections": [
+        "preregistration_and_hashes",
+        "point_in_time_data_and_survivorship_controls",
+        "execution_and_cost_model",
+        "result_uncertainty_stress_capacity_and_diversification",
+        "admission_or_kill_decision",
+        "code_environment_and_reproduction"
+      ],
+      "research_family_key": "crypto_carry",
+      "research_family_title": "Crypto perpetual-futures carry",
+      "sleeve_context": "AlphaForge",
+      "verified_family_paper_path": "/research/crypto-carry-lineage.md",
+      "verified_packet_path": "/glassbox/trial-packets/61db97abbbc4076f.json",
+      "verified_sections": [
+        "identity_and_authorship",
+        "economic_mechanism_and_falsifiable_hypothesis",
+        "literature_and_overlap_decision",
+        "family_and_union_trial_accounting",
+        "machine_readable_packet_and_stable_public_paper"
+      ]
+    },
+    {
+      "candidate_match_is_verified": true,
+      "candidate_public_papers": [
+        "/research/crypto-carry-lineage.md"
+      ],
+      "completion_assessment": {
+        "artifact_recoverability_class": "AMBIGUOUS_EXACT_ARTIFACT_MATCHES",
+        "blockers": [
+          {
+            "code": "MULTIPLE_BYTE_DISTINCT_ARTIFACTS_MATCH_IDENTITY",
+            "evidence": [
+              {
+                "path": "artifacts/cpanel/carryz252_daily/walkforward.json",
+                "sha256": "918d9cdbadde299ea2ae0ef366dfba608c136667a3292ac8232bb5a64bbe7902"
+              },
+              {
+                "path": "artifacts/cpanel/carryz_daily/walkforward.json",
+                "sha256": "1963c9547fdbfe7df39d5d5876f0434d26cd4a711042f878f4a6c6218b3ffbeb"
+              }
+            ],
+            "finding": "2 byte-distinct walk-forward artifacts match every ledger identity field and immutable measurement. The original source cannot be selected without inventing lineage.",
+            "required_section": "code_environment_and_reproduction"
+          },
+          {
+            "code": "IDENTITY_PREREGISTRATION_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/cpanel/carryz252_daily/walkforward.json",
+                "sha256": "918d9cdbadde299ea2ae0ef366dfba608c136667a3292ac8232bb5a64bbe7902"
+              }
+            ],
+            "finding": "No identity-level preregistration and immutable pre-result hash are bound to this historical measurement.",
+            "required_section": "preregistration_and_hashes"
+          },
+          {
+            "code": "IDENTITY_LEVEL_DECISION_PACKET_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/cpanel/carryz252_daily/walkforward.json",
+                "sha256": "918d9cdbadde299ea2ae0ef366dfba608c136667a3292ac8232bb5a64bbe7902"
+              }
+            ],
+            "finding": "No complete identity-level admission or kill packet under the current contract is preserved for this historical measurement.",
+            "required_section": "admission_or_kill_decision"
+          }
+        ],
+        "config_hash": "5d319d4b930ef867",
+        "status": "AUDITED_NOT_CURRENTLY_COMPLETABLE",
+        "walkforward_corpus_hash": "sha256:100f6051fcadd89a33412ec317f982f17023bb8fe18b879116d5b16955bcb7c7"
+      },
+      "config_hash": "5d319d4b930ef867",
+      "coverage_status": "VERIFIED_INCOMPLETE_IDENTITY_PACKET",
+      "family_paper_binding_status": "VERIFIED_TAXONOMY_BINDING",
+      "first_recorded_at": "2026-06-20T13:23:16.679000+00:00",
+      "hypothesis_key": "bd3db62a406aeb58",
+      "identity_packet_content_hash": "sha256:5ed0f2e5d9ed9a29e1f44171f370aaa67bde0e8e332c01c17fb88b7c3848937a",
+      "identity_packet_status": "INCOMPLETE_BACKFILL_REQUIRED",
+      "label": "carry_z_252",
+      "ledger_profile": "var",
+      "ledger_source_path": "var/experiments.jsonl",
+      "measurement": {
+        "annualized_sharpe": -1.394514793521782,
+        "kurtosis": 8.073085763392877,
+        "observations": 1574,
+        "skew": 0.29602922205043186
+      },
+      "missing_sections": [
+        "preregistration_and_hashes",
+        "point_in_time_data_and_survivorship_controls",
+        "execution_and_cost_model",
+        "result_uncertainty_stress_capacity_and_diversification",
+        "admission_or_kill_decision",
+        "code_environment_and_reproduction"
+      ],
+      "research_family_key": "crypto_carry",
+      "research_family_title": "Crypto perpetual-futures carry",
+      "sleeve_context": "AlphaForge",
+      "verified_family_paper_path": "/research/crypto-carry-lineage.md",
+      "verified_packet_path": "/glassbox/trial-packets/bd3db62a406aeb58.json",
+      "verified_sections": [
+        "identity_and_authorship",
+        "economic_mechanism_and_falsifiable_hypothesis",
+        "literature_and_overlap_decision",
+        "family_and_union_trial_accounting",
+        "machine_readable_packet_and_stable_public_paper"
+      ]
+    },
+    {
+      "candidate_match_is_verified": true,
+      "candidate_public_papers": [
+        "/research/crypto-carry-lineage.md"
+      ],
+      "completion_assessment": {
+        "artifact_recoverability_class": "METRIC_MATCH_CONFIG_MISMATCH",
+        "blockers": [
+          {
+            "code": "METRIC_MATCHES_BUT_IDENTITY_CONFIG_DIFFERS",
+            "evidence": [
+              {
+                "path": "artifacts/cpanel/carry_regime_short/walkforward.json",
+                "sha256": "f4903883d871665f82676c5f408f2bdccf41f554c18d37ba65ff220eb93c55c7"
+              }
+            ],
+            "finding": "1 artifact(s) match the alpha list and immutable measurement, but none preserve every identity-bearing ledger field. Metric equality cannot repair a configuration-lineage mismatch.",
+            "required_section": "code_environment_and_reproduction"
+          },
+          {
+            "code": "IDENTITY_PREREGISTRATION_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/cpanel/carry_regime_short/walkforward.json",
+                "sha256": "f4903883d871665f82676c5f408f2bdccf41f554c18d37ba65ff220eb93c55c7"
+              }
+            ],
+            "finding": "No identity-level preregistration and immutable pre-result hash are bound to this historical measurement.",
+            "required_section": "preregistration_and_hashes"
+          },
+          {
+            "code": "IDENTITY_LEVEL_DECISION_PACKET_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/cpanel/carry_regime_short/walkforward.json",
+                "sha256": "f4903883d871665f82676c5f408f2bdccf41f554c18d37ba65ff220eb93c55c7"
+              }
+            ],
+            "finding": "No complete identity-level admission or kill packet under the current contract is preserved for this historical measurement.",
+            "required_section": "admission_or_kill_decision"
+          }
+        ],
+        "config_hash": "7c4ef7fa217157b0",
+        "status": "AUDITED_NOT_CURRENTLY_COMPLETABLE",
+        "walkforward_corpus_hash": "sha256:100f6051fcadd89a33412ec317f982f17023bb8fe18b879116d5b16955bcb7c7"
+      },
+      "config_hash": "7c4ef7fa217157b0",
+      "coverage_status": "VERIFIED_INCOMPLETE_IDENTITY_PACKET",
+      "family_paper_binding_status": "VERIFIED_TAXONOMY_BINDING",
+      "first_recorded_at": "2026-06-20T13:23:50.650000+00:00",
+      "hypothesis_key": "230d98e8609b0771",
+      "identity_packet_content_hash": "sha256:7ba7a1fdb95bdef8f39dcb583ce3470b95d958ac923800f215a4afd16093a63f",
+      "identity_packet_status": "INCOMPLETE_BACKFILL_REQUIRED",
+      "label": "carry_fund_21",
+      "ledger_profile": "var",
+      "ledger_source_path": "var/experiments.jsonl",
+      "measurement": {
+        "annualized_sharpe": -0.28608018051999906,
+        "kurtosis": 3.932339042596677,
+        "observations": 479,
+        "skew": 0.023949037101274277
+      },
+      "missing_sections": [
+        "preregistration_and_hashes",
+        "point_in_time_data_and_survivorship_controls",
+        "execution_and_cost_model",
+        "result_uncertainty_stress_capacity_and_diversification",
+        "admission_or_kill_decision",
+        "code_environment_and_reproduction"
+      ],
+      "research_family_key": "crypto_carry",
+      "research_family_title": "Crypto perpetual-futures carry",
+      "sleeve_context": "AlphaForge",
+      "verified_family_paper_path": "/research/crypto-carry-lineage.md",
+      "verified_packet_path": "/glassbox/trial-packets/230d98e8609b0771.json",
+      "verified_sections": [
+        "identity_and_authorship",
+        "economic_mechanism_and_falsifiable_hypothesis",
+        "literature_and_overlap_decision",
+        "family_and_union_trial_accounting",
+        "machine_readable_packet_and_stable_public_paper"
+      ]
+    },
+    {
+      "candidate_match_is_verified": true,
+      "candidate_public_papers": [
+        "/research/crypto-carry-lineage.md"
+      ],
+      "completion_assessment": {
+        "artifact_recoverability_class": "UNIQUE_EXACT_ARTIFACT_BINDING",
+        "blockers": [
+          {
+            "code": "EXACT_ARTIFACT_LACKS_ORIGINAL_ENVIRONMENT_STAMP",
+            "evidence": [
+              {
+                "path": "artifacts/cpanel/carry_regime_short/walkforward.json",
+                "sha256": "f4903883d871665f82676c5f408f2bdccf41f554c18d37ba65ff220eb93c55c7"
+              },
+              {
+                "path": "artifacts/cpanel/carry_regime_short/equity.parquet",
+                "sha256": "778a8af5d117d7f8266236aeef1bcda46a2721c0d619ea197b11a733d97901df"
+              },
+              {
+                "config_hash": "afce50e66876d993",
+                "path": "var/experiments.jsonl",
+                "sha256": "b5a318c0997d980575f758451f509e0154eecbbb50d734e49a587d473062bd08"
+              }
+            ],
+            "finding": "One persisted walk-forward artifact and equity curve uniquely match every identity-bearing ledger field and the immutable measurement. The artifact does not preserve the original code commit, runner hash, lockfile, and input manifest.",
+            "required_section": "code_environment_and_reproduction"
+          },
+          {
+            "code": "IDENTITY_PREREGISTRATION_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/cpanel/carry_regime_short/walkforward.json",
+                "sha256": "f4903883d871665f82676c5f408f2bdccf41f554c18d37ba65ff220eb93c55c7"
+              }
+            ],
+            "finding": "No identity-level preregistration and immutable pre-result hash are bound to this historical measurement.",
+            "required_section": "preregistration_and_hashes"
+          },
+          {
+            "code": "IDENTITY_LEVEL_DECISION_PACKET_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/cpanel/carry_regime_short/walkforward.json",
+                "sha256": "f4903883d871665f82676c5f408f2bdccf41f554c18d37ba65ff220eb93c55c7"
+              }
+            ],
+            "finding": "No complete identity-level admission or kill packet under the current contract is preserved for this historical measurement.",
+            "required_section": "admission_or_kill_decision"
+          }
+        ],
+        "config_hash": "afce50e66876d993",
+        "status": "AUDITED_NOT_CURRENTLY_COMPLETABLE",
+        "walkforward_corpus_hash": "sha256:100f6051fcadd89a33412ec317f982f17023bb8fe18b879116d5b16955bcb7c7"
+      },
+      "config_hash": "afce50e66876d993",
+      "coverage_status": "VERIFIED_INCOMPLETE_IDENTITY_PACKET",
+      "family_paper_binding_status": "VERIFIED_TAXONOMY_BINDING",
+      "first_recorded_at": "2026-06-20T13:23:50.650000+00:00",
+      "hypothesis_key": "8eb9bed726090014",
+      "identity_packet_content_hash": "sha256:b99bfd82ba05e4d429ff84f317e1b6820f4f0bcc2402090bb28c8c6c44f60004",
+      "identity_packet_status": "INCOMPLETE_BACKFILL_REQUIRED",
+      "label": "carry_fund_21",
+      "ledger_profile": "var",
+      "ledger_source_path": "var/experiments.jsonl",
+      "measurement": {
+        "annualized_sharpe": -0.28608018051999906,
+        "kurtosis": 3.932339042596677,
+        "observations": 479,
+        "skew": 0.023949037101274277
+      },
+      "missing_sections": [
+        "preregistration_and_hashes",
+        "point_in_time_data_and_survivorship_controls",
+        "execution_and_cost_model",
+        "result_uncertainty_stress_capacity_and_diversification",
+        "admission_or_kill_decision",
+        "code_environment_and_reproduction"
+      ],
+      "research_family_key": "crypto_carry",
+      "research_family_title": "Crypto perpetual-futures carry",
+      "sleeve_context": "AlphaForge",
+      "verified_family_paper_path": "/research/crypto-carry-lineage.md",
+      "verified_packet_path": "/glassbox/trial-packets/8eb9bed726090014.json",
+      "verified_sections": [
+        "identity_and_authorship",
+        "economic_mechanism_and_falsifiable_hypothesis",
+        "literature_and_overlap_decision",
+        "family_and_union_trial_accounting",
+        "machine_readable_packet_and_stable_public_paper"
+      ]
+    },
+    {
+      "candidate_match_is_verified": true,
+      "candidate_public_papers": [
+        "/research/crypto-carry-lineage.md"
+      ],
+      "completion_assessment": {
+        "artifact_recoverability_class": "UNIQUE_EXACT_ARTIFACT_BINDING",
+        "blockers": [
+          {
+            "code": "EXACT_ARTIFACT_LACKS_ORIGINAL_ENVIRONMENT_STAMP",
+            "evidence": [
+              {
+                "path": "artifacts/cpanel/carry_mvo_weekly/walkforward.json",
+                "sha256": "698d98d0fa20d9ecc8aa0d367da24b7bc28e73965d58343954a1139d6fb1daed"
+              },
+              {
+                "path": "artifacts/cpanel/carry_mvo_weekly/equity.parquet",
+                "sha256": "b604071dcf39ece678d7389ce311b3eb5225e8bda601308fef70725e42132718"
+              },
+              {
+                "config_hash": "dd4f3b256f522e6b",
+                "path": "var/experiments.jsonl",
+                "sha256": "b5a318c0997d980575f758451f509e0154eecbbb50d734e49a587d473062bd08"
+              }
+            ],
+            "finding": "One persisted walk-forward artifact and equity curve uniquely match every identity-bearing ledger field and the immutable measurement. The artifact does not preserve the original code commit, runner hash, lockfile, and input manifest.",
+            "required_section": "code_environment_and_reproduction"
+          },
+          {
+            "code": "IDENTITY_PREREGISTRATION_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/cpanel/carry_mvo_weekly/walkforward.json",
+                "sha256": "698d98d0fa20d9ecc8aa0d367da24b7bc28e73965d58343954a1139d6fb1daed"
+              }
+            ],
+            "finding": "No identity-level preregistration and immutable pre-result hash are bound to this historical measurement.",
+            "required_section": "preregistration_and_hashes"
+          },
+          {
+            "code": "IDENTITY_LEVEL_DECISION_PACKET_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/cpanel/carry_mvo_weekly/walkforward.json",
+                "sha256": "698d98d0fa20d9ecc8aa0d367da24b7bc28e73965d58343954a1139d6fb1daed"
+              }
+            ],
+            "finding": "No complete identity-level admission or kill packet under the current contract is preserved for this historical measurement.",
+            "required_section": "admission_or_kill_decision"
+          }
+        ],
+        "config_hash": "dd4f3b256f522e6b",
+        "status": "AUDITED_NOT_CURRENTLY_COMPLETABLE",
+        "walkforward_corpus_hash": "sha256:100f6051fcadd89a33412ec317f982f17023bb8fe18b879116d5b16955bcb7c7"
+      },
+      "config_hash": "dd4f3b256f522e6b",
+      "coverage_status": "VERIFIED_INCOMPLETE_IDENTITY_PACKET",
+      "family_paper_binding_status": "VERIFIED_TAXONOMY_BINDING",
+      "first_recorded_at": "2026-06-20T13:24:16.539000+00:00",
+      "hypothesis_key": "e2d030eb57ff18a1",
+      "identity_packet_content_hash": "sha256:5d6e76cb8283de6ad9849d02bf00bf49588570a71a3263eabb266991c392d75e",
+      "identity_packet_status": "INCOMPLETE_BACKFILL_REQUIRED",
+      "label": "carry_fund_21 + carry_fund_90 + carry_z_252",
+      "ledger_profile": "var",
+      "ledger_source_path": "var/experiments.jsonl",
+      "measurement": {
+        "annualized_sharpe": -0.2123986011219555,
+        "kurtosis": 56.22811016772478,
+        "observations": 1574,
+        "skew": -3.508089472311598
+      },
+      "missing_sections": [
+        "preregistration_and_hashes",
+        "point_in_time_data_and_survivorship_controls",
+        "execution_and_cost_model",
+        "result_uncertainty_stress_capacity_and_diversification",
+        "admission_or_kill_decision",
+        "code_environment_and_reproduction"
+      ],
+      "research_family_key": "crypto_carry",
+      "research_family_title": "Crypto perpetual-futures carry",
+      "sleeve_context": "AlphaForge",
+      "verified_family_paper_path": "/research/crypto-carry-lineage.md",
+      "verified_packet_path": "/glassbox/trial-packets/e2d030eb57ff18a1.json",
+      "verified_sections": [
+        "identity_and_authorship",
+        "economic_mechanism_and_falsifiable_hypothesis",
+        "literature_and_overlap_decision",
+        "family_and_union_trial_accounting",
+        "machine_readable_packet_and_stable_public_paper"
+      ]
+    },
+    {
+      "candidate_match_is_verified": true,
+      "candidate_public_papers": [
+        "/research/crypto-carry-lineage.md"
+      ],
+      "completion_assessment": {
+        "artifact_recoverability_class": "UNIQUE_EXACT_ARTIFACT_BINDING",
+        "blockers": [
+          {
+            "code": "EXACT_ARTIFACT_LACKS_ORIGINAL_ENVIRONMENT_STAMP",
+            "evidence": [
+              {
+                "path": "artifacts/cpanel/carry21_3d_rank/walkforward.json",
+                "sha256": "5c3d1b522a9293a55f1f2b5e5f1ed4cb88d97940e19a4da845349b443364db1d"
+              },
+              {
+                "path": "artifacts/cpanel/carry21_3d_rank/equity.parquet",
+                "sha256": "6b5952f5abe6cc8a9f8d05fd23c6d8b5f32669d5d920ed50676fb81a30565b7b"
+              },
+              {
+                "config_hash": "e2712874c6e55d6e",
+                "path": "var/experiments.jsonl",
+                "sha256": "b5a318c0997d980575f758451f509e0154eecbbb50d734e49a587d473062bd08"
+              }
+            ],
+            "finding": "One persisted walk-forward artifact and equity curve uniquely match every identity-bearing ledger field and the immutable measurement. The artifact does not preserve the original code commit, runner hash, lockfile, and input manifest.",
+            "required_section": "code_environment_and_reproduction"
+          },
+          {
+            "code": "IDENTITY_PREREGISTRATION_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/cpanel/carry21_3d_rank/walkforward.json",
+                "sha256": "5c3d1b522a9293a55f1f2b5e5f1ed4cb88d97940e19a4da845349b443364db1d"
+              }
+            ],
+            "finding": "No identity-level preregistration and immutable pre-result hash are bound to this historical measurement.",
+            "required_section": "preregistration_and_hashes"
+          },
+          {
+            "code": "IDENTITY_LEVEL_DECISION_PACKET_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/cpanel/carry21_3d_rank/walkforward.json",
+                "sha256": "5c3d1b522a9293a55f1f2b5e5f1ed4cb88d97940e19a4da845349b443364db1d"
+              }
+            ],
+            "finding": "No complete identity-level admission or kill packet under the current contract is preserved for this historical measurement.",
+            "required_section": "admission_or_kill_decision"
+          }
+        ],
+        "config_hash": "e2712874c6e55d6e",
+        "status": "AUDITED_NOT_CURRENTLY_COMPLETABLE",
+        "walkforward_corpus_hash": "sha256:100f6051fcadd89a33412ec317f982f17023bb8fe18b879116d5b16955bcb7c7"
+      },
+      "config_hash": "e2712874c6e55d6e",
+      "coverage_status": "VERIFIED_INCOMPLETE_IDENTITY_PACKET",
+      "family_paper_binding_status": "VERIFIED_TAXONOMY_BINDING",
+      "first_recorded_at": "2026-06-20T13:26:41.825000+00:00",
+      "hypothesis_key": "18125376cea1ebbd",
+      "identity_packet_content_hash": "sha256:bc24ec77a900cc98c63cec8a7eef640f0738b7ad6dc6d2cf2ce04ff102e940ce",
+      "identity_packet_status": "INCOMPLETE_BACKFILL_REQUIRED",
+      "label": "carry_fund_21",
+      "ledger_profile": "var",
+      "ledger_source_path": "var/experiments.jsonl",
+      "measurement": {
+        "annualized_sharpe": 0.36746235624658236,
+        "kurtosis": 8.275884473654465,
+        "observations": 1574,
+        "skew": -0.38363673713701796
+      },
+      "missing_sections": [
+        "preregistration_and_hashes",
+        "point_in_time_data_and_survivorship_controls",
+        "execution_and_cost_model",
+        "result_uncertainty_stress_capacity_and_diversification",
+        "admission_or_kill_decision",
+        "code_environment_and_reproduction"
+      ],
+      "research_family_key": "crypto_carry",
+      "research_family_title": "Crypto perpetual-futures carry",
+      "sleeve_context": "AlphaForge",
+      "verified_family_paper_path": "/research/crypto-carry-lineage.md",
+      "verified_packet_path": "/glassbox/trial-packets/18125376cea1ebbd.json",
+      "verified_sections": [
+        "identity_and_authorship",
+        "economic_mechanism_and_falsifiable_hypothesis",
+        "literature_and_overlap_decision",
+        "family_and_union_trial_accounting",
+        "machine_readable_packet_and_stable_public_paper"
+      ]
+    },
+    {
+      "candidate_match_is_verified": true,
+      "candidate_public_papers": [
+        "/research/crypto-carry-lineage.md"
+      ],
+      "completion_assessment": {
+        "artifact_recoverability_class": "UNIQUE_EXACT_ARTIFACT_BINDING",
+        "blockers": [
+          {
+            "code": "EXACT_ARTIFACT_LACKS_ORIGINAL_ENVIRONMENT_STAMP",
+            "evidence": [
+              {
+                "path": "artifacts/cpanel/carry21_2w_rank/walkforward.json",
+                "sha256": "3fceea1e9a4364a737143f2ad73e32f05b517689f64559623f4d44cf77a4cd6d"
+              },
+              {
+                "path": "artifacts/cpanel/carry21_2w_rank/equity.parquet",
+                "sha256": "22bda30a2f9da444976ee1a6add4c52905f141ca60ddfe4885eb6becd040e242"
+              },
+              {
+                "config_hash": "de6224da7fcf6722",
+                "path": "var/experiments.jsonl",
+                "sha256": "b5a318c0997d980575f758451f509e0154eecbbb50d734e49a587d473062bd08"
+              }
+            ],
+            "finding": "One persisted walk-forward artifact and equity curve uniquely match every identity-bearing ledger field and the immutable measurement. The artifact does not preserve the original code commit, runner hash, lockfile, and input manifest.",
+            "required_section": "code_environment_and_reproduction"
+          },
+          {
+            "code": "IDENTITY_PREREGISTRATION_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/cpanel/carry21_2w_rank/walkforward.json",
+                "sha256": "3fceea1e9a4364a737143f2ad73e32f05b517689f64559623f4d44cf77a4cd6d"
+              }
+            ],
+            "finding": "No identity-level preregistration and immutable pre-result hash are bound to this historical measurement.",
+            "required_section": "preregistration_and_hashes"
+          },
+          {
+            "code": "IDENTITY_LEVEL_DECISION_PACKET_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/cpanel/carry21_2w_rank/walkforward.json",
+                "sha256": "3fceea1e9a4364a737143f2ad73e32f05b517689f64559623f4d44cf77a4cd6d"
+              }
+            ],
+            "finding": "No complete identity-level admission or kill packet under the current contract is preserved for this historical measurement.",
+            "required_section": "admission_or_kill_decision"
+          }
+        ],
+        "config_hash": "de6224da7fcf6722",
+        "status": "AUDITED_NOT_CURRENTLY_COMPLETABLE",
+        "walkforward_corpus_hash": "sha256:100f6051fcadd89a33412ec317f982f17023bb8fe18b879116d5b16955bcb7c7"
+      },
+      "config_hash": "de6224da7fcf6722",
+      "coverage_status": "VERIFIED_INCOMPLETE_IDENTITY_PACKET",
+      "family_paper_binding_status": "VERIFIED_TAXONOMY_BINDING",
+      "first_recorded_at": "2026-06-20T13:26:43.107000+00:00",
+      "hypothesis_key": "346311eccb786dda",
+      "identity_packet_content_hash": "sha256:01c6c5c5b9de7f099c2e0cae43f703ef4610e164224f4e240f523a342e7bb39a",
+      "identity_packet_status": "INCOMPLETE_BACKFILL_REQUIRED",
+      "label": "carry_fund_21",
+      "ledger_profile": "var",
+      "ledger_source_path": "var/experiments.jsonl",
+      "measurement": {
+        "annualized_sharpe": 0.37341757341395126,
+        "kurtosis": 16.974190845258782,
+        "observations": 1574,
+        "skew": -0.756072078528504
+      },
+      "missing_sections": [
+        "preregistration_and_hashes",
+        "point_in_time_data_and_survivorship_controls",
+        "execution_and_cost_model",
+        "result_uncertainty_stress_capacity_and_diversification",
+        "admission_or_kill_decision",
+        "code_environment_and_reproduction"
+      ],
+      "research_family_key": "crypto_carry",
+      "research_family_title": "Crypto perpetual-futures carry",
+      "sleeve_context": "AlphaForge",
+      "verified_family_paper_path": "/research/crypto-carry-lineage.md",
+      "verified_packet_path": "/glassbox/trial-packets/346311eccb786dda.json",
+      "verified_sections": [
+        "identity_and_authorship",
+        "economic_mechanism_and_falsifiable_hypothesis",
+        "literature_and_overlap_decision",
+        "family_and_union_trial_accounting",
+        "machine_readable_packet_and_stable_public_paper"
+      ]
+    },
+    {
+      "candidate_match_is_verified": true,
+      "candidate_public_papers": [
+        "/research/crypto-carry-lineage.md"
+      ],
+      "completion_assessment": {
+        "artifact_recoverability_class": "UNIQUE_EXACT_ARTIFACT_BINDING",
+        "blockers": [
+          {
+            "code": "EXACT_ARTIFACT_LACKS_ORIGINAL_ENVIRONMENT_STAMP",
+            "evidence": [
+              {
+                "path": "artifacts/cpanel/L9_carry_wk/walkforward.json",
+                "sha256": "9803324310afb7ce6be8c356996d1ec3910632fc8e19b15efd4f4d1f9cb0f364"
+              },
+              {
+                "path": "artifacts/cpanel/L9_carry_wk/equity.parquet",
+                "sha256": "6333318dab2a4eddf2fd17bfbf384f5cefede3e2e8933f6d370aeeced1961e2e"
+              },
+              {
+                "config_hash": "ea69c2d62fc37304",
+                "path": "var/experiments.jsonl",
+                "sha256": "b5a318c0997d980575f758451f509e0154eecbbb50d734e49a587d473062bd08"
+              }
+            ],
+            "finding": "One persisted walk-forward artifact and equity curve uniquely match every identity-bearing ledger field and the immutable measurement. The artifact does not preserve the original code commit, runner hash, lockfile, and input manifest.",
+            "required_section": "code_environment_and_reproduction"
+          },
+          {
+            "code": "IDENTITY_PREREGISTRATION_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/cpanel/L9_carry_wk/walkforward.json",
+                "sha256": "9803324310afb7ce6be8c356996d1ec3910632fc8e19b15efd4f4d1f9cb0f364"
+              }
+            ],
+            "finding": "No identity-level preregistration and immutable pre-result hash are bound to this historical measurement.",
+            "required_section": "preregistration_and_hashes"
+          },
+          {
+            "code": "IDENTITY_LEVEL_DECISION_PACKET_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/cpanel/L9_carry_wk/walkforward.json",
+                "sha256": "9803324310afb7ce6be8c356996d1ec3910632fc8e19b15efd4f4d1f9cb0f364"
+              }
+            ],
+            "finding": "No complete identity-level admission or kill packet under the current contract is preserved for this historical measurement.",
+            "required_section": "admission_or_kill_decision"
+          }
+        ],
+        "config_hash": "ea69c2d62fc37304",
+        "status": "AUDITED_NOT_CURRENTLY_COMPLETABLE",
+        "walkforward_corpus_hash": "sha256:100f6051fcadd89a33412ec317f982f17023bb8fe18b879116d5b16955bcb7c7"
+      },
+      "config_hash": "ea69c2d62fc37304",
+      "coverage_status": "VERIFIED_INCOMPLETE_IDENTITY_PACKET",
+      "family_paper_binding_status": "VERIFIED_TAXONOMY_BINDING",
+      "first_recorded_at": "2026-06-20T13:53:39.351000+00:00",
+      "hypothesis_key": "890a432d09e1ef8a",
+      "identity_packet_content_hash": "sha256:bb0f534c2f742af5359a0b927728a37c382b63429ffeb92b6bcecac70adb2bf2",
+      "identity_packet_status": "INCOMPLETE_BACKFILL_REQUIRED",
+      "label": "carry_fund_21 + carry_fund_90 + carry_z_252 + carry_mom_21_63",
+      "ledger_profile": "var",
+      "ledger_source_path": "var/experiments.jsonl",
+      "measurement": {
+        "annualized_sharpe": 0.18560803833102626,
+        "kurtosis": 8.802038673943732,
+        "observations": 1574,
+        "skew": -0.23552796225899547
+      },
+      "missing_sections": [
+        "preregistration_and_hashes",
+        "point_in_time_data_and_survivorship_controls",
+        "execution_and_cost_model",
+        "result_uncertainty_stress_capacity_and_diversification",
+        "admission_or_kill_decision",
+        "code_environment_and_reproduction"
+      ],
+      "research_family_key": "crypto_carry",
+      "research_family_title": "Crypto perpetual-futures carry",
+      "sleeve_context": "AlphaForge",
+      "verified_family_paper_path": "/research/crypto-carry-lineage.md",
+      "verified_packet_path": "/glassbox/trial-packets/890a432d09e1ef8a.json",
+      "verified_sections": [
+        "identity_and_authorship",
+        "economic_mechanism_and_falsifiable_hypothesis",
+        "literature_and_overlap_decision",
+        "family_and_union_trial_accounting",
+        "machine_readable_packet_and_stable_public_paper"
+      ]
+    },
+    {
+      "candidate_match_is_verified": true,
+      "candidate_public_papers": [
+        "/research/crypto-carry-lineage.md"
+      ],
+      "completion_assessment": {
+        "artifact_recoverability_class": "UNIQUE_EXACT_ARTIFACT_BINDING",
+        "blockers": [
+          {
+            "code": "EXACT_ARTIFACT_LACKS_ORIGINAL_ENVIRONMENT_STAMP",
+            "evidence": [
+              {
+                "path": "artifacts/cpanel/L9_carry_72/walkforward.json",
+                "sha256": "c97ca519e1d37f418d5ab15579ec2c16a3a113a20e11060b86df34205907f2e0"
+              },
+              {
+                "path": "artifacts/cpanel/L9_carry_72/equity.parquet",
+                "sha256": "e3a173f32c63a0bb0a9f5307c9f3a4c0d02d081d091c9a893d8ead2f63c7870c"
+              },
+              {
+                "config_hash": "d0d6682daf67db7d",
+                "path": "var/experiments.jsonl",
+                "sha256": "b5a318c0997d980575f758451f509e0154eecbbb50d734e49a587d473062bd08"
+              }
+            ],
+            "finding": "One persisted walk-forward artifact and equity curve uniquely match every identity-bearing ledger field and the immutable measurement. The artifact does not preserve the original code commit, runner hash, lockfile, and input manifest.",
+            "required_section": "code_environment_and_reproduction"
+          },
+          {
+            "code": "IDENTITY_PREREGISTRATION_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/cpanel/L9_carry_72/walkforward.json",
+                "sha256": "c97ca519e1d37f418d5ab15579ec2c16a3a113a20e11060b86df34205907f2e0"
+              }
+            ],
+            "finding": "No identity-level preregistration and immutable pre-result hash are bound to this historical measurement.",
+            "required_section": "preregistration_and_hashes"
+          },
+          {
+            "code": "IDENTITY_LEVEL_DECISION_PACKET_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/cpanel/L9_carry_72/walkforward.json",
+                "sha256": "c97ca519e1d37f418d5ab15579ec2c16a3a113a20e11060b86df34205907f2e0"
+              }
+            ],
+            "finding": "No complete identity-level admission or kill packet under the current contract is preserved for this historical measurement.",
+            "required_section": "admission_or_kill_decision"
+          }
+        ],
+        "config_hash": "d0d6682daf67db7d",
+        "status": "AUDITED_NOT_CURRENTLY_COMPLETABLE",
+        "walkforward_corpus_hash": "sha256:100f6051fcadd89a33412ec317f982f17023bb8fe18b879116d5b16955bcb7c7"
+      },
+      "config_hash": "d0d6682daf67db7d",
+      "coverage_status": "VERIFIED_INCOMPLETE_IDENTITY_PACKET",
+      "family_paper_binding_status": "VERIFIED_TAXONOMY_BINDING",
+      "first_recorded_at": "2026-06-20T14:02:54.465000+00:00",
+      "hypothesis_key": "c54196c5721e8556",
+      "identity_packet_content_hash": "sha256:9780bc4eaf3b46062a0dd4369c77f764e699ea4c82c180c7cd399a46c5a24252",
+      "identity_packet_status": "INCOMPLETE_BACKFILL_REQUIRED",
+      "label": "carry_fund_21 + carry_fund_90 + carry_z_252 + carry_mom_21_63",
+      "ledger_profile": "var",
+      "ledger_source_path": "var/experiments.jsonl",
+      "measurement": {
+        "annualized_sharpe": 0.3987301589695089,
+        "kurtosis": 8.972890364583392,
+        "observations": 1574,
+        "skew": -0.5731726857820153
+      },
+      "missing_sections": [
+        "preregistration_and_hashes",
+        "point_in_time_data_and_survivorship_controls",
+        "execution_and_cost_model",
+        "result_uncertainty_stress_capacity_and_diversification",
+        "admission_or_kill_decision",
+        "code_environment_and_reproduction"
+      ],
+      "research_family_key": "crypto_carry",
+      "research_family_title": "Crypto perpetual-futures carry",
+      "sleeve_context": "AlphaForge",
+      "verified_family_paper_path": "/research/crypto-carry-lineage.md",
+      "verified_packet_path": "/glassbox/trial-packets/c54196c5721e8556.json",
+      "verified_sections": [
+        "identity_and_authorship",
+        "economic_mechanism_and_falsifiable_hypothesis",
+        "literature_and_overlap_decision",
+        "family_and_union_trial_accounting",
+        "machine_readable_packet_and_stable_public_paper"
+      ]
+    },
+    {
+      "candidate_match_is_verified": true,
+      "candidate_public_papers": [
+        "/research/crypto-carry-lineage.md"
+      ],
+      "completion_assessment": {
+        "artifact_recoverability_class": "UNIQUE_EXACT_ARTIFACT_BINDING",
+        "blockers": [
+          {
+            "code": "EXACT_ARTIFACT_LACKS_ORIGINAL_ENVIRONMENT_STAMP",
+            "evidence": [
+              {
+                "path": "artifacts/cpanel/carry21_weekly_mvo/walkforward.json",
+                "sha256": "96abf7d187aab83298ccf372d9fb730cfe5ae74086e1ce3b12ae22a039fe90a8"
+              },
+              {
+                "path": "artifacts/cpanel/carry21_weekly_mvo/equity.parquet",
+                "sha256": "4e461b1a2ce3da6bc9291006da2082522898d3e49b49a443c58c79cb67c95ce9"
+              },
+              {
+                "config_hash": "24931dc5159268e9",
+                "path": "var/experiments.jsonl",
+                "sha256": "b5a318c0997d980575f758451f509e0154eecbbb50d734e49a587d473062bd08"
+              }
+            ],
+            "finding": "One persisted walk-forward artifact and equity curve uniquely match every identity-bearing ledger field and the immutable measurement. The artifact does not preserve the original code commit, runner hash, lockfile, and input manifest.",
+            "required_section": "code_environment_and_reproduction"
+          },
+          {
+            "code": "IDENTITY_PREREGISTRATION_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/cpanel/carry21_weekly_mvo/walkforward.json",
+                "sha256": "96abf7d187aab83298ccf372d9fb730cfe5ae74086e1ce3b12ae22a039fe90a8"
+              }
+            ],
+            "finding": "No identity-level preregistration and immutable pre-result hash are bound to this historical measurement.",
+            "required_section": "preregistration_and_hashes"
+          },
+          {
+            "code": "IDENTITY_LEVEL_DECISION_PACKET_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/cpanel/carry21_weekly_mvo/walkforward.json",
+                "sha256": "96abf7d187aab83298ccf372d9fb730cfe5ae74086e1ce3b12ae22a039fe90a8"
+              }
+            ],
+            "finding": "No complete identity-level admission or kill packet under the current contract is preserved for this historical measurement.",
+            "required_section": "admission_or_kill_decision"
+          }
+        ],
+        "config_hash": "24931dc5159268e9",
+        "status": "AUDITED_NOT_CURRENTLY_COMPLETABLE",
+        "walkforward_corpus_hash": "sha256:100f6051fcadd89a33412ec317f982f17023bb8fe18b879116d5b16955bcb7c7"
+      },
+      "config_hash": "24931dc5159268e9",
+      "coverage_status": "VERIFIED_INCOMPLETE_IDENTITY_PACKET",
+      "family_paper_binding_status": "VERIFIED_TAXONOMY_BINDING",
+      "first_recorded_at": "2026-06-20T14:36:43.491000+00:00",
+      "hypothesis_key": "c64d232200a50030",
+      "identity_packet_content_hash": "sha256:6f5e699605dfaecd4f315d19ce856ea14e923f527b273fcccba2d950196134b9",
+      "identity_packet_status": "INCOMPLETE_BACKFILL_REQUIRED",
+      "label": "carry_fund_21",
+      "ledger_profile": "var",
+      "ledger_source_path": "var/experiments.jsonl",
+      "measurement": {
+        "annualized_sharpe": 0.27110548754894287,
+        "kurtosis": 17.027686881589744,
+        "observations": 1574,
+        "skew": -0.4789806486788806
+      },
+      "missing_sections": [
+        "preregistration_and_hashes",
+        "point_in_time_data_and_survivorship_controls",
+        "execution_and_cost_model",
+        "result_uncertainty_stress_capacity_and_diversification",
+        "admission_or_kill_decision",
+        "code_environment_and_reproduction"
+      ],
+      "research_family_key": "crypto_carry",
+      "research_family_title": "Crypto perpetual-futures carry",
+      "sleeve_context": "AlphaForge",
+      "verified_family_paper_path": "/research/crypto-carry-lineage.md",
+      "verified_packet_path": "/glassbox/trial-packets/c64d232200a50030.json",
+      "verified_sections": [
+        "identity_and_authorship",
+        "economic_mechanism_and_falsifiable_hypothesis",
+        "literature_and_overlap_decision",
+        "family_and_union_trial_accounting",
+        "machine_readable_packet_and_stable_public_paper"
+      ]
+    },
+    {
+      "candidate_match_is_verified": true,
+      "candidate_public_papers": [
+        "/research/crypto-carry-lineage.md"
+      ],
+      "completion_assessment": {
+        "artifact_recoverability_class": "UNIQUE_EXACT_ARTIFACT_BINDING",
+        "blockers": [
+          {
+            "code": "EXACT_ARTIFACT_LACKS_ORIGINAL_ENVIRONMENT_STAMP",
+            "evidence": [
+              {
+                "path": "artifacts/cpanel/L7_carry_band50_1M/walkforward.json",
+                "sha256": "3e030df718b35d52304f8653e6c49dc6a9ade8f460df02fad8422e78d3aef0ab"
+              },
+              {
+                "path": "artifacts/cpanel/L7_carry_band50_1M/equity.parquet",
+                "sha256": "90f91c1f0d264fc72fc3a6c904ec4b1bcb9491ed88b30dacea461e52790ad583"
+              },
+              {
+                "config_hash": "1fe30c158f629271",
+                "path": "var/experiments.jsonl",
+                "sha256": "b5a318c0997d980575f758451f509e0154eecbbb50d734e49a587d473062bd08"
+              }
+            ],
+            "finding": "One persisted walk-forward artifact and equity curve uniquely match every identity-bearing ledger field and the immutable measurement. The artifact does not preserve the original code commit, runner hash, lockfile, and input manifest.",
+            "required_section": "code_environment_and_reproduction"
+          },
+          {
+            "code": "IDENTITY_PREREGISTRATION_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/cpanel/L7_carry_band50_1M/walkforward.json",
+                "sha256": "3e030df718b35d52304f8653e6c49dc6a9ade8f460df02fad8422e78d3aef0ab"
+              }
+            ],
+            "finding": "No identity-level preregistration and immutable pre-result hash are bound to this historical measurement.",
+            "required_section": "preregistration_and_hashes"
+          },
+          {
+            "code": "IDENTITY_LEVEL_DECISION_PACKET_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/cpanel/L7_carry_band50_1M/walkforward.json",
+                "sha256": "3e030df718b35d52304f8653e6c49dc6a9ade8f460df02fad8422e78d3aef0ab"
+              }
+            ],
+            "finding": "No complete identity-level admission or kill packet under the current contract is preserved for this historical measurement.",
+            "required_section": "admission_or_kill_decision"
+          }
+        ],
+        "config_hash": "1fe30c158f629271",
+        "status": "AUDITED_NOT_CURRENTLY_COMPLETABLE",
+        "walkforward_corpus_hash": "sha256:100f6051fcadd89a33412ec317f982f17023bb8fe18b879116d5b16955bcb7c7"
+      },
+      "config_hash": "1fe30c158f629271",
+      "coverage_status": "VERIFIED_INCOMPLETE_IDENTITY_PACKET",
+      "family_paper_binding_status": "VERIFIED_TAXONOMY_BINDING",
+      "first_recorded_at": "2026-06-20T14:37:50.444000+00:00",
+      "hypothesis_key": "f67b4ad24feb9100",
+      "identity_packet_content_hash": "sha256:5943f47293a77a467206d53e079124467ce43e73841becb701e5ed4db233972c",
+      "identity_packet_status": "INCOMPLETE_BACKFILL_REQUIRED",
+      "label": "carry_fund_21",
+      "ledger_profile": "var",
+      "ledger_source_path": "var/experiments.jsonl",
+      "measurement": {
+        "annualized_sharpe": 0.3028331090417991,
+        "kurtosis": 21.431634860220882,
+        "observations": 1574,
+        "skew": -1.1740093819792758
+      },
+      "missing_sections": [
+        "preregistration_and_hashes",
+        "point_in_time_data_and_survivorship_controls",
+        "execution_and_cost_model",
+        "result_uncertainty_stress_capacity_and_diversification",
+        "admission_or_kill_decision",
+        "code_environment_and_reproduction"
+      ],
+      "research_family_key": "crypto_carry",
+      "research_family_title": "Crypto perpetual-futures carry",
+      "sleeve_context": "AlphaForge",
+      "verified_family_paper_path": "/research/crypto-carry-lineage.md",
+      "verified_packet_path": "/glassbox/trial-packets/f67b4ad24feb9100.json",
+      "verified_sections": [
+        "identity_and_authorship",
+        "economic_mechanism_and_falsifiable_hypothesis",
+        "literature_and_overlap_decision",
+        "family_and_union_trial_accounting",
+        "machine_readable_packet_and_stable_public_paper"
+      ]
+    },
+    {
+      "candidate_match_is_verified": true,
+      "candidate_public_papers": [
+        "/research/crypto-carry-lineage.md"
+      ],
+      "completion_assessment": {
+        "artifact_recoverability_class": "UNIQUE_EXACT_ARTIFACT_BINDING",
+        "blockers": [
+          {
+            "code": "EXACT_ARTIFACT_LACKS_ORIGINAL_ENVIRONMENT_STAMP",
+            "evidence": [
+              {
+                "path": "artifacts/exp1/20260625T075446Z/carry/walkforward.json",
+                "sha256": "701c4e251d98117db448018e41e17d1fc924067a60f6aa3284a6e8460777c51d"
+              },
+              {
+                "path": "artifacts/exp1/20260625T075446Z/carry/equity.parquet",
+                "sha256": "45003675aac9d33fab58bc3cf9947895f901e247d71ec8c66f84a9627e1eb24e"
+              },
+              {
+                "config_hash": "cd1dab48a7b8d983",
+                "path": "artifacts/exp1/20260625T075446Z/experiments.jsonl",
+                "sha256": "b5b8a68fe07d19581050e7adfd6ec7f61521e2267ca7306b44c8db9997cfb976"
+              }
+            ],
+            "finding": "One persisted walk-forward artifact and equity curve uniquely match every identity-bearing ledger field and the immutable measurement. The artifact does not preserve the original code commit, runner hash, lockfile, and input manifest.",
+            "required_section": "code_environment_and_reproduction"
+          },
+          {
+            "code": "IDENTITY_PREREGISTRATION_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/exp1/20260625T075446Z/carry/walkforward.json",
+                "sha256": "701c4e251d98117db448018e41e17d1fc924067a60f6aa3284a6e8460777c51d"
+              }
+            ],
+            "finding": "No identity-level preregistration and immutable pre-result hash are bound to this historical measurement.",
+            "required_section": "preregistration_and_hashes"
+          },
+          {
+            "code": "IDENTITY_LEVEL_DECISION_PACKET_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/exp1/20260625T075446Z/carry/walkforward.json",
+                "sha256": "701c4e251d98117db448018e41e17d1fc924067a60f6aa3284a6e8460777c51d"
+              }
+            ],
+            "finding": "No complete identity-level admission or kill packet under the current contract is preserved for this historical measurement.",
+            "required_section": "admission_or_kill_decision"
+          }
+        ],
+        "config_hash": "cd1dab48a7b8d983",
+        "status": "AUDITED_NOT_CURRENTLY_COMPLETABLE",
+        "walkforward_corpus_hash": "sha256:100f6051fcadd89a33412ec317f982f17023bb8fe18b879116d5b16955bcb7c7"
+      },
+      "config_hash": "cd1dab48a7b8d983",
+      "coverage_status": "VERIFIED_INCOMPLETE_IDENTITY_PACKET",
+      "family_paper_binding_status": "VERIFIED_TAXONOMY_BINDING",
+      "first_recorded_at": "2026-06-25T07:54:46.297000+00:00",
+      "hypothesis_key": "54eed376f4055448",
+      "identity_packet_content_hash": "sha256:92b5fc5bb79e9e36270665cf5f6b5ec7357aae5058e440b5595b5abc5f551d48",
+      "identity_packet_status": "INCOMPLETE_BACKFILL_REQUIRED",
+      "label": "carry_fund_21 + carry_fund_90 + carry_z_252 + carry_mom_21_63",
+      "ledger_profile": "20260625T075446Z",
+      "ledger_source_path": "artifacts/exp1/20260625T075446Z/experiments.jsonl",
+      "measurement": {
+        "annualized_sharpe": 0.09201601211080473,
+        "kurtosis": 7.250870745518348,
+        "observations": 1612,
+        "skew": -0.13807080423143248
+      },
+      "missing_sections": [
+        "preregistration_and_hashes",
+        "point_in_time_data_and_survivorship_controls",
+        "execution_and_cost_model",
+        "result_uncertainty_stress_capacity_and_diversification",
+        "admission_or_kill_decision",
+        "code_environment_and_reproduction"
+      ],
+      "research_family_key": "crypto_carry",
+      "research_family_title": "Crypto perpetual-futures carry",
+      "sleeve_context": "AlphaForge",
+      "verified_family_paper_path": "/research/crypto-carry-lineage.md",
+      "verified_packet_path": "/glassbox/trial-packets/54eed376f4055448.json",
+      "verified_sections": [
+        "identity_and_authorship",
+        "economic_mechanism_and_falsifiable_hypothesis",
+        "literature_and_overlap_decision",
+        "family_and_union_trial_accounting",
+        "machine_readable_packet_and_stable_public_paper"
+      ]
+    },
+    {
+      "candidate_match_is_verified": true,
+      "candidate_public_papers": [
+        "/research/crypto-carry-lineage.md"
+      ],
+      "completion_assessment": {
+        "artifact_recoverability_class": "UNIQUE_EXACT_ARTIFACT_BINDING",
+        "blockers": [
+          {
+            "code": "EXACT_ARTIFACT_LACKS_ORIGINAL_ENVIRONMENT_STAMP",
+            "evidence": [
+              {
+                "path": "artifacts/exp4/smoke_20260625T102142Z/taker/walkforward.json",
+                "sha256": "2d5201641d96ff39d191349ddbf4397d395e48d0a6d57ffc647dd6e51f9bf40c"
+              },
+              {
+                "path": "artifacts/exp4/smoke_20260625T102142Z/taker/equity.parquet",
+                "sha256": "820240f3e1f5cebe1a83cf1c3e96992df9ab741ddb5bc3c760bd079680367320"
+              },
+              {
+                "config_hash": "f57dcca4fc722b7d",
+                "path": "artifacts/exp4/smoke_20260625T102142Z/experiments.jsonl",
+                "sha256": "593715ec3abb5c58d17dfde1cd96177dd64a72eb74a8571c2f10935af81107ef"
+              }
+            ],
+            "finding": "One persisted walk-forward artifact and equity curve uniquely match every identity-bearing ledger field and the immutable measurement. The artifact does not preserve the original code commit, runner hash, lockfile, and input manifest.",
+            "required_section": "code_environment_and_reproduction"
+          },
+          {
+            "code": "IDENTITY_PREREGISTRATION_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/exp4/smoke_20260625T102142Z/taker/walkforward.json",
+                "sha256": "2d5201641d96ff39d191349ddbf4397d395e48d0a6d57ffc647dd6e51f9bf40c"
+              }
+            ],
+            "finding": "No identity-level preregistration and immutable pre-result hash are bound to this historical measurement.",
+            "required_section": "preregistration_and_hashes"
+          },
+          {
+            "code": "IDENTITY_LEVEL_DECISION_PACKET_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/exp4/smoke_20260625T102142Z/taker/walkforward.json",
+                "sha256": "2d5201641d96ff39d191349ddbf4397d395e48d0a6d57ffc647dd6e51f9bf40c"
+              }
+            ],
+            "finding": "No complete identity-level admission or kill packet under the current contract is preserved for this historical measurement.",
+            "required_section": "admission_or_kill_decision"
+          }
+        ],
+        "config_hash": "f57dcca4fc722b7d",
+        "status": "AUDITED_NOT_CURRENTLY_COMPLETABLE",
+        "walkforward_corpus_hash": "sha256:100f6051fcadd89a33412ec317f982f17023bb8fe18b879116d5b16955bcb7c7"
+      },
+      "config_hash": "f57dcca4fc722b7d",
+      "coverage_status": "VERIFIED_INCOMPLETE_IDENTITY_PACKET",
+      "family_paper_binding_status": "VERIFIED_TAXONOMY_BINDING",
+      "first_recorded_at": "2026-06-25T10:21:42.062000+00:00",
+      "hypothesis_key": "0fe8b76c5ae033e2",
+      "identity_packet_content_hash": "sha256:baa4d734424caba0881f8f2f4618ea71521a923b1d3a79ccdaa483d83a295161",
+      "identity_packet_status": "INCOMPLETE_BACKFILL_REQUIRED",
+      "label": "carry_fund_21 + carry_fund_90 + carry_z_252 + carry_mom_21_63",
+      "ledger_profile": "smoke_20260625T102142Z",
+      "ledger_source_path": "artifacts/exp4/smoke_20260625T102142Z/experiments.jsonl",
+      "measurement": {
+        "annualized_sharpe": -1.0170227890592296,
+        "kurtosis": 14.27359216972267,
+        "observations": 245,
+        "skew": -1.9147354499686384
+      },
+      "missing_sections": [
+        "preregistration_and_hashes",
+        "point_in_time_data_and_survivorship_controls",
+        "execution_and_cost_model",
+        "result_uncertainty_stress_capacity_and_diversification",
+        "admission_or_kill_decision",
+        "code_environment_and_reproduction"
+      ],
+      "research_family_key": "crypto_carry",
+      "research_family_title": "Crypto perpetual-futures carry",
+      "sleeve_context": "AlphaForge",
+      "verified_family_paper_path": "/research/crypto-carry-lineage.md",
+      "verified_packet_path": "/glassbox/trial-packets/0fe8b76c5ae033e2.json",
+      "verified_sections": [
+        "identity_and_authorship",
+        "economic_mechanism_and_falsifiable_hypothesis",
+        "literature_and_overlap_decision",
+        "family_and_union_trial_accounting",
+        "machine_readable_packet_and_stable_public_paper"
+      ]
+    },
+    {
+      "candidate_match_is_verified": true,
+      "candidate_public_papers": [
+        "/research/crypto-carry-lineage.md"
+      ],
+      "completion_assessment": {
+        "artifact_recoverability_class": "UNIQUE_EXACT_ARTIFACT_BINDING",
+        "blockers": [
+          {
+            "code": "EXACT_ARTIFACT_LACKS_ORIGINAL_ENVIRONMENT_STAMP",
+            "evidence": [
+              {
+                "path": "artifacts/exp4/20260625T103226Z/taker/walkforward.json",
+                "sha256": "394541849652c9d6144d58e55147b4764b6cb09e3ee74cb1e4c6f2a9dca36026"
+              },
+              {
+                "path": "artifacts/exp4/20260625T103226Z/taker/equity.parquet",
+                "sha256": "9e6436852618d5a06e2dd5e4295e86b12a03b7ceb54d4103650fa3139af558fc"
+              },
+              {
+                "config_hash": "4b9efdd421481611",
+                "path": "artifacts/exp4/20260625T103226Z/experiments.jsonl",
+                "sha256": "e5fbe266fc033ba80e237e22629642f51c86c19830f1a5bdc97519708423e755"
+              }
+            ],
+            "finding": "One persisted walk-forward artifact and equity curve uniquely match every identity-bearing ledger field and the immutable measurement. The artifact does not preserve the original code commit, runner hash, lockfile, and input manifest.",
+            "required_section": "code_environment_and_reproduction"
+          },
+          {
+            "code": "IDENTITY_PREREGISTRATION_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/exp4/20260625T103226Z/taker/walkforward.json",
+                "sha256": "394541849652c9d6144d58e55147b4764b6cb09e3ee74cb1e4c6f2a9dca36026"
+              }
+            ],
+            "finding": "No identity-level preregistration and immutable pre-result hash are bound to this historical measurement.",
+            "required_section": "preregistration_and_hashes"
+          },
+          {
+            "code": "IDENTITY_LEVEL_DECISION_PACKET_NOT_PRESERVED",
+            "evidence": [
+              {
+                "path": "artifacts/exp4/20260625T103226Z/taker/walkforward.json",
+                "sha256": "394541849652c9d6144d58e55147b4764b6cb09e3ee74cb1e4c6f2a9dca36026"
+              }
+            ],
+            "finding": "No complete identity-level admission or kill packet under the current contract is preserved for this historical measurement.",
+            "required_section": "admission_or_kill_decision"
+          }
+        ],
+        "config_hash": "4b9efdd421481611",
+        "status": "AUDITED_NOT_CURRENTLY_COMPLETABLE",
+        "walkforward_corpus_hash": "sha256:100f6051fcadd89a33412ec317f982f17023bb8fe18b879116d5b16955bcb7c7"
+      },
+      "config_hash": "4b9efdd421481611",
+      "coverage_status": "VERIFIED_INCOMPLETE_IDENTITY_PACKET",
+      "family_paper_binding_status": "VERIFIED_TAXONOMY_BINDING",
+      "first_recorded_at": "2026-06-25T10:32:26.542000+00:00",
+      "hypothesis_key": "446e00f6c7b0dbfc",
+      "identity_packet_content_hash": "sha256:ba164fdd937c2c43e530851853a217bd9749f53afa15a8b1664a88e62bb2e652",
+      "identity_packet_status": "INCOMPLETE_BACKFILL_REQUIRED",
+      "label": "carry_fund_21 + carry_fund_90 + carry_z_252 + carry_mom_21_63",
+      "ledger_profile": "20260625T103226Z",
+      "ledger_source_path": "artifacts/exp4/20260625T103226Z/experiments.jsonl",
+      "measurement": {
+        "annualized_sharpe": -0.5868348160441706,
+        "kurtosis": 36.49558712757007,
+        "observations": 365,
+        "skew": -3.765717054501521
+      },
+      "missing_sections": [
+        "preregistration_and_hashes",
+        "point_in_time_data_and_survivorship_controls",
+        "execution_and_cost_model",
+        "result_uncertainty_stress_capacity_and_diversification",
+        "admission_or_kill_decision",
+        "code_environment_and_reproduction"
+      ],
+      "research_family_key": "crypto_carry",
+      "research_family_title": "Crypto perpetual-futures carry",
+      "sleeve_context": "AlphaForge",
+      "verified_family_paper_path": "/research/crypto-carry-lineage.md",
+      "verified_packet_path": "/glassbox/trial-packets/446e00f6c7b0dbfc.json",
+      "verified_sections": [
+        "identity_and_authorship",
+        "economic_mechanism_and_falsifiable_hypothesis",
+        "literature_and_overlap_decision",
+        "family_and_union_trial_accounting",
+        "machine_readable_packet_and_stable_public_paper"
+      ]
+    }
+  ],
+  "registry_key": "alphaforge_crypto_carry",
+  "research_family_key": "crypto_carry",
+  "schema": "canli.alphac-publication-trial-accounting-binding.v2",
+  "status": "COMPLETE_RECORDED_UNION_EXTRACTED_IDENTITY_PACKETS_MAY_BE_INCOMPLETE",
+  "trial_packet_manifest": {
+    "content_hash": "sha256:38758b89a1a5fa845487a640b1deab046fffcf61ede5ad3afb6371798b208371",
+    "path": "artifacts/research/trial_packet_manifest.json",
+    "sha256": "0147dd8e631ca24257e2db384bf01d4637a79371f1754b284f3f7e9637c1369c"
+  }
+}

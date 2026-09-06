@@ -1,0 +1,30 @@
+{
+  "abstract": "AlphaForge tested one preregistered BTC/ETH volatility-risk-premium timing rule from 2021-03-24 through 2026-06-01. It compared Deribit DVOL closes with a seven-day Yang–Zhang realized- volatility estimate, entered only when the spread exceeded two volatility points, charged 10 basis points on signal turnover, and evaluated 1,492 expanding-window out-of-sample days after a 365-day warmup. The proxy produced annualized Sharpe -0.633, Deflated Sharpe Ratio 0.000, PSR 0.066, skew -9.517, and raw kurtosis 132.65. It failed. The diagnostic also illustrates why average variance premium is not timing alpha. BTC's mean DVOL-minus-realized spread was +0.044 and positive on 72.99% of days; an always-short variance proxy showed Sharpe 2.4818 but skew -5.4874. ETH's corresponding always-short proxy showed Sharpe 0.5309 and skew -10.6795. Those attractive averages coexist with catastrophic left tails. This family is not a sleeve, is not in an Alpaca account, and has no broker-reconciled forward record.",
+  "authors": [
+    {
+      "affiliation": "Canli Capital / AlphaC Algorithms",
+      "full_name": "Arhan Canli",
+      "roles": [
+        "CONCEPTUALIZATION",
+        "METHODOLOGY",
+        "SOFTWARE",
+        "VALIDATION",
+        "INVESTIGATION",
+        "WRITING",
+        "PROJECT_ADMINISTRATION"
+      ]
+    }
+  ],
+  "capital_kind": "RESEARCH_SIMULATION_ONLY",
+  "claim_boundary": "This is an incomplete preparation bundle. It proves no external submission, DOI, peer review, independent replication, funded performance, or future return.",
+  "date": "2026-08-23",
+  "external_identifiers": [],
+  "language": "en",
+  "peer_reviewed": false,
+  "registry_key": "crypto_vrp",
+  "result_release_complete": true,
+  "schema": "canli.alphac-sleeve-paper.v1",
+  "title": "Crypto Volatility Risk Premium: One Proxy Trial and a Published Null",
+  "type": "WORKING_PAPER_PREPRINT_NOT_PEER_REVIEWED",
+  "version": "0.1.0"
+}

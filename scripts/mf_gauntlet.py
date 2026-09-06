@@ -102,16 +102,22 @@ def main(argv=None) -> int:
         eqs = eq.set_index("ts")["equity"] if "ts" in eq.columns else eq.iloc[:, -1]
         ret = np.log(eqs.astype(float)).diff().dropna()
         skew = float(((ret - ret.mean()) ** 3).mean() / ret.std(ddof=0) ** 3)
-        spy = pd.read_parquet(next((Path("data/lake_mf/ohlcv_1d") / "instrument_id=XUSE:CASH:SPYUSD").glob("**/*.parquet")))
+        spy_parts = sorted(
+            (Path("data/lake_mf/ohlcv_1d") / "instrument_id=XUSE:CASH:SPYUSD").glob("**/*.parquet")
+        )
+        if not spy_parts:
+            raise FileNotFoundError("no SPY partitions under data/lake_mf/ohlcv_1d")
+        spy = pd.concat([pd.read_parquet(f) for f in spy_parts])
         spy_ret = np.log(spy.sort_values("ts_open").set_index("ts_open")["close"].astype(float)).diff()
-        spy_ret.index = pd.to_datetime(spy_ret.index, unit="ms")
-        a2, b2 = ret.reset_index(drop=True), None
+        spy_ret.index = pd.DatetimeIndex(spy_ret.index).tz_localize(None)
         # align on date
         rd = pd.Series(ret.values, index=pd.to_datetime(eqs.index[1:], unit="ms") if np.issubdtype(np.asarray(eqs.index).dtype, np.number) else eqs.index[1:])
-        j = pd.concat([rd.rename("b"), spy_ret.rename("s")], axis=1).dropna()
+        j = pd.concat([rd.rename("b"), spy_ret.rename("s")], axis=1, sort=True).dropna()
         if len(j) > 30:
             corr_spy = float(np.corrcoef(j["b"], j["s"])[0, 1])
-    except Exception as e:  # noqa: BLE001
+        else:
+            print(f"(corr to SPY: only {len(j)} overlapping days, need >30 — not computed)")
+    except Exception as e:
         print(f"(skew/corr post-hoc failed: {str(e)[:80]})")
 
     print("\n================ MANAGED-FUTURES TREND — GAUNTLET ================")

@@ -25,7 +25,7 @@ if str(SRC) not in sys.path:
 
 from alphaforge.analytics.metrics import daily_returns  # noqa: E402
 from alphaforge.validation.dsr import dsr_from_returns  # noqa: E402
-from alphaforge.validation.experiments import ExperimentUnion  # noqa: E402
+from alphaforge.validation.legacy_epoch import legacy_selection_context  # noqa: E402
 
 OUT_JSON: Final[Path] = REPO / "artifacts" / "audit" / "legacy_dsr_restatement.json"
 OUT_MD: Final[Path] = REPO / "docs" / "research" / "LEGACY_DSR_RESTATEMENT.md"
@@ -258,9 +258,7 @@ def _retired_families() -> list[dict[str, Any]]:
 
 
 def build() -> dict[str, Any]:
-    union = ExperimentUnion.discover(REPO / "var" / "experiments.jsonl", REPO)
-    n_trials = union.n_hypotheses()
-    variance = union.hypothesis_sharpe_variance()
+    n_trials, variance, ledger_paths = legacy_selection_context(REPO)
     rows = (
         _construction_rows(n_trials, variance)
         + _gauntlet_rows(n_trials, variance)
@@ -285,7 +283,7 @@ def build() -> dict[str, Any]:
             "n_hypotheses": n_trials,
             "sharpe_variance": variance,
             "unit": "first_immutable_record_per_hypothesis",
-            "ledger_paths": [str(path.relative_to(REPO)) for path in union.paths],
+            "ledger_paths": ledger_paths,
         },
         "summary": {
             "historical_exception_families": historical_families,

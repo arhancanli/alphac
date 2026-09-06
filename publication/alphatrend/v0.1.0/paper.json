@@ -1,0 +1,30 @@
+{
+  "abstract": "AlphaTrend is ALPHAC's managed-futures trend program. It takes volatility-normalized directional positions from medium- and long-horizon price trends across liquid exchange-traded market proxies, then combines them under a covariance-aware risk budget. This paper reconciles all 21 charged hypothesis identities in the family rather than presenting the strongest backtest alone. The result is promising as a diversifier but statistically unresolved. Nineteen identities have finite Sharpe estimates ranging from -0.238 to +0.345. Six identities retain complete walk-forward artifacts, seven retain source-bound summary reports, and eight retain immutable ledger summaries without full curves. Thirteen have persisted artifact-era DSR values; zero clear the 0.95 gate. The 17-market baseline had Sharpe 0.289 and 9.69% vol-matched maximum drawdown in a replica screen. Correlation whitening reduced Sharpe to 0.186, a single 110-session signal reached 0.271, and expanding to 33 ETFs reduced Sharpe to 0.128 while worsening vol-matched drawdown to 14.42%. AlphaTrend remains a paper evidence-collection sleeve, not an established forward result.",
+  "authors": [
+    {
+      "affiliation": "Canli Capital / AlphaC Algorithms",
+      "full_name": "Arhan Canli",
+      "roles": [
+        "CONCEPTUALIZATION",
+        "METHODOLOGY",
+        "SOFTWARE",
+        "VALIDATION",
+        "INVESTIGATION",
+        "WRITING",
+        "PROJECT_ADMINISTRATION"
+      ]
+    }
+  ],
+  "capital_kind": "ALPACA_PAPER_AND_RESEARCH_SIMULATION_SEPARATELY_LABELLED",
+  "claim_boundary": "This is an incomplete preparation bundle. It proves no external submission, DOI, peer review, independent replication, funded performance, or future return.",
+  "date": "2026-08-23",
+  "external_identifiers": [],
+  "language": "en",
+  "peer_reviewed": false,
+  "registry_key": "alphatrend_managed_futures",
+  "result_release_complete": true,
+  "schema": "canli.alphac-sleeve-paper.v1",
+  "title": "Managed-Futures Trend as an Unresolved Diversifier: Complete Trial Lineage and Forward Burden of Proof",
+  "type": "WORKING_PAPER_PREPRINT_NOT_PEER_REVIEWED",
+  "version": "0.1.0"
+}

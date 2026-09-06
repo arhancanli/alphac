@@ -1,0 +1,152 @@
+{
+  "author": "Arhan Canli",
+  "metadata_cache": {
+    "content_hash": "sha256:a2b17534e33c4c361cd515387b566cd1c2e352a1b970159e66c329c3519b99c4",
+    "path": "artifacts/research/publication_reference_metadata.json",
+    "sha256": "cc011d355b2613f1514889fe8076752c3de1c54e158e561db60da559d3f1469c"
+  },
+  "reference_count": 6,
+  "references": [
+    {
+      "authors": [
+        {
+          "family": "Ackerer",
+          "given": "Damien"
+        },
+        {
+          "family": "Hugonnier",
+          "given": "Julien"
+        },
+        {
+          "family": "Jermann",
+          "given": "Urban"
+        }
+      ],
+      "citation_key": "ackerer2024perpetual_a5ff86",
+      "container_title": "",
+      "doi": "10.3386/w32936",
+      "metadata_authority": "CROSSREF_REST_API",
+      "title": "Perpetual Futures Pricing",
+      "url": "https://doi.org/10.3386/w32936",
+      "year": 2024
+    },
+    {
+      "authors": [
+        {
+          "family": "Schmeling",
+          "given": "Maik"
+        },
+        {
+          "family": "Schrimpf",
+          "given": "Andreas"
+        },
+        {
+          "family": "Todorov",
+          "given": "Karamfil"
+        }
+      ],
+      "citation_key": "schmeling2022crypto_3c2f99",
+      "container_title": "",
+      "doi": "10.2139/ssrn.4268371",
+      "metadata_authority": "CROSSREF_REST_API",
+      "title": "Crypto Carry",
+      "url": "https://doi.org/10.2139/ssrn.4268371",
+      "year": 2022
+    },
+    {
+      "authors": [
+        {
+          "family": "Gornall",
+          "given": "Will"
+        },
+        {
+          "family": "Rinaldi",
+          "given": "Juan Martin"
+        },
+        {
+          "family": "Xiao",
+          "given": "Yizhou"
+        }
+      ],
+      "citation_key": "gornall2025funding_3b42f5",
+      "container_title": "",
+      "doi": "10.2139/ssrn.5036933",
+      "metadata_authority": "CROSSREF_REST_API",
+      "title": "Funding Payments Crisis-Proofed Bitcoin's Perpetual Futures",
+      "url": "https://doi.org/10.2139/ssrn.5036933",
+      "year": 2025
+    },
+    {
+      "authors": [
+        {
+          "family": "Chi",
+          "given": "Yeguang"
+        },
+        {
+          "family": "Hao",
+          "given": "Wenyan"
+        },
+        {
+          "family": "Hu",
+          "given": "Jiangdong"
+        },
+        {
+          "family": "Ran",
+          "given": "Zhenkai"
+        }
+      ],
+      "citation_key": "chi2023empirical_bead04",
+      "container_title": "Journal of Futures Markets",
+      "doi": "10.1002/fut.22425",
+      "metadata_authority": "CROSSREF_REST_API",
+      "title": "An empirical investigation on risk factors in cryptocurrency futures",
+      "url": "https://doi.org/10.1002/fut.22425",
+      "year": 2023
+    },
+    {
+      "authors": [
+        {
+          "family": "He",
+          "given": "Songrun"
+        },
+        {
+          "family": "Manela",
+          "given": "Asaf"
+        },
+        {
+          "family": "Ross",
+          "given": "Omri"
+        },
+        {
+          "family": "von Wachter",
+          "given": "Victor"
+        }
+      ],
+      "citation_key": "he2022fundamentals_126423",
+      "container_title": "arXiv",
+      "doi": "10.48550/arXiv.2212.06888",
+      "metadata_authority": "ARXIV_PRIMARY_RECORD",
+      "title": "Fundamentals of Perpetual Futures",
+      "url": "https://arxiv.org/abs/2212.06888",
+      "year": 2022
+    },
+    {
+      "authors": [
+        {
+          "family": "Binance",
+          "given": ""
+        }
+      ],
+      "citation_key": "binance_funding_history_api",
+      "container_title": "Official documentation",
+      "metadata_authority": "PRIMARY_VENDOR_DOCUMENTATION",
+      "title": "Get Funding Rate History",
+      "url": "https://developers.binance.com/docs/derivatives/usds-margined-futures/market-data/rest-api/Get-Funding-Rate-History",
+      "year": 2026
+    }
+  ],
+  "registry_key": "alphaforge_crypto_carry",
+  "schema": "canli.alphac-sleeve-bibliography.v1",
+  "status": "COMPLETE_NORMALIZED_BIBLIOGRAPHY",
+  "unresolved_references": []
+}

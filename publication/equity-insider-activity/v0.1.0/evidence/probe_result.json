@@ -1,0 +1,166 @@
+{
+  "schema": "canli.insider-cluster-probe.v3",
+  "preregistration": "docs/design/PREREG_INSIDER_CLUSTERS.md",
+  "hypotheses_spent": 1,
+  "configuration": {
+    "mechanism": "clustered_form4_open_market_purchases",
+    "cluster_days": 30,
+    "min_insiders": 2,
+    "min_value": 100000.0,
+    "hold_sessions": 63,
+    "filing_delay_sessions": 2,
+    "hedge": "trailing_252d_spy_beta_clamped_0_3",
+    "positioning": "equal_notional_gross_1",
+    "return_aggregation": "weighted_simple_returns",
+    "costs": {
+      "issuer_oneway": 0.0006,
+      "spy_oneway": 0.0001
+    },
+    "oos_start": "2016-01-01"
+  },
+  "pbo": "not defined for a one-configuration probe; no selection surface exists",
+  "implementation_correction": {
+    "status": "corrected_before_publication",
+    "issue": "The preliminary pass linearly combined adjusted log returns while the canonical curve and cost contracts require simple returns.",
+    "research_parameters_changed": false,
+    "preliminary_verdict": "KILL",
+    "preliminary_net_sharpe": -0.9929526796481759,
+    "preliminary_newey_west_t": -3.0486717545950497,
+    "ledger_policy": "The corrected implementation has a distinct auditable config field and therefore raises, rather than lowers, the union trial count."
+  },
+  "data": {
+    "source": "SEC DERA Insider Transactions Data Sets",
+    "qualifying_purchase_rows": 243586,
+    "raw_cluster_dates": 27114,
+    "scheduled_nonoverlapping_events": 3541,
+    "rejections": {
+      "unmapped": 11958,
+      "cooldown": 4418,
+      "liquidity": 6752,
+      "beta_history": 377,
+      "incomplete_hold": 68
+    }
+  },
+  "metrics": {
+    "observations": 2674,
+    "net_sharpe": -0.23152401026980723,
+    "newey_west_t": -0.7490229630283064,
+    "dsr": 1.8267699207635905e-07,
+    "psr": 0.22598904912387024,
+    "n_trials_union_including_candidate": 228,
+    "sr_trial_variance": 0.0008957471162984615,
+    "max_drawdown": -0.2483953434183076,
+    "skew": 0.291961367111781,
+    "realized_spy_beta": 0.04551621680968263,
+    "turnover_ann": 2.907342487230462,
+    "net_sharpe_at_2x_costs": -0.28496977017285985,
+    "capacity": {
+      "p05_usd_at_1bp_adv": 53149.09588793405,
+      "median_usd_at_1bp_adv": 82883.77763872346,
+      "p05_usd_at_5bp_adv": 265745.4794396702,
+      "median_usd_at_5bp_adv": 414418.88819361734,
+      "p05_usd_at_10bp_adv": 531490.9588793404,
+      "median_usd_at_10bp_adv": 828837.7763872347,
+      "p05_usd_at_1pct_adv": 5314909.588793404,
+      "median_usd_at_1pct_adv": 8288377.763872347
+    }
+  },
+  "correlation": {
+    "ordinary_by_sleeve": {
+      "AlphaForge": 0.007757287429986645,
+      "AlphaMax": -0.216728031054449,
+      "AlphaTrend": -0.11009836619736227,
+      "AlphaVintage": 0.056953006445850426
+    },
+    "average": -0.06552902584399353,
+    "max_pair": 0.056953006445850426,
+    "stressed_by_sleeve": {
+      "AlphaForge": 0.08895163041803392,
+      "AlphaMax": -0.062342550486232384,
+      "AlphaTrend": -0.14191042448523658,
+      "AlphaVintage": 0.1414108935226361
+    },
+    "max_stressed": 0.1414108935226361
+  },
+  "book": {
+    "common_start": "2023-07-07",
+    "common_end": "2026-06-01",
+    "common_days": 728,
+    "base_sharpe": 1.223582316577314,
+    "candidate_10pct_sharpe": 1.1301399872659141,
+    "delta_sharpe": -0.09344232931139995,
+    "mean_zero_delta_sharpe": 0.009691987864072882,
+    "leave_one_year_out_delta": {
+      "2023": -0.15906659072330465,
+      "2024": -0.03702873758564751,
+      "2025": -0.08290522405870648,
+      "2026": -0.08247577402229489
+    },
+    "all_leave_one_year_out_positive": false
+  },
+  "gates": {
+    "net_sharpe_at_least_0_40": false,
+    "dsr_at_least_0_95": false,
+    "newey_west_t_at_least_2": false,
+    "net_sharpe_at_2x_costs_at_least_0_40": false,
+    "absolute_beta_at_most_0_10": true,
+    "average_correlation_at_most_0_15": true,
+    "max_pair_correlation_at_most_0_35": true,
+    "max_stressed_correlation_at_most_0_50": true,
+    "book_delta_positive": false,
+    "mean_zero_book_delta_positive": true,
+    "all_leave_one_year_out_positive": false,
+    "capacity_p05_at_least_5m": true
+  },
+  "verdict": "KILL",
+  "admission_review": {
+    "contract_schema": "canli.alphac-sleeve-admission-contract.v6",
+    "contract_path": "config/sleeve_admission_contract.json",
+    "contract_sha256": "5f628a44ae73ed9c412b225ac9dc56c4e59c1bc0645e2ebde251501e938b9932",
+    "checks_required_for_technical_eligibility": 85,
+    "preregistered_research_checks": 12,
+    "preregistered_research_checks_passed": 6,
+    "status": "RESEARCH_SUBSET_FAILED",
+    "technically_eligible": false,
+    "claim_boundary": "This corrected historical probe failed its preregistered research gates. Binding it to v6 does not retroactively change those gates or establish eligibility."
+  },
+  "lineage": {
+    "preregistration_sha256": "f880efe1bc1c25256f46189f594e5c06e0cfa625481b965f4dc8c5145ef67ff4",
+    "input_data_manifest_sha256": "cb310343b674167dce642832f9729a8a98c267154ef92ac3fb2617c482d47b82",
+    "runner_sha256": "a252e37cfdc8c01cba8310fbeacb671bdf8ec53c5752ea421cb79023b732004b",
+    "admission_contract_sha256": "5f628a44ae73ed9c412b225ac9dc56c4e59c1bc0645e2ebde251501e938b9932"
+  },
+  "ledger_reconciliation": {
+    "hypothesis_key": "d614fdc1daa2906c",
+    "config_hash": "89b95c2e97f2b7f2",
+    "immutable_first_measurement": {
+      "observations": 2669,
+      "annualized_sharpe_population_std": -0.24327562849906975,
+      "recorded_at_unix_ms": 1786809994244
+    },
+    "current_replay": {
+      "observations": 2674,
+      "annualized_sharpe_sample_std": -0.23152401026980723,
+      "annualized_sharpe_population_std": -0.2315673141157428
+    },
+    "observation_delta": 5,
+    "exact_first_measurement_reproduced": false,
+    "relation": "OOS_EXTENSION_NOT_EXACT_REPRODUCTION",
+    "packet_completion_eligible": false,
+    "claim_boundary": "A later replay on an advanced data lake may audit the unchanged implementation, but it cannot substitute for the exact curve behind the immutable first measurement."
+  },
+  "reproduction": {
+    "command": "uv run python scripts/probe_insider_clusters.py",
+    "python": "3.12.13 (main, Jun  2 2026, 22:42:28) [Clang 22.1.3 ]",
+    "numpy": "2.4.6",
+    "pandas": "3.0.3",
+    "pyproject_path": "pyproject.toml",
+    "pyproject_sha256": "ddaf8b60999275f6d3fb93b3073f256d75d1383bfc8bab14263dc58645841006",
+    "uv_lock_path": "uv.lock",
+    "uv_lock_sha256": "5caca664242722a3a3112663d7a19b7b5000583e30ade3753e1b8ffdecfd6f06",
+    "runner_path": "scripts/probe_insider_clusters.py",
+    "runner_sha256": "a252e37cfdc8c01cba8310fbeacb671bdf8ec53c5752ea421cb79023b732004b",
+    "scope": "current_input_snapshot_replay",
+    "exact_first_measurement_reproduced": false
+  }
+}

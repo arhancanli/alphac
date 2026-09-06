@@ -1,0 +1,90 @@
+{
+  "alphavintage_result_recomputed": false,
+  "author": "Arhan Canli",
+  "claim_boundary": "This proves portable reacquisition and exact normalized-table equality for the Philadelphia Fed headline/core CPI vintage inputs through the declared cutoff. It does not replay licensed IWM/SPY data, recompute AlphaVintage returns, establish redistribution rights, or constitute independent replication.",
+  "comparisons": [
+    {
+      "fresh_table_content_hash": "sha256:1e0284a66f96a1ef1799d5854e453ea0fde82fc30b5de880986cc0fc7f51050d",
+      "local_source": {
+        "path": "data/lake_macro_vintage/tier2_vintage/PCPI_vintage_long.parquet",
+        "sha256": "387b8155f73d15a1a6b9ad8a4d3b9315ec03f1c8881f2fae0efe5ddc1290e0a4"
+      },
+      "local_table_content_hash": "sha256:1e0284a66f96a1ef1799d5854e453ea0fde82fc30b5de880986cc0fc7f51050d",
+      "rows_fresh_fetch": 317682,
+      "rows_local_at_cutoff": 317682,
+      "series": "PCPI",
+      "tables_equal": true
+    },
+    {
+      "fresh_table_content_hash": "sha256:6cc69ec1ac788d0a0cbeb4e2b16034d1bc99670aeaa1a248e0cef4aa7534b70a",
+      "local_source": {
+        "path": "data/lake_macro_vintage/tier2_vintage/PCPIX_vintage_long.parquet",
+        "sha256": "e764f0b4f68cbc77c2586d4ff9a298ec3ed7a80a5d93bab6216c6461cb6800ca"
+      },
+      "local_table_content_hash": "sha256:6cc69ec1ac788d0a0cbeb4e2b16034d1bc99670aeaa1a248e0cef4aa7534b70a",
+      "rows_fresh_fetch": 317682,
+      "rows_local_at_cutoff": 317682,
+      "series": "PCPIX",
+      "tables_equal": true
+    }
+  ],
+  "content_hash": "sha256:753770632177dec33bb9e53798a725fbaebc468563f9b25138016bb0cce52912",
+  "execution": {
+    "dependency_environment": "PEP723_UV_ISOLATED_SCRIPT",
+    "network_source": "OFFICIAL_PHILADELPHIA_FED_RTDSM",
+    "vintage_cutoff_inclusive": "2026-07-15",
+    "workspace_outside_repository": true
+  },
+  "fresh_source_manifest": {
+    "claim_boundary": "This manifest proves a fresh official-source acquisition and deterministic table normalization under the recorded environment. It does not grant redistribution rights and does not reproduce market returns or the AlphaVintage result.",
+    "content_hash": "sha256:f2a0fb54236a4babb0ed5b6578a58664e40e22de4b401b9eaf0cfd2b8fba50b3",
+    "raw_redistribution_authorized": false,
+    "records": [
+      {
+        "first_observation": "1947-01-01",
+        "first_vintage": "1998-11-15",
+        "last_observation": "2026-06-01",
+        "last_vintage": "2026-07-15",
+        "normalized_file": "PCPI_vintage_long.parquet",
+        "normalized_sha256": "387b8155f73d15a1a6b9ad8a4d3b9315ec03f1c8881f2fae0efe5ddc1290e0a4",
+        "normalized_table_content_hash": "sha256:1e0284a66f96a1ef1799d5854e453ea0fde82fc30b5de880986cc0fc7f51050d",
+        "official_variable_page": "https://www.philadelphiafed.org/surveys-and-data/real-time-data-research/pcpi",
+        "raw_file": "pcpiMvMd.xlsx",
+        "raw_sha256": "11851cd13c73b743bc3be30564fc18283cedd11211a070a3a82ce6b64b6cca10",
+        "resolved_download_url": "https://www.philadelphiafed.org/-/media/FRBP/Assets/Surveys-And-Data/real-time-data/data-files/xlsx/pcpiMvMd.xlsx?sc_lang=en&hash=E41A743DC6423F950B10C3DE7A4F674D",
+        "rows": 317682,
+        "series": "PCPI"
+      },
+      {
+        "first_observation": "1947-01-01",
+        "first_vintage": "1998-11-15",
+        "last_observation": "2026-06-01",
+        "last_vintage": "2026-07-15",
+        "normalized_file": "PCPIX_vintage_long.parquet",
+        "normalized_sha256": "e764f0b4f68cbc77c2586d4ff9a298ec3ed7a80a5d93bab6216c6461cb6800ca",
+        "normalized_table_content_hash": "sha256:6cc69ec1ac788d0a0cbeb4e2b16034d1bc99670aeaa1a248e0cef4aa7534b70a",
+        "official_variable_page": "https://www.philadelphiafed.org/surveys-and-data/real-time-data-research/pcpix",
+        "raw_file": "pcpixMvMd.xlsx",
+        "raw_sha256": "dcdab3493a10a880312164f8da7e1ac98c44b5c76080e9314c89dc74c9dd3e38",
+        "resolved_download_url": "https://www.philadelphiafed.org/-/media/FRBP/Assets/Surveys-And-Data/real-time-data/data-files/xlsx/pcpixMvMd.xlsx?sc_lang=en&hash=C6DFB09386E1C79B336AB19F748ADB82",
+        "rows": 317682,
+        "series": "PCPIX"
+      }
+    ],
+    "schema": "canli.alphac-rtdsm-cpi-portable-fetch.v1",
+    "source": "Federal Reserve Bank of Philadelphia RTDSM",
+    "vintage_cutoff_inclusive": "2026-07-15"
+  },
+  "independent_replication": false,
+  "market_data_component_replayed": false,
+  "passes": true,
+  "raw_files_released": false,
+  "schema": "canli.alphac-alphavintage-rtdsm-portable-fetch.v1",
+  "source_bindings": {
+    "portable_fetcher": {
+      "path": "scripts/fetch_rtdsm_cpi_portable.py",
+      "sha256": "c83c3658ce4babdc80046fd44caa6378e462e395acf80ba0fe70de74fa13412a"
+    }
+  },
+  "status": "PASS_PUBLIC_MACRO_COMPONENT_PORTABLE"
+}

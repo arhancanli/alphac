@@ -1,0 +1,216 @@
+{
+  "@context": "https://w3id.org/ro/crate/1.1/context",
+  "@graph": [
+    {
+      "@id": "ro-crate-metadata.json",
+      "@type": "CreativeWork",
+      "about": {
+        "@id": "./"
+      },
+      "conformsTo": {
+        "@id": "https://w3id.org/ro/crate/1.1"
+      }
+    },
+    {
+      "@id": "./",
+      "@type": "Dataset",
+      "author": {
+        "@id": "#arhan-canli"
+      },
+      "datePublished": "2026-08-23",
+      "hasPart": [
+        {
+          "@id": "CITATION.cff"
+        },
+        {
+          "@id": "CORRECTIONS.md"
+        },
+        {
+          "@id": "LICENSE"
+        },
+        {
+          "@id": "README.md"
+        },
+        {
+          "@id": "archival_visual_inspection_receipt.json"
+        },
+        {
+          "@id": "bundle_manifest.json"
+        },
+        {
+          "@id": "codemeta.json"
+        },
+        {
+          "@id": "data_manifest.json"
+        },
+        {
+          "@id": "evidence/family_result.json"
+        },
+        {
+          "@id": "evidence/grand_matrix.json"
+        },
+        {
+          "@id": "internal_replay_receipt.json"
+        },
+        {
+          "@id": "isolated_replay_receipt.json"
+        },
+        {
+          "@id": "paper.html"
+        },
+        {
+          "@id": "paper.json"
+        },
+        {
+          "@id": "paper.md"
+        },
+        {
+          "@id": "paper.pdf"
+        },
+        {
+          "@id": "paper.tex"
+        },
+        {
+          "@id": "pdf_validation.json"
+        },
+        {
+          "@id": "references.bib"
+        },
+        {
+          "@id": "references.json"
+        },
+        {
+          "@id": "reproduction.json"
+        },
+        {
+          "@id": "sbom.spdx.json"
+        },
+        {
+          "@id": "trial_accounting.json"
+        }
+      ],
+      "name": "Crypto Multi-Factor Engine: Seven Trials, Capacity Decay, and No-Deploy Verdict",
+      "version": "0.1.0"
+    },
+    {
+      "@id": "#arhan-canli",
+      "@type": "Person",
+      "name": "Arhan Canli"
+    },
+    {
+      "@id": "CITATION.cff",
+      "@type": "File",
+      "sha256": "061721a6f149e5354b8e232bd3666fa4934d3c4af10eb2a5f59fcaee4bca59aa"
+    },
+    {
+      "@id": "CORRECTIONS.md",
+      "@type": "File",
+      "sha256": "39c242cf47c67517dfda0fd1d1ee8f67ecc535a5cf619aa7473f6904fe3f5c4e"
+    },
+    {
+      "@id": "LICENSE",
+      "@type": "File",
+      "sha256": "e679ca02271c3b6ff38e197098b9260900656c23f06b787383624681f425fa26"
+    },
+    {
+      "@id": "README.md",
+      "@type": "File",
+      "sha256": "52133dba35eeb79b7d441d395219e3200c6fedc8ef6ca746d4c0ee20e35713c0"
+    },
+    {
+      "@id": "archival_visual_inspection_receipt.json",
+      "@type": "File",
+      "sha256": "7a40b8c55de12ec4dd2f93143810266ac8854dc14fdd2ac1a336f64ff9dd8578"
+    },
+    {
+      "@id": "bundle_manifest.json",
+      "@type": "File",
+      "sha256": "df49adc22535ffd291a0b645e3013dae72475f138b00484fb81ecb97336bfc2d"
+    },
+    {
+      "@id": "codemeta.json",
+      "@type": "File",
+      "sha256": "eb59a12fa118a71b54e61e201f4ec3fffd3240950535d52d4929b4f0d3f212a6"
+    },
+    {
+      "@id": "data_manifest.json",
+      "@type": "File",
+      "sha256": "11cdbf5c9f7cae58356c43512a77f44a7b9bd4849b04cc6d1151231b2e1be586"
+    },
+    {
+      "@id": "evidence/family_result.json",
+      "@type": "File",
+      "sha256": "3c6e476d4aa25f1730ffa9eeba880bebc65571121aed83069dd3a0342c1accab"
+    },
+    {
+      "@id": "evidence/grand_matrix.json",
+      "@type": "File",
+      "sha256": "786c580d478f7912aa61886e8b1271faa706fe723ff35423ef1c27d7018ba32c"
+    },
+    {
+      "@id": "internal_replay_receipt.json",
+      "@type": "File",
+      "sha256": "70ac0c8d8542294e02c396085216646208a786295c747940f0eb0f576010ec95"
+    },
+    {
+      "@id": "isolated_replay_receipt.json",
+      "@type": "File",
+      "sha256": "d0df878375d415986fa639487e4ccffc9cad6396dca9bde5f3be4a7fdf50b2ad"
+    },
+    {
+      "@id": "paper.html",
+      "@type": "File",
+      "sha256": "a41e96ae0a9da334bad27c9a27dd09bbb478cc4dc416b0ce8fbb0a04efff6dd9"
+    },
+    {
+      "@id": "paper.json",
+      "@type": "File",
+      "sha256": "af07c30f9e4ea8f982d2da9cb145ba9a9335bca13f3af337882623b0997a1fe0"
+    },
+    {
+      "@id": "paper.md",
+      "@type": "File",
+      "sha256": "73e40af49f0e55e09f706dde37473781d5cc22104d86cd6bc031fe77e080b53c"
+    },
+    {
+      "@id": "paper.pdf",
+      "@type": "File",
+      "sha256": "d472c102ac67d1259c8207ecc79b17bc0b2a6ce64c9b581c11cbb010e42391ae"
+    },
+    {
+      "@id": "paper.tex",
+      "@type": "File",
+      "sha256": "5857c1bc94ecf3dc00cfe98a06d6cd3485e3c2b89d231712cc653ad452d2ea8e"
+    },
+    {
+      "@id": "pdf_validation.json",
+      "@type": "File",
+      "sha256": "f9940101485bbbec60b7ef40b3f658f0818bf593eb4684f4a886ba57d2271b53"
+    },
+    {
+      "@id": "references.bib",
+      "@type": "File",
+      "sha256": "c5f36aa5b0aefbf784f7577f8c0309afe92efc459766e2a1fa5aac04e2624f3a"
+    },
+    {
+      "@id": "references.json",
+      "@type": "File",
+      "sha256": "cbf3bbf7bc11a6cc1f78ed4597e578ae07b723865ced6d9a02133af4e4e4f0b8"
+    },
+    {
+      "@id": "reproduction.json",
+      "@type": "File",
+      "sha256": "289140cb0f0dae7e689819abd23a21e0de1c5cf526682ef552f343820fcc8a10"
+    },
+    {
+      "@id": "sbom.spdx.json",
+      "@type": "File",
+      "sha256": "f8adb6b10890bc97de69993c29c6515a75473175eaca210aad03a13bc4cc13bb"
+    },
+    {
+      "@id": "trial_accounting.json",
+      "@type": "File",
+      "sha256": "d234df53fac678a0101a46b5e80e08b23cbf0127e5bdda99b1359ab5c3dd76fe"
+    }
+  ]
+}

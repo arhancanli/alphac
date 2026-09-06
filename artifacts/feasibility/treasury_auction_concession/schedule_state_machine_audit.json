@@ -1,0 +1,2438 @@
+{
+  "schema": "canli.feasibility.treasury-schedule-state-machine.v1",
+  "generated_at": "2026-08-26T07:23:15.459642+00:00",
+  "stage": "point_in_time_calendar_identity_redesign_no_prices_no_returns",
+  "family": "treasury_auction_concession",
+  "period": {
+    "start_year": 2013,
+    "end_year": 2025
+  },
+  "clock": {
+    "calendar": "XNYS",
+    "pre_sessions": 10,
+    "post_sessions": 10,
+    "unknown_intraday_update_policy": "ACT_AT_NEXT_XNYS_CLOSE",
+    "late_replacement_policy": "DO_NOT_CHASE_PRE_LEG",
+    "post_entry_policy": "CONFIRMED_AUCTION_DAY_XNYS_CLOSE_AFTER_AUCTION"
+  },
+  "source_hashes": {
+    "event_manifest_sha256": "594cd1df7acbb6b91c3a778cfea0abd7bdec290d418b073c954ead858b22c285",
+    "combined_schedule_audit_sha256": "3ca94a00f6df8585cb5e3122dbcee9be7b08423b778ed7239791ce43371156d3",
+    "calendar_revision_audit_sha256": "60c5d9fd6b0179cb7bd8987f917fa1213eafe9ee25257f314948b4ba00073a6e",
+    "protocol_sha256": "12b3fa9cfb774bd926945bf39111f9cd3ba50e0c87ba67220f9d8e1423b8563f"
+  },
+  "summary": {
+    "eligible_events": 156,
+    "exact_schedule_pre_and_post": 145,
+    "pre_entered_then_cancelled_on_revision": 4,
+    "revision_before_entry_post_only": 1,
+    "late_post_event_or_missing_post_only": 6,
+    "events_with_pre_leg": 149,
+    "events_post_only": 7,
+    "known_tentative_date_changes": 5,
+    "adjacent_event_windows_with_overlap": 83
+  },
+  "path_counts": {
+    "EXACT_SCHEDULE_PRE_AND_POST": 145,
+    "PRE_ENTERED_THEN_CANCELLED_ON_REVISION": 4,
+    "REVISION_BEFORE_ENTRY_POST_ONLY": 1,
+    "NO_PRE_POSITION_POST_ONLY": 6
+  },
+  "overlap_cases": [
+    {
+      "previous_event": "2013-01-28|912828UK4",
+      "current_event": "2013-02-25|912828UP3",
+      "previous_post_exit": "2013-02-11",
+      "current_first_active_session": "2013-02-08"
+    },
+    {
+      "previous_event": "2013-03-26|912828UT5",
+      "current_event": "2013-04-23|912828UY4",
+      "previous_post_exit": "2013-04-10",
+      "current_first_active_session": "2013-04-09"
+    },
+    {
+      "previous_event": "2013-05-28|912828VD9",
+      "current_event": "2013-06-25|912828VH0",
+      "previous_post_exit": "2013-06-11",
+      "current_first_active_session": "2013-06-11"
+    },
+    {
+      "previous_event": "2013-06-25|912828VH0",
+      "current_event": "2013-07-23|912828VN7",
+      "previous_post_exit": "2013-07-10",
+      "current_first_active_session": "2013-07-09"
+    },
+    {
+      "previous_event": "2013-08-27|912828VU1",
+      "current_event": "2013-09-24|912828VY3",
+      "previous_post_exit": "2013-09-11",
+      "current_first_active_session": "2013-09-10"
+    },
+    {
+      "previous_event": "2013-10-28|912828WB2",
+      "current_event": "2013-11-25|912828A26",
+      "previous_post_exit": "2013-11-11",
+      "current_first_active_session": "2013-11-11"
+    },
+    {
+      "previous_event": "2013-11-25|912828A26",
+      "current_event": "2013-12-17|912828A67",
+      "previous_post_exit": "2013-12-10",
+      "current_first_active_session": "2013-12-02"
+    },
+    {
+      "previous_event": "2014-03-25|912828C40",
+      "current_event": "2014-04-22|912828C81",
+      "previous_post_exit": "2014-04-08",
+      "current_first_active_session": "2014-04-07"
+    },
+    {
+      "previous_event": "2014-05-27|912828WM8",
+      "current_event": "2014-06-24|912828WQ9",
+      "previous_post_exit": "2014-06-10",
+      "current_first_active_session": "2014-06-10"
+    },
+    {
+      "previous_event": "2014-08-26|912828D64",
+      "current_event": "2014-09-23|912828F47",
+      "previous_post_exit": "2014-09-10",
+      "current_first_active_session": "2014-09-09"
+    },
+    {
+      "previous_event": "2014-10-28|912828F88",
+      "current_event": "2014-11-24|912828G46",
+      "previous_post_exit": "2014-11-11",
+      "current_first_active_session": "2014-11-10"
+    },
+    {
+      "previous_event": "2014-11-24|912828G46",
+      "current_event": "2014-12-22|912828H29",
+      "previous_post_exit": "2014-12-09",
+      "current_first_active_session": "2014-12-08"
+    },
+    {
+      "previous_event": "2015-01-28|912828H78",
+      "current_event": "2015-02-24|912828J35",
+      "previous_post_exit": "2015-02-11",
+      "current_first_active_session": "2015-02-09"
+    },
+    {
+      "previous_event": "2015-02-24|912828J35",
+      "current_event": "2015-03-24|912828J92",
+      "previous_post_exit": "2015-03-10",
+      "current_first_active_session": "2015-03-10"
+    },
+    {
+      "previous_event": "2015-04-27|912828K66",
+      "current_event": "2015-05-26|912828SY7",
+      "previous_post_exit": "2015-05-11",
+      "current_first_active_session": "2015-05-11"
+    },
+    {
+      "previous_event": "2015-05-26|912828SY7",
+      "current_event": "2015-06-23|912828XJ4",
+      "previous_post_exit": "2015-06-09",
+      "current_first_active_session": "2015-06-09"
+    },
+    {
+      "previous_event": "2015-07-28|912828XP0",
+      "current_event": "2015-08-25|912828TM2",
+      "previous_post_exit": "2015-08-11",
+      "current_first_active_session": "2015-08-11"
+    },
+    {
+      "previous_event": "2015-08-25|912828TM2",
+      "current_event": "2015-09-22|912828TS9",
+      "previous_post_exit": "2015-09-09",
+      "current_first_active_session": "2015-09-08"
+    },
+    {
+      "previous_event": "2015-11-04|912828TW0",
+      "current_event": "2015-11-23|912828M72",
+      "previous_post_exit": "2015-11-18",
+      "current_first_active_session": "2015-11-09"
+    },
+    {
+      "previous_event": "2015-12-28|912828N55",
+      "current_event": "2016-01-26|912828P20",
+      "previous_post_exit": "2016-01-12",
+      "current_first_active_session": "2016-01-11"
+    },
+    {
+      "previous_event": "2016-01-26|912828P20",
+      "current_event": "2016-02-23|912828UR9",
+      "previous_post_exit": "2016-02-09",
+      "current_first_active_session": "2016-02-08"
+    },
+    {
+      "previous_event": "2016-03-28|912828Q45",
+      "current_event": "2016-04-25|912828Q94",
+      "previous_post_exit": "2016-04-11",
+      "current_first_active_session": "2016-04-11"
+    },
+    {
+      "previous_event": "2016-10-25|912828T83",
+      "current_event": "2016-11-21|912828U40",
+      "previous_post_exit": "2016-11-08",
+      "current_first_active_session": "2016-11-07"
+    },
+    {
+      "previous_event": "2016-12-27|912828U99",
+      "current_event": "2017-01-24|912828V56",
+      "previous_post_exit": "2017-01-11",
+      "current_first_active_session": "2017-01-09"
+    },
+    {
+      "previous_event": "2017-01-24|912828V56",
+      "current_event": "2017-02-21|912828W30",
+      "previous_post_exit": "2017-02-07",
+      "current_first_active_session": "2017-02-06"
+    },
+    {
+      "previous_event": "2017-03-27|912828W97",
+      "current_event": "2017-04-25|912828ST8",
+      "previous_post_exit": "2017-04-10",
+      "current_first_active_session": "2017-04-10"
+    },
+    {
+      "previous_event": "2017-04-25|912828ST8",
+      "current_event": "2017-05-23|912828XS4",
+      "previous_post_exit": "2017-05-09",
+      "current_first_active_session": "2017-05-09"
+    },
+    {
+      "previous_event": "2017-06-26|912828XV7",
+      "current_event": "2017-07-25|9128282K5",
+      "previous_post_exit": "2017-07-11",
+      "current_first_active_session": "2017-07-11"
+    },
+    {
+      "previous_event": "2017-08-28|9128282T6",
+      "current_event": "2017-09-26|9128282X7",
+      "previous_post_exit": "2017-09-12",
+      "current_first_active_session": "2017-09-12"
+    },
+    {
+      "previous_event": "2017-09-26|9128282X7",
+      "current_event": "2017-10-24|912828F62",
+      "previous_post_exit": "2017-10-10",
+      "current_first_active_session": "2017-10-10"
+    },
+    {
+      "previous_event": "2017-11-27|9128283H1",
+      "current_event": "2017-12-26|9128283N8",
+      "previous_post_exit": "2017-12-11",
+      "current_first_active_session": "2017-12-11"
+    },
+    {
+      "previous_event": "2017-12-26|9128283N8",
+      "current_event": "2018-01-23|9128283S7",
+      "previous_post_exit": "2018-01-10",
+      "current_first_active_session": "2018-01-08"
+    },
+    {
+      "previous_event": "2018-01-23|9128283S7",
+      "current_event": "2018-02-20|9128283Y4",
+      "previous_post_exit": "2018-02-06",
+      "current_first_active_session": "2018-02-05"
+    },
+    {
+      "previous_event": "2018-03-26|9128284C1",
+      "current_event": "2018-04-24|9128284J6",
+      "previous_post_exit": "2018-04-10",
+      "current_first_active_session": "2018-04-10"
+    },
+    {
+      "previous_event": "2018-04-24|9128284J6",
+      "current_event": "2018-05-22|9128284Q0",
+      "previous_post_exit": "2018-05-08",
+      "current_first_active_session": "2018-05-08"
+    },
+    {
+      "previous_event": "2018-06-26|912828XY1",
+      "current_event": "2018-07-24|912828Y46",
+      "previous_post_exit": "2018-07-11",
+      "current_first_active_session": "2018-07-10"
+    },
+    {
+      "previous_event": "2018-11-26|9128285Q9",
+      "current_event": "2018-12-24|9128285S5",
+      "previous_post_exit": "2018-12-11",
+      "current_first_active_session": "2018-12-10"
+    },
+    {
+      "previous_event": "2019-01-28|9128285X4",
+      "current_event": "2019-02-25|9128286D7",
+      "previous_post_exit": "2019-02-11",
+      "current_first_active_session": "2019-02-08"
+    },
+    {
+      "previous_event": "2019-03-26|912828C57",
+      "current_event": "2019-04-23|912828WG1",
+      "previous_post_exit": "2019-04-09",
+      "current_first_active_session": "2019-04-08"
+    },
+    {
+      "previous_event": "2019-05-28|9128286V7",
+      "current_event": "2019-06-25|9128287A2",
+      "previous_post_exit": "2019-06-11",
+      "current_first_active_session": "2019-06-11"
+    },
+    {
+      "previous_event": "2019-06-25|9128287A2",
+      "current_event": "2019-07-23|9128287F1",
+      "previous_post_exit": "2019-07-10",
+      "current_first_active_session": "2019-07-09"
+    },
+    {
+      "previous_event": "2019-08-27|912828YC8",
+      "current_event": "2019-09-24|912828YJ3",
+      "previous_post_exit": "2019-09-11",
+      "current_first_active_session": "2019-09-10"
+    },
+    {
+      "previous_event": "2019-09-24|912828YJ3",
+      "current_event": "2019-10-22|912828YP9",
+      "previous_post_exit": "2019-10-08",
+      "current_first_active_session": "2019-10-08"
+    },
+    {
+      "previous_event": "2019-11-25|912828YT1",
+      "current_event": "2019-12-23|912828YZ7",
+      "previous_post_exit": "2019-12-10",
+      "current_first_active_session": "2019-12-09"
+    },
+    {
+      "previous_event": "2020-01-27|912828Z60",
+      "current_event": "2020-02-25|912828ZA1",
+      "previous_post_exit": "2020-02-10",
+      "current_first_active_session": "2020-02-10"
+    },
+    {
+      "previous_event": "2020-02-25|912828ZA1",
+      "current_event": "2020-03-24|912828ZG8",
+      "previous_post_exit": "2020-03-10",
+      "current_first_active_session": "2020-03-10"
+    },
+    {
+      "previous_event": "2020-04-27|912828ZM5",
+      "current_event": "2020-05-26|912828ZR4",
+      "previous_post_exit": "2020-05-11",
+      "current_first_active_session": "2020-05-11"
+    },
+    {
+      "previous_event": "2020-05-26|912828ZR4",
+      "current_event": "2020-06-23|912828ZX1",
+      "previous_post_exit": "2020-06-09",
+      "current_first_active_session": "2020-06-09"
+    },
+    {
+      "previous_event": "2020-08-25|91282CAG6",
+      "current_event": "2020-09-22|91282CAN1",
+      "previous_post_exit": "2020-09-09",
+      "current_first_active_session": "2020-09-08"
+    },
+    {
+      "previous_event": "2020-10-27|91282CAR2",
+      "current_event": "2020-11-23|91282CAX9",
+      "previous_post_exit": "2020-11-10",
+      "current_first_active_session": "2020-11-09"
+    },
+    {
+      "previous_event": "2020-12-28|91282CBD2",
+      "current_event": "2021-01-25|91282CBG5",
+      "previous_post_exit": "2021-01-12",
+      "current_first_active_session": "2021-01-08"
+    },
+    {
+      "previous_event": "2021-01-25|91282CBG5",
+      "current_event": "2021-02-23|91282CBN0",
+      "previous_post_exit": "2021-02-08",
+      "current_first_active_session": "2021-02-08"
+    },
+    {
+      "previous_event": "2021-02-23|91282CBN0",
+      "current_event": "2021-03-23|91282CBU4",
+      "previous_post_exit": "2021-03-09",
+      "current_first_active_session": "2021-03-09"
+    },
+    {
+      "previous_event": "2021-05-25|91282CCD1",
+      "current_event": "2021-06-22|91282CCK5",
+      "previous_post_exit": "2021-06-09",
+      "current_first_active_session": "2021-06-08"
+    },
+    {
+      "previous_event": "2021-10-26|91282CDD0",
+      "current_event": "2021-11-22|91282CDM0",
+      "previous_post_exit": "2021-11-09",
+      "current_first_active_session": "2021-11-08"
+    },
+    {
+      "previous_event": "2021-12-27|91282CDR9",
+      "current_event": "2022-01-24|91282CDV0",
+      "previous_post_exit": "2022-01-10",
+      "current_first_active_session": "2022-01-07"
+    },
+    {
+      "previous_event": "2022-01-24|91282CDV0",
+      "current_event": "2022-02-22|91282CEA5",
+      "previous_post_exit": "2022-02-07",
+      "current_first_active_session": "2022-02-07"
+    },
+    {
+      "previous_event": "2022-03-28|91282CEG2",
+      "current_event": "2022-04-26|91282CEK3",
+      "previous_post_exit": "2022-04-11",
+      "current_first_active_session": "2022-04-11"
+    },
+    {
+      "previous_event": "2022-04-26|91282CEK3",
+      "current_event": "2022-05-24|91282CER8",
+      "previous_post_exit": "2022-05-10",
+      "current_first_active_session": "2022-05-10"
+    },
+    {
+      "previous_event": "2022-06-27|91282CEX5",
+      "current_event": "2022-07-25|91282CFA4",
+      "previous_post_exit": "2022-07-12",
+      "current_first_active_session": "2022-07-11"
+    },
+    {
+      "previous_event": "2022-10-25|91282CFQ9",
+      "current_event": "2022-11-21|91282CFX4",
+      "previous_post_exit": "2022-11-08",
+      "current_first_active_session": "2022-11-07"
+    },
+    {
+      "previous_event": "2022-12-27|91282CGD7",
+      "current_event": "2023-01-24|91282CGG0",
+      "previous_post_exit": "2023-01-11",
+      "current_first_active_session": "2023-01-09"
+    },
+    {
+      "previous_event": "2023-01-24|91282CGG0",
+      "current_event": "2023-02-21|91282CGN5",
+      "previous_post_exit": "2023-02-07",
+      "current_first_active_session": "2023-02-06"
+    },
+    {
+      "previous_event": "2023-03-27|91282CGU9",
+      "current_event": "2023-04-25|91282CGX3",
+      "previous_post_exit": "2023-04-11",
+      "current_first_active_session": "2023-04-11"
+    },
+    {
+      "previous_event": "2023-04-25|91282CGX3",
+      "current_event": "2023-05-23|91282CHD6",
+      "previous_post_exit": "2023-05-09",
+      "current_first_active_session": "2023-05-09"
+    },
+    {
+      "previous_event": "2023-06-26|91282CHL8",
+      "current_event": "2023-07-24|91282CHN4",
+      "previous_post_exit": "2023-07-11",
+      "current_first_active_session": "2023-07-10"
+    },
+    {
+      "previous_event": "2023-08-28|91282CHV6",
+      "current_event": "2023-09-26|91282CJB8",
+      "previous_post_exit": "2023-09-12",
+      "current_first_active_session": "2023-09-12"
+    },
+    {
+      "previous_event": "2023-09-26|91282CJB8",
+      "current_event": "2023-10-24|91282CJE2",
+      "previous_post_exit": "2023-10-10",
+      "current_first_active_session": "2023-10-10"
+    },
+    {
+      "previous_event": "2023-11-27|91282CJL6",
+      "current_event": "2023-12-26|91282CJS1",
+      "previous_post_exit": "2023-12-11",
+      "current_first_active_session": "2023-12-11"
+    },
+    {
+      "previous_event": "2023-12-26|91282CJS1",
+      "current_event": "2024-01-23|91282CJV4",
+      "previous_post_exit": "2024-01-10",
+      "current_first_active_session": "2024-01-08"
+    },
+    {
+      "previous_event": "2024-02-26|91282CKB6",
+      "current_event": "2024-03-25|91282CKH3",
+      "previous_post_exit": "2024-03-11",
+      "current_first_active_session": "2024-03-11"
+    },
+    {
+      "previous_event": "2024-03-25|91282CKH3",
+      "current_event": "2024-04-23|91282CKK6",
+      "previous_post_exit": "2024-04-09",
+      "current_first_active_session": "2024-04-09"
+    },
+    {
+      "previous_event": "2024-05-28|91282CKS9",
+      "current_event": "2024-06-25|91282CKY6",
+      "previous_post_exit": "2024-06-11",
+      "current_first_active_session": "2024-06-10"
+    },
+    {
+      "previous_event": "2024-06-25|91282CKY6",
+      "current_event": "2024-07-23|91282CLB5",
+      "previous_post_exit": "2024-07-10",
+      "current_first_active_session": "2024-07-09"
+    },
+    {
+      "previous_event": "2024-08-27|91282CLH2",
+      "current_event": "2024-09-24|91282CLP4",
+      "previous_post_exit": "2024-09-11",
+      "current_first_active_session": "2024-09-10"
+    },
+    {
+      "previous_event": "2024-10-28|91282CLS8",
+      "current_event": "2024-11-25|91282CLY5",
+      "previous_post_exit": "2024-11-11",
+      "current_first_active_session": "2024-11-11"
+    },
+    {
+      "previous_event": "2024-11-25|91282CLY5",
+      "current_event": "2024-12-23|91282CME8",
+      "previous_post_exit": "2024-12-10",
+      "current_first_active_session": "2024-12-09"
+    },
+    {
+      "previous_event": "2025-01-27|91282CMH1",
+      "current_event": "2025-02-24|91282CMP3",
+      "previous_post_exit": "2025-02-10",
+      "current_first_active_session": "2025-02-07"
+    },
+    {
+      "previous_event": "2025-03-25|91282CMV0",
+      "current_event": "2025-04-22|91282CMY4",
+      "previous_post_exit": "2025-04-08",
+      "current_first_active_session": "2025-04-07"
+    },
+    {
+      "previous_event": "2025-05-27|91282CNE7",
+      "current_event": "2025-06-24|91282CNL1",
+      "previous_post_exit": "2025-06-10",
+      "current_first_active_session": "2025-06-09"
+    },
+    {
+      "previous_event": "2025-08-26|91282CNV9",
+      "current_event": "2025-09-23|91282CPB1",
+      "previous_post_exit": "2025-09-10",
+      "current_first_active_session": "2025-09-09"
+    },
+    {
+      "previous_event": "2025-10-27|91282CPE5",
+      "current_event": "2025-11-24|91282CPL9",
+      "previous_post_exit": "2025-11-10",
+      "current_first_active_session": "2025-11-10"
+    },
+    {
+      "previous_event": "2025-11-24|91282CPL9",
+      "current_event": "2025-12-22|91282CPS4",
+      "previous_post_exit": "2025-12-09",
+      "current_first_active_session": "2025-12-08"
+    }
+  ],
+  "events": [
+    {
+      "event_identity": "2013-01-28|912828UK4",
+      "auction_date": "2013-01-28",
+      "announcement_date": "2013-01-24",
+      "post_entry_date": "2013-01-28",
+      "post_exit_date": "2013-02-11",
+      "path": "NO_PRE_POSITION_POST_ONLY",
+      "tentative_date": null,
+      "pre_entry_date": null,
+      "pre_exit_date": null,
+      "revision_action": "EXACT_DATE_ONLY_LATE_CAPTURE"
+    },
+    {
+      "event_identity": "2013-02-25|912828UP3",
+      "auction_date": "2013-02-25",
+      "announcement_date": "2013-02-21",
+      "post_entry_date": "2013-02-25",
+      "post_exit_date": "2013-03-11",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2013-02-25",
+      "pre_entry_date": "2013-02-08",
+      "pre_exit_date": "2013-02-25",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2013-03-26|912828UT5",
+      "auction_date": "2013-03-26",
+      "announcement_date": "2013-03-21",
+      "post_entry_date": "2013-03-26",
+      "post_exit_date": "2013-04-10",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2013-03-26",
+      "pre_entry_date": "2013-03-12",
+      "pre_exit_date": "2013-03-26",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2013-04-23|912828UY4",
+      "auction_date": "2013-04-23",
+      "announcement_date": "2013-04-18",
+      "post_entry_date": "2013-04-23",
+      "post_exit_date": "2013-05-07",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2013-04-23",
+      "pre_entry_date": "2013-04-09",
+      "pre_exit_date": "2013-04-23",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2013-05-28|912828VD9",
+      "auction_date": "2013-05-28",
+      "announcement_date": "2013-05-23",
+      "post_entry_date": "2013-05-28",
+      "post_exit_date": "2013-06-11",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2013-05-28",
+      "pre_entry_date": "2013-05-13",
+      "pre_exit_date": "2013-05-28",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2013-06-25|912828VH0",
+      "auction_date": "2013-06-25",
+      "announcement_date": "2013-06-20",
+      "post_entry_date": "2013-06-25",
+      "post_exit_date": "2013-07-10",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2013-06-25",
+      "pre_entry_date": "2013-06-11",
+      "pre_exit_date": "2013-06-25",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2013-07-23|912828VN7",
+      "auction_date": "2013-07-23",
+      "announcement_date": "2013-07-18",
+      "post_entry_date": "2013-07-23",
+      "post_exit_date": "2013-08-06",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2013-07-23",
+      "pre_entry_date": "2013-07-09",
+      "pre_exit_date": "2013-07-23",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2013-08-27|912828VU1",
+      "auction_date": "2013-08-27",
+      "announcement_date": "2013-08-22",
+      "post_entry_date": "2013-08-27",
+      "post_exit_date": "2013-09-11",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2013-08-27",
+      "pre_entry_date": "2013-08-13",
+      "pre_exit_date": "2013-08-27",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2013-09-24|912828VY3",
+      "auction_date": "2013-09-24",
+      "announcement_date": "2013-09-19",
+      "post_entry_date": "2013-09-24",
+      "post_exit_date": "2013-10-08",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2013-09-24",
+      "pre_entry_date": "2013-09-10",
+      "pre_exit_date": "2013-09-24",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2013-10-28|912828WB2",
+      "auction_date": "2013-10-28",
+      "announcement_date": "2013-10-24",
+      "post_entry_date": "2013-10-28",
+      "post_exit_date": "2013-11-11",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2013-10-28",
+      "pre_entry_date": "2013-10-14",
+      "pre_exit_date": "2013-10-28",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2013-11-25|912828A26",
+      "auction_date": "2013-11-25",
+      "announcement_date": "2013-11-21",
+      "post_entry_date": "2013-11-25",
+      "post_exit_date": "2013-12-10",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2013-11-25",
+      "pre_entry_date": "2013-11-11",
+      "pre_exit_date": "2013-11-25",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2013-12-17|912828A67",
+      "auction_date": "2013-12-17",
+      "announcement_date": "2013-12-12",
+      "post_entry_date": "2013-12-17",
+      "post_exit_date": "2014-01-02",
+      "path": "PRE_ENTERED_THEN_CANCELLED_ON_REVISION",
+      "tentative_date": "2013-12-16",
+      "pre_entry_date": "2013-12-02",
+      "pre_exit_date": "2013-12-13",
+      "revision_action": "EXIT_NEXT_XNYS_CLOSE_DO_NOT_REOPEN_LATE"
+    },
+    {
+      "event_identity": "2014-01-28|912828B41",
+      "auction_date": "2014-01-28",
+      "announcement_date": "2014-01-23",
+      "post_entry_date": "2014-01-28",
+      "post_exit_date": "2014-02-11",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2014-01-28",
+      "pre_entry_date": "2014-01-13",
+      "pre_exit_date": "2014-01-28",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2014-02-25|912828B82",
+      "auction_date": "2014-02-25",
+      "announcement_date": "2014-02-20",
+      "post_entry_date": "2014-02-25",
+      "post_exit_date": "2014-03-11",
+      "path": "NO_PRE_POSITION_POST_ONLY",
+      "tentative_date": null,
+      "pre_entry_date": null,
+      "pre_exit_date": null,
+      "revision_action": "EXACT_DATE_ONLY_POST_EVENT_CAPTURE"
+    },
+    {
+      "event_identity": "2014-03-25|912828C40",
+      "auction_date": "2014-03-25",
+      "announcement_date": "2014-03-20",
+      "post_entry_date": "2014-03-25",
+      "post_exit_date": "2014-04-08",
+      "path": "NO_PRE_POSITION_POST_ONLY",
+      "tentative_date": null,
+      "pre_entry_date": null,
+      "pre_exit_date": null,
+      "revision_action": "EXACT_DATE_ONLY_POST_EVENT_CAPTURE"
+    },
+    {
+      "event_identity": "2014-04-22|912828C81",
+      "auction_date": "2014-04-22",
+      "announcement_date": "2014-04-17",
+      "post_entry_date": "2014-04-22",
+      "post_exit_date": "2014-05-06",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2014-04-22",
+      "pre_entry_date": "2014-04-07",
+      "pre_exit_date": "2014-04-22",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2014-05-27|912828WM8",
+      "auction_date": "2014-05-27",
+      "announcement_date": "2014-05-22",
+      "post_entry_date": "2014-05-27",
+      "post_exit_date": "2014-06-10",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2014-05-27",
+      "pre_entry_date": "2014-05-12",
+      "pre_exit_date": "2014-05-27",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2014-06-24|912828WQ9",
+      "auction_date": "2014-06-24",
+      "announcement_date": "2014-06-19",
+      "post_entry_date": "2014-06-24",
+      "post_exit_date": "2014-07-09",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2014-06-24",
+      "pre_entry_date": "2014-06-10",
+      "pre_exit_date": "2014-06-24",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2014-07-28|912828WX4",
+      "auction_date": "2014-07-28",
+      "announcement_date": "2014-07-24",
+      "post_entry_date": "2014-07-28",
+      "post_exit_date": "2014-08-11",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2014-07-28",
+      "pre_entry_date": "2014-07-14",
+      "pre_exit_date": "2014-07-28",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2014-08-26|912828D64",
+      "auction_date": "2014-08-26",
+      "announcement_date": "2014-08-21",
+      "post_entry_date": "2014-08-26",
+      "post_exit_date": "2014-09-10",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2014-08-26",
+      "pre_entry_date": "2014-08-12",
+      "pre_exit_date": "2014-08-26",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2014-09-23|912828F47",
+      "auction_date": "2014-09-23",
+      "announcement_date": "2014-09-18",
+      "post_entry_date": "2014-09-23",
+      "post_exit_date": "2014-10-07",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2014-09-23",
+      "pre_entry_date": "2014-09-09",
+      "pre_exit_date": "2014-09-23",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2014-10-28|912828F88",
+      "auction_date": "2014-10-28",
+      "announcement_date": "2014-10-23",
+      "post_entry_date": "2014-10-28",
+      "post_exit_date": "2014-11-11",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2014-10-28",
+      "pre_entry_date": "2014-10-14",
+      "pre_exit_date": "2014-10-28",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2014-11-24|912828G46",
+      "auction_date": "2014-11-24",
+      "announcement_date": "2014-11-20",
+      "post_entry_date": "2014-11-24",
+      "post_exit_date": "2014-12-09",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2014-11-24",
+      "pre_entry_date": "2014-11-10",
+      "pre_exit_date": "2014-11-24",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2014-12-22|912828H29",
+      "auction_date": "2014-12-22",
+      "announcement_date": "2014-12-18",
+      "post_entry_date": "2014-12-22",
+      "post_exit_date": "2015-01-07",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2014-12-22",
+      "pre_entry_date": "2014-12-08",
+      "pre_exit_date": "2014-12-22",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2015-01-28|912828H78",
+      "auction_date": "2015-01-28",
+      "announcement_date": "2015-01-22",
+      "post_entry_date": "2015-01-28",
+      "post_exit_date": "2015-02-11",
+      "path": "PRE_ENTERED_THEN_CANCELLED_ON_REVISION",
+      "tentative_date": "2015-01-27",
+      "pre_entry_date": "2015-01-12",
+      "pre_exit_date": "2015-01-23",
+      "revision_action": "EXIT_NEXT_XNYS_CLOSE_DO_NOT_REOPEN_LATE"
+    },
+    {
+      "event_identity": "2015-02-24|912828J35",
+      "auction_date": "2015-02-24",
+      "announcement_date": "2015-02-19",
+      "post_entry_date": "2015-02-24",
+      "post_exit_date": "2015-03-10",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2015-02-24",
+      "pre_entry_date": "2015-02-09",
+      "pre_exit_date": "2015-02-24",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2015-03-24|912828J92",
+      "auction_date": "2015-03-24",
+      "announcement_date": "2015-03-19",
+      "post_entry_date": "2015-03-24",
+      "post_exit_date": "2015-04-08",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2015-03-24",
+      "pre_entry_date": "2015-03-10",
+      "pre_exit_date": "2015-03-24",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2015-04-27|912828K66",
+      "auction_date": "2015-04-27",
+      "announcement_date": "2015-04-23",
+      "post_entry_date": "2015-04-27",
+      "post_exit_date": "2015-05-11",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2015-04-27",
+      "pre_entry_date": "2015-04-13",
+      "pre_exit_date": "2015-04-27",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2015-05-26|912828SY7",
+      "auction_date": "2015-05-26",
+      "announcement_date": "2015-05-21",
+      "post_entry_date": "2015-05-26",
+      "post_exit_date": "2015-06-09",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2015-05-26",
+      "pre_entry_date": "2015-05-11",
+      "pre_exit_date": "2015-05-26",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2015-06-23|912828XJ4",
+      "auction_date": "2015-06-23",
+      "announcement_date": "2015-06-18",
+      "post_entry_date": "2015-06-23",
+      "post_exit_date": "2015-07-08",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2015-06-23",
+      "pre_entry_date": "2015-06-09",
+      "pre_exit_date": "2015-06-23",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2015-07-28|912828XP0",
+      "auction_date": "2015-07-28",
+      "announcement_date": "2015-07-23",
+      "post_entry_date": "2015-07-28",
+      "post_exit_date": "2015-08-11",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2015-07-28",
+      "pre_entry_date": "2015-07-14",
+      "pre_exit_date": "2015-07-28",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2015-08-25|912828TM2",
+      "auction_date": "2015-08-25",
+      "announcement_date": "2015-08-20",
+      "post_entry_date": "2015-08-25",
+      "post_exit_date": "2015-09-09",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2015-08-25",
+      "pre_entry_date": "2015-08-11",
+      "pre_exit_date": "2015-08-25",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2015-09-22|912828TS9",
+      "auction_date": "2015-09-22",
+      "announcement_date": "2015-09-17",
+      "post_entry_date": "2015-09-22",
+      "post_exit_date": "2015-10-06",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2015-09-22",
+      "pre_entry_date": "2015-09-08",
+      "pre_exit_date": "2015-09-22",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2015-11-04|912828TW0",
+      "auction_date": "2015-11-04",
+      "announcement_date": "2015-10-30",
+      "post_entry_date": "2015-11-04",
+      "post_exit_date": "2015-11-18",
+      "path": "REVISION_BEFORE_ENTRY_POST_ONLY",
+      "tentative_date": "2015-11-23",
+      "pre_entry_date": null,
+      "pre_exit_date": null,
+      "stale_entry_cancelled": "2015-11-09",
+      "revision_action": "CANCEL_ARMED_DATE_DO_NOT_CHASE"
+    },
+    {
+      "event_identity": "2015-11-23|912828M72",
+      "auction_date": "2015-11-23",
+      "announcement_date": "2015-11-19",
+      "post_entry_date": "2015-11-23",
+      "post_exit_date": "2015-12-08",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2015-11-23",
+      "pre_entry_date": "2015-11-09",
+      "pre_exit_date": "2015-11-23",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2015-12-28|912828N55",
+      "auction_date": "2015-12-28",
+      "announcement_date": "2015-12-24",
+      "post_entry_date": "2015-12-28",
+      "post_exit_date": "2016-01-12",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2015-12-28",
+      "pre_entry_date": "2015-12-11",
+      "pre_exit_date": "2015-12-28",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2016-01-26|912828P20",
+      "auction_date": "2016-01-26",
+      "announcement_date": "2016-01-21",
+      "post_entry_date": "2016-01-26",
+      "post_exit_date": "2016-02-09",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2016-01-26",
+      "pre_entry_date": "2016-01-11",
+      "pre_exit_date": "2016-01-26",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2016-02-23|912828UR9",
+      "auction_date": "2016-02-23",
+      "announcement_date": "2016-02-18",
+      "post_entry_date": "2016-02-23",
+      "post_exit_date": "2016-03-08",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2016-02-23",
+      "pre_entry_date": "2016-02-08",
+      "pre_exit_date": "2016-02-23",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2016-03-28|912828Q45",
+      "auction_date": "2016-03-28",
+      "announcement_date": "2016-03-24",
+      "post_entry_date": "2016-03-28",
+      "post_exit_date": "2016-04-11",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2016-03-28",
+      "pre_entry_date": "2016-03-11",
+      "pre_exit_date": "2016-03-28",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2016-04-25|912828Q94",
+      "auction_date": "2016-04-25",
+      "announcement_date": "2016-04-21",
+      "post_entry_date": "2016-04-25",
+      "post_exit_date": "2016-05-09",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2016-04-25",
+      "pre_entry_date": "2016-04-11",
+      "pre_exit_date": "2016-04-25",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2016-05-24|912828R51",
+      "auction_date": "2016-05-24",
+      "announcement_date": "2016-05-19",
+      "post_entry_date": "2016-05-24",
+      "post_exit_date": "2016-06-08",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2016-05-24",
+      "pre_entry_date": "2016-05-10",
+      "pre_exit_date": "2016-05-24",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2016-06-20|912828R93",
+      "auction_date": "2016-06-20",
+      "announcement_date": "2016-06-16",
+      "post_entry_date": "2016-06-20",
+      "post_exit_date": "2016-07-05",
+      "path": "PRE_ENTERED_THEN_CANCELLED_ON_REVISION",
+      "tentative_date": "2016-06-27",
+      "pre_entry_date": "2016-06-13",
+      "pre_exit_date": "2016-06-17",
+      "revision_action": "EXIT_NEXT_XNYS_CLOSE_DO_NOT_REOPEN_LATE"
+    },
+    {
+      "event_identity": "2016-07-25|912828S68",
+      "auction_date": "2016-07-25",
+      "announcement_date": "2016-07-21",
+      "post_entry_date": "2016-07-25",
+      "post_exit_date": "2016-08-08",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2016-07-25",
+      "pre_entry_date": "2016-07-11",
+      "pre_exit_date": "2016-07-25",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2016-08-23|9128282C3",
+      "auction_date": "2016-08-23",
+      "announcement_date": "2016-08-18",
+      "post_entry_date": "2016-08-23",
+      "post_exit_date": "2016-09-07",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2016-08-23",
+      "pre_entry_date": "2016-08-09",
+      "pre_exit_date": "2016-08-23",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2016-09-26|912828T42",
+      "auction_date": "2016-09-26",
+      "announcement_date": "2016-09-22",
+      "post_entry_date": "2016-09-26",
+      "post_exit_date": "2016-10-10",
+      "path": "PRE_ENTERED_THEN_CANCELLED_ON_REVISION",
+      "tentative_date": "2016-09-27",
+      "pre_entry_date": "2016-09-13",
+      "pre_exit_date": "2016-09-23",
+      "revision_action": "EXIT_NEXT_XNYS_CLOSE_DO_NOT_REOPEN_LATE"
+    },
+    {
+      "event_identity": "2016-10-25|912828T83",
+      "auction_date": "2016-10-25",
+      "announcement_date": "2016-10-20",
+      "post_entry_date": "2016-10-25",
+      "post_exit_date": "2016-11-08",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2016-10-25",
+      "pre_entry_date": "2016-10-11",
+      "pre_exit_date": "2016-10-25",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2016-11-21|912828U40",
+      "auction_date": "2016-11-21",
+      "announcement_date": "2016-11-17",
+      "post_entry_date": "2016-11-21",
+      "post_exit_date": "2016-12-06",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2016-11-21",
+      "pre_entry_date": "2016-11-07",
+      "pre_exit_date": "2016-11-21",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2016-12-27|912828U99",
+      "auction_date": "2016-12-27",
+      "announcement_date": "2016-12-22",
+      "post_entry_date": "2016-12-27",
+      "post_exit_date": "2017-01-11",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2016-12-27",
+      "pre_entry_date": "2016-12-12",
+      "pre_exit_date": "2016-12-27",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2017-01-24|912828V56",
+      "auction_date": "2017-01-24",
+      "announcement_date": "2017-01-19",
+      "post_entry_date": "2017-01-24",
+      "post_exit_date": "2017-02-07",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2017-01-24",
+      "pre_entry_date": "2017-01-09",
+      "pre_exit_date": "2017-01-24",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2017-02-21|912828W30",
+      "auction_date": "2017-02-21",
+      "announcement_date": "2017-02-16",
+      "post_entry_date": "2017-02-21",
+      "post_exit_date": "2017-03-07",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2017-02-21",
+      "pre_entry_date": "2017-02-06",
+      "pre_exit_date": "2017-02-21",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2017-03-27|912828W97",
+      "auction_date": "2017-03-27",
+      "announcement_date": "2017-03-23",
+      "post_entry_date": "2017-03-27",
+      "post_exit_date": "2017-04-10",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2017-03-27",
+      "pre_entry_date": "2017-03-13",
+      "pre_exit_date": "2017-03-27",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2017-04-25|912828ST8",
+      "auction_date": "2017-04-25",
+      "announcement_date": "2017-04-20",
+      "post_entry_date": "2017-04-25",
+      "post_exit_date": "2017-05-09",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2017-04-25",
+      "pre_entry_date": "2017-04-10",
+      "pre_exit_date": "2017-04-25",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2017-05-23|912828XS4",
+      "auction_date": "2017-05-23",
+      "announcement_date": "2017-05-18",
+      "post_entry_date": "2017-05-23",
+      "post_exit_date": "2017-06-07",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2017-05-23",
+      "pre_entry_date": "2017-05-09",
+      "pre_exit_date": "2017-05-23",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2017-06-26|912828XV7",
+      "auction_date": "2017-06-26",
+      "announcement_date": "2017-06-22",
+      "post_entry_date": "2017-06-26",
+      "post_exit_date": "2017-07-11",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2017-06-26",
+      "pre_entry_date": "2017-06-12",
+      "pre_exit_date": "2017-06-26",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2017-07-25|9128282K5",
+      "auction_date": "2017-07-25",
+      "announcement_date": "2017-07-20",
+      "post_entry_date": "2017-07-25",
+      "post_exit_date": "2017-08-08",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2017-07-25",
+      "pre_entry_date": "2017-07-11",
+      "pre_exit_date": "2017-07-25",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2017-08-28|9128282T6",
+      "auction_date": "2017-08-28",
+      "announcement_date": "2017-08-24",
+      "post_entry_date": "2017-08-28",
+      "post_exit_date": "2017-09-12",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2017-08-28",
+      "pre_entry_date": "2017-08-14",
+      "pre_exit_date": "2017-08-28",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2017-09-26|9128282X7",
+      "auction_date": "2017-09-26",
+      "announcement_date": "2017-09-21",
+      "post_entry_date": "2017-09-26",
+      "post_exit_date": "2017-10-10",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2017-09-26",
+      "pre_entry_date": "2017-09-12",
+      "pre_exit_date": "2017-09-26",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2017-10-24|912828F62",
+      "auction_date": "2017-10-24",
+      "announcement_date": "2017-10-19",
+      "post_entry_date": "2017-10-24",
+      "post_exit_date": "2017-11-07",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2017-10-24",
+      "pre_entry_date": "2017-10-10",
+      "pre_exit_date": "2017-10-24",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2017-11-27|9128283H1",
+      "auction_date": "2017-11-27",
+      "announcement_date": "2017-11-22",
+      "post_entry_date": "2017-11-27",
+      "post_exit_date": "2017-12-11",
+      "path": "NO_PRE_POSITION_POST_ONLY",
+      "tentative_date": null,
+      "pre_entry_date": null,
+      "pre_exit_date": null,
+      "revision_action": "EXACT_DATE_ONLY_LATE_CAPTURE"
+    },
+    {
+      "event_identity": "2017-12-26|9128283N8",
+      "auction_date": "2017-12-26",
+      "announcement_date": "2017-12-21",
+      "post_entry_date": "2017-12-26",
+      "post_exit_date": "2018-01-10",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2017-12-26",
+      "pre_entry_date": "2017-12-11",
+      "pre_exit_date": "2017-12-26",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2018-01-23|9128283S7",
+      "auction_date": "2018-01-23",
+      "announcement_date": "2018-01-18",
+      "post_entry_date": "2018-01-23",
+      "post_exit_date": "2018-02-06",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2018-01-23",
+      "pre_entry_date": "2018-01-08",
+      "pre_exit_date": "2018-01-23",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2018-02-20|9128283Y4",
+      "auction_date": "2018-02-20",
+      "announcement_date": "2018-02-15",
+      "post_entry_date": "2018-02-20",
+      "post_exit_date": "2018-03-06",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2018-02-20",
+      "pre_entry_date": "2018-02-05",
+      "pre_exit_date": "2018-02-20",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2018-03-26|9128284C1",
+      "auction_date": "2018-03-26",
+      "announcement_date": "2018-03-22",
+      "post_entry_date": "2018-03-26",
+      "post_exit_date": "2018-04-10",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2018-03-26",
+      "pre_entry_date": "2018-03-12",
+      "pre_exit_date": "2018-03-26",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2018-04-24|9128284J6",
+      "auction_date": "2018-04-24",
+      "announcement_date": "2018-04-19",
+      "post_entry_date": "2018-04-24",
+      "post_exit_date": "2018-05-08",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2018-04-24",
+      "pre_entry_date": "2018-04-10",
+      "pre_exit_date": "2018-04-24",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2018-05-22|9128284Q0",
+      "auction_date": "2018-05-22",
+      "announcement_date": "2018-05-17",
+      "post_entry_date": "2018-05-22",
+      "post_exit_date": "2018-06-06",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2018-05-22",
+      "pre_entry_date": "2018-05-08",
+      "pre_exit_date": "2018-05-22",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2018-06-26|912828XY1",
+      "auction_date": "2018-06-26",
+      "announcement_date": "2018-06-21",
+      "post_entry_date": "2018-06-26",
+      "post_exit_date": "2018-07-11",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2018-06-26",
+      "pre_entry_date": "2018-06-12",
+      "pre_exit_date": "2018-06-26",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2018-07-24|912828Y46",
+      "auction_date": "2018-07-24",
+      "announcement_date": "2018-07-19",
+      "post_entry_date": "2018-07-24",
+      "post_exit_date": "2018-08-07",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2018-07-24",
+      "pre_entry_date": "2018-07-10",
+      "pre_exit_date": "2018-07-24",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2018-08-27|9128284Y3",
+      "auction_date": "2018-08-27",
+      "announcement_date": "2018-08-23",
+      "post_entry_date": "2018-08-27",
+      "post_exit_date": "2018-09-11",
+      "path": "NO_PRE_POSITION_POST_ONLY",
+      "tentative_date": null,
+      "pre_entry_date": null,
+      "pre_exit_date": null,
+      "revision_action": "EXACT_DATE_ONLY_POST_EVENT_CAPTURE"
+    },
+    {
+      "event_identity": "2018-09-24|9128285B2",
+      "auction_date": "2018-09-24",
+      "announcement_date": "2018-09-20",
+      "post_entry_date": "2018-09-24",
+      "post_exit_date": "2018-10-08",
+      "path": "NO_PRE_POSITION_POST_ONLY",
+      "tentative_date": null,
+      "pre_entry_date": null,
+      "pre_exit_date": null,
+      "revision_action": "NO_CAPTURED_MONTH_SCHEDULE"
+    },
+    {
+      "event_identity": "2018-10-23|9128285G1",
+      "auction_date": "2018-10-23",
+      "announcement_date": "2018-10-18",
+      "post_entry_date": "2018-10-23",
+      "post_exit_date": "2018-11-06",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2018-10-23",
+      "pre_entry_date": "2018-10-09",
+      "pre_exit_date": "2018-10-23",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2018-11-26|9128285Q9",
+      "auction_date": "2018-11-26",
+      "announcement_date": "2018-11-21",
+      "post_entry_date": "2018-11-26",
+      "post_exit_date": "2018-12-11",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2018-11-26",
+      "pre_entry_date": "2018-11-09",
+      "pre_exit_date": "2018-11-26",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2018-12-24|9128285S5",
+      "auction_date": "2018-12-24",
+      "announcement_date": "2018-12-20",
+      "post_entry_date": "2018-12-24",
+      "post_exit_date": "2019-01-09",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2018-12-24",
+      "pre_entry_date": "2018-12-10",
+      "pre_exit_date": "2018-12-24",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2019-01-28|9128285X4",
+      "auction_date": "2019-01-28",
+      "announcement_date": "2019-01-24",
+      "post_entry_date": "2019-01-28",
+      "post_exit_date": "2019-02-11",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2019-01-28",
+      "pre_entry_date": "2019-01-11",
+      "pre_exit_date": "2019-01-28",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2019-02-25|9128286D7",
+      "auction_date": "2019-02-25",
+      "announcement_date": "2019-02-21",
+      "post_entry_date": "2019-02-25",
+      "post_exit_date": "2019-03-11",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2019-02-25",
+      "pre_entry_date": "2019-02-08",
+      "pre_exit_date": "2019-02-25",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2019-03-26|912828C57",
+      "auction_date": "2019-03-26",
+      "announcement_date": "2019-03-21",
+      "post_entry_date": "2019-03-26",
+      "post_exit_date": "2019-04-09",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2019-03-26",
+      "pre_entry_date": "2019-03-12",
+      "pre_exit_date": "2019-03-26",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2019-04-23|912828WG1",
+      "auction_date": "2019-04-23",
+      "announcement_date": "2019-04-18",
+      "post_entry_date": "2019-04-23",
+      "post_exit_date": "2019-05-07",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2019-04-23",
+      "pre_entry_date": "2019-04-08",
+      "pre_exit_date": "2019-04-23",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2019-05-28|9128286V7",
+      "auction_date": "2019-05-28",
+      "announcement_date": "2019-05-23",
+      "post_entry_date": "2019-05-28",
+      "post_exit_date": "2019-06-11",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2019-05-28",
+      "pre_entry_date": "2019-05-13",
+      "pre_exit_date": "2019-05-28",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2019-06-25|9128287A2",
+      "auction_date": "2019-06-25",
+      "announcement_date": "2019-06-20",
+      "post_entry_date": "2019-06-25",
+      "post_exit_date": "2019-07-10",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2019-06-25",
+      "pre_entry_date": "2019-06-11",
+      "pre_exit_date": "2019-06-25",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2019-07-23|9128287F1",
+      "auction_date": "2019-07-23",
+      "announcement_date": "2019-07-18",
+      "post_entry_date": "2019-07-23",
+      "post_exit_date": "2019-08-06",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2019-07-23",
+      "pre_entry_date": "2019-07-09",
+      "pre_exit_date": "2019-07-23",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2019-08-27|912828YC8",
+      "auction_date": "2019-08-27",
+      "announcement_date": "2019-08-22",
+      "post_entry_date": "2019-08-27",
+      "post_exit_date": "2019-09-11",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2019-08-27",
+      "pre_entry_date": "2019-08-13",
+      "pre_exit_date": "2019-08-27",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2019-09-24|912828YJ3",
+      "auction_date": "2019-09-24",
+      "announcement_date": "2019-09-19",
+      "post_entry_date": "2019-09-24",
+      "post_exit_date": "2019-10-08",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2019-09-24",
+      "pre_entry_date": "2019-09-10",
+      "pre_exit_date": "2019-09-24",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2019-10-22|912828YP9",
+      "auction_date": "2019-10-22",
+      "announcement_date": "2019-10-17",
+      "post_entry_date": "2019-10-22",
+      "post_exit_date": "2019-11-05",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2019-10-22",
+      "pre_entry_date": "2019-10-08",
+      "pre_exit_date": "2019-10-22",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2019-11-25|912828YT1",
+      "auction_date": "2019-11-25",
+      "announcement_date": "2019-11-21",
+      "post_entry_date": "2019-11-25",
+      "post_exit_date": "2019-12-10",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2019-11-25",
+      "pre_entry_date": "2019-11-11",
+      "pre_exit_date": "2019-11-25",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2019-12-23|912828YZ7",
+      "auction_date": "2019-12-23",
+      "announcement_date": "2019-12-19",
+      "post_entry_date": "2019-12-23",
+      "post_exit_date": "2020-01-08",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2019-12-23",
+      "pre_entry_date": "2019-12-09",
+      "pre_exit_date": "2019-12-23",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2020-01-27|912828Z60",
+      "auction_date": "2020-01-27",
+      "announcement_date": "2020-01-23",
+      "post_entry_date": "2020-01-27",
+      "post_exit_date": "2020-02-10",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2020-01-27",
+      "pre_entry_date": "2020-01-10",
+      "pre_exit_date": "2020-01-27",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2020-02-25|912828ZA1",
+      "auction_date": "2020-02-25",
+      "announcement_date": "2020-02-20",
+      "post_entry_date": "2020-02-25",
+      "post_exit_date": "2020-03-10",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2020-02-25",
+      "pre_entry_date": "2020-02-10",
+      "pre_exit_date": "2020-02-25",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2020-03-24|912828ZG8",
+      "auction_date": "2020-03-24",
+      "announcement_date": "2020-03-19",
+      "post_entry_date": "2020-03-24",
+      "post_exit_date": "2020-04-07",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2020-03-24",
+      "pre_entry_date": "2020-03-10",
+      "pre_exit_date": "2020-03-24",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2020-04-27|912828ZM5",
+      "auction_date": "2020-04-27",
+      "announcement_date": "2020-04-23",
+      "post_entry_date": "2020-04-27",
+      "post_exit_date": "2020-05-11",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2020-04-27",
+      "pre_entry_date": "2020-04-13",
+      "pre_exit_date": "2020-04-27",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2020-05-26|912828ZR4",
+      "auction_date": "2020-05-26",
+      "announcement_date": "2020-05-21",
+      "post_entry_date": "2020-05-26",
+      "post_exit_date": "2020-06-09",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2020-05-26",
+      "pre_entry_date": "2020-05-11",
+      "pre_exit_date": "2020-05-26",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2020-06-23|912828ZX1",
+      "auction_date": "2020-06-23",
+      "announcement_date": "2020-06-18",
+      "post_entry_date": "2020-06-23",
+      "post_exit_date": "2020-07-08",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2020-06-23",
+      "pre_entry_date": "2020-06-09",
+      "pre_exit_date": "2020-06-23",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2020-07-27|91282CAC5",
+      "auction_date": "2020-07-27",
+      "announcement_date": "2020-07-23",
+      "post_entry_date": "2020-07-27",
+      "post_exit_date": "2020-08-10",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2020-07-27",
+      "pre_entry_date": "2020-07-13",
+      "pre_exit_date": "2020-07-27",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2020-08-25|91282CAG6",
+      "auction_date": "2020-08-25",
+      "announcement_date": "2020-08-20",
+      "post_entry_date": "2020-08-25",
+      "post_exit_date": "2020-09-09",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2020-08-25",
+      "pre_entry_date": "2020-08-11",
+      "pre_exit_date": "2020-08-25",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2020-09-22|91282CAN1",
+      "auction_date": "2020-09-22",
+      "announcement_date": "2020-09-17",
+      "post_entry_date": "2020-09-22",
+      "post_exit_date": "2020-10-06",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2020-09-22",
+      "pre_entry_date": "2020-09-08",
+      "pre_exit_date": "2020-09-22",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2020-10-27|91282CAR2",
+      "auction_date": "2020-10-27",
+      "announcement_date": "2020-10-22",
+      "post_entry_date": "2020-10-27",
+      "post_exit_date": "2020-11-10",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2020-10-27",
+      "pre_entry_date": "2020-10-13",
+      "pre_exit_date": "2020-10-27",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2020-11-23|91282CAX9",
+      "auction_date": "2020-11-23",
+      "announcement_date": "2020-11-19",
+      "post_entry_date": "2020-11-23",
+      "post_exit_date": "2020-12-08",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2020-11-23",
+      "pre_entry_date": "2020-11-09",
+      "pre_exit_date": "2020-11-23",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2020-12-28|91282CBD2",
+      "auction_date": "2020-12-28",
+      "announcement_date": "2020-12-24",
+      "post_entry_date": "2020-12-28",
+      "post_exit_date": "2021-01-12",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2020-12-28",
+      "pre_entry_date": "2020-12-11",
+      "pre_exit_date": "2020-12-28",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2021-01-25|91282CBG5",
+      "auction_date": "2021-01-25",
+      "announcement_date": "2021-01-21",
+      "post_entry_date": "2021-01-25",
+      "post_exit_date": "2021-02-08",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2021-01-25",
+      "pre_entry_date": "2021-01-08",
+      "pre_exit_date": "2021-01-25",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2021-02-23|91282CBN0",
+      "auction_date": "2021-02-23",
+      "announcement_date": "2021-02-18",
+      "post_entry_date": "2021-02-23",
+      "post_exit_date": "2021-03-09",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2021-02-23",
+      "pre_entry_date": "2021-02-08",
+      "pre_exit_date": "2021-02-23",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2021-03-23|91282CBU4",
+      "auction_date": "2021-03-23",
+      "announcement_date": "2021-03-18",
+      "post_entry_date": "2021-03-23",
+      "post_exit_date": "2021-04-07",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2021-03-23",
+      "pre_entry_date": "2021-03-09",
+      "pre_exit_date": "2021-03-23",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2021-04-26|91282CBX8",
+      "auction_date": "2021-04-26",
+      "announcement_date": "2021-04-22",
+      "post_entry_date": "2021-04-26",
+      "post_exit_date": "2021-05-10",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2021-04-26",
+      "pre_entry_date": "2021-04-12",
+      "pre_exit_date": "2021-04-26",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2021-05-25|91282CCD1",
+      "auction_date": "2021-05-25",
+      "announcement_date": "2021-05-20",
+      "post_entry_date": "2021-05-25",
+      "post_exit_date": "2021-06-09",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2021-05-25",
+      "pre_entry_date": "2021-05-11",
+      "pre_exit_date": "2021-05-25",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2021-06-22|91282CCK5",
+      "auction_date": "2021-06-22",
+      "announcement_date": "2021-06-17",
+      "post_entry_date": "2021-06-22",
+      "post_exit_date": "2021-07-07",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2021-06-22",
+      "pre_entry_date": "2021-06-08",
+      "pre_exit_date": "2021-06-22",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2021-07-26|91282CCN9",
+      "auction_date": "2021-07-26",
+      "announcement_date": "2021-07-22",
+      "post_entry_date": "2021-07-26",
+      "post_exit_date": "2021-08-09",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2021-07-26",
+      "pre_entry_date": "2021-07-12",
+      "pre_exit_date": "2021-07-26",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2021-08-24|91282CCU3",
+      "auction_date": "2021-08-24",
+      "announcement_date": "2021-08-19",
+      "post_entry_date": "2021-08-24",
+      "post_exit_date": "2021-09-08",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2021-08-24",
+      "pre_entry_date": "2021-08-10",
+      "pre_exit_date": "2021-08-24",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2021-09-27|91282CDA6",
+      "auction_date": "2021-09-27",
+      "announcement_date": "2021-09-23",
+      "post_entry_date": "2021-09-27",
+      "post_exit_date": "2021-10-11",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2021-09-27",
+      "pre_entry_date": "2021-09-13",
+      "pre_exit_date": "2021-09-27",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2021-10-26|91282CDD0",
+      "auction_date": "2021-10-26",
+      "announcement_date": "2021-10-21",
+      "post_entry_date": "2021-10-26",
+      "post_exit_date": "2021-11-09",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2021-10-26",
+      "pre_entry_date": "2021-10-12",
+      "pre_exit_date": "2021-10-26",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2021-11-22|91282CDM0",
+      "auction_date": "2021-11-22",
+      "announcement_date": "2021-11-18",
+      "post_entry_date": "2021-11-22",
+      "post_exit_date": "2021-12-07",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2021-11-22",
+      "pre_entry_date": "2021-11-08",
+      "pre_exit_date": "2021-11-22",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2021-12-27|91282CDR9",
+      "auction_date": "2021-12-27",
+      "announcement_date": "2021-12-23",
+      "post_entry_date": "2021-12-27",
+      "post_exit_date": "2022-01-10",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2021-12-27",
+      "pre_entry_date": "2021-12-10",
+      "pre_exit_date": "2021-12-27",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2022-01-24|91282CDV0",
+      "auction_date": "2022-01-24",
+      "announcement_date": "2022-01-20",
+      "post_entry_date": "2022-01-24",
+      "post_exit_date": "2022-02-07",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2022-01-24",
+      "pre_entry_date": "2022-01-07",
+      "pre_exit_date": "2022-01-24",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2022-02-22|91282CEA5",
+      "auction_date": "2022-02-22",
+      "announcement_date": "2022-02-17",
+      "post_entry_date": "2022-02-22",
+      "post_exit_date": "2022-03-08",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2022-02-22",
+      "pre_entry_date": "2022-02-07",
+      "pre_exit_date": "2022-02-22",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2022-03-28|91282CEG2",
+      "auction_date": "2022-03-28",
+      "announcement_date": "2022-03-24",
+      "post_entry_date": "2022-03-28",
+      "post_exit_date": "2022-04-11",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2022-03-28",
+      "pre_entry_date": "2022-03-14",
+      "pre_exit_date": "2022-03-28",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2022-04-26|91282CEK3",
+      "auction_date": "2022-04-26",
+      "announcement_date": "2022-04-21",
+      "post_entry_date": "2022-04-26",
+      "post_exit_date": "2022-05-10",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2022-04-26",
+      "pre_entry_date": "2022-04-11",
+      "pre_exit_date": "2022-04-26",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2022-05-24|91282CER8",
+      "auction_date": "2022-05-24",
+      "announcement_date": "2022-05-19",
+      "post_entry_date": "2022-05-24",
+      "post_exit_date": "2022-06-08",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2022-05-24",
+      "pre_entry_date": "2022-05-10",
+      "pre_exit_date": "2022-05-24",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2022-06-27|91282CEX5",
+      "auction_date": "2022-06-27",
+      "announcement_date": "2022-06-23",
+      "post_entry_date": "2022-06-27",
+      "post_exit_date": "2022-07-12",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2022-06-27",
+      "pre_entry_date": "2022-06-10",
+      "pre_exit_date": "2022-06-27",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2022-07-25|91282CFA4",
+      "auction_date": "2022-07-25",
+      "announcement_date": "2022-07-21",
+      "post_entry_date": "2022-07-25",
+      "post_exit_date": "2022-08-08",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2022-07-25",
+      "pre_entry_date": "2022-07-11",
+      "pre_exit_date": "2022-07-25",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2022-08-23|91282CFG1",
+      "auction_date": "2022-08-23",
+      "announcement_date": "2022-08-18",
+      "post_entry_date": "2022-08-23",
+      "post_exit_date": "2022-09-07",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2022-08-23",
+      "pre_entry_date": "2022-08-09",
+      "pre_exit_date": "2022-08-23",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2022-09-26|91282CFN6",
+      "auction_date": "2022-09-26",
+      "announcement_date": "2022-09-22",
+      "post_entry_date": "2022-09-26",
+      "post_exit_date": "2022-10-10",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2022-09-26",
+      "pre_entry_date": "2022-09-12",
+      "pre_exit_date": "2022-09-26",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2022-10-25|91282CFQ9",
+      "auction_date": "2022-10-25",
+      "announcement_date": "2022-10-20",
+      "post_entry_date": "2022-10-25",
+      "post_exit_date": "2022-11-08",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2022-10-25",
+      "pre_entry_date": "2022-10-11",
+      "pre_exit_date": "2022-10-25",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2022-11-21|91282CFX4",
+      "auction_date": "2022-11-21",
+      "announcement_date": "2022-11-17",
+      "post_entry_date": "2022-11-21",
+      "post_exit_date": "2022-12-06",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2022-11-21",
+      "pre_entry_date": "2022-11-07",
+      "pre_exit_date": "2022-11-21",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2022-12-27|91282CGD7",
+      "auction_date": "2022-12-27",
+      "announcement_date": "2022-12-22",
+      "post_entry_date": "2022-12-27",
+      "post_exit_date": "2023-01-11",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2022-12-27",
+      "pre_entry_date": "2022-12-12",
+      "pre_exit_date": "2022-12-27",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2023-01-24|91282CGG0",
+      "auction_date": "2023-01-24",
+      "announcement_date": "2023-01-19",
+      "post_entry_date": "2023-01-24",
+      "post_exit_date": "2023-02-07",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2023-01-24",
+      "pre_entry_date": "2023-01-09",
+      "pre_exit_date": "2023-01-24",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2023-02-21|91282CGN5",
+      "auction_date": "2023-02-21",
+      "announcement_date": "2023-02-16",
+      "post_entry_date": "2023-02-21",
+      "post_exit_date": "2023-03-07",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2023-02-21",
+      "pre_entry_date": "2023-02-06",
+      "pre_exit_date": "2023-02-21",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2023-03-27|91282CGU9",
+      "auction_date": "2023-03-27",
+      "announcement_date": "2023-03-23",
+      "post_entry_date": "2023-03-27",
+      "post_exit_date": "2023-04-11",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2023-03-27",
+      "pre_entry_date": "2023-03-13",
+      "pre_exit_date": "2023-03-27",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2023-04-25|91282CGX3",
+      "auction_date": "2023-04-25",
+      "announcement_date": "2023-04-20",
+      "post_entry_date": "2023-04-25",
+      "post_exit_date": "2023-05-09",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2023-04-25",
+      "pre_entry_date": "2023-04-11",
+      "pre_exit_date": "2023-04-25",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2023-05-23|91282CHD6",
+      "auction_date": "2023-05-23",
+      "announcement_date": "2023-05-18",
+      "post_entry_date": "2023-05-23",
+      "post_exit_date": "2023-06-07",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2023-05-23",
+      "pre_entry_date": "2023-05-09",
+      "pre_exit_date": "2023-05-23",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2023-06-26|91282CHL8",
+      "auction_date": "2023-06-26",
+      "announcement_date": "2023-06-22",
+      "post_entry_date": "2023-06-26",
+      "post_exit_date": "2023-07-11",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2023-06-26",
+      "pre_entry_date": "2023-06-09",
+      "pre_exit_date": "2023-06-26",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2023-07-24|91282CHN4",
+      "auction_date": "2023-07-24",
+      "announcement_date": "2023-07-20",
+      "post_entry_date": "2023-07-24",
+      "post_exit_date": "2023-08-07",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2023-07-24",
+      "pre_entry_date": "2023-07-10",
+      "pre_exit_date": "2023-07-24",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2023-08-28|91282CHV6",
+      "auction_date": "2023-08-28",
+      "announcement_date": "2023-08-24",
+      "post_entry_date": "2023-08-28",
+      "post_exit_date": "2023-09-12",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2023-08-28",
+      "pre_entry_date": "2023-08-14",
+      "pre_exit_date": "2023-08-28",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2023-09-26|91282CJB8",
+      "auction_date": "2023-09-26",
+      "announcement_date": "2023-09-21",
+      "post_entry_date": "2023-09-26",
+      "post_exit_date": "2023-10-10",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2023-09-26",
+      "pre_entry_date": "2023-09-12",
+      "pre_exit_date": "2023-09-26",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2023-10-24|91282CJE2",
+      "auction_date": "2023-10-24",
+      "announcement_date": "2023-10-19",
+      "post_entry_date": "2023-10-24",
+      "post_exit_date": "2023-11-07",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2023-10-24",
+      "pre_entry_date": "2023-10-10",
+      "pre_exit_date": "2023-10-24",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2023-11-27|91282CJL6",
+      "auction_date": "2023-11-27",
+      "announcement_date": "2023-11-22",
+      "post_entry_date": "2023-11-27",
+      "post_exit_date": "2023-12-11",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2023-11-27",
+      "pre_entry_date": "2023-11-10",
+      "pre_exit_date": "2023-11-27",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2023-12-26|91282CJS1",
+      "auction_date": "2023-12-26",
+      "announcement_date": "2023-12-21",
+      "post_entry_date": "2023-12-26",
+      "post_exit_date": "2024-01-10",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2023-12-26",
+      "pre_entry_date": "2023-12-11",
+      "pre_exit_date": "2023-12-26",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2024-01-23|91282CJV4",
+      "auction_date": "2024-01-23",
+      "announcement_date": "2024-01-18",
+      "post_entry_date": "2024-01-23",
+      "post_exit_date": "2024-02-06",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2024-01-23",
+      "pre_entry_date": "2024-01-08",
+      "pre_exit_date": "2024-01-23",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2024-02-26|91282CKB6",
+      "auction_date": "2024-02-26",
+      "announcement_date": "2024-02-22",
+      "post_entry_date": "2024-02-26",
+      "post_exit_date": "2024-03-11",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2024-02-26",
+      "pre_entry_date": "2024-02-09",
+      "pre_exit_date": "2024-02-26",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2024-03-25|91282CKH3",
+      "auction_date": "2024-03-25",
+      "announcement_date": "2024-03-21",
+      "post_entry_date": "2024-03-25",
+      "post_exit_date": "2024-04-09",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2024-03-25",
+      "pre_entry_date": "2024-03-11",
+      "pre_exit_date": "2024-03-25",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2024-04-23|91282CKK6",
+      "auction_date": "2024-04-23",
+      "announcement_date": "2024-04-18",
+      "post_entry_date": "2024-04-23",
+      "post_exit_date": "2024-05-07",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2024-04-23",
+      "pre_entry_date": "2024-04-09",
+      "pre_exit_date": "2024-04-23",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2024-05-28|91282CKS9",
+      "auction_date": "2024-05-28",
+      "announcement_date": "2024-05-23",
+      "post_entry_date": "2024-05-28",
+      "post_exit_date": "2024-06-11",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2024-05-28",
+      "pre_entry_date": "2024-05-13",
+      "pre_exit_date": "2024-05-28",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2024-06-25|91282CKY6",
+      "auction_date": "2024-06-25",
+      "announcement_date": "2024-06-20",
+      "post_entry_date": "2024-06-25",
+      "post_exit_date": "2024-07-10",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2024-06-25",
+      "pre_entry_date": "2024-06-10",
+      "pre_exit_date": "2024-06-25",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2024-07-23|91282CLB5",
+      "auction_date": "2024-07-23",
+      "announcement_date": "2024-07-18",
+      "post_entry_date": "2024-07-23",
+      "post_exit_date": "2024-08-06",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2024-07-23",
+      "pre_entry_date": "2024-07-09",
+      "pre_exit_date": "2024-07-23",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2024-08-27|91282CLH2",
+      "auction_date": "2024-08-27",
+      "announcement_date": "2024-08-22",
+      "post_entry_date": "2024-08-27",
+      "post_exit_date": "2024-09-11",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2024-08-27",
+      "pre_entry_date": "2024-08-13",
+      "pre_exit_date": "2024-08-27",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2024-09-24|91282CLP4",
+      "auction_date": "2024-09-24",
+      "announcement_date": "2024-09-19",
+      "post_entry_date": "2024-09-24",
+      "post_exit_date": "2024-10-08",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2024-09-24",
+      "pre_entry_date": "2024-09-10",
+      "pre_exit_date": "2024-09-24",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2024-10-28|91282CLS8",
+      "auction_date": "2024-10-28",
+      "announcement_date": "2024-10-24",
+      "post_entry_date": "2024-10-28",
+      "post_exit_date": "2024-11-11",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2024-10-28",
+      "pre_entry_date": "2024-10-14",
+      "pre_exit_date": "2024-10-28",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2024-11-25|91282CLY5",
+      "auction_date": "2024-11-25",
+      "announcement_date": "2024-11-21",
+      "post_entry_date": "2024-11-25",
+      "post_exit_date": "2024-12-10",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2024-11-25",
+      "pre_entry_date": "2024-11-11",
+      "pre_exit_date": "2024-11-25",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2024-12-23|91282CME8",
+      "auction_date": "2024-12-23",
+      "announcement_date": "2024-12-19",
+      "post_entry_date": "2024-12-23",
+      "post_exit_date": "2025-01-08",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2024-12-23",
+      "pre_entry_date": "2024-12-09",
+      "pre_exit_date": "2024-12-23",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2025-01-27|91282CMH1",
+      "auction_date": "2025-01-27",
+      "announcement_date": "2025-01-23",
+      "post_entry_date": "2025-01-27",
+      "post_exit_date": "2025-02-10",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2025-01-27",
+      "pre_entry_date": "2025-01-10",
+      "pre_exit_date": "2025-01-27",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2025-02-24|91282CMP3",
+      "auction_date": "2025-02-24",
+      "announcement_date": "2025-02-20",
+      "post_entry_date": "2025-02-24",
+      "post_exit_date": "2025-03-10",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2025-02-24",
+      "pre_entry_date": "2025-02-07",
+      "pre_exit_date": "2025-02-24",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2025-03-25|91282CMV0",
+      "auction_date": "2025-03-25",
+      "announcement_date": "2025-03-20",
+      "post_entry_date": "2025-03-25",
+      "post_exit_date": "2025-04-08",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2025-03-25",
+      "pre_entry_date": "2025-03-11",
+      "pre_exit_date": "2025-03-25",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2025-04-22|91282CMY4",
+      "auction_date": "2025-04-22",
+      "announcement_date": "2025-04-17",
+      "post_entry_date": "2025-04-22",
+      "post_exit_date": "2025-05-06",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2025-04-22",
+      "pre_entry_date": "2025-04-07",
+      "pre_exit_date": "2025-04-22",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2025-05-27|91282CNE7",
+      "auction_date": "2025-05-27",
+      "announcement_date": "2025-05-22",
+      "post_entry_date": "2025-05-27",
+      "post_exit_date": "2025-06-10",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2025-05-27",
+      "pre_entry_date": "2025-05-12",
+      "pre_exit_date": "2025-05-27",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2025-06-24|91282CNL1",
+      "auction_date": "2025-06-24",
+      "announcement_date": "2025-06-18",
+      "post_entry_date": "2025-06-24",
+      "post_exit_date": "2025-07-09",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2025-06-24",
+      "pre_entry_date": "2025-06-09",
+      "pre_exit_date": "2025-06-24",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2025-07-28|91282CNP2",
+      "auction_date": "2025-07-28",
+      "announcement_date": "2025-07-24",
+      "post_entry_date": "2025-07-28",
+      "post_exit_date": "2025-08-11",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2025-07-28",
+      "pre_entry_date": "2025-07-14",
+      "pre_exit_date": "2025-07-28",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2025-08-26|91282CNV9",
+      "auction_date": "2025-08-26",
+      "announcement_date": "2025-08-21",
+      "post_entry_date": "2025-08-26",
+      "post_exit_date": "2025-09-10",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2025-08-26",
+      "pre_entry_date": "2025-08-12",
+      "pre_exit_date": "2025-08-26",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2025-09-23|91282CPB1",
+      "auction_date": "2025-09-23",
+      "announcement_date": "2025-09-18",
+      "post_entry_date": "2025-09-23",
+      "post_exit_date": "2025-10-07",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2025-09-23",
+      "pre_entry_date": "2025-09-09",
+      "pre_exit_date": "2025-09-23",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2025-10-27|91282CPE5",
+      "auction_date": "2025-10-27",
+      "announcement_date": "2025-10-23",
+      "post_entry_date": "2025-10-27",
+      "post_exit_date": "2025-11-10",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2025-10-27",
+      "pre_entry_date": "2025-10-13",
+      "pre_exit_date": "2025-10-27",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2025-11-24|91282CPL9",
+      "auction_date": "2025-11-24",
+      "announcement_date": "2025-11-20",
+      "post_entry_date": "2025-11-24",
+      "post_exit_date": "2025-12-09",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2025-11-24",
+      "pre_entry_date": "2025-11-10",
+      "pre_exit_date": "2025-11-24",
+      "revision_action": "NONE"
+    },
+    {
+      "event_identity": "2025-12-22|91282CPS4",
+      "auction_date": "2025-12-22",
+      "announcement_date": "2025-12-18",
+      "post_entry_date": "2025-12-22",
+      "post_exit_date": "2026-01-07",
+      "path": "EXACT_SCHEDULE_PRE_AND_POST",
+      "tentative_date": "2025-12-22",
+      "pre_entry_date": "2025-12-08",
+      "pre_exit_date": "2025-12-22",
+      "revision_action": "NONE"
+    }
+  ],
+  "gates": {
+    "all_events_have_one_deterministic_path": true,
+    "source_counts_reconcile": true,
+    "all_auction_dates_are_xnys_sessions": true,
+    "revisions_have_explicit_cancel_behavior": true,
+    "late_and_missing_updates_fail_closed": true,
+    "overlap_policy_declared": true,
+    "market_and_return_columns_absent": true,
+    "return_data_unopened": true,
+    "return_hypotheses_unspent": true,
+    "author_technical_approval_recorded": false
+  },
+  "technical_decision": "PASS_NO_RETURN_STATE_MACHINE_AUDIT",
+  "governance_decision": "AUTHOR_APPROVAL_REQUIRED",
+  "decision": "AUTHOR_APPROVAL_REQUIRED",
+  "candidate_status": "identity-redesign-required",
+  "author_technical_approval": false,
+  "return_preregistration_authorized": false,
+  "return_data_opened": false,
+  "return_hypotheses_spent": 0,
+  "claim_boundary": "This audit proves only that each sealed calendar event has a deterministic point-in-time state path. It is not author approval, a return preregistration, return evidence, a Sharpe or drawdown estimate, or sleeve admission.",
+  "content_hash": "sha256:46dfc56e7a2bd92cf55cacc1cb69ce4d09d8803a56376ab93faeb0d4b45ebef2"
+}

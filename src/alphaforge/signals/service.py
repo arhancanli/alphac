@@ -45,6 +45,7 @@ import pandas as pd
 import pyarrow as pa
 
 from alphaforge.config.sleeve import CRYPTO_PERP_SLEEVE, Sleeve
+from alphaforge.core.logging import get_logger
 from alphaforge.core.time import Ms, bar_open_for_decision
 from alphaforge.features.context import FeatureContext, long_series
 from alphaforge.features.cross_section import CSPipeline
@@ -62,11 +63,14 @@ from alphaforge.signals.sizing import MU_ANN_COLUMN, GrinoldSizer
 from alphaforge.validation.metrics import non_overlapping, rank_ic
 
 if TYPE_CHECKING:
-    from collections.abc import Mapping, Sequence
+    from collections.abc import Iterable, Mapping, Sequence
 
     from alphaforge.config.settings import SignalsCfg
+    from alphaforge.core.instruments import Instrument, InstrumentStore
     from alphaforge.data.universe.store import UniverseStore
     from alphaforge.features.registry import FeatureRegistry
+
+_log = get_logger("alphaforge.signals.service")
 
 __all__ = ["SIGMA_COLUMN", "SignalService"]
 
@@ -175,6 +179,15 @@ class SignalService:
         self._anchor_tf = sleeve.anchor_tf
         self._calendar = sleeve.calendar
         self._periods_per_year = sleeve.periods_per_year()
+        # THE CROSS-SECTION IS THE SLEEVE'S ASSET CLASS, NOT THE RAW MEMBERSHIP.
+        # The universe store is shared across asset classes (the crypto lake carries
+        # 2,088 equity names beside its 20 perps). The live loop already scopes the
+        # TRADABLE set to the profile's asset class (``_InstrumentsAdapter``); the
+        # signal path did not, so on 2026-08-13/20/27 and 09-03 the carry feature asked
+        # the instrument record for an equity's funding interval and raised KeyError on
+        # the trading host, whose record holds no equities. Four weekly rebalances died
+        # and the sleeve held stale positions for 37 days. See ``_scope_members``.
+        self._asset_class = sleeve.asset_class
         self._sizer = GrinoldSizer.from_cfg(
             cfg, timeframe=self._anchor_tf, periods_per_year=self._periods_per_year
         )
@@ -228,9 +241,16 @@ class SignalService:
         contract, enforced by the seam tests.
         """
         t_star = bar_open_for_decision(as_of, self._anchor_tf)
-        members = sorted(self._universe.membership_asof(t_star))
-        if not members:
+        raw_members = sorted(self._universe.membership_asof(t_star))
+        if not raw_members:
             raise ValueError(f"universe is empty at decision bar {t_star} (as_of={as_of})")
+        members = self._scope_members(raw_members, as_of=t_star)
+        if not members:
+            raise ValueError(
+                f"no {self._asset_class.value} members at decision bar {t_star} "
+                f"(as_of={as_of}): {len(raw_members)} universe member(s), none in this "
+                "sleeve's asset class with a resolvable instrument record"
+            )
         specs = [*self._alpha_specs, _SIGMA_SPEC]
         frame = self._engine.compute_asof(specs, members, as_of=as_of)
         mask = pd.Series(True, index=frame.index)  # ids ARE the members at t*
@@ -318,15 +338,61 @@ class SignalService:
 
     def _window_ids(self, start: Ms, end: Ms) -> list[str]:
         """Sorted union of instruments whose membership interval overlaps
-        ``[start, end)`` (half-open both sides; ``effective_to`` null = open)."""
+        ``[start, end)`` (half-open both sides; ``effective_to`` null = open),
+        scoped to the sleeve's asset class exactly as :meth:`on_bar_close` is — the
+        research grid and the live row set must be the same cross-section or the
+        parity contract compares two different books."""
         ids, froms, tos = self._intervals()
-        return sorted(
+        overlapping = sorted(
             {
                 iid
                 for iid, eff_from, eff_to in zip(ids, froms, tos, strict=True)
                 if eff_from < end and (eff_to is None or eff_to > start)
             }
         )
+        return self._scope_members(overlapping, as_of=end)
+
+    def _scope_members(self, ids: Iterable[str], *, as_of: Ms) -> list[str]:
+        """Keep the ids whose SCD2 record resolves AND is this sleeve's asset class.
+
+        Resolution mirrors :meth:`FeatureContext.instrument` exactly (the version valid
+        at ``as_of``, else the earliest known version): an id this method keeps is one
+        the features can read; an id it drops would have raised inside them. Dropping
+        is logged with counts by reason so a leak is visible, never silent — the
+        trading host's instrument record is pruned to its own asset class, so a foreign
+        member shows up there as ``no record``, while on a workstation with the full
+        record it shows up as ``other class``. Both are the same defect upstream (a
+        shared membership store) and both are handled here identically.
+        """
+        store: InstrumentStore = self._engine.instruments
+        known: dict[str, Instrument] = {
+            inst.instrument_id: inst for inst in store.all_known(as_of=as_of)
+        }
+        kept: list[str] = []
+        other_class: list[str] = []
+        no_record: list[str] = []
+        for iid in ids:
+            inst = known.get(iid)
+            if inst is None:
+                versions = store.history(iid)
+                inst = versions[0][2] if versions else None
+            if inst is None:
+                no_record.append(iid)
+            elif inst.asset_class is not self._asset_class:
+                other_class.append(iid)
+            else:
+                kept.append(iid)
+        if other_class or no_record:
+            _log.warning(
+                "signal.cross_section_scoped",
+                asset_class=self._asset_class.value,
+                kept=len(kept),
+                dropped_other_class=len(other_class),
+                dropped_no_record=len(no_record),
+                sample_other_class=other_class[:3],
+                sample_no_record=no_record[:3],
+            )
+        return kept
 
     def _membership_mask(self, index: pd.MultiIndex) -> pd.Series:
         """Boolean PIT membership per ``(ts_open, instrument_id)`` row: member iff
@@ -342,13 +408,21 @@ class SignalService:
         # (``inst == iid`` is never true), so skipping it is byte-identical -- but it
         # turns an O(intervals x N) full-numpy-scan-per-interval blowup (the dominant
         # live-cycle cost: 2000+ scans of the panel) into O(panel-instruments x N).
-        panel_ids = set(inst.tolist())
+        # ``inst`` is an object/string array. Comparing that full array once per
+        # membership interval dominated a five-year, 58-contract carry replay: the
+        # same strings were compared hundreds of millions of times. Factorize the
+        # immutable index once and compare compact integer codes below. This is an
+        # exact representation change only -- ``codes == code_by_iid[iid]`` selects
+        # precisely the rows for which the former ``inst == iid`` was true.
+        inst_codes, unique_inst = pd.factorize(inst, sort=False)
+        code_by_iid = {iid: code for code, iid in enumerate(unique_inst.tolist())}
         member = np.zeros(len(index), dtype=bool)
         for iid, eff_from, eff_to in zip(ids, froms, tos, strict=True):
-            if iid not in panel_ids:
+            code = code_by_iid.get(iid)
+            if code is None:
                 continue
             in_span = ts >= eff_from if eff_to is None else (ts >= eff_from) & (ts < eff_to)
-            member |= in_span & (inst == iid)
+            member |= in_span & (inst_codes == code)
         return pd.Series(member, index=index)
 
     def _intervals(self) -> tuple[list[str], list[int], list[int | None]]:

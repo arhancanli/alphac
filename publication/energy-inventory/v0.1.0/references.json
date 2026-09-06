@@ -1,0 +1,38 @@
+{
+  "author": "Arhan Canli",
+  "metadata_cache": {
+    "content_hash": "sha256:a2b17534e33c4c361cd515387b566cd1c2e352a1b970159e66c329c3519b99c4",
+    "path": "artifacts/research/publication_reference_metadata.json",
+    "sha256": "cc011d355b2613f1514889fe8076752c3de1c54e158e561db60da559d3f1469c"
+  },
+  "reference_count": 1,
+  "references": [
+    {
+      "authors": [
+        {
+          "family": "Gorton",
+          "given": "Gary B."
+        },
+        {
+          "family": "Hayashi",
+          "given": "Fumio"
+        },
+        {
+          "family": "Rouwenhorst",
+          "given": "K. Geert"
+        }
+      ],
+      "citation_key": "gorton2013fundamentals_ffb30a",
+      "container_title": "Review of Finance",
+      "doi": "10.1093/rof/rfs019",
+      "metadata_authority": "CROSSREF_REST_API",
+      "title": "The Fundamentals of Commodity Futures Returns",
+      "url": "https://doi.org/10.1093/rof/rfs019",
+      "year": 2013
+    }
+  ],
+  "registry_key": "energy_inventory",
+  "schema": "canli.alphac-sleeve-bibliography.v1",
+  "status": "COMPLETE_NORMALIZED_BIBLIOGRAPHY",
+  "unresolved_references": []
+}

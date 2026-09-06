@@ -1,0 +1,474 @@
+"""Build the v6 ALPHAC sleeve-admission contract with its arithmetic derived, not typed.
+
+Every number in the ``frontier_arithmetic`` block is computed here from the governing identity
+``S_book = s_bar * sqrt(N / (1 + (N - 1) * rho_bar))`` so that the published contract cannot drift
+from the arithmetic it claims to rest on. Reads no data, runs no backtest, spends no hypothesis.
+
+Run: ``python scripts/build_admission_contract_v6.py``
+(writes config/sleeve_admission_contract.json)
+"""
+
+from __future__ import annotations
+
+import json
+import math
+from pathlib import Path
+from typing import Any
+
+REPO = Path(__file__).resolve().parents[1]
+SOURCE = REPO / "config" / "archive" / "sleeve_admission_contract_v5_superseded.json"
+TARGET = REPO / "config" / "sleeve_admission_contract.json"
+
+TARGET_N = 14
+ANNUALIZATION_DAYS = 252.0
+# Measured per-sleeve quality, both bases published side by side because they differ and the
+# difference matters: 0.529 is the three traded sleeves, 0.464 the four-curve basis that included
+# an untraded curve. See artifacts/analysis/sleeve_scaling and frontier_14.
+S_BAR_TRADED = 0.529
+S_BAR_FOUR_CURVE = 0.464
+
+
+def book_sharpe(s_bar: float, rho_bar: float, n: int = TARGET_N) -> float:
+    return s_bar * math.sqrt(n / (1.0 + (n - 1) * rho_bar))
+
+
+def required_rho(s_bar: float, target: float, n: int = TARGET_N) -> float:
+    return ((s_bar**2 * n) / target**2 - 1.0) / (n - 1)
+
+
+def required_s_bar(rho_bar: float, target: float, n: int = TARGET_N) -> float:
+    return target / math.sqrt(n / (1.0 + (n - 1) * rho_bar))
+
+
+def main() -> int:
+    contract: dict[str, Any] = json.loads(SOURCE.read_text())
+    contract["schema"] = "canli.alphac-sleeve-admission-contract.v6"
+    contract["status"] = "IN_FORCE"
+    contract["derived_from"] = "canli.alphac-sleeve-admission-contract.v5-proposed"
+    contract["rationale"] = "docs/design/ADMISSION_V6.md"
+
+    thresholds = contract["thresholds"]
+    thresholds["minimum_oos_observations"] = 756
+    thresholds["newey_west_t_min"] = 0.25
+    thresholds["newey_west_t_ratio_min"] = 0.60
+    thresholds["average_pairwise_correlation_upper_95_max"] = 0.10
+    thresholds["capacity_usd_min"] = 500_000
+
+    # A CANDIDATE'S SAMPLE AND THE BOOK'S COMMON WINDOW ARE DIFFERENT QUANTITIES.
+    # minimum_oos_observations = 756 is a property of the candidate and a candidate can have it.
+    # correlation_observations is the INTERSECTION of the candidate and the book, so applying the
+    # same 756 to it makes admission depend on the book's own history -- and this book cannot
+    # supply it on any basis: the blessed evidence curves span 728 days and END 2026-06-01 by
+    # design (they are frozen, pinned by disclosure protocol, and no tick regenerates them),
+    # while the live-forward basis is shorter still at 177 days. Refreshing cannot fix it.
+    # Precision is protected by average_pairwise_correlation_upper_95_max, which gates the BOUND
+    # and therefore already accounts for sample length; this floor exists to refuse an absurdly
+    # short window, not to carry that job alone.
+    thresholds["minimum_correlation_observations"] = 504
+
+    # THE PER-SLEEVE DEFLATION GATE WAS THE SAME DEFECT AS THE t-GATE, ONE LAYER DOWN.
+    # deflated_sharpe_min 0.95 over the contract's own 756-observation minimum requires an
+    # annualized Sharpe of 1.184 EVEN AT n_trials=2, the least deflation the formula permits --
+    # roughly eight times the declared net_sharpe_min of 0.15. So the Sharpe floor was decoration
+    # again, and the real bar was one the firm's own book cannot clear: 0 of 33 restated
+    # variants, the live sleeves' own configurations among them, reach 0.95.
+    #
+    # It is not lowered, it is RE-SCOPED, and the contract's own deflation_policy already said
+    # why: "The published claim is the book's, so the book carries the full union."  A sleeve
+    # admitted for its correlation contribution is not claiming standalone edge, so deflating its
+    # standalone Sharpe measures the wrong object. The object being published is gated harder --
+    # book_deflated_sharpe_min 0.95 against the COMPLETE union, plus a bootstrap lower bound on
+    # the book-Sharpe improvement. The per-sleeve figure stays mandatory to measure and publish.
+    thresholds.pop("deflated_sharpe_min", None)
+    thresholds["deflated_sharpe_must_be_measured"] = True
+
+    # ── RE-ANCHORED 2026-08-21: the objective is an HONEST FORWARD Sharpe, not a backtest one ──
+    #
+    # The published target was an in-sample band of 2.0-2.5 with no haircut named. That is the
+    # wrong quantity to aim at, for a reason this book's own numbers make plain: it publishes an
+    # in-sample equal-risk Sharpe near 1.04 and an honest forward estimate of 0.3-0.9, so the
+    # realised haircut on THIS book has been roughly 1.5x to 3x. A target stated in-sample is
+    # therefore a target stated in the units that flatter.
+    #
+    # It was also unreachable. A verified forward 2.0 at measured quality requires an average
+    # pairwise correlation of -0.062 against a PSD floor of -0.077 -- 81% of the mathematical
+    # limit, meaning nearly every sleeve maximally hedging every other. An honest forward 1.5 sits
+    # inside that floor at every quality above 0.47, which is the whole difference.
+    #
+    # Both numbers are published: the forward target that is actually being aimed at, and the
+    # in-sample range it implies under each haircut, so nobody has to guess which one a future
+    # result should be read against.
+    objective = contract["objective"]
+    objective["honest_forward_sharpe_target"] = 1.5
+    objective["superseded_in_sample_sharpe_target"] = [2.0, 2.5]
+    objective["superseded_reason"] = (
+        "Stated in-sample with no haircut named, and unreachable as a forward result: a verified "
+        "forward 2.0 at measured per-sleeve quality needs an average pairwise correlation of "
+        "-0.062 against a PSD floor of -0.077. Withdrawn 2026-08-21 and replaced with an honest "
+        "FORWARD target of 1.5, which is inside the floor at every plausible quality."
+    )
+    objective["backtest_to_forward_haircut"] = {
+        "measured_on_this_book": "in-sample equal-risk ~1.04 against an honest forward of 0.3-0.9",
+        "range": [1.5, 3.0],
+        "note": (
+            "The haircut IS the uncertainty. Until the forward record is long enough to speak, "
+            "every in-sample figure should be read through it, and the range is this book's own "
+            "published pair rather than a convention borrowed from elsewhere."
+        ),
+    }
+    objective["implied_in_sample_target"] = {
+        "at_1_5x_haircut": 1.5 * 1.5,
+        "at_2_0x_haircut": 1.5 * 2.0,
+        "at_3_0x_haircut": 1.5 * 3.0,
+    }
+    objective["what_reaching_it_requires"] = (
+        "Both halves, not either: an average pairwise correlation meaningfully BELOW zero, and "
+        "per-sleeve quality above roughly 0.60. At today's measured 0.469 the forward target is "
+        "reachable only at a correlation near -0.030 and only on the optimistic haircut."
+    )
+    objective["why_this_is_not_a_retreat"] = (
+        "The rarer thing was never the number. A forward Sharpe near 1.5 that is genuinely "
+        "verifiable -- signed forward record, every killed candidate published in full, gates "
+        "that provably bite, and the arithmetic showing where the gate falls short of the target "
+        "printed on the same page as the target -- is harder to find than a 2.5 nobody can check."
+    )
+
+    # portfolio_sharpe_target now carries the IMPLIED IN-SAMPLE band, because that is the unit
+    # the ceiling s_bar/sqrt(rho_bar) is measured in. Comparing an in-sample ceiling against a
+    # forward target was comparing two different quantities and reading the answer as a verdict.
+    objective["portfolio_sharpe_target"] = [
+        objective["implied_in_sample_target"]["at_1_5x_haircut"],
+        objective["implied_in_sample_target"]["at_2_0x_haircut"],
+    ]
+    objective["portfolio_sharpe_target_unit"] = (
+        "IN-SAMPLE, being the band that an honest forward 1.5 implies at the 1.5x and 2.0x ends "
+        "of this book's own measured haircut. The headline target is honest_forward_sharpe_target."
+    )
+
+    correlation_gate = thresholds["average_pairwise_correlation_max"]
+    low, high = objective["portfolio_sharpe_target"]
+    psd_floor = -1.0 / (TARGET_N - 1)
+
+    contract["frontier_arithmetic"] = {
+        "claim_boundary": (
+            "Derived from the governing identity alone. Reads no data, runs no backtest, spends no "
+            "hypothesis, and claims no candidate's correlation, sign or return."
+        ),
+        "identity": "S_book = s_bar * sqrt(N / (1 + (N - 1) * rho_bar))",
+        "target_sleeve_count": TARGET_N,
+        "psd_floor_at_target_n": psd_floor,
+        "psd_floor_note": (
+            "Average pairwise correlation cannot fall below -1/(N-1) for any real correlation "
+            "matrix. At fourteen sleeves that floor is far from binding, which is why a negative "
+            "average is arithmetically available here and is not at 250 sleeves."
+        ),
+        "correlation_gate_in_force": correlation_gate,
+        "book_sharpe_ceiling_at_the_gate": {
+            "s_bar_traded_basis": book_sharpe(S_BAR_TRADED, correlation_gate),
+            "s_bar_four_curve_basis": book_sharpe(S_BAR_FOUR_CURVE, correlation_gate),
+        },
+        "gate_permits_objective_floor": book_sharpe(S_BAR_TRADED, correlation_gate) >= low,
+        "gate_permits_objective_ceiling": book_sharpe(S_BAR_TRADED, correlation_gate) >= high,
+        "quality_precondition_at_the_gate": {
+            "note": (
+                "What the tightened correlation gate alone does NOT buy. At the gate exactly, "
+                "reaching each end of the objective band requires at least this average "
+                "standalone Sharpe across fourteen sleeves."
+            ),
+            f"s_bar_required_for_{low}": required_s_bar(correlation_gate, low),
+            f"s_bar_required_for_{high}": required_s_bar(correlation_gate, high),
+            "s_bar_measured_traded_basis": S_BAR_TRADED,
+            "s_bar_measured_four_curve_basis": S_BAR_FOUR_CURVE,
+        },
+        "correlation_required_at_measured_quality": {
+            "note": (
+                "The other route to the same place: hold quality where it is measured today and "
+                "read off the average pairwise correlation each end of the band demands."
+            ),
+            "traded_basis": {
+                f"rho_bar_required_for_{low}": required_rho(S_BAR_TRADED, low),
+                f"rho_bar_required_for_{high}": required_rho(S_BAR_TRADED, high),
+            },
+            "four_curve_basis": {
+                f"rho_bar_required_for_{low}": required_rho(S_BAR_FOUR_CURVE, low),
+                f"rho_bar_required_for_{high}": required_rho(S_BAR_FOUR_CURVE, high),
+            },
+        },
+        "honest_reading": (
+            "Tightening the correlation ceiling from 0.15 to 0.00 removes a ceiling that sat "
+            "BELOW the objective at every plausible quality, which is why the v4 gate could not "
+            "have produced the objective at any sleeve count. It does not on its own deliver the "
+            "objective. At the gate exactly, fourteen sleeves of today's measured quality reach "
+            "the figure recorded above, and the remaining distance has to be bought with "
+            "per-sleeve quality, genuinely negative correlation, or both. Publishing this is the "
+            "point: a target sitting beside a gate that forbids it is not a stretch goal."
+        ),
+    }
+
+    contract["capacity_policy"] = {
+        "capacity_usd_min_previous": 5_000_000,
+        "capacity_usd_min": thresholds["capacity_usd_min"],
+        "reason": (
+            "A 5,000,000 USD floor per sleeve implies a 70,000,000 USD book at fourteen sleeves. "
+            "It was written for a fund that does not exist yet, and it did not reject candidates "
+            "uniformly: the return sources most likely to be genuinely anti-correlated with a "
+            "momentum-and-carry book -- catastrophe bonds, municipal basis, freight, power, "
+            "sovereign dislocation -- are structurally thin. The floor therefore selected AGAINST "
+            "the diversification the objective depends on, which is the opposite of what a "
+            "capacity gate is for."
+        ),
+        "what_this_does_not_relax": (
+            "The capacity CURVE, its monotonicity reconciliation, and the stressed fill-ratio "
+            "floor are unchanged. A candidate must still show Sharpe decaying and cost rising "
+            "with capital, and must still reconcile its reported capacity to that curve."
+        ),
+        "review_trigger": (
+            "Re-raise per sleeve when deployed capital per sleeve exceeds one fifth of this "
+            "floor. Capacity is a property of the strategy, but the FLOOR is a property of the "
+            "book, and a floor that outruns the book is a constraint that costs edge for nothing."
+        ),
+    }
+
+    contract["deflation_policy"]["per_sleeve_is_measured_not_gated"] = True
+    contract["deflation_policy"]["per_sleeve_gate_removed_reason"] = (
+        "deflated_sharpe_min of 0.95 over this contract's 756-observation minimum requires an "
+        "annualized Sharpe of 1.184 even at n_trials=2, the least deflation the formula permits: "
+        "about eight times the declared net_sharpe_min of 0.15, which made the Sharpe floor "
+        "decoration exactly as the Newey-West t floor did. It is also a bar this book cannot "
+        "clear -- 0 of 33 restated variants reach it, including the live sleeves' own "
+        "configurations, so the gate demanded of new candidates something no existing sleeve "
+        "achieves. Re-scoped rather than lowered: a sleeve admitted for its correlation "
+        "contribution is not claiming standalone edge, so deflating its standalone Sharpe "
+        "measures the wrong object. The object actually published is the book's, and it is gated "
+        "harder -- book_deflated_sharpe_min 0.95 against the COMPLETE union of hypothesis "
+        "identities, plus a bootstrap lower bound on the book-Sharpe improvement. The per-sleeve "
+        "deflated Sharpe remains mandatory to measure and publish; evidence that omits it fails "
+        "closed."
+    )
+    contract["deflation_policy"]["per_sleeve_measurement_key"] = "deflated_sharpe_must_be_measured"
+
+    contract["significance_policy"] = {
+        "newey_west_t_min": thresholds["newey_west_t_min"],
+        "newey_west_t_min_role": "sign gate",
+        "newey_west_t_ratio_min": thresholds["newey_west_t_ratio_min"],
+        "newey_west_t_ratio_role": "autocorrelation-inflation gate",
+        "primary_significance_gate": "book_sharpe_delta_lower_95_min_exclusive",
+        "reason": (
+            "v4 declared net_sharpe_min 0.40, newey_west_t_min 2.0 and minimum_oos_observations "
+            "252 together. Because t is approximately Sharpe * sqrt(years), a candidate at the "
+            "declared Sharpe floor needed 25 years of out-of-sample data to clear the t floor, and "
+            "at the declared 252-observation minimum the pair demanded a standalone Sharpe of 2.0 "
+            "-- five times the floor a reader of the config would see. v5 lowered the Sharpe floor "
+            "to 0.15 and left the t floor at 2.0, raising the hidden requirement to 178 years. The "
+            "t floor, not the Sharpe floor, had been doing the rejecting all along. It is now set "
+            "where it does what it is for -- excluding wrong-signed and indistinguishable-from-"
+            "zero results -- and load_admission_contract refuses any contract whose three "
+            "significance floors cannot all be met at once, so this class of error cannot recur."
+        ),
+        "why_a_standalone_bar_is_the_wrong_instrument": (
+            "When correlation binds, standalone Sharpe does not rank a candidate's portfolio "
+            "value: a Sharpe 0.25 sleeve at correlation -0.05 beats a Sharpe 0.60 sleeve at "
+            "+0.30. The gate that decides admission is therefore the bootstrap LOWER bound on the "
+            "book-Sharpe improvement, which prices edge and correlation together, and it is "
+            "strictly harder to game than either input alone."
+        ),
+        "self_consistency_is_enforced_at_load": (
+            "load_admission_contract refuses any contract whose significance floors cannot all be "
+            "satisfied at once. It checks two pairs: net_sharpe_min against newey_west_t_min at "
+            "minimum_oos_observations, and net_sharpe_min against deflated_sharpe_min solved at "
+            "n_trials=2. Both pairs were violated before v6, in the same way and undetected, "
+            "which is why the check is structural rather than a corrected number."
+        ),
+        "correlation_observations_decoupled": (
+            "minimum_correlation_observations is separate from minimum_oos_observations because "
+            "they measure different things: a candidate's own sample is the candidate's to "
+            "supply, while the correlation window is its intersection with the BOOK. Tying them "
+            "together made admission impossible for a reason that had nothing to do with any "
+            "candidate -- v6 briefly required 756 correlation observations against a book that "
+            "can supply 728 on its blessed basis and 177 on its live-forward one."
+        ),
+        "minimum_oos_observations_raised_from": 252,
+        "minimum_oos_observations_reason": (
+            "Raised to three years because the binding constraint of this whole programme is an "
+            "average pairwise correlation, and a correlation measured over 252 observations "
+            "carries a sampling error near 0.063 -- twice the size of the -0.03 effect the "
+            "objective turns on. Gating a number the sample cannot resolve is not a strict gate. "
+            "Paired with average_pairwise_correlation_upper_95_max, which gates the bound rather "
+            "than the point estimate."
+        ),
+    }
+
+    overlay = contract["overlay_policy"]
+    overlay["known_defect"] = {
+        "site": "src/alphaforge/portfolio/strategy.py (_realized_vol_ann)",
+        "description": (
+            "The realized leg was measured on the post-overlay account equity curve while the "
+            "ex-ante leg used pre-overlay optimizer weights. The book runs de-levered, so the "
+            "realized leg lost max() essentially always and the fast regime detector never fired."
+        ),
+        "measured_bind_fraction_as_shipped": 0.000193,
+        "measured_bind_fraction_if_fixed": 0.817626,
+        "expected_max_drawdown_cost_at_permitted_stressed_rho": 0.0217,
+        "status": (
+            "RESOLVED in production. The realized leg is now de-levered per bar before "
+            "comparison, and tests/unit/test_overlay_realized_leg_scale.py pins the caller's "
+            "value rather than the function's intention."
+        ),
+    }
+    overlay["production_cov_halflife_today"] = 720
+    overlay["production_cov_halflife_unit"] = (
+        "BARS, and therefore a different duration per sleeve: 720 bars is 30 days on the crypto "
+        "H1 sleeve and 720 sessions, about 2.86 years, on equity D1. Incoherent by construction "
+        "and unchanged, because changing it changes the live book."
+    )
+    overlay["production_realized_vol_halflife_today"] = 240
+    overlay["production_realized_vol_halflife_unit"] = (
+        "BARS, not days, and NOT converted per calendar. On the crypto H1 sleeve 240 bars is 10 "
+        "days, not the 240 days the realized_vol_halflife_days_max threshold names. Only the "
+        "covariance leg gained a calendar conversion; the realized leg still has none. Stated "
+        "here rather than left implied, because the earlier wording of this block asserted a "
+        "per-calendar conversion for both legs and that was false for this one."
+    )
+    overlay["both_halves_shipped"] = False
+    overlay["remaining_gap_to_the_drawdown_objective"] = (
+        "OPEN, and wider than a previous revision of this contract claimed. The measured study "
+        "holds expected maximum drawdown at 10.2% only with BOTH the realized-leg scale "
+        "correction (shipped) and the covariance halflife at 21 days (NOT shipped). The halflife "
+        "change was briefly made the default and has been reverted, for three reasons recorded "
+        "in full below: it silently re-sizes every live sleeve on the next daily tick; the sweep "
+        "cell used to price it does not correspond to what the crypto sleeve actually ran; and "
+        "the live estimator is windowed and seeded, so it does not reproduce the untruncated "
+        "recursion the sweep simulated. The objective is also an EXPECTED maximum drawdown -- no "
+        "tested configuration held the 95th percentile at or under 11%, the best being 13.8%."
+    )
+    overlay["why_the_halflife_change_was_reverted"] = {
+        "found_by": "adversarial audit, 2026-08-21, after the change had been deployed",
+        "live_blast_radius": (
+            "No call site passes cov_halflife_days: the crypto loop (cli/paper_cmds.py), the "
+            "AlphaTrend gauntlet and the AlphaMax walk-forward all take the default. The "
+            "walk-forwards are regenerated by the daily ticks and live_cycle.py submits the last "
+            "leg's weights straight to the broker, so a default change is a trade on every "
+            "sleeve at once, not a configuration edit. The commit that made it claimed 'nothing "
+            "was re-run', which was wrong in the direction that mattered."
+        ),
+        "cost_basis_did_not_correspond": (
+            "The sweep is a DAILY simulation, so its cov=720 cell is a 720-DAY halflife. The "
+            "live crypto sleeve ran 720 BARS on H1, which is 30 days. Pricing the change against "
+            "the 720 cell therefore measured a 2.86-year to 21-day move and published it as the "
+            "cost of a 30-day to 21-day one. Interpolating the artifact's own cells at "
+            "rho_stress 0.50 puts the crypto sleeve's real improvement near 0.5pp, not 3.98pp."
+        ),
+        "estimator_does_not_match_the_simulation": (
+            "ewma_cov is windowed at cov_window_bars=720 and seeds S_0 with an equally weighted "
+            "sample covariance over the oldest min_periods=240 rows, so a large share of the "
+            "estimate is a flat block the recursion cannot forget inside the window. The sweep "
+            "simulated an untruncated recursion. The mapping from a swept halflife to the live "
+            "estimator's effective memory is therefore not one-to-one and was never measured."
+        ),
+        "also_unresolved": (
+            "ledoit_wolf_cc is passed the full unweighted 720-row window to compute its shrinkage "
+            "intensity. That was conservative while the EWMA's effective sample exceeded 720; at "
+            "a short halflife it is not, and the shrinkage would be materially too weak."
+        ),
+        "the_mapping_is_now_measured": {
+            "evidence": "artifacts/analysis/live_covariance_memory/result.json",
+            "finding": (
+                "The estimator's memory is bounded by cov_window_bars, so the halflife is "
+                "faithful BELOW the window and truncated above it. On the crypto H1 sleeve the "
+                "720-bar window is 30 days: 7 days requested delivers 7.0, 14 delivers 14.0, but "
+                "30 delivers 22.0 and 720 delivers 24.9. On the equity D1 sleeve the same window "
+                "is 720 SESSIONS, so the parameter is faithful across the practical range and "
+                "only the legacy 720-day setting is truncated, to 529 days."
+            ),
+            "correction": (
+                "An earlier revision of this block said the parameter was 'nearly inert' on "
+                "crypto and named cov_window_bars as the only lever. That was withdrawn the same "
+                "day: it came from sampling only 21 days and up, where every result is truncated "
+                "into a 20-25 day band by the window. Below the window the halflife works."
+            ),
+            "consequence": (
+                "If the drawdown study's finding holds -- shorter covariance memory reduces "
+                "expected maximum drawdown -- the halflife IS the instrument on both sleeves, and "
+                "it must be asked for BELOW the window rather than at 21 days where truncation "
+                "has already begun. It is also the better of the two routes: 7 days at the "
+                "production window gives 7.0 days of memory on ~475 effective rows, while "
+                "shortening the window to 240 bars gives ~8 days on ~107 rows. Four times the "
+                "effective sample for comparable memory, which also keeps ledoit_wolf_cc's T=720 "
+                "approximation far closer to valid. That approximation is where the remaining "
+                "exposure sits: at a 21-day halflife on equity the effective sample is 60.6 rows "
+                "against a T of 720."
+            ),
+        },
+        "what_would_make_it_shippable": (
+            "Measure the halflife on the LIVE estimator per sleeve, on each sleeve's own "
+            "calendar, with the window, the seed and the shrinkage in the loop, and pass the "
+            "value explicitly at the profile that measured it rather than as a global default."
+        ),
+    }
+    overlay["halflife_unit_defect"] = {
+        "found": "2026-08-21",
+        "description": (
+            "The halflife was a BAR count while the objective and this contract are stated in "
+            "DAYS, and a bar is one hour on the crypto H1 sleeve against one session on equity "
+            "D1. The old 720-bar default therefore meant 30 days to crypto and about 2.9 years "
+            "to equities. Writing the study's 21 into the bar parameter would have given the "
+            "crypto sleeve a 21-HOUR covariance halflife."
+        ),
+        "resolution": (
+            "The parameter is cov_halflife_days, converted at the point of use via "
+            "periods_per_year(tf) / periods_per_year(D1). Pinned by "
+            "tests/unit/test_cov_halflife_units.py, which fails if the conversion is removed."
+        ),
+        "still_ambiguous_and_not_changed": (
+            "cov_window_bars (720), cov_min_periods (240) and realized_vol_halflife_bars (240) "
+            "all carry the same ambiguity, and the realized-leg one is named by a threshold in "
+            "this contract that says DAYS. No study measured them, so changing them would be an "
+            "unmeasured change; naming them is the honest alternative to fixing them quietly."
+        ),
+    }
+    overlay["cost_of_the_halflife_change"] = {
+        "evidence": "artifacts/analysis/overlay_halflife_decision/result.json",
+        "status": "SUPERSEDED — the baseline it prices is not what the crypto sleeve ran",
+        "evaluated_at_stressed_correlation": 0.50,
+        "simulated_expected_max_drawdown_before": 0.14213,
+        "simulated_expected_max_drawdown_after": 0.10225,
+        "why_this_is_not_the_live_cost": (
+            "The 'before' cell is a 720-DAY halflife in a daily simulation. The crypto sleeve ran "
+            "720 BARS on H1, which is 30 days, and the live estimator is windowed and seeded "
+            "rather than an untruncated recursion. Both figures are kept because they were "
+            "published; neither is a measurement of the live book."
+        ),
+    }
+
+    contract["claim_boundary"] = (
+        "Passing this contract makes a result technically eligible for an explicit admission "
+        "decision. It does not guarantee a sleeve, future performance, the target Sharpe, or the "
+        "target drawdown. Point estimates cannot override confidence-bound, crisis-conditional, "
+        "tail-loss, execution-evidence, or capacity-reconciliation failures. v6 additionally "
+        "refuses to load if its own significance floors cannot all be satisfied at once, gates "
+        "the average pairwise correlation on its upper confidence bound as well as its point "
+        "estimate, and publishes the arithmetic relating the correlation gate to the portfolio "
+        "objective -- including the distance the gate does not close."
+    )
+
+    base = 21
+    contract["evidence_checks_per_candidate"] = (
+        len(contract["required_lineage"])
+        + len(contract["required_robustness"])
+        + len(contract["execution_dimensions"])
+        + base
+        + 8
+    )
+
+    TARGET.write_text(json.dumps(contract, indent=2, sort_keys=False) + "\n")
+    print(f"wrote {TARGET.relative_to(REPO)}")
+    print(f"  evidence_checks_per_candidate = {contract['evidence_checks_per_candidate']}")
+    fa = contract["frontier_arithmetic"]
+    print(f"  ceiling at the gate (traded basis) = "
+          f"{fa['book_sharpe_ceiling_at_the_gate']['s_bar_traded_basis']:.4f}")
+    print(f"  gate_permits_objective_floor = {fa['gate_permits_objective_floor']}")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

@@ -1,0 +1,111 @@
+{
+  "author": "Arhan Canli",
+  "claim_boundary": "This packet binds one preregistered historical trial and its kill verdict. It does not establish forward performance, capacity, live execution, or future return.",
+  "evidence_date": "2026-08-22",
+  "family_key": "equity_narrative_change",
+  "identity": {
+    "artifact_path": "artifacts/probe/earnings_narrative_change/result.json",
+    "artifact_sha256": "8e416ba075894a67eb74e262d74f467127a6274ae9e78d59d66b35822068a091",
+    "config_hash": "41ce2b1f40450a6e",
+    "configuration": {
+      "cohort": "acceptance_month_second_next_open",
+      "controls": "filing_reaction_momentum_sic2",
+      "costs": {
+        "borrow_annual": 0.03,
+        "spy_oneway": 0.0001,
+        "stock_oneway": 0.0015
+      },
+      "direction": "long_stable_short_changed",
+      "hedge": "individual_252d_spy_beta_clamped_pm1",
+      "hold_sessions": 63,
+      "mechanism": "sec_10k_item1a_stability_jaccard5",
+      "oos_end": "2025-12-31",
+      "oos_start": "2016-01-01",
+      "prereg": "docs/design/PREREG_EARNINGS_NARRATIVE_CHANGE.md",
+      "probe": "earnings_narrative_change",
+      "tails": "residual_quintiles"
+    },
+    "gates": {
+      "absolute_beta_at_most_0_10": true,
+      "all_leave_one_year_out_positive": true,
+      "average_correlation_at_most_0_15": true,
+      "book_delta_positive": true,
+      "book_expected_shortfall_delta_nonpositive": false,
+      "book_max_drawdown_delta_at_most_0_01": true,
+      "capacity_at_least_5m": false,
+      "correlation_observations_at_least_252": true,
+      "dsr_at_least_0_95": false,
+      "long_leg_positive": true,
+      "max_pair_correlation_at_most_0_35": true,
+      "max_pair_correlation_upper_95_at_most_0_35": true,
+      "max_stressed_correlation_at_most_0_50": true,
+      "max_stressed_correlation_upper_95_at_most_0_50": true,
+      "mean_zero_book_delta_positive": false,
+      "net_sharpe_at_least_0_40": false,
+      "newey_west_t_at_least_2": false,
+      "short_leg_positive": false,
+      "stressed_observations_at_least_63": true,
+      "stressed_sharpe_at_least_0_40": false
+    },
+    "hypothesis_key": "e2b76a7604131f00",
+    "ledger_source_path": "var/experiments.jsonl",
+    "observations": 2514,
+    "result": {
+      "capacity": {
+        "median_usd_at_10bp_adv": 140724.34169549422,
+        "median_usd_at_1bp_adv": 14072.434169549422,
+        "median_usd_at_1pct_adv": 1407243.416954942,
+        "median_usd_at_5bp_adv": 70362.17084774711,
+        "p05_usd_at_10bp_adv": 73982.8886393524,
+        "p05_usd_at_1bp_adv": 7398.2888639352395,
+        "p05_usd_at_1pct_adv": 739828.8863935239,
+        "p05_usd_at_5bp_adv": 36991.4443196762
+      },
+      "dsr": 1.135167655547433e-05,
+      "long_leg_gross_contribution": 0.7616211960073791,
+      "max_drawdown": -0.2847080682530856,
+      "n_trials_union_including_candidate": 228,
+      "net_sharpe": -0.0074355006698948066,
+      "net_sharpe_at_2x_costs": -0.462084363844257,
+      "newey_west_t": -0.024159385592414994,
+      "psr": 0.49063363567839996,
+      "realized_spy_beta": 0.0032566977631836255,
+      "short_leg_gross_contribution": -0.4637276418442936,
+      "skew": 0.05157137520091304,
+      "sr_trial_variance": 0.0008957471162984615,
+      "turnover_ann": 3.953845431455051
+    },
+    "verdict": "KILL"
+  },
+  "schema": "canli.alphac-equity-narrative-family.v1",
+  "source_provenance": {
+    "preregistration_path": "docs/design/PREREG_EARNINGS_NARRATIVE_CHANGE.md",
+    "preregistration_sha256": "60486da41f1e2c88e62b6e56d436d780f645420ffaeb13364540d0c4040cc3b9",
+    "result_lineage": {
+      "admission_contract_sha256": "5f628a44ae73ed9c412b225ac9dc56c4e59c1bc0645e2ebde251501e938b9932",
+      "corpus_parts_sha256": "45505610e0a93bf7cb27829aa6b62acf4dbd28659783e1fb7735b56f63e59a1b",
+      "corpus_result_sha256": "0c4fc9a4ae8955a160120c5bee8904edb4f66dd7ef17767a95b7ddf950b827dc",
+      "data_manifest_path": "artifacts/probe/earnings_narrative_change/input_data_manifest.json",
+      "data_manifest_sha256": "3f69cc02bd0038d9fc3ad4c8f61b832e884127cbef93e862194e22b06f25e006",
+      "diversification_report_sha256": "db1ae528574297b72916720ce8f048231800a6ad4834bfc8b05a4ed65f058c8e",
+      "filing_manifest_sha256": "7228eef1a2493152355da5b0e84cc620a3c15707279caecc7f45041941dfa651",
+      "pair_file_sha256": "31b0c4e1eac60cbcee690256ad624edef4a66db00975e9ead8f72aa76fe3d808",
+      "pair_result_sha256": "77e63f666c0ff2625757b6cef6636361c65ca6094e3874b1b9008c5e79c82b42",
+      "preregistration_sha256": "60486da41f1e2c88e62b6e56d436d780f645420ffaeb13364540d0c4040cc3b9",
+      "return_identity_reservation_sha256": "1cca246e42c70803830ce69e9efda1ee6978b92ba88b6adee7830d479eabae79",
+      "runner_sha256": "b64c366b95c2f9595de3f6bf292f3958db7d9f2b1b5cab38ebedd94a082e3a05",
+      "ticker_history_sha256": "eb40fa6f1a6ba1e37336efd75392c5149123a825bfee209a84a83d0b7458e4cf"
+    },
+    "result_path": "artifacts/probe/earnings_narrative_change/result.json",
+    "result_sha256": "8e416ba075894a67eb74e262d74f467127a6274ae9e78d59d66b35822068a091"
+  },
+  "summary": {
+    "admission_status": "RESEARCH_SUBSET_FAILED",
+    "broker_reconciled_forward_status": "NOT_ESTABLISHED",
+    "distinct_hypothesis_identities": 1,
+    "research_gates_passed": 12,
+    "research_gates_required": 20,
+    "technically_eligible": false,
+    "verdict": "KILL"
+  }
+}

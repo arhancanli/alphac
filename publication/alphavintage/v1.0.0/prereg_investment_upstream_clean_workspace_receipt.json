@@ -1,0 +1,3272 @@
+{
+  "author": "Arhan Canli",
+  "author_clean_workspace_run_not_independent": true,
+  "claim_boundary": "This author-run temporary workspace replayed the recovered raw Sharadar loader, universe rebuild, and historical strategy command against hash-bound private inputs. The zero-held Binance memberships are artifact-informed minimal intervals, so even a passing result establishes strategy-output equivalence, not exact recovery of every historical input, valid prospective evidence, sleeve admission, or independent reproduction. Historical metrics are compared, never regraded.",
+  "classification": {
+    "artifact_role": "HISTORICAL_GATE_INPUT_ONLY",
+    "later_preregistration_covered_historical_run": false,
+    "not_a_sleeve": true
+  },
+  "comparison": {
+    "equity_curve": {
+      "bytes_exact": true,
+      "frame_exact": true,
+      "log_returns_exact": true,
+      "max_absolute_equity_difference": 0.0,
+      "reference_sha256": "e81f22c716da8590ee0a7129760ffa65f56b6967f8ef8c3c2ed86845cdf1645b",
+      "replay_sha256": "e81f22c716da8590ee0a7129760ffa65f56b6967f8ef8c3c2ed86845cdf1645b",
+      "shape_exact": true,
+      "shape_reference": [
+        5385,
+        2
+      ],
+      "shape_replay": [
+        5385,
+        2
+      ],
+      "timestamps_exact": true
+    },
+    "output_tree": {
+      "byte_exact_files": 779,
+      "different_files": [],
+      "missing_from_reference": [],
+      "missing_from_replay": [],
+      "path_sets_exact": true,
+      "reference_files": 779,
+      "replay_files": 779,
+      "semantic_checks_for_byte_differences_by_extension": {},
+      "semantic_differences": []
+    },
+    "walkforward_json": {
+      "config_exact": true,
+      "legs_exact": true,
+      "summary_exact": true,
+      "validation_exact": true
+    }
+  },
+  "content_hash": "sha256:3017c1611ece9b66041c8f14026b4b8b5ce1565a4f61fea3fb7cb5a00bb73b3a",
+  "executed_at": "2026-08-24T09:37:52.648993+00:00",
+  "execution": {
+    "attempt_id": "20260824T082519290503Z",
+    "commands": [
+      {
+        "command": "uv sync --frozen",
+        "duration_seconds": 1.147525,
+        "exit_code": 0,
+        "finished_at": "2026-08-24T08:25:20.632835+00:00",
+        "output_tail": ".0\n + markdown-it-py==4.2.0\n + markupsafe==3.0.3\n + matplotlib==3.11.0\n + mdurl==0.1.2\n + multidict==6.7.1\n + mypy==2.1.0\n + mypy-boto3-s3==1.43.31\n + mypy-extensions==1.1.0\n + narwhals==2.22.1\n + numpy==2.4.6\n + osqp==1.1.2\n + packaging==26.2\n + pandas==3.0.3\n + pandas-stubs==3.0.3.260530\n + pathspec==1.1.1\n + pillow==12.2.0\n + pluggy==1.6.0\n + propcache==0.5.2\n + pyarrow==24.0.0\n + pycares==5.0.1\n + pycparser==3.0\n + pydantic==2.13.4\n + pydantic-core==2.46.4\n + pydantic-settings==2.14.1\n + pygments==2.20.0\n + pyluach==2.3.0\n + pyparsing==3.3.2\n + pytest==9.0.3\n + pytest-cov==7.1.0\n + python-dateutil==2.9.0.post0\n + python-dotenv==1.2.2\n + pyyaml==6.0.3\n + qdldl==0.1.9.post1\n + requests==2.34.2\n + rich==15.0.0\n + ruff==0.15.16\n + s3transfer==0.19.0\n + scikit-learn==1.9.0\n + scipy==1.17.1\n + setuptools==82.0.1\n + shellingham==1.5.4\n + six==1.17.0\n + sortedcontainers==2.4.0\n + sparsediffpy==0.3.0\n + structlog==26.1.0\n + tenacity==9.1.4\n + threadpoolctl==3.6.0\n + toolz==1.1.0\n + typer==0.26.7\n + types-awscrt==0.34.1\n + types-pyyaml==6.0.12.20260518\n + types-s3transfer==0.16.0\n + typing-extensions==4.15.0\n + typing-inspection==0.4.2\n + tzdata==2026.2\n + urllib3==2.7.0\n + yarl==1.24.2\n",
+        "private_log_bytes": 2729,
+        "private_log_sha256": "6cfee64e224720379965027583597e141bbd81def46769b1d8afba0b654cace5",
+        "stage": "uv_sync",
+        "started_at": "2026-08-24T08:25:19.485310+00:00"
+      },
+      {
+        "command": "uv run python scripts/sharadar_load.py --min-dollar 500000",
+        "duration_seconds": 195.686684,
+        "exit_code": 0,
+        "finished_at": "2026-08-24T08:28:36.319824+00:00",
+        "output_tail": "warning: `VIRTUAL_ENV=/Users/arhancanli/alphaforge/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\ncandidates: 17480 common-stock tickers\nSEP: kept 8436 liquid tickers (median $vol>=500,000); wrote 24,085,990 bars\nTICKERS: upserted 8436 instruments\nSF1: wrote 392,229 ARQ fundamental rows\nACTIONS: wrote 172,200 rows (5,079 splits)\nLOAD COMPLETE\n",
+        "private_log_bytes": 434,
+        "private_log_sha256": "0c81cedd483a5df9140cf4ce35d1313d9de2728893b7dae208a738e7361108da",
+        "stage": "sharadar_load",
+        "started_at": "2026-08-24T08:25:20.633140+00:00"
+      },
+      {
+        "command": "uv run af universe rebuild --profile equity --start 2000-01-01 --end 2026-06-01",
+        "duration_seconds": 437.199341,
+        "exit_code": 0,
+        "finished_at": "2026-08-24T08:35:53.519640+00:00",
+        "output_tail": "warning: `VIRTUAL_ENV=/Users/arhancanli/alphaforge/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\nuniverse rebuilt over [2000-01-01T00:00:00Z, 2026-06-01T00:00:00Z]: 318 rebalance(s), 11359 interval(s) (11359 entries, 9271 exits, 2088 open)\n",
+        "private_log_bytes": 330,
+        "private_log_sha256": "2669e2461a3f007c6ac19400181a4cf59c362642f38b78ffea21fbbe9c7c878a",
+        "stage": "universe_rebuild",
+        "started_at": "2026-08-24T08:28:36.320299+00:00"
+      },
+      {
+        "command": "uv run af research walkforward --profile equity --allocator rank --rebalance-bars 63 --start 2000-01-01 --end 2026-06-01 --train-days 252 --test-days 63 --alphas eq_asset_growth --out outputs/prereg_investment",
+        "duration_seconds": 3685.750538,
+        "exit_code": 0,
+        "finished_at": "2026-08-24T09:37:21.322529+00:00",
+        "output_tail": "45%\nleg 76  test [1704931200000 .. 1712880000000)  equity 331,401.13 -> 323,131.60  sharpe -6.95  max_dd 2.50%\nleg 77  test [1712880000000 .. 1720828800000)  equity 323,131.60 -> 325,121.51  sharpe 1.20  max_dd 1.42%\nleg 78  test [1721001600000 .. 1728604800000)  equity 325,121.51 -> 345,710.41  sharpe 3.48  max_dd 1.42%\nleg 79  test [1728604800000 .. 1736812800000)  equity 345,710.41 -> 353,349.37  sharpe 0.99  max_dd 2.78%\nleg 80  test [1736812800000 .. 1744675200000)  equity 353,349.37 -> 345,763.79  sharpe -1.97  max_dd 4.11%\nleg 81  test [1744675200000 .. 1752710400000)  equity 345,763.79 -> 344,607.23  sharpe -0.17  max_dd 2.50%\nleg 82  test [1752710400000 .. 1760486400000)  equity 344,607.23 -> 330,509.81  sharpe -2.69  max_dd 6.75%\nleg 83  test [1760486400000 .. 1768435200000)  equity 330,509.81 -> 356,399.13  sharpe 5.74  max_dd 3.14%\nleg 84  test [1768435200000 .. 1776384000000)  equity 356,399.13 -> 360,649.18  sharpe 0.67  max_dd 3.24%\nleg 85  test [1776384000000 .. 1780099200000)  equity 360,649.18 -> 348,904.58  sharpe -2.95  max_dd 4.99%\n\nvalidation  PSR 0.9999  DSR 0.0006  (gate 0.95: FAILS)  SR_ann 0.83  N_trials 75  SR* 0.0820\nartifacts: outputs/prereg_investment\n",
+        "private_log_bytes": 10867,
+        "private_log_sha256": "5f2eed31237fe4fbbbaaaa3376c4f9782e295f0d84da49e0418ef9c85d367104",
+        "stage": "strategy",
+        "started_at": "2026-08-24T08:35:55.571991+00:00"
+      }
+    ],
+    "prior_attempts": [
+      {
+        "content_hash": "sha256:d012998e1062b46f2a821a29ffcbc7326e02796a7e65da24fdc1ecd632389f66",
+        "executed_at": "2026-08-24T08:21:12.615058+00:00",
+        "failure": {
+          "error": "replayed XUSE membership state differs: {'instrument_ids': 1050, 'intervals': 2381, 'open_intervals': 203}",
+          "error_type": "ValueError"
+        },
+        "path": "artifacts/publication/prereg_investment_upstream_attempts/20260824T082112.615058_0000_d012998e1062.json",
+        "sha256": "3df4d5e3aadfed414eb860e480d70290a7fcd042dde1ffa71ddeab85778460a6",
+        "status": "FAIL_FULL_RAW_TO_STRATEGY_REPLAY"
+      }
+    ],
+    "replay_output_inventory": {
+      "equity.parquet": {
+        "bytes": 91004,
+        "sha256": "e81f22c716da8590ee0a7129760ffa65f56b6967f8ef8c3c2ed86845cdf1645b"
+      },
+      "legs/leg_00/equity.parquet": {
+        "bytes": 2706,
+        "sha256": "27143e737713998d0aec4274732560fbd59e23f5ee257513ab37c5702dd02589"
+      },
+      "legs/leg_00/fills.parquet": {
+        "bytes": 16051,
+        "sha256": "9fc8fd6f37f94ccb8c426a6e6f5f49582cb0c5455c5e401a8cc9d8bd3dab6650"
+      },
+      "legs/leg_00/funding.parquet": {
+        "bytes": 3222,
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      "legs/leg_00/orders.parquet": {
+        "bytes": 34048,
+        "sha256": "7f6699ca5b0c4c56305e26a5a9e60893f54d663372ed0eb7afde0f3e54aa70e5"
+      },
+      "legs/leg_00/positions.parquet": {
+        "bytes": 269969,
+        "sha256": "e10c3b9cf61333103a67094c722e6cd85ecc3be4ece06aba065a038f25c03780"
+      },
+      "legs/leg_00/run_meta.json": {
+        "bytes": 187223,
+        "sha256": "336269b0fe2a434fdc09c5a02f9bdc89514c49cd693b146f65d8134432b50349"
+      },
+      "legs/leg_00/summary.txt": {
+        "bytes": 953,
+        "sha256": "60187e82c83ad9f568eb87c1b7f24b6f70c00305a0ec95261d91c293b3db190d"
+      },
+      "legs/leg_00/tearsheet.png": {
+        "bytes": 187451,
+        "sha256": "3ebc3a860aeb2adf9588588f6dfb85ce5320d3e96b80dbd4894a7a73b46aa7e4"
+      },
+      "legs/leg_00/tearsheet.txt": {
+        "bytes": 953,
+        "sha256": "60187e82c83ad9f568eb87c1b7f24b6f70c00305a0ec95261d91c293b3db190d"
+      },
+      "legs/leg_01/equity.parquet": {
+        "bytes": 2707,
+        "sha256": "579e3987f5737c8a436ae04eab654c3fea3eb3bb9e77e8df89a851b1f2a07004"
+      },
+      "legs/leg_01/fills.parquet": {
+        "bytes": 16021,
+        "sha256": "e553dc3c2a1a6ed31961a71699a412ceb4d234de7a8d5db024f01b61b5aec4e3"
+      },
+      "legs/leg_01/funding.parquet": {
+        "bytes": 3222,
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      "legs/leg_01/orders.parquet": {
+        "bytes": 33825,
+        "sha256": "24dbc920518ad8bc11d0c42f1d23df8ff1b363c27e278e6627407f97ae0750df"
+      },
+      "legs/leg_01/positions.parquet": {
+        "bytes": 269227,
+        "sha256": "19cd0b825a19e09cdadd7817c90d4e45472fe81cc96f6731024f80ca27cd6039"
+      },
+      "legs/leg_01/run_meta.json": {
+        "bytes": 187232,
+        "sha256": "960a5dc21798f3270a8c041e50df92518ac33801f34b12d4d8d46f5a12d64a37"
+      },
+      "legs/leg_01/summary.txt": {
+        "bytes": 947,
+        "sha256": "fa4d0a8345ff4a0d733d9181357f67f18a4ea95973fd1430615afa933fb9abf2"
+      },
+      "legs/leg_01/tearsheet.png": {
+        "bytes": 176086,
+        "sha256": "8913f01e6ffa8aaec9d93aee0cd4494dc12c5e9903852bcb0244e1a70fc5adad"
+      },
+      "legs/leg_01/tearsheet.txt": {
+        "bytes": 947,
+        "sha256": "fa4d0a8345ff4a0d733d9181357f67f18a4ea95973fd1430615afa933fb9abf2"
+      },
+      "legs/leg_02/equity.parquet": {
+        "bytes": 2707,
+        "sha256": "acd4810e2e311b8903e729480f6e4cc27edb1e16723596be0142828a974ffbc6"
+      },
+      "legs/leg_02/fills.parquet": {
+        "bytes": 16232,
+        "sha256": "625413017d4b3926574fc7f249d93eb427e8a6cd33186ec3ebba249a8cea9bb2"
+      },
+      "legs/leg_02/funding.parquet": {
+        "bytes": 3222,
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      "legs/leg_02/orders.parquet": {
+        "bytes": 34007,
+        "sha256": "7e34300dfe819e948f2c65e44dc9c649de3d71dd0b48fe30f14336949a746e6d"
+      },
+      "legs/leg_02/positions.parquet": {
+        "bytes": 267842,
+        "sha256": "fbb7a2a1a228b171ae67d8f087665aee0c5e3f35c47e18e9eb9037b27689a25b"
+      },
+      "legs/leg_02/run_meta.json": {
+        "bytes": 187233,
+        "sha256": "8348add716228d51ed3a9e7fc2bc8e95237249b5af8cbb360f53183658225780"
+      },
+      "legs/leg_02/summary.txt": {
+        "bytes": 954,
+        "sha256": "ebbee6755d56cf6f68b961e52e9991fb2193961fb5af3129fd79a1a5ee7f02bf"
+      },
+      "legs/leg_02/tearsheet.png": {
+        "bytes": 167756,
+        "sha256": "374dc760726df90c0e20cbb6dd1c9ee5b90058c7afd9cdea6177a5fa54f1b21e"
+      },
+      "legs/leg_02/tearsheet.txt": {
+        "bytes": 954,
+        "sha256": "ebbee6755d56cf6f68b961e52e9991fb2193961fb5af3129fd79a1a5ee7f02bf"
+      },
+      "legs/leg_03/equity.parquet": {
+        "bytes": 2709,
+        "sha256": "d6991a8de96f2f531c95609f1ebcb9163d027015cc1377d2bdd5a36e4439e5f9"
+      },
+      "legs/leg_03/fills.parquet": {
+        "bytes": 15823,
+        "sha256": "35635172fbf5c7bf04029794f84299b9bc8d2ef840d2736745df204d7b18fff0"
+      },
+      "legs/leg_03/funding.parquet": {
+        "bytes": 3222,
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      "legs/leg_03/orders.parquet": {
+        "bytes": 34315,
+        "sha256": "fb7a085fbde85219c5142b766279bd63ca587f1a1ab250a4719859c954bc319b"
+      },
+      "legs/leg_03/positions.parquet": {
+        "bytes": 266905,
+        "sha256": "0f8c58ee6a219b4985c985c429fff553935764ebcc4f0bf06ed87b77b6f2ad88"
+      },
+      "legs/leg_03/run_meta.json": {
+        "bytes": 187233,
+        "sha256": "d95d47c3dae04562d2de37f0de7b6343853981655a2aa1351e88b0e6b9829c5c"
+      },
+      "legs/leg_03/summary.txt": {
+        "bytes": 953,
+        "sha256": "398b2784cad465531f59c24e3ae421145b6e5d687eab27e608e31d69b92612f8"
+      },
+      "legs/leg_03/tearsheet.png": {
+        "bytes": 186884,
+        "sha256": "04c2bff6133db5b176e0330d79f4ef5eda82d0cd0a7f73bb34c12ecbd547399c"
+      },
+      "legs/leg_03/tearsheet.txt": {
+        "bytes": 953,
+        "sha256": "398b2784cad465531f59c24e3ae421145b6e5d687eab27e608e31d69b92612f8"
+      },
+      "legs/leg_04/equity.parquet": {
+        "bytes": 2708,
+        "sha256": "5b5ea2d09a83ab086254eea38637aca6deccdd976689bb5a6f5a0ae777952735"
+      },
+      "legs/leg_04/fills.parquet": {
+        "bytes": 15881,
+        "sha256": "253d5db691d4efc37801eb72a9a2b84fe7f6951d56d632b48b1868125545de76"
+      },
+      "legs/leg_04/funding.parquet": {
+        "bytes": 3222,
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      "legs/leg_04/orders.parquet": {
+        "bytes": 34320,
+        "sha256": "afe079eb213b1aa027f439c94c1826676d448eccd7f7b3c77a56ff0a2776104f"
+      },
+      "legs/leg_04/positions.parquet": {
+        "bytes": 269588,
+        "sha256": "999fdc74b78cf27e6f445e0989e30654db7aab90372b55ca8c830c57457d3738"
+      },
+      "legs/leg_04/run_meta.json": {
+        "bytes": 187231,
+        "sha256": "13242aec60fcf266880dac4d8b3a231c4c2a5db3639fad379a0a90757816464b"
+      },
+      "legs/leg_04/summary.txt": {
+        "bytes": 946,
+        "sha256": "49db7029fa548588c2c4f7d35f30323443759bb5854c3776c9e627ac4eb3fd57"
+      },
+      "legs/leg_04/tearsheet.png": {
+        "bytes": 181988,
+        "sha256": "701c0376e1284cf4db61a5b9fa1b6c5e6bbd60445e1f5155ee8a44408794e092"
+      },
+      "legs/leg_04/tearsheet.txt": {
+        "bytes": 946,
+        "sha256": "49db7029fa548588c2c4f7d35f30323443759bb5854c3776c9e627ac4eb3fd57"
+      },
+      "legs/leg_05/equity.parquet": {
+        "bytes": 2708,
+        "sha256": "c781a68718ab8116535d6638307845b6488e5cf6294ca3e46d3ef30a4a8322ec"
+      },
+      "legs/leg_05/fills.parquet": {
+        "bytes": 15922,
+        "sha256": "ff77088c9cedb1a616a0015319d9802e3f44bad9dacb3ab94f060b4f093ca0fe"
+      },
+      "legs/leg_05/funding.parquet": {
+        "bytes": 3222,
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      "legs/leg_05/orders.parquet": {
+        "bytes": 34161,
+        "sha256": "32793fdde5e061c911b921c250d97534d338c6b05fefd37213d625b60d8fa761"
+      },
+      "legs/leg_05/positions.parquet": {
+        "bytes": 273930,
+        "sha256": "ed49f5a77098f15860268bedfe185ba260aeb4c55db031b6d835aafdababce27"
+      },
+      "legs/leg_05/run_meta.json": {
+        "bytes": 187232,
+        "sha256": "c6a6e63e9d13d6ed5dd422572d628dd914a09bf838d3f587ce49857fbf35a237"
+      },
+      "legs/leg_05/summary.txt": {
+        "bytes": 948,
+        "sha256": "26802607f323aee7d88fda6578fcc9393cde20aee29c9e6c0704c412ad445fa8"
+      },
+      "legs/leg_05/tearsheet.png": {
+        "bytes": 204605,
+        "sha256": "035218b990601ce1d48e46e37453c3a5b0bc95a1de71d70b5118b246bd3245cb"
+      },
+      "legs/leg_05/tearsheet.txt": {
+        "bytes": 948,
+        "sha256": "26802607f323aee7d88fda6578fcc9393cde20aee29c9e6c0704c412ad445fa8"
+      },
+      "legs/leg_06/equity.parquet": {
+        "bytes": 2706,
+        "sha256": "690ec186fd6d53357206fd43cd7d4d7999968d81fbd837a008513a673fa977ef"
+      },
+      "legs/leg_06/fills.parquet": {
+        "bytes": 15990,
+        "sha256": "4462053b8779371be36e710af6ead385793f7db8f0d7c77ab76d90ea23eb1334"
+      },
+      "legs/leg_06/funding.parquet": {
+        "bytes": 3222,
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      "legs/leg_06/orders.parquet": {
+        "bytes": 34009,
+        "sha256": "13189a7d7c1ce14a89b49ea12c7089017895ff90ac09a51380e3a1ac2fdf4654"
+      },
+      "legs/leg_06/positions.parquet": {
+        "bytes": 271785,
+        "sha256": "2ea682ae7dbbb1eec0b76496550ad7e663feec818f1b748ee5258e19ebfa9a34"
+      },
+      "legs/leg_06/run_meta.json": {
+        "bytes": 187232,
+        "sha256": "5961e1255a6342fbe0957ba5c3658076e5feb018bcd0bc06672af94a5b876d6e"
+      },
+      "legs/leg_06/summary.txt": {
+        "bytes": 950,
+        "sha256": "f367c82e5c2457a66464bc8e13a7178dd8663e409faaa06e951a031bcc8f6452"
+      },
+      "legs/leg_06/tearsheet.png": {
+        "bytes": 190213,
+        "sha256": "3df2cdeb72cf3a09f2cbf011a535e75a5ec1496feb2ed06f04b84a0dd1b8ec1b"
+      },
+      "legs/leg_06/tearsheet.txt": {
+        "bytes": 950,
+        "sha256": "f367c82e5c2457a66464bc8e13a7178dd8663e409faaa06e951a031bcc8f6452"
+      },
+      "legs/leg_07/equity.parquet": {
+        "bytes": 2707,
+        "sha256": "0a33f54ef50659cddb525bbbd8e9063463294a7b2542ed7895fed961fd105f62"
+      },
+      "legs/leg_07/fills.parquet": {
+        "bytes": 15949,
+        "sha256": "417fd74185e7f17a0c180c63bc4d02280e87c3b6e2881aed2b9d9814bf09518b"
+      },
+      "legs/leg_07/funding.parquet": {
+        "bytes": 3222,
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      "legs/leg_07/orders.parquet": {
+        "bytes": 34091,
+        "sha256": "3b70ef0f8498b5f212a4fa782a097c821801da660eccce4b7cf0117f2d64b97d"
+      },
+      "legs/leg_07/positions.parquet": {
+        "bytes": 273072,
+        "sha256": "a3ea39accb07392c8a9d8ecf8d64aacfe0521b55c599ad5ba4f7b161424403f6"
+      },
+      "legs/leg_07/run_meta.json": {
+        "bytes": 187232,
+        "sha256": "76c41b7916b8fae665ea4f9765d70db649e3f9601e442a6724fd9e458bf19ff2"
+      },
+      "legs/leg_07/summary.txt": {
+        "bytes": 947,
+        "sha256": "d298236ae1b81111d2bc60e52025607fe58a80997dccec1b814e179c5074415b"
+      },
+      "legs/leg_07/tearsheet.png": {
+        "bytes": 178898,
+        "sha256": "32f44eada2b85562899d1ea562935b83ef5e58f0a8748445ce4747fe0ffd79ef"
+      },
+      "legs/leg_07/tearsheet.txt": {
+        "bytes": 947,
+        "sha256": "d298236ae1b81111d2bc60e52025607fe58a80997dccec1b814e179c5074415b"
+      },
+      "legs/leg_08/equity.parquet": {
+        "bytes": 2708,
+        "sha256": "1c6c3231f0bc47b733a2b0676af5d5e2c4f3d375334eb0acc52d36d4faab44aa"
+      },
+      "legs/leg_08/fills.parquet": {
+        "bytes": 16062,
+        "sha256": "7ef17174b40ada35f1344856285a030908aacd757307b90abe23c62c8ce030d7"
+      },
+      "legs/leg_08/funding.parquet": {
+        "bytes": 3222,
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      "legs/leg_08/orders.parquet": {
+        "bytes": 34183,
+        "sha256": "7281c6667cc5952ba166f12f7fe9d6cf13b754ee016a0d630f9ea851140a210e"
+      },
+      "legs/leg_08/positions.parquet": {
+        "bytes": 263920,
+        "sha256": "9c0a3deebaab4753c83903c9b2c263038853ddbb5271847285b86826615b5170"
+      },
+      "legs/leg_08/run_meta.json": {
+        "bytes": 187231,
+        "sha256": "8dab129724d2242364e702bc9ca1c4de4911a32dd6e50149c69832e7c2f1c1c6"
+      },
+      "legs/leg_08/summary.txt": {
+        "bytes": 954,
+        "sha256": "19cb661bb8b41ba4b01770d01c9fd3009bb2e58283afc3088d594718ab2d1024"
+      },
+      "legs/leg_08/tearsheet.png": {
+        "bytes": 161249,
+        "sha256": "86af408047714992695ccb0aca7b29e0c5e62dca6b50b2669a6fc420d76e7b23"
+      },
+      "legs/leg_08/tearsheet.txt": {
+        "bytes": 954,
+        "sha256": "19cb661bb8b41ba4b01770d01c9fd3009bb2e58283afc3088d594718ab2d1024"
+      },
+      "legs/leg_09/equity.parquet": {
+        "bytes": 2707,
+        "sha256": "01db7d148cf1fe6ea5be541d0cbac2abeb68a2bc39bf2814d337aedc1fa142d7"
+      },
+      "legs/leg_09/fills.parquet": {
+        "bytes": 16257,
+        "sha256": "bd13ebfae32b11874a69f470946a24f479c03e57ee4b22d24e8d78e60cf4e203"
+      },
+      "legs/leg_09/funding.parquet": {
+        "bytes": 3222,
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      "legs/leg_09/orders.parquet": {
+        "bytes": 33901,
+        "sha256": "5006f5257aec81b52a65ffe67a2c375d35f72e3c30aca951512bf109a83cd6b3"
+      },
+      "legs/leg_09/positions.parquet": {
+        "bytes": 276760,
+        "sha256": "05906124884a0408039ebe2b7f0722a9d282696c3e73fb3f37cfa1423946b4e4"
+      },
+      "legs/leg_09/run_meta.json": {
+        "bytes": 187232,
+        "sha256": "2358778de3b558df7ffe372ceee7fae5b99cdb9c55cac6f1cedf98f635663da1"
+      },
+      "legs/leg_09/summary.txt": {
+        "bytes": 954,
+        "sha256": "8a9da60df58fbc12310facfd2e823fd7c9d6b667abd838188935fdc9522ae70f"
+      },
+      "legs/leg_09/tearsheet.png": {
+        "bytes": 186979,
+        "sha256": "1c2308cd19347d5f67be9a1fac041e00a377ae51fdbfd4ee3d989e36b6db9afe"
+      },
+      "legs/leg_09/tearsheet.txt": {
+        "bytes": 954,
+        "sha256": "8a9da60df58fbc12310facfd2e823fd7c9d6b667abd838188935fdc9522ae70f"
+      },
+      "legs/leg_10/equity.parquet": {
+        "bytes": 2709,
+        "sha256": "351599618ecfdfab7bb65a77fceaacefeecf9dd934ac9da2202c1688ed21a910"
+      },
+      "legs/leg_10/fills.parquet": {
+        "bytes": 15965,
+        "sha256": "bc7f0c40589f67243a8562d973b41bed79862689df014d16663bb45618a7ba8f"
+      },
+      "legs/leg_10/funding.parquet": {
+        "bytes": 3222,
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      "legs/leg_10/orders.parquet": {
+        "bytes": 33971,
+        "sha256": "445f5a0d4755737e7c56dd01f7b302eb40b2b82b4d8dcab558a99c310de18e03"
+      },
+      "legs/leg_10/positions.parquet": {
+        "bytes": 275236,
+        "sha256": "4c5cc4e5e0943a5b0364ee3c4d5222cb5ead2aa42087d71a3a72f8e4bbbe9d04"
+      },
+      "legs/leg_10/run_meta.json": {
+        "bytes": 187233,
+        "sha256": "4963607ca7274088828e1d330d965e7e031d95db2bae4816aa7419f593d8b81c"
+      },
+      "legs/leg_10/summary.txt": {
+        "bytes": 955,
+        "sha256": "213a14a973aa83bfb22d3a1dbd294187159689c486ccbf6ddcbc21981bc6bc25"
+      },
+      "legs/leg_10/tearsheet.png": {
+        "bytes": 174926,
+        "sha256": "040364f4f83fd11ec7129ebe97ca342a4bd553f498adabe3a61b64d923b59bde"
+      },
+      "legs/leg_10/tearsheet.txt": {
+        "bytes": 955,
+        "sha256": "213a14a973aa83bfb22d3a1dbd294187159689c486ccbf6ddcbc21981bc6bc25"
+      },
+      "legs/leg_11/equity.parquet": {
+        "bytes": 2708,
+        "sha256": "c1a9378e8887eb09fa50f8c1e4bee05f5251b274df17716dcc25ffeae7707b32"
+      },
+      "legs/leg_11/fills.parquet": {
+        "bytes": 16173,
+        "sha256": "6456d018868be994d07ccf3c5874b185f8349b3bb7328fcdf5f12dab4def04b0"
+      },
+      "legs/leg_11/funding.parquet": {
+        "bytes": 3222,
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      "legs/leg_11/orders.parquet": {
+        "bytes": 34042,
+        "sha256": "46ad1df8863dde28e9267c37e2ff7c5be2084cbc457f9c5df52f8c259e31f7d1"
+      },
+      "legs/leg_11/positions.parquet": {
+        "bytes": 275047,
+        "sha256": "b172025f96c4dd5dc0ce9d0566bbed5fdf1254b03039b9ff8d06c48cfd83e16b"
+      },
+      "legs/leg_11/run_meta.json": {
+        "bytes": 187233,
+        "sha256": "9349568a2e77d902e28fea4eb3657c3657ca3da1234ed3088636c4b67c2dc99f"
+      },
+      "legs/leg_11/summary.txt": {
+        "bytes": 954,
+        "sha256": "78403a0e0bb7ec1de0741e15b10cbd497483ddd591c243e2a368f33f2894b2c4"
+      },
+      "legs/leg_11/tearsheet.png": {
+        "bytes": 198402,
+        "sha256": "c0fda5d7edf6c0a741be6dd5b8e3554e5f235ac22fbf63dca86b5446e5206396"
+      },
+      "legs/leg_11/tearsheet.txt": {
+        "bytes": 954,
+        "sha256": "78403a0e0bb7ec1de0741e15b10cbd497483ddd591c243e2a368f33f2894b2c4"
+      },
+      "legs/leg_12/equity.parquet": {
+        "bytes": 2709,
+        "sha256": "7ed51bbb12e41e4519a9de452b66fb460a27c17f30e51c35c35f78045e40cfc0"
+      },
+      "legs/leg_12/fills.parquet": {
+        "bytes": 16107,
+        "sha256": "964098f04542e33f8b61bc484e1cf21841b9894ca18555f0f04165a27a6eab3d"
+      },
+      "legs/leg_12/funding.parquet": {
+        "bytes": 3222,
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      "legs/leg_12/orders.parquet": {
+        "bytes": 33842,
+        "sha256": "3516af29e5c1068ddd2c5942e41dbae123004fd610797684a3b27b7551e89e00"
+      },
+      "legs/leg_12/positions.parquet": {
+        "bytes": 273553,
+        "sha256": "42d38444ee6d6332da23f4b9ce23260908f92eaffaee0afcb8150be3a18b7105"
+      },
+      "legs/leg_12/run_meta.json": {
+        "bytes": 187232,
+        "sha256": "0af5b2d43cd023f3910ccdf0ccfb5adbc94ee39cc30a92cdec4e073eed307605"
+      },
+      "legs/leg_12/summary.txt": {
+        "bytes": 947,
+        "sha256": "8cec34bff92c771c8fc00438918b11a051dab59595ca95657531d887ff1b70cf"
+      },
+      "legs/leg_12/tearsheet.png": {
+        "bytes": 184501,
+        "sha256": "d6c88a966eb3f9b4156e8b01e2aff0822b586ec7b11eb7524f0f06068cfa1e7d"
+      },
+      "legs/leg_12/tearsheet.txt": {
+        "bytes": 947,
+        "sha256": "8cec34bff92c771c8fc00438918b11a051dab59595ca95657531d887ff1b70cf"
+      },
+      "legs/leg_13/equity.parquet": {
+        "bytes": 2708,
+        "sha256": "4adc14fd35684a3cfcf1fca5c4b9924a05256586a99449edb99375f989edb4c0"
+      },
+      "legs/leg_13/fills.parquet": {
+        "bytes": 15772,
+        "sha256": "ac5f257ae8091effdcf7cc787e186201ec094a6f7e4547b7a20b909a23b43317"
+      },
+      "legs/leg_13/funding.parquet": {
+        "bytes": 3222,
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      "legs/leg_13/orders.parquet": {
+        "bytes": 33573,
+        "sha256": "90e47d0e528f923db01c84ae938f5027a6a5e460e434f430ec1b10d766486f2b"
+      },
+      "legs/leg_13/positions.parquet": {
+        "bytes": 270201,
+        "sha256": "e08ecd95bb38f0e74ad5f47c85ac624f88e44e3dd5809c4cf296602b73a25a26"
+      },
+      "legs/leg_13/run_meta.json": {
+        "bytes": 187233,
+        "sha256": "43aaaead44a7e15094551ff00fba39d7e56b7ba74e1370c6033f3902d880eb2f"
+      },
+      "legs/leg_13/summary.txt": {
+        "bytes": 955,
+        "sha256": "6b9a3421f19eb55123ecf4b944ccf3f417fb301c9719013eb6478a3281afdb02"
+      },
+      "legs/leg_13/tearsheet.png": {
+        "bytes": 179657,
+        "sha256": "d8d856967c5b91a7ff314cf76a1a00dfcbadae83b654f9c4300df2abd390c285"
+      },
+      "legs/leg_13/tearsheet.txt": {
+        "bytes": 955,
+        "sha256": "6b9a3421f19eb55123ecf4b944ccf3f417fb301c9719013eb6478a3281afdb02"
+      },
+      "legs/leg_14/equity.parquet": {
+        "bytes": 2707,
+        "sha256": "f3daaa0981137fe88e06c6717fb8828aebc78318de322aaaa005f69621f59670"
+      },
+      "legs/leg_14/fills.parquet": {
+        "bytes": 16024,
+        "sha256": "156df8b2f3e79bd6b831e0dac8fef8a5f7e712b9747228fbbc936d2ca7cc813d"
+      },
+      "legs/leg_14/funding.parquet": {
+        "bytes": 3222,
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      "legs/leg_14/orders.parquet": {
+        "bytes": 34088,
+        "sha256": "db3d88addd6d77219506e72bca570687f50b6c37248b68a66af099b25b51ff93"
+      },
+      "legs/leg_14/positions.parquet": {
+        "bytes": 268199,
+        "sha256": "0ffa520f07b90f79d40246e60519ec73519374c56846354206362ad854c54e89"
+      },
+      "legs/leg_14/run_meta.json": {
+        "bytes": 187233,
+        "sha256": "67ee99775b24af66dd1ab9d2f4889dfa37ec1faa0e61e733459726882fead9bf"
+      },
+      "legs/leg_14/summary.txt": {
+        "bytes": 948,
+        "sha256": "23907e695bfed14421509283e0b5dc526baf28512d79a2eecf4623e2cf84babe"
+      },
+      "legs/leg_14/tearsheet.png": {
+        "bytes": 210386,
+        "sha256": "4bd98aebd4fcf6857ddf9dc46687a6d3b9517c4e51f6d090acd5bb4febc3e171"
+      },
+      "legs/leg_14/tearsheet.txt": {
+        "bytes": 948,
+        "sha256": "23907e695bfed14421509283e0b5dc526baf28512d79a2eecf4623e2cf84babe"
+      },
+      "legs/leg_15/equity.parquet": {
+        "bytes": 2708,
+        "sha256": "91743fed03684cdcbc6f13872500638bbcfc779bce00c8cef8e44494ff69f8a4"
+      },
+      "legs/leg_15/fills.parquet": {
+        "bytes": 16177,
+        "sha256": "ccfc2a41bea15d036929332d5f29424c6e54609187c84b69e0fcc001d270de4a"
+      },
+      "legs/leg_15/funding.parquet": {
+        "bytes": 3222,
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      "legs/leg_15/orders.parquet": {
+        "bytes": 33594,
+        "sha256": "3c062ce5ff56d8eddb7a77dd5a3962f5d7f01add20f6f7dcb23c99cac33207c2"
+      },
+      "legs/leg_15/positions.parquet": {
+        "bytes": 268002,
+        "sha256": "ffe0742f21e006ff11f5623e56177516d964d99977675a09a0a939a97758d3e6"
+      },
+      "legs/leg_15/run_meta.json": {
+        "bytes": 187234,
+        "sha256": "e98492a544deb49c2c2317227cef56bf65171d59bdba2d45d636d9de2941ba41"
+      },
+      "legs/leg_15/summary.txt": {
+        "bytes": 955,
+        "sha256": "49f6e4386fc8c70afcbd58552d8bf5e010998579e9f67a1a3465be3ba1adc429"
+      },
+      "legs/leg_15/tearsheet.png": {
+        "bytes": 198324,
+        "sha256": "fd228ffceff35c1d3c70538b64b3ed9b91949a42759ca7531ad381f88020a831"
+      },
+      "legs/leg_15/tearsheet.txt": {
+        "bytes": 955,
+        "sha256": "49f6e4386fc8c70afcbd58552d8bf5e010998579e9f67a1a3465be3ba1adc429"
+      },
+      "legs/leg_16/equity.parquet": {
+        "bytes": 2708,
+        "sha256": "c28e0c622c127cc769e2f994160885a0b7353cd20336b3a8a427ca3330e9f930"
+      },
+      "legs/leg_16/fills.parquet": {
+        "bytes": 58661,
+        "sha256": "5a9912087da1a2205ed3487f0960fc4d75bab12c85eb6df2be65cd21f139198f"
+      },
+      "legs/leg_16/funding.parquet": {
+        "bytes": 3222,
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      "legs/leg_16/orders.parquet": {
+        "bytes": 175716,
+        "sha256": "4ad7a7d68c0e8140b65dce70b67448021b20aa9da0e6529791bcea98a3de7695"
+      },
+      "legs/leg_16/positions.parquet": {
+        "bytes": 280620,
+        "sha256": "09d337fe525975603fde289076350b07a0f058159989b42d44998137f7ed3ce7"
+      },
+      "legs/leg_16/run_meta.json": {
+        "bytes": 187239,
+        "sha256": "a4bec0ce7ea5c31a3c815d4dff0f0135af1797f6fa671ed583ad23afc65b3bd1"
+      },
+      "legs/leg_16/summary.txt": {
+        "bytes": 956,
+        "sha256": "321f03cc9aeed2c45833e946de45e46bc67efc3406bcf7139812262666792e9c"
+      },
+      "legs/leg_16/tearsheet.png": {
+        "bytes": 179277,
+        "sha256": "296a0793ac0b99f634dabad631c03add1c693bc3a54e455b72ea438cecdfd4a7"
+      },
+      "legs/leg_16/tearsheet.txt": {
+        "bytes": 956,
+        "sha256": "321f03cc9aeed2c45833e946de45e46bc67efc3406bcf7139812262666792e9c"
+      },
+      "legs/leg_17/equity.parquet": {
+        "bytes": 2708,
+        "sha256": "2948d3e2cead3c861cb1428c6388d1bc49270a9b1fa00885d92a57d0cca18289"
+      },
+      "legs/leg_17/fills.parquet": {
+        "bytes": 16328,
+        "sha256": "1a4a85fd5617af238339ba6c05c761fd53e77d1fd3d4fb9db63965d7f5eca2e5"
+      },
+      "legs/leg_17/funding.parquet": {
+        "bytes": 3222,
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      "legs/leg_17/orders.parquet": {
+        "bytes": 32939,
+        "sha256": "687ab5774d33aa78bcc60d7ce0af706d82a7fb60853b44c50755e8d18bfd63cc"
+      },
+      "legs/leg_17/positions.parquet": {
+        "bytes": 277745,
+        "sha256": "35995114508407c16c532437a26afbe65019677c5c0f5987ceb71c667e0d304b"
+      },
+      "legs/leg_17/run_meta.json": {
+        "bytes": 187233,
+        "sha256": "1c62af132e14028bcd8c498db7765c12140d7a2566481e142d147b69a55b8c18"
+      },
+      "legs/leg_17/summary.txt": {
+        "bytes": 950,
+        "sha256": "bd91f8428282db1c79dbc65d73f696c236ae81e7c97a25c853b2bb88c6d56d5b"
+      },
+      "legs/leg_17/tearsheet.png": {
+        "bytes": 189906,
+        "sha256": "0d49dc5b92eeea56121529abcd7e77eabb76c513ff3429103dddfde74049533e"
+      },
+      "legs/leg_17/tearsheet.txt": {
+        "bytes": 950,
+        "sha256": "bd91f8428282db1c79dbc65d73f696c236ae81e7c97a25c853b2bb88c6d56d5b"
+      },
+      "legs/leg_18/equity.parquet": {
+        "bytes": 2707,
+        "sha256": "325dda99e7ed53826a0431ebfc76a701b4c352d77cb0acf4faa65f8e91cb763d"
+      },
+      "legs/leg_18/fills.parquet": {
+        "bytes": 16253,
+        "sha256": "b722937d498787c16583b3d199341cdc62d0dc664a9a7b3bc9a014add60578b1"
+      },
+      "legs/leg_18/funding.parquet": {
+        "bytes": 3222,
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      "legs/leg_18/orders.parquet": {
+        "bytes": 33793,
+        "sha256": "4275958e7a1e4e96221f9d95fa69fc8ac83fc20f61385213df46a37001476583"
+      },
+      "legs/leg_18/positions.parquet": {
+        "bytes": 271801,
+        "sha256": "d1e299e4c23f3eafcd21f03eaa107659fb02236b8a4fd88c832d7c64ddafb990"
+      },
+      "legs/leg_18/run_meta.json": {
+        "bytes": 187234,
+        "sha256": "a3a5ec931d8e2adc78d2c01da3f0bd862f6f49bc3622028429b5f393e30b76c8"
+      },
+      "legs/leg_18/summary.txt": {
+        "bytes": 948,
+        "sha256": "6297776538ae60cde6fdc8d6669cf8983ef6eb104e16951331b28b546c1652b8"
+      },
+      "legs/leg_18/tearsheet.png": {
+        "bytes": 176818,
+        "sha256": "d633b74a45e54cfb784db1eddd660896f90eff375eb36e40cb20cf09ae90b3c0"
+      },
+      "legs/leg_18/tearsheet.txt": {
+        "bytes": 948,
+        "sha256": "6297776538ae60cde6fdc8d6669cf8983ef6eb104e16951331b28b546c1652b8"
+      },
+      "legs/leg_19/equity.parquet": {
+        "bytes": 2706,
+        "sha256": "b41c75a5191fa32e8d26b5d9b656eab60118411117554dc9b8cc962bfe9b84cf"
+      },
+      "legs/leg_19/fills.parquet": {
+        "bytes": 16199,
+        "sha256": "79c260594161116d910d789baf20c93a650f49d1687585678390878e6cca6926"
+      },
+      "legs/leg_19/funding.parquet": {
+        "bytes": 3222,
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      "legs/leg_19/orders.parquet": {
+        "bytes": 34207,
+        "sha256": "a8c65291673a4f88b6a1b90e8b6b9447537c6af06d354ec4cf9f2b9d86d0a99b"
+      },
+      "legs/leg_19/positions.parquet": {
+        "bytes": 270547,
+        "sha256": "3cd3d0eefe3b2c943bff06eb2cfc5521fea6bd014a3a17ab962966ffb1647b5e"
+      },
+      "legs/leg_19/run_meta.json": {
+        "bytes": 187233,
+        "sha256": "d6da3066ed1d7a7300751247c835c6ce1a9c9b59ecf206f1f2e929e9177c7090"
+      },
+      "legs/leg_19/summary.txt": {
+        "bytes": 947,
+        "sha256": "7bdc773093531d52a409a2381db5de674bd1801169978068382085049bd27b5e"
+      },
+      "legs/leg_19/tearsheet.png": {
+        "bytes": 185778,
+        "sha256": "4e3ffddba032afa19019161a38c0c2c4a7f0578ad0fe428c94efc70d8dc6d917"
+      },
+      "legs/leg_19/tearsheet.txt": {
+        "bytes": 947,
+        "sha256": "7bdc773093531d52a409a2381db5de674bd1801169978068382085049bd27b5e"
+      },
+      "legs/leg_20/equity.parquet": {
+        "bytes": 2707,
+        "sha256": "4ffea6594d4ea59f8833ec5e63f85e020f348a442757fa1e7d2faa841b043fec"
+      },
+      "legs/leg_20/fills.parquet": {
+        "bytes": 16221,
+        "sha256": "c377720c09e10b004029f6be7d2afb4e0beaa0c2ccee88f656f385decddd4cb9"
+      },
+      "legs/leg_20/funding.parquet": {
+        "bytes": 3222,
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      "legs/leg_20/orders.parquet": {
+        "bytes": 33956,
+        "sha256": "4128a669d200d7236e1b981886cff07494de1d2371f10db790f58ba80383c57d"
+      },
+      "legs/leg_20/positions.parquet": {
+        "bytes": 273348,
+        "sha256": "5d7678558834858727fdd30658e397d8ad23acc4101bec959d6ed5e675021b8e"
+      },
+      "legs/leg_20/run_meta.json": {
+        "bytes": 187233,
+        "sha256": "532cbf3a87f7cc14b834bb06ad43bd1a202ce28b007e7ab1d9dc852117d36eab"
+      },
+      "legs/leg_20/summary.txt": {
+        "bytes": 951,
+        "sha256": "ef51816c54f81c5f7b6a5c59456b0fed82f5ae16bf2ffc5c6799a2c82daa5c75"
+      },
+      "legs/leg_20/tearsheet.png": {
+        "bytes": 176986,
+        "sha256": "2c81c881e3324e53d7abbd8526e0c82de027f887a3f60d4dc973901fbb26a919"
+      },
+      "legs/leg_20/tearsheet.txt": {
+        "bytes": 951,
+        "sha256": "ef51816c54f81c5f7b6a5c59456b0fed82f5ae16bf2ffc5c6799a2c82daa5c75"
+      },
+      "legs/leg_21/equity.parquet": {
+        "bytes": 2707,
+        "sha256": "d96e6a3bff7fa92c634f417cb86ba8d8fb48651cd9d4879528c95317d687872e"
+      },
+      "legs/leg_21/fills.parquet": {
+        "bytes": 16393,
+        "sha256": "4ab239bd5f131254bbe24e3e40e18d2b71e903e15e76fe516e1318ac06da5be8"
+      },
+      "legs/leg_21/funding.parquet": {
+        "bytes": 3222,
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      "legs/leg_21/orders.parquet": {
+        "bytes": 34258,
+        "sha256": "4e4276b419a43a97b01c5eec365af82a86e1c769b741136123057a23de1e5199"
+      },
+      "legs/leg_21/positions.parquet": {
+        "bytes": 272442,
+        "sha256": "23037e1437afce221dfe26b5d4456cd08d0aefe79e310e7f0ac9ffc64d4df4c2"
+      },
+      "legs/leg_21/run_meta.json": {
+        "bytes": 187234,
+        "sha256": "18b1dd7e964d1895a12d708b59e4dbb7813c8f4646457ae9f5d3abfded298d51"
+      },
+      "legs/leg_21/summary.txt": {
+        "bytes": 955,
+        "sha256": "b7b1e2811f60728e3041c4ff822561b791e0843fd36c71ab89e32a1c361d87ee"
+      },
+      "legs/leg_21/tearsheet.png": {
+        "bytes": 173368,
+        "sha256": "d67f0cc1d808aaeaf794fb67022e6dad39c856d77eedf197d50423d27b920949"
+      },
+      "legs/leg_21/tearsheet.txt": {
+        "bytes": 955,
+        "sha256": "b7b1e2811f60728e3041c4ff822561b791e0843fd36c71ab89e32a1c361d87ee"
+      },
+      "legs/leg_22/equity.parquet": {
+        "bytes": 2708,
+        "sha256": "ce9ae5ad9b4843c6d66aa2016bdadcd7f7df90d0b9b899822473eb4677b3ae49"
+      },
+      "legs/leg_22/fills.parquet": {
+        "bytes": 16258,
+        "sha256": "dd8a7583ce7d3167b3b5902b9c2d705b68ebfab7e6dc428086ddd593a7a911dd"
+      },
+      "legs/leg_22/funding.parquet": {
+        "bytes": 3222,
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      "legs/leg_22/orders.parquet": {
+        "bytes": 34244,
+        "sha256": "8a6fd0ef83f7d7a7b7a781b74f22101c626e22398fdc6886ba17122de35f7187"
+      },
+      "legs/leg_22/positions.parquet": {
+        "bytes": 265730,
+        "sha256": "4f989e380420e2937dec63896ef3385397bd3ecdf4f755bae0bddf24fae6546a"
+      },
+      "legs/leg_22/run_meta.json": {
+        "bytes": 187232,
+        "sha256": "4904b1c79ca434a854c03bb51ef5520022f542930e43e86a1f3db59fadc3533d"
+      },
+      "legs/leg_22/summary.txt": {
+        "bytes": 951,
+        "sha256": "52f43a73ce976f745f95312ccd464c66d1b8c79d58d1d6882f14f6d2ae7e94bc"
+      },
+      "legs/leg_22/tearsheet.png": {
+        "bytes": 175039,
+        "sha256": "5b2bcf12ccd9d7448b1f2b7838eda71e5659aa1f805a8ffbf702d95c8977a49d"
+      },
+      "legs/leg_22/tearsheet.txt": {
+        "bytes": 951,
+        "sha256": "52f43a73ce976f745f95312ccd464c66d1b8c79d58d1d6882f14f6d2ae7e94bc"
+      },
+      "legs/leg_23/equity.parquet": {
+        "bytes": 2708,
+        "sha256": "28ff38de5186eb1c0a1edc10b44f5967c27410b5d6d723a4bb59a06f3dbbb8b2"
+      },
+      "legs/leg_23/fills.parquet": {
+        "bytes": 16207,
+        "sha256": "ff968710384b5bad1ab0b0db4b35000ef65fc66d029366f955484bce0429364b"
+      },
+      "legs/leg_23/funding.parquet": {
+        "bytes": 3222,
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      "legs/leg_23/orders.parquet": {
+        "bytes": 33984,
+        "sha256": "ddeb8818885ea68ccb77f7eabb3ad552d26faa66486eb19b54f4cc5290addcc9"
+      },
+      "legs/leg_23/positions.parquet": {
+        "bytes": 261579,
+        "sha256": "a61eb69ddb256bc530e843f91dbeaac535d50f1cba955d0101753a9cae6bf6ea"
+      },
+      "legs/leg_23/run_meta.json": {
+        "bytes": 187233,
+        "sha256": "1aa8cccaf02074bcd448ed83830f2118d2813675e35c2ab7ef66426c280554fe"
+      },
+      "legs/leg_23/summary.txt": {
+        "bytes": 947,
+        "sha256": "faa79c23aef780890b3a8afaea23ab0136343dfa496a0899947576ac78b2f992"
+      },
+      "legs/leg_23/tearsheet.png": {
+        "bytes": 180079,
+        "sha256": "8299335d9b5c0cff89dd71f63ad76538750a189c608589442e55bf08fe2a5111"
+      },
+      "legs/leg_23/tearsheet.txt": {
+        "bytes": 947,
+        "sha256": "faa79c23aef780890b3a8afaea23ab0136343dfa496a0899947576ac78b2f992"
+      },
+      "legs/leg_24/equity.parquet": {
+        "bytes": 2708,
+        "sha256": "baea66b0036cbca4e6a83f2e3447f9d49579f799ca85fe9f8090c902813c353e"
+      },
+      "legs/leg_24/fills.parquet": {
+        "bytes": 16174,
+        "sha256": "41db038634b72e9fc70566769130583fa6bb1e7afe237ec5392753700e97a25c"
+      },
+      "legs/leg_24/funding.parquet": {
+        "bytes": 3222,
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      "legs/leg_24/orders.parquet": {
+        "bytes": 33820,
+        "sha256": "592a16180e9657c126562a51d8dc84788ea1f4a79add4b1e4fe34a3ee002b6b9"
+      },
+      "legs/leg_24/positions.parquet": {
+        "bytes": 269577,
+        "sha256": "f1238c25257c4ce821db0373078e82c7b0c233f13843b7117513b9ebe6e3056e"
+      },
+      "legs/leg_24/run_meta.json": {
+        "bytes": 187232,
+        "sha256": "bea65adf561731827c12d46bdd0523612ba1ca793577a16572fbf2131205f942"
+      },
+      "legs/leg_24/summary.txt": {
+        "bytes": 956,
+        "sha256": "b0324e376bd092c7dc2e085fdbafa64384a06d2632ba9be631cdcfecb2d0c4b3"
+      },
+      "legs/leg_24/tearsheet.png": {
+        "bytes": 161916,
+        "sha256": "bf76b2f14cb7d72218f71c8471396938a97c6a09f9fa1ced92565ec520f6722f"
+      },
+      "legs/leg_24/tearsheet.txt": {
+        "bytes": 956,
+        "sha256": "b0324e376bd092c7dc2e085fdbafa64384a06d2632ba9be631cdcfecb2d0c4b3"
+      },
+      "legs/leg_25/equity.parquet": {
+        "bytes": 2707,
+        "sha256": "79d294a644793f654689796ce9f74830f4fb971ee5b7545af2bfff0171a2eb46"
+      },
+      "legs/leg_25/fills.parquet": {
+        "bytes": 15812,
+        "sha256": "76fb1bc14577c8f0751cc2d11a51612deb170b60bd2e08aa1dedffcf25076c1e"
+      },
+      "legs/leg_25/funding.parquet": {
+        "bytes": 3222,
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      "legs/leg_25/orders.parquet": {
+        "bytes": 34113,
+        "sha256": "5b3f135451c3938525d64287b5495f34968418f1137428c952e8d5dacfb1d4d6"
+      },
+      "legs/leg_25/positions.parquet": {
+        "bytes": 262241,
+        "sha256": "8dc07a16360edeb8c0a3af9e2b0bcd7d1500013e8382124bbb180e47e7803705"
+      },
+      "legs/leg_25/run_meta.json": {
+        "bytes": 187233,
+        "sha256": "e61f4fffca9814360b345d899fdc94444e1846762bf460570cf508e5ebd9a4d0"
+      },
+      "legs/leg_25/summary.txt": {
+        "bytes": 955,
+        "sha256": "0b6203ef55cdaca2ae1cb14d45bdb6c64db5ad9b0a24ba2cd9e71e84711fa03e"
+      },
+      "legs/leg_25/tearsheet.png": {
+        "bytes": 186567,
+        "sha256": "2033b7fa50371d7398c89cfd55282dcaea336ae3b8957e99dafef8286db79bdf"
+      },
+      "legs/leg_25/tearsheet.txt": {
+        "bytes": 955,
+        "sha256": "0b6203ef55cdaca2ae1cb14d45bdb6c64db5ad9b0a24ba2cd9e71e84711fa03e"
+      },
+      "legs/leg_26/equity.parquet": {
+        "bytes": 2707,
+        "sha256": "dd325084a09d7103b754d5430592d845a675dfbe24fc91666bf91b4648f3a364"
+      },
+      "legs/leg_26/fills.parquet": {
+        "bytes": 16079,
+        "sha256": "3bf7deac6a0d82e09096f9b9f7724e63fe4cf615b4bafeb33e8b1cd03976e5a4"
+      },
+      "legs/leg_26/funding.parquet": {
+        "bytes": 3222,
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      "legs/leg_26/orders.parquet": {
+        "bytes": 34123,
+        "sha256": "1a5808418356dd9ac5aaecd75ac40f1f85f3223508a9a414fb22810cec24c8a5"
+      },
+      "legs/leg_26/positions.parquet": {
+        "bytes": 268481,
+        "sha256": "7a37e25675c66b852f8c413b8d705f85f3c736285ddc64d26fceb9caa419ed35"
+      },
+      "legs/leg_26/run_meta.json": {
+        "bytes": 187233,
+        "sha256": "cd46e618922dbc2ddc96466fbb5738db166064d2b7e3d5516d08aeaad7d734a4"
+      },
+      "legs/leg_26/summary.txt": {
+        "bytes": 955,
+        "sha256": "76cef8e843e04fdb2eb8175ca1dd25ee856c1fbcb6bfdab2ad6d898d71ccd7a9"
+      },
+      "legs/leg_26/tearsheet.png": {
+        "bytes": 197228,
+        "sha256": "d2628708d4e4f87fd28e819c8d752704859b069ed3e5cf98152d71801b3cd593"
+      },
+      "legs/leg_26/tearsheet.txt": {
+        "bytes": 955,
+        "sha256": "76cef8e843e04fdb2eb8175ca1dd25ee856c1fbcb6bfdab2ad6d898d71ccd7a9"
+      },
+      "legs/leg_27/equity.parquet": {
+        "bytes": 2708,
+        "sha256": "da68f3229cdbbed6958e0d8dcad6b3ea8769666bf87be4d5217d93b48647af7b"
+      },
+      "legs/leg_27/fills.parquet": {
+        "bytes": 16480,
+        "sha256": "11adcf8a0e572d16cbdfc5a4ce8967da117160cedf3b612006e461bea0da85ca"
+      },
+      "legs/leg_27/funding.parquet": {
+        "bytes": 3222,
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      "legs/leg_27/orders.parquet": {
+        "bytes": 33960,
+        "sha256": "e16deb5ca8a717601aea7c13b8cc1fa8265cdfe0a557af7d9db13cf5ea7d5c50"
+      },
+      "legs/leg_27/positions.parquet": {
+        "bytes": 271857,
+        "sha256": "ac60591be119c5e6e24a9fee9e7d97d62b41cb232eb79d685f35fc1f4f848519"
+      },
+      "legs/leg_27/run_meta.json": {
+        "bytes": 187232,
+        "sha256": "3f961545807308b7d783528e711c05e0acc5c98986d88fe6d4c2a2e56f2a740e"
+      },
+      "legs/leg_27/summary.txt": {
+        "bytes": 948,
+        "sha256": "65a7d1388633e32ab55ab62df543c1c0696ab0c9590ef9272759dd895b0ac721"
+      },
+      "legs/leg_27/tearsheet.png": {
+        "bytes": 195613,
+        "sha256": "760b504a990c25e7e8d1485aa89b3e3e7a9dad67b2363b4088a9df32c057c7dd"
+      },
+      "legs/leg_27/tearsheet.txt": {
+        "bytes": 948,
+        "sha256": "65a7d1388633e32ab55ab62df543c1c0696ab0c9590ef9272759dd895b0ac721"
+      },
+      "legs/leg_28/equity.parquet": {
+        "bytes": 2709,
+        "sha256": "23477a7c80e886e7effafd6cccc71a428b95119b21eff641b9817cf623b56adf"
+      },
+      "legs/leg_28/fills.parquet": {
+        "bytes": 16352,
+        "sha256": "600f2b74ad7e252a513eb15e80233513b6d96c69bc712046044c6cfd488af88f"
+      },
+      "legs/leg_28/funding.parquet": {
+        "bytes": 3222,
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      "legs/leg_28/orders.parquet": {
+        "bytes": 34093,
+        "sha256": "e0cde887a624f1cabb61ded1584e2ca0477ce1f0ef0c260923d8461820392867"
+      },
+      "legs/leg_28/positions.parquet": {
+        "bytes": 268215,
+        "sha256": "df4392df39f1113d161653418edac1aaaaf58fbb551327254e58d13c03797799"
+      },
+      "legs/leg_28/run_meta.json": {
+        "bytes": 187233,
+        "sha256": "479c500787bfb5253dbde2be8497967fac36a45e159260bd5c9ae32f5c8d443c"
+      },
+      "legs/leg_28/summary.txt": {
+        "bytes": 948,
+        "sha256": "d34ad741334ad40e2b28caa8937baee7dca5d70ebec174aaed4d292246b2df14"
+      },
+      "legs/leg_28/tearsheet.png": {
+        "bytes": 182703,
+        "sha256": "7a52bc7c3b7ccc72301143828a8c9244d90c00c053342cb7a101e291d83a852c"
+      },
+      "legs/leg_28/tearsheet.txt": {
+        "bytes": 948,
+        "sha256": "d34ad741334ad40e2b28caa8937baee7dca5d70ebec174aaed4d292246b2df14"
+      },
+      "legs/leg_29/equity.parquet": {
+        "bytes": 2708,
+        "sha256": "d31af028450341d9d8f9d341bf9beb87421dba9cbc8a04296e8e8f5ec9a70a2c"
+      },
+      "legs/leg_29/fills.parquet": {
+        "bytes": 15972,
+        "sha256": "faf7a4d5cce353d09fa5dc9675b6f7376d71926680d96032cf8f5043739667c1"
+      },
+      "legs/leg_29/funding.parquet": {
+        "bytes": 3222,
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      "legs/leg_29/orders.parquet": {
+        "bytes": 34059,
+        "sha256": "04bd7758b7635d1d7c30224822efc82a2ce4cacea79987b72891516da2bb4029"
+      },
+      "legs/leg_29/positions.parquet": {
+        "bytes": 269722,
+        "sha256": "a6a8cbe04a189d069b3c765334cf3c785fb6c194855a786cf9441b5de4081ce3"
+      },
+      "legs/leg_29/run_meta.json": {
+        "bytes": 187232,
+        "sha256": "cfb8c6201b356315635381a760d4bad8293e86d68248624acd024dbce0120489"
+      },
+      "legs/leg_29/summary.txt": {
+        "bytes": 948,
+        "sha256": "a344eeae6696e37ad1cb056d8813f2eb87e8d78a7975391ce64fbdb2ff76a328"
+      },
+      "legs/leg_29/tearsheet.png": {
+        "bytes": 201395,
+        "sha256": "6062c8a000fb97d268ee43636182b52d673c5d516b6569990e723309f45f7bcd"
+      },
+      "legs/leg_29/tearsheet.txt": {
+        "bytes": 948,
+        "sha256": "a344eeae6696e37ad1cb056d8813f2eb87e8d78a7975391ce64fbdb2ff76a328"
+      },
+      "legs/leg_30/equity.parquet": {
+        "bytes": 2708,
+        "sha256": "317da3b1224a454422c51ab376411e6eebc6fc8781f35f649c43d2440448fe0d"
+      },
+      "legs/leg_30/fills.parquet": {
+        "bytes": 16048,
+        "sha256": "cafe0713c98ea5e3a8374ec2edc491748e4e79007a658c5008c3830029ffd288"
+      },
+      "legs/leg_30/funding.parquet": {
+        "bytes": 3222,
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      "legs/leg_30/orders.parquet": {
+        "bytes": 34120,
+        "sha256": "c8907de3bb90aab779aaa589a3087090b0b46cbccda868fa4a0b31035183e7c3"
+      },
+      "legs/leg_30/positions.parquet": {
+        "bytes": 272183,
+        "sha256": "a865ce7517ea9e3ebfb5440e41fbb6f65e061d7078f00f66bed18fcde6daf429"
+      },
+      "legs/leg_30/run_meta.json": {
+        "bytes": 187233,
+        "sha256": "3a549b3626624711e3bcacaa37698a635c92ba174028bef64a2ce042671532aa"
+      },
+      "legs/leg_30/summary.txt": {
+        "bytes": 948,
+        "sha256": "f9b626ff6bba65d2888d48a7c5ddf98adb29a0029741b07eec5b17fefe125de0"
+      },
+      "legs/leg_30/tearsheet.png": {
+        "bytes": 189028,
+        "sha256": "eb69fdd02f152c7475683bb49ecd2718e1a66b94909b4edc7b239bf742fba263"
+      },
+      "legs/leg_30/tearsheet.txt": {
+        "bytes": 948,
+        "sha256": "f9b626ff6bba65d2888d48a7c5ddf98adb29a0029741b07eec5b17fefe125de0"
+      },
+      "legs/leg_31/equity.parquet": {
+        "bytes": 2706,
+        "sha256": "91d4cece22420125e5b830e90ce6ce288d7568e34d0aa777f06acd957803205c"
+      },
+      "legs/leg_31/fills.parquet": {
+        "bytes": 15947,
+        "sha256": "4f5a5a2222e1c3512884d4f28891af4faf6cdb18acc5eadfddf84160a222b0e1"
+      },
+      "legs/leg_31/funding.parquet": {
+        "bytes": 3222,
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      "legs/leg_31/orders.parquet": {
+        "bytes": 34358,
+        "sha256": "758f68eabfcf8d843dfc8dc996f5213f6f15908d6dab6ab5b2462275a97c2160"
+      },
+      "legs/leg_31/positions.parquet": {
+        "bytes": 270090,
+        "sha256": "8242ec77cac30e38126dd448b973f12aa491fa367c3c8cb15fc159131feedfaa"
+      },
+      "legs/leg_31/run_meta.json": {
+        "bytes": 187232,
+        "sha256": "31911e9594a872d27d2e5c4b5dc63815ddf45414a4cd1fbfc0d0b8c09b4eca25"
+      },
+      "legs/leg_31/summary.txt": {
+        "bytes": 948,
+        "sha256": "0997a190063a14cb5314367ea1029a84963b89247e9ffa1ea7bbecaa690e9eee"
+      },
+      "legs/leg_31/tearsheet.png": {
+        "bytes": 173932,
+        "sha256": "18dde83c260a885e457f0d202a8e8d1e2fb27ba7f44a1c7abbd4b8eef2c1ffd6"
+      },
+      "legs/leg_31/tearsheet.txt": {
+        "bytes": 948,
+        "sha256": "0997a190063a14cb5314367ea1029a84963b89247e9ffa1ea7bbecaa690e9eee"
+      },
+      "legs/leg_32/equity.parquet": {
+        "bytes": 2707,
+        "sha256": "6abc728da05486ba0c58e67aa0815610e4315b4d8b3e1f5ca95ce7e49640c374"
+      },
+      "legs/leg_32/fills.parquet": {
+        "bytes": 16265,
+        "sha256": "6c4cb04de07a286afcf89190e810a8fa084eacb61e0bbbbd2c8b404dd4e46773"
+      },
+      "legs/leg_32/funding.parquet": {
+        "bytes": 3222,
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      "legs/leg_32/orders.parquet": {
+        "bytes": 34430,
+        "sha256": "dec4de503aee9349d2020e5b84fac3577b187a7036049874dc28fb3408797d2d"
+      },
+      "legs/leg_32/positions.parquet": {
+        "bytes": 270954,
+        "sha256": "489f967d68ca245eb87032a147fbc4389a30014d77428aa488750ab84bb1b8de"
+      },
+      "legs/leg_32/run_meta.json": {
+        "bytes": 187233,
+        "sha256": "2ec6892d6b4017cacd6bad62cf717fae3528d1322da19a4ffb28cdc33e9b8a9c"
+      },
+      "legs/leg_32/summary.txt": {
+        "bytes": 948,
+        "sha256": "a0251b19622dfeb722e2d45054a750ae0e17ed3ce579d6d54892c16499b9734e"
+      },
+      "legs/leg_32/tearsheet.png": {
+        "bytes": 201493,
+        "sha256": "0ab4b890be91196ee4c476871380be1d54a926d218605d54f9fdec6c3cf91eb3"
+      },
+      "legs/leg_32/tearsheet.txt": {
+        "bytes": 948,
+        "sha256": "a0251b19622dfeb722e2d45054a750ae0e17ed3ce579d6d54892c16499b9734e"
+      },
+      "legs/leg_33/equity.parquet": {
+        "bytes": 2707,
+        "sha256": "56d899c6a67ab836fb9b04a9c3c251f6d896b3d086cb363b565d8ee09f37ab9d"
+      },
+      "legs/leg_33/fills.parquet": {
+        "bytes": 16483,
+        "sha256": "2c321432b2b0cc8e4ba4061a816604008e3ef73531bc79d5d3db3169fd377efa"
+      },
+      "legs/leg_33/funding.parquet": {
+        "bytes": 3222,
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      "legs/leg_33/orders.parquet": {
+        "bytes": 34426,
+        "sha256": "5ccbbc4b77f8cb08953a7aa54676d1c68cc9ce4fc108fe5e326660f73260602e"
+      },
+      "legs/leg_33/positions.parquet": {
+        "bytes": 275245,
+        "sha256": "86f6f7ee03bb22185b87c7b308a2131d697b72bb4413d43d7d01734ade0b3191"
+      },
+      "legs/leg_33/run_meta.json": {
+        "bytes": 187233,
+        "sha256": "a0d07ae92198bc9177260b53312be8b5612247c1e507bc2e22d306258fa94688"
+      },
+      "legs/leg_33/summary.txt": {
+        "bytes": 948,
+        "sha256": "1954d0221aecf537ed2471523a0feef1c30a3dbd17773e8180b7242c9de6fa13"
+      },
+      "legs/leg_33/tearsheet.png": {
+        "bytes": 175972,
+        "sha256": "75e423186c0bd12115a2459f472560a10d6b0bcb8a4641d0a4ff75d90f91fc43"
+      },
+      "legs/leg_33/tearsheet.txt": {
+        "bytes": 948,
+        "sha256": "1954d0221aecf537ed2471523a0feef1c30a3dbd17773e8180b7242c9de6fa13"
+      },
+      "legs/leg_34/equity.parquet": {
+        "bytes": 2707,
+        "sha256": "99180a895a4a59a915c103d87de141b02d630be0f1e52b8a372cadba23fe2771"
+      },
+      "legs/leg_34/fills.parquet": {
+        "bytes": 16211,
+        "sha256": "619dca7606a0d2a2852588c6bf80027781cf2009b20a91bf8d813a76dadd9f70"
+      },
+      "legs/leg_34/funding.parquet": {
+        "bytes": 3222,
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      "legs/leg_34/orders.parquet": {
+        "bytes": 34566,
+        "sha256": "6bf1e4e3db6f317da635a3fa4a4e9c2dca5d0d2497e4030b010be0ce29fa7f08"
+      },
+      "legs/leg_34/positions.parquet": {
+        "bytes": 277543,
+        "sha256": "317a124f5751dbcc215e90f932ddcd6663058ccb431059a63b75e0bafd31a5a4"
+      },
+      "legs/leg_34/run_meta.json": {
+        "bytes": 187233,
+        "sha256": "1526fd2b82c02716fdf2fb304b34eec50bfe3b9e60c851cf7d89ff7bd29def52"
+      },
+      "legs/leg_34/summary.txt": {
+        "bytes": 956,
+        "sha256": "c8e96642d1d10d9ac41a2e9de183846586312a5f5818cd28ee966187f8e6717e"
+      },
+      "legs/leg_34/tearsheet.png": {
+        "bytes": 178843,
+        "sha256": "8595ae9f91b0aa355adc88a7e7fd1d20ce35376505d948c297a2b81b903c6185"
+      },
+      "legs/leg_34/tearsheet.txt": {
+        "bytes": 956,
+        "sha256": "c8e96642d1d10d9ac41a2e9de183846586312a5f5818cd28ee966187f8e6717e"
+      },
+      "legs/leg_35/equity.parquet": {
+        "bytes": 2708,
+        "sha256": "d9bddcd2e11127a97af8fd93da62cef905e39b5fd8a6d89406a33819e221ea2d"
+      },
+      "legs/leg_35/fills.parquet": {
+        "bytes": 16431,
+        "sha256": "faee6dddff5711762cd89d7d987676390c653e92475a4bd8e50eb0a6b949514c"
+      },
+      "legs/leg_35/funding.parquet": {
+        "bytes": 3222,
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      "legs/leg_35/orders.parquet": {
+        "bytes": 34586,
+        "sha256": "52e411750e35efdd26109935330f0d94c4f4a734e949beb86286d18952e3769e"
+      },
+      "legs/leg_35/positions.parquet": {
+        "bytes": 275869,
+        "sha256": "01f26b95d8e27ce7715b49827416e50ac3a39b126cbb57cf283a1fc161a58778"
+      },
+      "legs/leg_35/run_meta.json": {
+        "bytes": 187232,
+        "sha256": "ff1746228377b7e77d71e14ece0b86b1770068c02b33c1702f4efa1d788d20d8"
+      },
+      "legs/leg_35/summary.txt": {
+        "bytes": 955,
+        "sha256": "8c0117142f8c18e165051f3f8e93ff4fe6459fc36add2eb848b237f9587e971e"
+      },
+      "legs/leg_35/tearsheet.png": {
+        "bytes": 160305,
+        "sha256": "4e6679378ec846df46185531cf75772de07dadbb1686ffd09cff00a5ea57c559"
+      },
+      "legs/leg_35/tearsheet.txt": {
+        "bytes": 955,
+        "sha256": "8c0117142f8c18e165051f3f8e93ff4fe6459fc36add2eb848b237f9587e971e"
+      },
+      "legs/leg_36/equity.parquet": {
+        "bytes": 2707,
+        "sha256": "b8ac6ec44a1ba820f1e1657711ea246ef2cda9243f3ffa47fb13d54465bfdf08"
+      },
+      "legs/leg_36/fills.parquet": {
+        "bytes": 16318,
+        "sha256": "28ef8c362261192adc2824f4f3ddcf9f857230b2261b7a28cf5218ec6b3fe337"
+      },
+      "legs/leg_36/funding.parquet": {
+        "bytes": 3222,
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      "legs/leg_36/orders.parquet": {
+        "bytes": 34417,
+        "sha256": "c5fc8ab9b7731a4e1e4dfa7b11ae08c81d5918aa81a866d139467dc5bd28dc67"
+      },
+      "legs/leg_36/positions.parquet": {
+        "bytes": 282978,
+        "sha256": "0786f39cb7dafef1355057eda06a0516ca72c4e55aa4953c7832d6d82654adca"
+      },
+      "legs/leg_36/run_meta.json": {
+        "bytes": 187233,
+        "sha256": "87c629c5f740cf25de0c8e78986666e3f3c76db1ff458bd956af01936a5f6d4a"
+      },
+      "legs/leg_36/summary.txt": {
+        "bytes": 956,
+        "sha256": "db2ad62387bbc69d27b1ec905a07dbc37385ee9b5036b74f92e8e10931adbd59"
+      },
+      "legs/leg_36/tearsheet.png": {
+        "bytes": 178125,
+        "sha256": "f38c6b77d36a01ea15d5fb89b084947ac425f31fabf74d6720fe4473393b0b9f"
+      },
+      "legs/leg_36/tearsheet.txt": {
+        "bytes": 956,
+        "sha256": "db2ad62387bbc69d27b1ec905a07dbc37385ee9b5036b74f92e8e10931adbd59"
+      },
+      "legs/leg_37/equity.parquet": {
+        "bytes": 2709,
+        "sha256": "e3d4337ad7545d639b09fdc4948f818f503d319b711e218f9b47be8a5a59f798"
+      },
+      "legs/leg_37/fills.parquet": {
+        "bytes": 16222,
+        "sha256": "ca5a1a379abd03d6a5b0219e645bedb9c1b6649b51df910731f50523dfe0c26f"
+      },
+      "legs/leg_37/funding.parquet": {
+        "bytes": 3222,
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      "legs/leg_37/orders.parquet": {
+        "bytes": 34499,
+        "sha256": "7e05c0f964810e8705fa508743b05bf6299df96d4ea47af67a25db0cfd1bc203"
+      },
+      "legs/leg_37/positions.parquet": {
+        "bytes": 274328,
+        "sha256": "fb06cef7ef28b91b60f140c2bd72b01f7c72e7b29cb194042fbc66b2c108a29d"
+      },
+      "legs/leg_37/run_meta.json": {
+        "bytes": 187233,
+        "sha256": "0a5100fef3ce9140951baa1ec7f45399efdb5681877ab8368234877ebf5067ad"
+      },
+      "legs/leg_37/summary.txt": {
+        "bytes": 948,
+        "sha256": "9995fdbd77888ba489563e21def95d4b6b8d5918a3b063c0d873b424de392083"
+      },
+      "legs/leg_37/tearsheet.png": {
+        "bytes": 183137,
+        "sha256": "c2c838f5a52e88d9a79f414a6e70900b9b4cd6513eb2fa4a39d4298364fcf29c"
+      },
+      "legs/leg_37/tearsheet.txt": {
+        "bytes": 948,
+        "sha256": "9995fdbd77888ba489563e21def95d4b6b8d5918a3b063c0d873b424de392083"
+      },
+      "legs/leg_38/equity.parquet": {
+        "bytes": 2707,
+        "sha256": "6cb74fd7fc4b11c6ff734e6ced45c258a96699b30ebffb26f64b7365dd10a820"
+      },
+      "legs/leg_38/fills.parquet": {
+        "bytes": 16207,
+        "sha256": "eda54f4db908a38604bb78ed244466aa7c0f4a1e8451159426de859cbd02919d"
+      },
+      "legs/leg_38/funding.parquet": {
+        "bytes": 3222,
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      "legs/leg_38/orders.parquet": {
+        "bytes": 34692,
+        "sha256": "947d061385db936cb6ff9055e5272895db7c66d4bef6f3c80b8d531c2d8cd9d5"
+      },
+      "legs/leg_38/positions.parquet": {
+        "bytes": 277441,
+        "sha256": "e8d8669d3afdfcaed3b3b94c32f356562199e2a4ede860918039937ac1af3e54"
+      },
+      "legs/leg_38/run_meta.json": {
+        "bytes": 187233,
+        "sha256": "036d7e4a4bc859d403ccb343f5df722990c6afb4cdf4354241628ded38cb4d6c"
+      },
+      "legs/leg_38/summary.txt": {
+        "bytes": 956,
+        "sha256": "600eb15f86c1f5e06b0497058d6db48bb697b2e26933e75340f02c7a71150dcf"
+      },
+      "legs/leg_38/tearsheet.png": {
+        "bytes": 180859,
+        "sha256": "cad67e95cc65d746fe32ee60cab4c3ebbaec34f4cdc0626b3053089dd8547966"
+      },
+      "legs/leg_38/tearsheet.txt": {
+        "bytes": 956,
+        "sha256": "600eb15f86c1f5e06b0497058d6db48bb697b2e26933e75340f02c7a71150dcf"
+      },
+      "legs/leg_39/equity.parquet": {
+        "bytes": 2709,
+        "sha256": "6c2f57ad93a8bfcd258ea45f414be901d2512ca3c2f01fc232deb95dce399fba"
+      },
+      "legs/leg_39/fills.parquet": {
+        "bytes": 16367,
+        "sha256": "fa3e8ff473ebad4e3d3aa5d3d0b2b9b0f0c08dc8374bf3d4a3aa88c7e35f4d3e"
+      },
+      "legs/leg_39/funding.parquet": {
+        "bytes": 3222,
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      "legs/leg_39/orders.parquet": {
+        "bytes": 34648,
+        "sha256": "0c0861d2db37af038118a6a58be6f61563137d65268908b4d622aa38b3fdc158"
+      },
+      "legs/leg_39/positions.parquet": {
+        "bytes": 276283,
+        "sha256": "13404a7ae77219cbb6f4abee6900bccd0814b8616861b2bd9dc06e1e8c3040ea"
+      },
+      "legs/leg_39/run_meta.json": {
+        "bytes": 187233,
+        "sha256": "e921bfd76ddfac530a1e9d91176288337c30667562a3ff6b1ead06c5251f0446"
+      },
+      "legs/leg_39/summary.txt": {
+        "bytes": 955,
+        "sha256": "8b0fa57de77991979b1e4dcdb4c915802b347b8bf2f0bed5ccab7fd192a1d45c"
+      },
+      "legs/leg_39/tearsheet.png": {
+        "bytes": 202897,
+        "sha256": "bc4860b3f648b05551ba173d0b8ec92d0334f720d437e38dd8605244ff560469"
+      },
+      "legs/leg_39/tearsheet.txt": {
+        "bytes": 955,
+        "sha256": "8b0fa57de77991979b1e4dcdb4c915802b347b8bf2f0bed5ccab7fd192a1d45c"
+      },
+      "legs/leg_40/equity.parquet": {
+        "bytes": 2709,
+        "sha256": "62a6cbb47a37351c6d996848f800abd3d67ac5716e20063752298a24526fb612"
+      },
+      "legs/leg_40/fills.parquet": {
+        "bytes": 32694,
+        "sha256": "a0d280e9e31da2c7308ea6fb7d1e5f953ca477a5e7b7a6f6e31dcb6d833e229d"
+      },
+      "legs/leg_40/funding.parquet": {
+        "bytes": 3222,
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      "legs/leg_40/orders.parquet": {
+        "bytes": 285682,
+        "sha256": "8e1b010f57669c2cce156cf16ad4549372fa5922ad4c1954b79e00b638e68b57"
+      },
+      "legs/leg_40/positions.parquet": {
+        "bytes": 279453,
+        "sha256": "56447765cb1b3a35d02044445fc69b816038247792dc3c65cc9e96f40d492fa1"
+      },
+      "legs/leg_40/run_meta.json": {
+        "bytes": 187242,
+        "sha256": "567b29545604e5268cb58e229e097c43c542a2919f8476e80ea53b4c5a8789fe"
+      },
+      "legs/leg_40/summary.txt": {
+        "bytes": 956,
+        "sha256": "cc5d681ca6329609d4a0f2e7ae3b5491171d167746c85563c46fc5afcf87c468"
+      },
+      "legs/leg_40/tearsheet.png": {
+        "bytes": 175020,
+        "sha256": "19ba8102362dcb1b05ef970e9e5a236aa761da180496d2c2ba4ff5fe8fef46ae"
+      },
+      "legs/leg_40/tearsheet.txt": {
+        "bytes": 956,
+        "sha256": "cc5d681ca6329609d4a0f2e7ae3b5491171d167746c85563c46fc5afcf87c468"
+      },
+      "legs/leg_41/equity.parquet": {
+        "bytes": 2709,
+        "sha256": "ee3628598d0910b5a222239cadf520daf227d312ea6a86f91a8dad40a03ef901"
+      },
+      "legs/leg_41/fills.parquet": {
+        "bytes": 28988,
+        "sha256": "fdb55cded990fb485ea4aea0036ab3505c3824384290932da7072aea602ba880"
+      },
+      "legs/leg_41/funding.parquet": {
+        "bytes": 3222,
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      "legs/leg_41/orders.parquet": {
+        "bytes": 655758,
+        "sha256": "623e1643a4d27aae97a08026ad2fe8e91a587a9bb08dcf151e72b7e5981d3619"
+      },
+      "legs/leg_41/positions.parquet": {
+        "bytes": 259109,
+        "sha256": "465f6f5342b6c2bd5d822f2f5c73fd69836127acf6a0c4ae2ee0a77e779fbede"
+      },
+      "legs/leg_41/run_meta.json": {
+        "bytes": 187244,
+        "sha256": "c1872a293602503fccb684c2ceb01a1ccf2561d9493e32cd9cb56cf490326ebb"
+      },
+      "legs/leg_41/summary.txt": {
+        "bytes": 955,
+        "sha256": "eafec0ce9ac400b2294b4fde2438e6cdf1be0d89d5048c1bd2d943e5cb615e3c"
+      },
+      "legs/leg_41/tearsheet.png": {
+        "bytes": 173694,
+        "sha256": "0995a6cc90498dddc4ffe1831e2fa40b7310792654e1ebbded35b874d745c7d9"
+      },
+      "legs/leg_41/tearsheet.txt": {
+        "bytes": 955,
+        "sha256": "eafec0ce9ac400b2294b4fde2438e6cdf1be0d89d5048c1bd2d943e5cb615e3c"
+      },
+      "legs/leg_42/equity.parquet": {
+        "bytes": 2708,
+        "sha256": "b7f89b87d82c8aaedda53e4d246badab3a3cdeda14b6919205e63b6e93f0ff50"
+      },
+      "legs/leg_42/fills.parquet": {
+        "bytes": 29697,
+        "sha256": "d7872e7033b33cb91f1b665ff856cda3f2b472f6325de573dab8dd81683f0781"
+      },
+      "legs/leg_42/funding.parquet": {
+        "bytes": 3222,
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      "legs/leg_42/orders.parquet": {
+        "bytes": 644091,
+        "sha256": "4d27340fa5de62b317ebcc7ad0621747b28faa305509446d56010aa3bccdfb45"
+      },
+      "legs/leg_42/positions.parquet": {
+        "bytes": 271275,
+        "sha256": "9e5fb4ae3df6510f9b19a997afa76ac85924afc1f96af26b315117618387ba0b"
+      },
+      "legs/leg_42/run_meta.json": {
+        "bytes": 187244,
+        "sha256": "c6c4c134036ba36ca1f0c0bea2bb8e137152fb9595fec0af65f6b6d5f08dbf05"
+      },
+      "legs/leg_42/summary.txt": {
+        "bytes": 951,
+        "sha256": "2d3735efe12e9814da6e46f26de0a875c636b8d76cca03ea69f4ad62158f52cd"
+      },
+      "legs/leg_42/tearsheet.png": {
+        "bytes": 180573,
+        "sha256": "84595456ee1024c84f7cc26c64e90e33a7f134d9254d9de01b88d3b9d98b7ab7"
+      },
+      "legs/leg_42/tearsheet.txt": {
+        "bytes": 951,
+        "sha256": "2d3735efe12e9814da6e46f26de0a875c636b8d76cca03ea69f4ad62158f52cd"
+      },
+      "legs/leg_43/equity.parquet": {
+        "bytes": 2709,
+        "sha256": "30b3cb6dd8e14505eed3ea03d53b3bd6039223db9bda85318712aab72eec9191"
+      },
+      "legs/leg_43/fills.parquet": {
+        "bytes": 33024,
+        "sha256": "760804379c96ea4cd4f8aea001b0eb7596197e4a13da042a578d7ffe7918b108"
+      },
+      "legs/leg_43/funding.parquet": {
+        "bytes": 3222,
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      "legs/leg_43/orders.parquet": {
+        "bytes": 173543,
+        "sha256": "8c8fbbfb2bee221a33bbf1b5b84e14999a9e259bdeb86e1d854afbc6beb226a4"
+      },
+      "legs/leg_43/positions.parquet": {
+        "bytes": 270113,
+        "sha256": "e3740c033ea5ca27838a2bf8550f36782071cb62f64a3bec973c37a9d0a4459c"
+      },
+      "legs/leg_43/run_meta.json": {
+        "bytes": 187239,
+        "sha256": "f8b4f403537dfc4ffcc45898a2e4bba551deefd1f538ae50b9461872bf5dca02"
+      },
+      "legs/leg_43/summary.txt": {
+        "bytes": 955,
+        "sha256": "8bf2ecb9792158049b6a979fb42a884b6641dbef1900902d73f3d8e4194527a7"
+      },
+      "legs/leg_43/tearsheet.png": {
+        "bytes": 181092,
+        "sha256": "4497f325fd698348c1d0b323f754c835bf1d21543d9b7308a03face081987441"
+      },
+      "legs/leg_43/tearsheet.txt": {
+        "bytes": 955,
+        "sha256": "8bf2ecb9792158049b6a979fb42a884b6641dbef1900902d73f3d8e4194527a7"
+      },
+      "legs/leg_44/equity.parquet": {
+        "bytes": 2706,
+        "sha256": "3d343d3e1ef80457bfd25c3844c0b65bddbc48a262f4d838d49abd710c7c69c5"
+      },
+      "legs/leg_44/fills.parquet": {
+        "bytes": 27397,
+        "sha256": "5d8db7a20a53787a835237946dfb30f6076b28bba34cff28963726f64540293f"
+      },
+      "legs/leg_44/funding.parquet": {
+        "bytes": 3222,
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      "legs/leg_44/orders.parquet": {
+        "bytes": 408138,
+        "sha256": "60e34d6dcb50fd2db28fda9639e4bcd673bd74f1eb71be1666a2273019ca24ac"
+      },
+      "legs/leg_44/positions.parquet": {
+        "bytes": 268773,
+        "sha256": "9ece8132cd3f8d39bb73233b1d19d3827bdd8720f0a3419e8e6214ea4fab4be5"
+      },
+      "legs/leg_44/run_meta.json": {
+        "bytes": 187240,
+        "sha256": "c6d62b3fbfc14c46b6a994ce17b813f38fd362a564382ca60c60f9cb91cd55a8"
+      },
+      "legs/leg_44/summary.txt": {
+        "bytes": 947,
+        "sha256": "73e9b66c9e82122cd22158ae15c8b43f55da68077022857f89766c961199ba5f"
+      },
+      "legs/leg_44/tearsheet.png": {
+        "bytes": 186568,
+        "sha256": "238afd430a33f3676040fd89d1e548e3b7c5bcf3e2f6cf54f519f314b4d688e0"
+      },
+      "legs/leg_44/tearsheet.txt": {
+        "bytes": 947,
+        "sha256": "73e9b66c9e82122cd22158ae15c8b43f55da68077022857f89766c961199ba5f"
+      },
+      "legs/leg_45/equity.parquet": {
+        "bytes": 2707,
+        "sha256": "15c12bdeccb8781e8701117f363d13e62d19b9e1917b34cdca65e7ad82785dd3"
+      },
+      "legs/leg_45/fills.parquet": {
+        "bytes": 16000,
+        "sha256": "898946f4e2c3db66fdf54313166bba0c1e5b79362f5a112c0a4d45a1e3ec2e77"
+      },
+      "legs/leg_45/funding.parquet": {
+        "bytes": 3222,
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      "legs/leg_45/orders.parquet": {
+        "bytes": 34269,
+        "sha256": "58642516b39472b753d025ade9966cf193251f4c254854e4fab986274e2a1fa6"
+      },
+      "legs/leg_45/positions.parquet": {
+        "bytes": 270660,
+        "sha256": "5cea0633b45b308b4ae947bbe0bb032eba45604c44660354a9bcfca2e6b1c0c5"
+      },
+      "legs/leg_45/run_meta.json": {
+        "bytes": 187233,
+        "sha256": "ccfbfd3d6c0395b45bb48a834205d3b92599c4c7ef0ecc86d888443a466adb8b"
+      },
+      "legs/leg_45/summary.txt": {
+        "bytes": 949,
+        "sha256": "7bb90dcfa5e85818f416295e16ce1b6b1a238dcda2a900893b7a33d1b7a6fa72"
+      },
+      "legs/leg_45/tearsheet.png": {
+        "bytes": 207900,
+        "sha256": "45cb390eddaacafc9c07a989b6cd4b1a8cd81bf515156c8490e181bcdad76196"
+      },
+      "legs/leg_45/tearsheet.txt": {
+        "bytes": 949,
+        "sha256": "7bb90dcfa5e85818f416295e16ce1b6b1a238dcda2a900893b7a33d1b7a6fa72"
+      },
+      "legs/leg_46/equity.parquet": {
+        "bytes": 2708,
+        "sha256": "fbc620ffd177c6fec1b48f727eec4c2e5a5fc25d4ec07e146874d6b619325acd"
+      },
+      "legs/leg_46/fills.parquet": {
+        "bytes": 16137,
+        "sha256": "6127f1a61ba0508356fbe909ac9cb5ce7a60d1d872a5b484190f164741a1af89"
+      },
+      "legs/leg_46/funding.parquet": {
+        "bytes": 3222,
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      "legs/leg_46/orders.parquet": {
+        "bytes": 34542,
+        "sha256": "734fdd6da21c7deaae4210505fd2f48ea5fdf6d8c6cb3e23088015488580d7ed"
+      },
+      "legs/leg_46/positions.parquet": {
+        "bytes": 269941,
+        "sha256": "ff0f69db6fe6cb110d2635169610922358814d9c8d99b029d7389292b8036600"
+      },
+      "legs/leg_46/run_meta.json": {
+        "bytes": 187233,
+        "sha256": "bcc4f5202ed1055663416813c77e1e73645310240ca0189708e999d964345d81"
+      },
+      "legs/leg_46/summary.txt": {
+        "bytes": 948,
+        "sha256": "474670b1e14cea78cc9a0a6b0f3166e4ff7b9bb08b16d18e662af2aa9078f5b8"
+      },
+      "legs/leg_46/tearsheet.png": {
+        "bytes": 210553,
+        "sha256": "2d1a6ced7b8f31ea28d9a9b05bfc881ac4fc3c7f9146a25399647b67f474c10b"
+      },
+      "legs/leg_46/tearsheet.txt": {
+        "bytes": 948,
+        "sha256": "474670b1e14cea78cc9a0a6b0f3166e4ff7b9bb08b16d18e662af2aa9078f5b8"
+      },
+      "legs/leg_47/equity.parquet": {
+        "bytes": 2708,
+        "sha256": "8e1ec50e8b5d208e41ae630d04b40fa8d9e00563b9b240b19c23d738d2de8c47"
+      },
+      "legs/leg_47/fills.parquet": {
+        "bytes": 15995,
+        "sha256": "72588e91b7fc11d5b6df6ab21458e8992ca5330911ad0519084e775dfa1bbb05"
+      },
+      "legs/leg_47/funding.parquet": {
+        "bytes": 3222,
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      "legs/leg_47/orders.parquet": {
+        "bytes": 34594,
+        "sha256": "b2db8f968fa281d766c278b0fe7c1c5c38012ce9f777a56ffac05821b02e09a6"
+      },
+      "legs/leg_47/positions.parquet": {
+        "bytes": 268437,
+        "sha256": "801b26f3fee7d9347badba42b7f503b8c6699dd3cc6326630c8f10becc0fb421"
+      },
+      "legs/leg_47/run_meta.json": {
+        "bytes": 187233,
+        "sha256": "72c9f860f06d09a39711884ef57941dc780171c86ce51f66795d516367b5c1d8"
+      },
+      "legs/leg_47/summary.txt": {
+        "bytes": 948,
+        "sha256": "ab8e3e3842a78f70dc017499e864a6889ecd2b26ad0f7cfcb4366c74bbeeaad5"
+      },
+      "legs/leg_47/tearsheet.png": {
+        "bytes": 193546,
+        "sha256": "5cde2c0754145f357e32184d4f83efb7ad9d68f75ec8dba5fe02786cef1c1a9c"
+      },
+      "legs/leg_47/tearsheet.txt": {
+        "bytes": 948,
+        "sha256": "ab8e3e3842a78f70dc017499e864a6889ecd2b26ad0f7cfcb4366c74bbeeaad5"
+      },
+      "legs/leg_48/equity.parquet": {
+        "bytes": 2708,
+        "sha256": "e0cafd13691b85e674f24ed8f7e1ef11c5c8962af6c58d92ce5161c55f785dcd"
+      },
+      "legs/leg_48/fills.parquet": {
+        "bytes": 16123,
+        "sha256": "acb8b282d3700e8dda8c81e5e135c191de4408e013f37cd8874d81613d6bf9b5"
+      },
+      "legs/leg_48/funding.parquet": {
+        "bytes": 3222,
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      "legs/leg_48/orders.parquet": {
+        "bytes": 34464,
+        "sha256": "3b59ab604f7e9edb5be05c94ccad2e36ebd5ac82319fae1bad517b6858d3c74b"
+      },
+      "legs/leg_48/positions.parquet": {
+        "bytes": 273656,
+        "sha256": "1da49253ce4ee163499552e35e5eb783b3eff6db4822244fcf60e58cb661d43a"
+      },
+      "legs/leg_48/run_meta.json": {
+        "bytes": 187232,
+        "sha256": "c64347437a95f193a657f20f17b6f71ee81456b467e987bce29916ac37c577e2"
+      },
+      "legs/leg_48/summary.txt": {
+        "bytes": 956,
+        "sha256": "ffe1f41a75bf5e6a8becc231274ee8066297be0d401d10e20375e978cde0d16f"
+      },
+      "legs/leg_48/tearsheet.png": {
+        "bytes": 168374,
+        "sha256": "7e0e6b4ef62c2ecf01d86aff31578a0b1b4248ce9227ac082f53f792560a6e04"
+      },
+      "legs/leg_48/tearsheet.txt": {
+        "bytes": 956,
+        "sha256": "ffe1f41a75bf5e6a8becc231274ee8066297be0d401d10e20375e978cde0d16f"
+      },
+      "legs/leg_49/equity.parquet": {
+        "bytes": 2708,
+        "sha256": "da161230acae4d14adaf45fc3893fa98e6b9f5fb18cc62f9e9d7195f3555bf61"
+      },
+      "legs/leg_49/fills.parquet": {
+        "bytes": 15826,
+        "sha256": "f91392795dee4710c08381f4e0434d4b18a79a34a7334123229b50474008d4f4"
+      },
+      "legs/leg_49/funding.parquet": {
+        "bytes": 3222,
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      "legs/leg_49/orders.parquet": {
+        "bytes": 34558,
+        "sha256": "328318e87f329d36812c6188a830c023acb7159e236ab0f7d9d81b1482239726"
+      },
+      "legs/leg_49/positions.parquet": {
+        "bytes": 269556,
+        "sha256": "b0144557e0207beb424e768b4e1dd34fbfc44df8370ddcf0a930979bc76a8468"
+      },
+      "legs/leg_49/run_meta.json": {
+        "bytes": 187233,
+        "sha256": "24e29a530b1f2311075684577dbc2cf210202608027fb4cd41335e81b759df05"
+      },
+      "legs/leg_49/summary.txt": {
+        "bytes": 948,
+        "sha256": "0068de7db271b3e47fab3847a6be3eb450767d76f578c8f7d4f18125c3c815de"
+      },
+      "legs/leg_49/tearsheet.png": {
+        "bytes": 187159,
+        "sha256": "6b9544035da137677975166657e35dea51760f18ff4af407c3258fb7a76c3fc3"
+      },
+      "legs/leg_49/tearsheet.txt": {
+        "bytes": 948,
+        "sha256": "0068de7db271b3e47fab3847a6be3eb450767d76f578c8f7d4f18125c3c815de"
+      },
+      "legs/leg_50/equity.parquet": {
+        "bytes": 2708,
+        "sha256": "a8e9588ef7bff3b5b13b0cfc6ece450fb30bf679d992a46c1ddcc62905469471"
+      },
+      "legs/leg_50/fills.parquet": {
+        "bytes": 16114,
+        "sha256": "f5bdf672cde3bb54cf52088c517f4cc669f22fd7150c8a13ebd356f6472e872e"
+      },
+      "legs/leg_50/funding.parquet": {
+        "bytes": 3222,
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      "legs/leg_50/orders.parquet": {
+        "bytes": 34587,
+        "sha256": "ff0b32d1c0e751ddb10f73b9945d7d76db4cdc5c84d33fd31e253b4edd19c6a6"
+      },
+      "legs/leg_50/positions.parquet": {
+        "bytes": 276987,
+        "sha256": "9c88c3800d81f3b85657268ce60b902a49e1e7ed8585cef209349be188321070"
+      },
+      "legs/leg_50/run_meta.json": {
+        "bytes": 187233,
+        "sha256": "7a776fe4a5dc668cc12ea2fd71a1337dfefec3509b98688d1dc08af5f873063b"
+      },
+      "legs/leg_50/summary.txt": {
+        "bytes": 951,
+        "sha256": "5973a7616a2047375f2e6fb54e63b76177fe1effa03cd7563e0ef8490e67d903"
+      },
+      "legs/leg_50/tearsheet.png": {
+        "bytes": 178265,
+        "sha256": "30d98644834e28874d05559862625a84b46a05620191e65329a5e66245a50ead"
+      },
+      "legs/leg_50/tearsheet.txt": {
+        "bytes": 951,
+        "sha256": "5973a7616a2047375f2e6fb54e63b76177fe1effa03cd7563e0ef8490e67d903"
+      },
+      "legs/leg_51/equity.parquet": {
+        "bytes": 2708,
+        "sha256": "37e51f7ecfec057f2198d3f12639b89cd9ed7ab519dd373ac4f077a415f28808"
+      },
+      "legs/leg_51/fills.parquet": {
+        "bytes": 15905,
+        "sha256": "f8c05ad3912bfce3f88fef1f2d26dd46f30ade09e37fc181531b0b595dc82543"
+      },
+      "legs/leg_51/funding.parquet": {
+        "bytes": 3222,
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      "legs/leg_51/orders.parquet": {
+        "bytes": 34707,
+        "sha256": "c571f7005f2c3bf03fadbb7ae95ab74499ebb0ce67a4de009e489269ac69d85e"
+      },
+      "legs/leg_51/positions.parquet": {
+        "bytes": 267741,
+        "sha256": "691c96f1fed1f0dad139eb811d8ae67d9a1bb3d48f2df5f46091d7ff1dc73d11"
+      },
+      "legs/leg_51/run_meta.json": {
+        "bytes": 187233,
+        "sha256": "2f36350ce521ba9bd955177ed149f47867fadc4c1331dff4d62f59df4a43608c"
+      },
+      "legs/leg_51/summary.txt": {
+        "bytes": 948,
+        "sha256": "84c21d6d9634f415d17f9e5c8d61bb5b446c2dab326e8814b0ed766b30bf7ebc"
+      },
+      "legs/leg_51/tearsheet.png": {
+        "bytes": 179718,
+        "sha256": "b6e93bba9986e21df0daea1cc4de3bcca6bb7d4dc2f8b1a8804fa48c53652cc7"
+      },
+      "legs/leg_51/tearsheet.txt": {
+        "bytes": 948,
+        "sha256": "84c21d6d9634f415d17f9e5c8d61bb5b446c2dab326e8814b0ed766b30bf7ebc"
+      },
+      "legs/leg_52/equity.parquet": {
+        "bytes": 2707,
+        "sha256": "f4cb7ab53481faf2219d6cabab457b62d8f499269f60f6fffec6cedaee38ae32"
+      },
+      "legs/leg_52/fills.parquet": {
+        "bytes": 15928,
+        "sha256": "c7c9dc10a9685d62d9d0347fbc97abe6ae8bbc56eea71f85bece6dba5b70e616"
+      },
+      "legs/leg_52/funding.parquet": {
+        "bytes": 3222,
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      "legs/leg_52/orders.parquet": {
+        "bytes": 34910,
+        "sha256": "0fb1d0b015b60c792643ed6533817c62204c402c65f938428814f07f1f507aea"
+      },
+      "legs/leg_52/positions.parquet": {
+        "bytes": 267386,
+        "sha256": "a9b7a78b66af05766f81c96f177f83f9a7377fb34a08e7b8d7dc17c118b87467"
+      },
+      "legs/leg_52/run_meta.json": {
+        "bytes": 187233,
+        "sha256": "a9172e58db8b6c3b3635364c17b28fe9ab15cefce41595115ecba66c81f450ab"
+      },
+      "legs/leg_52/summary.txt": {
+        "bytes": 956,
+        "sha256": "4a749ce1bac39529ef206ba1913f3c5d2b2388d98d21618cfec96407b9a972da"
+      },
+      "legs/leg_52/tearsheet.png": {
+        "bytes": 186953,
+        "sha256": "46d70aae616821d0892127797934443623d848eb784170af680b8072660451fb"
+      },
+      "legs/leg_52/tearsheet.txt": {
+        "bytes": 956,
+        "sha256": "4a749ce1bac39529ef206ba1913f3c5d2b2388d98d21618cfec96407b9a972da"
+      },
+      "legs/leg_53/equity.parquet": {
+        "bytes": 2708,
+        "sha256": "7bafab7d311fc17771f80b4054e030d0ccc38abd0f5d560c7158ba609633f1ff"
+      },
+      "legs/leg_53/fills.parquet": {
+        "bytes": 16156,
+        "sha256": "1f2210ab31210f38577bcd26b4eae0bf0fffb85bc789fd8f78eb47ddf04a7cd0"
+      },
+      "legs/leg_53/funding.parquet": {
+        "bytes": 3222,
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      "legs/leg_53/orders.parquet": {
+        "bytes": 35008,
+        "sha256": "4508b7cb7f6581e62d4887b8e8f03ad51cf91728bbf2c8545b94efa6a5be1d91"
+      },
+      "legs/leg_53/positions.parquet": {
+        "bytes": 265620,
+        "sha256": "13f510cdffe417194f9873c01ebbb6b06109abe98c6c97e0c865c25f7e69ec95"
+      },
+      "legs/leg_53/run_meta.json": {
+        "bytes": 187232,
+        "sha256": "4932e2439c7fb7db7dd2b023652d9e6b443ff7c93c809270f2dde4590b95e250"
+      },
+      "legs/leg_53/summary.txt": {
+        "bytes": 948,
+        "sha256": "3d57aaba55372e09d5247ecc0fe439f41ddc986feabb48e5ea09289a1201d462"
+      },
+      "legs/leg_53/tearsheet.png": {
+        "bytes": 189892,
+        "sha256": "d0d459fae1bd95736410bda0af1c51ced07fa15476dd77742501a677661389a3"
+      },
+      "legs/leg_53/tearsheet.txt": {
+        "bytes": 948,
+        "sha256": "3d57aaba55372e09d5247ecc0fe439f41ddc986feabb48e5ea09289a1201d462"
+      },
+      "legs/leg_54/equity.parquet": {
+        "bytes": 2709,
+        "sha256": "6c381fe01ca07af6e22132d9fd74bc6179cfc339d14b84d34e6c8e8a163ff913"
+      },
+      "legs/leg_54/fills.parquet": {
+        "bytes": 15859,
+        "sha256": "67fda7e5250f477585e1e83718662b0ce447d2a797651cba32ad617b9edb1396"
+      },
+      "legs/leg_54/funding.parquet": {
+        "bytes": 3222,
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      "legs/leg_54/orders.parquet": {
+        "bytes": 34765,
+        "sha256": "696310e76bd3b662e15b368feea1549c164befb8d6cbb54c2723e35cc7139909"
+      },
+      "legs/leg_54/positions.parquet": {
+        "bytes": 276483,
+        "sha256": "f7db33992d9bf511734e8bf71964b243a701ef46218a774d6d3f7926f968473d"
+      },
+      "legs/leg_54/run_meta.json": {
+        "bytes": 187231,
+        "sha256": "54c633ee1ba06873f600a5f4c7debb6fad6738a56f6b4401e168f6d4e767461a"
+      },
+      "legs/leg_54/summary.txt": {
+        "bytes": 949,
+        "sha256": "8df471204ba8ad38b4a479b4cbfc9c66da6db05b3a4dabd5488a3cd2dd491b1d"
+      },
+      "legs/leg_54/tearsheet.png": {
+        "bytes": 192561,
+        "sha256": "121573e08d3b261cc4ffb42884d761bc8ed26efcdc8511781edb960c19edb11a"
+      },
+      "legs/leg_54/tearsheet.txt": {
+        "bytes": 949,
+        "sha256": "8df471204ba8ad38b4a479b4cbfc9c66da6db05b3a4dabd5488a3cd2dd491b1d"
+      },
+      "legs/leg_55/equity.parquet": {
+        "bytes": 2707,
+        "sha256": "9de62647d6ab7ca0866862e17a89fe7d055b2c6f8f9556d4c21ef9338996c1af"
+      },
+      "legs/leg_55/fills.parquet": {
+        "bytes": 16116,
+        "sha256": "25de13a40b0bec2859be56abb127578f69356971da13650db884b1a9eaf33bbd"
+      },
+      "legs/leg_55/funding.parquet": {
+        "bytes": 3222,
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      "legs/leg_55/orders.parquet": {
+        "bytes": 34978,
+        "sha256": "1aa58bc87e655872f000c5b83eff2fd7740930a5900343d347cabc4dd82bec17"
+      },
+      "legs/leg_55/positions.parquet": {
+        "bytes": 278650,
+        "sha256": "4e313883c0bd80a612ca6d9ca51ab231e59e6f68eaa248a55ad522ef9365287f"
+      },
+      "legs/leg_55/run_meta.json": {
+        "bytes": 187232,
+        "sha256": "34981b7aa579476aa7ec2a1227e1766cfb817d8788d3e8cfb0c81463a643a704"
+      },
+      "legs/leg_55/summary.txt": {
+        "bytes": 948,
+        "sha256": "8396b5958747749d847dd4696717b30c66ef5a731efac543d72319a54f6ef5c3"
+      },
+      "legs/leg_55/tearsheet.png": {
+        "bytes": 199749,
+        "sha256": "2f84a0f3f01e73b91e5eaa81de3929ffef13ebb2b8293c10efce4611ecaa1702"
+      },
+      "legs/leg_55/tearsheet.txt": {
+        "bytes": 948,
+        "sha256": "8396b5958747749d847dd4696717b30c66ef5a731efac543d72319a54f6ef5c3"
+      },
+      "legs/leg_56/equity.parquet": {
+        "bytes": 2706,
+        "sha256": "4de590fe8571627ea601390ce0756082cce37d35c926428f8992afeb2c41d23a"
+      },
+      "legs/leg_56/fills.parquet": {
+        "bytes": 16163,
+        "sha256": "71c745da5e2b0a909e020b09322fdfe8b53f6d3e8bc554e418b6135ca77d35b1"
+      },
+      "legs/leg_56/funding.parquet": {
+        "bytes": 3222,
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      "legs/leg_56/orders.parquet": {
+        "bytes": 34593,
+        "sha256": "e64817ef7a4e41d6d745ab0af6c235e3c8fa126365a88174e1b2493241a6ae68"
+      },
+      "legs/leg_56/positions.parquet": {
+        "bytes": 274914,
+        "sha256": "4831d1fc445233ac573c7f86aa7c29545fd2a34d48a831b77ee9de1195f404ae"
+      },
+      "legs/leg_56/run_meta.json": {
+        "bytes": 187234,
+        "sha256": "944a6fa29b9a4ea1a23ec4563398f257bf3ed5c45d8e0347bbe0a48b93fe7df3"
+      },
+      "legs/leg_56/summary.txt": {
+        "bytes": 956,
+        "sha256": "2847a08b32cd16296eb468b936a73fed7c5fcd505f66a3321c841a1a53f3fdfe"
+      },
+      "legs/leg_56/tearsheet.png": {
+        "bytes": 170448,
+        "sha256": "2223d5b8e9c275fea15e05daf845a0b5e855540c47d4e6b4a43ada2cc28522b4"
+      },
+      "legs/leg_56/tearsheet.txt": {
+        "bytes": 956,
+        "sha256": "2847a08b32cd16296eb468b936a73fed7c5fcd505f66a3321c841a1a53f3fdfe"
+      },
+      "legs/leg_57/equity.parquet": {
+        "bytes": 2706,
+        "sha256": "40c206ae0267b195c47f137fec34cd69a186233124668a58b2e8b0ee6ec007ed"
+      },
+      "legs/leg_57/fills.parquet": {
+        "bytes": 15823,
+        "sha256": "0e35d5eb661cf95079a097a21a48fb83de48ff361bf5106c483839ee4c45069c"
+      },
+      "legs/leg_57/funding.parquet": {
+        "bytes": 3222,
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      "legs/leg_57/orders.parquet": {
+        "bytes": 34916,
+        "sha256": "0423c3a4a48fba4fb1d1ff9f0120991800629ee4114620d6ac9624c8ae52f00b"
+      },
+      "legs/leg_57/positions.parquet": {
+        "bytes": 272185,
+        "sha256": "7799267f9ef53de7f0cf84ee95cbb3fd0e5fbf955388ddb6489c55d0b5ee5dfa"
+      },
+      "legs/leg_57/run_meta.json": {
+        "bytes": 187233,
+        "sha256": "164d9226f4d6ef2c1d145499c67ede042ccda5a9ea68cda80023ba0d69c354f2"
+      },
+      "legs/leg_57/summary.txt": {
+        "bytes": 948,
+        "sha256": "5cd699e526c66675ea4f6a3a10b2684e68a37f064b2d016e6494a8a419aff329"
+      },
+      "legs/leg_57/tearsheet.png": {
+        "bytes": 191390,
+        "sha256": "4ab94bb837738d269f641f2cdfe0ed2ff0c3e908c9375b7bb268cb0d3c53e70a"
+      },
+      "legs/leg_57/tearsheet.txt": {
+        "bytes": 948,
+        "sha256": "5cd699e526c66675ea4f6a3a10b2684e68a37f064b2d016e6494a8a419aff329"
+      },
+      "legs/leg_58/equity.parquet": {
+        "bytes": 2707,
+        "sha256": "cd3dd49e85adaefc0d85d901edc5b25bd4a6766dc141fa7b41e99962daacce12"
+      },
+      "legs/leg_58/fills.parquet": {
+        "bytes": 15753,
+        "sha256": "c86b629e5a1b29c683599c487e5128675f97a1377e7bd005351b2c2d2dbd9648"
+      },
+      "legs/leg_58/funding.parquet": {
+        "bytes": 3222,
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      "legs/leg_58/orders.parquet": {
+        "bytes": 34991,
+        "sha256": "60de1d9b0d2849dac72e11c26036c61c19f9cebfcb5b11f573ff5921ac22bd4d"
+      },
+      "legs/leg_58/positions.parquet": {
+        "bytes": 276045,
+        "sha256": "b40dc5d3308d4e298b5df14729a7b210f8eeb593d5372e344eac32708e0e2406"
+      },
+      "legs/leg_58/run_meta.json": {
+        "bytes": 187233,
+        "sha256": "b9fc40793f7a2bef5ebb3cead0b5eee5811e6ce8e4b6ed6ec05a7b23f3a9c7e3"
+      },
+      "legs/leg_58/summary.txt": {
+        "bytes": 948,
+        "sha256": "0e613380cdaed3e0c13f4c029920c9bfb05c65bc442cf64582bea971ce5b00fc"
+      },
+      "legs/leg_58/tearsheet.png": {
+        "bytes": 187159,
+        "sha256": "66eab8f5f9273d68bfed644e09390d14808a9172f494220e2b3f16c8ea1f3ea6"
+      },
+      "legs/leg_58/tearsheet.txt": {
+        "bytes": 948,
+        "sha256": "0e613380cdaed3e0c13f4c029920c9bfb05c65bc442cf64582bea971ce5b00fc"
+      },
+      "legs/leg_59/equity.parquet": {
+        "bytes": 2707,
+        "sha256": "f6d6969384f94652ca0043b4a068b765472f5f9da2ca84503b26255416306e75"
+      },
+      "legs/leg_59/fills.parquet": {
+        "bytes": 16091,
+        "sha256": "06bbd09f3897062710cb7a5936fdf25c089a0b4ba1e1794c0afd323f293a0284"
+      },
+      "legs/leg_59/funding.parquet": {
+        "bytes": 3222,
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      "legs/leg_59/orders.parquet": {
+        "bytes": 35345,
+        "sha256": "750438e9769f8a5259e9465abfe6894b593bdb03c54c38d2c3c057ae33c719ce"
+      },
+      "legs/leg_59/positions.parquet": {
+        "bytes": 270125,
+        "sha256": "ce031aec9fb8cc83523d0cea117a185da9668cd012ba2ecf87a4d51dd235e142"
+      },
+      "legs/leg_59/run_meta.json": {
+        "bytes": 187234,
+        "sha256": "671f298e318f580a7668f540d7534a291ba7c9f61a9eb0fcc3a0660c02d8a9e7"
+      },
+      "legs/leg_59/summary.txt": {
+        "bytes": 948,
+        "sha256": "9e17cfe91d99f17e1720b39e6b399c91a5897056b3d88ea194bebd6f6968ac48"
+      },
+      "legs/leg_59/tearsheet.png": {
+        "bytes": 182872,
+        "sha256": "3f8634e36e39463884e1c3b5ff59ef147262e84f165310c169ffc9ffc6e6654d"
+      },
+      "legs/leg_59/tearsheet.txt": {
+        "bytes": 948,
+        "sha256": "9e17cfe91d99f17e1720b39e6b399c91a5897056b3d88ea194bebd6f6968ac48"
+      },
+      "legs/leg_60/equity.parquet": {
+        "bytes": 2707,
+        "sha256": "46ad137ae0f08608f951c9f9126fa7832693d412fad4beefe44be569ff5f67bd"
+      },
+      "legs/leg_60/fills.parquet": {
+        "bytes": 16242,
+        "sha256": "7fbbbcecdd44471e664e0fc45fb1c85e3b9c17b65fcacf24e82a582b95e7774f"
+      },
+      "legs/leg_60/funding.parquet": {
+        "bytes": 3222,
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      "legs/leg_60/orders.parquet": {
+        "bytes": 35482,
+        "sha256": "f4d53b47f969f66eacbf0609bd0836bf5e1bb1b83e64a3c0d687285651dbdc9f"
+      },
+      "legs/leg_60/positions.parquet": {
+        "bytes": 276413,
+        "sha256": "9f97c21ac732bc44bf6568a01e3c54ae4c619e3639986e0ddf95fcd38f1ac16f"
+      },
+      "legs/leg_60/run_meta.json": {
+        "bytes": 187233,
+        "sha256": "fd51eabedf05fdeadb2b5633a89ccd2134e9f8ce725df1853e319edc7c690d7a"
+      },
+      "legs/leg_60/summary.txt": {
+        "bytes": 956,
+        "sha256": "bf38f65031e3cee5e9d657bf6e5a8d5a73d649836eeaf72c56da2daaa6ae9340"
+      },
+      "legs/leg_60/tearsheet.png": {
+        "bytes": 173005,
+        "sha256": "fb8d1af19036ae0b30571caa7a8cfd367fe080d2bd3b72a013904650aecc177f"
+      },
+      "legs/leg_60/tearsheet.txt": {
+        "bytes": 956,
+        "sha256": "bf38f65031e3cee5e9d657bf6e5a8d5a73d649836eeaf72c56da2daaa6ae9340"
+      },
+      "legs/leg_61/equity.parquet": {
+        "bytes": 2547,
+        "sha256": "41eaa724de5ad6a97ca082b7f5e56f649ee1e7998c348d930ea306efc299a6f9"
+      },
+      "legs/leg_61/fills.parquet": {
+        "bytes": 24342,
+        "sha256": "38b413a0e52a412da9dc5807461ae1ae078c039caa49f7ba26841e0e6ca88b11"
+      },
+      "legs/leg_61/funding.parquet": {
+        "bytes": 3222,
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      "legs/leg_61/orders.parquet": {
+        "bytes": 561452,
+        "sha256": "c0f19086b8779497143c9c06d3efcab224dfc5dbbfd0e3e1b23ef895846f5c24"
+      },
+      "legs/leg_61/positions.parquet": {
+        "bytes": 191543,
+        "sha256": "58325ae9422d375329576ac16d3615b7c4a4d80e9c2412bcded2c0b48be68d2f"
+      },
+      "legs/leg_61/run_meta.json": {
+        "bytes": 187240,
+        "sha256": "a6dd80f91ea15d939c1736ba05d826e9b2727819536adbfdb98d10195fa5cd38"
+      },
+      "legs/leg_61/summary.txt": {
+        "bytes": 949,
+        "sha256": "675ef1d8a533bb811cb54726c79341f89841fa0160f42a785d187b151ee01e13"
+      },
+      "legs/leg_61/tearsheet.png": {
+        "bytes": 157533,
+        "sha256": "7e93164fd6183b8d67e39076edd059272d82b0e4e77afb22214c4be16ad3a435"
+      },
+      "legs/leg_61/tearsheet.txt": {
+        "bytes": 949,
+        "sha256": "675ef1d8a533bb811cb54726c79341f89841fa0160f42a785d187b151ee01e13"
+      },
+      "legs/leg_62/equity.parquet": {
+        "bytes": 2158,
+        "sha256": "4025fd58857b0ac4ed9953fa73ba70fa89bbeb371505a2b0e91556d0d76722e8"
+      },
+      "legs/leg_62/fills.parquet": {
+        "bytes": 5137,
+        "sha256": "d7a4b8b8691a86e0089ac3f2c48b968a521a5b78075700f2cfd0c3dfce830281"
+      },
+      "legs/leg_62/funding.parquet": {
+        "bytes": 3222,
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      "legs/leg_62/orders.parquet": {
+        "bytes": 1420918,
+        "sha256": "5ab95888acd721812c90079bec2dec0205a26b7bdf12a34f80cfdb91af7f98e6"
+      },
+      "legs/leg_62/positions.parquet": {
+        "bytes": 3030,
+        "sha256": "878abaabd7ddd1cf20dd46d19fd80219113003633847f240de17da285ede1a1b"
+      },
+      "legs/leg_62/run_meta.json": {
+        "bytes": 187222,
+        "sha256": "a33b6651bf438f3998ffafeabab216fd8eddbfaca81e96e8bb8b736bca84c3ad"
+      },
+      "legs/leg_62/summary.txt": {
+        "bytes": 906,
+        "sha256": "d01df1c00272fa3e6fd8b06d3bc430fbcc47f5ff7741fbe28789c9c967786c0c"
+      },
+      "legs/leg_62/tearsheet.png": {
+        "bytes": 87048,
+        "sha256": "e4f3552a14834258bc6e236c739dd111ff913263daeec95920b850991328559c"
+      },
+      "legs/leg_62/tearsheet.txt": {
+        "bytes": 906,
+        "sha256": "d01df1c00272fa3e6fd8b06d3bc430fbcc47f5ff7741fbe28789c9c967786c0c"
+      },
+      "legs/leg_63/equity.parquet": {
+        "bytes": 2158,
+        "sha256": "5116a232d52f22c3f7436e127e97f6bdfb228ebc2ef17ffcbce3d6c049892b8a"
+      },
+      "legs/leg_63/fills.parquet": {
+        "bytes": 5137,
+        "sha256": "d7a4b8b8691a86e0089ac3f2c48b968a521a5b78075700f2cfd0c3dfce830281"
+      },
+      "legs/leg_63/funding.parquet": {
+        "bytes": 3222,
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      "legs/leg_63/orders.parquet": {
+        "bytes": 1437257,
+        "sha256": "6a67288d43dbe10467c87f062003d0bc53fd4aae739408958cb99e5949151352"
+      },
+      "legs/leg_63/positions.parquet": {
+        "bytes": 3030,
+        "sha256": "878abaabd7ddd1cf20dd46d19fd80219113003633847f240de17da285ede1a1b"
+      },
+      "legs/leg_63/run_meta.json": {
+        "bytes": 187222,
+        "sha256": "4c8ff331181c1343436effe9b36efb58369781dc63b64200739396e9e4ac3020"
+      },
+      "legs/leg_63/summary.txt": {
+        "bytes": 906,
+        "sha256": "120e88db5bdacd76fe6be5eeff0827b239acd59a533354b793575f785952a517"
+      },
+      "legs/leg_63/tearsheet.png": {
+        "bytes": 88602,
+        "sha256": "5cf211613f5c0f3cb064e5d0eaad946fd1f57223caeef8bfb94dea4929c07966"
+      },
+      "legs/leg_63/tearsheet.txt": {
+        "bytes": 906,
+        "sha256": "120e88db5bdacd76fe6be5eeff0827b239acd59a533354b793575f785952a517"
+      },
+      "legs/leg_64/equity.parquet": {
+        "bytes": 2160,
+        "sha256": "8967043a070d60ea8acb406cc791963717971ae096be060b3a52c4c06e6cb947"
+      },
+      "legs/leg_64/fills.parquet": {
+        "bytes": 5137,
+        "sha256": "d7a4b8b8691a86e0089ac3f2c48b968a521a5b78075700f2cfd0c3dfce830281"
+      },
+      "legs/leg_64/funding.parquet": {
+        "bytes": 3222,
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      "legs/leg_64/orders.parquet": {
+        "bytes": 1466884,
+        "sha256": "71df6d89c5256b5e66da6b87b10590b6c38bfa0384a3e23133a0fc3a6a1894b9"
+      },
+      "legs/leg_64/positions.parquet": {
+        "bytes": 3030,
+        "sha256": "878abaabd7ddd1cf20dd46d19fd80219113003633847f240de17da285ede1a1b"
+      },
+      "legs/leg_64/run_meta.json": {
+        "bytes": 187222,
+        "sha256": "d1b4bcb48f0076d093ce9fd33ffbbbf277fa4121607a79dfdf5816903ff5924b"
+      },
+      "legs/leg_64/summary.txt": {
+        "bytes": 906,
+        "sha256": "9ff566a5e4c550cf23a91d5d7e6e761656bac196351f724a37ecf0dc4e8c905c"
+      },
+      "legs/leg_64/tearsheet.png": {
+        "bytes": 92243,
+        "sha256": "696e292ddcb6ecfeeec7e7ed66644636551b62c75fa3f7ddd3d3cf06878908f6"
+      },
+      "legs/leg_64/tearsheet.txt": {
+        "bytes": 906,
+        "sha256": "9ff566a5e4c550cf23a91d5d7e6e761656bac196351f724a37ecf0dc4e8c905c"
+      },
+      "legs/leg_65/equity.parquet": {
+        "bytes": 2159,
+        "sha256": "c211a4b8e93e701814e2d18a54752f9589de412b2a6d4a25d791b34a43d0eae0"
+      },
+      "legs/leg_65/fills.parquet": {
+        "bytes": 5137,
+        "sha256": "d7a4b8b8691a86e0089ac3f2c48b968a521a5b78075700f2cfd0c3dfce830281"
+      },
+      "legs/leg_65/funding.parquet": {
+        "bytes": 3222,
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      "legs/leg_65/orders.parquet": {
+        "bytes": 1434556,
+        "sha256": "f2b4e502454fd25735cdcde0eea18d38d46d8a425baafc5fdf1655398b74c463"
+      },
+      "legs/leg_65/positions.parquet": {
+        "bytes": 3030,
+        "sha256": "878abaabd7ddd1cf20dd46d19fd80219113003633847f240de17da285ede1a1b"
+      },
+      "legs/leg_65/run_meta.json": {
+        "bytes": 187222,
+        "sha256": "d6fdcebe8e53d1b3dfffeac22c19583920acfe2502a1aeed91cda6cc98430aa1"
+      },
+      "legs/leg_65/summary.txt": {
+        "bytes": 906,
+        "sha256": "fd6d63109547c74f0378960b6fc9974dbb80a3cd2e216f3388705db72aa0ee39"
+      },
+      "legs/leg_65/tearsheet.png": {
+        "bytes": 93574,
+        "sha256": "f20e1cf784c2f88905e5a3ec037f7c4330be7a4961482136852b8db4af0d2411"
+      },
+      "legs/leg_65/tearsheet.txt": {
+        "bytes": 906,
+        "sha256": "fd6d63109547c74f0378960b6fc9974dbb80a3cd2e216f3388705db72aa0ee39"
+      },
+      "legs/leg_66/equity.parquet": {
+        "bytes": 2159,
+        "sha256": "6ae0b2c451e0ad14c426827f10fced0b519f0bf66a76d531ea4b138f2ea73d90"
+      },
+      "legs/leg_66/fills.parquet": {
+        "bytes": 5137,
+        "sha256": "d7a4b8b8691a86e0089ac3f2c48b968a521a5b78075700f2cfd0c3dfce830281"
+      },
+      "legs/leg_66/funding.parquet": {
+        "bytes": 3222,
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      "legs/leg_66/orders.parquet": {
+        "bytes": 1437339,
+        "sha256": "56ac8c82631261fcb83823e7983461f3170e6f680e9ac573dd48fee7190481bd"
+      },
+      "legs/leg_66/positions.parquet": {
+        "bytes": 3030,
+        "sha256": "878abaabd7ddd1cf20dd46d19fd80219113003633847f240de17da285ede1a1b"
+      },
+      "legs/leg_66/run_meta.json": {
+        "bytes": 187222,
+        "sha256": "77ac7c679a5abce84e6922bd073f8a77256d670ddd0c694c80f5d6b75fdb05ae"
+      },
+      "legs/leg_66/summary.txt": {
+        "bytes": 906,
+        "sha256": "03ad0abc796ae31a1855a3cff4625c00c3b94fc5b1bfd597d652679835d99b8f"
+      },
+      "legs/leg_66/tearsheet.png": {
+        "bytes": 87654,
+        "sha256": "04317ae75a8e0211732d5bdb4b3c4b1ea2ae4f9dc4ff9de4e46082be2209e5f6"
+      },
+      "legs/leg_66/tearsheet.txt": {
+        "bytes": 906,
+        "sha256": "03ad0abc796ae31a1855a3cff4625c00c3b94fc5b1bfd597d652679835d99b8f"
+      },
+      "legs/leg_67/equity.parquet": {
+        "bytes": 2708,
+        "sha256": "071ea2dd115c8b06541bc74f9119acd1020e3ff2b8b4c8513de0cb65998de0e3"
+      },
+      "legs/leg_67/fills.parquet": {
+        "bytes": 15265,
+        "sha256": "05d7b83357755b3ed87a98168873889236718dcb647ce7478d65586ab9e6ec42"
+      },
+      "legs/leg_67/funding.parquet": {
+        "bytes": 3222,
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      "legs/leg_67/orders.parquet": {
+        "bytes": 35154,
+        "sha256": "9176d344b2cf885d7a9688d65a05269fefa3c4dc01b494899ed701abdd6f8ca5"
+      },
+      "legs/leg_67/positions.parquet": {
+        "bytes": 254380,
+        "sha256": "af91d124ca687e9b03e881b2f051182c40a1e94d299e57acf65def3725555fdf"
+      },
+      "legs/leg_67/run_meta.json": {
+        "bytes": 187233,
+        "sha256": "0bd31a19288ee6b4487bc991ad8865dee361da7270fe67e59a240e3471f6c551"
+      },
+      "legs/leg_67/summary.txt": {
+        "bytes": 949,
+        "sha256": "d80691956a462e0eeee214b54a5c4c9e3011c66ece56cfad7451c60459c843b0"
+      },
+      "legs/leg_67/tearsheet.png": {
+        "bytes": 179816,
+        "sha256": "8f355488a4a5f9de21a129f50a24364f98ab339f0c564abed8bb1c713e526a78"
+      },
+      "legs/leg_67/tearsheet.txt": {
+        "bytes": 949,
+        "sha256": "d80691956a462e0eeee214b54a5c4c9e3011c66ece56cfad7451c60459c843b0"
+      },
+      "legs/leg_68/equity.parquet": {
+        "bytes": 2708,
+        "sha256": "5a1eaa6bb265af07e7e594c2061a0b5facbc9b4f603a1309a28d1726cb8eb9f2"
+      },
+      "legs/leg_68/fills.parquet": {
+        "bytes": 16097,
+        "sha256": "93cc7350365bc20366afc3efeb4eaa7a9261037efd8729fa6c2e149468eb9845"
+      },
+      "legs/leg_68/funding.parquet": {
+        "bytes": 3222,
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      "legs/leg_68/orders.parquet": {
+        "bytes": 35193,
+        "sha256": "3fe45ca66062fbb41e111fdd908522a8ac87c3a0edbce5ff4140656f9ad0347d"
+      },
+      "legs/leg_68/positions.parquet": {
+        "bytes": 268830,
+        "sha256": "9733840c8471ee48e25a5f35a7dd7b0b1b3baae47847f950e032b3539f3efd17"
+      },
+      "legs/leg_68/run_meta.json": {
+        "bytes": 187233,
+        "sha256": "e78b3cd21eb05302c5b01c05717c8466e0338623c2365c3b0f6079439d4add7d"
+      },
+      "legs/leg_68/summary.txt": {
+        "bytes": 948,
+        "sha256": "9346718445785e21e28c934b047fb46814a66d07ffcf5f328b203fda1fbc1bf9"
+      },
+      "legs/leg_68/tearsheet.png": {
+        "bytes": 202976,
+        "sha256": "43c7dac2de826e729d17d4e34dd9c686a6ad2442d70106095a08ae6b18d041e6"
+      },
+      "legs/leg_68/tearsheet.txt": {
+        "bytes": 948,
+        "sha256": "9346718445785e21e28c934b047fb46814a66d07ffcf5f328b203fda1fbc1bf9"
+      },
+      "legs/leg_69/equity.parquet": {
+        "bytes": 2707,
+        "sha256": "2c327ae90bb91ec1663793875664c66ac4df307c2621245fe823d7771dacc20c"
+      },
+      "legs/leg_69/fills.parquet": {
+        "bytes": 15549,
+        "sha256": "b5943ca0538feead5c471af12a1a3166f3269a5115cada74722ddcb8f43f230b"
+      },
+      "legs/leg_69/funding.parquet": {
+        "bytes": 3222,
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      "legs/leg_69/orders.parquet": {
+        "bytes": 35346,
+        "sha256": "635e31bee9aa8ea04fa7e204feca96c72deae7c2546a133a5d1c68312e38796f"
+      },
+      "legs/leg_69/positions.parquet": {
+        "bytes": 266811,
+        "sha256": "b2d28858fefe5a8c901447049db86c69c9b5fcf520084edfdb6b708b5c6ff0a7"
+      },
+      "legs/leg_69/run_meta.json": {
+        "bytes": 187232,
+        "sha256": "67dbe345477c2439e917899cfa15444b3810c56107de7ce501fcb259ff58303d"
+      },
+      "legs/leg_69/summary.txt": {
+        "bytes": 948,
+        "sha256": "70d58149d747b080f58336f74477e29ae5afb8accc71d72da71e111452ec6b4f"
+      },
+      "legs/leg_69/tearsheet.png": {
+        "bytes": 198427,
+        "sha256": "6029384361bf9df2abbb655f2b07e4256d4944057e6e9ce377202964da439cd9"
+      },
+      "legs/leg_69/tearsheet.txt": {
+        "bytes": 948,
+        "sha256": "70d58149d747b080f58336f74477e29ae5afb8accc71d72da71e111452ec6b4f"
+      },
+      "legs/leg_70/equity.parquet": {
+        "bytes": 2708,
+        "sha256": "ce968c2fb33aa45c84dcecd807531ba39345942a4ab4c9fbbb49068f600b1825"
+      },
+      "legs/leg_70/fills.parquet": {
+        "bytes": 16128,
+        "sha256": "380af366ab05aa0889f5b4201581931afe355eecd8383ad4dffc8507a4605a9f"
+      },
+      "legs/leg_70/funding.parquet": {
+        "bytes": 3222,
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      "legs/leg_70/orders.parquet": {
+        "bytes": 35566,
+        "sha256": "92957869ac911c67bf79b5fc25b33edaa98fa3b1efd69019b022160fe39da7bc"
+      },
+      "legs/leg_70/positions.parquet": {
+        "bytes": 271601,
+        "sha256": "ba7234dd8527e459d6d8672bc951569eadcca3cf59e37ff438d239efd7f4ea20"
+      },
+      "legs/leg_70/run_meta.json": {
+        "bytes": 187233,
+        "sha256": "696becb26179064153a940efdadb2bb692eef2f8cc85ea4d45b4eb0bf00762cf"
+      },
+      "legs/leg_70/summary.txt": {
+        "bytes": 948,
+        "sha256": "f78aca748e11df0e50c50b98ef6d79952dde715de2ece508c5cdee265e7ddf28"
+      },
+      "legs/leg_70/tearsheet.png": {
+        "bytes": 180710,
+        "sha256": "44bc516277d2401f9d0dc1d746f8b045a0d76b1b232d369e18cb9f5787cca26a"
+      },
+      "legs/leg_70/tearsheet.txt": {
+        "bytes": 948,
+        "sha256": "f78aca748e11df0e50c50b98ef6d79952dde715de2ece508c5cdee265e7ddf28"
+      },
+      "legs/leg_71/equity.parquet": {
+        "bytes": 2706,
+        "sha256": "36e767df99980821ebad09b5059c59a9f75d03ee8ec9d7614b3eb2509fb0c8a4"
+      },
+      "legs/leg_71/fills.parquet": {
+        "bytes": 15858,
+        "sha256": "ab694686b88f065e3449b08bab096f0b81715aea45720778f87940486c0ffd52"
+      },
+      "legs/leg_71/funding.parquet": {
+        "bytes": 3222,
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      "legs/leg_71/orders.parquet": {
+        "bytes": 35815,
+        "sha256": "87799a1b3dd10e9b9713d9e7bed8755191eca9301014a97448eb65e612404e46"
+      },
+      "legs/leg_71/positions.parquet": {
+        "bytes": 262040,
+        "sha256": "4cf44e0c9b7cfb23e233f2e4dd15e7da350ee2b77a72c42f2bcaa1bf458c19ab"
+      },
+      "legs/leg_71/run_meta.json": {
+        "bytes": 187233,
+        "sha256": "28e812bce8b4dba043b0772995e49a08835eaa49d8193be9a9af75822821b734"
+      },
+      "legs/leg_71/summary.txt": {
+        "bytes": 949,
+        "sha256": "e3ea21c48db54fc2ee1e1196f95525eb5cf631198f4ab8ca158ad13cea2452a6"
+      },
+      "legs/leg_71/tearsheet.png": {
+        "bytes": 181549,
+        "sha256": "e5f4463edf78711a180f08f01d38a66db73c8f175e4f983b1d137939353f907d"
+      },
+      "legs/leg_71/tearsheet.txt": {
+        "bytes": 949,
+        "sha256": "e3ea21c48db54fc2ee1e1196f95525eb5cf631198f4ab8ca158ad13cea2452a6"
+      },
+      "legs/leg_72/equity.parquet": {
+        "bytes": 2709,
+        "sha256": "de30d0bc2538d6b51a3ba05940bc63d0f542da2a733e08c70b2acee2ec299608"
+      },
+      "legs/leg_72/fills.parquet": {
+        "bytes": 16227,
+        "sha256": "383cadcb184ca5b42d96152c3082de21b03ce546e492164d6e536d2bcd9d02c6"
+      },
+      "legs/leg_72/funding.parquet": {
+        "bytes": 3222,
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      "legs/leg_72/orders.parquet": {
+        "bytes": 35928,
+        "sha256": "414bdee2e1593db1fe870c3472397dbab8edefbf086403f0a8a23b71c9085f3b"
+      },
+      "legs/leg_72/positions.parquet": {
+        "bytes": 275740,
+        "sha256": "5f7d735eb67d322bbc44d34a85373def7725588523699bef82ed4d27f6a3edf0"
+      },
+      "legs/leg_72/run_meta.json": {
+        "bytes": 187232,
+        "sha256": "48b056bb6a232e28fae66e43932750e281066b6c9408fd8ea87b5cefda584a0b"
+      },
+      "legs/leg_72/summary.txt": {
+        "bytes": 956,
+        "sha256": "5013266d2624329b9618c1fa8aa03146b0328e4f5589a20c78dc690c22a32424"
+      },
+      "legs/leg_72/tearsheet.png": {
+        "bytes": 185280,
+        "sha256": "e471d6a92443761f6e4914b7ca182290eb8ad66b40ad2bb1e99e8f81f0c2c404"
+      },
+      "legs/leg_72/tearsheet.txt": {
+        "bytes": 956,
+        "sha256": "5013266d2624329b9618c1fa8aa03146b0328e4f5589a20c78dc690c22a32424"
+      },
+      "legs/leg_73/equity.parquet": {
+        "bytes": 2708,
+        "sha256": "6bf726ce0a43e50e41b1e46dacdb46d3e8ddccbf16197b9442e0ab2e9bcfaa6c"
+      },
+      "legs/leg_73/fills.parquet": {
+        "bytes": 38482,
+        "sha256": "e038563895d77a43da9e9a76d4fe4d5179a3b2703038cfb96588bae659745aab"
+      },
+      "legs/leg_73/funding.parquet": {
+        "bytes": 3222,
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      "legs/leg_73/orders.parquet": {
+        "bytes": 183639,
+        "sha256": "1e2133ca3d789fee59b52f0e8d996ab015bece6dc55ca06f553c1a5bc162b920"
+      },
+      "legs/leg_73/positions.parquet": {
+        "bytes": 286494,
+        "sha256": "3a852de3bffe7622500504b8e3007db09e97e7d714a4b7b1a07a942516159558"
+      },
+      "legs/leg_73/run_meta.json": {
+        "bytes": 187240,
+        "sha256": "b6441a7f81cdd35304cec4c43bf6485a71645341b279f93bcc3a95f691f47e82"
+      },
+      "legs/leg_73/summary.txt": {
+        "bytes": 956,
+        "sha256": "47af3240be63a675078370dd2ec8f12ada6c96fda0f0bb0725a07298fd3664c8"
+      },
+      "legs/leg_73/tearsheet.png": {
+        "bytes": 168074,
+        "sha256": "be292b7abff42d4005819d54eced5f215e2c210a6d800ae3a21cf8446f804c97"
+      },
+      "legs/leg_73/tearsheet.txt": {
+        "bytes": 956,
+        "sha256": "47af3240be63a675078370dd2ec8f12ada6c96fda0f0bb0725a07298fd3664c8"
+      },
+      "legs/leg_74/equity.parquet": {
+        "bytes": 2707,
+        "sha256": "f08080a548355b94dc7d4be3404ca63cf3ca42287f2e464c0357d67a637a33e7"
+      },
+      "legs/leg_74/fills.parquet": {
+        "bytes": 28967,
+        "sha256": "dc3a7675a4ef1cfe0e4fb8151607f5e72e32234a7d77e9aac53c20e8d7dcb020"
+      },
+      "legs/leg_74/funding.parquet": {
+        "bytes": 3222,
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      "legs/leg_74/orders.parquet": {
+        "bytes": 591830,
+        "sha256": "7649c9d4e5763360535ae37ef3f570930a866f865d2a9a4ea5f99f11343d1bcd"
+      },
+      "legs/leg_74/positions.parquet": {
+        "bytes": 263343,
+        "sha256": "a026ad6f6726d9432323c7deccb300d429d16c08cf56e7b1a06983d8c5597d05"
+      },
+      "legs/leg_74/run_meta.json": {
+        "bytes": 187241,
+        "sha256": "804849d5b6c742f4c5f6c44d82110e166beaf8e9632b54a4efb161e6265e6a27"
+      },
+      "legs/leg_74/summary.txt": {
+        "bytes": 956,
+        "sha256": "15a7d59300626e45d16e5a879f10632a325936ff1e06763c0c2b21ea4c271bc8"
+      },
+      "legs/leg_74/tearsheet.png": {
+        "bytes": 170952,
+        "sha256": "19224de2512fd0426f6dd6b8b6ab6931b126275fe6e94fc5db9bdd2a501f15f3"
+      },
+      "legs/leg_74/tearsheet.txt": {
+        "bytes": 956,
+        "sha256": "15a7d59300626e45d16e5a879f10632a325936ff1e06763c0c2b21ea4c271bc8"
+      },
+      "legs/leg_75/equity.parquet": {
+        "bytes": 2706,
+        "sha256": "6f030852f736342786f386d847b6a217a3d89a6878d3857f37a17d6ac03f8e4b"
+      },
+      "legs/leg_75/fills.parquet": {
+        "bytes": 56464,
+        "sha256": "0cabedf0a854e5636c149b8fb1938c0b521f4d48e1a942874fecca98f0bd13cb"
+      },
+      "legs/leg_75/funding.parquet": {
+        "bytes": 3222,
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      "legs/leg_75/orders.parquet": {
+        "bytes": 730728,
+        "sha256": "dac7364ed7058f762c2ea8182f892349e8e43534212eac685c9d108b79532ac6"
+      },
+      "legs/leg_75/positions.parquet": {
+        "bytes": 270221,
+        "sha256": "994a3dd6b708f50e3d5f5a00fba898827ccc7cafe278b95027c8615da9721cdd"
+      },
+      "legs/leg_75/run_meta.json": {
+        "bytes": 187245,
+        "sha256": "48278791745654b843dd1faa4bb2b8340cefccab11523eca79c71e2d41feb414"
+      },
+      "legs/leg_75/summary.txt": {
+        "bytes": 948,
+        "sha256": "5305081e20b6d81371c3b13970a74b617f2ba39429bb8f49c7ee3246e3de70c3"
+      },
+      "legs/leg_75/tearsheet.png": {
+        "bytes": 197281,
+        "sha256": "77b36e2ded8569c5bee964ccf8f6c54f8fd6d07e66926fb63d216c8786769470"
+      },
+      "legs/leg_75/tearsheet.txt": {
+        "bytes": 948,
+        "sha256": "5305081e20b6d81371c3b13970a74b617f2ba39429bb8f49c7ee3246e3de70c3"
+      },
+      "legs/leg_76/equity.parquet": {
+        "bytes": 2708,
+        "sha256": "cadf94911298bc864c72e66d4a8d99c1a54c1e198bff30f84339fba48a9441f0"
+      },
+      "legs/leg_76/fills.parquet": {
+        "bytes": 43929,
+        "sha256": "28df8832820e40d14b9bfed8cba76b1947bbe7990d7929ce277732dc64f574e9"
+      },
+      "legs/leg_76/funding.parquet": {
+        "bytes": 3222,
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      "legs/leg_76/orders.parquet": {
+        "bytes": 731204,
+        "sha256": "a82eb8d0202b3ea12debdddefcad8766a6c9b1a11ac2d3746d32b1084561108c"
+      },
+      "legs/leg_76/positions.parquet": {
+        "bytes": 277312,
+        "sha256": "4b414fac58503a2b57def3a7c5dc4f61c95421a0c210671e9d2a7137f91beeb3"
+      },
+      "legs/leg_76/run_meta.json": {
+        "bytes": 187243,
+        "sha256": "52a3fae0aa1e4401631d402962a0d8d053434058df82b8d4057caad6d73c3f1f"
+      },
+      "legs/leg_76/summary.txt": {
+        "bytes": 956,
+        "sha256": "fddc1cc00d5d5ed0d185e1f2be53825f1acc262218b92cc62eda1bd558fda6cb"
+      },
+      "legs/leg_76/tearsheet.png": {
+        "bytes": 160738,
+        "sha256": "86a5d94aa1bfc5818818ff735e724b210db9ceeb7d6f9e7c0a5ad353610ff88e"
+      },
+      "legs/leg_76/tearsheet.txt": {
+        "bytes": 956,
+        "sha256": "fddc1cc00d5d5ed0d185e1f2be53825f1acc262218b92cc62eda1bd558fda6cb"
+      },
+      "legs/leg_77/equity.parquet": {
+        "bytes": 2707,
+        "sha256": "20c86ac977d2162f5bb5e8e47d50d44863996a511f725ac0cb29c95c57e649b0"
+      },
+      "legs/leg_77/fills.parquet": {
+        "bytes": 43310,
+        "sha256": "ce7fa275bad3337ce25dbaa544df70aa94685381166444458794ee9e1bbf5624"
+      },
+      "legs/leg_77/funding.parquet": {
+        "bytes": 3222,
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      "legs/leg_77/orders.parquet": {
+        "bytes": 605100,
+        "sha256": "9abe43d0aa7cbdb34664e292af4452e88ca7e411fe501ee117b525392936cb7f"
+      },
+      "legs/leg_77/positions.parquet": {
+        "bytes": 269227,
+        "sha256": "470129410fa92c3d4e73f26302985f919798562ddb8262f13d487c65f766590b"
+      },
+      "legs/leg_77/run_meta.json": {
+        "bytes": 187244,
+        "sha256": "6bc5af491c3cbda72e303d681ef44e4c58d3f7f3c1beb12c0279b80be99aeb3a"
+      },
+      "legs/leg_77/summary.txt": {
+        "bytes": 948,
+        "sha256": "ced12f4cd8b8bfb2d32f4cd09bf1fb875498b2a8fcb275bd9c86b1ecb382a219"
+      },
+      "legs/leg_77/tearsheet.png": {
+        "bytes": 177726,
+        "sha256": "4b8a5a496a91cafe9c619807a4b7b23c6566de9dfee735cd30dda37ec744bf2b"
+      },
+      "legs/leg_77/tearsheet.txt": {
+        "bytes": 948,
+        "sha256": "ced12f4cd8b8bfb2d32f4cd09bf1fb875498b2a8fcb275bd9c86b1ecb382a219"
+      },
+      "legs/leg_78/equity.parquet": {
+        "bytes": 2707,
+        "sha256": "c72a4acb0f682df28a0bf99caaf27ff70bc84654592a4ea8c17e841fcb6c96a0"
+      },
+      "legs/leg_78/fills.parquet": {
+        "bytes": 29642,
+        "sha256": "3a1fbb3c059b1c927619306ec7d89cf6093eaadd9d48b4047e9c24f691e9e1f1"
+      },
+      "legs/leg_78/funding.parquet": {
+        "bytes": 3222,
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      "legs/leg_78/orders.parquet": {
+        "bytes": 438493,
+        "sha256": "b84dd433d036c1ab3e206c7657226628037e4c10ef0fb3c95415bb3c0f00a0b2"
+      },
+      "legs/leg_78/positions.parquet": {
+        "bytes": 259939,
+        "sha256": "3ba846d82b8fc4266859249303512bef58ed05c93a5700d673909ae1d9bbf871"
+      },
+      "legs/leg_78/run_meta.json": {
+        "bytes": 187239,
+        "sha256": "5bb034e4d92afa8cc0d5255d1704204cef31b83b8a19d14c6448a222ab145870"
+      },
+      "legs/leg_78/summary.txt": {
+        "bytes": 951,
+        "sha256": "a24ed35bcbf735bc6e792d236fb06b6b82ac226e6046206f86296c9c999d3385"
+      },
+      "legs/leg_78/tearsheet.png": {
+        "bytes": 178560,
+        "sha256": "65bde3db977fb0406dcc3376372c6db38eb988b9f4c403f173524c6658f4916b"
+      },
+      "legs/leg_78/tearsheet.txt": {
+        "bytes": 951,
+        "sha256": "a24ed35bcbf735bc6e792d236fb06b6b82ac226e6046206f86296c9c999d3385"
+      },
+      "legs/leg_79/equity.parquet": {
+        "bytes": 2707,
+        "sha256": "f503658fa061f0b9c75aa1818f557855fe6e927d0d8072ee6fb4b759e7fe3a04"
+      },
+      "legs/leg_79/fills.parquet": {
+        "bytes": 15613,
+        "sha256": "2308f867879aa2fbfb6fe7c12db7afa4111e020a3e1749415f1f256585642021"
+      },
+      "legs/leg_79/funding.parquet": {
+        "bytes": 3222,
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      "legs/leg_79/orders.parquet": {
+        "bytes": 35404,
+        "sha256": "ced3aaf8cdb3ac418bcf62586181e53e335d6bf45eabe5b173cb54986347afe1"
+      },
+      "legs/leg_79/positions.parquet": {
+        "bytes": 267271,
+        "sha256": "e50108a59d58edd31008c42294f9ed49f295af7d1e5c714a8d79914ef46b64a5"
+      },
+      "legs/leg_79/run_meta.json": {
+        "bytes": 187233,
+        "sha256": "e78b71b057b181f03bde07a6921d9b5d8ae55298a41aaf1064b105bf7ad64018"
+      },
+      "legs/leg_79/summary.txt": {
+        "bytes": 948,
+        "sha256": "48b3e0f96c576bf386c904bff8d2549f9f083bb086cc5a3847bfd0551dac58e8"
+      },
+      "legs/leg_79/tearsheet.png": {
+        "bytes": 188777,
+        "sha256": "d977c2870095f8a2464468fea54ee562da9f664c29d449ba3d70c11e3ecf1d15"
+      },
+      "legs/leg_79/tearsheet.txt": {
+        "bytes": 948,
+        "sha256": "48b3e0f96c576bf386c904bff8d2549f9f083bb086cc5a3847bfd0551dac58e8"
+      },
+      "legs/leg_80/equity.parquet": {
+        "bytes": 2707,
+        "sha256": "bc8c8f51bc3708c662dba7af6e86567946174a8a6a1be88e2dcc221c9e3ab720"
+      },
+      "legs/leg_80/fills.parquet": {
+        "bytes": 15690,
+        "sha256": "e4e86e321210bab435e54594105a54d4c9469e28e9037761594ba29af3b4e0f5"
+      },
+      "legs/leg_80/funding.parquet": {
+        "bytes": 3222,
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      "legs/leg_80/orders.parquet": {
+        "bytes": 35736,
+        "sha256": "e691d138152e60cb907362a70025e6c2ce031e89afbff589eac43a16f7be6052"
+      },
+      "legs/leg_80/positions.parquet": {
+        "bytes": 255852,
+        "sha256": "1eaca81e0f8084801af802e8b09e7cff88557cf2d60c919951394693c12f4a53"
+      },
+      "legs/leg_80/run_meta.json": {
+        "bytes": 187232,
+        "sha256": "4a5578638bb3da5a8d1cad53b3783d486903ec3ef310a391e8c476d664e47ddc"
+      },
+      "legs/leg_80/summary.txt": {
+        "bytes": 956,
+        "sha256": "48e7a2055f136a1459d4188d718471b575fcda6f1c68d10bc71c2d58ef835ded"
+      },
+      "legs/leg_80/tearsheet.png": {
+        "bytes": 176896,
+        "sha256": "bb55f3c345b325172c742b75caaae004ac8ad78230be0a40b5cbde49af2ee1a2"
+      },
+      "legs/leg_80/tearsheet.txt": {
+        "bytes": 956,
+        "sha256": "48e7a2055f136a1459d4188d718471b575fcda6f1c68d10bc71c2d58ef835ded"
+      },
+      "legs/leg_81/equity.parquet": {
+        "bytes": 2708,
+        "sha256": "0fbc2259d4af89a09bf9e0a0c86ed386d8ab78ec4abe808ca23e9f7930301927"
+      },
+      "legs/leg_81/fills.parquet": {
+        "bytes": 15989,
+        "sha256": "fd52660815df8937957aca714e3115e4594289d4e608e8fa753fc2a454e096d2"
+      },
+      "legs/leg_81/funding.parquet": {
+        "bytes": 3222,
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      "legs/leg_81/orders.parquet": {
+        "bytes": 35700,
+        "sha256": "396a80ed2cc6835311c95be27f2aa0b5e1d673a8971f51bcba469d443322deb8"
+      },
+      "legs/leg_81/positions.parquet": {
+        "bytes": 267241,
+        "sha256": "ded867634e8043388d6485ff15325624b33616827fcdfc02bd775e8191d6605a"
+      },
+      "legs/leg_81/run_meta.json": {
+        "bytes": 187234,
+        "sha256": "6998f77081f24ff51da3f69d2f4578b4f5925744ebb8c4173a2a98bafa306992"
+      },
+      "legs/leg_81/summary.txt": {
+        "bytes": 955,
+        "sha256": "d27a01077de6111479d920f4775c852334dc000f4f966f3e62cb5972bc9bcea1"
+      },
+      "legs/leg_81/tearsheet.png": {
+        "bytes": 195636,
+        "sha256": "1a45d616e508d66ce4a11093092f2c91dadc54b200f2385e912712e91e7e7563"
+      },
+      "legs/leg_81/tearsheet.txt": {
+        "bytes": 955,
+        "sha256": "d27a01077de6111479d920f4775c852334dc000f4f966f3e62cb5972bc9bcea1"
+      },
+      "legs/leg_82/equity.parquet": {
+        "bytes": 2706,
+        "sha256": "6f3dbe25716dbc95a53ab6a3a48cc4b35763c18cd5a32c9a366d3069a0881abd"
+      },
+      "legs/leg_82/fills.parquet": {
+        "bytes": 15904,
+        "sha256": "15ec23341cd83528d8a2e8ff0646e2a96b68229985632596b398ed464345f6a5"
+      },
+      "legs/leg_82/funding.parquet": {
+        "bytes": 3222,
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      "legs/leg_82/orders.parquet": {
+        "bytes": 35569,
+        "sha256": "95b016dd209ad78ce5f9b8e9aefa19f7370be65830a299eb3fa8aafb13fbb974"
+      },
+      "legs/leg_82/positions.parquet": {
+        "bytes": 270041,
+        "sha256": "33be83af198cd37f5722703fbdb1ed9ec5974574c25bb46a0e8d432554a50f9f"
+      },
+      "legs/leg_82/run_meta.json": {
+        "bytes": 187234,
+        "sha256": "8bc654c147066bc6b52ea920f78528169fa9a643e4a64d9fdeafa886599854f3"
+      },
+      "legs/leg_82/summary.txt": {
+        "bytes": 955,
+        "sha256": "a0448c0a61b53b8e9880742dbde5d565db366b638658eb0930693a6019db2add"
+      },
+      "legs/leg_82/tearsheet.png": {
+        "bytes": 168101,
+        "sha256": "7f5eb44a6ee8ebde86ddc965f2456dd403699ff2753f97ee15fa0c603860f52f"
+      },
+      "legs/leg_82/tearsheet.txt": {
+        "bytes": 955,
+        "sha256": "a0448c0a61b53b8e9880742dbde5d565db366b638658eb0930693a6019db2add"
+      },
+      "legs/leg_83/equity.parquet": {
+        "bytes": 2708,
+        "sha256": "1711161031619931ba26a5a5d7ba325eff580ccaf07070cd14f320492c102add"
+      },
+      "legs/leg_83/fills.parquet": {
+        "bytes": 15576,
+        "sha256": "9e33589f6331c5efe2525c1eb943a95c050acbd7de096c232900c465762a0612"
+      },
+      "legs/leg_83/funding.parquet": {
+        "bytes": 3222,
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      "legs/leg_83/orders.parquet": {
+        "bytes": 35788,
+        "sha256": "0870eb082cc97de792cc2242bb5749c4515cf94570d52bab2d1da9bf041b3fb1"
+      },
+      "legs/leg_83/positions.parquet": {
+        "bytes": 264739,
+        "sha256": "bcf67999a77b8f2cdd9a0325df3f7ef244fcd4855c0b61545cbbe9b324defcb6"
+      },
+      "legs/leg_83/run_meta.json": {
+        "bytes": 187234,
+        "sha256": "fac3b49f1b2732cf8db8bcf5c43d6a35fb4c4443e26c0920681f96502fbdc197"
+      },
+      "legs/leg_83/summary.txt": {
+        "bytes": 951,
+        "sha256": "9407128b8c8c9a7f721e33d532b61f612123316e37fc36a5b4432fe1042fc1b4"
+      },
+      "legs/leg_83/tearsheet.png": {
+        "bytes": 172090,
+        "sha256": "d708578d96b1d1edae811734ebab7155034c9f594cb5436e0987cae400187ebd"
+      },
+      "legs/leg_83/tearsheet.txt": {
+        "bytes": 951,
+        "sha256": "9407128b8c8c9a7f721e33d532b61f612123316e37fc36a5b4432fe1042fc1b4"
+      },
+      "legs/leg_84/equity.parquet": {
+        "bytes": 2708,
+        "sha256": "62ee21c40329daa321da71317cde9a9444ede7b09e400f7eda23ccb46cbf55d5"
+      },
+      "legs/leg_84/fills.parquet": {
+        "bytes": 15519,
+        "sha256": "290ec850a41111b1bd16b28d6c41058f01bf45256d9ebee7e88883e52e64542b"
+      },
+      "legs/leg_84/funding.parquet": {
+        "bytes": 3222,
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      "legs/leg_84/orders.parquet": {
+        "bytes": 35591,
+        "sha256": "90008a39dbbbc306c7e8546a83a38e131e949bd99606d6e9f502d38ce06a7831"
+      },
+      "legs/leg_84/positions.parquet": {
+        "bytes": 266340,
+        "sha256": "5793fc613ee9c41e1bd9fa5b68afe27fd79d54c394e365eec94cd2303ced7351"
+      },
+      "legs/leg_84/run_meta.json": {
+        "bytes": 187234,
+        "sha256": "8e56648e9fb77f1625809bb61bb00a7d5fe626ba8dc6f177a65f7a69fbfb244a"
+      },
+      "legs/leg_84/summary.txt": {
+        "bytes": 948,
+        "sha256": "ca92062293c08ea8e421e35046743af9c7daa5ff7f48e35cdfe5dbf9c3604351"
+      },
+      "legs/leg_84/tearsheet.png": {
+        "bytes": 215053,
+        "sha256": "10c75450ad0463d5748efd687a4496c664786966ad85c8674b8def7f33c618fd"
+      },
+      "legs/leg_84/tearsheet.txt": {
+        "bytes": 948,
+        "sha256": "ca92062293c08ea8e421e35046743af9c7daa5ff7f48e35cdfe5dbf9c3604351"
+      },
+      "legs/leg_85/equity.parquet": {
+        "bytes": 2188,
+        "sha256": "37ee945b9f4390278da82aee6356f364b8742ee101fedb8a2536fadb7f10399d"
+      },
+      "legs/leg_85/fills.parquet": {
+        "bytes": 15689,
+        "sha256": "ba45ed30e25cf36513145f313b9eb432b0978233cadd6592c5637a00610afcc1"
+      },
+      "legs/leg_85/funding.parquet": {
+        "bytes": 3222,
+        "sha256": "38824bf24e82bb277a71cae92a628d0372de93700c6b0d6a0992cffbb9b2211d"
+      },
+      "legs/leg_85/orders.parquet": {
+        "bytes": 35666,
+        "sha256": "901b6bfc21853ccd8eb4135029c670f2acb97ea2ac81691ff263f43b9667415d"
+      },
+      "legs/leg_85/positions.parquet": {
+        "bytes": 130501,
+        "sha256": "c2d747854f09715b647758a9bb2051a52b914a525ed5a8eab02aad57e9d3ec11"
+      },
+      "legs/leg_85/run_meta.json": {
+        "bytes": 187232,
+        "sha256": "3f07395b19b80d53bfa46cef95fbda89649e28132df68a4b1b579a6d13968da9"
+      },
+      "legs/leg_85/summary.txt": {
+        "bytes": 955,
+        "sha256": "44e81c8d29d47359deef9d277bb5032b6a0916998b686766ce3ee9e166408124"
+      },
+      "legs/leg_85/tearsheet.png": {
+        "bytes": 162282,
+        "sha256": "c8bca9a1c333c1fb38929d15fd252829432812f4aced1956d1b87fb606587909"
+      },
+      "legs/leg_85/tearsheet.txt": {
+        "bytes": 955,
+        "sha256": "44e81c8d29d47359deef9d277bb5032b6a0916998b686766ce3ee9e166408124"
+      },
+      "summary.txt": {
+        "bytes": 954,
+        "sha256": "a52cbc9604cd015f6d3557582bdeb01e538752baba6eacc5cd021b8bf33d4376"
+      },
+      "tearsheet.png": {
+        "bytes": 388179,
+        "sha256": "ee2a150c4e1e4f9f597bd25d225903e6f8d24df7f7389f2ed48949c3240ef37f"
+      },
+      "tearsheet.txt": {
+        "bytes": 954,
+        "sha256": "a52cbc9604cd015f6d3557582bdeb01e538752baba6eacc5cd021b8bf33d4376"
+      },
+      "walkforward.json": {
+        "bytes": 322724,
+        "sha256": "fb11cba28271462444de855e2da294d026bcffdfd7176ec9a4ffabe7be46485f"
+      }
+    },
+    "repository_historical_artifact_mutated": false,
+    "source": {
+      "equivalence_is_replay_adjudicated": true,
+      "full_historical_dirty_source_tree_exactly_recovered": false,
+      "git_archive_sha256": "cc6eda34f9abd410d069172a5f15ee01ac05f2835e2418584324a7497fd14b9f",
+      "predecessor_commit": "8417cb850a27306b30f6c70365c3565f3d209ddf",
+      "recovered_patch_file_sha256": {
+        "configs/equity.yaml": "5db15b29f53764e882a70cfaabb09d725d4fb429d6e73a20a74c6f5e790aff26",
+        "scripts/sharadar_load.py": "d438167baafdf125afd6b5826af025ca69f6387e7a810e48a83e7cfe7b5b03c7",
+        "src/alphaforge/features/library/equity_fundamental.py": "803cb64a60deb602dca8a365513dfed9fb917fdef5bea60bb7117976024e392a"
+      }
+    },
+    "workspace_destroyed_after_execution": true,
+    "workspace_outside_repository": true
+  },
+  "fresh_vendor_reacquisition_completed": false,
+  "historical_crypto_membership_intervals_exact": false,
+  "historical_full_artifact_byte_exact": true,
+  "historical_full_dirty_source_tree_recovered": false,
+  "input_validation": {
+    "crypto_membership_classification": "ARTIFACT_INFORMED_MINIMAL_ZERO_HELD_RECONSTRUCTION",
+    "manifest_content_hash": "sha256:0031026aa3d618ae78ef3632f958253363b3e8a270b349c34910a21251dd58e3",
+    "manifest_path": "artifacts/publication/prereg_investment_upstream_replay_manifest.json",
+    "manifest_sha256": "86f9f1146601eebc3cbef1db12bedbc490df3bbfdf466d52fa1ca2e436096769",
+    "membership_after_raw_rebuild": {
+      "full_window_instrument_ids": 6880,
+      "full_window_instrument_set_exact": true,
+      "xuse": {
+        "instrument_ids": 6835,
+        "intervals": 11359,
+        "open_intervals": 2088
+      }
+    },
+    "validated_before_and_after_replay": true
+  },
+  "passes_strategy_reproduction": true,
+  "raw_to_strategy_pipeline_replay_completed": true,
+  "rights_and_release": {
+    "aggregate_hash_receipt_may_be_public": true,
+    "private_snapshot_publication_authorized": false,
+    "raw_vendor_rows_publication_authorized": false
+  },
+  "schema": "canli.alphac-prereg-investment-upstream-clean-workspace.v1",
+  "status": "PASS_FULL_RAW_TO_ARTIFACT_BYTE_EXACT"
+}

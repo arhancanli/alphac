@@ -1,0 +1,30 @@
+{
+  "abstract": "AlphaForge tested cross-sectional and time-series momentum in perpetual-futures prices. This paper reconciles all 18 charged crypto-momentum hypothesis identities recorded from 2026-06-20 through 2026-06-25. The best persisted result, a 21-day time-series momentum signal rebalanced weekly, had annualized Sharpe 0.4863, total return 26.83%, and maximum drawdown 17.02% from 2022-02-08 through 2026-06-01. Its artifact-era Deflated Sharpe Ratio was only 0.0684. The worst result, a seven-day cross-sectional signal rebalanced daily, had Sharpe -1.1690, total return -42.39%, and maximum drawdown 50.64%. All 18 artifacts failed their recorded DSR gate. A separate 2021–2026 diagnostic combined three momentum signals and measured Sharpe 0.0780. Its full-sample correlation with a carry diagnostic was +0.0444 and stress correlation was negative, but the combined Sharpe was only 0.0556 and even the reported decorrelated ceiling was 0.1206. Diversification without standalone edge does not earn a sleeve slot. No persisted momentum capacity sweep exists. This family is research-only: it is not validated, admitted, live, or part of an Alpaca paper account.",
+  "authors": [
+    {
+      "affiliation": "Canli Capital / AlphaC Algorithms",
+      "full_name": "Arhan Canli",
+      "roles": [
+        "CONCEPTUALIZATION",
+        "METHODOLOGY",
+        "SOFTWARE",
+        "VALIDATION",
+        "INVESTIGATION",
+        "WRITING",
+        "PROJECT_ADMINISTRATION"
+      ]
+    }
+  ],
+  "capital_kind": "RESEARCH_SIMULATION_ONLY",
+  "claim_boundary": "This is an incomplete preparation bundle. It proves no external submission, DOI, peer review, independent replication, funded performance, or future return.",
+  "date": "2026-08-23",
+  "external_identifiers": [],
+  "language": "en",
+  "peer_reviewed": false,
+  "registry_key": "crypto_momentum",
+  "result_release_complete": true,
+  "schema": "canli.alphac-sleeve-paper.v1",
+  "title": "Crypto Momentum: Complete Trial Lineage and Failed Sleeve-Admission Evidence",
+  "type": "WORKING_PAPER_PREPRINT_NOT_PEER_REVIEWED",
+  "version": "0.1.0"
+}

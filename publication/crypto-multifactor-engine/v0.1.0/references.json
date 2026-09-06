@@ -1,0 +1,84 @@
+{
+  "author": "Arhan Canli",
+  "metadata_cache": {
+    "content_hash": "sha256:a2b17534e33c4c361cd515387b566cd1c2e352a1b970159e66c329c3519b99c4",
+    "path": "artifacts/research/publication_reference_metadata.json",
+    "sha256": "cc011d355b2613f1514889fe8076752c3de1c54e158e561db60da559d3f1469c"
+  },
+  "reference_count": 3,
+  "references": [
+    {
+      "authors": [
+        {
+          "family": "LIU",
+          "given": "YUKUN"
+        },
+        {
+          "family": "TSYVINSKI",
+          "given": "ALEH"
+        },
+        {
+          "family": "WU",
+          "given": "XI"
+        }
+      ],
+      "citation_key": "liu2022common_5776ac",
+      "container_title": "The Journal of Finance",
+      "doi": "10.1111/jofi.13119",
+      "metadata_authority": "CROSSREF_REST_API",
+      "title": "Common Risk Factors in Cryptocurrency",
+      "url": "https://doi.org/10.1111/jofi.13119",
+      "year": 2022
+    },
+    {
+      "authors": [
+        {
+          "family": "Liu",
+          "given": "Yukun"
+        },
+        {
+          "family": "Tsyvinski",
+          "given": "Aleh"
+        }
+      ],
+      "citation_key": "liu2021risks_0c3a60",
+      "container_title": "The Review of Financial Studies",
+      "doi": "10.1093/rfs/hhaa113",
+      "metadata_authority": "CROSSREF_REST_API",
+      "title": "Risks and Returns of Cryptocurrency",
+      "url": "https://doi.org/10.1093/rfs/hhaa113",
+      "year": 2021
+    },
+    {
+      "authors": [
+        {
+          "family": "Bailey",
+          "given": "David"
+        },
+        {
+          "family": "Borwein",
+          "given": "Jonathan"
+        },
+        {
+          "family": "López de Prado",
+          "given": "Marcos"
+        },
+        {
+          "family": "Zhu",
+          "given": "Qiji Jim"
+        }
+      ],
+      "citation_key": "bailey2016probability_766a65",
+      "container_title": "The Journal of Computational Finance",
+      "doi": "10.21314/jcf.2016.322",
+      "metadata_authority": "CROSSREF_REST_API",
+      "title": "The probability of backtest overfitting",
+      "url": "https://doi.org/10.21314/jcf.2016.322",
+      "year": 2016
+    }
+  ],
+  "registry_key": "crypto_multifactor_engine",
+  "schema": "canli.alphac-sleeve-bibliography.v1",
+  "status": "COMPLETE_NORMALIZED_BIBLIOGRAPHY",
+  "unresolved_references": []
+}

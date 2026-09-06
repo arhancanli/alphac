@@ -18,6 +18,7 @@ name: ci
 # complete offline suite remains a separate local verification claim.
 
 on:
+  workflow_dispatch:
   push:
     branches: [main]
   pull_request:
@@ -37,6 +38,23 @@ env:
   UV_FROZEN: "1"
 
 jobs:
+  publication-integrity:
+    name: publication integrity (clean checkout)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Verify all tracked scholarly preparation bundles
+        run: >-
+          python scripts/verify_publication_clean_checkout.py
+          --receipt publication-clean-checkout-integrity.json
+      - name: Upload the commit-bound verification receipt
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: publication-clean-checkout-integrity
+          path: publication-clean-checkout-integrity.json
+          if-no-files-found: error
+
   lint:
     name: ruff (governed scope + debt ledger)
     runs-on: ubuntu-latest
@@ -88,10 +106,14 @@ jobs:
         run: uv python install
       - name: Sync the frozen environment
         run: uv sync --frozen --dev
-      # Network tests and workspace-evidence integration tests are excluded from
-      # this portable clean-checkout gate. The latter cannot run without the
-      # deliberately unversioned evidence corpus and sibling website workspaces;
-      # each such test is explicitly marked instead of failing accidentally.
+      # Network, workspace-evidence and wall-clock performance tests are excluded
+      # from this parallel correctness lane. Workspace evidence cannot run without
+      # the deliberately unversioned corpus and sibling website workspaces; the
+      # exact module inventory is versioned in
+      # config/clean_checkout_workspace_evidence_policy.json. Slow
+      # performance guards run serially in the next mandatory step: measuring an
+      # 8-second wall budget while 17 sibling workers contend for the host measures
+      # pytest scheduling rather than engine performance.
       # Branch coverage of the alphaforge package is collected by pyproject
       # (--cov=alphaforge --cov-branch) on every run; -p no:randomly is not used
       # because nothing here is order-dependent. We emit an XML report and a
@@ -99,9 +121,17 @@ jobs:
       # (see pyproject): a floor is pinned once a true baseline is observed,
       # rather than redding CI aspirationally.
       - name: pytest (portable offline suite with branch coverage)
+        env:
+          ALPHAC_TEST_CONTEXT: clean-checkout-portable
         run: >-
-          uv run pytest -m 'not network and not workspace_evidence'
+          uv run pytest -m 'not network and not workspace_evidence and not slow'
           --cov-report=xml --cov-report=term
+      - name: pytest (serial performance guards)
+        env:
+          ALPHAC_TEST_CONTEXT: clean-checkout-portable
+        run: >-
+          uv run pytest -n0 --no-cov
+          -m 'slow and not network and not workspace_evidence'
       - name: Upload coverage report
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -109,3 +139,97 @@ jobs:
           name: coverage-xml
           path: coverage.xml
           if-no-files-found: warn
+
+  foundry-database-contract:
+    name: foundry PostgreSQL contract
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres@sha256:1c59e2c3c818eaa0f0628f695b36e7c9e362d6b219b36a54a32df645cbd7e1af
+        env:
+          POSTGRES_DB: foundry
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d foundry"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install uv
+        uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
+        with:
+          enable-cache: true
+      - name: Pin Python from .python-version
+        run: uv python install
+      - name: Sync the frozen environment
+        run: uv sync --frozen --dev
+      - name: Create isolated database roles
+        run: |
+          psql -h 127.0.0.1 -U postgres -d foundry <<'SQL'
+          CREATE ROLE foundry_researchd LOGIN;
+          CREATE ROLE foundry_worker LOGIN;
+          CREATE ROLE foundry_status LOGIN;
+          CREATE ROLE foundry_migrator LOGIN;
+          CREATE ROLE foundry_validator LOGIN;
+          CREATE ROLE foundry_publisher LOGIN;
+          SQL
+      - name: Apply the Foundry database contract
+        run: |
+          psql -v ON_ERROR_STOP=1 -h 127.0.0.1 -U postgres -d foundry \
+            -f deploy/foundry/sql/001_core.sql
+          psql -v ON_ERROR_STOP=1 -h 127.0.0.1 -U postgres -d foundry \
+            -f deploy/foundry/sql/002_privileges.sql
+          psql -v ON_ERROR_STOP=1 -h 127.0.0.1 -U postgres -d foundry \
+            -f deploy/foundry/sql/003_legacy_migration.sql
+      - name: Exercise lifecycle, immutability, role and lease boundaries
+        env:
+          FOUNDRY_TEST_ADMIN_DSN: postgresql://postgres@127.0.0.1:5432/foundry
+          FOUNDRY_TEST_RESEARCHD_DSN: postgresql://foundry_researchd@127.0.0.1:5432/foundry
+          FOUNDRY_TEST_WORKER_DSN: postgresql://foundry_worker@127.0.0.1:5432/foundry
+          FOUNDRY_TEST_STATUS_DSN: postgresql://foundry_status@127.0.0.1:5432/foundry
+          FOUNDRY_TEST_MIGRATOR_DSN: postgresql://foundry_migrator@127.0.0.1:5432/foundry
+          FOUNDRY_TEST_VALIDATOR_DSN: postgresql://foundry_validator@127.0.0.1:5432/foundry
+          FOUNDRY_TEST_PUBLISHER_DSN: postgresql://foundry_publisher@127.0.0.1:5432/foundry
+        run: >-
+          uv run --with-requirements deploy/foundry/requirements.lock
+          pytest -n0 --no-cov
+          tests/integration/test_foundry_postgres.py
+
+  browser-interface:
+    name: browser interface (synthetic clean-checkout fixture)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install uv
+        uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
+        with:
+          enable-cache: true
+      - name: Pin Python from .python-version
+        run: uv python install
+      - name: Sync the frozen environment
+        run: uv sync --frozen --dev
+      - name: Install the ephemeral Chromium QA runtime
+        run: uv run --with playwright playwright install --with-deps chromium
+      - name: Build and exercise the synthetic blind-review interface fixture
+        shell: bash
+        run: |
+          fixture_dir=/tmp/alphac-active-ownership-browser-fixture
+          uv run python tests/browser/build_active_ownership_browser_fixture.py --out "$fixture_dir"
+          uv run python -m http.server 8765 --bind 127.0.0.1 --directory "$fixture_dir" \
+            >/tmp/alphac-browser-server.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+          for attempt in {1..20}; do
+            if curl --fail --silent http://127.0.0.1:8765/review.html >/dev/null; then
+              break
+            fi
+            sleep 0.25
+          done
+          curl --fail --silent http://127.0.0.1:8765/review.html >/dev/null
+          uv run --with playwright python \
+            tests/browser/test_active_ownership_review_workspace.py \
+            --packet-dir "$fixture_dir" \
+            --url http://127.0.0.1:8765/review.html

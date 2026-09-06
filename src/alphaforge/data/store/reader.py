@@ -96,6 +96,15 @@ class PITDataReader:
         self._con = duckdb.connect()  # in-memory: pure query engine, owns no storage
         self._con.execute("SET TimeZone = 'UTC'")
 
+    @property
+    def lake_paths(self) -> LakePaths:
+        """The exact lake path authority consumed by this reader.
+
+        Exposed read-only so measured runs can freeze the partitions selected by
+        this reader instead of reconstructing a possibly different path from config.
+        """
+        return self._paths
+
     def ohlcv(
         self,
         instrument_ids: Sequence[str],

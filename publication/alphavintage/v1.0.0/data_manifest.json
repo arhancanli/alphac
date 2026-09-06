@@ -1,0 +1,37 @@
+{
+  "derived_curve": {
+    "bundled": false,
+    "path": "artifacts/probe/cpi_surprise_size/equity.parquet",
+    "reason": "A redistribution and source-licence review is required before releasing the derived curve outside the repository evidence interface.",
+    "rows": 6296,
+    "sha256": "d277c63ddf2bed6e9314aa863dbbf6adf3f4adb55bd89e8166aee4a19aab415f"
+  },
+  "paper": "alphavintage",
+  "release_status": "INCOMPLETE_DATA_LICENCE_REVIEW_REQUIRED",
+  "schema": "canli.alphac-publication-data-manifest.v1",
+  "sources": [
+    {
+      "license_status": "SOURCE_TERMS_REQUIRE_RELEASE_REVIEW",
+      "name": "Philadelphia Fed Real-Time Data Set for Macroeconomists",
+      "point_in_time_field": "vintage_date",
+      "public_documentation": "https://www.philadelphiafed.org/surveys-and-data/real-time-data-research/real-time-data-set-for-macroeconomists",
+      "raw_data_bundled": false,
+      "role": "point-in-time CPI and core-CPI vintage inputs"
+    },
+    {
+      "license_status": "VENDOR_DERIVED_RAW_DATA_NOT_REDISTRIBUTED",
+      "name": "IWM, SPY, and QQQ daily market data",
+      "point_in_time_field": "ts_open",
+      "raw_data_bundled": false,
+      "role": "historical size-spread returns and the QQQ-minus-SPY placebo"
+    },
+    {
+      "license_status": "SANITIZED_DERIVED_EVIDENCE_ONLY",
+      "name": "Alpaca paper account",
+      "point_in_time_field": "broker portfolio-history timestamp",
+      "raw_data_bundled": false,
+      "role": "paper-only broker reconciliation"
+    }
+  ],
+  "version": "1.0.0"
+}
