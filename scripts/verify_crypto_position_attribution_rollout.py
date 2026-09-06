@@ -104,6 +104,98 @@ def write_if_changed(path: Path, document: dict[str, Any]) -> None:
     path.write_text(encoded, encoding="utf-8")
 
 
+def _binding_revisions(contract: dict[str, Any]) -> list[dict[str, Any]]:
+    revisions = contract.get("binding_revisions")
+    if not isinstance(revisions, list):
+        return []
+    return [entry for entry in revisions if isinstance(entry, dict)]
+
+
+def _entry_date(entry: dict[str, Any]) -> Any:
+    raw = entry.get("date")
+    if not isinstance(raw, str):
+        return None
+    try:
+        return datetime.fromisoformat(raw).date()
+    except ValueError:
+        return None
+
+
+def _check_source_binding(
+    key: str,
+    sealed_value: Any,
+    current_value: str,
+    *,
+    revisions: list[dict[str, Any]],
+    sealed_at: Any,
+) -> None:
+    """Fail-closed per-key check: the receipt's sealed hash for one binding must be either the
+    CURRENT file hash, or a value some binding_revisions entry itself records as the predecessor
+    it superseded -- and that entry must postdate the receipt. A legitimate re-pin of the contract
+    or the verifier moves the CURRENT hash away from what an old receipt sealed; without this a
+    fixed historical receipt could never validate again after the first such re-pin (the same
+    gate-nobody-can-pass class as the preflight observation's contract binding), but a value
+    recorded nowhere -- an unreviewed drift -- must still be rejected.
+    """
+    if sealed_value == current_value:
+        return
+    matches = [e for e in revisions if e.get("preceding_bindings", {}).get(key) == sealed_value]
+    if not matches:
+        raise VerificationError(
+            f"deployment receipt source binding {key}={sealed_value!r} matches neither the "
+            f"current file ({current_value!r}) nor any recorded preceding_bindings entry"
+        )
+    postdating = [e for e in matches if (d := _entry_date(e)) is not None and d > sealed_at]
+    if not postdating:
+        raise VerificationError(
+            f"binding_revisions entry recording {key}={sealed_value!r} as a predecessor does not "
+            f"postdate the receipt sealed at {sealed_at.isoformat()}"
+        )
+
+
+def _desired_revisions(contract: dict[str, Any]) -> list[dict[str, Any]]:
+    revisions = contract.get("desired_revisions")
+    if not isinstance(revisions, list):
+        return []
+    return [entry for entry in revisions if isinstance(entry, dict)]
+
+
+def _check_required_file(
+    path: str,
+    sealed_value: Any,
+    current_desired: str,
+    *,
+    revisions: list[dict[str, Any]],
+    sealed_at: Any,
+) -> None:
+    """Same fail-closed shape as _check_source_binding, scoped to one required_files path.
+
+    The 2026-08-25 receipt's after-migration hash for a file is a snapshot of what THAT rollout
+    deployed. required_files[].desired_sha256 has since moved for unrelated reasons (the
+    drawdown-ladder and overlay_scale fixes recorded in desired_revisions), so the receipt's
+    after-hash must be accepted if it is either the CURRENT desired_sha256 or a value some
+    desired_revisions entry for this exact path records as the state it moved FROM -- postdating
+    the receipt. A hash explained by neither still fails closed.
+    """
+    if sealed_value == current_desired:
+        return
+    matches = [
+        e for e in revisions if e.get("path") == path and e.get("from_sha256") == sealed_value
+    ]
+    if not matches:
+        raise VerificationError(
+            f"deployment receipt after-hash for {path}={sealed_value!r} matches neither the "
+            f"current desired_sha256 ({current_desired!r}) nor any recorded desired_revisions "
+            "from_sha256 for this path"
+        )
+    postdating = [e for e in matches if (d := _entry_date(e)) is not None and d > sealed_at]
+    if not postdating:
+        raise VerificationError(
+            f"desired_revisions entry recording {path} from_sha256={sealed_value!r} does not "
+            f"postdate the receipt sealed at {sealed_at.isoformat()}"
+        )
+
+
 def validate_receipt(receipt: dict[str, Any], contract: dict[str, Any], deploy: ModuleType) -> int:
     if receipt.get("schema") != "canli.alphac-crypto-position-attribution-vps-receipt.v1":
         raise VerificationError("missing or unexpected deployment receipt schema")
@@ -114,19 +206,47 @@ def validate_receipt(receipt: dict[str, Any], contract: dict[str, Any], deploy: 
     if receipt.get("content_hash") != deploy._content_hash(receipt):
         raise VerificationError("deployment receipt content hash is invalid")
 
-    expected_bindings = {
+    try:
+        sealed_at = (
+            datetime.strptime(receipt["deployed_at_utc"], "%Y%m%dT%H%M%SZ")
+            .replace(tzinfo=UTC)
+            .date()
+        )
+    except (KeyError, TypeError, ValueError) as exc:
+        raise VerificationError(
+            "deployment receipt has no valid deployed_at_utc timestamp"
+        ) from exc
+
+    current_bindings = {
         "deployment_tool_sha256": deploy._sha256(Path(deploy.__file__).resolve()),
         "preflight_contract_sha256": deploy._sha256(CONTRACT_PATH),
         "attribution_evaluator_sha256": deploy._sha256(ATTRIBUTION_SCRIPT),
         "rollout_verifier_sha256": deploy._sha256(Path(__file__).resolve()),
     }
-    if receipt.get("source_bindings") != expected_bindings:
-        raise VerificationError("deployment receipt source bindings do not match the verifier")
+    sealed_bindings = receipt.get("source_bindings") or {}
+    revisions = _binding_revisions(contract)
+    for key, current_value in current_bindings.items():
+        _check_source_binding(
+            key, sealed_bindings.get(key), current_value, revisions=revisions, sealed_at=sealed_at
+        )
 
-    expected_files = {item["path"]: item["desired_sha256"] for item in contract["required_files"]}
     after = receipt.get("after", {})
-    if after.get("files") != expected_files:
-        raise VerificationError("deployment receipt is not bound to desired source hashes")
+    after_files = after.get("files") if isinstance(after.get("files"), dict) else {}
+    required_paths = {item["path"] for item in contract["required_files"]}
+    if set(after_files) != required_paths:
+        raise VerificationError(
+            "deployment receipt after-snapshot does not cover exactly the contract's "
+            "required_files paths"
+        )
+    file_revisions = _desired_revisions(contract)
+    for item in contract["required_files"]:
+        _check_required_file(
+            item["path"],
+            after_files.get(item["path"]),
+            item["desired_sha256"],
+            revisions=file_revisions,
+            sealed_at=sealed_at,
+        )
     if not set(deploy.REQUIRED_COLUMNS).issubset(after.get("position_snapshot_columns", [])):
         raise VerificationError("deployment receipt does not prove the additive schema migration")
 

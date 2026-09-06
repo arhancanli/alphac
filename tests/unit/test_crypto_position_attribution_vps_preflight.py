@@ -1,10 +1,15 @@
 from __future__ import annotations
 
+import copy
 import hashlib
+import importlib.util
 import json
 from datetime import datetime
 from pathlib import Path
+from types import ModuleType
 from typing import Any
+
+import pytest
 
 ROOT = Path(__file__).resolve().parents[2]
 # Path literals below deliberately keep "artifacts/..." joined in one string (rather than split
@@ -19,11 +24,21 @@ OBSERVATION = (
 ROLLOUT_VERIFICATION = (
     ROOT / "artifacts/engineering" / "crypto_position_attribution_rollout_verification.json"
 )
+RECEIPT = ROOT / "artifacts/engineering/crypto_position_attribution_vps_receipt.json"
 DEPLOY_SCRIPT = ROOT / "scripts" / "deploy_crypto_position_attribution_vps.py"
+VERIFY_SCRIPT = ROOT / "scripts" / "verify_crypto_position_attribution_rollout.py"
 
 
 def _sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def _load_module(name: str, path: Path) -> ModuleType:
+    spec = importlib.util.spec_from_file_location(name, path)
+    assert spec is not None and spec.loader is not None, f"cannot load {path}"
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 
 def _content_hash(document: dict[str, Any]) -> str:
@@ -180,3 +195,32 @@ def test_current_deployed_state_is_verified_by_rollout_receipt() -> None:
         "CURRENT desired_sha256 values -- the deployed VPS state has drifted from what the "
         "contract now declares desired"
     )
+
+
+def test_validate_receipt_accepts_recorded_predecessor_and_rejects_unrecorded_drift() -> None:
+    """Unit-level proof for validate_receipt's per-key source-binding check.
+
+    validate_receipt binds the sealed 2026-08-25 receipt's source_bindings (deployment tool,
+    preflight contract, attribution evaluator, rollout verifier) to the CURRENT sha256 of each of
+    those four files. Two of them (the contract and this verifier) have been legitimately revised
+    since the receipt was sealed, recorded in the contract's binding_revisions. A receipt bound to
+    a hash matching neither the current file NOR a recorded predecessor must still be rejected --
+    this is exercised directly against validate_receipt so it does not depend on real SSH state.
+    """
+    verify = _load_module("crypto_verify_binding_test", VERIFY_SCRIPT)
+    deploy = _load_module("crypto_deploy_binding_test", DEPLOY_SCRIPT)
+    contract = json.loads(PREFLIGHT.read_text(encoding="utf-8"))
+    receipt = json.loads(RECEIPT.read_text(encoding="utf-8"))
+
+    # The real, unmodified receipt is bound to hashes that no longer match the CURRENT contract
+    # or verifier files -- accepted only because binding_revisions records those exact values as
+    # this receipt's predecessors, dated after it. This is today's real situation, not a fixture.
+    verify.validate_receipt(receipt, contract, deploy)
+
+    # A binding recorded NOWHERE -- neither the current file nor any predecessor -- must still be
+    # rejected: this is the fail-closed half the restructuring must not lose.
+    drifted = copy.deepcopy(receipt)
+    drifted["source_bindings"]["rollout_verifier_sha256"] = "f" * 64
+    drifted["content_hash"] = deploy._content_hash(drifted)
+    with pytest.raises(verify.VerificationError, match="rollout_verifier_sha256"):
+        verify.validate_receipt(drifted, contract, deploy)

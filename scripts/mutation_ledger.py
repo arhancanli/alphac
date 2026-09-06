@@ -649,6 +649,26 @@ MUTATIONS: tuple[Mutation, ...] = (
         ],
     ),
     Mutation(
+        "test_crypto_position_attribution_vps_preflight.py",
+        "remove the recorded predecessor rollout-verifier hash from binding_revisions",
+        REPO / "artifacts/engineering/crypto_position_attribution_vps_preflight.json",
+        _replace(
+            '"rollout_verifier_sha256": '
+            '"6a0c2f00453886776535e19b9b072374341427d5512e895c666fa9f979ebaf24"',
+            '"rollout_verifier_sha256": '
+            '"0000000000000000000000000000000000000000000000000000000000000000"',
+        ),
+        notes=[
+            "The verifier's own source hash moves every time verify_crypto_position_attribution_"
+            "rollout.py is legitimately edited, so validate_receipt accepts the sealed 2026-08-25 "
+            "receipt's rollout_verifier_sha256 only because binding_revisions records it as this "
+            "receipt's predecessor. Corrupting the recorded predecessor leaves the sealed value "
+            "explained by nothing -- caught by test_validate_receipt_accepts_recorded_predecessor_"
+            "and_rejects_unrecorded_drift, which calls validate_receipt directly against the real "
+            "receipt and this contract, independent of any SSH state.",
+        ],
+    ),
+    Mutation(
         "test_seriality_waiver.py",
         "accept a seriality waiver bound to a stale packet content hash",
         REPO / "src/alphaforge/validation/trial_reservation.py",
