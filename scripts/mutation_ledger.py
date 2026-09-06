@@ -540,6 +540,78 @@ MUTATIONS: tuple[Mutation, ...] = (
         REPO / "docs/research/ALPHAVINTAGE_MACRO_SURPRISE_LINEAGE.md",
         _replace("0.0000006327801884142836", "0.000001735861554830187"),
     ),
+    Mutation(
+        "test_health_sites_expectations.py",
+        "let the www host serve the site directly (200) instead of redirecting to the apex",
+        REPO / "scripts" / "health_check.py",
+        _replace(
+            'apex_ok = code in (301, 308) and location == f"{LANDING}/"',
+            'apex_ok = (code in (200, 301, 308)) and (location == f"{LANDING}/" or code == 200)',
+        ),
+        notes=[
+            "Reproduces the historical defect the docstring names: www returning 200 (a second "
+            "copy of the site) treated as a pass. Scoped so a 301/308 to the wrong location is "
+            "still red — only the '200 is fine too' branch is new.",
+        ],
+    ),
+    Mutation(
+        "test_single_writer_for_published_state.py",
+        "make alphamax_tick.sh a second writer of the published state",
+        REPO / "scripts" / "alphamax_tick.sh",
+        _replace(
+            "  # tests/unit/test_single_writer_for_published_state.py.\n"
+            '  echo "=== alphamax_tick done',
+            "  # tests/unit/test_single_writer_for_published_state.py.\n"
+            "  uv run python scripts/paper_trading_state.py\n"
+            '  echo "=== alphamax_tick done',
+        ),
+        notes=[
+            "The exact regression this guard was written to pin: a non-publisher script "
+            "re-running paper_trading_state.py on its own.",
+        ],
+    ),
+    Mutation(
+        "test_strategy_history_seed.py",
+        "let seed_history overwrite a strategy that already has its own history",
+        REPO / "src" / "alphaforge" / "portfolio" / "strategy.py",
+        _replace(
+            "        if self._equity_hist or self._scale_hist:\n            return False",
+            "        if False:\n            return False",
+        ),
+        notes=[
+            "Breaks the refusal, not the t-1 alignment: a long-lived --forever process's true "
+            "history must not be replaced by a seed.",
+        ],
+    ),
+    Mutation(
+        "test_build_dsr_calculator_contract.py",
+        "corrupt the persisted DSR calculator contract's content hash",
+        REPO / "artifacts" / "engineering" / "deflated_sharpe_calculator_contract.json",
+        _corrupt_json_string(("content_hash",)),
+    ),
+    Mutation(
+        "test_audit_treasury_schedule_state_machine.py",
+        "invert the revision-before-entry state-machine branch condition",
+        REPO / "scripts" / "audit_treasury_schedule_state_machine.py",
+        _replace(
+            "if announcement_date <= pre_entry_date:",
+            "if announcement_date > pre_entry_date:",
+        ),
+        notes=[
+            "Swaps which of the two unresolved-revision paths (PRE_ENTERED_THEN_CANCELLED vs "
+            "REVISION_BEFORE_ENTRY_POST_ONLY) a case takes, caught directly by the golden-vector "
+            "assertions in test_revised_dates_cancel_or_skip_without_chasing.",
+        ],
+    ),
+    Mutation(
+        "test_external_validation_opportunities.py",
+        "change the external-validation audit's fail-closed decision string",
+        REPO / "scripts" / "seal_external_validation_opportunities.py",
+        _replace(
+            '"decision": "NO_EXTERNAL_ACTION_AUTHORIZED_ELIGIBILITY_FACTS_REMAIN",',
+            '"decision": "MUTATED_DECISION",',
+        ),
+    ),
 )
 
 
@@ -552,16 +624,42 @@ def _run_test(name: str) -> subprocess.CompletedProcess[str]:
     )
 
 
-def main() -> int:
+def main(argv: list[str] | None = None) -> int:
+    import argparse
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--only",
+        action="append",
+        default=None,
+        help=(
+            "Run only the mutation(s) registered for this guard test filename (repeatable). "
+            "For proving a newly-registered mutation without paying for a full run. Skips "
+            "writing the published ledger artifact, since a subset run is not the coverage "
+            "record."
+        ),
+    )
+    args = parser.parse_args(argv)
+
     guards = discover_guards()
     mutated = {m.guard for m in MUTATIONS}
     unknown = sorted(mutated - set(guards))
     if unknown:
         raise AssertionError(f"mutations registered for tests that do not exist: {unknown}")
 
+    selected = MUTATIONS
+    if args.only:
+        only = set(args.only)
+        not_registered = sorted(only - mutated)
+        if not_registered:
+            raise AssertionError(
+                f"--only names guards with no registered mutation: {not_registered}"
+            )
+        selected = tuple(m for m in MUTATIONS if m.guard in only)
+
     rows: list[dict[str, Any]] = []
     survived: list[str] = []
-    for mutation in MUTATIONS:
+    for mutation in selected:
         target = mutation.target
         if not target.exists():
             rows.append(
@@ -609,6 +707,17 @@ def main() -> int:
         print(f"  {flag} {observed:8}  {mutation.guard:52} {mutation.describes}")
 
     unmutated = sorted(set(guards) - mutated)
+    if args.only:
+        print(
+            f"\n--only run over {len(selected)} guard(s); ledger artifact NOT written "
+            "(not a full run)."
+        )
+        print(f"  behaved as expected          : {sum(1 for r in rows if r.get('as_expected'))}")
+        print(f"  FINDINGS                     : {len(survived)}")
+        for name in survived:
+            print(f"      {name}")
+        return 1 if survived else 0
+
     result = {
         "schema": "canli.alphac-mutation-ledger.v1",
         "claim_boundary": (

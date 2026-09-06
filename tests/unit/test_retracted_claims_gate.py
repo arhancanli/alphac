@@ -170,7 +170,8 @@ def test_the_stale_breadth_sentence_is_caught_bare_and_passes_inside_its_correct
     disclosed.write_text(
         '{"transparency": ["CORRECTION 2026-09-06 \\u2014 the roadmap said the next breadth '
         "would be managed-futures trend, but that needs futures data we have not yet invested "
-        'in. That sentence was wrong from the day the managed-futures trend sleeve entered the book."]}'
+        "in. That sentence was wrong from the day the managed-futures trend sleeve entered "
+        'the book."]}'
     )
     assert not GATE.scan(tmp_path, rules), (
         "the retired sentence quoted inside a dated CORRECTION must PASS: disclosure, not deletion"
