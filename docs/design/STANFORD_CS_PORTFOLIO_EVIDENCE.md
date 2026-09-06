@@ -83,7 +83,7 @@ Boundary: Archive integrity is not result replay or rights clearance; no DOI, ex
 ### The project refuses to infer success from an immature forward record.
 
 - `daily_return_observations`: 28
-- `cumulative_return`: -0.03193580000000007
+- `cumulative_return`: -0.03219649999999996
 - `sharpe_status`: IMMATURE_RECORD_TOO_SHORT
 - `current_sleeves`: 4
 - `target_sleeves`: 14

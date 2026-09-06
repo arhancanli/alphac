@@ -26,9 +26,9 @@ artifact-bound publication pipeline; this is not a real-time broker display.
 | | |
 |---|---|
 | Paper sleeves | **4 / 14 planned** — funding carry, equity momentum, managed-futures trend, PIT macro surprise |
-| Forward record | **28 daily returns** from 2026-08-07 through 2026-09-06; cumulative return **−3.19358%**; provenance currently passes the publication gate |
+| Forward record | **28 daily returns** from 2026-08-07 through 2026-09-06; cumulative return **−3.21965%**; provenance currently passes the publication gate |
 | Forward Sharpe | **Not reportable** — 252 observations are required for an estimate and 756 for the project's establishment test |
-| Drawdown | Realized **3.29804%** to date, descriptive only; the current-composition model estimates **9.318% expected / 16.451% p95**, neither established by live evidence |
+| Drawdown | Realized **3.32408%** to date, descriptive only; the current-composition model estimates **9.318% expected / 16.451% p95**, neither established by live evidence |
 | Diversification | Research-curve average pairwise correlation **+0.02483** across 4 sleeves; live-forward diversification is not established |
 | DSR policy | Mandatory to measure and publish; **0.95 is a full-union portfolio-maturity threshold, not a per-sleeve or incremental-admission gate** |
 
