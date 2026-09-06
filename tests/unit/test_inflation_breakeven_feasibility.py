@@ -24,7 +24,9 @@ def test_signal_depth_does_not_masquerade_as_executable_return_data() -> None:
     assert payload["market_return_files_opened"] == []
     assert payload["return_hypotheses_spent"] == 0
     assert payload["aligned_5y_10y"]["rows"] >= 5914
-    assert payload["cpi_vintage_inventory"]["true_first_releases"] == 335
+    # A floor, not a pin: true CPI first releases accrue ~monthly (335 in 2026-08, 336 in
+    # 2026-09), so an exact `==` here goes red every month with no signal about the audit.
+    assert payload["cpi_vintage_inventory"]["true_first_releases"] >= 335
     assert payload["gates"]["aligned_5y_10y_signal_at_least_three_years"] is True
     assert payload["gates"]["all_atlas_maturities_present"] is False
     assert payload["gates"]["historical_signal_vintages_preserved"] is False

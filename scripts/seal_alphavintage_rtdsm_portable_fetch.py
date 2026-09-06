@@ -115,17 +115,37 @@ def build(fetched_dir: Path) -> dict[str, Any]:
     return document
 
 
-def validate_published() -> dict[str, Any]:
-    document = json.loads(OUTPUT.read_text())
+def validate_published(output_path: Path = OUTPUT, local_dir: Path = LOCAL_DIR) -> dict[str, Any]:
+    """Re-check the sealed receipt against whatever is on disk right now.
+
+    WHY THIS DOES NOT RE-HASH THE WHOLE LOCAL PARQUET (fixed 2026-09-06). The receipt seals a
+    `vintage_cutoff_inclusive` date and, per series, a `local_table_content_hash` -- the content
+    hash of the local table ALREADY FILTERED to that cutoff at seal time. Hashing the raw file
+    bytes instead (the previous check) fails on any ordinary backfill that appends rows after
+    the cutoff, because the file's bytes change even though nothing the receipt actually vouches
+    for -- the frozen pre-cutoff slice -- has moved. The correct comparison re-derives that same
+    slice from the CURRENT local parquet and compares content hashes, so a post-cutoff append
+    passes and a change to a pre-cutoff row still fails closed.
+    """
+    document = json.loads(output_path.read_text())
     if document.get("content_hash") != _content_hash(document):
         raise RuntimeError("Published receipt content hash is invalid")
     fetch_binding = document["source_bindings"]["portable_fetcher"]
     if fetch_binding["sha256"] != _sha256(ROOT / fetch_binding["path"]):
         raise RuntimeError("Portable fetcher changed after the receipt")
+    cutoff = pd.Timestamp(document["execution"]["vintage_cutoff_inclusive"])
+    fetcher = _fetch_module()
     for comparison in document["comparisons"]:
-        binding = comparison["local_source"]
-        if binding["sha256"] != _sha256(ROOT / binding["path"]):
-            raise RuntimeError(f"Local CPI source changed: {comparison['series']}")
+        series = comparison["series"]
+        local_path = local_dir / f"{series}_vintage_long.parquet"
+        if not local_path.is_file():
+            raise RuntimeError(f"Local CPI source missing: {series}")
+        local = pd.read_parquet(local_path)
+        local = local[local["vintage_date"] <= cutoff]
+        local = local.sort_values(["obs_period", "vintage_date"]).reset_index(drop=True)
+        current_slice_hash = fetcher._table_content_hash(local)
+        if current_slice_hash != comparison["local_table_content_hash"]:
+            raise RuntimeError(f"Local CPI source's pre-cutoff slice changed: {series}")
     return document
 
 

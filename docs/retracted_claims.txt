@@ -73,3 +73,8 @@
 -- :: 0\.3403 :: withdraw|WITHDRAWN|superseded|KILLED|CORRECTION|we published|we said|not the :: ["']gross_mean["']\s*:\s*0\.3403
 -- :: Newey-West t of 1\.82 :: withdraw|WITHDRAWN|superseded|KILLED|CORRECTION|we published|we said
 -- :: net Sharpe 0\.34 with :: withdraw|WITHDRAWN|superseded|KILLED|CORRECTION|we published|we said
+# 2026-09-06 — /progress kept a roadmap sentence written before AlphaTrend joined the book:
+# managed-futures trend was described as a future breadth needing futures data, on a page whose own
+# description counted four live sleeves. Sentence-class rules; the CORRECTION entry that quotes it passes.
+-- :: needs futures data we have not yet invested in :: CORRECTION|wrong|WRONG|stale|withdraw|WITHDRAWN|no longer
+-- :: next breadth would be managed-futures trend :: CORRECTION|wrong|WRONG|stale|withdraw|WITHDRAWN|no longer

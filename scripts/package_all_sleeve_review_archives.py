@@ -134,7 +134,18 @@ def _verify_archive(archive_path: Path, archive_root: str) -> dict[str, Any]:
         }
 
 
-def build() -> dict[str, Any]:
+def build(output_root: Path = OUTPUT_DIR) -> dict[str, Any]:
+    """Compute the all-sleeve review-archive receipt.
+
+    `output_root` is WHERE the archive bytes are physically written -- it defaults to the real
+    `OUTPUT_DIR` for `main()`'s publish path. Callers that only want to compare the current
+    sources against the persisted receipt (the test suite) pass a temporary directory instead,
+    so a read-only comparison can never mutate the tracked, human-attested archives under
+    `OUTPUT_DIR`. The receipt's own "archive" field always records the real, canonical
+    `OUTPUT_DIR` path regardless of where this call physically wrote bytes -- archive
+    construction is deterministic given `bundle_dir`'s contents, so the recorded sha256/bytes
+    are identical either way.
+    """
     registry = json.loads(REGISTRY.read_text())
     rights = json.loads(RIGHTS_AUDIT.read_text())
     expected_rights_status = (
@@ -145,7 +156,7 @@ def build() -> dict[str, Any]:
     if rights["counts"]["raw_row_free_bundles"] != len(registry["sleeves"]):
         raise RuntimeError("Every planned sleeve must be audited raw-row-free")
 
-    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    output_root.mkdir(parents=True, exist_ok=True)
     records: list[dict[str, Any]] = []
     failures: list[str] = []
     for paper in registry["sleeves"]:
@@ -154,7 +165,8 @@ def build() -> dict[str, Any]:
         metadata = json.loads((bundle_dir / "paper.json").read_text())
         archive_root = f"{paper['bundle_slug']}-v{metadata['version']}"
         archive_name = f"{archive_root}-external-review-preparation.tar.gz"
-        archive_path = OUTPUT_DIR / archive_name
+        archive_path = output_root / archive_name
+        canonical_path = OUTPUT_DIR / archive_name
         payload = _archive_bytes(bundle_dir, archive_root)
         archive_path.write_bytes(payload)
         deterministic = payload == _archive_bytes(bundle_dir, archive_root)
@@ -175,7 +187,7 @@ def build() -> dict[str, Any]:
             {
                 "registry_key": paper["key"],
                 "wave": 1 if paper["key"] in FIRST_WAVE else 2,
-                "archive": str(archive_path.relative_to(ROOT)),
+                "archive": str(canonical_path.relative_to(ROOT)),
                 "archive_root": archive_root,
                 "sha256": _sha256(archive_path),
                 "bytes": archive_path.stat().st_size,

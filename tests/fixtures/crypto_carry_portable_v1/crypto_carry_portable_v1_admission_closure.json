@@ -1,0 +1,132 @@
+{
+  "author": "Arhan Canli",
+  "claim_boundary": "This closure proves why the registered candidate ends INCOMPLETE and not admitted. It does not assert that an unmeasured gate failed, convert null evidence into zero, authorize a post-result scenario choice, validate returns, or imply future performance.",
+  "content_hash": "sha256:ac2ef258f30ee20dc8a915866cbc72e52c3f5ae93a21fb336cdd627406c0d451",
+  "decision": {
+    "additional_return_paths_executed_after_primary": 0,
+    "admitted": false,
+    "disposition": "INCOMPLETE",
+    "final_for_admission": true,
+    "gate_changes_after_result": 0,
+    "identity_may_be_regraded_later": false,
+    "killed": false,
+    "technically_eligible": false
+  },
+  "evidence_accounting": {
+    "packet_completion_meaning": "Every required section has either measured evidence or a hash-bound final blocker. It does not mean every admission gate was evaluated or passed.",
+    "pbo": "NOT_DEFINED_SINGLE_REGISTERED_IDENTITY_NO_PATH_MATRIX",
+    "primary_result_and_same_path_diagnostics": "SEALED",
+    "unmeasured_gate_evidence": [
+      "newey_west_t_min",
+      "newey_west_t_ratio_min",
+      "stressed_sharpe_min",
+      "capacity_curve_min_points",
+      "capacity_minimum_stressed_fill_ratio",
+      "capacity_usd_min",
+      "ordinary_pairwise_correlation_max",
+      "pairwise_correlation_upper_95_max",
+      "stressed_pairwise_correlation_max",
+      "stressed_pairwise_correlation_upper_95_max",
+      "candidate_average_correlation_to_existing_book_max",
+      "book_average_pairwise_correlation_delta_max_exclusive",
+      "book_sharpe_delta_min_exclusive",
+      "book_sharpe_delta_lower_95_min_exclusive",
+      "minimum_leave_one_period_out_book_sharpe_delta_exclusive",
+      "book_expected_shortfall_delta_max",
+      "book_max_drawdown_delta_max",
+      "book_expected_max_drawdown_max",
+      "book_deflated_sharpe_must_be_measured",
+      "execution_scenario_bundle",
+      "overlay_replay"
+    ],
+    "unmeasured_values_are_null_or_absent": true,
+    "unmeasured_values_treated_as_pass": false
+  },
+  "evidence_date": "2026-08-24",
+  "governance_finding": {
+    "contract_requires_predeclared_candidate_weight": true,
+    "contract_requires_predeclared_stress_mask": true,
+    "required_but_unfrozen_fields": [
+      "stress_scenario_manifest",
+      "stressed_cost_grid",
+      "stressed_execution_grid",
+      "capacity_capital_points",
+      "capacity_fill_model",
+      "existing_book_snapshot",
+      "candidate_book_weight",
+      "diversification_stress_mask",
+      "book_drawdown_simulation_specification"
+    ],
+    "seriality_interaction": "A separate new return identity cannot be reserved until this identity has a complete packet. Packet completion therefore records the final INCOMPLETE decision; it does not waive missing gates or make the candidate eligible.",
+    "status": "PREREGISTERED_OUTPUT_CLASSES_BUT_NOT_EXACT_SUPPLEMENTAL_SCENARIOS",
+    "trial_policy_identity_definition": "A distinct economic or parameter identity after removing only start and end measurement-window keys.",
+    "trial_policy_window_only_exemption": [
+      "start",
+      "end"
+    ],
+    "why_book_tests_cannot_support_admission": "The existing-book snapshot, candidate weight, stress mask, and drawdown simulation specification were not hash-bound before the primary result. The v7 contract requires upstream predeclaration for the candidate weight and stress mask. Choosing them now could change the admission result.",
+    "why_supplemental_return_paths_were_not_run": "Selecting cost, execution, capital, fill, or risk mutations after observing the primary result would add post-result discretion. The reservation-bound policy exempts only start and end from hypothesis identity, and the preregistration states that cost or risk mutations are new identities unless the governing policy explicitly classifies them otherwise. No such classification or exact scenario manifest was frozen for this identity."
+  },
+  "identity": {
+    "config_hash": "50d9e8b059fee773",
+    "family_trial_account": "crypto_carry",
+    "hypotheses_spent": 1,
+    "hypothesis_key": "da5f5f47f99f9bd2",
+    "reservation_ordinal": 229,
+    "return_identity_id": "crypto_carry_portable_v1"
+  },
+  "lineage": {
+    "admission_contract": {
+      "bytes": 28931,
+      "path": "config/sleeve_admission_contract.json",
+      "sha256": "6bc72c1f47675b4e14897e1ba3aad6e56aba9b5f013a7b9bae57f930e8d3b8b6"
+    },
+    "preregistration": {
+      "bytes": 9703,
+      "path": "docs/design/PREREG_CRYPTO_CARRY_PORTABLE_V1.md",
+      "sha256": "729963706715562640bcf2aecee2420433f888eb2f178300da2dded66c2b216e"
+    },
+    "primary_result": {
+      "bytes": 59377,
+      "content_hash": "sha256:00c516f5c5465e399aff5a03f99e65897c370c88482a4387c3e34ac0668a3c7f",
+      "path": "artifacts/research/crypto_carry_portable_v1_result.json",
+      "sha256": "bca34612b3f683666e5738fbbe352be7953a233b4fd6689ba1111d56385e916c"
+    },
+    "reservation": {
+      "bytes": 3993,
+      "path": "artifacts/research/preregistrations/crypto_carry_portable_v1/return_identity_reservation.json",
+      "sha256": "3553bd9b55cf27a1ddac052c68ab1c640f891e4b7295dad648cd501ea8df5394"
+    },
+    "run_config": {
+      "bytes": 4923,
+      "content_hash": "sha256:4c51bc73f0332aeec402a008cc9bc8ea8cc81b74608634599d05a63d1ec327ff",
+      "path": "config/crypto_carry_portable_v1_run.json",
+      "sha256": "763da67845da3a6860117db6d390187db3e5a9c60f602f0ee3763466d2b4f556"
+    },
+    "trial_paper": {
+      "bytes": 20971,
+      "path": "docs/research/CRYPTO_CARRY_PORTABLE_V1.md",
+      "sha256": "141bbf970993a5ee594d27ddd8c55dc8aeb2944dc7cd0bd24712e53e307188c5"
+    },
+    "trial_policy": {
+      "bytes": 7326,
+      "path": "config/trial_accounting.json",
+      "sha256": "f15af7c989aded5da6c5259a7f7e5587377ab33977b5cd3c5b2395a84ea45043"
+    }
+  },
+  "prospective_correction_required": {
+    "applies_to_future_reservations_only": true,
+    "applies_to_this_known_result": false,
+    "requirements": [
+      "Freeze the exact stress-cost and stress-execution scenario manifest.",
+      "Freeze all capacity capital points, fill assumptions, and decision rule.",
+      "Freeze the existing-book return snapshot and alignment rule.",
+      "Freeze candidate book weight, stress mask, bootstrap seed, block length, and samples.",
+      "Freeze the expected and p95 book-drawdown simulation specification.",
+      "Classify prespecified diagnostic paths in the trial policy before reservation.",
+      "Execute and seal all required evidence before exposing the primary result to discretionary review."
+    ]
+  },
+  "schema": "canli.alphac-crypto-carry-portable-admission-closure.v1",
+  "status": "FINAL_INCOMPLETE_NOT_ADMITTED_EVIDENCE_ACCOUNTING_COMPLETE"
+}

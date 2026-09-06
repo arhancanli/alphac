@@ -89,20 +89,32 @@ def _verify_archive(archive_path: Path, bundle_name: str) -> dict[str, Any]:
         }
 
 
-def build() -> dict[str, Any]:
+def build(output_root: Path = OUTPUT_DIR) -> dict[str, Any]:
+    """Compute the Wave 1 release-candidate receipt.
+
+    `output_root` is WHERE the archive bytes are physically written -- it defaults to the real
+    `OUTPUT_DIR` for `main()`'s publish path. Callers that only want to compare the current
+    sources against the persisted receipt (the test suite) pass a temporary directory instead,
+    so a read-only comparison can never mutate the tracked, human-attested archives under
+    `OUTPUT_DIR`. The receipt's own "archive" field always records the real, canonical
+    `OUTPUT_DIR` path regardless of where this call physically wrote bytes -- archive
+    construction is deterministic given `bundle_dir`'s contents, so the recorded sha256/bytes
+    are identical either way.
+    """
     plan = json.loads(PLAN.read_text())
     rights = json.loads(RIGHTS_AUDIT.read_text())
     if rights.get("status") != "PASS_PUBLIC_TERMS_REVIEW_COMPLETE_CLEARANCE_REQUIRED":
         raise RuntimeError("Wave 1 data-rights exclusion audit must pass")
 
-    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    output_root.mkdir(parents=True, exist_ok=True)
     records: list[dict[str, Any]] = []
     failures: list[str] = []
     for paper in (record for record in plan["records"] if record["wave"] == 1):
         manifest = ROOT / paper["source_objects"]["bundle_manifest"]["path"]
         bundle_dir = manifest.parent
         archive_name = f"{paper['bundle_slug']}-v{paper['version']}-preparation-bundle.tar.gz"
-        archive_path = OUTPUT_DIR / archive_name
+        archive_path = output_root / archive_name
+        canonical_path = OUTPUT_DIR / archive_name
         payload = _archive_bytes(bundle_dir)
         archive_path.write_bytes(payload)
         # A second in-memory build proves deterministic construction in this environment.
@@ -121,7 +133,7 @@ def build() -> dict[str, Any]:
         records.append(
             {
                 "registry_key": paper["registry_key"],
-                "archive": str(archive_path.relative_to(ROOT)),
+                "archive": str(canonical_path.relative_to(ROOT)),
                 "public_path": f"/release-candidates/{archive_name}",
                 "sha256": _sha256(archive_path),
                 "bytes": archive_path.stat().st_size,

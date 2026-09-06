@@ -118,8 +118,16 @@ As of the status date:
   governing KILL rule. The current disposition is `INCOMPLETE / NOT ADMITTED`: stress, execution,
   capacity, diversification, book-contribution and book-drawdown evidence remains unmeasured, and
   PBO is null because the single registered path did not produce an eligible path matrix. The
-  result receipt and working paper are sealed, but the identity packet intentionally remains
-  incomplete and mechanically blocks the next forward identity.
+  result receipt and working paper are sealed. The admission closure records the decision as
+  final: INCOMPLETE, not admitted, not killed, not technically eligible, and not regradable
+  later, because the stress-scenario manifest, stressed cost and execution grids, capacity
+  points and fill model, existing-book snapshot, candidate weight, stress mask and
+  book-drawdown simulation specification that v7 requires upstream were never hash-bound
+  before the primary result. The identity packet is complete for evidence accounting and
+  does not block the next forward identity; completion records the final INCOMPLETE
+  decision, it does not waive a gate. (This paragraph said the packet "intentionally
+  remains incomplete and mechanically blocks the next forward identity" until 2026-09-06;
+  the sealed closure and packet say otherwise, and the artifacts govern.)
 - The portable trial's data provenance remains exact. Before return computation, the source gate
   rehashed 5,965 available official archive objects (100,990,618 bytes), their
   checksum sidecars and 116 normalized objects. All 14 unavailable required archives belong to
@@ -142,13 +150,25 @@ As of the status date:
 These are snapshots, not constants. The live site must derive changing values from canonical
 artifacts and display an `as of` timestamp and provenance for each one.
 
-The immediate crypto-carry priority is to finish the registered identity's admission evidence
-without spending or disguising another hypothesis. Before any stress or capacity path is computed,
-a supplemental protocol must classify each requested calculation under the trial-accounting policy,
-freeze every scenario and fail if a return-changing mutation requires a new identity. The current
-packet stays incomplete and the next identity stays blocked until the required measurements support
-an honest `ADMIT`, `KILL`, or final `INCOMPLETE` decision. The surviving historical path has already
-been exhaustively delimited; forcing an additive split from missing bytes would be false precision.
+The immediate crypto-carry priority is no longer to finish this identity's evidence. The closure
+is final, and the missing scenarios cannot be computed for a known result without mutating its
+return path, which the trial-accounting policy classifies as a new identity; there is no
+supplemental diagnostic class in force that would let them be produced at zero new identities.
+The path to an honest `ADMIT` or `KILL` for portable crypto carry is a new reservation (ordinal
+230 or later) under the forward full-evidence reservation design, which is drafted but not in
+force: freeze the exact stress-cost and stress-execution scenario manifest, every capacity
+capital point, fill assumption and decision rule, the existing-book return snapshot and
+alignment rule, the candidate book weight, stress mask, bootstrap seed, block length and sample
+count, and the expected and p95 book-drawdown simulation specification; classify any
+prespecified diagnostic paths in the trial policy before reserving; and execute and seal all
+required evidence before the primary result reaches discretionary review. That spends at least
+one identity of the remaining budget and needs an owner promotion record, as v7 did. One
+contract question is open for that promotion: the seriality rule checks packet completeness, and
+a packet is complete once its evidence accounting is final, so an identity that closes
+`INCOMPLETE` unblocks the next one without ever facing a gate; whether unblocking should require
+`ADMIT`, `KILL`, or an owner-signed waiver is a decision to make before the next reservation, not
+after. The surviving historical path has already been exhaustively delimited; forcing an
+additive split from missing bytes would be false precision.
 
 ## Workstreams and acceptance criteria
 

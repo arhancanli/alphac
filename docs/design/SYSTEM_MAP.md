@@ -10,7 +10,7 @@ having none.
 
 At a glance: **344 Python scripts**, **17 shell entry points**,
 **27 configuration contracts**, **29 engineering artifacts**,
-**401 unit test files**, **22 data directories**, **9 scheduled jobs**.
+**408 unit test files**, **22 data directories**, **9 scheduled jobs**.
 
 
 ## What runs on a timer
@@ -22,7 +22,7 @@ At a glance: **344 Python scripts**, **17 shell entry points**,
 | com.accapital.alphavintage | `alphavintage_tick.sh` | 10:00 daily |
 | com.accapital.deribit | `deribit_capture.py` | 13:00 daily |
 | com.accapital.eia930 | `eia930_sweep.sh` | 4 times daily |
-| com.accapital.health | `health_check.py` | 03:10 daily |
+| com.accapital.health | `health_check.py` | 03:32 daily |
 | com.accapital.livetick | `live_tick.sh` | 0*:25 daily |
 | com.accapital.macrovintage | `macro_vintage_tick.sh` | 08:20 daily |
 | com.accapital.publish | `live_publish.sh` | 02:10 daily |
@@ -41,7 +41,6 @@ Canli Capital - daily AlphaMax (equity) refresh.
 | # | step | what it is |
 |---|---|---|
 | 1 | `scripts/live_cycle.py` | Genuine broker-executed live paper cycle — turns a sleeve from SIMULATION into REAL Alpaca fills. |
-| 2 | `scripts/paper_trading_state.py` | Generate the paper-trading state JSON the Meridian web app + landing render. |
 
 ### `scripts/alphavintage_tick.sh`
 
@@ -98,9 +97,19 @@ Canli Capital - daily PUBLISH of the live track record to the public sites.
 | 22 | `scripts/sync_readme_forward_evidence.py` | Synchronize README forward headlines with the canonical maturity artifact. |
 | 23 | `scripts/analyze_forward_sleeve_contribution.py` | Attribute the published forward book to its realized sleeve curves. |
 | 24 | `scripts/audit_crypto_lab_carry_crash.py` | Seal the LABUSDT carry-crash incident from immutable local execution evidence. |
-| 25 | `scripts/research_export.py` | Research data layer: emit research.json — the FULL honest gauntlet — from REAL artifacts. |
-| 26 | `scripts/reproduce.py` | Reproduce our numbers — the outsider's one-command verifier of the Canli Capital glass box. |
-| 27 | `scripts/check_retracted_claims.py` | Refuse to publish a claim this record has already withdrawn. |
+| 25 | `scripts/package_all_sleeve_review_archives.py` | Build deterministic raw-row-free review archives for all sleeve papers. |
+| 26 | `scripts/audit_all_sleeve_data_rights.py` | Audit all sleeve bundles for raw-row exclusion and conservative source mapping. |
+| 27 | `scripts/audit_clean_workspace_reproduction_contracts.py` | Audit whether each publication archive can genuinely reproduce its result cleanly. |
+| 28 | `scripts/audit_wave1_data_rights.py` | Audit Wave 1 publication bundles against the conservative data-rights policy. |
+| 29 | `scripts/package_wave1_release_candidates.py` | Create deterministic, raw-row-free Wave 1 archive candidates and verify extraction. |
+| 30 | `scripts/build_repository_submission_worksheets.py` | Build fail-closed repository worksheets without performing account actions. |
+| 31 | `scripts/audit_publication_manuscript_style.py` | Audit mechanical manuscript-style and authorship boundaries without scoring prose quality. |
+| 32 | `scripts/audit_inflation_breakeven_feasibility.py` | Audit inflation-breakeven source feasibility without opening any return data. |
+| 33 | `scripts/build_stanford_evidence_map.py` | Build a compact, source-bound Stanford CS portfolio evidence map. |
+| 34 | `scripts/audit_external_publication_readiness.py` | Fail closed on external-publication claims and report the exact sleeve-paper blockers. |
+| 35 | `scripts/research_export.py` | Research data layer: emit research.json — the FULL honest gauntlet — from REAL artifacts. |
+| 36 | `scripts/reproduce.py` | Reproduce our numbers — the outsider's one-command verifier of the Canli Capital glass box. |
+| 37 | `scripts/check_retracted_claims.py` | Refuse to publish a claim this record has already withdrawn. |
 
 ### `scripts/live_tick.sh`
 
@@ -128,9 +137,10 @@ Canli Capital - hourly live PAPER cycle (the running track record).
 | 18 | `scripts/sync_readme_forward_evidence.py` | Synchronize README forward headlines with the canonical maturity artifact. |
 | 19 | `scripts/analyze_forward_sleeve_contribution.py` | Attribute the published forward book to its realized sleeve curves. |
 | 20 | `scripts/audit_crypto_lab_carry_crash.py` | Seal the LABUSDT carry-crash incident from immutable local execution evidence. |
-| 21 | `scripts/research_export.py` | Research data layer: emit research.json — the FULL honest gauntlet — from REAL artifacts. |
-| 22 | `scripts/check_retracted_claims.py` | Refuse to publish a claim this record has already withdrawn. |
-| 23 | `scripts/check_live_change_declared.py` | Block the publish if the live trading configuration has changed without being declared. |
+| 21 | `scripts/build_stanford_evidence_map.py` | Build a compact, source-bound Stanford CS portfolio evidence map. |
+| 22 | `scripts/research_export.py` | Research data layer: emit research.json — the FULL honest gauntlet — from REAL artifacts. |
+| 23 | `scripts/check_retracted_claims.py` | Refuse to publish a claim this record has already withdrawn. |
+| 24 | `scripts/check_live_change_declared.py` | Block the publish if the live trading configuration has changed without being declared. |
 
 ### `scripts/macro_vintage_tick.sh`
 
@@ -149,7 +159,6 @@ Canli Capital - daily AlphaTrend (managed-futures trend) refresh.
 | 1 | `scripts/mf_etf_load.py` | Load the managed-futures ETF basket into a dedicated AlphaForge research lake. |
 | 2 | `scripts/mf_gauntlet.py` | Gauntlet the MANAGED-FUTURES TREND sleeve through the deflated purged walk-forward. |
 | 3 | `scripts/live_cycle.py` | Genuine broker-executed live paper cycle — turns a sleeve from SIMULATION into REAL Alpaca fills. |
-| 4 | `scripts/paper_trading_state.py` | Generate the paper-trading state JSON the Meridian web app + landing render. |
 
 ### `scripts/overnight_campaign.sh`
 

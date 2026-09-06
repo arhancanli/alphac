@@ -55,3 +55,17 @@ if git diff --cached --name-only | grep -qE '\.py$|\.sh$|^pyproject\.toml$|^conf
     echo "pre-commit: WARNING — could not regenerate the system map; its guard will fail"
   fi
 fi
+
+# The governed ruff scope is what CI enforces (uv run ruff check src/alphaforge tests). Twice on
+# 2026-09-06 a commit reached CI with one overlong line in tests/ because the local check had run
+# before the last edit. Running the same check here, on the staged tree, costs about a second and
+# turns a CI failure discovered twenty minutes later into a refusal discovered now. It is a gate,
+# so it exits non-zero; it is NOT the debt ledger (scripts/ stays covered by the contract above).
+if git diff --cached --name-only | grep -qE '^(src/alphaforge|tests)/.*\.py$'; then
+  RUFF="$REPO/.venv/bin/ruff"
+  [ -x "$RUFF" ] || RUFF=ruff
+  if ! "$RUFF" check "$REPO/src/alphaforge" "$REPO/tests" --quiet; then
+    echo "pre-commit: REFUSED — the governed ruff scope (src/alphaforge, tests) has violations; CI would fail"
+    exit 1
+  fi
+fi

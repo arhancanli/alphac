@@ -4,12 +4,16 @@
 SITE_LANDING_SOURCE=${SITE_LANDING_SOURCE:-"$HOME/meridian"}
 SITE_APP_SOURCE=${SITE_APP_SOURCE:-"$HOME/meridian-app"}
 
+# .claude/ and .firecrawl/ (2026-09-06): agent worktrees under .claude/worktrees are written to
+# continuously while agents build, so a snapshot that hashes them never sees a stable source and
+# the hourly deploy skips itself for as long as anyone is working. They are not site source.
 site_source_hash() {
   find "$SITE_LANDING_SOURCE" "$SITE_APP_SOURCE" \
     \( -path "$SITE_LANDING_SOURCE/artifacts" \
        -o -path "$SITE_APP_SOURCE/artifacts" \
        -o -name node_modules -o -name dist -o -name .next -o -name .vercel \
-       -o -name .git -o -name .bak \) -prune -o \
+       -o -name .git -o -name .bak \
+       -o -name .claude -o -name .firecrawl \) -prune -o \
     -type f -print0 2>/dev/null \
     | sort -z \
     | xargs -0 shasum -a 256 2>/dev/null \
@@ -35,6 +39,8 @@ _site_snapshot_copy() {
     --exclude '/.vercel/' \
     --exclude '/.git/' \
     --exclude '/.bak/' \
+    --exclude '/.claude/' \
+    --exclude '/.firecrawl/' \
     "$source_dir/" "$destination_dir/" || return 1
   mkdir -p "$destination_dir/.vercel" || return 1
   cp "$source_dir/.vercel/project.json" "$destination_dir/.vercel/project.json" || return 1

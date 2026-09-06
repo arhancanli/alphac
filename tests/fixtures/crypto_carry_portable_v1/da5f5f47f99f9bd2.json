@@ -1,0 +1,334 @@
+{
+  "author": "Arhan Canli",
+  "claim_boundary": "This packet permanently accounts for the first measurement and final INCOMPLETE decision. Packet completeness means every section has measured evidence or a hash-bound blocker; it does not mean every gate was measured or passed. It is not an admission, KILL, live result, future-return claim, independent replication, external submission, DOI, or peer review.",
+  "complete": true,
+  "completion_assessment": {
+    "blockers": [],
+    "candidate_evidence_complete_for_admission": false,
+    "disposition": "INCOMPLETE_NOT_ADMITTED",
+    "next_forward_identity_blocked_by_this_packet": false,
+    "packet_evidence_accounting_complete": true,
+    "status": "COMPLETE_EVIDENCE_ACCOUNTING_FINAL_INCOMPLETE"
+  },
+  "config_hash": "50d9e8b059fee773",
+  "configuration": {
+    "allocator": "rank",
+    "alpha_names": [
+      "carry_fund_21"
+    ],
+    "end": 1780272000000,
+    "instrument_ids": [
+      "BINANCE:PERP:1000PEPEUSDT",
+      "BINANCE:PERP:1000SHIBUSDT",
+      "BINANCE:PERP:AAVEUSDT",
+      "BINANCE:PERP:ADAUSDT",
+      "BINANCE:PERP:APEUSDT",
+      "BINANCE:PERP:APTUSDT",
+      "BINANCE:PERP:ARBUSDT",
+      "BINANCE:PERP:ATOMUSDT",
+      "BINANCE:PERP:AVAXUSDT",
+      "BINANCE:PERP:AXSUSDT",
+      "BINANCE:PERP:BCHUSDT",
+      "BINANCE:PERP:BLZUSDT",
+      "BINANCE:PERP:BNBUSDT",
+      "BINANCE:PERP:BTCUSDT",
+      "BINANCE:PERP:CHZUSDT",
+      "BINANCE:PERP:COMPUSDT",
+      "BINANCE:PERP:CRVUSDT",
+      "BINANCE:PERP:DOGEUSDT",
+      "BINANCE:PERP:DOTUSDT",
+      "BINANCE:PERP:EOSUSDT",
+      "BINANCE:PERP:ETCUSDT",
+      "BINANCE:PERP:ETHUSDT",
+      "BINANCE:PERP:FILUSDT",
+      "BINANCE:PERP:FTMUSDT",
+      "BINANCE:PERP:GALAUSDT",
+      "BINANCE:PERP:INJUSDT",
+      "BINANCE:PERP:LDOUSDT",
+      "BINANCE:PERP:LINAUSDT",
+      "BINANCE:PERP:LINKUSDT",
+      "BINANCE:PERP:LRCUSDT",
+      "BINANCE:PERP:LTCUSDT",
+      "BINANCE:PERP:LUNAUSDT",
+      "BINANCE:PERP:MANAUSDT",
+      "BINANCE:PERP:MATICUSDT",
+      "BINANCE:PERP:MKRUSDT",
+      "BINANCE:PERP:NEARUSDT",
+      "BINANCE:PERP:OCEANUSDT",
+      "BINANCE:PERP:OPUSDT",
+      "BINANCE:PERP:REEFUSDT",
+      "BINANCE:PERP:RNDRUSDT",
+      "BINANCE:PERP:RUNEUSDT",
+      "BINANCE:PERP:SANDUSDT",
+      "BINANCE:PERP:SEIUSDT",
+      "BINANCE:PERP:SOLUSDT",
+      "BINANCE:PERP:SUIUSDT",
+      "BINANCE:PERP:SUSHIUSDT",
+      "BINANCE:PERP:SXPUSDT",
+      "BINANCE:PERP:THETAUSDT",
+      "BINANCE:PERP:TIAUSDT",
+      "BINANCE:PERP:TOMOUSDT",
+      "BINANCE:PERP:TRXUSDT",
+      "BINANCE:PERP:UNIUSDT",
+      "BINANCE:PERP:VETUSDT",
+      "BINANCE:PERP:WAVESUSDT",
+      "BINANCE:PERP:WLDUSDT",
+      "BINANCE:PERP:XLMUSDT",
+      "BINANCE:PERP:XRPUSDT"
+    ],
+    "no_trade_band": 0.001,
+    "rebalance_bars": 168,
+    "start": 1622505600000,
+    "test_bars": 1512,
+    "train_bars": 6048
+  },
+  "content_hash": "sha256:9ba408cb3c1d9accd91eddd25a079995a8d42aa6b7456dd6afd22539917ce40a",
+  "evidence_date": "2026-08-24",
+  "family_paper_public_path": "/research/crypto-carry-lineage.md",
+  "hypothesis_key": "da5f5f47f99f9bd2",
+  "immutable_first_measurement": {
+    "annualized_sharpe": 0.9688980432905521,
+    "kurtosis": 11.500589740273464,
+    "ledger_record_sha256": "50391584b4805ba2b42488b6031363117422e7a3474cb8b17bd0f919987a5be7",
+    "ledger_source_path": "var/experiments.jsonl",
+    "observations": 1574,
+    "recorded_at_unix_ms": 1787524156391,
+    "skew": 0.047091520020683564
+  },
+  "label": "crypto_carry_portable_v1",
+  "missing_sections": [],
+  "packet_status": "COMPLETE_EVIDENCED_FINAL_INCOMPLETE_NOT_ADMITTED",
+  "partial_sections": [],
+  "required_sections": {
+    "admission_or_kill_decision": {
+      "evidence": [
+        {
+          "content_hash": "sha256:00c516f5c5465e399aff5a03f99e65897c370c88482a4387c3e34ac0668a3c7f",
+          "public_path": "/glassbox/crypto_carry_portable_v1_result.json",
+          "sha256": "bca34612b3f683666e5738fbbe352be7953a233b4fd6689ba1111d56385e916c",
+          "source_path": "artifacts/research/crypto_carry_portable_v1_result.json"
+        },
+        {
+          "bytes": 6760,
+          "content_hash": "sha256:ac2ef258f30ee20dc8a915866cbc72e52c3f5ae93a21fb336cdd627406c0d451",
+          "path": "artifacts/research/crypto_carry_portable_v1_admission_closure.json",
+          "sha256": "83c330782c7178315ad55648b18db31a3798e767ffdbdd8c0fe2af7c76beeef1",
+          "type": "final_incomplete_admission_closure"
+        }
+      ],
+      "status": "VERIFIED_FINAL_INCOMPLETE_NOT_ADMITTED"
+    },
+    "code_environment_and_reproduction": {
+      "evidence": [
+        {
+          "bytes": 11525,
+          "path": "scripts/run_crypto_carry_portable_v1.py",
+          "sha256": "2cf54ab1cde34899523fc0fa3af461c96bc58219c2e0fe875cb88083591d674d"
+        },
+        {
+          "bytes": 3175,
+          "path": "pyproject.toml",
+          "sha256": "ddaf8b60999275f6d3fb93b3073f256d75d1383bfc8bab14263dc58645841006"
+        },
+        {
+          "bytes": 617550,
+          "path": "uv.lock",
+          "sha256": "5caca664242722a3a3112663d7a19b7b5000583e30ade3753e1b8ffdecfd6f06"
+        },
+        {
+          "all_files_rehashed_at_seal": true,
+          "content_hash": "sha256:f25fd7e5e9ca8794c9fdc1949288dae5e3e9524cdbe0b9103e32252b3734f006",
+          "file_count": 781,
+          "manifest_sha256": "a1ac28f065bffcc761f9a3b8f7058deb55f8d7672f72770d27b02fd07ade1156",
+          "path": "artifacts/prospective/crypto_carry_portable_v1/input_snapshot/manifest.json",
+          "public_release_allowed": false,
+          "root_sha256": "c8b573712103907130a301f22d578feb07e31de0939339450f766b2d037df822",
+          "snapshot_bytes": 102831710
+        }
+      ],
+      "status": "VERIFIED_IDENTITY_LEVEL_EVIDENCE"
+    },
+    "economic_mechanism_and_falsifiable_hypothesis": {
+      "evidence": [
+        {
+          "bytes": 9703,
+          "path": "docs/design/PREREG_CRYPTO_CARRY_PORTABLE_V1.md",
+          "sha256": "729963706715562640bcf2aecee2420433f888eb2f178300da2dded66c2b216e"
+        }
+      ],
+      "status": "VERIFIED_IDENTITY_LEVEL_EVIDENCE"
+    },
+    "execution_and_cost_model": {
+      "evidence": [
+        {
+          "bytes": 9703,
+          "path": "docs/design/PREREG_CRYPTO_CARRY_PORTABLE_V1.md",
+          "sha256": "729963706715562640bcf2aecee2420433f888eb2f178300da2dded66c2b216e"
+        },
+        {
+          "bytes": 11525,
+          "path": "scripts/run_crypto_carry_portable_v1.py",
+          "sha256": "2cf54ab1cde34899523fc0fa3af461c96bc58219c2e0fe875cb88083591d674d"
+        },
+        {
+          "content_hash": "sha256:00c516f5c5465e399aff5a03f99e65897c370c88482a4387c3e34ac0668a3c7f",
+          "public_path": "/glassbox/crypto_carry_portable_v1_result.json",
+          "sha256": "bca34612b3f683666e5738fbbe352be7953a233b4fd6689ba1111d56385e916c",
+          "source_path": "artifacts/research/crypto_carry_portable_v1_result.json"
+        }
+      ],
+      "status": "VERIFIED_IDENTITY_LEVEL_EVIDENCE"
+    },
+    "family_and_union_trial_accounting": {
+      "evidence": [
+        {
+          "bytes": 3993,
+          "path": "artifacts/research/preregistrations/crypto_carry_portable_v1/return_identity_reservation.json",
+          "sha256": "3553bd9b55cf27a1ddac052c68ab1c640f891e4b7295dad648cd501ea8df5394"
+        },
+        {
+          "record_sha256": "50391584b4805ba2b42488b6031363117422e7a3474cb8b17bd0f919987a5be7",
+          "source_path": "var/experiments.jsonl",
+          "type": "immutable_ledger_record"
+        }
+      ],
+      "status": "VERIFIED_IDENTITY_LEVEL_EVIDENCE"
+    },
+    "identity_and_authorship": {
+      "evidence": [
+        {
+          "bytes": 3993,
+          "path": "artifacts/research/preregistrations/crypto_carry_portable_v1/return_identity_reservation.json",
+          "sha256": "3553bd9b55cf27a1ddac052c68ab1c640f891e4b7295dad648cd501ea8df5394"
+        }
+      ],
+      "status": "VERIFIED_IDENTITY_LEVEL_EVIDENCE"
+    },
+    "literature_and_overlap_decision": {
+      "evidence": [
+        {
+          "bytes": 23017,
+          "path": "docs/research/CRYPTO_CARRY_LINEAGE.md",
+          "sha256": "52be66f53fb245fa9b2c9c5816d2edf2f95ebeb205c9d14fbbb41537855da1f2"
+        }
+      ],
+      "status": "VERIFIED_IDENTITY_LEVEL_EVIDENCE"
+    },
+    "machine_readable_packet_and_stable_public_paper": {
+      "evidence": [
+        {
+          "content_hash": "sha256:00c516f5c5465e399aff5a03f99e65897c370c88482a4387c3e34ac0668a3c7f",
+          "public_path": "/glassbox/crypto_carry_portable_v1_result.json",
+          "sha256": "bca34612b3f683666e5738fbbe352be7953a233b4fd6689ba1111d56385e916c",
+          "source_path": "artifacts/research/crypto_carry_portable_v1_result.json"
+        },
+        {
+          "bytes": 20971,
+          "path": "docs/research/CRYPTO_CARRY_PORTABLE_V1.md",
+          "public_path": "/research/crypto-carry-portable-v1",
+          "sha256": "141bbf970993a5ee594d27ddd8c55dc8aeb2944dc7cd0bd24712e53e307188c5"
+        }
+      ],
+      "status": "VERIFIED_IDENTITY_LEVEL_EVIDENCE"
+    },
+    "point_in_time_data_and_survivorship_controls": {
+      "evidence": [
+        {
+          "all_files_rehashed_at_seal": true,
+          "content_hash": "sha256:f25fd7e5e9ca8794c9fdc1949288dae5e3e9524cdbe0b9103e32252b3734f006",
+          "file_count": 781,
+          "manifest_sha256": "a1ac28f065bffcc761f9a3b8f7058deb55f8d7672f72770d27b02fd07ade1156",
+          "path": "artifacts/prospective/crypto_carry_portable_v1/input_snapshot/manifest.json",
+          "public_release_allowed": false,
+          "root_sha256": "c8b573712103907130a301f22d578feb07e31de0939339450f766b2d037df822",
+          "snapshot_bytes": 102831710
+        },
+        {
+          "bytes": 4481,
+          "path": "artifacts/audit/crypto_carry_portable_lake_readiness.json",
+          "sha256": "e6c829153b60ac5fef16d35abe052e9efa720f96a61e4106ccb35c2c4f8ae441"
+        }
+      ],
+      "status": "VERIFIED_IDENTITY_LEVEL_EVIDENCE"
+    },
+    "preregistration_and_hashes": {
+      "evidence": [
+        {
+          "bytes": 9703,
+          "path": "docs/design/PREREG_CRYPTO_CARRY_PORTABLE_V1.md",
+          "sha256": "729963706715562640bcf2aecee2420433f888eb2f178300da2dded66c2b216e"
+        },
+        {
+          "bytes": 3993,
+          "path": "artifacts/research/preregistrations/crypto_carry_portable_v1/return_identity_reservation.json",
+          "sha256": "3553bd9b55cf27a1ddac052c68ab1c640f891e4b7295dad648cd501ea8df5394"
+        }
+      ],
+      "status": "VERIFIED_IDENTITY_LEVEL_EVIDENCE"
+    },
+    "result_uncertainty_stress_capacity_and_diversification": {
+      "evidence": [
+        {
+          "content_hash": "sha256:00c516f5c5465e399aff5a03f99e65897c370c88482a4387c3e34ac0668a3c7f",
+          "public_path": "/glassbox/crypto_carry_portable_v1_result.json",
+          "sha256": "bca34612b3f683666e5738fbbe352be7953a233b4fd6689ba1111d56385e916c",
+          "source_path": "artifacts/research/crypto_carry_portable_v1_result.json"
+        },
+        {
+          "bytes": 6760,
+          "content_hash": "sha256:ac2ef258f30ee20dc8a915866cbc72e52c3f5ae93a21fb336cdd627406c0d451",
+          "path": "artifacts/research/crypto_carry_portable_v1_admission_closure.json",
+          "sha256": "83c330782c7178315ad55648b18db31a3798e767ffdbdd8c0fe2af7c76beeef1",
+          "type": "final_incomplete_admission_closure"
+        }
+      ],
+      "status": "VERIFIED_FINAL_INCOMPLETE_WITH_HASH_BOUND_BLOCKERS",
+      "unmeasured": [
+        "newey_west_t_min",
+        "newey_west_t_ratio_min",
+        "stressed_sharpe_min",
+        "capacity_curve_min_points",
+        "capacity_minimum_stressed_fill_ratio",
+        "capacity_usd_min",
+        "ordinary_pairwise_correlation_max",
+        "pairwise_correlation_upper_95_max",
+        "stressed_pairwise_correlation_max",
+        "stressed_pairwise_correlation_upper_95_max",
+        "candidate_average_correlation_to_existing_book_max",
+        "book_average_pairwise_correlation_delta_max_exclusive",
+        "book_sharpe_delta_min_exclusive",
+        "book_sharpe_delta_lower_95_min_exclusive",
+        "minimum_leave_one_period_out_book_sharpe_delta_exclusive",
+        "book_expected_shortfall_delta_max",
+        "book_max_drawdown_delta_max",
+        "book_expected_max_drawdown_max",
+        "book_deflated_sharpe_must_be_measured",
+        "execution_scenario_bundle",
+        "overlay_replay"
+      ],
+      "unmeasured_values_treated_as_pass": false
+    }
+  },
+  "research_family_key": "crypto_carry",
+  "result_receipt": {
+    "content_hash": "sha256:00c516f5c5465e399aff5a03f99e65897c370c88482a4387c3e34ac0668a3c7f",
+    "public_path": "/glassbox/crypto_carry_portable_v1_result.json",
+    "sha256": "bca34612b3f683666e5738fbbe352be7953a233b4fd6689ba1111d56385e916c",
+    "source_path": "artifacts/research/crypto_carry_portable_v1_result.json"
+  },
+  "schema": "canli.alphac-identity-trial-packet.v2",
+  "trial_paper_public_path": "/research/crypto-carry-portable-v1",
+  "verified_sections": [
+    "identity_and_authorship",
+    "economic_mechanism_and_falsifiable_hypothesis",
+    "literature_and_overlap_decision",
+    "family_and_union_trial_accounting",
+    "machine_readable_packet_and_stable_public_paper",
+    "preregistration_and_hashes",
+    "point_in_time_data_and_survivorship_controls",
+    "execution_and_cost_model",
+    "result_uncertainty_stress_capacity_and_diversification",
+    "admission_or_kill_decision",
+    "code_environment_and_reproduction"
+  ]
+}
