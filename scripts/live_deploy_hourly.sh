@@ -113,6 +113,22 @@ PY
       # form has no such cap, so a future growth in pages cannot repeat the failure mode.
       raw=$(run_bounded 600 vercel deploy --prod --yes --archive=tgz 2>&1)
       url=$(printf '%s\n' "$raw" | grep -oE "https://[a-z0-9-]+\.vercel\.app" | tail -1)
+      # A URL IS NOT SUCCESS (2026-09-06). Vercel prints the deployment URL before it builds, and
+      # a build that dies (that day: ENOENT on a file .vercelignore had hidden) still leaves a URL
+      # in the output with status Error. This loop took the URL as proof and reported "prod: ..."
+      # while the domain kept serving the previous build. So: the CLI must exit clean, the output
+      # must not carry a build error, and the new deployment must answer 200 for the homepage.
+      if [ -n "$url" ] && printf '%s\n' "$raw" | grep -qE "Error: Command .* exited|Build Failed|status.*Error"; then
+        echo "  [$label] deployment $url reported a build error; not treating the URL as success"
+        url=""
+      fi
+      if [ -n "$url" ]; then
+        served=$(curl -s -o /dev/null --max-time 30 -w '%{http_code}' "$url/" 2>/dev/null || echo 000)
+        if [ "$served" != "200" ]; then
+          echo "  [$label] deployment $url answers HTTP $served for /; the build did not complete"
+          url=""
+        fi
+      fi
       if [ -n "$url" ]; then echo "  [$label] prod: $url (attempt $attempt)"; break; fi
       echo "  [$label] deploy attempt $attempt failed; retrying in $((attempt*8))s"
       printf '%s\n' "$raw" | tail -20 | sed "s/^/    [$label:err] /"
