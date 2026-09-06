@@ -170,6 +170,9 @@ deploy_prod() {
   # 1) 16 raw-row-free sleeve review archives; step 2, 5 and 8 below all read this receipt.
   uv run python scripts/package_all_sleeve_review_archives.py \
     || echo "WARN: all-sleeve review archives NOT rebuilt — publishing a receipt bound to stale archives"
+  # 1b) all-sleeve data-rights audit; steps 2 and 9 bind its content hash.
+  uv run python scripts/audit_all_sleeve_data_rights.py \
+    || echo "WARN: all-sleeve data-rights audit NOT rebuilt — publishing receipts bound to a stale rights audit"
   # 2) clean-workspace reproduction audit; reads the archives step 1 just wrote.
   uv run python scripts/audit_clean_workspace_reproduction_contracts.py \
     || echo "WARN: clean-workspace reproduction audit NOT rebuilt — publishing a stale contract audit"
@@ -197,6 +200,11 @@ deploy_prod() {
   # in this run, so it MUST run last among the eight. research_export.py copies its output on.
   uv run python scripts/build_stanford_evidence_map.py \
     || echo "WARN: Stanford CS evidence map NOT rebuilt — publishing a stale portfolio evidence map"
+  # 9) external publication readiness: binds the data-rights audit, worksheets and the author
+  # technical-approval protocol, so it reads steps 1-5 and must run after them (found red on the
+  # first suite run after steps 1-8 were wired, 2026-09-06).
+  uv run python scripts/audit_external_publication_readiness.py \
+    || echo "WARN: external publication readiness NOT rebuilt — publishing a stale readiness receipt"
   uv run python scripts/research_export.py || { echo "research_export FAILED"; FAIL=1; }
   # publish the downloadable verifier, then SELF-CHECK that our own published record reproduces
   # (content hashes + signatures + golden master) before we ship it. A failure here means we'd be
