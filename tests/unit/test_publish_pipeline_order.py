@@ -176,7 +176,10 @@ EDGES: tuple[
     (
         "audit_all_sleeve_data_rights.py",
         "artifacts/publication/all_sleeve_data_rights_audit.json",
-        ("audit_clean_workspace_reproduction_contracts.py", "audit_external_publication_readiness.py"),
+        (
+            "audit_clean_workspace_reproduction_contracts.py",
+            "audit_external_publication_readiness.py",
+        ),
         ("scripts/live_publish.sh",),
     ),
     (
