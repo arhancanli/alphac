@@ -10,7 +10,7 @@ having none.
 
 At a glance: **344 Python scripts**, **17 shell entry points**,
 **27 configuration contracts**, **29 engineering artifacts**,
-**402 unit test files**, **22 data directories**, **9 scheduled jobs**.
+**406 unit test files**, **22 data directories**, **9 scheduled jobs**.
 
 
 ## What runs on a timer
@@ -41,7 +41,6 @@ Canli Capital - daily AlphaMax (equity) refresh.
 | # | step | what it is |
 |---|---|---|
 | 1 | `scripts/live_cycle.py` | Genuine broker-executed live paper cycle — turns a sleeve from SIMULATION into REAL Alpaca fills. |
-| 2 | `scripts/paper_trading_state.py` | Generate the paper-trading state JSON the Meridian web app + landing render. |
 
 ### `scripts/alphavintage_tick.sh`
 
@@ -149,7 +148,6 @@ Canli Capital - daily AlphaTrend (managed-futures trend) refresh.
 | 1 | `scripts/mf_etf_load.py` | Load the managed-futures ETF basket into a dedicated AlphaForge research lake. |
 | 2 | `scripts/mf_gauntlet.py` | Gauntlet the MANAGED-FUTURES TREND sleeve through the deflated purged walk-forward. |
 | 3 | `scripts/live_cycle.py` | Genuine broker-executed live paper cycle — turns a sleeve from SIMULATION into REAL Alpaca fills. |
-| 4 | `scripts/paper_trading_state.py` | Generate the paper-trading state JSON the Meridian web app + landing render. |
 
 ### `scripts/overnight_campaign.sh`
 

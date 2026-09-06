@@ -67,6 +67,17 @@ HEALTH = os.path.join(AF, "var", "health")
 HIST = os.path.join(HEALTH, "history")
 STATE_JSON = os.path.join(AF, "data", "paper", "state.json")
 CRYPTO_DB = os.path.join(AF, "var", "trading_crypto_perp.sqlite")  # the ONLY live crypto DB
+# WHEN THE SUITE MAY RUN (2026-09-06). live_tick.sh holds TICK_LOCK for its whole run and
+# rewrites data/paper/state.json plus ~15 hash-bound artifacts over several minutes. A suite
+# that overlaps it reads two artifacts a minute apart and reports the tick's progress as a
+# failure ("forward evidence maturity source drift"), which is what C7b did every night from
+# 03:10. So: wait (bounded) for the lock before starting, and schedule the start so the
+# worst case (wait + budget) ends before the next :25. The arithmetic is pinned by
+# tests/unit/test_health_schedule_clears_the_tick.py against deploy/com.accapital.health.plist.template.
+TICK_LOCK = os.path.join(AF, "var", "locks", "live_tick.lock")
+TICK_MINUTE = 25             # com.accapital.livetick fires at :25 every hour
+TICK_LOCK_MAX_WAIT_S = 300   # a tick is ~5 min; still held 5 min later = something else is wrong
+SUITE_BUDGET_S = 2700        # raised 900 -> 2700 on 2026-08-20, see check_suite()
 MF_DB = os.path.join(AF, "var", "trading_managed_futures.sqlite")  # AlphaTrend realized curve
 EQUITY_DB = os.path.join(AF, "var", "trading_equity.sqlite")       # AlphaMax realized curve
 DERIBIT_SNAPSHOTS = os.path.join(AF, "data", "deribit", "snapshots")
@@ -202,6 +213,18 @@ def http(url: str, method: str = "GET", timeout: int = 20) -> int:
         return 0
 
 
+def http_redirect(url: str, timeout: int = 20) -> tuple[int, str]:
+    """(status, Location) WITHOUT following it. The www host and the app's legacy auth URLs are
+    designed to redirect, so the check needs the target, not just a code that is not 200."""
+    _rc, out = sh(f"/usr/bin/curl -sS -o /dev/null -w '%{{http_code}} %{{redirect_url}}' "
+                  f"--max-time {timeout} {url}", timeout=timeout + 5)
+    try:
+        code, _, location = out.strip().splitlines()[-1].partition(" ")
+        return int(code), location.strip()
+    except Exception:
+        return 0, ""
+
+
 def get_json(url: str, timeout: int = 20):
     # PARSE STDOUT ONLY (2026-08-20). sh() returns stdout+stderr concatenated, and curl -sS writes
     # transient network complaints to stderr — so a single stderr line lands inside the text handed
@@ -309,26 +332,54 @@ def check_suite():
     # correctness into noise, which is strictly worse than no check. The elapsed time is now
     # recorded in the observation on every run, pass or fail, so creep toward the new budget is
     # visible long before it trips — measured, not assumed.
+    waited, still_held = wait_for_tick_lock()
+    if still_held:
+        add("C7c-tick-lock", "tests", "tick lock clear before the suite", "WARN", "info",
+            observed=f"live_tick.lock still held after {waited}s; suite ran beside a tick",
+            expected=f"clear within {TICK_LOCK_MAX_WAIT_S}s", evidence=TICK_LOCK)
     t_started = time.monotonic()
     rc, out = sh(f"cd {AF} && /usr/bin/caffeinate -i uv run pytest -q --no-cov "
                  f"--ignore=tests/integration/test_experiments_honest_trial_count.py",
-                 timeout=2700, env=UV_ENV)
+                 timeout=SUITE_BUDGET_S, env=UV_ENV)
     elapsed_s = time.monotonic() - t_started
     ok = rc == 0
     add("C7b-suite", "tests", "Full pytest suite",
-        "PASS" if ok else "FAIL", "high", observed=f"exit={rc} in {elapsed_s:.0f}s",
+        "PASS" if ok else "FAIL", "high",
+        observed=f"exit={rc} in {elapsed_s:.0f}s, waited {waited}s for tick",
         expected="exit=0", evidence=_summary_line(out))
     return ok
 
 
+def wait_for_tick_lock(lock: str = TICK_LOCK, max_wait_s: int = TICK_LOCK_MAX_WAIT_S,
+                       poll_s: int = 15, isdir=os.path.isdir, sleep=time.sleep) -> tuple[int, bool]:
+    """Block (bounded) while live_tick.sh holds its lock. Returns (seconds waited, still held)."""
+    waited = 0
+    while isdir(lock):
+        if waited >= max_wait_s:
+            return waited, True
+        sleep(poll_s)
+        waited += poll_s
+    return waited, False
+
+
 def check_sites(lite=False):
-    for url, sev, name in [(LANDING, "critical", "landing-apex"),
-                           (f"{LANDING.replace('//', '//www.')}", "high", "landing-www"),
-                           (APP, "critical", "app-host")]:
+    # EXPECT THE DESIGN, NOT JULY (2026-09-06). Three rows here were red for ten nights against
+    # deliberate behaviour: www has redirected to the apex since vercel.json's first commit, and
+    # the app's /sign-in and /sign-up became redirect("/dashboard") when the development auth gate
+    # was removed (meridian-app 3eeef36, 08-26). A monitor that disagrees with the design every
+    # night trains the reader to ignore it, which is how the night it crashed outright looked like
+    # every other night. Pinned by tests/unit/test_health_sites_expectations.py.
+    for url, sev, name in [(LANDING, "critical", "landing-apex"), (APP, "critical", "app-host")]:
         c = http(url)
-        st = "PASS" if c == 200 else ("FAIL" if c >= 500 or c == 0 else "FAIL")
-        add(f"C3-{name}", "sites", f"{name} 200", st, sev,
+        add(f"C3-{name}", "sites", f"{name} 200", "PASS" if c == 200 else "FAIL", sev,
             observed=c, expected=200, evidence=url)
+    www = LANDING.replace("//", "//www.")
+    code, location = http_redirect(www)
+    apex_ok = code in (301, 308) and location == f"{LANDING}/"
+    add("C3-landing-www", "sites", "landing-www redirects to apex",
+        "PASS" if apex_ok else "FAIL", "high",
+        observed=f"{code} -> {location or '(none)'}", expected=f"301/308 -> {LANDING}/",
+        evidence=www)
     if lite:
         return
     for r in ["performance", "progress", "systems", "open", "research"]:
@@ -338,13 +389,26 @@ def check_sites(lite=False):
                 observed=c, expected=200, evidence=f"{LANDING}/{r}")
     add("C3-landing-routes", "sites", "landing CTA routes (5)", "PASS", "high",
         observed="all 200 unless a FAIL row above", expected="all 200")
-    for r in ["sign-in", "sign-up", "how-it-works"]:
+    # What the app's nav, footer and access CTA link to since the auth gate went.
+    app_routes = ["dashboard", "how-it-works", "research"]
+    for r in app_routes:
         c = http(f"{APP}/{r}")
         if c != 200:
-            add(f"C3-app-{r}", "sites", f"app /{r}", "FAIL", "high",
+            add(f"C3-app-route-{r}", "sites", f"app /{r}", "FAIL", "high",
                 observed=c, expected=200, evidence=f"{APP}/{r}")
-    add("C3-app-routes", "sites", "app CTA routes (3)", "PASS", "high",
-        observed="all 200 unless a FAIL row above", expected="all 200")
+    add("C3-app-routes", "sites", f"app CTA routes ({len(app_routes)})", "PASS", "high",
+        observed="all 200 unless a FAIL row above", expected="all 200",
+        evidence=", ".join(app_routes))
+    # The legacy auth URLs must still resolve, and resolve to the dashboard. A 404 breaks old
+    # links; a 200 means a login page came back, which is a change someone must declare here.
+    bad = []
+    for r in ["sign-in", "sign-up"]:
+        code, location = http_redirect(f"{APP}/{r}")
+        if code not in (301, 302, 307, 308) or location != f"{APP}/dashboard":
+            bad.append(f"{r}: {code} -> {location or '(none)'}")
+    add("C3-app-legacy-auth", "sites", "app /sign-in + /sign-up redirect to /dashboard",
+        "PASS" if not bad else "FAIL", "high",
+        observed="; ".join(bad) or "both -> /dashboard", expected=f"3xx -> {APP}/dashboard")
     for r in ["sitemap.xml", "robots.txt"]:
         c = http(f"{LANDING}/{r}")
         add(f"C3-{r}", "sites", r, "PASS" if c == 200 else "WARN", "info",
