@@ -607,6 +607,51 @@ def build_evidence(
 # ----------------------------------------------------------------------------- sealing
 
 
+def deterministic_rerun(
+    runner: Any,
+    *,
+    section: str,
+    reservation_path: Path,
+    result_path: Path,
+    sealed_series: np.ndarray,
+) -> dict[str, Any]:
+    """Re-run the section from the same sealed inputs into a scratch directory; compare by hash.
+
+    Mandatory: the contract's deterministic_rerun gate is a measurement, not a checkbox, and a
+    closure written without it would carry a False that the evaluator turns into KILL, which is
+    final. The re-run never touches the sealed directory (run() writes the curve, cohorts and
+    manifest beside the result) and never authorizes the window again (rerun_of).
+    """
+    import shutil
+    import tempfile
+
+    scratch = Path(tempfile.mkdtemp(prefix="narrative_rerun_"))
+    try:
+        again = runner.run(
+            "oos",
+            section=section,
+            max_cohorts=None,
+            reservation=reservation_path,
+            defer_result=True,
+            out_root=scratch,
+            rerun_of=result_path,
+        )
+        rerun_hash = hashlib.sha256(
+            again["net_returns"].to_numpy(dtype="float64").tobytes()
+        ).hexdigest()
+    finally:
+        shutil.rmtree(scratch, ignore_errors=True)
+    sealed_hash = hashlib.sha256(np.asarray(sealed_series, dtype="float64").tobytes()).hexdigest()
+    return {
+        "performed": True,
+        "reproduced": rerun_hash == sealed_hash,
+        "sealed_series_sha256": sealed_hash,
+        "rerun_series_sha256": rerun_hash,
+        "rerun_out_root": "scratch directory, removed",
+        "rerun_authorization": "rerun_of the sealed result; the window was not re-authorized",
+    }
+
+
 def seal_identity(
     section: str,
     *,
@@ -614,7 +659,6 @@ def seal_identity(
     study: Any,
     contract: dict[str, Any],
     matrix: dict[str, Any],
-    do_rerun: bool,
     sealed_at: str,
 ) -> dict[str, Any]:
     spec = runner.SECTIONS[section]
@@ -645,25 +689,13 @@ def seal_identity(
         ).read_text()
     )
     aligned = aligned_candidate(snapshot, net_sessions)
-    rerun: dict[str, Any] = {"performed": False}
-    if do_rerun:
-        again = runner.run(
-            "oos",
-            section=section,
-            max_cohorts=None,
-            reservation=reservation_path,
-            defer_result=True,
-        )
-        rerun_hash = hashlib.sha256(
-            again["net_returns"].to_numpy(dtype="float64").tobytes()
-        ).hexdigest()
-        sealed_hash = hashlib.sha256(net_sessions.to_numpy(dtype="float64").tobytes()).hexdigest()
-        rerun = {
-            "performed": True,
-            "reproduced": rerun_hash == sealed_hash,
-            "sealed_series_sha256": sealed_hash,
-            "rerun_series_sha256": rerun_hash,
-        }
+    rerun = deterministic_rerun(
+        runner,
+        section=section,
+        reservation_path=reservation_path,
+        result_path=result_path,
+        sealed_series=net_sessions.to_numpy(dtype="float64"),
+    )
     extras = {
         "book_sharpe_delta_bootstrap": book_sharpe_delta_lower_95(
             aligned,
@@ -774,7 +806,13 @@ def seal_identity(
             },
             "diversification_report": _binding(diversification_file),
             "admission_evidence": _binding(evidence_file),
-            "runner": _binding(REPO / "scripts" / "run_earnings_narrative_change_v1.py"),
+            # The runner that produced the result is the one the reservation bound at
+            # authorization; the seal may run under a later revision (the re-run path was added
+            # after the batch ran), so both hashes are recorded rather than one pretending to be
+            # the other. The deterministic re-run under the later revision reproducing the
+            # sealed series is evidence that the revision did not touch the computation.
+            "runner_at_authorization": reservation["evidence"]["runner"],
+            "runner_at_seal": _binding(REPO / "scripts" / "run_earnings_narrative_change_v1.py"),
             "python_project": _binding(REPO / "pyproject.toml"),
             "locked_environment": _binding(REPO / "uv.lock"),
             "ledger": result["ledger_record"],
@@ -865,7 +903,11 @@ def build_packet(
         "code_environment_and_reproduction": {
             "status": verified,
             "evidence": [
-                _binding(REPO / "scripts" / "run_earnings_narrative_change_v1.py"),
+                {**reservation["evidence"]["runner"], "type": "runner_at_authorization"},
+                {
+                    **_binding(REPO / "scripts" / "run_earnings_narrative_change_v1.py"),
+                    "type": "runner_at_seal",
+                },
                 _binding(REPO / "pyproject.toml"),
                 _binding(REPO / "uv.lock"),
             ],
@@ -941,7 +983,7 @@ def build_packet(
     return packet
 
 
-def seal(*, do_rerun: bool) -> dict[str, Any]:
+def seal() -> dict[str, Any]:
     runner = _load_module(
         REPO / "scripts" / "run_earnings_narrative_change_v1.py", "narrative_runner_for_seal"
     )
@@ -961,7 +1003,6 @@ def seal(*, do_rerun: bool) -> dict[str, Any]:
             study=study,
             contract=contract,
             matrix=matrix,
-            do_rerun=do_rerun,
             sealed_at=sealed_at,
         )
         for section in runner.SECTIONS
@@ -988,13 +1029,8 @@ def seal(*, do_rerun: bool) -> dict[str, Any]:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument(
-        "--skip-rerun",
-        action="store_true",
-        help="do not re-run the sections for the determinism check",
-    )
-    args = parser.parse_args(argv)
-    summary = seal(do_rerun=not args.skip_rerun)
+    parser.parse_args(argv)
+    summary = seal()
     for row in summary["identities"]:
         print(
             f"{row['profile']}: {row['disposition']}"
