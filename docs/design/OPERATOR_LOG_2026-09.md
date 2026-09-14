@@ -618,3 +618,16 @@ published number or spend a research identity are marked DECISION and name who m
   writing to it: 1 governed + 118 development-closed, 0 unclosed; forward index 119
   published, 119 complete, 0 admitted, 0 pending. Site side: the trials page still reads the
   legacy index only; a canlicapital change to render the forward index follows.
+- 2026-09-15 01:10Z. CAUGHT BEFORE THE SEAL (PR #45). The seal accepted `--skip-rerun`, and the
+  watcher I armed used it to save time. The evaluator would have read the missing check as
+  not_passed:robustness.deterministic_rerun and closed both identities KILL, which is final;
+  the contract's nineteen booleans are measurements, not checkboxes. And the re-run itself was
+  wrong in two ways: it re-authorized the window through the validator, which rightly refuses a
+  reservation whose identity is already logged, and it wrote the curve, cohorts and manifest
+  into the sealed directory it was checking. Fixed: the runner gains `rerun_of`, a re-run
+  authorized by the sealed result (content hash verified, the same reservation file unchanged,
+  the same section), always deferred, refused unless out_root is a fresh directory; the seal's
+  re-run is mandatory, runs into a scratch directory that is removed, and compares the net
+  series by hash. The watcher was stopped before the batch finished; nothing was sealed. Tests:
+  the re-run is deferred into scratch and compared by hash, the seal has no skip path, and the
+  re-run authorization refuses the sealed directory, a moved reservation and a wrong section.

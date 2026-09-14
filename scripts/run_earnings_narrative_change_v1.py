@@ -220,6 +220,39 @@ def authorize_oos(section: str, reservation: Path | None) -> dict[str, Any]:
     }
 
 
+def rerun_authorization(
+    section: str, reservation: Path | None, rerun_of: Path, *, out_root: Path | None
+) -> dict[str, Any]:
+    """The deterministic re-run of an identity already sealed: read-only against the record.
+
+    The out-of-sample window opened once, behind the validated reservation, and that identity is
+    now logged, so the validator would (rightly) refuse the same reservation a second time. The
+    re-run is not a second measurement: it recomputes the same section from the same sealed
+    inputs so the seal can compare the net series by hash. It is allowed only against a sealed
+    result whose authorization bound the very reservation file passed here (unchanged since),
+    only for that result's section, and only into a fresh out_root away from the sealed
+    directory, because run() writes the curve, cohorts, events and manifest beside the result.
+    """
+    if reservation is None:
+        raise SystemExit("a re-run needs the reservation the sealed run was authorized by")
+    if out_root is None or out_root.resolve() == rerun_of.resolve().parent.parent:
+        raise SystemExit("a re-run must write into a fresh out_root, never the sealed directory")
+    sealed = json.loads(rerun_of.read_text(encoding="utf-8"))
+    if sealed.get("content_hash") != _content_hash(sealed):
+        raise SystemExit("the sealed result's content hash does not verify; nothing to re-run")
+    if sealed.get("section") != section:
+        raise SystemExit(f"the sealed result is {sealed.get('section')!r}, not {section!r}")
+    authorization = dict(sealed["authorization"])
+    if authorization.get("reservation_sha256") != _sha256(reservation):
+        raise SystemExit("the reservation moved since the sealed run bound it; re-run refused")
+    resolved = rerun_of.resolve()
+    authorization["rerun_of"] = (
+        str(resolved.relative_to(REPO)) if resolved.is_relative_to(REPO) else str(resolved)
+    )
+    authorization["rerun_of_content_hash"] = sealed["content_hash"]
+    return authorization
+
+
 def run(
     window: str,
     *,
@@ -229,19 +262,26 @@ def run(
     reservation: Path | None,
     lake: Path | None = None,
     defer_result: bool = False,
+    rerun_of: Path | None = None,
 ) -> dict[str, Any]:
     """One window of one section. Returns the run's out dir, result document and net returns.
 
     With ``defer_result`` the result document is returned but NOT written and the ledger is
     untouched; the batch runner writes both members together after the matrix exists, so no
-    member's evaluation is on disk before the other's curve is.
+    member's evaluation is on disk before the other's curve is. With ``rerun_of`` (the sealed
+    result of an identity already logged) the window is not re-authorized: the run is the
+    seal's deterministic re-run, deferred, into a fresh out_root (see rerun_authorization).
     """
     t0 = time.time()
     spec = SECTIONS[section]
-    out_root = out_root if out_root is not None else spec["out_root"]
+    if rerun_of is not None and not defer_result:
+        raise SystemExit("a re-run is always deferred: it must not write a result or a ledger row")
     authorization: dict[str, Any] | None = None
-    if window == "oos":
+    if window == "oos" and rerun_of is not None:
+        authorization = rerun_authorization(section, reservation, rerun_of, out_root=out_root)
+    elif window == "oos":
         authorization = authorize_oos(section, reservation)
+    out_root = out_root if out_root is not None else spec["out_root"]
     start, end = WINDOWS[window]
     seal = lineage_seal(section)
     pairs = signal.eligible_pairs(pd.read_parquet(spec["pairs"]))
