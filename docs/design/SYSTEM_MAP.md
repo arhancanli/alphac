@@ -8,9 +8,9 @@ line of its own docstring, each pipeline's steps are the scripts it actually inv
 contract's boundary is the boundary it states about itself. A script with no docstring appears as
 having none.
 
-At a glance: **361 Python scripts**, **17 shell entry points**,
+At a glance: **362 Python scripts**, **17 shell entry points**,
 **33 configuration contracts**, **30 engineering artifacts**,
-**433 unit test files**, **23 data directories**, **9 scheduled jobs**.
+**434 unit test files**, **23 data directories**, **9 scheduled jobs**.
 
 
 ## What runs on a timer
@@ -87,32 +87,33 @@ Canli Capital - daily PUBLISH of the live track record to the public sites.
 | 12 | `scripts/build_trial_packet_manifest.py` | Inventory one permanent evidence packet for every union hypothesis identity. |
 | 13 | `scripts/seal_legacy_research_epoch.py` | Retire the legacy return-identity epoch without forgiving its evidence debt. |
 | 14 | `scripts/build_prospective_epoch_register.py` | Register every hypothesis identity measured after the legacy epoch closed, one row each. |
-| 15 | `scripts/seal_next_sleeve_selection.py` | Select the next sleeve feasibility candidate without opening returns. |
-| 16 | `scripts/transparency_log.py` | Tamper-evident transparency log for the live track record. |
-| 17 | `scripts/anchor_transparency.py` | External anchoring of the transparency chain into Bitcoin via OpenTimestamps — the S-tier trust seal. |
-| 18 | `scripts/export_crypto_position_attribution.py` | Export fail-closed instrument attribution for the latest crypto paper cycle. |
-| 19 | `scripts/verify_crypto_position_attribution_rollout.py` | Verify the first non-empty natural crypto cycle after attribution rollout. |
-| 20 | `scripts/analyze_current_book_drawdown.py` | Measure current-composition drawdown under a frozen two-model protocol. |
-| 21 | `scripts/analyze_current_book_diversification.py` | Measure exact current-book diversification under the frozen retrospective protocol. |
-| 22 | `scripts/analyze_drawdown_control.py` | Measure the declared book-level drawdown ladder on the published drawdown study's own paths. |
-| 23 | `scripts/seal_forward_drawdown_evidence.py` | Seal the drawdown study and expose its exact live-equivalence boundary. |
-| 24 | `scripts/evaluate_forward_evidence_maturity.py` | Evaluate the ALPHAC paper record against a frozen forward-evidence contract. |
-| 25 | `scripts/sync_readme_forward_evidence.py` | Synchronize README forward headlines with the canonical maturity artifact. |
-| 26 | `scripts/analyze_forward_sleeve_contribution.py` | Attribute the published forward book to its realized sleeve curves. |
-| 27 | `scripts/audit_crypto_lab_carry_crash.py` | Seal the LABUSDT carry-crash incident from immutable local execution evidence. |
-| 28 | `scripts/package_all_sleeve_review_archives.py` | Build deterministic raw-row-free review archives for all sleeve papers. |
-| 29 | `scripts/audit_all_sleeve_data_rights.py` | Audit all sleeve bundles for raw-row exclusion and conservative source mapping. |
-| 30 | `scripts/audit_clean_workspace_reproduction_contracts.py` | Audit whether each publication archive can genuinely reproduce its result cleanly. |
-| 31 | `scripts/audit_wave1_data_rights.py` | Audit Wave 1 publication bundles against the conservative data-rights policy. |
-| 32 | `scripts/package_wave1_release_candidates.py` | Create deterministic, raw-row-free Wave 1 archive candidates and verify extraction. |
-| 33 | `scripts/build_repository_submission_worksheets.py` | Build fail-closed repository worksheets without performing account actions. |
-| 34 | `scripts/audit_publication_manuscript_style.py` | Audit mechanical manuscript-style and authorship boundaries without scoring prose quality. |
-| 35 | `scripts/audit_inflation_breakeven_feasibility.py` | Audit inflation-breakeven source feasibility without opening any return data. |
-| 36 | `scripts/build_stanford_evidence_map.py` | Build a compact, source-bound Stanford CS portfolio evidence map. |
-| 37 | `scripts/audit_external_publication_readiness.py` | Fail closed on external-publication claims and report the exact sleeve-paper blockers. |
-| 38 | `scripts/research_export.py` | Research data layer: emit research.json — the FULL honest gauntlet — from REAL artifacts. |
-| 39 | `scripts/reproduce.py` | Reproduce our numbers — the outsider's one-command verifier of the Canli Capital glass box. |
-| 40 | `scripts/check_retracted_claims.py` | Refuse to publish a claim this record has already withdrawn. |
+| 15 | `scripts/build_forward_identity_packet_index.py` | Index every forward-epoch identity packet for publication, bound by hash to its closure. |
+| 16 | `scripts/seal_next_sleeve_selection.py` | Select the next sleeve feasibility candidate without opening returns. |
+| 17 | `scripts/transparency_log.py` | Tamper-evident transparency log for the live track record. |
+| 18 | `scripts/anchor_transparency.py` | External anchoring of the transparency chain into Bitcoin via OpenTimestamps — the S-tier trust seal. |
+| 19 | `scripts/export_crypto_position_attribution.py` | Export fail-closed instrument attribution for the latest crypto paper cycle. |
+| 20 | `scripts/verify_crypto_position_attribution_rollout.py` | Verify the first non-empty natural crypto cycle after attribution rollout. |
+| 21 | `scripts/analyze_current_book_drawdown.py` | Measure current-composition drawdown under a frozen two-model protocol. |
+| 22 | `scripts/analyze_current_book_diversification.py` | Measure exact current-book diversification under the frozen retrospective protocol. |
+| 23 | `scripts/analyze_drawdown_control.py` | Measure the declared book-level drawdown ladder on the published drawdown study's own paths. |
+| 24 | `scripts/seal_forward_drawdown_evidence.py` | Seal the drawdown study and expose its exact live-equivalence boundary. |
+| 25 | `scripts/evaluate_forward_evidence_maturity.py` | Evaluate the ALPHAC paper record against a frozen forward-evidence contract. |
+| 26 | `scripts/sync_readme_forward_evidence.py` | Synchronize README forward headlines with the canonical maturity artifact. |
+| 27 | `scripts/analyze_forward_sleeve_contribution.py` | Attribute the published forward book to its realized sleeve curves. |
+| 28 | `scripts/audit_crypto_lab_carry_crash.py` | Seal the LABUSDT carry-crash incident from immutable local execution evidence. |
+| 29 | `scripts/package_all_sleeve_review_archives.py` | Build deterministic raw-row-free review archives for all sleeve papers. |
+| 30 | `scripts/audit_all_sleeve_data_rights.py` | Audit all sleeve bundles for raw-row exclusion and conservative source mapping. |
+| 31 | `scripts/audit_clean_workspace_reproduction_contracts.py` | Audit whether each publication archive can genuinely reproduce its result cleanly. |
+| 32 | `scripts/audit_wave1_data_rights.py` | Audit Wave 1 publication bundles against the conservative data-rights policy. |
+| 33 | `scripts/package_wave1_release_candidates.py` | Create deterministic, raw-row-free Wave 1 archive candidates and verify extraction. |
+| 34 | `scripts/build_repository_submission_worksheets.py` | Build fail-closed repository worksheets without performing account actions. |
+| 35 | `scripts/audit_publication_manuscript_style.py` | Audit mechanical manuscript-style and authorship boundaries without scoring prose quality. |
+| 36 | `scripts/audit_inflation_breakeven_feasibility.py` | Audit inflation-breakeven source feasibility without opening any return data. |
+| 37 | `scripts/build_stanford_evidence_map.py` | Build a compact, source-bound Stanford CS portfolio evidence map. |
+| 38 | `scripts/audit_external_publication_readiness.py` | Fail closed on external-publication claims and report the exact sleeve-paper blockers. |
+| 39 | `scripts/research_export.py` | Research data layer: emit research.json — the FULL honest gauntlet — from REAL artifacts. |
+| 40 | `scripts/reproduce.py` | Reproduce our numbers — the outsider's one-command verifier of the Canli Capital glass box. |
+| 41 | `scripts/check_retracted_claims.py` | Refuse to publish a claim this record has already withdrawn. |
 
 ### `scripts/live_tick.sh`
 
@@ -131,22 +132,23 @@ Canli Capital - hourly live PAPER cycle (the running track record).
 | 9 | `scripts/build_trial_packet_manifest.py` | Inventory one permanent evidence packet for every union hypothesis identity. |
 | 10 | `scripts/seal_legacy_research_epoch.py` | Retire the legacy return-identity epoch without forgiving its evidence debt. |
 | 11 | `scripts/build_prospective_epoch_register.py` | Register every hypothesis identity measured after the legacy epoch closed, one row each. |
-| 12 | `scripts/seal_next_sleeve_selection.py` | Select the next sleeve feasibility candidate without opening returns. |
-| 13 | `scripts/transparency_log.py` | Tamper-evident transparency log for the live track record. |
-| 14 | `scripts/export_crypto_position_attribution.py` | Export fail-closed instrument attribution for the latest crypto paper cycle. |
-| 15 | `scripts/verify_crypto_position_attribution_rollout.py` | Verify the first non-empty natural crypto cycle after attribution rollout. |
-| 16 | `scripts/analyze_current_book_drawdown.py` | Measure current-composition drawdown under a frozen two-model protocol. |
-| 17 | `scripts/analyze_current_book_diversification.py` | Measure exact current-book diversification under the frozen retrospective protocol. |
-| 18 | `scripts/seal_forward_drawdown_evidence.py` | Seal the drawdown study and expose its exact live-equivalence boundary. |
-| 19 | `scripts/evaluate_forward_evidence_maturity.py` | Evaluate the ALPHAC paper record against a frozen forward-evidence contract. |
-| 20 | `scripts/sync_readme_forward_evidence.py` | Synchronize README forward headlines with the canonical maturity artifact. |
-| 21 | `scripts/analyze_forward_sleeve_contribution.py` | Attribute the published forward book to its realized sleeve curves. |
-| 22 | `scripts/audit_crypto_lab_carry_crash.py` | Seal the LABUSDT carry-crash incident from immutable local execution evidence. |
-| 23 | `scripts/build_stanford_evidence_map.py` | Build a compact, source-bound Stanford CS portfolio evidence map. |
-| 24 | `scripts/audit_forward_full_evidence_reservation_v2_template.py` | Audit the non-active full-evidence reservation template without reading returns. |
-| 25 | `scripts/research_export.py` | Research data layer: emit research.json — the FULL honest gauntlet — from REAL artifacts. |
-| 26 | `scripts/check_retracted_claims.py` | Refuse to publish a claim this record has already withdrawn. |
-| 27 | `scripts/check_live_change_declared.py` | Block the publish if the live trading configuration has changed without being declared. |
+| 12 | `scripts/build_forward_identity_packet_index.py` | Index every forward-epoch identity packet for publication, bound by hash to its closure. |
+| 13 | `scripts/seal_next_sleeve_selection.py` | Select the next sleeve feasibility candidate without opening returns. |
+| 14 | `scripts/transparency_log.py` | Tamper-evident transparency log for the live track record. |
+| 15 | `scripts/export_crypto_position_attribution.py` | Export fail-closed instrument attribution for the latest crypto paper cycle. |
+| 16 | `scripts/verify_crypto_position_attribution_rollout.py` | Verify the first non-empty natural crypto cycle after attribution rollout. |
+| 17 | `scripts/analyze_current_book_drawdown.py` | Measure current-composition drawdown under a frozen two-model protocol. |
+| 18 | `scripts/analyze_current_book_diversification.py` | Measure exact current-book diversification under the frozen retrospective protocol. |
+| 19 | `scripts/seal_forward_drawdown_evidence.py` | Seal the drawdown study and expose its exact live-equivalence boundary. |
+| 20 | `scripts/evaluate_forward_evidence_maturity.py` | Evaluate the ALPHAC paper record against a frozen forward-evidence contract. |
+| 21 | `scripts/sync_readme_forward_evidence.py` | Synchronize README forward headlines with the canonical maturity artifact. |
+| 22 | `scripts/analyze_forward_sleeve_contribution.py` | Attribute the published forward book to its realized sleeve curves. |
+| 23 | `scripts/audit_crypto_lab_carry_crash.py` | Seal the LABUSDT carry-crash incident from immutable local execution evidence. |
+| 24 | `scripts/build_stanford_evidence_map.py` | Build a compact, source-bound Stanford CS portfolio evidence map. |
+| 25 | `scripts/audit_forward_full_evidence_reservation_v2_template.py` | Audit the non-active full-evidence reservation template without reading returns. |
+| 26 | `scripts/research_export.py` | Research data layer: emit research.json — the FULL honest gauntlet — from REAL artifacts. |
+| 27 | `scripts/check_retracted_claims.py` | Refuse to publish a claim this record has already withdrawn. |
+| 28 | `scripts/check_live_change_declared.py` | Block the publish if the live trading configuration has changed without being declared. |
 
 ### `scripts/mf_tick.sh`
 
@@ -365,7 +367,7 @@ and is worth more than a hand-made taxonomy that would drift.
 | `audit_vate_2020_dividend_vendor_resolution.py` | Resolve the unsupported VATE/HCHC 2020 dividend row without opening returns. |
 | `audit_wave1_data_rights.py` | Audit Wave 1 publication bundles against the conservative data-rights policy. |
 
-### `build_*` (40)
+### `build_*` (41)
 
 | script | first line of its docstring |
 |---|---|
@@ -383,6 +385,7 @@ and is worth more than a hand-made taxonomy that would drift.
 | `build_dsr_calculator_contract.py` | Build the public, implementation-bound Deflated Sharpe calculator contract. |
 | `build_external_reviewer_packets.py` | Build hash-bound, preparation-only reviewer packets for flagship papers. |
 | `build_external_submission_plan.py` | Build a fail-closed, repository-specific release queue for every sleeve paper. |
+| `build_forward_identity_packet_index.py` | Index every forward-epoch identity packet for publication, bound by hash to its closure. |
 | `build_fresh_context_reader_packets.py` | Build blank, hash-bound fresh-context reader packets for every manuscript. |
 | `build_fundamental_single_curve_evidence.py` | Build uncertainty and canonical diversification evidence for one preserved factor curve. |
 | `build_fundamental_single_input_manifest.py` | Commit the complete in-window lake snapshot for the selected fundamental replay. |

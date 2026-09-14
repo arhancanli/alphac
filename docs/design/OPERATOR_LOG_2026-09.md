@@ -596,3 +596,25 @@ published number or spend a research identity are marked DECISION and name who m
   seal binds both closures and the PBO matrix receipt. Five tests, including a synthetic
   document the contract decides in full with the lower-bound gate caught by name. Auto-merge
   armed; main is merged in once #40 lands.
+- 2026-09-15 00:15Z. FORWARD EPOCH PUBLISHED (PR #42, stacked on #41). Two gaps found while
+  the batch waited. First, `scripts/build_prospective_epoch_register.py` recognised exactly
+  one closure file by name, so after #40 it would have published the 118 imported identities
+  as "reserved, measured, unclosed" while the seriality guard counted them decided. It now
+  discovers every final closure on disk (governed: crypto carry and every narrative-change
+  batch closure; development: the 118 imported closures) and labels them
+  GOVERNED_SERIAL_PACKET_CLOSED or DEVELOPMENT_CLOSURE_FINAL_NOT_ADMITTED, with the closure
+  path, kind, schema and disposition on the row; two closures for one identity fail closed.
+  Second, the legacy packet index is sealed at 228 identities by the legacy epoch closure and
+  cannot grow, so the 119 forward packets sat on disk and off the site (the site held 228 + 1).
+  `scripts/build_forward_identity_packet_index.py` writes
+  `artifacts/research/trial_packets/forward_index.json`: one row per register identity,
+  packet bound by file hash and content hash (refused on mismatch, refused under a foreign key),
+  its closure and disposition, PACKET_PENDING_SEAL for an identity whose packet the seal has
+  not written, and a fail-closed check that no key sits in both epochs. research_export
+  refuses an index built from a different register, copies every listed packet and the index
+  to both hosts, and derives complete and published packet counts from it (legacy 228 +
+  forward). Both publish pipelines run the index after the register and before the export;
+  the pipeline-order test carries both edges. Measured against the publisher tree without
+  writing to it: 1 governed + 118 development-closed, 0 unclosed; forward index 119
+  published, 119 complete, 0 admitted, 0 pending. Site side: the trials page still reads the
+  legacy index only; a canlicapital change to render the forward index follows.

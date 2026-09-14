@@ -112,34 +112,89 @@ def repo(tmp_path: Path) -> Path:
     )
     # One canonical measurement with no reservation at all: a governance finding, not a crash.
     _record(repo / "artifacts" / "analysis" / "loose" / "experiments.jsonl", _cfg(20), 6_000)
+    # The stress arm was decided by its study and imported with a development closure (KILL);
+    # a governed identity ran under a validated reservation and closed INCOMPLETE.
+    _final_closure(
+        repo
+        / "artifacts"
+        / "research"
+        / "development_closures"
+        / f"{hypothesis_hash(_cfg(11, arm='stress'))}_admission_closure.json",
+        hypothesis_hash(_cfg(11, arm="stress")),
+        "canli.alphac-development-trial-admission-closure.v1",
+        "KILL",
+    )
+    governed = repo / "artifacts" / "analysis" / "governed_20260914"
+    _record(governed / "experiments.jsonl", _cfg(30, arm="governed"), 7_000)
+    _reservation(
+        governed,
+        hypothesis_hash(_cfg(30, arm="governed")),
+        7,
+        "fam2",
+        "governed",
+        "2026-09-14T03:00:00+00:00",
+    )
+    _final_closure(
+        repo
+        / "artifacts"
+        / "research"
+        / "earnings_narrative_change_batch"
+        / "governed_admission_closure.json",
+        hypothesis_hash(_cfg(30, arm="governed")),
+        "canli.alphac-narrative-change-admission-closure.v1",
+        "INCOMPLETE",
+    )
     return repo
+
+
+def _final_closure(path: Path, key: str, schema: str, disposition: str) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        json.dumps(
+            {
+                "schema": schema,
+                "identity": {"hypothesis_key": key},
+                "decision": {"disposition": disposition, "admitted": False},
+            }
+        )
+    )
 
 
 def test_register_derives_the_epoch_and_the_arithmetic_holds(repo: Path) -> None:
     register = MOD.build(repo, now=NOW)
     summary = register["summary"]
-    assert summary["union_identities"] == 6
+    assert summary["union_identities"] == 7
     assert summary["legacy_retired_identities"] == 3
-    assert summary["observed_identities"] == 3
+    assert summary["observed_identities"] == 4
     assert summary["identity_arithmetic_holds"] is True
     assert summary["by_status"] == {
-        MOD.STATUS_GOVERNED: 0,
-        MOD.STATUS_IMPORTED: 2,
+        MOD.STATUS_GOVERNED: 1,
+        MOD.STATUS_DEVELOPMENT_CLOSED: 1,
+        MOD.STATUS_IMPORTED: 1,
         MOD.STATUS_RESERVED: 0,
         MOD.STATUS_UNRESERVED: 1,
     }
+    assert summary["closed_identities"] == 2 and summary["unclosed_identities"] == 2
+    assert summary["by_final_disposition"] == {"INCOMPLETE": 1, "KILL": 1}
     assert summary["first_reservation_ordinal"] == 5
-    assert summary["latest_reservation_ordinal"] == 6
+    assert summary["latest_reservation_ordinal"] == 7
     assert summary["reservation_ordinals_contiguous"] is True
     rows = register["identities"]
-    assert [r["reservation_ordinal"] for r in rows] == [5, 6, None]
+    assert [r["reservation_ordinal"] for r in rows] == [5, 6, 7, None]
+    # The imported stress arm is closed by its study's decision, never upgraded to governed.
+    assert rows[1]["status"] == MOD.STATUS_DEVELOPMENT_CLOSED
+    assert rows[1]["closure_kind"] == "development" and rows[1]["final_disposition"] == "KILL"
+    assert rows[1]["packet_complete"] is True and rows[1]["admitted"] is False
+    assert rows[2]["status"] == MOD.STATUS_GOVERNED and rows[2]["closure_kind"] == "governed"
+    assert rows[2]["closure_schema"] == "canli.alphac-narrative-change-admission-closure.v1"
+    assert rows[0]["closure_path"] is None and rows[0]["packet_complete"] is False
     assert rows[0]["source"] == {
         "kind": "imported",
         "receipt": "artifacts/audit/external_ledger_import_20260914T000000Z.json",
     }
     assert rows[0]["arm"] == "candidate" and rows[1]["arm"] == "stress"
-    assert rows[2]["status"] == MOD.STATUS_UNRESERVED and rows[2]["family_trial_account"] is None
-    assert all(r["admitted"] is False and r["packet_complete"] is False for r in rows)
+    assert rows[3]["status"] == MOD.STATUS_UNRESERVED and rows[3]["family_trial_account"] is None
+    assert all(r["admitted"] is False for r in rows)
     assert rows[0]["first_measurement"]["n_obs"] == 800
     content_hash = register.pop("content_hash")
     assert content_hash == MOD._content_hash(register)
@@ -158,7 +213,7 @@ def test_an_ordinal_gap_is_reported_not_hidden(repo: Path) -> None:
     )
     summary = MOD.build(repo, now=NOW)["summary"]
     assert summary["reservation_ordinals_contiguous"] is False
-    assert summary["reservation_ordinal_gaps"] == [7, 8]
+    assert summary["reservation_ordinal_gaps"] == [8]  # 7 is the governed identity's ordinal
 
 
 def test_two_identities_on_one_ordinal_fail_closed(repo: Path) -> None:

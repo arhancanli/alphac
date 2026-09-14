@@ -37,12 +37,22 @@ from alphaforge.validation.experiments import ExperimentLog, ExperimentUnion, hy
 REPO = Path(__file__).resolve().parents[1]
 OUTPUT_RELATIVE = Path("artifacts/research/prospective_epoch_register.json")
 LEGACY_CLOSURE_RELATIVE = Path("artifacts/research/legacy_research_epoch_closure.json")
-GOVERNED_CLOSURES_RELATIVE = ("artifacts/research/crypto_carry_portable_v1_admission_closure.json",)
+# Final closures on file, discovered rather than listed, so a new closure cannot be left out of
+# the record by forgetting to name it here. A GOVERNED closure decides an identity that ran under
+# a validated reservation and the serial packet rule (crypto carry; every v2 batch identity). A
+# DEVELOPMENT closure records a decision an external study already made on an imported identity
+# (2026-09-14 import: retrospective development measurements, all KILL); it computes nothing.
+GOVERNED_CLOSURE_GLOBS = (
+    "artifacts/research/crypto_carry_portable_v1_admission_closure.json",
+    "artifacts/research/earnings_narrative_change_batch/*_admission_closure.json",
+)
+DEVELOPMENT_CLOSURE_GLOB = "artifacts/research/development_closures/*_admission_closure.json"
 IMPORT_RECEIPT_GLOB = "artifacts/audit/external_ledger_import_*.json"
 SCHEMA = "canli.alphac-prospective-epoch-register.v1"
 AUTHOR = "Arhan Canli"
 
 STATUS_GOVERNED = "GOVERNED_SERIAL_PACKET_CLOSED"
+STATUS_DEVELOPMENT_CLOSED = "DEVELOPMENT_CLOSURE_FINAL_NOT_ADMITTED"
 STATUS_IMPORTED = "IMPORTED_RESERVED_MEASURED_UNCLOSED"
 STATUS_RESERVED = "RESERVED_MEASURED_UNCLOSED"
 STATUS_UNRESERVED = "MEASURED_WITHOUT_RESERVATION"
@@ -125,16 +135,25 @@ def imported_directories(repo: Path) -> dict[str, str]:
 
 
 def governed_closures(repo: Path) -> dict[str, dict[str, Any]]:
-    """hypothesis key -> governed serial closure (final decision on file)."""
+    """hypothesis key -> final closure on file, with its kind (governed or development)."""
     out: dict[str, dict[str, Any]] = {}
-    for relative in GOVERNED_CLOSURES_RELATIVE:
-        path = repo / relative
-        if not path.exists():
+    found: list[tuple[str, Path]] = []
+    for pattern in GOVERNED_CLOSURE_GLOBS:
+        found.extend(("governed", path) for path in sorted(repo.glob(pattern)))
+    found.extend(("development", path) for path in sorted(repo.glob(DEVELOPMENT_CLOSURE_GLOB)))
+    for kind, path in found:
+        if not path.is_file():
             continue
         closure = json.loads(path.read_text(encoding="utf-8"))
         key = closure.get("identity", {}).get("hypothesis_key")
-        if isinstance(key, str):
-            out[key] = {"closure": closure, "path": relative}
+        if not isinstance(key, str):
+            continue
+        relative = str(path.relative_to(repo))
+        if key in out:
+            raise ValueError(
+                f"identity {key} has two final closures: {out[key]['path']} and {relative}"
+            )
+        out[key] = {"closure": closure, "path": relative, "kind": kind}
     return out
 
 
@@ -177,8 +196,10 @@ def build(repo: Path = REPO, *, now: dt.datetime | None = None) -> dict[str, Any
             arm = str(arm) if arm is not None else None
             reserved_at = rec.get("reserved_at")
             return_identity_id = rec.get("return_identity_id")
-        if governed_entry is not None:
+        if governed_entry is not None and governed_entry["kind"] == "governed":
             status = STATUS_GOVERNED
+        elif governed_entry is not None:
+            status = STATUS_DEVELOPMENT_CLOSED
         elif reservation is None:
             status = STATUS_UNRESERVED
         elif top is not None and top in imported:
@@ -218,6 +239,10 @@ def build(repo: Path = REPO, *, now: dt.datetime | None = None) -> dict[str, Any
                 },
                 "packet_complete": bool(governed_entry is not None),
                 "closure_path": governed_entry["path"] if governed_entry is not None else None,
+                "closure_kind": governed_entry["kind"] if governed_entry is not None else None,
+                "closure_schema": (
+                    governed_entry["closure"].get("schema") if governed_entry is not None else None
+                ),
                 "final_disposition": decision["disposition"] if decision else None,
                 "admitted": bool(decision["admitted"]) if decision else False,
             }
@@ -236,6 +261,7 @@ def build(repo: Path = REPO, *, now: dt.datetime | None = None) -> dict[str, Any
         gaps = [o for o in range(ordinals[0], ordinals[-1] + 1) if o not in ordinal_owner]
     counts = {
         STATUS_GOVERNED: sum(1 for r in rows if r["status"] == STATUS_GOVERNED),
+        STATUS_DEVELOPMENT_CLOSED: sum(1 for r in rows if r["status"] == STATUS_DEVELOPMENT_CLOSED),
         STATUS_IMPORTED: sum(1 for r in rows if r["status"] == STATUS_IMPORTED),
         STATUS_RESERVED: sum(1 for r in rows if r["status"] == STATUS_RESERVED),
         STATUS_UNRESERVED: sum(1 for r in rows if r["status"] == STATUS_UNRESERVED),
@@ -267,6 +293,17 @@ def build(repo: Path = REPO, *, now: dt.datetime | None = None) -> dict[str, Any
         "reservation_ordinal_gaps": gaps,
         "duplicate_reservation_records": duplicate_reservations,
         "admitted_identities": sum(1 for r in rows if r["admitted"]),
+        "closed_identities": sum(1 for r in rows if r["closure_path"] is not None),
+        "unclosed_identities": sum(1 for r in rows if r["closure_path"] is None),
+        "by_final_disposition": dict(
+            sorted(
+                (
+                    disposition,
+                    sum(1 for r in rows if r["final_disposition"] == disposition),
+                )
+                for disposition in {r["final_disposition"] for r in rows if r["final_disposition"]}
+            )
+        ),
     }
     payload: dict[str, Any] = {
         "schema": SCHEMA,
