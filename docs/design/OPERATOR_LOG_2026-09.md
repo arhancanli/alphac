@@ -573,3 +573,26 @@ published number or spend a research identity are marked DECISION and name who m
   for its equity sleeve. Exercised on the dry-run reservation with a synthetic series: 1,061
   aligned days, REPORTED. The publisher-tree chain (authoring, then the single batch run) is
   armed and waits for #40 to land and the tick to be idle.
+- 20:00Z. SEAL WRITTEN (PR #41, stacked on #40). `scripts/seal_earnings_narrative_change_batch.py`
+  runs after the single batch and, per identity, builds the evidence document the admission
+  contract's evaluator reads from the sealed outputs and the frozen evidence the reservation
+  binds, then lets `evaluate_sleeve_evidence` decide. Every gate the contract declares is
+  measured, which is what crypto_carry_portable_v1 lacked: per-sleeve and book-level deflated
+  Sharpe, the batch PBO, the book's average-correlation delta and rolling instability, a
+  block-bootstrap one-sided lower bound on the book Sharpe delta (the reservation's 10,000
+  paths, 63-day block, seed), the correlation-regime drawdown with and without the candidate,
+  the capacity curve reconciled to the declared capacity scenarios (fill ratio as the scenario's
+  mean gross over the baseline's, stressed cost as the scenario's cost drag per unit turnover),
+  and execution evidence per dimension under the pre-registered pass rule (net Sharpe at or
+  above 0.40; a scenario with no Sharpe cannot pass). The overlay block reads every number from
+  its source: production's vol target, scale ceiling and 240-bar realized halflife off the code's
+  own signatures, the covariance halflife as the contract's 21-day maximum, and the v7 record
+  that production ships 720 bars today. That gap is written on the closure as a deployment
+  condition (a declared live-configuration change must carry the contract value before the
+  sleeve trades); it is not hidden inside a passing number. The pre-registration's
+  DATA-ESCALATE rule is applied after the evaluator: a passing result with any force-flat closes
+  INCOMPLETE, never ADMIT. Outputs per identity: admission evidence, evaluator report inside the
+  closure (every failure named), closure, v2 packet, canonical diversification report; one batch
+  seal binds both closures and the PBO matrix receipt. Five tests, including a synthetic
+  document the contract decides in full with the lower-bound gate caught by name. Auto-merge
+  armed; main is merged in once #40 lands.
