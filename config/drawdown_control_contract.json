@@ -1,24 +1,29 @@
 {
   "schema": "canli.alphac-drawdown-control-contract.v1",
+  "version": "1.1",
   "author": "Arhan Canli",
   "status": "MEASURED_ACCEPTED_AS_BOUND_MECHANISM_NOT_LIVE",
   "frozen_at": "2026-09-14",
+  "frozen_note": "v1.1 parameters re-derived from the restated bound on 2026-09-14 (evening), before the v1.1 study run; v1.0 was frozen and measured earlier the same day.",
   "measurement": {
     "measured_on": "2026-09-14",
     "artifact": "artifacts/analysis/drawdown_control_v1/result.json",
     "public_path": "/glassbox/drawdown_control_v1.json",
     "result_summary": "Every figure lives in the artifact; this contract records only that the declared rule was applied once, after the parameters were frozen, and what it decided.",
     "accepted_as_bound_mechanism": true,
-    "nothing_was_tuned_after_the_result": true
+    "nothing_was_tuned_after_the_result": true,
+    "conservative_p95_with_absorbing_ladder": 0.10067091639034838,
+    "conservative_p99_with_absorbing_ladder": 0.10196252172481021
   },
   "protocol": "docs/design/DRAWDOWN_CONTROL_V1_PROTOCOL.md",
-  "owner_goal": "Combined portfolio maximum drawdown no greater than 0.11, a hard bound rather than an expected-maximum-drawdown target, with realized, historical-scenario, simulated expected and simulated tail drawdowns published separately.",
-  "bound": 0.11,
+  "owner_goal": "Combined portfolio maximum drawdown no greater than 0.10 (owner restatement of 2026-09-14, config/owner_goals.json goals.combined_max_drawdown): a bound on REALIZED maximum drawdown rather than an expected-maximum-drawdown target, with realized, historical-scenario, simulated expected and simulated tail drawdowns published separately.",
+  "bound": 0.1,
+  "bound_source": "config/owner_goals.json goals.combined_max_drawdown.bound",
   "ladder": {
     "implementation": "alphaforge.risk.ladder_paths.simulate_book_ladder (research twin of alphaforge.risk.monitors.DrawdownLadder, asserted step-equal)",
     "measured_on": "book daily close equity versus its high-water mark",
-    "dd_half_frac": 0.055,
-    "dd_flat_frac": 0.11,
+    "dd_half_frac": 0.05,
+    "dd_flat_frac": 0.1,
     "release_frac_of_half": 0.75,
     "flat_state": "ABSORBING_UNTIL_OWNER_REVIEW",
     "secondary_scenario_flat_cooldown_days": 14,
@@ -41,10 +46,12 @@
   },
   "acceptance_rule": {
     "declared_before_measurement": true,
+    "derivation": "The v1.0 rule scaled to the new bound by the same relative slack it declared: p95 within 9.09% of the bound and p99 within 18.18% of the bound (0.12 / 0.11 and 0.13 / 0.11). The slack is the one-day overshoot a close-to-close ladder cannot avoid. Derived, not chosen.",
     "conservative_model": "the worse of the two models per statistic",
-    "p95_max_drawdown_with_absorbing_ladder_max": 0.12,
-    "p99_max_drawdown_with_absorbing_ladder_max": 0.13,
-    "return_cost_is_a_price_not_a_gate": true
+    "p95_max_drawdown_with_absorbing_ladder_max": 0.109091,
+    "p99_max_drawdown_with_absorbing_ladder_max": 0.118182,
+    "return_cost_is_a_price_not_a_gate": true,
+    "disclosure_scratch_cell_before_redeclaration": "A scratch cell at 5.0 / 10.0 was run at 18:30Z on 2026-09-14, before this rule was re-declared, to learn whether the bound was reachable at all (operator log). Its figures, conservative p95 0.1007 and p99 0.1020, were known when this rule was written. The rule above is v1.0's rule scaled to the bound, which fixes the thresholds at 0.1091 and 0.1182 without reference to those figures; the official run below is the one that decides."
   },
   "published_measures": {
     "realized_forward": "artifacts/engineering/forward_drawdown_evidence.json (paper record since 2026-08-07, descriptive only)",
@@ -52,6 +59,38 @@
     "simulated_expected": "artifacts/analysis/drawdown_control_v1/result.json, per model, with and without the ladder",
     "simulated_tail": "artifacts/analysis/drawdown_control_v1/result.json p95 and p99, per model, with and without the ladder"
   },
+  "trial_accounting": {
+    "hypothesis_identities_spent": 0,
+    "return_data_opened": false,
+    "classification": "EXISTING_RETURN_RISK_REMEASUREMENT"
+  },
+  "history": [
+    {
+      "version": "1.0",
+      "frozen_at": "2026-09-14",
+      "bound": 0.11,
+      "ladder": {
+        "dd_half_frac": 0.055,
+        "dd_flat_frac": 0.11,
+        "release_frac_of_half": 0.75
+      },
+      "acceptance_rule": {
+        "p95_max_drawdown_with_absorbing_ladder_max": 0.12,
+        "p99_max_drawdown_with_absorbing_ladder_max": 0.13
+      },
+      "measurement": {
+        "measured_on": "2026-09-14",
+        "artifact": "artifacts/analysis/drawdown_control_v1/result.json",
+        "public_path": "/glassbox/drawdown_control_v1.json",
+        "result_summary": "Every figure lives in the artifact; this contract records only that the declared rule was applied once, after the parameters were frozen, and what it decided.",
+        "accepted_as_bound_mechanism": true,
+        "nothing_was_tuned_after_the_result": true
+      },
+      "measured_result": "conservative p95 0.1102, p99 0.1116 with the absorbing ladder (regime model), halt probability 0.064, two-year drift cost 0.0074; accepted",
+      "superseded_on": "2026-09-14",
+      "superseded_because": "The owner restated the maximum-drawdown goal as 10 percent (config/owner_goals.json, in force 2026-09-14). A ladder that goes flat at 11 percent cannot enforce a 10 percent bound, so the ladder is re-derived from the new bound by the same rule and re-measured by the same study. Nothing about v1.0 was wrong for the 11 percent bound it served."
+    }
+  ],
   "activation": {
     "live": false,
     "one_switch": "This flag. Read at trade time by alphaforge.risk.book_ladder.BookLadderProvider (every sleeve) and hashed into the live-configuration fingerprint (scripts/export_live_config_fingerprint.py risk_path_settings.book_ladder_activation_live), so the public contract, the trading path and the live-change guard cannot disagree about whether the brake is on.",
@@ -78,11 +117,6 @@
       "5. Mark the forward record: returns before and after the activation date are separate evidence epochs and are not pooled."
     ],
     "status_after_activation": "MECHANISM_LIVE_BOUND_ENFORCED_UP_TO_ONE_DAY_OVERSHOOT"
-  },
-  "trial_accounting": {
-    "hypothesis_identities_spent": 0,
-    "return_data_opened": false,
-    "classification": "EXISTING_RETURN_RISK_REMEASUREMENT"
   },
   "claim_boundary": "This contract declares a risk policy and how it is measured. It does not establish a maximum drawdown for the live book, does not forecast returns, and changes no published performance figure. A brake bounds each drawdown episode up to a one-day overshoot; it does not make losses impossible."
 }

@@ -79,3 +79,7 @@ Read as governing goals (`config/owner_goals.json`, in force 2026-09-14):
 The drawdown brake declared in `config/drawdown_control_contract.json` (half gross at 5.5%, flat
 at 11%) was measured against the superseded 11% objective and cannot enforce a 10% bound. A ladder
 consistent with the bound must be measured and declared before the brake is activated.
+
+Update, 2026-09-14 (evening): drawdown control v1.1 re-derives the ladder from the 10% bound
+(half gross at 5%, flat at 10%) and re-measures it by the same protocol; v1.0 (5.5% / 11%) is kept
+as history in the contract. The brake is still not activated.
