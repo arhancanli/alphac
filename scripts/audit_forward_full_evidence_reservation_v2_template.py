@@ -11,6 +11,8 @@ from typing import Any, Final, cast
 
 ROOT: Final = Path(__file__).resolve().parents[1]
 TEMPLATE: Final = Path("config/forward_full_evidence_reservation_v2_template.json")
+RECEIPT: Final = Path("config/forward_full_evidence_reservation_v2_promotion.json")
+RECEIPT_SCHEMA: Final = "canli.alphac-forward-full-evidence-v2-promotion.v1"
 PROTOCOL: Final = Path("docs/design/FORWARD_FULL_EVIDENCE_RESERVATION_V2.md")
 CONTRACT: Final = Path("config/sleeve_admission_contract.json")
 OUTPUT: Final = Path("artifacts/audit/forward_full_evidence_reservation_v2_template.json")
@@ -128,15 +130,41 @@ def build(repo: Path = ROOT) -> dict[str, Any]:
     contract = _load(repo / CONTRACT)
     if template.get("schema") != "canli.alphac-forward-full-evidence-reservation-template.v2":
         raise TemplateAuditError("unexpected template schema")
-    if template.get("status") != "TEMPLATE_NOT_IN_FORCE_NO_RETURN_AUTHORIZATION":
+    promoted = template.get("status") == "IN_FORCE"
+    if template.get("status") not in {"TEMPLATE_NOT_IN_FORCE_NO_RETURN_AUTHORIZATION", "IN_FORCE"}:
         raise TemplateAuditError("template is active or has an unsafe status")
     scope = template.get("scope")
-    if scope != {
-        "applies_to_known_results": False,
-        "earliest_possible_reservation_ordinal": 230,
-        "requires_separate_policy_promotion": True,
-    }:
+    if (
+        not isinstance(scope, dict)
+        or scope.get("applies_to_known_results") is not False
+        or scope.get("requires_separate_policy_promotion") is not True
+        or not isinstance(scope.get("earliest_possible_reservation_ordinal"), int)
+        or scope["earliest_possible_reservation_ordinal"] < 230
+    ):
         raise TemplateAuditError("prospective scope is not fail-closed")
+    receipt: dict[str, Any] | None = None
+    if promoted:
+        # A promoted template must be bound by a valid receipt whose template hash is the
+        # template on disk; otherwise "IN_FORCE" is a word somebody typed.
+        receipt_path = repo / RECEIPT
+        if not receipt_path.is_file():
+            raise TemplateAuditError("template says IN_FORCE but no promotion receipt exists")
+        receipt = _load(receipt_path)
+        if receipt.get("schema") != RECEIPT_SCHEMA or receipt.get("content_hash") != _content_hash(
+            receipt
+        ):
+            raise TemplateAuditError("promotion receipt is invalid")
+        if receipt.get("promoted_template_sha256") != _sha256(repo / TEMPLATE):
+            raise TemplateAuditError("promotion receipt does not bind the template on disk")
+        promotion = template.get("promotion")
+        if not isinstance(promotion, dict) or promotion.get(
+            "effective_on_or_after_reservation_ordinal"
+        ) != receipt.get("effective_on_or_after_reservation_ordinal"):
+            raise TemplateAuditError("template promotion block disagrees with the receipt")
+        if set(promotion.get("gates_satisfied", [])) != set(
+            template.get("required_promotion_before_use", [])
+        ):
+            raise TemplateAuditError("promotion does not record every required gate")
     for path in REQUIRED_NULL_PATHS:
         if _nested(template, path) is not None:
             raise TemplateAuditError("unfilled template field is not null: " + ".".join(path))
@@ -219,7 +247,11 @@ def build(repo: Path = ROOT) -> dict[str, Any]:
 
     document: dict[str, Any] = {
         "schema": SCHEMA,
-        "status": "PASS_TEMPLATE_FAIL_CLOSED_NOT_ACTIVE_ZERO_RETURN",
+        "status": (
+            "PASS_TEMPLATE_PROMOTED_IN_FORCE_RETURN_BY_VALIDATED_RESERVATION_ONLY"
+            if promoted
+            else "PASS_TEMPLATE_FAIL_CLOSED_NOT_ACTIVE_ZERO_RETURN"
+        ),
         "author": "Arhan Canli",
         "evidence_date": "2026-08-24",
         "template": {
@@ -251,7 +283,22 @@ def build(repo: Path = ROOT) -> dict[str, Any]:
             "active_policy_changed": False,
             "return_authorized": False,
         },
-        "remaining_before_promotion": template["required_promotion_before_use"],
+        "remaining_before_promotion": (
+            [] if promoted else template["required_promotion_before_use"]
+        ),
+        "promotion_receipt": (
+            None
+            if receipt is None
+            else {
+                "path": str(RECEIPT),
+                "sha256": _sha256(repo / RECEIPT),
+                "content_hash": receipt["content_hash"],
+                "promoted_at": receipt["promoted_at"],
+                "effective_on_or_after_reservation_ordinal": receipt[
+                    "effective_on_or_after_reservation_ordinal"
+                ],
+            }
+        ),
         "claim_boundary": (
             "This audit proves the design template is fail-closed, return-blind, and aligned with "
             "selected current contract constants. It does not promote the template, alter the "

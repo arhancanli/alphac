@@ -149,6 +149,12 @@ WATCHDOG_S=2400   # 40 min cap: hourly cache-hit cycles are ~3 min; the once-dai
   # Pinned by tests/unit/test_publish_pipeline_order.py::EDGES.
   uv run python scripts/build_stanford_evidence_map.py >/dev/null \
     || echo "WARN: Stanford CS evidence map NOT rebuilt — publishing a stale portfolio evidence map"
+  # v2 full-evidence template audit (2026-09-14): research_export.py copies the audit and, once
+  # the template is promoted, projects the promotion receipt the audit bound. The audit was a
+  # one-off before promotion; a stale copy after promotion would make the export fail closed on
+  # a receipt mismatch, so it is regenerated here, before the export, every tick.
+  uv run python scripts/audit_forward_full_evidence_reservation_v2_template.py >/dev/null \
+    || echo "WARN: v2 template audit NOT rebuilt — the export will refuse a stale promotion receipt"
   uv run python scripts/research_export.py
   # RETRACTED-CLAIM GATE. Runs after regeneration and BEFORE the deploy below, because a signed
   # retraction that only appends to the log is a footnote, not a retraction: AlphaTrend's DSR 0.83
