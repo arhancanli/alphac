@@ -673,3 +673,38 @@ published number or spend a research identity are marked DECISION and name who m
   companion-file rollout to Frankfurt (contract and base.yaml), which is the next step and is
   currently refused by the rollout contract's own drift check because PR #40 moved
   trial_reservation.py: the contract must be re-authored with desired_revisions before --apply.
+- 2026-09-15 02:22Z. IN FORCE, AND ON FRANKFURT. #43 (cost realism) merged 21:24Z, #45 (mandatory
+  seal re-run) 21:54Z, #44 (drawdown control v1.1 activated) 22:17Z; the publisher tree pulled
+  main at bc5ee5c with the tick idle, so the equity sleeves read the live contract and the https
+  ladder source from their next daily cycle. The published ladder at that moment: state NORMAL,
+  gross multiplier 1.0, book drawdown 2.98 percent against the 5 percent half-gross rung, so
+  activation changes no sizing until the book falls further. Frankfurt: the rollout contract
+  (`artifacts/engineering/crypto_position_attribution_vps_preflight.json`) had refused the tree
+  since #40 moved trial_reservation.py; it was re-authored against a read-only host snapshot with
+  one desired_revisions entry per moved file (settings.py, trial_reservation.py, the drawdown
+  contract, and configs/base.yaml added as a companion, each with its reason), the read-only
+  preflight passed, and `deploy_crypto_position_attribution_vps.py --apply` deployed at
+  22:20:52Z: the 2026-09-14 loop.py (book-ladder reading, pre-multiplier book restored on
+  boot), store.py, settings.py, paper_cmds.py, strategy.py, trial_reservation.py,
+  book_ladder.py, ladder_paths.py, the activated contract and base.yaml (source https). Timer
+  active, service idle, nine tables, every file at its desired hash; no cycle was forced; receipt
+  `crypto_position_attribution_vps_receipt.json` waits for the first natural :10 cycle
+  (23:10Z), after which `verify_crypto_position_attribution_rollout.py` decides. The crypto
+  sleeve therefore applies the brake from that cycle. Batch: the Item 1A section finished
+  (52 of 120 cohorts ranked, 60 force-flats; the seal decides, not this log); Item 7 is building
+  cohorts; the seal, with its mandatory re-runs, follows.
+- 2026-09-15 02:40Z. PUBLISH STALLED FOR TWO HOURS, FOUND AND FIXED (PR #46). Every tick since
+  the publisher tree took #40 at 20:25Z ran research_export to a fail-closed error:
+  "prospective trial publication fails closed: future_template_is_not_active,
+  future_template_bound_by_audit". Two defects, both mine. The crypto carry prospective record
+  asserted the v2 template was NOT in force, which #40's promotion made false by design. And the
+  tick step I added in #40 ran the template audit without `--write`, so it printed a fresh audit
+  to /dev/null and left the 2026-08-24 file in place; the export then compared a pre-promotion
+  audit against the promoted template. The site's research.json therefore stayed at 19:50Z
+  (program_status, trial ledger and the forward index were not republished; the paper state and
+  the ladder, written by other steps, kept publishing). Fixed: the record now requires the
+  template's state to be CONSISTENT with its receipt and audit (not in force with the zero-return
+  checks, or IN_FORCE with the promotion receipt binding this exact template and the audit in
+  promoted mode), the tick writes the audit, a test pins `--write` on that step, and the audit
+  artifact was rewritten in the publisher tree by hand so the next tick after the merge
+  publishes. Lesson recorded: a gate I promote must be re-read everywhere it was asserted.

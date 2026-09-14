@@ -2054,6 +2054,18 @@ def build_prospective_trial_record() -> dict[str, Any]:
         "canli.alphac-walkforward-input-snapshot.v1",
     )
     template = json.loads(FORWARD_FULL_EVIDENCE_TEMPLATE_JSON.read_text())
+    # The v2 template was promoted IN_FORCE on 2026-09-14 (PR #40). Before that day the record
+    # asserted the template was NOT in force; after it, that assertion made the whole prospective
+    # record fail closed and the export stopped publishing for two hours. What must hold is that
+    # the template's state is CONSISTENT with its promotion receipt and its audit: not in force
+    # with the audit's zero-return checks, or in force with the receipt binding this exact template
+    # and the audit in promoted mode. Neither state authorizes a return by itself.
+    template_promoted = template["status"] == "IN_FORCE"
+    promotion_receipt = (
+        json.loads(FORWARD_FULL_EVIDENCE_PROMOTION_JSON.read_text())
+        if FORWARD_FULL_EVIDENCE_PROMOTION_JSON.exists()
+        else None
+    )
     paper_text = CRYPTO_CARRY_PORTABLE_PAPER_MD.read_text()
     paper_dois = {
         match.group(1).rstrip(".,").lower()
@@ -2098,11 +2110,22 @@ def build_prospective_trial_record() -> dict[str, Any]:
         ]
         == 0,
         "no_post_result_gate_changes": closure["decision"]["gate_changes_after_result"] == 0,
-        "future_template_is_not_active": (
-            template["status"] == "TEMPLATE_NOT_IN_FORCE_NO_RETURN_AUTHORIZATION"
-            and template["scope"]["applies_to_known_results"] is False
-            and template_audit["fail_closed_checks"]["return_authorized"] is False
-            and template_audit["fail_closed_checks"]["returns_computed"] is False
+        "future_template_state_consistent": (
+            (
+                template["status"] == "TEMPLATE_NOT_IN_FORCE_NO_RETURN_AUTHORIZATION"
+                and template["scope"]["applies_to_known_results"] is False
+                and template_audit["fail_closed_checks"]["return_authorized"] is False
+                and template_audit["fail_closed_checks"]["returns_computed"] is False
+            )
+            or (
+                template_promoted
+                and promotion_receipt is not None
+                and promotion_receipt["promoted_template_sha256"] == template_sha256
+                and promotion_receipt["applies_to_known_results"] is False
+                and template["scope"]["applies_to_known_results"] is False
+                and template_audit["status"]
+                == "PASS_TEMPLATE_PROMOTED_IN_FORCE_RETURN_BY_VALIDATED_RESERVATION_ONLY"
+            )
         ),
         "future_template_bound_by_audit": template_audit["template"]["sha256"] == template_sha256,
         "snapshot_bound_by_result": (
