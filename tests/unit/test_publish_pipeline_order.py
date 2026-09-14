@@ -107,6 +107,13 @@ EDGES: tuple[
         "artifacts/research/trial_packets",
         ("build_trial_packet_manifest.py",),
     ),
+    # The prospective-epoch register (2026-09-14) is derived from the union and the sealed legacy
+    # closure, and research_export publishes it; the site asserts legacy + prospective = N on it.
+    (
+        "build_prospective_epoch_register.py",
+        "artifacts/research/prospective_epoch_register.json",
+        ("research_export.py",),
+    ),
     (
         "transparency_log.py",
         "meridian/public/glassbox/transparency_log.json",
