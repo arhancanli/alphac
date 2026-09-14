@@ -101,8 +101,14 @@ def test_a_gap_is_classified_against_the_sleeve_that_owns_it() -> None:
             assert sleeve["days_expected"] == audit["days_since_go_live"]
         else:
             for day in sleeve["legitimate_absence_days"]:
-                assert dt.date.fromisoformat(day).weekday() >= 5, (
-                    f"{key} counts {day} as a legitimate absence but it is a weekday"
+                # A legitimate absence is a day that is NOT an XNYS session: a weekend or an
+                # exchange holiday. The first version of this check asserted weekday >= 5 and
+                # went red on Labor Day 2026-09-07, the first holiday inside the forward record.
+                # Weekday arithmetic is the exact mistake the auditor itself avoids (see
+                # test_equity_expectations_use_xnys_sessions_not_weekdays).
+                date = dt.date.fromisoformat(day)
+                assert MOD.expected_days(date, date, trades_24_7=False) == [], (
+                    f"{key} counts {day} as a legitimate absence but it is an XNYS session"
                 )
 
 
@@ -137,12 +143,8 @@ def test_the_threshold_is_declared_not_fitted() -> None:
 
 
 def test_alpaca_midnight_rows_map_to_the_preceding_xnys_session() -> None:
-    monday_close_stamp = int(
-        dt.datetime(2026, 8, 11, tzinfo=dt.UTC).timestamp() * 1000
-    )
-    friday_close_stamp = int(
-        dt.datetime(2026, 8, 8, tzinfo=dt.UTC).timestamp() * 1000
-    )
+    monday_close_stamp = int(dt.datetime(2026, 8, 11, tzinfo=dt.UTC).timestamp() * 1000)
+    friday_close_stamp = int(dt.datetime(2026, 8, 8, tzinfo=dt.UTC).timestamp() * 1000)
 
     assert MOD.mark_session_date(monday_close_stamp, trades_24_7=False) == "2026-08-10"
     assert MOD.mark_session_date(friday_close_stamp, trades_24_7=False) == "2026-08-07"
@@ -150,14 +152,10 @@ def test_alpaca_midnight_rows_map_to_the_preceding_xnys_session() -> None:
 
 
 def test_weekend_current_snapshot_does_not_manufacture_an_equity_mark() -> None:
-    saturday_snapshot = int(
-        dt.datetime(2026, 8, 22, 22, 17, tzinfo=dt.UTC).timestamp() * 1000
-    )
+    saturday_snapshot = int(dt.datetime(2026, 8, 22, 22, 17, tzinfo=dt.UTC).timestamp() * 1000)
     assert MOD.mark_session_date(saturday_snapshot, trades_24_7=False) is None
 
 
 def test_equity_expectations_use_xnys_sessions_not_weekdays() -> None:
-    days = MOD.expected_days(
-        dt.date(2021, 1, 1), dt.date(2021, 1, 5), trades_24_7=False
-    )
+    days = MOD.expected_days(dt.date(2021, 1, 1), dt.date(2021, 1, 5), trades_24_7=False)
     assert days == ["2021-01-04", "2021-01-05"]  # New Year's Day is not a session.
