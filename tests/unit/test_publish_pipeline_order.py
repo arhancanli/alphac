@@ -164,6 +164,21 @@ EDGES: tuple[
         "artifacts/analysis/next_sleeve_selection.json",
         ("research_export.py",),
     ),
+    # Drawdown control v1 (2026-09-14) replays the current-book drawdown study's paths with the
+    # declared book ladder, so it must run after that study and before the export copies it.
+    # Publish-only: its inputs are frozen research curves and cannot move hourly.
+    (
+        "analyze_current_book_drawdown.py",
+        "artifacts/analysis/current_book_drawdown/result.json",
+        ("analyze_drawdown_control.py",),
+        ("live_publish.sh",),
+    ),
+    (
+        "analyze_drawdown_control.py",
+        "artifacts/analysis/drawdown_control_v1/result.json",
+        ("research_export.py",),
+        ("live_publish.sh",),
+    ),
     # SLEEVE-PUBLICATION EVIDENCE CHAIN (added 2026-09-06). Each of these reads the previous
     # one's output, and every one of them drifted silently for the same reason: nothing in
     # either publish job ever ran them, so "persisted receipt matches current sources" tests
