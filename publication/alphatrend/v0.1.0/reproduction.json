@@ -2,7 +2,7 @@
   "bundle_integrity_command": "sha256sum -c SHA256SUMS",
   "clean_environment_reproduction_completed": false,
   "code_bindings": {
-    "scripts/audit_alphatrend_family.py": "d87b4828df88cba66ac4e43b95b43ce3a1e6ecbf593ece0b91d314c7aa6baef2"
+    "scripts/audit_alphatrend_family.py": "28fec71c26abcc46da2011fc2681c84722319f8f5ca19a4ee38715eb864a9c73"
   },
   "environment_bindings": {
     "pyproject.toml": "ddaf8b60999275f6d3fb93b3073f256d75d1383bfc8bab14263dc58645841006",

@@ -250,6 +250,41 @@ MUTATIONS: tuple[Mutation, ...] = (
         notes=["Exactly what the reproduce kit exists to detect, done from the inside."],
     ),
     Mutation(
+        "test_book_ladder_provider.py",
+        "apply the published book multiplier even when the contract says the brake is off",
+        REPO / "src" / "alphaforge" / "risk" / "book_ladder.py",
+        _replace(
+            'return bool(contract.get("activation", {}).get("live", False))',
+            "return True",
+        ),
+        notes=[
+            "The one switch of drawdown control v1. A provider that ignores it would size every "
+            "sleeve off a number the public contract says is not in force."
+        ],
+    ),
+    Mutation(
+        "test_audit_external_experiment_ledgers.py",
+        "report a second checkout's unseen identities as a complete canonical union",
+        REPO / "scripts" / "audit_external_experiment_ledgers.py",
+        _replace(
+            "    elif external_new:\n        status = STATUS_UNRECONCILED\n",
+            "    elif external_new:\n        status = STATUS_COMPLETE\n",
+        ),
+        notes=["The 2026-09-13 failure class: 118 identities ledgered in a clone, invisible."],
+    ),
+    Mutation(
+        "test_prospective_epoch_register.py",
+        "let two identities claim the same reservation ordinal",
+        REPO / "scripts" / "build_prospective_epoch_register.py",
+        _replace(
+            "            if ordinal in ordinal_owner and ordinal_owner[ordinal] != key:\n",
+            "            if False:\n",
+        ),
+        notes=[
+            "A register that tolerates a duplicate ordinal cannot prove the epoch is contiguous."
+        ],
+    ),
+    Mutation(
         "test_research_export_freshness.py",
         "let a published contract go stale against its source",
         REPO / "artifacts" / "engineering" / "lint_debt_contract.json",
@@ -632,10 +667,8 @@ MUTATIONS: tuple[Mutation, ...] = (
         "recording a matching desired_revisions entry",
         REPO / "artifacts/engineering/crypto_position_attribution_vps_preflight.json",
         _replace(
-            '"desired_sha256": '
-            '"975e5362afb144c083bc9f196a508af2d75d6492061b71f404dd9d5229d0c278"',
-            '"desired_sha256": '
-            '"0000000000000000000000000000000000000000000000000000000000000000"',
+            '"desired_sha256": "975e5362afb144c083bc9f196a508af2d75d6492061b71f404dd9d5229d0c278"',
+            '"desired_sha256": "0000000000000000000000000000000000000000000000000000000000000000"',
         ),
         notes=[
             "Restructured 2026-09-06 after the original assertion became a gate nobody could "

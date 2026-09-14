@@ -110,6 +110,12 @@ LEDOIT_WOLF_JSON: Final[Path] = (
 DRAWDOWN_LIVE_ESTIMATOR_JSON: Final[Path] = (
     REPO / "artifacts" / "analysis" / "drawdown_live_estimator" / "result.json"
 )
+DRAWDOWN_CONTROL_JSON: Final[Path] = (
+    REPO / "artifacts" / "analysis" / "drawdown_control_v1" / "result.json"
+)
+BOOK_DRAWDOWN_LADDER_JSON: Final[Path] = (
+    REPO / "artifacts" / "engineering" / "book_drawdown_ladder.json"
+)
 CURRENT_BOOK_DRAWDOWN_JSON: Final[Path] = (
     REPO / "artifacts" / "analysis" / "current_book_drawdown" / "result.json"
 )
@@ -576,7 +582,33 @@ IDENTITY_PACKET_RECOVERABILITY_JSON: Final[Path] = (
 LEGACY_RESEARCH_EPOCH_CLOSURE_JSON: Final[Path] = (
     REPO / "artifacts" / "research" / "legacy_research_epoch_closure.json"
 )
+# Every identity measured after the legacy epoch closed, derived by
+# scripts/build_prospective_epoch_register.py (2026-09-14). Until that day the prospective epoch
+# was one identity and this file typed "1" in three places; the 118-identity import made the
+# site's legacy + prospective = N check fail, correctly. The register is now the only source.
+PROSPECTIVE_EPOCH_REGISTER_JSON: Final[Path] = (
+    REPO / "artifacts" / "research" / "prospective_epoch_register.json"
+)
 LEGACY_DSR_EXCEPTIONS_JSON: Final[Path] = REPO / "config" / "legacy_dsr_exceptions.json"
+
+
+def load_prospective_epoch_register() -> dict[str, Any] | None:
+    """The derived prospective-epoch register, or None only when no legacy closure exists."""
+    if not PROSPECTIVE_EPOCH_REGISTER_JSON.exists():
+        if LEGACY_RESEARCH_EPOCH_CLOSURE_JSON.exists():
+            raise ValueError(
+                "prospective epoch register is missing while the legacy epoch is closed; run "
+                "scripts/build_prospective_epoch_register.py before research_export.py"
+            )
+        return None
+    register = json.loads(PROSPECTIVE_EPOCH_REGISTER_JSON.read_text(encoding="utf-8"))
+    if register.get("schema") != "canli.alphac-prospective-epoch-register.v1":
+        raise ValueError("prospective epoch register schema mismatch")
+    if register["summary"].get("identity_arithmetic_holds") is not True:
+        raise ValueError("prospective epoch register does not reconcile with the union")
+    return register
+
+
 LEGACY_DSR_RESTATEMENT_JSON: Final[Path] = (
     REPO / "artifacts" / "audit" / "legacy_dsr_restatement.json"
 )
@@ -924,10 +956,7 @@ PUBLICATION_NUMERIC_SUPPORT_FILES: Final[tuple[tuple[str, Path], ...]] = (
     ),
     (
         "prereg_investment_upstream_clean_workspace.json",
-        REPO
-        / "artifacts"
-        / "publication"
-        / "prereg_investment_upstream_clean_workspace.json",
+        REPO / "artifacts" / "publication" / "prereg_investment_upstream_clean_workspace.json",
     ),
     (
         "lowvol720_reopen_result.json",
@@ -2009,11 +2038,28 @@ def build_prospective_trial_record() -> dict[str, Any]:
     validation = result["immutable_primary_result"]["validation"]
     diagnostics = result["stability_diagnostics_from_same_immutable_path"]
     risk_counters = [leg["risk_counters"] for leg in diagnostics["walkforward_legs"]]
+    epoch_register = load_prospective_epoch_register()
+    epoch = (
+        {
+            "observed_identities": epoch_register["summary"]["observed_identities"],
+            "legacy_retired_identities": epoch_register["summary"]["legacy_retired_identities"],
+            "union_hypothesis_identities": epoch_register["summary"]["union_identities"],
+            "latest_reservation_ordinal": epoch_register["summary"]["latest_reservation_ordinal"],
+            "by_status": epoch_register["summary"]["by_status"],
+            "register_public_path": "/glassbox/prospective_epoch_register.json",
+            "register_content_hash": epoch_register["content_hash"],
+        }
+        if epoch_register
+        else None
+    )
     return {
         "schema": "canli.alphac-public-prospective-trial-record.v1",
         "title": "A hash-bound prospective test of cross-sectional perpetual-futures carry",
         "author": result["author"],
         "identity": identity,
+        # The epoch this identity opened. Its own metrics below describe ordinal 229 only; the
+        # register lists every later prospective identity, so legacy + epoch = selection N.
+        "epoch": epoch,
         "classification": result["classification"],
         "metrics": {
             "annualized_daily_sharpe": summary["sharpe"],
@@ -2198,6 +2244,15 @@ def build_program_status(state: dict[str, Any]) -> dict[str, Any]:
         json.loads(LEGACY_RESEARCH_EPOCH_CLOSURE_JSON.read_text())
         if LEGACY_RESEARCH_EPOCH_CLOSURE_JSON.exists()
         else None
+    )
+    epoch_register = load_prospective_epoch_register()
+    epoch_summary = epoch_register["summary"] if epoch_register else None
+    # Prospective identities that were reserved and measured but never closed with a packet.
+    unclosed = (
+        epoch_summary["observed_identities"]
+        - epoch_summary["by_status"]["GOVERNED_SERIAL_PACKET_CLOSED"]
+        if epoch_summary
+        else 0
     )
     if legacy_epoch_closure:
         if packet_manifest is None:
@@ -2538,12 +2593,44 @@ def build_program_status(state: dict[str, Any]) -> dict[str, Any]:
                     else None
                 ),
                 "published_identity_packets": (
-                    packet_manifest["summary"].get("published_identity_packets", 0) + 1
+                    packet_manifest["summary"].get("published_identity_packets", 0)
+                    + (
+                        epoch_summary["by_status"]["GOVERNED_SERIAL_PACKET_CLOSED"]
+                        if epoch_summary
+                        else 1
+                    )
                     if packet_manifest
                     else None
                 ),
                 "prospective_epoch": {
-                    "observed_identities": 1,
+                    # Derived from artifacts/research/prospective_epoch_register.json: every
+                    # identity measured after the legacy closure, by evidence status. Only the
+                    # governed serial identity has a packet and a final decision; the rest were
+                    # reserved and measured (in a second checkout, imported 2026-09-14) and never
+                    # closed, and are counted in selection N exactly like everything else.
+                    "observed_identities": (
+                        epoch_summary["observed_identities"] if epoch_summary else 1
+                    ),
+                    "by_status": epoch_summary["by_status"] if epoch_summary else None,
+                    "latest_reservation_ordinal": (
+                        epoch_summary["latest_reservation_ordinal"] if epoch_summary else None
+                    ),
+                    "reservation_ordinals_contiguous": (
+                        epoch_summary["reservation_ordinals_contiguous"] if epoch_summary else None
+                    ),
+                    "distinct_families": (
+                        epoch_summary["distinct_families"] if epoch_summary else None
+                    ),
+                    "admitted_identities": (
+                        epoch_summary["admitted_identities"] if epoch_summary else 0
+                    ),
+                    "register_public_path": (
+                        "/glassbox/prospective_epoch_register.json" if epoch_register else None
+                    ),
+                    "register_content_hash": (
+                        epoch_register["content_hash"] if epoch_register else None
+                    ),
+                    "governed_serial_identity": prospective_trial["identity"]["return_identity_id"],
                     "complete_identity_packets": int(prospective_trial["packet"]["complete"]),
                     "candidate_evidence_complete_for_admission": prospective_trial["packet"][
                         "completion_assessment"
@@ -2555,8 +2642,15 @@ def build_program_status(state: dict[str, Any]) -> dict[str, Any]:
                     ],
                     "trial_paper_public_path": prospective_trial["public_paths"]["paper"],
                     "claim_boundary": (
-                        "The prospective packet is complete as evidence accounting, while the "
-                        "candidate evidence required for admission is incomplete."
+                        "The governed serial identity's packet is complete as evidence "
+                        "accounting while its candidate evidence for admission is incomplete. "
+                        + (
+                            f"{unclosed} "
+                            "further prospective identities were reserved and measured without "
+                            "a closing packet; they count in selection N and establish nothing."
+                            if epoch_summary
+                            else "No other prospective identity has been measured."
+                        )
                     ),
                 },
                 "new_return_identity_gate": {
@@ -2602,11 +2696,20 @@ def build_program_status(state: dict[str, Any]) -> dict[str, Any]:
                         "admission-eligible or reusable, and missing packet sections remain "
                         "missing. A genuinely new identity may run only after its exact "
                         "pre-result reservation validates. Frozen live paper execution is "
-                        "unaffected. The first prospective identity now has a complete, hash-valid "
+                        "unaffected. The first prospective identity has a complete, hash-valid "
                         "evidence-accounting packet and a final INCOMPLETE / NOT ADMITTED "
-                        "decision, so it no longer blocks the serial queue. Every later forward "
-                        "identity remains subject to the same rule before another can compute "
-                        "returns."
+                        "decision, so it does not block the serial queue. "
+                        + (
+                            f"{unclosed} "
+                            "later prospective identities were reserved and measured in a second "
+                            "checkout without closing packets and were imported into the union on "
+                            "2026-09-14; the serial packet rule was not applied to them and this "
+                            "record says so rather than pretending otherwise. "
+                            if epoch_summary
+                            else ""
+                        )
+                        + "Every later forward identity remains subject to the same rule before "
+                        "another can compute returns."
                     ),
                 },
                 "required_trial_packets": trial_accounting["distinct_hypothesis_identities"],
@@ -2618,11 +2721,27 @@ def build_program_status(state: dict[str, Any]) -> dict[str, Any]:
                     else None
                 ),
                 "claim_boundary": (
-                    "The 228-identity historical manifest remains a retired fail-closed epoch with "
-                    "226 incomplete packets. The separate prospective identity has a complete "
-                    "hash-valid accounting packet, but its candidate evidence is incomplete and "
-                    "it is not admitted. Packet publication or accounting completeness is not "
-                    "validation, admission, independent replication, or a future-return claim."
+                    (
+                        f"The {legacy_epoch_closure['summary']['retired_identities']}-identity "
+                        "historical manifest remains a retired fail-closed epoch with "
+                        f"{packet_manifest['summary']['incomplete_trial_packets']} incomplete "
+                        "packets. "
+                        if legacy_epoch_closure and packet_manifest
+                        else "The historical manifest is not yet sealed. "
+                    )
+                    + (
+                        f"The prospective epoch holds {epoch_summary['observed_identities']} "
+                        "identities: one governed serial identity with a complete hash-valid "
+                        "accounting packet whose candidate evidence is incomplete and which is "
+                        "not admitted, and "
+                        f"{unclosed} reserved, measured, unclosed identities. "
+                        if epoch_summary
+                        else "The separate prospective identity has a complete hash-valid "
+                        "accounting packet, but its candidate evidence is incomplete and it is "
+                        "not admitted. "
+                    )
+                    + "Packet publication or accounting completeness is not validation, "
+                    "admission, independent replication, or a future-return claim."
                 ),
             },
         },
@@ -3521,6 +3640,10 @@ def main(out_dir: Path = OUT_DIR) -> Path:
     (out_dir / "trial_ledger.json").write_text(trial_ledger)
     (out_dir / "program_status.json").write_text(program_status)
     (out_dir / "prospective_trial_record.json").write_text(prospective_trial_record)
+    if PROSPECTIVE_EPOCH_REGISTER_JSON.exists():
+        (out_dir / "prospective_epoch_register.json").write_text(
+            PROSPECTIVE_EPOCH_REGISTER_JSON.read_text()
+        )
     if TRIAL_PACKET_MANIFEST_JSON.exists():
         (out_dir / "trial_packet_manifest.json").write_text(TRIAL_PACKET_MANIFEST_JSON.read_text())
     if IDENTITY_PACKET_RECOVERABILITY_JSON.exists():
@@ -3669,6 +3792,10 @@ def main(out_dir: Path = OUT_DIR) -> Path:
             DRAWDOWN_LIVE_ESTIMATOR_JSON.read_text()
         )
     (out_dir / "current_book_drawdown.json").write_text(CURRENT_BOOK_DRAWDOWN_JSON.read_text())
+    if DRAWDOWN_CONTROL_JSON.exists():
+        (out_dir / "drawdown_control_v1.json").write_text(DRAWDOWN_CONTROL_JSON.read_text())
+    if BOOK_DRAWDOWN_LADDER_JSON.exists():
+        (out_dir / "book_drawdown_ladder.json").write_text(BOOK_DRAWDOWN_LADDER_JSON.read_text())
     (out_dir / "current_book_diversification.json").write_text(
         CURRENT_BOOK_DIVERSIFICATION_JSON.read_text()
     )
@@ -4161,6 +4288,10 @@ def main(out_dir: Path = OUT_DIR) -> Path:
         (app_dir / "trial_ledger.json").write_text(trial_ledger)
         (app_dir / "program_status.json").write_text(program_status)
         (app_dir / "prospective_trial_record.json").write_text(prospective_trial_record)
+        if PROSPECTIVE_EPOCH_REGISTER_JSON.exists():
+            (app_dir / "prospective_epoch_register.json").write_text(
+                PROSPECTIVE_EPOCH_REGISTER_JSON.read_text()
+            )
         if TRIAL_PACKET_MANIFEST_JSON.exists():
             (app_dir / "trial_packet_manifest.json").write_text(
                 TRIAL_PACKET_MANIFEST_JSON.read_text()
@@ -4250,6 +4381,12 @@ def main(out_dir: Path = OUT_DIR) -> Path:
                 DRAWDOWN_LIVE_ESTIMATOR_JSON.read_text()
             )
         (app_dir / "current_book_drawdown.json").write_text(CURRENT_BOOK_DRAWDOWN_JSON.read_text())
+        if DRAWDOWN_CONTROL_JSON.exists():
+            (app_dir / "drawdown_control_v1.json").write_text(DRAWDOWN_CONTROL_JSON.read_text())
+        if BOOK_DRAWDOWN_LADDER_JSON.exists():
+            (app_dir / "book_drawdown_ladder.json").write_text(
+                BOOK_DRAWDOWN_LADDER_JSON.read_text()
+            )
         (app_dir / "current_book_diversification.json").write_text(
             CURRENT_BOOK_DIVERSIFICATION_JSON.read_text()
         )

@@ -115,18 +115,32 @@ def _log_prior_forward_identity(tmp_path: Path) -> tuple[str, dict[str, object]]
     return ledger._hypothesis_key(trial), trial
 
 
-def _write_complete_forward_packet(tmp_path: Path, identity: str) -> None:
+def _write_complete_forward_packet(
+    tmp_path: Path, identity: str, *, disposition: str = "KILL"
+) -> dict[str, object]:
+    """A complete packet that references a sealed closure with the given disposition."""
+    closure_rel = f"artifacts/research/{identity}_admission_closure.json"
+    closure: dict[str, object] = {
+        "schema": "canli.alphac-admission-closure.test",
+        "hypothesis_key": identity,
+        "decision": {"disposition": disposition},
+    }
+    closure["content_hash"] = _observed_content_hash(closure)
+    closure_path = tmp_path / closure_rel
+    closure_path.parent.mkdir(parents=True, exist_ok=True)
+    closure_path.write_text(json.dumps(closure), encoding="utf-8")
     packet: dict[str, object] = {
         "schema": "canli.alphac-identity-trial-packet.v2",
         "hypothesis_key": identity,
         "complete": True,
         "missing_sections": [],
+        "required_sections": {"admission_or_kill_decision": {"evidence": [{"path": closure_rel}]}},
     }
-    canonical = json.dumps(packet, sort_keys=True, separators=(",", ":")).encode()
-    packet["content_hash"] = "sha256:" + hashlib.sha256(canonical).hexdigest()
+    packet["content_hash"] = _observed_content_hash(packet)
     path = tmp_path / "artifacts" / "research" / "trial_packets" / f"{identity}.json"
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(packet), encoding="utf-8")
+    return packet
 
 
 def test_valid_reservation_binds_all_pre_result_evidence(tmp_path: Path) -> None:
@@ -158,6 +172,7 @@ def test_reservation_blocks_second_forward_identity_until_prior_packet_is_comple
     result = validate_reservation(reservation, trial_config=trial, repo=tmp_path)
     assert result["forward_epoch_seriality"]["forward_identities_already_logged"] == 1
     assert result["forward_epoch_seriality"]["complete_forward_packets_verified"] == 1
+    assert result["forward_epoch_seriality"]["verified_packets"][0]["closure_disposition"] == "KILL"
 
 
 def test_reservation_rejects_incomplete_historical_packet_coverage(tmp_path: Path) -> None:
@@ -320,3 +335,90 @@ def test_a_valid_seriality_waiver_unblocks_the_sealed_incomplete_v1_state(
     waiver_path.write_text(json.dumps(waiver), encoding="utf-8")
 
     _validate_prior_identity_admission_disposition(tmp_path, SEALED_V1_IDENTITY, packet)
+
+
+# Plan task 4 (wired 2026-09-14 under the owner's delegation): the in-force validator now
+# refuses the next ordinal while a prior forward identity's sealed closure is neither ADMIT nor
+# KILL and no owner waiver is bound to that packet. Replays the sealed v1 shape under a fixture
+# identity inside a full validate_reservation call.
+
+
+def _write_forward_packet_with_incomplete_closure(
+    tmp_path: Path, identity: str
+) -> dict[str, object]:
+    """The real sealed v1 packet and INCOMPLETE closure, byte-for-byte except the identity."""
+    packet = json.loads(SEALED_V1_PACKET_FIXTURE.read_text(encoding="utf-8"))
+    packet["hypothesis_key"] = identity
+    packet.pop("content_hash", None)
+    packet["content_hash"] = _observed_content_hash(packet)
+    packet_path = tmp_path / "artifacts" / "research" / "trial_packets" / f"{identity}.json"
+    packet_path.parent.mkdir(parents=True, exist_ok=True)
+    packet_path.write_text(json.dumps(packet), encoding="utf-8")
+    closure_target = tmp_path / SEALED_V1_CLOSURE
+    closure_target.parent.mkdir(parents=True, exist_ok=True)
+    closure_target.write_bytes(SEALED_V1_CLOSURE_FIXTURE.read_bytes())
+    return packet
+
+
+def test_full_validate_reservation_blocks_ordinal_230_without_waiver_once_wired(
+    tmp_path: Path,
+) -> None:
+    reservation, trial = _fixture(tmp_path)
+    identity, _ = _log_prior_forward_identity(tmp_path)
+    packet = _write_forward_packet_with_incomplete_closure(tmp_path, identity)
+    assert packet["complete"] is True
+    reservation["governance_epoch"]["reservation_ordinal"] = 230
+    with pytest.raises(ReservationError, match="neither ADMIT nor KILL"):
+        validate_reservation(reservation, trial_config=trial, repo=tmp_path)
+
+    waiver: dict[str, object] = {
+        "schema": "canli.alphac-seriality-waiver.v1",
+        "waived_hypothesis_key": identity,
+        "waived_packet_content_hash": packet["content_hash"],
+        "reason": (
+            "Owner accepts the unfrozen evidence fields as a permanent gap for this identity."
+        ),
+        "authorized_by": "Arhan Canli, owner, 2026-09-14",
+    }
+    waiver["content_hash"] = _observed_content_hash(waiver)
+    waiver_path = tmp_path / "artifacts" / "research" / "seriality_waivers" / f"{identity}.json"
+    waiver_path.parent.mkdir(parents=True, exist_ok=True)
+    waiver_path.write_text(json.dumps(waiver), encoding="utf-8")
+    result = validate_reservation(reservation, trial_config=trial, repo=tmp_path)
+    seriality = result["forward_epoch_seriality"]
+    assert seriality["prior_identities_must_be_decided"] is True
+    assert seriality["verified_packets"][0]["closure_disposition"] == "WAIVED"
+
+    # a waiver bound to a different packet hash is refused: a re-seal invalidates it
+    waiver["waived_packet_content_hash"] = "sha256:" + "0" * 64
+    waiver["content_hash"] = _observed_content_hash(waiver)
+    waiver_path.write_text(json.dumps(waiver), encoding="utf-8")
+    with pytest.raises(ReservationError, match="does not match the sealed packet"):
+        validate_reservation(reservation, trial_config=trial, repo=tmp_path)
+
+
+SEALED_V1_WAIVER = Path("artifacts/research/seriality_waivers/da5f5f47f99f9bd2.json")
+
+
+def test_the_real_v1_waiver_is_bound_to_the_sealed_packet_and_owner_authorized() -> None:
+    """The tracked waiver that lets the next ordinal be reserved after v1 closed INCOMPLETE must
+    name the sealed packet's exact content hash (a re-seal invalidates it) and carry the owner's
+    authorization; it is the only thing standing between the wired guard and every reservation."""
+    waiver = json.loads((ROOT / SEALED_V1_WAIVER).read_text(encoding="utf-8"))
+    assert waiver["schema"] == "canli.alphac-seriality-waiver.v1"
+    assert waiver["waived_hypothesis_key"] == SEALED_V1_IDENTITY
+    packet = json.loads(SEALED_V1_PACKET_FIXTURE.read_text(encoding="utf-8"))
+    assert waiver["waived_packet_content_hash"] == packet["content_hash"]
+    assert waiver["content_hash"] == _observed_content_hash(waiver)
+    assert waiver["authorized_by"].startswith("Arhan Canli, owner, 2026-09-14")
+    assert "trial_accounting_reviews.json" in waiver["reason"]
+    # and the wired guard accepts exactly this state, replayed byte-for-byte
+    tmp = Path(__import__("tempfile").mkdtemp())
+    replayed = _replay_sealed_v1_state(tmp)
+    target = tmp / SEALED_V1_WAIVER
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_bytes((ROOT / SEALED_V1_WAIVER).read_bytes())
+    assert (
+        _validate_prior_identity_admission_disposition(tmp, SEALED_V1_IDENTITY, replayed)
+        == "WAIVED"
+    )

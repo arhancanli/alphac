@@ -4,8 +4,20 @@ import importlib.util
 from pathlib import Path
 from types import ModuleType
 
+from alphaforge.validation.experiments import ExperimentLog, ExperimentUnion, hypothesis_hash
+
 REPO = Path(__file__).resolve().parents[2]
 SCRIPT = REPO / "scripts" / "reconcile_trial_debt.py"
+
+
+def _live_union_identities() -> int:
+    """The union as the public ledger counts it, computed rather than typed."""
+    union = ExperimentUnion.discover(REPO / "var" / "experiments.jsonl", REPO)
+    keys: set[str] = set()
+    for path in union.paths:
+        if path.exists():
+            keys.update(hypothesis_hash(r.config) for r in ExperimentLog(path).all())
+    return len(keys)
 
 
 def _module() -> ModuleType:
@@ -67,6 +79,11 @@ def test_applied_reconciliation_preserves_first_delta_and_is_now_idempotent() ->
     assert applied["selection_identities_before"] == 174
     assert applied["selection_identities_after"] == 228
     assert applied["new_records_pending_before_run"] == 54
-    assert current["selection_identities_before"] == 229
-    assert current["selection_identities_after"] == 229
+    # The applied artifact is history and its numbers are fixed. The CURRENT union is whatever
+    # the ledgers hold today (229 on 2026-08-23, 347 after the 2026-09-14 external-ledger
+    # import), so idempotence is asserted against the live union, never against a typed count.
+    live_union = _live_union_identities()
+    assert live_union >= 229
+    assert current["selection_identities_before"] == live_union
+    assert current["selection_identities_after"] == live_union
     assert current["new_records_pending_before_run"] == 0

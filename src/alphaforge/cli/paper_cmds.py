@@ -150,9 +150,7 @@ class _InstrumentsAdapter:
 
     __slots__ = ("_asset_class", "_instruments", "_universe")
 
-    def __init__(
-        self, universe: object, instruments: InstrumentStore, asset_class: object
-    ) -> None:
+    def __init__(self, universe: object, instruments: InstrumentStore, asset_class: object) -> None:
         self._universe = universe
         self._instruments = instruments
         self._asset_class = asset_class
@@ -677,7 +675,9 @@ def _build_loop(settings: Settings, *, cash: float) -> _LoopBundle:
     }
     blessed = _live_blessed.get(settings.data.asset_class.value)
     service = SignalService(
-        FeatureEngine(reader, instruments, universe), universe, default_registry(),
+        FeatureEngine(reader, instruments, universe),
+        universe,
+        default_registry(),
         settings.signals,
         alpha_names=blessed["alpha_names"] if blessed else None,
     )
@@ -702,10 +702,18 @@ def _build_loop(settings: Settings, *, cash: float) -> _LoopBundle:
     # deployment is a fresh process per cycle, so the in-memory "run" anchor can never hold
     # between rebalances — epoch alignment makes the cadence deterministic across processes
     # (due on ts % (rebalance_bars*tf.ms) == 0, or immediately when the book is flat).
+    # BOOK-level drawdown brake (drawdown control v1, 2026-09-14): the combined book's
+    # published multiplier, applied after this sleeve's own ladder. Reads its one switch
+    # (activation.live) from the public contract; 1.0 and a logged reading otherwise.
+    from alphaforge.risk.book_ladder import BookLadderProvider
+
+    book_ladder = BookLadderProvider.from_settings(settings)
     strategy = BlendStrategy(
-        settings, mu_provider=mu_provider,
+        settings,
+        mu_provider=mu_provider,
         rebalance_bars=blessed["rebalance_bars"] if blessed else 24,
         rebalance_anchor="epoch",
+        book_multiplier=book_ladder.multiplier,
     )
     # Bind the loop's ladder to the strategy's so status/risk are consistent.
     ladder = strategy.ladder
@@ -757,11 +765,19 @@ def _build_loop(settings: Settings, *, cash: float) -> _LoopBundle:
     # month, so a missed rebalance repairs itself on the next healthy cycle.
     universe_refresher = _UniverseRefresherAdapter(
         UniverseBuilder(
-            reader, instruments, universe, settings.universe,
-            rank_tf=sleeve_for(asset_class).anchor_tf, asset_class=asset_class,
+            reader,
+            instruments,
+            universe,
+            settings.universe,
+            rank_tf=sleeve_for(asset_class).anchor_tf,
+            asset_class=asset_class,
         ),
-        universe, instruments, asset_class, start_ms=settings.data.backfill_start_ms,
+        universe,
+        instruments,
+        asset_class,
+        start_ms=settings.data.backfill_start_ms,
     )
+
     # FUNDING (2026-08-06). The live account never booked funding: `Ledger.apply_funding` was
     # reachable only from the backtest engine, so a funding-CARRY sleeve ran without the one
     # cashflow that IS its edge (~51% of its lifetime backtest PnL). PIT by construction --
@@ -771,7 +787,8 @@ def _build_loop(settings: Settings, *, cash: float) -> _LoopBundle:
         instrument_ids: list[str], *, start: int, end: int
     ) -> list[tuple[str, int, float]]:
         perps = [
-            i for i in instrument_ids
+            i
+            for i in instrument_ids
             if i in broker_instruments
             and getattr(broker_instruments[i].market_type, "name", "") == "PERP"
         ]
@@ -844,5 +861,6 @@ def _build_loop(settings: Settings, *, cash: float) -> _LoopBundle:
         universe_refresher=universe_refresher,
         initial_cash=cash,
         funding_source=_funding_source,
+        book_ladder=book_ladder,
     )
     return _LoopBundle(loop, (store, checkpoints, instruments))

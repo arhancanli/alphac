@@ -744,6 +744,120 @@ def check_honesty():
         pass
 
 
+def check_external_ledgers():
+    """C11 (2026-09-14): experiment ledgers outside the canonical union.
+
+    WHY. On 2026-09-12/13 an autonomous research session ran 118 new hypothesis identities in a
+    clone of this repository. Every one was ledgered correctly IN THE CLONE, so the public trial
+    ledger kept publishing 229 identities and "171 remaining" while the governed union stood at
+    347, past the 320 staged review the owner's policy says pauses registration. The ledgers
+    were fine; the union was computed over one tree. This runs the audit that computes it over
+    every checkout on the machine and reads its verdict: PASS when the canonical tree is the
+    whole union, WARN when identities exist that the public ledger cannot see, FAIL when the
+    merged count has reached a staged review nobody has recorded (or exceeds the budget).
+    """
+    out_path = os.path.join(HEALTH, "external_ledgers.json")
+    rc, out = sh(f"cd {AF} && uv run python scripts/audit_external_experiment_ledgers.py "
+                 f"--write {out_path} --quiet", timeout=300, env=UV_ENV)
+    doc = None
+    try:
+        with open(out_path) as fh:
+            doc = json.load(fh)
+    except Exception:
+        doc = None
+    title = "experiment ledgers outside the canonical union"
+    # The audit exits 1 whenever the union is not complete, so rc 1 is a verdict, not a crash.
+    if doc is None or rc not in (0, 1):
+        add("C11-external-ledgers", "honesty", title, "WARN", "high",
+            observed=f"audit produced no result (rc={rc}): {out[-200:]}",
+            expected="a hash-bound audit result", evidence=out_path)
+        return
+    verdicts = {
+        "CANONICAL_UNION_COMPLETE": "PASS",
+        "EXTERNAL_IDENTITIES_UNRECONCILED": "WARN",
+        "STAGED_REVIEW_REACHED_WITHOUT_RECORD": "FAIL",
+        "MERGED_UNION_EXCEEDS_BUDGET": "FAIL",
+    }
+    status = verdicts.get(str(doc.get("status")), "FAIL")
+    canonical = doc.get("canonical", {}).get("distinct_hypothesis_identities")
+    observed = (f"{doc.get('status')}: {doc.get('external_identities_not_in_canonical')} "
+                f"external identities in {len(doc.get('external_trees', []))} tree(s); "
+                f"canonical {canonical}, merged {doc.get('merged_distinct_hypothesis_identities')}"
+                f"/{doc.get('budget')}; staged reviews reached without record: "
+                f"{doc.get('staged_reviews_reached_without_record') or 'none'}")
+    add("C11-external-ledgers", "honesty", title, status, "high", observed=observed,
+        expected="0 external identities; no staged review reached without an owner record",
+        evidence=out_path)
+
+
+def check_book_ladder():
+    """C12 (2026-09-14): the book drawdown ladder is fresh, bound, and not silently halted.
+
+    WHY. Drawdown control v1 makes the owner's 11 percent bound a mechanism only if the multiplier
+    in force is recomputed every publish from the published marks and the trading cycles read a
+    file bound to that computation. The 2026-09-05 crypto ladder was inert for weeks because its
+    state lived in a process that died each cycle and nothing on this board looked. This reads
+    the artifact `scripts/book_drawdown_ladder.py` writes and the consumer file beside it: FAIL
+    when either is missing or the consumer file is not bound to the artifact (a consumer reading
+    a stale multiplier is the failure the design exists to remove), FAIL when the book is
+    FLAT_HALTED (that is the owner's rearm decision, and it must be loud), WARN at HALF_GROSS or
+    when the artifact is older than the hourly tick should allow, PASS otherwise.
+    """
+    title = "book drawdown ladder fresh, bound and not halted"
+    artifact = os.path.join(AF, "artifacts", "engineering", "book_drawdown_ladder.json")
+    current = os.path.join(AF, "var", "book_ladder", "current.json")
+    try:
+        with open(artifact) as fh:
+            doc = json.load(fh)
+    except Exception as e:
+        add("C12-book-ladder", "honesty", title, "FAIL", "high",
+            observed=f"no ladder artifact: {e}", expected="artifact regenerated every tick",
+            evidence=artifact)
+        return
+    try:
+        with open(current) as fh:
+            cur = json.load(fh)
+    except Exception as e:
+        add("C12-book-ladder", "honesty", title, "FAIL", "high",
+            observed=f"no consumer file: {e}", expected="var/book_ladder/current.json bound to the artifact",
+            evidence=current)
+        return
+    bound = cur.get("artifact_content_hash") == doc.get("content_hash")
+    try:
+        generated = dt.datetime.fromisoformat(str(doc.get("generated_at")).replace("Z", "+00:00"))
+        age_h = (NOW - generated).total_seconds() / 3600.0
+    except Exception:
+        age_h = float("inf")
+    try:
+        as_of_days = (NOW.date() - dt.date.fromisoformat(str(doc.get("as_of")))).days
+    except Exception:
+        as_of_days = 10 ** 6
+    state = str(doc.get("state"))
+    ladder = doc.get("ladder", {})
+    activation = doc.get("activation", {})
+    observed = (f"{state} x{float(doc.get('gross_multiplier', float('nan'))):.2f}, drawdown "
+                f"{float(doc.get('drawdown', float('nan'))):.2%} against half "
+                f"{float(ladder.get('dd_half_frac', float('nan'))):.1%} / flat "
+                f"{float(ladder.get('dd_flat_frac', float('nan'))):.1%}; as_of {doc.get('as_of')} "
+                f"({as_of_days}d), generated {age_h:.1f}h ago, {doc.get('marks')} marks, "
+                f"{len(doc.get('halts', []))} halt(s); consumer file "
+                f"{'bound' if bound else 'NOT BOUND'}; activation live={activation.get('live')}")
+    if not bound:
+        status, severity = "FAIL", "high"
+    elif state == "FLAT_HALTED":
+        status, severity = "FAIL", "critical"
+        observed = "BOOK HALTED, owner rearm required (config/book_ladder_rearms.json): " + observed
+    elif state == "HALF_GROSS":
+        status, severity = "WARN", "high"
+    elif age_h > 3.0 or as_of_days > 4:
+        status, severity = "WARN", "medium"
+    else:
+        status, severity = "PASS", "high"
+    add("C12-book-ladder", "honesty", title, status, severity, observed=observed,
+        expected="artifact under 3h old, marks under 4d old, consumer file bound, state NORMAL",
+        evidence=artifact)
+
+
 def check_publisher():
     rc, out = sh(f"tail -40 {AF}/var/log/live_publish.log")
     ok = ("=== publish OK" in out and "[landing] prod:" in out
@@ -1267,6 +1381,8 @@ def main():
     check_data()
     check_loops()
     check_honesty()
+    check_external_ledgers()
+    check_book_ladder()
     check_publisher()
     check_alert_channel()
 

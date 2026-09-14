@@ -204,28 +204,64 @@ ALPACA_RECONCILIATION = Path("artifacts/engineering/alpaca_broker_reconciliation
 BOOK_WEIGHTS = {EQUITY_WF: 1 / 4, CRYPTO_WF: 1 / 4, MF_WF: 1 / 4, VINTAGE_WF: 1 / 4}
 
 # ALPHAC aggregation is a separate layer from each constituent strategy's own risk sizing.
-# The constituents that use BlendStrategy target 15% internally; the flagship does NOT apply a
-# second book-level volatility target or a book-level drawdown ladder. Keeping these as explicit
-# constants prevents a constituent setting from being misreported as a composite setting.
+# The constituents that use BlendStrategy target 15% internally; the flagship applies NO second
+# book-level volatility target. Whether it applies a BOOK-level drawdown ladder is DERIVED from
+# config/drawdown_control_contract.json (drawdown control v1, 2026-09-14): None while
+# activation.live is false, the declared ladder once the owner activates it. Deriving it here is
+# what keeps the published aggregation policy, the live-config fingerprint and the trading path
+# from ever disagreeing about the brake; a typed constant would have to be edited at activation
+# and could be forgotten.
 BOOK_AGGREGATION_SCHEME = "fixed"
 BOOK_LEVEL_VOL_TARGET_ANN = None
-BOOK_LEVEL_DRAWDOWN_LADDER = None
+DRAWDOWN_CONTROL_CONTRACT = (
+    Path(__file__).resolve().parents[1] / "config" / "drawdown_control_contract.json"
+)
 BOOK_MISSING_MARK_POLICY = "ZERO_CONTRIBUTION_ON_MISSING_DAILY_SLEEVE_MARK"
+
+
+def declared_book_level_drawdown_ladder() -> dict | None:
+    """The book-level ladder in force, read from the contract; None when not activated."""
+    contract = json.loads(DRAWDOWN_CONTROL_CONTRACT.read_text(encoding="utf-8"))
+    if not contract.get("activation", {}).get("live", False):
+        return None
+    ladder = contract["ladder"]
+    return {
+        "dd_half_frac": float(ladder["dd_half_frac"]),
+        "dd_flat_frac": float(ladder["dd_flat_frac"]),
+        "release_frac_of_half": float(ladder["release_frac_of_half"]),
+        "flat_state": "ABSORBING_UNTIL_OWNER_REARM",
+        "applied_by": "every sleeve multiplies its target gross by the published book multiplier",
+        "source": "config/drawdown_control_contract.json",
+        "activated_on": contract["activation"].get("activated_on"),
+    }
+
+
+BOOK_LEVEL_DRAWDOWN_LADDER = declared_book_level_drawdown_ladder()
 
 
 def book_aggregation_metadata() -> dict:
     """One object used by the live-config stamp and the published book."""
+    ladder = BOOK_LEVEL_DRAWDOWN_LADDER
+    ladder_clause = (
+        "It does not apply a second book-level volatility target or drawdown ladder."
+        if ladder is None
+        else (
+            "It applies no second book-level volatility target. It does apply the declared "
+            f"book-level drawdown ladder (half gross at {ladder['dd_half_frac']:.1%} below the "
+            f"high-water mark, flat at {ladder['dd_flat_frac']:.1%}, absorbing until an owner "
+            "rearm), which every sleeve reads before sizing."
+        )
+    )
     return {
         "scheme": BOOK_AGGREGATION_SCHEME,
         "book_level_vol_target_ann": BOOK_LEVEL_VOL_TARGET_ANN,
-        "book_level_drawdown_ladder": BOOK_LEVEL_DRAWDOWN_LADDER,
+        "book_level_drawdown_ladder": ladder,
         "missing_mark_policy": BOOK_MISSING_MARK_POLICY,
         "strategic_overlay_is_book_vol_scaled": False,
         "claim_boundary": (
             "Constituent strategies own their internal sizing. ALPHAC combines their realized "
             "returns at the committed fixed-weight schedule and adds the separately disclosed "
-            "strategic overlay. It does not apply a second book-level volatility target or "
-            "drawdown ladder."
+            f"strategic overlay. {ladder_clause}"
         ),
     }
 

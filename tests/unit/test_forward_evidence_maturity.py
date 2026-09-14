@@ -97,8 +97,7 @@ def _inputs(evaluator, returns: list[float]) -> dict[str, Any]:
     current_book_drawdown = {
         "schema": contract["required_current_book_drawdown_study_schema"],
         "status": (
-            "CURRENT_COMPOSITION_EXPECTED_WITHIN_OBJECTIVE_"
-            "HISTORICAL_TAIL_COVERAGE_INCOMPLETE"
+            "CURRENT_COMPOSITION_EXPECTED_WITHIN_OBJECTIVE_HISTORICAL_TAIL_COVERAGE_INCOMPLETE"
         ),
         "configuration": {"live_fingerprint": fingerprint},
         "objective": {
@@ -108,9 +107,7 @@ def _inputs(evaluator, returns: list[float]) -> dict[str, Any]:
         },
         "failed_establishment_dimensions": ["HISTORICAL_TAIL_COVERAGE_INCOMPLETE"],
     }
-    current_book_drawdown["content_hash"] = evaluator._canonical_hash(
-        current_book_drawdown
-    )
+    current_book_drawdown["content_hash"] = evaluator._canonical_hash(current_book_drawdown)
     current_book_diversification = {
         "schema": contract["required_current_book_diversification_study_schema"],
         "status": "CURRENT_COMPOSITION_DIVERSIFICATION_OBJECTIVE_GAP_RESEARCH_ONLY",
@@ -367,10 +364,7 @@ def test_current_workspace_record_is_honestly_immature(evaluator) -> None:
     assert report["sharpe_evidence"]["annualized_point_estimate"] is None
     assert report["sharpe_evidence"]["target_statistically_established"] is False
     assert report["content_hash"] == evaluator._canonical_hash(report)
-    assert (
-        report["drawdown_evidence"]["study_production_labelled_p95_max_drawdown"]
-        > 0.11
-    )
+    assert report["drawdown_evidence"]["study_production_labelled_p95_max_drawdown"] > 0.11
     assert report["drawdown_evidence"]["production_equivalence_passes"] is False
     assert (
         report["drawdown_evidence"]["objective_status"]
@@ -398,3 +392,62 @@ def test_current_workspace_record_is_honestly_immature(evaluator) -> None:
         rollout_binding["sha256"]
         == hashlib.sha256(evaluator.CRYPTO_ATTRIBUTION_ROLLOUT_JSON.read_bytes()).hexdigest()
     )
+
+
+# ------------------------------------------------------------------- evidence epochs (2026-09-14)
+
+
+def _live_change(*entries: tuple[str, bool]) -> dict[str, Any]:
+    return {
+        "change_log": [
+            {"date": date, "change": f"change on {date}", "contaminates_forward_record": flag}
+            for date, flag in entries
+        ]
+    }
+
+
+def test_without_a_contaminating_change_the_record_is_one_epoch(evaluator) -> None:
+    inputs = _inputs(evaluator, _alternating_returns(30, 0.001))
+    report = evaluator.evaluate(**inputs, live_change=_live_change(("2023-01-05", False)))
+    record = report["record"]
+    assert record["evidence_epoch"] is None and record["prior_epochs"] == []
+    assert record["daily_return_observations"] == 30
+    assert record["whole_record"]["daily_return_observations"] == 30
+    assert report["sharpe_evidence"]["daily_return_observations"] == 30
+
+
+def test_a_contaminating_change_starts_a_new_epoch_and_never_pools(evaluator) -> None:
+    """Thirty returns, a re-sizing change declared on day 21: the Sharpe evidence sees the ten
+    returns after it, the prior twenty are published beside it, the whole record keeps its
+    realized drawdown, and the latest contaminating entry wins over an earlier one."""
+    inputs = _inputs(evaluator, _alternating_returns(30, 0.001))
+    live_change = _live_change(("2023-01-05", True), ("2023-01-21", True), ("2023-01-25", False))
+    report = evaluator.evaluate(**inputs, live_change=live_change)
+    record = report["record"]
+    assert record["evidence_epoch"]["starts_on"] == "2023-01-21"
+    assert record["first_mark"] == "2023-01-21"
+    assert record["daily_return_observations"] == 10  # marks 01-21 .. 01-31
+    assert report["sharpe_evidence"]["daily_return_observations"] == 10
+    (prior,) = record["prior_epochs"]
+    assert prior["first_mark"] == "2023-01-01" and prior["last_mark"] == "2023-01-20"
+    assert prior["daily_return_observations"] == 19 and prior["pooled_with_current_epoch"] is False
+    assert record["whole_record"]["daily_return_observations"] == 30
+    assert record["whole_record"]["first_mark"] == "2023-01-01"
+    assert report["drawdown_evidence"]["realized_live_max_drawdown"] >= 0.0
+    assert record["daily_return_observations"] + prior["daily_return_observations"] + 1 == 30
+
+
+def test_an_epoch_that_has_not_marked_yet_reports_zero_returns_not_an_error(evaluator) -> None:
+    inputs = _inputs(evaluator, _alternating_returns(30, 0.001))
+    report = evaluator.evaluate(**inputs, live_change=_live_change(("2023-03-01", True)))
+    record = report["record"]
+    assert record["daily_return_observations"] == 0 and record["first_mark"] == "2023-03-01"
+    assert report["status"] == "IMMATURE_RECORD_TOO_SHORT"
+    assert record["prior_epochs"][0]["daily_return_observations"] == 30
+
+
+def test_the_published_evaluation_reads_the_live_change_contract(evaluator) -> None:
+    source = evaluator.LIVE_CHANGE_JSON.read_text()
+    assert "change_log" in source
+    main_src = (REPO / "scripts" / "evaluate_forward_evidence_maturity.py").read_text()
+    assert "live_change=json.loads(LIVE_CHANGE_JSON.read_text())" in main_src

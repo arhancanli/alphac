@@ -256,11 +256,24 @@ def build_one(item: dict[str, Any], evidence: dict[str, Any], out_root: Path | N
     for result in released_results:
         if result["bundle_path"].endswith("family_result.json"):
             family_result = json.loads((out / result["bundle_path"]).read_text())
-            declared_count = family_result["summary"]["distinct_hypothesis_identities"]
-            if declared_count != len(identities):
+            summary = family_result["summary"]
+            declared_count = summary["distinct_hypothesis_identities"]
+            # The trial-packet manifest covers the LEGACY epoch's packets. A family result that
+            # publishes its packetized count separately (2026-09-14, after the external-ledger
+            # import added 28 prospective identities without packets) binds that count to the
+            # manifest; its total keeps following the union. A result without the split is an
+            # older family object and its total must still equal the manifest.
+            packetized = summary.get("identities_with_trial_packets", declared_count)
+            if packetized != len(identities):
                 raise ValueError(
-                    f"family result/union count mismatch for {item['key']}: "
-                    f"{declared_count} != {len(identities)}"
+                    f"family result/trial-packet count mismatch for {item['key']}: "
+                    f"{packetized} packetized identities in the result != {len(identities)} "
+                    f"in the manifest"
+                )
+            if declared_count < packetized:
+                raise ValueError(
+                    f"family result for {item['key']} declares {declared_count} identities but "
+                    f"{packetized} with packets"
                 )
     _write_json(
         out / "trial_accounting.json",
