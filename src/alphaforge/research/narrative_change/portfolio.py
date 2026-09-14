@@ -242,13 +242,17 @@ def simulate_book(
     costs: CostSchedule = BASELINE_COSTS,
     stress: CostSchedule = STRESS_COSTS,
     turnover_cost: Callable[[str, int, float], float] | None = None,
+    target_transform: Callable[[dict[str, float], float, int], tuple[dict[str, float], float]]
+    | None = None,
 ) -> BookResult:
     """Run the book from ``start_pos`` to ``end_pos`` (session positions, end exclusive).
 
-    ``turnover_cost(instrument_id, session_pos, abs_weight_change)`` is an optional extra cost
-    per unit of turnover a diagnostic scenario supplies (market impact at a capital point, for
-    example); it is charged to both the net and the stressed series and never to the primary
-    path, which passes nothing.
+    Two optional hooks exist for diagnostic scenarios and are never set by the primary path:
+    ``turnover_cost(instrument_id, session_pos, abs_weight_change)`` is an extra cost per unit
+    of turnover (market impact at a capital point), charged to both the net and the stressed
+    series; ``target_transform(target, hedge, session_pos)`` edits the NORMALIZED target book
+    after it is composed (a partial fill, an unavailable borrow, an ADV cap), so the edit is
+    not undone by the gross normalization inside ``target_book``.
     """
     aopen = adjusted_open(panel)
     spy_id = spy.instrument_ids[0]
@@ -282,6 +286,8 @@ def simulate_book(
     for k, pos in enumerate(range(start_pos, end_pos)):
         session = calendar.dates[pos]
         target, target_hedge = target_book(active, pos)
+        if target_transform is not None:
+            target, target_hedge = target_transform(target, target_hedge, pos)
         # --- execute: change a stock's weight only on a session with an observed open ---
         new_held: dict[str, float] = {}
         session_turnover = 0.0

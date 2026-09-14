@@ -8,9 +8,9 @@ line of its own docstring, each pipeline's steps are the scripts it actually inv
 contract's boundary is the boundary it states about itself. A script with no docstring appears as
 having none.
 
-At a glance: **358 Python scripts**, **17 shell entry points**,
+At a glance: **359 Python scripts**, **17 shell entry points**,
 **33 configuration contracts**, **30 engineering artifacts**,
-**430 unit test files**, **23 data directories**, **9 scheduled jobs**.
+**431 unit test files**, **23 data directories**, **9 scheduled jobs**.
 
 
 ## What runs on a timer
@@ -532,7 +532,7 @@ and is worth more than a hand-made taxonomy that would drift.
 | `verify_sleeve_publication_replays.py` | Replay audit-only sleeve evidence builders and prove no result or trial ledger changed. |
 | `verify_transparency.py` | Verify the public track-record chain, signatures and disclosed payloads. |
 
-### everything else (128)
+### everything else (129)
 
 | script | first line of its docstring |
 |---|---|
@@ -542,6 +542,7 @@ and is worth more than a hand-made taxonomy that would drift.
 | `anchor_transparency.py` | External anchoring of the transparency chain into Bitcoin via OpenTimestamps — the S-tier trust seal. |
 | `archive_live_record.py` | Freeze the live paper record before an account is re-seeded — a one-way, hashed snapshot. |
 | `atlas_reachability_screen.py` | Screen the twenty untouched atlas families on obtainability, before any of them is worked on. |
+| `author_earnings_narrative_change_batch.py` | Author, validate and audit the earnings-narrative-change identity batch, before any return. |
 | `benchmark_execution_models.py` | Benchmark the two built-in next-open fill paths on a deterministic workload. |
 | `book_drawdown_ladder.py` | Run the declared book-level drawdown ladder over the combined book's published daily marks. |
 | `capacity_commitment.py` | Public capacity commitment — a SIGNED governance pledge about how we treat capacity. |

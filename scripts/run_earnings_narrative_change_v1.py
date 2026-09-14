@@ -40,7 +40,13 @@ from alphaforge.config.settings import load_settings  # noqa: E402
 from alphaforge.core.time import Timeframe  # noqa: E402
 from alphaforge.data.store.lake import LakePaths  # noqa: E402
 from alphaforge.data.store.reader import PITDataReader  # noqa: E402
-from alphaforge.research.narrative_change import evaluation, inputs, portfolio, signal  # noqa: E402
+from alphaforge.research.narrative_change import (  # noqa: E402
+    evaluation,
+    inputs,
+    portfolio,
+    scenarios,
+    signal,
+)
 from alphaforge.validation.probe_ledger import selection_context  # noqa: E402
 
 INGEST = REPO / "artifacts" / "ingest" / "earnings_narrative_change"
@@ -423,6 +429,33 @@ def run(
         "elapsed_seconds": round(time.time() - t0, 1),
     }
     net_returns = book.frame()["net_return"].astype("float64")
+    # The sealed primary decision path: every cohort's entry, exit and signed weights. A
+    # diagnostic binds to this hash; a scenario computed on any other set of decisions is a new
+    # identity, not a diagnostic of this one.
+    decision_path = [
+        {
+            "year": c.year,
+            "month": c.month,
+            "entry_pos": c.entry_pos,
+            "exit_pos": c.exit_pos,
+            "weights": {k: float(v) for k, v in sorted(c.weights.items())},
+        }
+        for c in active
+    ]
+    primary_decision_path_sha256 = scenarios.canonical_sha256(decision_path)
+    result["primary_decision_path_sha256"] = primary_decision_path_sha256
+    if authorization is not None:
+        assert reservation is not None
+        result["diagnostics"] = _evaluate_declared_diagnostics(
+            reservation,
+            primary_decision_path_sha256=primary_decision_path_sha256,
+            active=active,
+            panel=panel,
+            spy=spy_panel,
+            calendar=calendar,
+            start_pos=start_pos,
+            end_pos=end_pos,
+        )
     if not defer_result:
         result["content_hash"] = _content_hash(result)
         (out / "result.json").write_text(
@@ -436,6 +469,76 @@ def run(
         f"force-flats {report['events']['force_flat']}; {result['elapsed_seconds']}s -> {out}"
     )
     return {"out": out, "result": result, "net_returns": net_returns}
+
+
+def _evaluate_declared_diagnostics(
+    reservation: Path,
+    *,
+    primary_decision_path_sha256: str,
+    active: list[portfolio.ActiveCohort],
+    panel: inputs.DailyPanel,
+    spy: inputs.DailyPanel,
+    calendar: inputs.SessionCalendar,
+    start_pos: int,
+    end_pos: int,
+) -> dict[str, Any]:
+    """Every scenario the reservation declared, re-simulated on the sealed decisions.
+
+    The declared assumptions are read back from the reservation and the execution scenario
+    manifest it binds; each result is hashed and bound to the primary decision path, in the
+    exact sealed shape ``_validate_diagnostic_scenarios`` checks. Nothing is selected: every
+    declared scenario is evaluated and every one is published.
+    """
+    payload = json.loads(reservation.read_text(encoding="utf-8"))
+
+    def _evaluate(scenario: dict[str, Any]) -> dict[str, Any]:
+        assumptions = dict(scenario["assumptions"])
+        if scenarios.canonical_sha256(assumptions) != scenario["assumptions_sha256"]:
+            raise SystemExit(f"declared scenario {scenario['scenario_id']} hash mismatch")
+        evaluated = scenarios.evaluate_scenario(
+            assumptions,
+            active=active,
+            panel=panel,
+            spy=spy,
+            calendar=calendar,
+            start_pos=start_pos,
+            end_pos=end_pos,
+        )
+        outcome = {
+            "net": evaluated["net"],
+            "turnover_total": evaluated["turnover_total"],
+            "events": evaluated["events"],
+            "series_sha256": evaluated["series_sha256"],
+        }
+        return {
+            "scenario_id": scenario["scenario_id"],
+            "assumptions": assumptions,
+            "assumptions_sha256": scenario["assumptions_sha256"],
+            "result": outcome,
+            "result_sha256": scenarios.canonical_sha256(outcome),
+            "primary_decision_path_sha256": primary_decision_path_sha256,
+        }
+
+    declared = payload.get("diagnostic_scenarios") or {}
+    out: dict[str, Any] = {
+        "diagnostic_scenarios": {
+            scenario_class: [_evaluate(s) for s in declared.get(scenario_class, [])]
+            for scenario_class in (
+                "cost_stress_scenarios",
+                "execution_stress_scenarios",
+                "capacity_scenarios",
+            )
+        },
+        "execution_dimensions": {},
+    }
+    execution = payload["full_evidence"]["execution_evidence"]
+    manifest = json.loads((REPO / execution["scenario_manifest_path"]).read_text(encoding="utf-8"))
+    for dimension in execution["applicable_dimensions"]:
+        out["execution_dimensions"][dimension] = [_evaluate(s) for s in manifest[dimension]]
+    out["scenarios_evaluated"] = sum(len(v) for v in out["diagnostic_scenarios"].values()) + sum(
+        len(v) for v in out["execution_dimensions"].values()
+    )
+    return out
 
 
 def _record_identity(section: str, net_returns: pd.Series, reservation: Path) -> dict[str, Any]:
