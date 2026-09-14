@@ -446,6 +446,7 @@ def run(
     result["primary_decision_path_sha256"] = primary_decision_path_sha256
     if authorization is not None:
         assert reservation is not None
+        result["book_evidence"] = _book_evidence(reservation, net_returns)
         result["diagnostics"] = _evaluate_declared_diagnostics(
             reservation,
             primary_decision_path_sha256=primary_decision_path_sha256,
@@ -469,6 +470,93 @@ def run(
         f"force-flats {report['events']['force_flat']}; {result['elapsed_seconds']}s -> {out}"
     )
     return {"out": out, "result": result, "net_returns": net_returns}
+
+
+def _book_evidence(reservation: Path, net_returns: pd.Series) -> dict[str, Any]:
+    """The candidate against the frozen existing book: correlations, book deltas, drawdown.
+
+    The reservation binds the snapshot of the four current sleeves' daily returns and the book
+    they form (UTC calendar days, 0.0 where a sleeve is flat, exactly as the published composite
+    treats its own equity sleeve). The candidate is placed on that calendar with 0.0 on
+    non-sessions, the same convention, so no internal date is missing on the common window.
+    Correlations and the fixed-weight deltas go through the shared diversification engine; the
+    drawdown block bootstraps the zero-drift book with and without the candidate at the frozen
+    weight, with the current-composition study's generator, seed and block, and reports the
+    expected and 95th-percentile maximum drawdown of each.
+    """
+    import importlib.util
+
+    payload = json.loads(reservation.read_text(encoding="utf-8"))
+    book_spec = payload["full_evidence"]["book_evidence"]
+    drawdown_spec_path = (
+        REPO / payload["full_evidence"]["book_drawdown"]["simulation_specification_path"]
+    )
+    snapshot_path = REPO / book_spec["book_return_snapshot_path"]
+    if _sha256(snapshot_path) != book_spec["book_return_snapshot_sha256"]:
+        raise SystemExit("the existing-book snapshot moved since the reservation bound it")
+    snapshot = pd.read_parquet(snapshot_path)
+    snapshot.index = pd.Index([pd.Timestamp(d).date() for d in snapshot.index])
+    sleeves = {name: snapshot[name].astype("float64") for name in book_spec["book_series_ids"]}
+    book = snapshot["book"].astype("float64")
+    candidate_days = pd.Series(
+        net_returns.to_numpy(dtype="float64"),
+        index=pd.Index([pd.Timestamp(d).date() for d in net_returns.index]),
+    )
+    first, last = candidate_days.index.min(), candidate_days.index.max()
+    calendar = snapshot.index[(snapshot.index >= first) & (snapshot.index <= last)]
+    candidate = candidate_days.reindex(calendar).fillna(0.0)
+    diversification = evaluation.diversification_evidence(candidate, sleeves, book=book)
+
+    spec = json.loads(drawdown_spec_path.read_text(encoding="utf-8"))
+    weight = float(book_spec["candidate_weight"])
+    aligned = pd.concat([candidate.rename("candidate"), book.rename("book")], axis=1).dropna()
+    study_spec = importlib.util.spec_from_file_location(
+        "narrative_book_drawdown", REPO / "scripts" / "analyze_current_book_drawdown.py"
+    )
+    assert study_spec is not None and study_spec.loader is not None
+    study = importlib.util.module_from_spec(study_spec)
+    study_spec.loader.exec_module(study)
+    without = aligned["book"].to_numpy(dtype="float64")
+    with_candidate = (1.0 - weight) * without + weight * aligned["candidate"].to_numpy(
+        dtype="float64"
+    )
+    drawdown: dict[str, Any] = {
+        "specification": str(drawdown_spec_path.relative_to(REPO)),
+        "aligned_days": len(aligned),
+        "candidate_weight": weight,
+        "drift_convention": "zero_drift_as_published",
+        "generator": "circular_block_bootstrap",
+        "paths": int(spec["paths"]),
+        "horizon_calendar_days": int(spec["horizon_calendar_days"]),
+        "block_days": int(study.PRIMARY_BLOCK_DAYS),
+        "seed": int(spec["seeds"]["bootstrap"]),
+    }
+    for label, series in (("without_candidate", without), ("with_candidate", with_candidate)):
+        centered = series - float(np.mean(series))
+        drawdown[label] = study.circular_block_bootstrap(
+            centered,
+            paths=int(spec["paths"]),
+            horizon_days=int(spec["horizon_calendar_days"]),
+            block_days=int(study.PRIMARY_BLOCK_DAYS),
+            seed=int(spec["seeds"]["bootstrap"]),
+        )
+    drawdown["expected_max_drawdown_delta"] = (
+        drawdown["with_candidate"]["expected_max_drawdown"]
+        - drawdown["without_candidate"]["expected_max_drawdown"]
+    )
+    drawdown["p95_max_drawdown_delta"] = (
+        drawdown["with_candidate"]["p95_max_drawdown"]
+        - drawdown["without_candidate"]["p95_max_drawdown"]
+    )
+    return {
+        "snapshot": {
+            "path": book_spec["book_return_snapshot_path"],
+            "sha256": book_spec["book_return_snapshot_sha256"],
+            "calendar": "UTC calendar days; the candidate is 0.0 on non-sessions",
+        },
+        "diversification": diversification,
+        "drawdown": drawdown,
+    }
 
 
 def _evaluate_declared_diagnostics(
