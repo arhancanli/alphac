@@ -13,7 +13,9 @@ Pure: synthetic frames and dicts; reads only the shipped contract and promotion 
 
 from __future__ import annotations
 
+import hashlib
 import importlib.util
+import json
 from pathlib import Path
 from typing import Any
 
@@ -240,3 +242,116 @@ def _passing_document(contract: dict[str, Any]) -> dict[str, Any]:
         },
         "execution": execution,
     }
+
+
+# ---------------------------------------------------------------- the deterministic re-run
+#
+# WHY. The seal once accepted --skip-rerun; the evaluator would have read the resulting False as
+# not_passed:robustness.deterministic_rerun and closed the identity KILL, which is final. And a
+# re-run through run() writes the curve, cohorts and manifest beside the result, so a re-run into
+# the sealed directory would overwrite the record it is checking. The re-run is therefore
+# mandatory, deferred, into a scratch directory, and authorized by the sealed result itself
+# rather than by re-validating a reservation whose identity is already logged.
+
+
+class _FakeRunner:
+    def __init__(self, series: np.ndarray) -> None:
+        self.series = series
+        self.calls: list[dict[str, Any]] = []
+
+    def run(self, window: str, **kwargs: Any) -> dict[str, Any]:
+        self.calls.append({"window": window, **kwargs})
+        out = kwargs["out_root"] / window
+        out.mkdir(parents=True)
+        (out / "curve.parquet").write_bytes(b"scratch")
+        return {"net_returns": pd.Series(self.series)}
+
+
+def test_the_rerun_is_deferred_into_a_scratch_directory_and_compared_by_hash(
+    tmp_path: Path,
+) -> None:
+    series = np.array([0.001, -0.002, 0.0005])
+    runner = _FakeRunner(series)
+    sealed_dir = tmp_path / "sealed" / "oos"
+    sealed_dir.mkdir(parents=True)
+    result_path = sealed_dir / "result.json"
+    result_path.write_text("{}")
+    out = MOD.deterministic_rerun(
+        runner,
+        section="item1a",
+        reservation_path=tmp_path / "reservation.json",
+        result_path=result_path,
+        sealed_series=series,
+    )
+    assert out["performed"] is True and out["reproduced"] is True
+    call = runner.calls[0]
+    assert call["defer_result"] is True
+    assert call["rerun_of"] == result_path
+    assert call["out_root"] != sealed_dir.parent and not call["out_root"].exists()  # removed
+    assert (sealed_dir / "result.json").read_text() == "{}"
+    runner_diverging = _FakeRunner(series + 1e-9)
+    out = MOD.deterministic_rerun(
+        runner_diverging,
+        section="item1a",
+        reservation_path=tmp_path / "reservation.json",
+        result_path=result_path,
+        sealed_series=series,
+    )
+    assert out["reproduced"] is False
+
+
+def test_the_seal_has_no_way_to_skip_the_rerun() -> None:
+    import inspect
+
+    assert "do_rerun" not in inspect.signature(MOD.seal_identity).parameters
+    assert (
+        "skip"
+        not in (REPO / "scripts" / "seal_earnings_narrative_change_batch.py")
+        .read_text()
+        .split("def main")[1]
+    )
+
+
+def test_rerun_authorization_binds_the_sealed_result_and_refuses_the_sealed_directory(
+    tmp_path: Path,
+) -> None:
+    runner_spec = importlib.util.spec_from_file_location(
+        "narrative_runner_for_rerun_test", REPO / "scripts" / "run_earnings_narrative_change_v1.py"
+    )
+    assert runner_spec is not None and runner_spec.loader is not None
+    runner = importlib.util.module_from_spec(runner_spec)
+    runner_spec.loader.exec_module(runner)
+    reservation = tmp_path / "return_identity_reservation.json"
+    reservation.write_text('{"hypothesis_identity": "abc"}')
+    sealed_dir = tmp_path / "artifacts" / "oos"
+    sealed_dir.mkdir(parents=True)
+    result = {
+        "section": "item1a",
+        "authorization": {
+            "reservation_sha256": hashlib.sha256(reservation.read_bytes()).hexdigest()
+        },
+    }
+    result["content_hash"] = runner._content_hash(result)
+    result_path = sealed_dir / "result.json"
+    result_path.write_text(json.dumps(result))
+    scratch = tmp_path / "scratch"
+    authorization = runner.rerun_authorization("item1a", reservation, result_path, out_root=scratch)
+    assert authorization["rerun_of_content_hash"] == result["content_hash"]
+    with pytest.raises(SystemExit, match="fresh out_root"):
+        runner.rerun_authorization("item1a", reservation, result_path, out_root=sealed_dir.parent)
+    with pytest.raises(SystemExit, match="fresh out_root"):
+        runner.rerun_authorization("item1a", reservation, result_path, out_root=None)
+    with pytest.raises(SystemExit, match="not 'item7'"):
+        runner.rerun_authorization("item7", reservation, result_path, out_root=scratch)
+    reservation.write_text('{"hypothesis_identity": "abc", "edited": true}')
+    with pytest.raises(SystemExit, match="reservation moved"):
+        runner.rerun_authorization("item1a", reservation, result_path, out_root=scratch)
+    with pytest.raises(SystemExit, match="always deferred"):
+        runner.run(
+            "oos",
+            section="item1a",
+            max_cohorts=None,
+            reservation=reservation,
+            out_root=scratch,
+            rerun_of=result_path,
+        )
