@@ -135,6 +135,14 @@
       "evidence": "config/drawdown_control_contract.json (version 1.1, history[0] = v1.0); docs/design/DRAWDOWN_CONTROL_V1_PROTOCOL.md (v1.1 section); artifacts/analysis/drawdown_control_v1/result.json (the v1.1 measurement); artifacts/engineering/live_config_fingerprint.json; docs/design/OPERATOR_LOG_2026-09.md",
       "contaminates_forward_record": false,
       "note": "Not a trading change: the brake is not activated and sizing is identical before and after this commit. The forward-evidence epoch does not restart. When the brake is activated, that activation is its own declared change (scripts/activate_book_drawdown_brake.py) and starts a new epoch."
+    },
+    {
+      "date": "2026-09-15",
+      "change": "cost realism v1.0: config/cost_realism_contract.json declares every cost a funded book would pay and where the paper-live record charges it. scripts/derive_cost_charged_live_curves.py charges the three Alpaca sleeves' filled orders commission, half spread and square-root impact through research's own TransactionCostModel, and the reconstructed daily short book the equity borrow rate; scripts/paper_trading_state.py publishes the result as cost_charged_curve beside live_curve on each sleeve and on the book, with the charges. The broker NAV (live_curve) is unchanged and remains published; no sleeve's sizing, parameters or execution moved, and the live configuration fingerprint is identical.",
+      "reason": "The owner's Sharpe target is net of real-life costs and the equity paper-live record charged none (docs/design/COST_REALISM_AUDIT_2026-09-14.md). An accounting repair keeps the original and discloses the correction; the correction is a second published curve, not an edit to the first. Latency, financing, cash yield and FX are not charged and the contract says why and when they will be.",
+      "evidence": "config/cost_realism_contract.json; scripts/derive_cost_charged_live_curves.py; artifacts/engineering/cost_charged_live_curves.json (regenerated each tick); data/paper/state.json cost_charged_curve and cost_charges; artifacts/engineering/live_config_fingerprint.json (unchanged); docs/design/OPERATOR_LOG_2026-09.md",
+      "contaminates_forward_record": false,
+      "note": "An accounting change, not a trading change: what the sleeves do is identical before and after; what is published about it gains a second, cost-charged series. The forward-evidence evaluation reads the cost-charged series from this date and says so in its own output (curve_basis); the epoch does not restart because the returns being evaluated were produced by the same unchanged configuration."
     }
   ]
 }
