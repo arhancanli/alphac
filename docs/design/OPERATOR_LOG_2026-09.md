@@ -324,6 +324,110 @@ published number or spend a research identity are marked DECISION and name who m
   each with its proof, building on the corpus tooling the feasibility pass already ran. Task 1
   (the full 2005-2025 10-K corpus) is days of rate-limited downloads and runs unattended, never in
   a tick. No identity is spent by the plan. The treasury-auction family follows the same shape.
+- 15:50Z. CORRECTED. The return-runner plan's Tasks 1 and 2 were already done on 2026-08-15/16:
+  `artifacts/ingest/earnings_narrative_change/` holds the whole 10-K corpus (83,070 filings,
+  8,122 CIKs, 2005-2025, 73,744 Item 1A sections, 331 hash-bound parts, `complete: true`) and
+  65,050 predecessor pairs with Jaccard already computed. I wrote "days of downloads" from the
+  feasibility probe's sample counts without opening the ingest directory; the plan now says so
+  and the remaining work is Tasks 3 to 7: market inputs, signal, portfolio, evaluation with the
+  v2 reservation at ordinal 348, and the run.
+- 16:25Z. BUILT AND FOUND (narrative-change runner, tasks 3 to 6 plus the calibration driver).
+  `alphaforge.research.narrative_change` now holds inputs (issuer mapping, session calendar on
+  New York open and close instants, PIT daily panel through the shared adjustment engine, the
+  input manifest), signal (cohorts, filing reaction, momentum, eligibility, residual regression,
+  quintile sides), portfolio (scheduling, beta hedge, netted-turnover costs, missing-open
+  deferral, force-flat, capacity) and evaluation (Sharpe, Newey-West, deflated Sharpe, drawdown,
+  annual, leave-one-year-out, mean-zero control, the shared diversification engine); 32 tests.
+  `scripts/run_earnings_narrative_change_v1.py` runs calibration and refuses the out-of-sample
+  window until the v2 template is in force. A two-year calibration smoke ran in 28 seconds and
+  did exactly what calibration is for: it exposed a survivorship hole. The Sharadar lake holds
+  8,436 instruments; SEP's ticker table holds 21,859 (15,573 delisted). In the 2007-03 cohort
+  749 of 1,759 mapped issuers have no lake partition at all, every one a delisted name. A run on
+  the lake as it stands would be a survivor-only backtest, which the pre-registration forbids.
+  Nothing is decided by this; the fix is a full-history SEP lake (next entry), not a parameter.
+- 16:30Z. FOUND, PRODUCTION. While checking the price path for the new sleeve I ran the shared
+  adjusted-close engine across Apple's 2020 four-for-one split on both production lakes:
+  raw close 499.23 the day before, 129.04 on the ex-date; ADJUSTED close 1,996.92 the day
+  before, 129.04 after, a fake 93.5 percent one-day drop. Cause: every lake stores the vendor's
+  factor, new shares per old (4.0), while the engine multiplies pre-ex prices by ``ratio`` and its
+  own tests encode a two-for-one as 0.5, old shares per new. Two conventions, never checked
+  against each other. A random sample of 80 real splits from data/lake (2020-2024): 57 come out
+  with an adjusted ex-date jump exactly twice the raw one in log terms, 3 plausible, 20
+  undetermined. `eq_mom_252_21`, the only alpha of both live equity walk-forwards, reads that
+  panel through `_adjusted_close_panel`, as do reversal, realized volatility and beta. The
+  2026-08 repair that made splits apply at all (they never had) applied them inverted; before it
+  the same names were unadjusted. Either way the momentum sleeve has been ranking split names on
+  garbage moves. Whole-lake audit running (`scripts/audit_split_adjustment_direction.py`);
+  the fix is one convention, declared, with a cross-lake guard that checks the engine against
+  a real split, then the walk-forwards regenerate. Nothing is changed until the audit is in.
+- 16:40Z. MEASURED, WHOLE LAKES (`artifacts/audit/split_adjustment_direction.json`). data/lake:
+  5,156 splits on 3,031 instruments; of the 4,662 determined, 4,135 (88.7 percent) come out of
+  the engine with an adjusted ex-date jump of twice the raw one (inverted), 228 neutralized,
+  299 other. data/lake_sharadar: 4,804 splits on 2,801 instruments; 4,000 of 4,440 determined
+  (90.1 percent) inverted, 208 neutralized. The Codex alphamax beta-neutral probe of 2026-09
+  had disclosed the same defect with the same Apple and Tesla numbers and worked around it
+  inside the probe, leaving `src/**` untouched; the live sleeves kept trading on it. Fixed at
+  the source: the kernel now divides pre-ex prices by the stored vendor factor (new shares per
+  old, the convention `data/schemas.py` documents and every lake follows) and refuses a
+  non-positive factor; the engine's eleven fixtures flip to the vendor convention; a cross-lake
+  guard checks Apple's 2020 split through the engine on both production lakes (pre-ex adjusted
+  close 124.81, raw 499.23 over four); the probe's local inversion is retired so it cannot
+  double-invert. The neutralized rows are being classified next: a small split, or a stored
+  reciprocal that the fix will turn wrong and that needs a versioned repair.
+- 16:45Z. VERIFIED AFTER THE FIX. The same whole-lake audit under the corrected kernel:
+  data/lake 3,857 of 4,662 determined splits neutralized (was 228), 89 still doubled (was
+  4,135); data/lake_sharadar 3,746 neutralized (was 208), 93 still doubled (was 4,000). Reading
+  each stored ratio's convention off the raw ex-date move: 4,116 and 3,984 rows follow the
+  vendor convention, 90 and 93 are stored as the reciprocal (Amarin 2025-04-11 stored 20.0 with a
+  raw move of +3.02, AstraZeneca's ADR ratio changes, Bank of Chile's), the ADR-ratio class the
+  corrected-lake work already isolates as `adrratiosplit`. Those rows are listed in the audit
+  artifact (`reciprocal_rows`) for a versioned lake repair with its own receipt; they are not
+  re-inverted anywhere. The kernel fix is committed signed (19b8fdc), the audit artifact tracked
+  (13435db). Live effect: the equity walk-forwards regenerate on the next tick after this lands
+  on main and the publisher tree switches; the equity target books change on names that split
+  within 252 sessions.
+  each with its proof, building on the corpus tooling the feasibility pass already ran. Task 1
+  (the full 2005-2025 10-K corpus) is days of rate-limited downloads and runs unattended, never in
+  a tick. No identity is spent by the plan. The treasury-auction family follows the same shape.
+- 16:36Z. MERGED. #36 (the signed chain, #24 through #34) landed on main by the owner's
+  `gh pr merge 36 --squash --auto` once CI went green; the publisher tree is on main (8561336).
+  The two earlier attempts taught two rules now in memory: deleting a stacked PR's base branch
+  closes its dependents for good, and main requires signed commits, so every branch today had to
+  be rebuilt with signing on.
+- 16:55Z. BRANCH. `research/narrative-change-runner-and-split-fix-20260914` from main, ten
+  signed commits: the runner (tasks 3 to 6, the calibration driver, the survivorship-inclusive
+  lake builder) and the split-direction repair with its audit and guard. One PR, because the
+  repair's guard test lives in the runner's test file and the owner merges once.
+- 17:00Z. BUILT. `data/lake_sharadar_full` from the raw SEP and ACTIONS archives
+  (`scripts/build_sharadar_full_history_lake.py`, receipt
+  `artifacts/audit/sharadar_full_history_lake_build.json`): 21,861 instruments, 46,079,829
+  daily bars, 263,516 executable corporate-action rows, 2.9 GB, 18 minutes, in the base lake's
+  layout and conventions (raw prices; the vendor split factor; dividends on the vendor basis,
+  which consumers do not fold). The runner reads it by default. The base lake (8,436
+  instruments) stays untouched for every sealed audit that binds it.
+  Verified through the branch's own code: Apple's 2020 split neutralizes on the full lake
+  (adjusted 124.81 the day before, 129.04 after), Apple's action rows equal the base lake's
+  (56 dividends, 4 splits), and the 2007-03 cohort that lost 749 of 1,759 mapped issuers on the
+  base lake loses none. The full 2006 to 2015 calibration is running on it.
+- 17:02Z. CALIBRATION, 2006 TO 2015, ON THE FULL LAKE (plumbing only, by the pre-registration;
+  no parameter may change and nothing is promoted or killed by it). 116 acceptance-month
+  cohorts, 5,529 instruments, 80 seconds. 59 cohorts ranked; 40 had fewer than 20 eligible
+  issuers, 15 saturated the one-hot industry design (fewer than 10 residual degrees of
+  freedom), 2 had fewer than 5 names in a tail. Attrition of 32,386 pairs: 11,098 below the
+  $5 million median dollar-volume floor, 8,097 below the $5 close, 1,408 issuers with no
+  Sharadar ticker row at entry, 91 with no close before entry (was thousands on the base lake).
+  56 force-flats over ten years, every one a delisting the full lake now shows. The plumbing
+  holds: turnover 9.7 times a year, average stock gross 0.88 plus a near-zero hedge (beta to
+  SPY minus 0.02), capacity bound by one 2009 name at 1 percent of ADV. The number the
+  pre-registration says calibration cannot act on, reported anyway because hiding it would be
+  worse: at the locked direction (long stable, short changed) the 2007 to 2015 net Sharpe is
+  minus 0.81, Newey-West t minus 2.31, stressed minus 1.28, maximum drawdown 42.7 percent,
+  below 98.4 percent of mean-zero block-bootstrap controls. Every year but 2010 and 2015 is
+  negative. This is not the out-of-sample test and it changes nothing about the locked identity;
+  it is disclosed so the owner spends the 2016 to 2025 identity knowing what the earlier
+  interval looked like. The deflated-Sharpe union count in this run (191) is an artifact of
+  running from a scratch tree that cannot see every ledger; the canonical union is 347 and the
+  out-of-sample run must be made from the main tree.
 - 17:40Z. DECISION (owner). "no the sharpe target is 2 and also in general make sure everything
   is the best." The operator had been about to keep publishing the admission contract's 1.5
   forward target as the programme objective. Recorded as `config/owner_goals.json`
