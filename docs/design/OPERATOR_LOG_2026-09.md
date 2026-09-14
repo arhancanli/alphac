@@ -618,3 +618,24 @@ published number or spend a research identity are marked DECISION and name who m
   writing to it: 1 governed + 118 development-closed, 0 unclosed; forward index 119
   published, 119 complete, 0 admitted, 0 pending. Site side: the trials page still reads the
   legacy index only; a canlicapital change to render the forward index follows.
+- 2026-09-15 00:40Z. COST REALISM v1.0 (PR #43). The equity paper-live record charged no
+  friction (audit of 09-14). `config/cost_realism_contract.json` now names every cost a funded
+  book would pay and where the record charges it. `scripts/derive_cost_charged_live_curves.py`
+  charges every filled Alpaca order commission, half spread and square-root impact through
+  research's own TransactionCostModel at the profile's own parameters (ADV the 30-session median
+  quote volume and sigma the EWMA daily volatility from the daily-bar lakes, both as of the
+  session before the fill; a fill above the 5 percent participation tripwire is charged at the
+  tripwire and counted as floored), and the reconstructed daily short book the borrow rate;
+  `scripts/paper_trading_state.py` subtracts the cumulative charges in broker dollars before the
+  $100k normalization and publishes `cost_charged_curve` beside `live_curve` per sleeve and for
+  the book, with the charges; the publish gate iterates the new curve; the forward-evidence
+  evaluator reads the cost-charged curve and says so (`curve_basis`); the README carries a
+  derived cost-drag row. Measured on the real fill tables (no publish yet): AlphaMax 4,432
+  fills, $2.42M traded, charged $2,788 (impact $1,598, spread $726, commission $242, borrow
+  $221); AlphaTrend 503 fills, $1.28M, $859; AlphaVintage 40 fills, $2.33M, $1,275; every fill
+  priced for impact, none floored. Latency, financing, cash yield and FX remain NOT_CHARGED with
+  reasons and the date they will be. Declared in `config/live_change_contract.json` as an
+  accounting change that does not restart the epoch (sizing and execution are identical). Tests:
+  every charge reconciled to an independent recomputation, the charged curve at or below the
+  broker curve and different by exactly the rebased charges, the gate iterating the curve, the
+  contract's statuses and declaration.

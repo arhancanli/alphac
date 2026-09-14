@@ -44,7 +44,18 @@ EDGES: tuple[
     (
         "export_alpaca_broker_reconciliation.py",
         "var/trading_equity.sqlite",
-        ("paper_trading_state.py", "audit_record_continuity.py"),
+        (
+            "derive_cost_charged_live_curves.py",
+            "paper_trading_state.py",
+            "audit_record_continuity.py",
+        ),
+    ),
+    # Cost realism (2026-09-15): the charges are derived from the fill tables the reconciliation
+    # just refreshed, and paper_trading_state.py publishes the cost-charged curve from them.
+    (
+        "derive_cost_charged_live_curves.py",
+        "artifacts/engineering/cost_charged_live_curves.json",
+        ("paper_trading_state.py",),
     ),
     (
         "paper_trading_state.py",
