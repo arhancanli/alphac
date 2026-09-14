@@ -8,7 +8,7 @@ line of its own docstring, each pipeline's steps are the scripts it actually inv
 contract's boundary is the boundary it states about itself. A script with no docstring appears as
 having none.
 
-At a glance: **354 Python scripts**, **17 shell entry points**,
+At a glance: **355 Python scripts**, **17 shell entry points**,
 **30 configuration contracts**, **30 engineering artifacts**,
 **426 unit test files**, **22 data directories**, **9 scheduled jobs**.
 
@@ -360,7 +360,7 @@ and is worth more than a hand-made taxonomy that would drift.
 | `audit_vate_2020_dividend_vendor_resolution.py` | Resolve the unsupported VATE/HCHC 2020 dividend row without opening returns. |
 | `audit_wave1_data_rights.py` | Audit Wave 1 publication bundles against the conservative data-rights policy. |
 
-### `build_*` (38)
+### `build_*` (39)
 
 | script | first line of its docstring |
 |---|---|
@@ -395,6 +395,7 @@ and is worth more than a hand-made taxonomy that would drift.
 | `build_sec_10k_manifest.py` | Build the preregistered SEC 10-K manifest without reading prices or returns. |
 | `build_sec_item1a_pairs.py` | Build immediate-predecessor Item 1A similarities without reading market data. |
 | `build_sharadar_corporate_action_corrected_lake.py` | Build a versioned Sharadar lake with normalized executable corporate actions. |
+| `build_sharadar_full_history_lake.py` | Build a survivorship-inclusive Sharadar lake from the raw SEP and ACTIONS archives. |
 | `build_sharadar_hdb_corrected_lake.py` | Build a versioned Sharadar lake that quarantines one proven HDB due-bill marker. |
 | `build_sleeve_atlas.py` | Build the governed ALPHAC candidate atlas without opening return data. |
 | `build_sleeve_publication_bundles.py` | Build deterministic, fail-closed preparation bundles for every sleeve lineage. |

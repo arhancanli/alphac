@@ -290,7 +290,12 @@ def load_daily_panel(
         actions = actions.loc[
             :, ["instrument_id", "action_type", "ex_date", "available_at", "ratio", "cash_amount"]
         ]
-    adjusted = adjusted_close(wide["close"], actions, tf_ms=DAY_MS, include_dividends=True)
+    # SPLIT-ONLY, like every other equity feature. Sharadar's ACTIONS dividend values are on
+    # the vendor's current share basis while the lake's prices are raw, and the sealed 2026-08-23
+    # dividend-basis audit quarantined that mismatch without authorizing a correction; folding
+    # dividends here would apply a known-wrong factor. The prereg's "dividend-adjusted" clause is
+    # therefore met for splits and disclosed as pending for dividends in the input manifest.
+    adjusted = adjusted_close(wide["close"], actions, tf_ms=DAY_MS, include_dividends=False)
     return DailyPanel(wide["open"], wide["close"], wide["volume"], adjusted, actions)
 
 
@@ -366,6 +371,8 @@ def build_input_manifest(
         "symbols": symbols,
         "corporate_actions": {"rows": actions_rows, "sha256": actions_digest},
         "adjustment_engine": "alphaforge.features.library.equity_price.adjusted_close",
+        "adjustment_basis": "SPLIT_ONLY_DIVIDENDS_PENDING_VENDOR_BASIS_RESOLUTION",
+        "split_factor_convention": "vendor, new shares per old; the kernel divides pre-ex prices",
     }
     manifest["content_hash"] = "sha256:" + _sha256_bytes(_canonical(manifest))
     return manifest
