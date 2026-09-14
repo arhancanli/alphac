@@ -1,0 +1,8 @@
+{
+  "schema": "canli.alphac-seriality-waiver.v1",
+  "waived_hypothesis_key": "da5f5f47f99f9bd2",
+  "waived_packet_content_hash": "sha256:9ba408cb3c1d9accd91eddd25a079995a8d42aa6b7456dd6afd22539917ce40a",
+  "reason": "crypto_carry_portable_v1 closed FINAL INCOMPLETE on 2026-09-06: ADMIT was unreachable at zero remaining identities because nine evidence fields were never frozen before the result, and the packet is complete as evidence accounting. The owner accepts that as a permanent evidentiary gap for this once-run identity, declines to regrade v1, and authorizes reserving the next ordinal. The 320 staged review of 2026-09-14 (config/trial_accounting_reviews.json) directs every remaining identity through the v2 full-evidence reservation, which freezes those fields before any result.",
+  "authorized_by": "Arhan Canli, owner, 2026-09-14 (recorded by the operating session under the owner's delegation of 2026-09-14: 'you are taking over everything', 'you have my full permission', 'ok lets do all of those')",
+  "content_hash": "sha256:b7e6b5b1e554a1414beedabce0ddeaaf60384839bdd74053f8352230d1678f6d"
+}

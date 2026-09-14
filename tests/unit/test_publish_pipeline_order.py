@@ -49,7 +49,22 @@ EDGES: tuple[
     (
         "paper_trading_state.py",
         "data/paper/state.json",
-        ("glassbox_export.py", "transparency_log.py", "research_export.py"),
+        (
+            "glassbox_export.py",
+            "transparency_log.py",
+            "research_export.py",
+            "book_drawdown_ladder.py",
+        ),
+    ),
+    # Book drawdown ladder (2026-09-14): the live half of drawdown control v1. It replays the marks
+    # paper_trading_state.py just wrote, so it must follow that step, and the export copies its
+    # artifact to both hosts, so it must precede the export. Both pipelines: the multiplier in
+    # force is hourly-moving state, and a stale ladder is the failure mode the design exists to
+    # remove.
+    (
+        "book_drawdown_ladder.py",
+        "artifacts/engineering/book_drawdown_ladder.json",
+        ("research_export.py",),
     ),
     # The same producer also copies the state out to the site workspaces; the lineage audit reads
     # THAT copy, not data/paper/state.json. Declaring it against the wrong artifact is precisely
@@ -107,6 +122,13 @@ EDGES: tuple[
         "artifacts/research/trial_packets",
         ("build_trial_packet_manifest.py",),
     ),
+    # The prospective-epoch register (2026-09-14) is derived from the union and the sealed legacy
+    # closure, and research_export publishes it; the site asserts legacy + prospective = N on it.
+    (
+        "build_prospective_epoch_register.py",
+        "artifacts/research/prospective_epoch_register.json",
+        ("research_export.py",),
+    ),
     (
         "transparency_log.py",
         "meridian/public/glassbox/transparency_log.json",
@@ -156,6 +178,21 @@ EDGES: tuple[
         "seal_next_sleeve_selection.py",
         "artifacts/analysis/next_sleeve_selection.json",
         ("research_export.py",),
+    ),
+    # Drawdown control v1 (2026-09-14) replays the current-book drawdown study's paths with the
+    # declared book ladder, so it must run after that study and before the export copies it.
+    # Publish-only: its inputs are frozen research curves and cannot move hourly.
+    (
+        "analyze_current_book_drawdown.py",
+        "artifacts/analysis/current_book_drawdown/result.json",
+        ("analyze_drawdown_control.py",),
+        ("live_publish.sh",),
+    ),
+    (
+        "analyze_drawdown_control.py",
+        "artifacts/analysis/drawdown_control_v1/result.json",
+        ("research_export.py",),
+        ("live_publish.sh",),
     ),
     # SLEEVE-PUBLICATION EVIDENCE CHAIN (added 2026-09-06). Each of these reads the previous
     # one's output, and every one of them drifted silently for the same reason: nothing in

@@ -526,3 +526,17 @@ class TestWalConcurrency:
             assert [c.cycle_ts for c in running] == [T0]
             open_ids = {o.client_order_id for o in s2.open_intents()}
             assert open_ids == {"af-c0-BTC"}
+
+
+# ------------------------------------------------------------ strategy last targets (book brake)
+
+
+def test_last_targets_round_trip_and_the_older_cycle_never_clobbers(store: TradingStore) -> None:
+    """The pre-multiplier book survives the process (drawdown control v1, 2026-09-14)."""
+    assert store.last_targets() is None
+    store.record_last_targets(cycle_ts=T0 + HOUR_MS, targets={"BTC": 0.1, "ETH": -0.05})
+    assert store.last_targets() == (T0 + HOUR_MS, {"BTC": 0.1, "ETH": -0.05})
+    store.record_last_targets(cycle_ts=T0, targets={"BTC": 0.9})  # an older replay
+    assert store.last_targets() == (T0 + HOUR_MS, {"BTC": 0.1, "ETH": -0.05})
+    store.record_last_targets(cycle_ts=T0 + HOUR_MS, targets={"BTC": 0.2})  # same cycle: overwrite
+    assert store.last_targets() == (T0 + HOUR_MS, {"BTC": 0.2})

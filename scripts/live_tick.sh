@@ -75,6 +75,11 @@ WATCHDOG_S=2400   # 40 min cap: hourly cache-hit cycles are ~3 min; the once-dai
   # cycle. The dependency is file-mediated and therefore invisible in the call order; pinned by
   # tests/unit/test_publish_pipeline_order.py.
   uv run python scripts/paper_trading_state.py
+  # Book drawdown ladder (2026-09-14): replays the marks paper_trading_state.py just wrote through the
+  # declared 5.5/11 percent ladder and writes the multiplier in force (artifact + var/book_ladder).
+  # Derived every run, never stored. Soft-fail here: the consumers keep their last reading and the
+  # nightly C12-book-ladder check fails loudly if the artifact goes stale.
+  uv run python scripts/book_drawdown_ladder.py || echo "WARN: book_drawdown_ladder FAILED — consumers keep the last multiplier"
   uv run python scripts/glassbox_export.py
   # research.json IS part of the served bundle and was NOT regenerated here until 2026-08-19.
   # It is owned by the nightly ceremony, which last fired on 2026-08-18 -- the 02:10 schedule
@@ -116,6 +121,9 @@ WATCHDOG_S=2400   # 40 min cap: hourly cache-hit cycles are ~3 min; the once-dai
   uv run python scripts/build_identity_trial_packets.py
   uv run python scripts/build_trial_packet_manifest.py
   uv run python scripts/seal_legacy_research_epoch.py
+  # Every identity measured after the legacy closure, derived; research_export reads it and
+  # the site checks legacy + prospective = N against it (2026-09-14).
+  uv run python scripts/build_prospective_epoch_register.py >/dev/null
   # Bind next-sleeve selection to the current unopened review packet before research_export copies
   # the receipt. This does not open labels, machine predictions, prices, or returns.
   uv run python scripts/seal_next_sleeve_selection.py
@@ -203,7 +211,11 @@ WATCHDOG_S=2400   # 40 min cap: hourly cache-hit cycles are ~3 min; the once-dai
   # (This no longer broad-kills `vercel deploy`: that would also kill the nightly publish,
   #  which overlaps this job by schedule. The deploy is now bounded by PID inside the
   #  script itself and the two jobs share a lock — see scripts/lib/bounded.sh.)
-  ( sleep 600; pkill -TERM -f "live_deploy_hourly" 2>/dev/null; \
+  # 2026-09-14: 600 s killed a deploy whose FIRST upload attempt alone exceeded ten minutes
+  # (Vercel's file API returned 500s all morning and uploads crawled; builds themselves take
+  # ~25 s). The bound still protects the trading lock; it is now long enough for one slow upload
+  # plus one retry. The health run's tick-lock wait (300 s) may WARN C7c on a night this fires.
+  ( sleep 1500; pkill -TERM -f "live_deploy_hourly" 2>/dev/null; \
     sleep 15; pkill -KILL -f "live_deploy_hourly" 2>/dev/null ) &
   _DWD=$!
   if [ "$_PUBLISHABLE" -eq 1 ]; then

@@ -19,6 +19,7 @@ from alphaforge.validation.experiments import ExperimentLog, ExperimentUnion
 
 REPO: Final[Path] = Path(__file__).resolve().parent.parent
 OUT: Final[Path] = REPO / "artifacts" / "research" / "alphatrend_family.json"
+LEGACY_IDENTITIES: Final[int] = 21  # family size at first build, 2026-08; a floor, not a pin
 ARP_REPORT: Final[Path] = REPO / "artifacts" / "sweep" / "alphatrend_arp" / "report.json"
 BREADTH_REPORT: Final[Path] = REPO / "artifacts" / "sweep" / "alphatrend_breadth" / "report.json"
 
@@ -108,10 +109,29 @@ def _historical_summary(config: dict[str, Any]) -> tuple[Path, dict[str, Any]] |
     return None
 
 
+TRIAL_PACKET_MANIFEST: Final[Path] = REPO / "artifacts" / "research" / "trial_packet_manifest.json"
+
+
+def _trial_packet_keys() -> set[str]:
+    """Hypothesis keys that have a published trial packet (empty when the manifest is absent)."""
+    if not TRIAL_PACKET_MANIFEST.exists():
+        return set()
+    manifest = json.loads(TRIAL_PACKET_MANIFEST.read_text(encoding="utf-8"))
+    return {str(row["hypothesis_key"]) for row in manifest.get("identities", [])}
+
+
 def build() -> dict[str, Any]:
     records = _first_records()
-    if len(records) != 21:
-        raise ValueError(f"expected 21 managed-futures identities, found {len(records)}")
+    # The family had 21 identities when this packet was first built (2026-08). Fewer means the
+    # union lost evidence and the packet must not be rebuilt over the hole. More is the normal
+    # course of research (28 arrived with the 2026-09-14 external-ledger import) and every
+    # identity binds below with whatever evidence grade it actually has; a pinned equality here
+    # was a count typed into code, the exact defect the ledger exists to prevent.
+    if len(records) < LEGACY_IDENTITIES:
+        raise ValueError(
+            f"expected at least {LEGACY_IDENTITIES} managed-futures identities, found "
+            f"{len(records)}: the union lost evidence"
+        )
 
     identities: list[dict[str, Any]] = []
     for key, (record, ledger_path) in sorted(records.items()):
@@ -143,9 +163,7 @@ def build() -> dict[str, Any]:
                     "total_return": float(summary["total_return"]),
                     "annual_turnover": float(summary["turnover_ann"]),
                     "artifact_era_dsr": _finite(validation.get("dsr")),
-                    "clears_artifact_era_dsr_gate": bool(
-                        validation.get("clears_dsr_gate", False)
-                    ),
+                    "clears_artifact_era_dsr_gate": bool(validation.get("clears_dsr_gate", False)),
                 }
             )
             evidence_grade = "complete_walkforward_curve_config_and_validation"
@@ -186,9 +204,14 @@ def build() -> dict[str, Any]:
         for row in identities
         if row["result"]["annualized_sharpe"] is not None
     ]
-    dsr_rows = [
-        row for row in identities if row["result"].get("artifact_era_dsr") is not None
-    ]
+    dsr_rows = [row for row in identities if row["result"].get("artifact_era_dsr") is not None]
+    # Which of the family's identities carry a published trial packet. The packets are built for
+    # the legacy epoch (228 retired identities); the 28 identities imported on 2026-09-14 are
+    # prospective register rows without packets. Both counts are published so the publication
+    # bundle can bind the packetized count to the trial-packet manifest while the family total
+    # keeps following the union (a total pinned to the manifest would hide every import).
+    packet_keys = _trial_packet_keys()
+    with_packets = sum(1 for key in records if key in packet_keys)
     return {
         "schema": "canli.alphac-alphatrend-family.v1",
         "evidence_date": "2026-08-22",
@@ -200,6 +223,8 @@ def build() -> dict[str, Any]:
         ),
         "summary": {
             "distinct_hypothesis_identities": len(identities),
+            "identities_with_trial_packets": with_packets,
+            "identities_without_trial_packets": len(identities) - with_packets,
             "finite_sharpe_identities": len(finite_sharpes),
             "minimum_annualized_sharpe": min(finite_sharpes),
             "maximum_annualized_sharpe": max(finite_sharpes),

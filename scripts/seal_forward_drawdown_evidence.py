@@ -14,12 +14,11 @@ from alphaforge.portfolio.strategy import BlendStrategy
 
 REPO: Final[Path] = Path(__file__).resolve().parents[1]
 MODEL: Final[Path] = REPO / "artifacts/analysis/drawdown_live_estimator/result.json"
-CURRENT_BOOK_MODEL: Final[Path] = (
-    REPO / "artifacts/analysis/current_book_drawdown/result.json"
-)
+CURRENT_BOOK_MODEL: Final[Path] = REPO / "artifacts/analysis/current_book_drawdown/result.json"
 FORWARD_CONTRACT: Final[Path] = REPO / "config/forward_evidence_contract.json"
 ADMISSION_CONTRACT: Final[Path] = REPO / "config/sleeve_admission_contract.json"
 LIVE_CHANGE_CONTRACT: Final[Path] = REPO / "config/live_change_contract.json"
+DRAWDOWN_CONTROL_CONTRACT: Final[Path] = REPO / "config/drawdown_control_contract.json"
 ANALYZER: Final[Path] = REPO / "scripts/analyze_drawdown_live_estimator.py"
 STRATEGY: Final[Path] = REPO / "src/alphaforge/portfolio/strategy.py"
 COVARIANCE: Final[Path] = REPO / "src/alphaforge/portfolio/covariance.py"
@@ -85,8 +84,7 @@ def _validate_model(model: dict[str, Any]) -> tuple[dict[str, Any], dict[str, An
     if not isinstance(grid, list) or len(grid) != 11:
         raise ValueError("drawdown grid must contain the eleven sealed configurations")
     identities = {
-        (row.get("window_bars"), row.get("seed_rows"), row.get("halflife_bars"))
-        for row in grid
+        (row.get("window_bars"), row.get("seed_rows"), row.get("halflife_bars")) for row in grid
     }
     if len(identities) != len(grid):
         raise ValueError("drawdown grid contains duplicate configuration identities")
@@ -95,7 +93,8 @@ def _validate_model(model: dict[str, Any]) -> tuple[dict[str, Any], dict[str, An
         if not all(isinstance(value, (int, float)) and math.isfinite(value) for value in values):
             raise ValueError("drawdown grid contains non-finite model output")
         if not (
-            0.0 <= row["median_max_drawdown"]
+            0.0
+            <= row["median_max_drawdown"]
             <= row["expected_max_drawdown"]
             <= row["p95_max_drawdown"]
             < 1.0
@@ -127,9 +126,7 @@ def _validate_model(model: dict[str, Any]) -> tuple[dict[str, Any], dict[str, An
     twin = model.get("twin_verification")
     if not isinstance(twin, list) or len(twin) != len(grid):
         raise ValueError("estimator twin coverage does not match the grid")
-    twin_ids = {
-        (row.get("window"), row.get("seed"), row.get("halflife")) for row in twin
-    }
+    twin_ids = {(row.get("window"), row.get("seed"), row.get("halflife")) for row in twin}
     if twin_ids != identities or any(
         not isinstance(row.get("max_abs_error"), (int, float))
         or not math.isfinite(row["max_abs_error"])
@@ -148,14 +145,10 @@ def _validate_current_book_model(
     if model.get("content_hash") != _content_hash(model):
         raise ValueError("current-book drawdown model content hash is invalid")
     declared_fingerprint = live_change_contract["declared_fingerprint"]
-    declared_aggregation = live_change_contract["declared_surface"][
-        "book_aggregation_settings"
-    ]
+    declared_aggregation = live_change_contract["declared_surface"]["book_aggregation_settings"]
     if (
-        model.get("configuration", {}).get("live_fingerprint")
-        != declared_fingerprint
-        or model.get("configuration", {}).get("aggregation")
-        != declared_aggregation
+        model.get("configuration", {}).get("live_fingerprint") != declared_fingerprint
+        or model.get("configuration", {}).get("aggregation") != declared_aggregation
     ):
         raise ValueError("current-book drawdown model does not bind the live specification")
     design = model.get("design", {})
@@ -185,9 +178,7 @@ def _validate_current_book_model(
         or model_objective.get("live_expected_max_drawdown_established") is not False
     ):
         raise ValueError("current-book drawdown objective is invalid")
-    if model.get("failed_establishment_dimensions") != list(
-        CURRENT_BOOK_FAILED_DIMENSIONS
-    ):
+    if model.get("failed_establishment_dimensions") != list(CURRENT_BOOK_FAILED_DIMENSIONS):
         raise ValueError("current-book failed establishment dimensions drifted")
     source_bindings = model.get("source_bindings", {})
     for key, path in (
@@ -210,9 +201,7 @@ def build(
     current_book_model: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     model = model or json.loads(MODEL.read_text(encoding="utf-8"))
-    forward_contract = forward_contract or json.loads(
-        FORWARD_CONTRACT.read_text(encoding="utf-8")
-    )
+    forward_contract = forward_contract or json.loads(FORWARD_CONTRACT.read_text(encoding="utf-8"))
     admission_contract = admission_contract or json.loads(
         ADMISSION_CONTRACT.read_text(encoding="utf-8")
     )
@@ -227,10 +216,8 @@ def build(
     admission_objective = admission_contract["objective"]
     if (
         objective != float(admission_objective["portfolio_max_drawdown_target"])
-        or objective
-        != float(admission_contract["thresholds"]["book_expected_max_drawdown_max"])
-        or admission_objective["portfolio_max_drawdown_statistic"]
-        != "expected_maximum_drawdown"
+        or objective != float(admission_contract["thresholds"]["book_expected_max_drawdown_max"])
+        or admission_objective["portfolio_max_drawdown_statistic"] != "expected_maximum_drawdown"
         or admission_objective["portfolio_p95_max_drawdown_must_be_published"] is not True
         or admission_objective["portfolio_p95_max_drawdown_is_gated"] is not False
     ):
@@ -246,9 +233,7 @@ def build(
         "cov_window_bars": signature["cov_window_bars"].default,
         "cov_halflife_days": signature["cov_halflife_days"].default,
         "cov_min_periods": signature["cov_min_periods"].default,
-        "realized_vol_halflife_bars": signature[
-            "realized_vol_halflife_bars"
-        ].default,
+        "realized_vol_halflife_bars": signature["realized_vol_halflife_bars"].default,
     }
     declared_defaults = {name: live_strategy[name] for name in code_defaults}
     if code_defaults != declared_defaults or code_defaults != {
@@ -261,18 +246,29 @@ def build(
     live_sleeves = live["book_composition"]["sleeves"]
     constituent_vol_target = float(live["risk_path_settings"]["vol_target_ann"])
     aggregation = live["book_aggregation_settings"]
+    # The book-level ladder is declared by config/drawdown_control_contract.json: absent until
+    # activation, the declared depths afterwards. Either is a consistent declaration; a ladder
+    # that matches neither is drift.
+    control = json.loads(DRAWDOWN_CONTROL_CONTRACT.read_text(encoding="utf-8"))
+    declared_ladder = aggregation.get("book_level_drawdown_ladder")
+    if control.get("activation", {}).get("live", False):
+        ladder_consistent = isinstance(declared_ladder, dict) and all(
+            float(declared_ladder.get(k, float("nan"))) == float(control["ladder"][k])
+            for k in ("dd_half_frac", "dd_flat_frac", "release_frac_of_half")
+        )
+    else:
+        ladder_consistent = declared_ladder is None
     if (
         aggregation.get("scheme") != "fixed"
         or aggregation.get("book_level_vol_target_ann") is not None
-        or aggregation.get("book_level_drawdown_ladder") is not None
+        or not ladder_consistent
         or aggregation.get("strategic_overlay_is_book_vol_scaled") is not False
         or aggregation.get("missing_mark_policy")
         != "ZERO_CONTRIBUTION_ON_MISSING_DAILY_SLEEVE_MARK"
     ):
         raise ValueError("declared live flagship aggregation policy drifted")
     model_equivalence_checks = {
-        "sleeve_count_matches_live_book": model["parameters"]["sleeves"]
-        == len(live_sleeves),
+        "sleeve_count_matches_live_book": model["parameters"]["sleeves"] == len(live_sleeves),
         "book_level_volatility_target_matches_live_composite": False,
         "book_level_risk_overlay_matches_live_composite": False,
         "single_daily_timebase_matches_mixed_live_timebases": False,
@@ -297,12 +293,8 @@ def build(
         ),
         "objective": {
             "expected_max_drawdown_target": objective,
-            "study_production_labelled_expected_max_drawdown": production[
-                "expected_max_drawdown"
-            ],
-            "study_production_labelled_p95_max_drawdown": production[
-                "p95_max_drawdown"
-            ],
+            "study_production_labelled_expected_max_drawdown": production["expected_max_drawdown"],
+            "study_production_labelled_p95_max_drawdown": production["p95_max_drawdown"],
             "study_expected_within_objective": expected_within,
             "study_p95_within_objective": tail_within,
             "current_composition_conservative_expected_max_drawdown": current_expected,
@@ -331,15 +323,9 @@ def build(
                 name for name, passes in model_equivalence_checks.items() if not passes
             ],
             "declared_live_sleeves": len(live_sleeves),
-            "declared_constituent_blend_strategy_volatility_target": (
-                constituent_vol_target
-            ),
-            "declared_live_book_level_volatility_target": aggregation[
-                "book_level_vol_target_ann"
-            ],
-            "declared_live_book_level_drawdown_ladder": aggregation[
-                "book_level_drawdown_ladder"
-            ],
+            "declared_constituent_blend_strategy_volatility_target": (constituent_vol_target),
+            "declared_live_book_level_volatility_target": aggregation["book_level_vol_target_ann"],
+            "declared_live_book_level_drawdown_ladder": aggregation["book_level_drawdown_ladder"],
             "declared_live_book_aggregation": aggregation,
             "declared_live_strategy_defaults": declared_defaults,
         },

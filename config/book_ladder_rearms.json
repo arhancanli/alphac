@@ -1,0 +1,11 @@
+{
+  "schema": "canli.alphac-book-ladder-rearms.v1",
+  "purpose": "Owner rearm register for the book-level drawdown ladder (config/drawdown_control_contract.json). A FLAT_HALTED book stays flat until a dated entry here; from the first published mark on or after rearm_date the ladder restarts with the high-water mark reset to that mark. Entries are append-only and each is a recorded owner decision; scripts/book_drawdown_ladder.py reads this file every publish.",
+  "entry_shape": {
+    "rearm_date": "YYYY-MM-DD (UTC calendar date of the mark the restart takes effect on)",
+    "reason": "why the owner judged the halt reviewed and the book fit to trade",
+    "recorded_by": "Arhan Canli",
+    "recorded_at": "ISO-8601 UTC timestamp"
+  },
+  "rearms": []
+}

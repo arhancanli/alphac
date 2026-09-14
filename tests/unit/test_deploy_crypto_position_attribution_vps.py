@@ -26,16 +26,19 @@ def _snapshot(
     module: ModuleType, contract: dict[str, object], *, before: bool
 ) -> dict[str, object]:
     hash_key = "remote_sha256" if before else "desired_sha256"
-    files = contract["required_files"]
-    assert isinstance(files, list)
+    files = module.all_files(contract)
     columns = ["cycle_ts", "instrument_id", "qty", "avg_entry_price", "opened_ts"]
-    if not before:
+    tables = ["cycles", "equity_curve", "ladder_state", "positions_snapshots"]
+    if module.expected_pre_rollout_schema(contract) == "MIGRATED" or not before:
         columns.extend(module.REQUIRED_COLUMNS)
+    if not before:
+        tables.extend(module.required_tables(contract))
     return {
         "database_exists": True,
         "database_sha256": "0" * 64,
-        "files": {item["path"]: item[hash_key] for item in files},
+        "files": {item["path"]: item.get(hash_key) for item in files},
         "position_snapshot_columns": columns,
+        "tables": sorted(set(tables)),
         "latest_equity_cycle_ts": 1_787_479_200_000,
         "timer_state": "active",
         "service_state": "inactive",
@@ -54,9 +57,102 @@ def test_apply_requires_explicit_phrase_before_any_rollout() -> None:
 
 
 def test_contract_is_exactly_three_hash_locked_local_files() -> None:
+    """The verifier's three files stay the three; companions ride beside them, hash-locked."""
     module = _module()
     contract = module.load_and_validate_contract(CONTRACT)
     assert tuple(item["path"] for item in contract["required_files"]) == module.EXPECTED_PATHS
+    for item in module.companion_files(contract):
+        assert item["path"] not in module.EXPECTED_PATHS
+        assert module._sha256(ROOT / item["path"]) == item["desired_sha256"]
+        assert item["remote_sha256"] is None or len(item["remote_sha256"]) == 64
+
+
+def _companion_contract(module: ModuleType, tmp_path: Path) -> dict[str, object]:
+    """A contract whose companions include a file the host does not have yet."""
+    contract = json.loads(CONTRACT.read_text(encoding="utf-8"))
+    present = ROOT / "src" / "alphaforge" / "portfolio" / "strategy.py"
+    absent = ROOT / "src" / "alphaforge" / "risk" / "book_ladder.py"
+    contract["companion_files"] = [
+        {
+            "path": "src/alphaforge/portfolio/strategy.py",
+            "desired_sha256": module._sha256(present),
+            "remote_sha256": "1" * 64,
+        },
+        {
+            "path": "src/alphaforge/risk/book_ladder.py",
+            "desired_sha256": module._sha256(absent),
+            "remote_sha256": None,
+        },
+    ]
+    contract["expected_pre_rollout_schema"] = "MIGRATED"
+    contract["required_tables_after_rollout"] = ["strategy_last_targets"]
+    path = tmp_path / "contract.json"
+    path.write_text(json.dumps(contract), encoding="utf-8")
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def test_companions_are_hash_locked_and_an_absent_one_is_installed_then_removed_on_rollback(
+    tmp_path: Path,
+) -> None:
+    module = _module()
+    _companion_contract(module, tmp_path)
+    path = tmp_path / "contract.json"
+    loaded = module.load_and_validate_contract(path)
+    assert [c["path"] for c in module.companion_files(loaded)] == [
+        "src/alphaforge/portfolio/strategy.py",
+        "src/alphaforge/risk/book_ladder.py",
+    ]
+    script = module._remote_apply_script(loaded, "20260914T150000Z")
+    assert "[ ! -e /opt/alphaforge/src/alphaforge/risk/book_ladder.py ]" in script
+    assert "require_hash /opt/alphaforge/src/alphaforge/portfolio/strategy.py " + "1" * 64 in script
+    assert "rm -f /opt/alphaforge/src/alphaforge/risk/book_ladder.py" in script  # rollback branch
+    assert "import alphaforge.live.loop, alphaforge.cli.paper_cmds" in script
+    assert "missing tables after migration" in script and "strategy_last_targets" in script
+    subprocess.run(["bash", "-n"], input=script, text=True, check=True)
+    rollback = module._remote_rollback_script(loaded, "20260914T150000Z")
+    assert "rm -f /opt/alphaforge/src/alphaforge/risk/book_ladder.py" in rollback
+    assert "[ ! -e /opt/alphaforge/src/alphaforge/risk/book_ladder.py ]" in rollback
+    subprocess.run(["bash", "-n"], input=rollback, text=True, check=True)
+
+    before = _snapshot(module, loaded, before=True)
+    assert before["files"]["src/alphaforge/risk/book_ladder.py"] is None
+    module.validate_remote_snapshot(before, loaded, before_apply=True)
+    after = _snapshot(module, loaded, before=False)
+    module.validate_remote_snapshot(after, loaded, before_apply=False)
+    after["tables"] = [t for t in after["tables"] if t != "strategy_last_targets"]
+    with pytest.raises(module.PreflightError, match="missing tables"):
+        module.validate_remote_snapshot(after, loaded, before_apply=False)
+
+
+def test_a_drifted_companion_fails_the_contract_closed(tmp_path: Path) -> None:
+    module = _module()
+    contract = _companion_contract(module, tmp_path)
+    contract["companion_files"][0]["desired_sha256"] = "2" * 64
+    path = tmp_path / "contract.json"
+    path.write_text(json.dumps(contract), encoding="utf-8")
+    with pytest.raises(module.PreflightError, match="local source drift"):
+        module.load_and_validate_contract(path)
+    contract["companion_files"][0]["desired_sha256"] = module._sha256(
+        ROOT / "src" / "alphaforge" / "portfolio" / "strategy.py"
+    )
+    contract["companion_files"].append(dict(contract["required_files"][0]))
+    path.write_text(json.dumps(contract), encoding="utf-8")
+    with pytest.raises(module.PreflightError, match="already required"):
+        module.load_and_validate_contract(path)
+
+
+def test_a_migrated_host_is_only_accepted_when_the_contract_declares_it(tmp_path: Path) -> None:
+    module = _module()
+    contract = json.loads(CONTRACT.read_text(encoding="utf-8"))
+    before = _snapshot(module, contract, before=True)
+    if module.expected_pre_rollout_schema(contract) == "MIGRATED":
+        legacy = dict(contract, expected_pre_rollout_schema="PRE_MIGRATION")
+        with pytest.raises(module.PreflightError, match="no longer the declared pre-migration"):
+            module.validate_remote_snapshot(before, legacy, before_apply=True)
+    else:
+        migrated = dict(contract, expected_pre_rollout_schema="MIGRATED")
+        with pytest.raises(module.PreflightError, match="not the declared migrated schema"):
+            module.validate_remote_snapshot(before, migrated, before_apply=True)
 
 
 def test_remote_state_drift_and_active_cycle_fail_closed() -> None:

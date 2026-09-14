@@ -81,6 +81,10 @@ deploy_prod() {
   # cycle. The dependency is file-mediated and therefore invisible in the call order; pinned by
   # tests/unit/test_publish_pipeline_order.py.
   uv run python scripts/paper_trading_state.py || { echo "paper_trading_state FAILED"; FAIL=1; }
+  # Book drawdown ladder (2026-09-14): replays the marks paper_trading_state.py just wrote through the
+  # declared 5.5/11 percent ladder and writes the multiplier in force (artifact + var/book_ladder).
+  # Derived every run, never stored, so nothing can go stale in a process that dies.
+  uv run python scripts/book_drawdown_ladder.py || { echo "book_drawdown_ladder FAILED"; FAIL=1; }
   uv run python scripts/glassbox_export.py || { echo "glassbox_export FAILED"; FAIL=1; }
   # keep capacity.json fresh + hash-consistent (it grounds the commitment AND the reproducibility kit;
   # leaving it out of the pipeline is what let it go stale once). Soft-fail: it is near-static.
@@ -123,6 +127,8 @@ deploy_prod() {
     || { echo "build_trial_packet_manifest FAILED"; FAIL=1; }
   uv run python scripts/seal_legacy_research_epoch.py \
     || { echo "seal_legacy_research_epoch FAILED"; FAIL=1; }
+  uv run python scripts/build_prospective_epoch_register.py \
+    || { echo "build_prospective_epoch_register FAILED"; FAIL=1; }
   # Rebind the selected next-sleeve receipt to the current frozen blind packet. The packet is
   # intentionally not rebuilt here, but its verifier/instructions may be hardened while labels
   # remain unopened; publishing the previous manifest hash would make the selection lineage stale.
@@ -149,6 +155,10 @@ deploy_prod() {
     || { echo "analyze_current_book_drawdown FAILED"; FAIL=1; }
   uv run python scripts/analyze_current_book_diversification.py \
     || { echo "analyze_current_book_diversification FAILED"; FAIL=1; }
+  # Drawdown control v1 (2026-09-14): the declared book ladder measured on the study above's own
+  # paths. Nightly only: its inputs are the frozen research curves, so it cannot move hourly.
+  uv run python scripts/analyze_drawdown_control.py \
+    || { echo "analyze_drawdown_control FAILED"; FAIL=1; }
   uv run python scripts/seal_forward_drawdown_evidence.py \
     || { echo "seal_forward_drawdown_evidence FAILED"; FAIL=1; }
   uv run python scripts/evaluate_forward_evidence_maturity.py \
