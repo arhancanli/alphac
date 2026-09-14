@@ -8,9 +8,9 @@ line of its own docstring, each pipeline's steps are the scripts it actually inv
 contract's boundary is the boundary it states about itself. A script with no docstring appears as
 having none.
 
-At a glance: **346 Python scripts**, **17 shell entry points**,
+At a glance: **347 Python scripts**, **17 shell entry points**,
 **27 configuration contracts**, **29 engineering artifacts**,
-**410 unit test files**, **22 data directories**, **9 scheduled jobs**.
+**412 unit test files**, **22 data directories**, **9 scheduled jobs**.
 
 
 ## What runs on a timer
@@ -268,7 +268,7 @@ and is worth more than a hand-made taxonomy that would drift.
 | `analyze_target_2p5.py` | ANALYSIS — what would a book Sharpe of 2.5 actually require, and is it reachable? |
 | `analyze_trial_budget_cost.py` | Price a prospective trial budget before it is authorized. |
 
-### `audit_*` (75)
+### `audit_*` (76)
 
 | script | first line of its docstring |
 |---|---|
@@ -299,6 +299,7 @@ and is worth more than a hand-made taxonomy that would drift.
 | `audit_electricity_load_weather_feasibility.py` | Audit EIA-930 load/forecast lineage without opening prices or returns. |
 | `audit_equity_fundamental_families.py` | Build deterministic ledger evidence for equity quality and value/investment families. |
 | `audit_equity_narrative_family.py` | Bind the single preregistered earnings-narrative trial to its sealed result. |
+| `audit_external_experiment_ledgers.py` | Find experiment ledgers outside the canonical union and price them against the trial budget. |
 | `audit_external_publication_readiness.py` | Fail closed on external-publication claims and report the exact sleeve-paper blockers. |
 | `audit_forward_full_evidence_reservation_v2_template.py` | Audit the non-active full-evidence reservation template without reading returns. |
 | `audit_fundamental_single_replay_failure.py` | Bind the selected fundamental replay's fail-closed data error to evidence. |

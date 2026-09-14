@@ -744,6 +744,52 @@ def check_honesty():
         pass
 
 
+def check_external_ledgers():
+    """C11 (2026-09-14): experiment ledgers outside the canonical union.
+
+    WHY. On 2026-09-12/13 an autonomous research session ran 118 new hypothesis identities in a
+    clone of this repository. Every one was ledgered correctly IN THE CLONE, so the public trial
+    ledger kept publishing 229 identities and "171 remaining" while the governed union stood at
+    347, past the 320 staged review the owner's policy says pauses registration. The ledgers
+    were fine; the union was computed over one tree. This runs the audit that computes it over
+    every checkout on the machine and reads its verdict: PASS when the canonical tree is the
+    whole union, WARN when identities exist that the public ledger cannot see, FAIL when the
+    merged count has reached a staged review nobody has recorded (or exceeds the budget).
+    """
+    out_path = os.path.join(HEALTH, "external_ledgers.json")
+    rc, out = sh(f"cd {AF} && uv run python scripts/audit_external_experiment_ledgers.py "
+                 f"--write {out_path} --quiet", timeout=300, env=UV_ENV)
+    doc = None
+    try:
+        with open(out_path) as fh:
+            doc = json.load(fh)
+    except Exception:
+        doc = None
+    title = "experiment ledgers outside the canonical union"
+    # The audit exits 1 whenever the union is not complete, so rc 1 is a verdict, not a crash.
+    if doc is None or rc not in (0, 1):
+        add("C11-external-ledgers", "honesty", title, "WARN", "high",
+            observed=f"audit produced no result (rc={rc}): {out[-200:]}",
+            expected="a hash-bound audit result", evidence=out_path)
+        return
+    verdicts = {
+        "CANONICAL_UNION_COMPLETE": "PASS",
+        "EXTERNAL_IDENTITIES_UNRECONCILED": "WARN",
+        "STAGED_REVIEW_REACHED_WITHOUT_RECORD": "FAIL",
+        "MERGED_UNION_EXCEEDS_BUDGET": "FAIL",
+    }
+    status = verdicts.get(str(doc.get("status")), "FAIL")
+    canonical = doc.get("canonical", {}).get("distinct_hypothesis_identities")
+    observed = (f"{doc.get('status')}: {doc.get('external_identities_not_in_canonical')} "
+                f"external identities in {len(doc.get('external_trees', []))} tree(s); "
+                f"canonical {canonical}, merged {doc.get('merged_distinct_hypothesis_identities')}"
+                f"/{doc.get('budget')}; staged reviews reached without record: "
+                f"{doc.get('staged_reviews_reached_without_record') or 'none'}")
+    add("C11-external-ledgers", "honesty", title, status, "high", observed=observed,
+        expected="0 external identities; no staged review reached without an owner record",
+        evidence=out_path)
+
+
 def check_publisher():
     rc, out = sh(f"tail -40 {AF}/var/log/live_publish.log")
     ok = ("=== publish OK" in out and "[landing] prod:" in out
@@ -1267,6 +1313,7 @@ def main():
     check_data()
     check_loops()
     check_honesty()
+    check_external_ledgers()
     check_publisher()
     check_alert_channel()
 
