@@ -266,6 +266,8 @@ def evaluate_scenario(
         "assumptions_sha256": canonical_sha256(dict(assumptions)),
         "net": stats,
         "turnover_total": float(np.sum(book.turnover)),
+        "mean_stock_gross": float(np.mean(book.stock_gross)),
+        "mean_hedge_abs_weight": float(np.mean(np.abs(book.hedge_weight))),
         "events": {
             "deferred": sum(1 for e in book.events if e.kind == "DEFERRED"),
             "force_flat": sum(1 for e in book.events if e.kind == "FORCE_FLAT"),
