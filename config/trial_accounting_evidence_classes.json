@@ -1,0 +1,53 @@
+{
+  "schema": "canli.alphac-trial-evidence-classes.v1",
+  "author": "Arhan Canli",
+  "status": "DECLARED_FOR_V2_PROMOTION",
+  "declared_on": "2026-09-14",
+  "purpose": "The trial-accounting policy (config/trial_accounting.json, whose bytes are sealed by the v7 promotion) defines a hypothesis identity. It does not say which pieces of evidence are SELECTABLE (can become the winner and therefore count in deflation) and which are MANDATORY DIAGNOSTICS (can only challenge an identity and therefore do not count). The crypto_carry_portable_v1 closure was INCOMPLETE because that distinction, and the atomic batch that lets a probability-of-backtest-overfitting matrix exist at all, were not defined before the result. This companion defines them. It is read by alphaforge.validation.trial_reservation and by the v2 full-evidence reservation audit; it changes no sealed byte of the policy it extends.",
+  "policy_binding": {
+    "path": "config/trial_accounting.json",
+    "schema": "alphac.trial-accounting-policy.v2",
+    "identity_definition": "A distinct economic or parameter identity after removing only start and end measurement-window keys.",
+    "note": "The hypothesis identity definition is unchanged. This file classifies evidence attached to an identity; it never creates, merges or exempts an identity."
+  },
+  "classes": {
+    "selectable_return_identity": {
+      "definition": "A return configuration that can be chosen as the deployable winner. Every selectable configuration is a counted hypothesis identity: it has its own pre-result reservation (hypotheses_spent 1), its own ordinal, its own packet, and it enters family and complete-union deflation.",
+      "counts_in_union_dsr": true,
+      "may_become_winner": true,
+      "reservation_schema": "canli.alphac-forward-trial-reservation.v1",
+      "validator": "alphaforge.validation.trial_reservation.validate_reservation"
+    },
+    "mandatory_diagnostic_scenario": {
+      "definition": "A deterministic recomputation of cost, execution or capacity outcomes on top of the exact decisions a sealed primary return path already made (same instrument weights, same entry and exit times). It can only challenge an identity; it can never be selected as a winner and never spends a hypothesis identity.",
+      "classes": ["cost_stress_scenarios", "execution_stress_scenarios", "capacity_scenarios"],
+      "declared_before_first_return_with": ["scenario_id", "assumptions", "assumptions_sha256"],
+      "sealed_after_the_run_with": ["result", "result_sha256", "primary_decision_path_sha256"],
+      "counts_in_union_dsr": false,
+      "may_become_winner": false,
+      "must_be_published": true,
+      "off_path_rule": "A scenario whose primary_decision_path_sha256 differs from the sealed primary path is not a diagnostic of that identity; it is a new selectable identity and must be reserved and counted as one.",
+      "validators": [
+        "alphaforge.validation.trial_reservation._validate_declared_diagnostic_scenarios (pre-result shape)",
+        "alphaforge.validation.trial_reservation._validate_diagnostic_scenarios (sealed result binding)"
+      ]
+    },
+    "identity_batch": {
+      "definition": "An atomic, predeclared set of selectable identities from one family, sealed as one registry document before the first return. The batch exists so that a probability-of-backtest-overfitting matrix with at least two counted columns can be computed; a batch of one column cannot define PBO and can therefore reach INCOMPLETE but never ADMIT.",
+      "registry_path_pattern": "artifacts/research/identity_batches/<batch_id>.json",
+      "registry_schema": "canli.alphac-identity-batch.v1",
+      "seal": "batch_content_hash = sha256 over {batch_id, family_trial_account, identity_hashes} in canonical JSON; every member reservation carries the same hash and must match the registry exactly",
+      "rules": [
+        "every member is reserved (its own reservation, ordinal and packet) before the first return of any member",
+        "adding, removing or reordering a member after the registry is sealed is refused",
+        "members of one batch do not block each other in the seriality guard; they decide together",
+        "while any member is undecided (no complete packet with an ADMIT or KILL closure or an owner waiver), every reservation outside the batch is blocked",
+        "interim results are withheld until the complete batch finishes or fails",
+        "each member is charged to its family and to the complete union; the batch adds no exemption"
+      ],
+      "counts_in_union_dsr": true,
+      "validator": "alphaforge.validation.trial_reservation._validate_identity_batch"
+    }
+  },
+  "claim_boundary": "This file classifies evidence for trial accounting. It authorizes no return computation, promotes no template, and changes no threshold in config/sleeve_admission_contract.json."
+}

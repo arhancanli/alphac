@@ -702,6 +702,47 @@ MUTATIONS: tuple[Mutation, ...] = (
         ],
     ),
     Mutation(
+        "test_identity_batch_reservation.py",
+        "let an unrelated reservation through while an identity batch is still open",
+        REPO / "src/alphaforge/validation/trial_reservation.py",
+        _replace(
+            "        if open_batch_id != batch_id:\n            raise ReservationError(",
+            "        if False and open_batch_id != batch_id:\n            raise ReservationError(",
+        ),
+        notes=[
+            "v2 batch seriality: the protocol blocks every unrelated reservation until the batch "
+            "decides. A guard that cannot see this branch go dark would let a second family "
+            "reserve mid-batch and the union count would be wrong at the moment it matters.",
+        ],
+    ),
+    Mutation(
+        "test_identity_batch_reservation.py",
+        "accept a batch member that was never reserved on disk",
+        REPO / "src/alphaforge/validation/trial_reservation.py",
+        _replace(
+            "    for sibling in predecessors:\n        if sibling not in on_disk:",
+            "    for sibling in predecessors:\n        if False and sibling not in on_disk:",
+        ),
+        notes=[
+            "The registry alone is not enough: an identity could claim a sealed batch whose "
+            "earlier member was never actually reserved, which is the unreserved-identity hole "
+            "the protocol names.",
+        ],
+    ),
+    Mutation(
+        "test_identity_batch_reservation.py",
+        "let a declared diagnostic carry a result before the run",
+        REPO / "src/alphaforge/validation/trial_reservation.py",
+        _replace(
+            "            if not isinstance(scenario, dict) or set(scenario) != DECLARED_DIAGNOSTIC_FIELDS:",
+            "            if not isinstance(scenario, dict) or not DECLARED_DIAGNOSTIC_FIELDS <= set(scenario):",
+        ),
+        notes=[
+            "A result inside a pre-result reservation is an outcome field by another name; the "
+            "exact-set check is what keeps it out.",
+        ],
+    ),
+    Mutation(
         "test_seriality_waiver.py",
         "accept a seriality waiver bound to a stale packet content hash",
         REPO / "src/alphaforge/validation/trial_reservation.py",
