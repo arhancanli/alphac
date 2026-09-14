@@ -8,9 +8,12 @@ import json
 from pathlib import Path
 from typing import Any, Final
 
+from alphaforge.research.owner_goals import governing_objective, load_owner_goals
+
 ROOT: Final = Path(__file__).resolve().parents[1]
 SOURCES: Final = {
     "admission_v7": ROOT / "config" / "admission_v7_promotion.json",
+    "owner_goals": ROOT / "config" / "owner_goals.json",
     "trial_packets": ROOT / "artifacts" / "research" / "trial_packet_manifest.json",
     "publication": ROOT / "artifacts" / "audit" / "external_publication_readiness.json",
     "submission_worksheets": (
@@ -76,7 +79,10 @@ def build() -> dict[str, Any]:
     external_review = source["external_review"]
     external_review_protocol = source["external_review_protocol"]
     foundry_deployment = source["foundry_deployment"]
-    objective = source["admission_v7"]["active_contract"]["objective"]
+    sealed_objective = source["admission_v7"]["active_contract"]["objective"]
+    objective = governing_objective(
+        load_owner_goals(), ROOT / "config" / "sleeve_admission_contract.json"
+    )
 
     activity = (
         "Built ALPHAC: 228 retired legacy identities, 1 prospective trial, broker evidence, "
@@ -186,10 +192,21 @@ def build() -> dict[str, Any]:
                 ),
                 "facts": {
                     "honest_forward_sharpe_target": objective["honest_forward_sharpe_target"],
-                    "expected_maximum_drawdown_target": objective["portfolio_max_drawdown_target"],
+                    "realized_maximum_drawdown_bound": objective["portfolio_max_drawdown_target"],
+                    "expected_maximum_drawdown_objective": objective[
+                        "expected_max_drawdown_objective"
+                    ],
                     "target_sleeves": objective["target_total_sleeves"],
                     "average_pairwise_correlation_objective": objective[
                         "average_pairwise_correlation_objective"
+                    ],
+                    "objective_in_force_from": objective["in_force_from"],
+                    "superseded_v7_forward_sharpe_target": sealed_objective[
+                        "honest_forward_sharpe_target"
+                    ],
+                    "superseded_v7_target_sleeves": sealed_objective["target_total_sleeves"],
+                    "superseded_v7_expected_maximum_drawdown_target": sealed_objective[
+                        "portfolio_max_drawdown_target"
                     ],
                     "prospective_gate_audit_read_candidate_returns": source["admission_v7"][
                         "active_contract"

@@ -9,8 +9,8 @@ contract's boundary is the boundary it states about itself. A script with no doc
 having none.
 
 At a glance: **358 Python scripts**, **17 shell entry points**,
-**32 configuration contracts**, **30 engineering artifacts**,
-**429 unit test files**, **23 data directories**, **9 scheduled jobs**.
+**33 configuration contracts**, **30 engineering artifacts**,
+**430 unit test files**, **23 data directories**, **9 scheduled jobs**.
 
 
 ## What runs on a timer
@@ -204,6 +204,7 @@ are the ones a reader has to know about; everything else is derived from them.
 | `config/legacy_dsr_exceptions.json` | No executable raw-row DSR implementation remains. |
 | `config/live_change_contract.json` | _(no stated boundary)_ |
 | `config/merger_announcement_confirmatory_design_inputs.json` | Binds already published no-return exploratory metadata and reserves a disjoint confirmation period. |
+| `config/owner_goals.json` | These are the owner's governing goals for a paper-trading programme that intends to become an open glassbox platform and, later, a real hedge fund. |
 | `config/scholarly_repository_requirements.json` | This dated snapshot records requirements observed on official repository pages. |
 | `config/sleeve_admission_contract.json` | This in-force contract applies only to return identities reserved at ordinal 229 or later under its exact effective hash. |
 | `config/sleeve_admission_contract_v7_proposed.json` | This is a prospective proposal, not an in-force gate change. |
@@ -587,7 +588,7 @@ and is worth more than a hand-made taxonomy that would drift.
 | `mf_etf_load.py` | Load the managed-futures ETF basket into a dedicated AlphaForge research lake. |
 | `mf_gauntlet.py` | Gauntlet the MANAGED-FUTURES TREND sleeve through the deflated purged walk-forward. |
 | `mf_strategy_search.py` | Brutal trend-strategy search for AlphaTrend — hundreds of configs, deflated honestly. |
-| `mutation_ledger.py` | Prove every guard over a published claim can actually fail, and publish the result. |
+| `mutation_ledger.py` | _(unreadable)_ |
 | `orthogonality_prior.py` | Rank the remaining families by expected orthogonality to this book — as a PRIOR, not a claim. |
 | `package_active_ownership_blind_review.py` | Build a deterministic, prediction-blind archive for an external reviewer. |
 | `package_all_sleeve_review_archives.py` | Build deterministic raw-row-free review archives for all sleeve papers. |

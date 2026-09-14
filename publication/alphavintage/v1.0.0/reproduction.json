@@ -1,7 +1,7 @@
 {
   "code_bindings": {
     "scripts/analyze_book_without_alphavintage.py": "f655cfd1dde21eb093b92088c9b86a88572c56e9d584ec4bb063181c46830f8d",
-    "scripts/analyze_current_book_diversification.py": "8309f592bfca5c1c011d60013bc0a65bdd4fb6bf83f26347c817151fb71aa6f2",
+    "scripts/analyze_current_book_diversification.py": "b1beabaf02f16577bef8b4e9400592bc5a5354722093b706c29782ba7eb28563",
     "scripts/export_alphavintage_sealed_outcome.py": "d00a6bddb211fb7746e1b269c5b6e9fc333b7b3a74e786626259f7b4c1c17fb2",
     "scripts/probe_cpi_surprise_size.py": "80b55488c7caab97dcf121c7d0f744a05d80981f75aaa6529dc17613808c48ed"
   },

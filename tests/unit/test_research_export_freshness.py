@@ -14,6 +14,8 @@ from pathlib import Path
 
 import pytest
 
+from alphaforge.research.owner_goals import load_owner_goals
+
 REPO = Path(__file__).resolve().parents[2]
 
 
@@ -112,8 +114,12 @@ def test_export_carries_fail_closed_sleeve_atlas(modules) -> None:
 
     assert atlas["summary"]["families"] == 40
     assert atlas["summary"]["cells"] == 240
-    assert atlas["objective"]["target_total_sleeves"] == 14
-    assert atlas["objective"]["minimum_new_sleeves"] == 10
+    goals = load_owner_goals()["goals"]
+    assert atlas["objective"]["target_total_sleeves"] == (
+        goals["qualified_economically_distinct_sleeves"]["minimum"]
+    )
+    superseded = atlas["objective"]["superseded_admission_contract_objective"]
+    assert superseded["target_total_sleeves"] == 14
     assert atlas["summary"]["return_data_opened"] == 0
     assert atlas["summary"]["family_return_data_opened"] == 1
     assert atlas["summary"]["family_return_hypotheses_spent"] == 1

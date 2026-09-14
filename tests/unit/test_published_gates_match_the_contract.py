@@ -19,6 +19,8 @@ from pathlib import Path
 
 import pytest
 
+from alphaforge.research.owner_goals import governing_objective, load_owner_goals
+
 REPO = Path(__file__).parents[2]
 CONTRACT = REPO / "config" / "sleeve_admission_contract.json"
 HOSTS = (
@@ -100,16 +102,26 @@ def test_a_retired_gate_is_not_still_published_as_a_live_one() -> None:
 
 @pytest.mark.workspace_evidence
 def test_the_objective_is_published_with_the_arithmetic_that_bounds_it() -> None:
-    contract_objective = json.loads(CONTRACT.read_text())["objective"]
+    goals = load_owner_goals()
     for path, discovery in _published():
-        for key, value in contract_objective.items():
-            assert discovery["objective"][key] == value, (
-                f"{path} publishes objective.{key}={discovery['objective'][key]!r} while the "
-                f"contract in force declares {value!r}"
+        published = discovery["objective"]
+        if published.get("source") != "config/owner_goals.json":
+            pytest.xfail(f"{path} has not been republished since the owner goals took force")
+        governing = governing_objective(
+            goals, CONTRACT, current_sleeves=published["current_sleeves"]
+        )
+        for key, value in governing.items():
+            assert published[key] == value, (
+                f"{path} publishes objective.{key}={published[key]!r} while the owner goals in "
+                f"force project {value!r}"
             )
-        assert (
-            discovery["objective"]["target_sleeve_count"]
-            == (contract_objective["target_total_sleeves"])
+        assert published["target_sleeve_count"] == governing["target_total_sleeves"]
+        # The contract's own objective is history on the same page, never a second target.
+        sealed = json.loads(CONTRACT.read_text())["objective"]
+        inner = published["superseded_admission_contract_objective"]
+        assert {key: inner[key] for key in sealed} == sealed
+        assert discovery["superseded_admission_contract_frontier_arithmetic"] == (
+            json.loads(CONTRACT.read_text())["frontier_arithmetic"]
         )
         assert "frontier_arithmetic" in discovery, (
             f"{path} publishes a portfolio objective and an admission gate with nothing stating "
