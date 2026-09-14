@@ -608,6 +608,8 @@ def _forward_full_evidence_promotion(
         ],
         "applies_to_known_results": receipt["applies_to_known_results"],
     }
+
+
 CRYPTO_CARRY_PORTABLE_LAKE_READINESS_JSON: Final[Path] = (
     REPO / "artifacts" / "audit" / "crypto_carry_portable_lake_readiness.json"
 )
@@ -636,6 +638,41 @@ PROSPECTIVE_EPOCH_REGISTER_JSON: Final[Path] = (
     REPO / "artifacts" / "research" / "prospective_epoch_register.json"
 )
 LEGACY_DSR_EXCEPTIONS_JSON: Final[Path] = REPO / "config" / "legacy_dsr_exceptions.json"
+# Every identity measured after the legacy epoch closed, with its packet bound by hash
+# (scripts/build_forward_identity_packet_index.py, 2026-09-15). Optional: without it the record
+# publishes the legacy 228 plus the one governed identity, as before that day.
+FORWARD_PACKET_INDEX_JSON: Final[Path] = (
+    REPO / "artifacts" / "research" / "trial_packets" / "forward_index.json"
+)
+
+
+def load_forward_packet_index() -> dict[str, Any] | None:
+    """The forward identity packet index, verified, or None when it has not been built."""
+    if not FORWARD_PACKET_INDEX_JSON.exists():
+        return None
+    payload: dict[str, Any] = json.loads(FORWARD_PACKET_INDEX_JSON.read_text(encoding="utf-8"))
+    body = {k: v for k, v in payload.items() if k != "content_hash"}
+    canonical = json.dumps(body, sort_keys=True, separators=(",", ":")).encode()
+    if payload.get("content_hash") != "sha256:" + hashlib.sha256(canonical).hexdigest():
+        raise ValueError("forward identity packet index content hash mismatch")
+    return payload
+
+
+def _copy_forward_identity_packets(target_dir: Path, index: dict[str, Any] | None) -> int:
+    """Publish every forward packet the index binds, verified against the index, plus the index."""
+    if index is None:
+        return 0
+    copied = 0
+    for row in index["packets"]:
+        if row["public_path"] is None:
+            continue
+        source = REPO / "artifacts" / "research" / "trial_packets" / f"{row['hypothesis_key']}.json"
+        if hashlib.sha256(source.read_bytes()).hexdigest() != row["packet_file_sha256"]:
+            raise ValueError(f"{row['hypothesis_key']}: packet file moved since the index bound it")
+        (target_dir / f"{row['hypothesis_key']}.json").write_bytes(source.read_bytes())
+        copied += 1
+    (target_dir / "forward_index.json").write_text(FORWARD_PACKET_INDEX_JSON.read_text())
+    return copied
 
 
 def load_prospective_epoch_register() -> dict[str, Any] | None:
@@ -647,7 +684,9 @@ def load_prospective_epoch_register() -> dict[str, Any] | None:
                 "scripts/build_prospective_epoch_register.py before research_export.py"
             )
         return None
-    register = json.loads(PROSPECTIVE_EPOCH_REGISTER_JSON.read_text(encoding="utf-8"))
+    register: dict[str, Any] = json.loads(
+        PROSPECTIVE_EPOCH_REGISTER_JSON.read_text(encoding="utf-8")
+    )
     if register.get("schema") != "canli.alphac-prospective-epoch-register.v1":
         raise ValueError("prospective epoch register schema mismatch")
     if register["summary"].get("identity_arithmetic_holds") is not True:
@@ -2296,6 +2335,14 @@ def build_program_status(state: dict[str, Any]) -> dict[str, Any]:
     )
     epoch_register = load_prospective_epoch_register()
     epoch_summary = epoch_register["summary"] if epoch_register else None
+    forward_index = load_forward_packet_index()
+    if forward_index and epoch_register:
+        bound = forward_index["source_bindings"]["prospective_epoch_register"]["content_hash"]
+        if bound != epoch_register["content_hash"]:
+            raise ValueError(
+                "forward identity packet index was built from a different register; run "
+                "scripts/build_forward_identity_packet_index.py after the register"
+            )
     # Prospective identities that were reserved and measured but never closed with a packet.
     unclosed = (
         epoch_summary["observed_identities"]
@@ -2654,7 +2701,11 @@ def build_program_status(state: dict[str, Any]) -> dict[str, Any]:
                 ),
                 "complete_trial_packets": (
                     packet_manifest["summary"]["complete_trial_packets"]
-                    + int(prospective_trial["packet"]["complete"])
+                    + (
+                        forward_index["summary"]["complete_packets"]
+                        if forward_index
+                        else int(prospective_trial["packet"]["complete"])
+                    )
                     if packet_manifest
                     else None
                 ),
@@ -2671,11 +2722,26 @@ def build_program_status(state: dict[str, Any]) -> dict[str, Any]:
                 "published_identity_packets": (
                     packet_manifest["summary"].get("published_identity_packets", 0)
                     + (
-                        epoch_summary["by_status"]["GOVERNED_SERIAL_PACKET_CLOSED"]
-                        if epoch_summary
-                        else 1
+                        forward_index["summary"]["published_packets"]
+                        if forward_index
+                        else (
+                            epoch_summary["by_status"]["GOVERNED_SERIAL_PACKET_CLOSED"]
+                            if epoch_summary
+                            else 1
+                        )
                     )
                     if packet_manifest
+                    else None
+                ),
+                "forward_identity_packets": (
+                    {
+                        **forward_index["summary"],
+                        "index_public_path": "/glassbox/trial-packets/forward_index.json",
+                        "register_content_hash": forward_index["source_bindings"][
+                            "prospective_epoch_register"
+                        ]["content_hash"],
+                    }
+                    if forward_index
                     else None
                 ),
                 "prospective_epoch": {
@@ -3750,6 +3816,7 @@ def main(out_dir: Path = OUT_DIR) -> Path:
     (out_trial_packet_dir / "crypto_carry_portable_v1.json").write_text(
         CRYPTO_CARRY_PORTABLE_PACKET_JSON.read_text()
     )
+    _copy_forward_identity_packets(out_trial_packet_dir, load_forward_packet_index())
     (out_dir / "crypto_carry_selected_walkforward.json").write_text(
         CRYPTO_CARRY_SELECTED_WALKFORWARD_JSON.read_text()
     )
@@ -4400,6 +4467,7 @@ def main(out_dir: Path = OUT_DIR) -> Path:
         (app_trial_packet_dir / "crypto_carry_portable_v1.json").write_text(
             CRYPTO_CARRY_PORTABLE_PACKET_JSON.read_text()
         )
+        _copy_forward_identity_packets(app_trial_packet_dir, load_forward_packet_index())
         (app_dir / "crypto_carry_selected_walkforward.json").write_text(
             CRYPTO_CARRY_SELECTED_WALKFORWARD_JSON.read_text()
         )

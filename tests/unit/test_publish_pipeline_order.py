@@ -127,6 +127,13 @@ EDGES: tuple[
     (
         "build_prospective_epoch_register.py",
         "artifacts/research/prospective_epoch_register.json",
+        ("build_forward_identity_packet_index.py", "research_export.py"),
+    ),
+    # The forward identity packet index (2026-09-15) binds the register just written and every
+    # forward packet by hash; research_export copies the packets and the index it lists.
+    (
+        "build_forward_identity_packet_index.py",
+        "artifacts/research/trial_packets/forward_index.json",
         ("research_export.py",),
     ),
     (
