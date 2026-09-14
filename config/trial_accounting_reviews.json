@@ -33,5 +33,36 @@
         "docs/design/OPERATOR_LOG_2026-09.md"
       ]
     }
-  }
+  },
+  "external_packet_import": [
+    {
+      "imported_on": "2026-09-14T19:36:11+00:00",
+      "script": "scripts/import_external_identity_packets.py",
+      "runs": 3,
+      "note": "Three partial runs and one final run; the first two stopped on a statement phrasing the vocabulary did not yet accept and left their imported packets in place, so this record is consolidated from the closures on disk.",
+      "identities_imported": 118,
+      "closures_written": 118,
+      "dispositions": [
+        "KILL"
+      ],
+      "constructions_retained_for_a_new_identity": 1,
+      "families": [
+        "alphamax_path_momentum",
+        "alphamax_total_return_momentum",
+        "bil_cash_implementation",
+        "bil_cash_implementation_2022_validation",
+        "bil_funded_account",
+        "crypto_continuous_account",
+        "crypto_funded_reference",
+        "filing_seasonal_common_income_change",
+        "managed_futures_trend",
+        "trend_fixed_asset_group_risk"
+      ],
+      "evidence_files_copied": 21,
+      "remaining_forward_identities_without_packet": 0,
+      "union_count_changed": false,
+      "seriality_after": "119 forward identities decided: 118 KILL closures and the crypto_carry_portable_v1 waiver",
+      "authorization": "Arhan Canli, owner, 2026-09-14: 'i give you full permision for the activiations so you can go ahead'; docs/design/ALPHAC_OWNER_GOALS_2026-09-12.md: this direction does not retroactively admit rejected candidates."
+    }
+  ]
 }
