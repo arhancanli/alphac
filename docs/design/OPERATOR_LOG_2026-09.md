@@ -563,3 +563,13 @@ published number or spend a research identity are marked DECISION and name who m
   as one atomic batch; both filled-reservation audits SATISFIABLE with disposition ceiling
   ADMIT. No return was read. The real authoring and the single out-of-sample batch run happen
   in the publisher tree once #40 lands, because the reservation binds the merged runner's hash.
+- 19:42Z. RUNNER. With a reservation the out-of-sample runner now also measures the candidate
+  against the frozen existing-book snapshot the reservation binds: correlations, stressed
+  correlations and their one-sided bounds, the fixed-weight book deltas through the shared
+  diversification engine, and the expected and 95th-percentile maximum drawdown of the
+  zero-drift book with and without the candidate at the frozen 10 percent weight (the
+  current-composition study's generator, seed and 63-day block). The candidate sits on the
+  snapshot's UTC calendar with 0.0 on non-sessions, the convention the composite already uses
+  for its equity sleeve. Exercised on the dry-run reservation with a synthetic series: 1,061
+  aligned days, REPORTED. The publisher-tree chain (authoring, then the single batch run) is
+  armed and waits for #40 to land and the tick to be idle.
