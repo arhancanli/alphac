@@ -29,20 +29,17 @@ long-short book is the kind of return least obviously tied to the four sleeves t
 
 ## Tasks (each one a commit; a task's proof is stated, not implied)
 
-### Task 1: full corpus, not the sample
-Extend the manifest and downloader from the locked sample to every unamended 10-K primary
-document from 2005 through 2025 for issuers in the Sharadar universe, resumable, rate-limited
-per SEC policy, with the immutable-index SIC and `sic_missing_at_source` counted as the prereg
-clarifies. **Proof:** the corpus result binds every Parquet part by ordered filename, byte length
-and SHA-256; a rerun over a completed corpus downloads nothing and reproduces the digest.
-**Budget:** days of downloads; this task runs unattended on the Mac (a launchd job with its own
-lock), never inside a tick.
-
-### Task 2: pairs and stability
-`build_sec_item1a_pairs.py` over the full corpus: immediate unamended predecessor only, both
-sections at least 500 words, five-token-shingle Jaccard, the exhaustive attrition ledger.
-**Proof:** every latest-attempt corpus row is either an accepted pair endpoint or carries a
-deterministic rejection reason; the pair result binds the corpus digest and the source manifest.
+### Tasks 1 and 2: DONE on 2026-08-15/16, verify the bindings, build nothing
+Correction made the same day this plan was written: the full corpus already exists.
+`artifacts/ingest/earnings_narrative_change/corpus_result.json` (`complete: true`) records
+83,070 unamended 10-Ks from 8,122 CIKs, 2005-01-03 through 2025-12-29, 82,491 downloaded,
+73,744 Item 1A sections extracted with `sec-filing-sections-v2` (89.4 percent), 320 filings with
+`sic_missing_at_source`, 331 hash-bound Parquet parts (522 MB, parts digest 45505610), and
+`item1a_pairs.parquet` holds 65,050 immediate-predecessor pairs with five-gram Jaccard, section
+hashes, word counts and SIC. The feasibility probe (477 sections, 373 pairs) was a separate
+locked sample; the corpus behind it is whole. **Proof still owed by the runner (Task 6):** it
+re-verifies the parts digest and the manifest SHA-256 before opening any return, exactly as the
+prereg's lineage-seal clause demands, and rejects a stale or partial corpus.
 
 ### Task 3: market inputs and the input manifest
 A loader for the Sharadar SEP/ACTIONS/TICKERS snapshots already on disk, the SPY research series,

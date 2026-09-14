@@ -8,9 +8,9 @@ line of its own docstring, each pipeline's steps are the scripts it actually inv
 contract's boundary is the boundary it states about itself. A script with no docstring appears as
 having none.
 
-At a glance: **352 Python scripts**, **17 shell entry points**,
+At a glance: **355 Python scripts**, **17 shell entry points**,
 **31 configuration contracts**, **30 engineering artifacts**,
-**422 unit test files**, **23 data directories**, **9 scheduled jobs**.
+**427 unit test files**, **23 data directories**, **9 scheduled jobs**.
 
 
 ## What runs on a timer
@@ -279,7 +279,7 @@ and is worth more than a hand-made taxonomy that would drift.
 | `analyze_target_2p5.py` | ANALYSIS — what would a book Sharpe of 2.5 actually require, and is it reachable? |
 | `analyze_trial_budget_cost.py` | Price a prospective trial budget before it is authorized. |
 
-### `audit_*` (76)
+### `audit_*` (77)
 
 | script | first line of its docstring |
 |---|---|
@@ -345,6 +345,7 @@ and is worth more than a hand-made taxonomy that would drift.
 | `audit_spinoff_document_schema.py` | Audit a frozen Form 10 document sample without opening prices or returns. |
 | `audit_spinoff_form10_lineage.py` | Build a hash-bound Form 10 candidate lineage without opening prices or returns. |
 | `audit_spinoff_form_universe.py` | Measure the two structural facts the spin-off redesign note rests on, so neither is a memory. |
+| `audit_split_adjustment_direction.py` | Measure, split by split, what the shared adjusted-close engine does across every ex-date. |
 | `audit_split_ratio_integrity.py` | AUDIT — how many stored split ratios disagree with the price move they should explain. |
 | `audit_tender_offer_document_feasibility.py` | Audit locked SC 14D9 document extraction without loading prices or returns. |
 | `audit_tender_offer_reachability.py` | Establish whether tender-offer parser work is justified, without opening returns. |
@@ -360,7 +361,7 @@ and is worth more than a hand-made taxonomy that would drift.
 | `audit_vate_2020_dividend_vendor_resolution.py` | Resolve the unsupported VATE/HCHC 2020 dividend row without opening returns. |
 | `audit_wave1_data_rights.py` | Audit Wave 1 publication bundles against the conservative data-rights policy. |
 
-### `build_*` (38)
+### `build_*` (39)
 
 | script | first line of its docstring |
 |---|---|
@@ -395,6 +396,7 @@ and is worth more than a hand-made taxonomy that would drift.
 | `build_sec_10k_manifest.py` | Build the preregistered SEC 10-K manifest without reading prices or returns. |
 | `build_sec_item1a_pairs.py` | Build immediate-predecessor Item 1A similarities without reading market data. |
 | `build_sharadar_corporate_action_corrected_lake.py` | Build a versioned Sharadar lake with normalized executable corporate actions. |
+| `build_sharadar_full_history_lake.py` | Build a survivorship-inclusive Sharadar lake from the raw SEP and ACTIONS archives. |
 | `build_sharadar_hdb_corrected_lake.py` | Build a versioned Sharadar lake that quarantines one proven HDB due-bill marker. |
 | `build_sleeve_atlas.py` | Build the governed ALPHAC candidate atlas without opening return data. |
 | `build_sleeve_publication_bundles.py` | Build deterministic, fail-closed preparation bundles for every sleeve lineage. |
@@ -499,7 +501,7 @@ and is worth more than a hand-made taxonomy that would drift.
 | `export_prereg_parameters.py` | Publish the earnings-narrative-change pre-registration's parameters as data, not prose. |
 | `export_validation_api_vectors.py` | Parity vectors for the canlicapital validation API. |
 
-### `run_*` (8)
+### `run_*` (9)
 
 | script | first line of its docstring |
 |---|---|
@@ -510,6 +512,7 @@ and is worth more than a hand-made taxonomy that would drift.
 | `run_alphatrend_upstream_clean_workspace.py` | Regenerate AlphaTrend from sealed inputs in a temporary pinned-source workspace. |
 | `run_alphavintage_full_decision_clean_workspace.py` | Execute and seal AlphaVintage's four-gate replay in a temporary clean workspace. |
 | `run_crypto_carry_portable_v1.py` | Dry-run by default; execute one reserved crypto_carry_portable_v1 trial explicitly. |
+| `run_earnings_narrative_change_v1.py` | Earnings narrative change v1: the pre-registered return runner (calibration now, OOS gated). |
 | `run_prereg_investment_upstream_clean_workspace.py` | Replay historical ``prereg_investment`` from raw archives in a clean workspace. |
 
 ### `verify_*` (7)

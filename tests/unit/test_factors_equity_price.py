@@ -335,7 +335,7 @@ class TestAdjustedClosePIT:
     def test_two_for_one_split_is_not_a_minus_fifty_percent_return(self) -> None:
         # Raw: a 2:1 split halves the printed price on ex-date. Without adjustment the
         # close-to-close return across the ex-date is ln(0.5) ~= -69% (garbage). The
-        # PIT adjustment must halve the PRE-ex prices (xratio=0.5) so the *adjusted*
+        # PIT adjustment must halve the PRE-ex prices (xratio=2.0) so the *adjusted*
         # return is ~0. Realistic timing: the split is DECLARED at row 0 (available_at
         # = idx[0]), so every pre-ex bar is knowable and folds — the standard case.
         n = 8
@@ -343,7 +343,7 @@ class TestAdjustedClosePIT:
         idx = [T0 + k * DAY for k in range(n)]
         raw_px = [100.0] * ex_pos + [50.0] * (n - ex_pos)  # halve at ex-date
         raw = pd.DataFrame({"A": raw_px}, index=idx)
-        actions = self._actions("A", ex_date=idx[ex_pos], available_at=idx[0], ratio=0.5)
+        actions = self._actions("A", ex_date=idx[ex_pos], available_at=idx[0], ratio=2.0)
         adj = adjusted_close(raw, actions, tf_ms=DAY)
         # Pre-ex prices (knowable from row 0) folded x0.5; post-ex untouched.
         assert adj["A"].iloc[ex_pos - 1] == pytest.approx(50.0, rel=1e-12)
@@ -372,7 +372,7 @@ class TestAdjustedClosePIT:
         raw = pd.DataFrame({"A": [100.0] * ex_pos + [50.0] * (n - ex_pos)}, index=idx)
         # available_at = ex_date + 1 day: the EXACT flat-files case (no declaration_date) that
         # the old gate made unsatisfiable. Every pre-ex bar must STILL fold x0.5.
-        actions = self._actions("A", ex_date=idx[ex_pos], available_at=idx[ex_pos] + DAY, ratio=0.5)
+        actions = self._actions("A", ex_date=idx[ex_pos], available_at=idx[ex_pos] + DAY, ratio=2.0)
         adj = adjusted_close(raw, actions, tf_ms=DAY)
         for p in range(ex_pos):  # EVERY pre-ex bar back-adjusts x0.5 (was the bug: stayed 100)
             assert adj["A"].iloc[p] == pytest.approx(50.0, rel=1e-12), p
@@ -391,7 +391,7 @@ class TestAdjustedClosePIT:
         n = 6
         idx = [T0 + k * DAY for k in range(n)]
         raw = pd.DataFrame({"A": [100.0, 100.0, 100.0, 50.0, 50.0, 50.0]}, index=idx)
-        empty = self._actions("A", ex_date=idx[3], available_at=idx[3], ratio=0.5).iloc[0:0]
+        empty = self._actions("A", ex_date=idx[3], available_at=idx[3], ratio=2.0).iloc[0:0]
         adj = adjusted_close(raw, empty, tf_ms=DAY)
         for p in range(n):
             assert adj["A"].iloc[p] == pytest.approx(raw["A"].iloc[p], rel=1e-12), p
@@ -403,7 +403,7 @@ class TestAdjustedClosePIT:
         ex_pos = 3
         idx = [T0 + k * DAY for k in range(n)]
         raw = pd.DataFrame({"A": [100.0] * ex_pos + [60.0] * (n - ex_pos)}, index=idx)
-        actions = self._actions("A", ex_date=idx[ex_pos], available_at=idx[0], ratio=0.5)
+        actions = self._actions("A", ex_date=idx[ex_pos], available_at=idx[0], ratio=2.0)
         adj = adjusted_close(raw, actions, tf_ms=DAY)
         for p in range(ex_pos, n):  # post-ex rows raw-equal (not back-adjusted)
             assert adj["A"].iloc[p] == pytest.approx(raw["A"].iloc[p], rel=1e-12), p
@@ -434,13 +434,13 @@ class TestAdjustedClosePIT:
     def test_nan_close_propagates(self) -> None:
         idx = [T0 + k * DAY for k in range(4)]
         raw = pd.DataFrame({"A": [100.0, np.nan, 100.0, 50.0]}, index=idx)
-        actions = self._actions("A", ex_date=idx[3], available_at=idx[0], ratio=0.5)
+        actions = self._actions("A", ex_date=idx[3], available_at=idx[0], ratio=2.0)
         adj = adjusted_close(raw, actions, tf_ms=DAY)
         assert np.isnan(adj["A"].iloc[1])
 
     def test_other_instrument_actions_ignored(self) -> None:
         raw = pd.DataFrame({"A": [100.0, 100.0]}, index=[T0, T0 + DAY])
-        actions = self._actions("ZZZ", ex_date=T0 + DAY, available_at=T0, ratio=0.5)
+        actions = self._actions("ZZZ", ex_date=T0 + DAY, available_at=T0, ratio=2.0)
         pd.testing.assert_frame_equal(
             adjusted_close(raw, actions, tf_ms=DAY), raw.astype("float64")
         )
@@ -452,7 +452,7 @@ class TestAdjustedClosePIT:
 
     def test_no_input_mutation(self) -> None:
         raw = pd.DataFrame({"A": [100.0, 100.0, 50.0]}, index=[T0 + k * DAY for k in range(3)])
-        actions = self._actions("A", ex_date=T0 + 2 * DAY, available_at=T0 + 2 * DAY, ratio=0.5)
+        actions = self._actions("A", ex_date=T0 + 2 * DAY, available_at=T0 + 2 * DAY, ratio=2.0)
         raw_snap, act_snap = raw.copy(deep=True), actions.copy(deep=True)
         adjusted_close(raw, actions, tf_ms=DAY)
         pd.testing.assert_frame_equal(raw, raw_snap)
@@ -511,7 +511,7 @@ class TestAdjustedClosePanelFeatureDetect:
                 "ex_date": [idx[4]],
                 "available_at": [idx[0]],  # declared at the window start -> all pre-ex fold
                 "action_type": ["split"],
-                "ratio": [0.5],
+                "ratio": [2.0],  # vendor factor: a 2-for-1 stores 2.0
                 "cash_amount": [float("nan")],
             }
         )

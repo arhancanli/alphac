@@ -240,7 +240,7 @@
     {
       "@id": "reproduction.json",
       "@type": "File",
-      "sha256": "22935bb6982383286e3ed1ad5398ca727124e234feeafd5a7d4ff8d2e21735d7"
+      "sha256": "f1c18dc524af97b51852de63a67f7c2ac2751c097f1b87d8db60021d326bd296"
     },
     {
       "@id": "sbom.spdx.json",
