@@ -1,10 +1,15 @@
 # Trial ledger reconciliation, 2026-09-14
 
-Status: FINDING RECORDED, GUARD SHIPPED, RECONCILIATION NOT PERFORMED. The union of hypothesis
-identities this project has actually measured is larger than the union it publishes, because
-measurements were run in a clone of the repository that the canonical accounting cannot see.
-This document states the measured facts, the guard that now makes such a split visible nightly,
-and the two honest ways to close it. Closing it is an owner decision.
+Status: FINDING RECORDED, GUARD SHIPPED, **IMPORTED 2026-09-14 09:51Z** (option 1 below, taken by
+the operating session under the owner's delegation of the same day; the owner merges the
+record). The union of hypothesis identities this project had actually measured was larger than
+the union it published, because measurements were run in a second checkout that the canonical
+accounting could not see. This document states the measured facts, the guard that now makes
+such a split visible nightly, and the two honest ways to close it. The import receipt is
+`artifacts/audit/external_ledger_import_20260914T095114Z.json` (compact copy under
+`docs/design/evidence/`), the review record is `staged_reviews_held.320` in
+`config/trial_accounting.json`, and the re-audit after the import reads
+`CANONICAL_UNION_COMPLETE` at 347. The public ledger reads 347 from the next publish.
 
 ## What was measured
 

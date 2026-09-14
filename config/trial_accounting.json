@@ -1,6 +1,36 @@
 {
-  "accounting_last_reconciled": "2026-08-22",
+  "accounting_last_reconciled": "2026-09-14",
   "budget_last_reviewed": "2026-08-21",
+  "external_ledger_reconciliation": {
+    "canonical_identities_before": 229,
+    "canonical_identities_after": 347,
+    "evidence": "artifacts/audit/external_ledger_import_20260914T095114Z.json",
+    "external_tree": "~/alphac-prospective-pause-20260911 (worktree of this repository on codex/alphaforge-prospective-pause; code recorded on record/codex-prospective-pause-20260914)",
+    "identities_imported": 118,
+    "ledger_directories_imported": 52,
+    "new_experiments_run": 0,
+    "reason": "An autonomous research session measured 118 new hypothesis identities between 2026-09-12 and 2026-09-13 inside a second checkout of this repository. Every measurement was ledgered, reserved and packeted correctly there, and none was visible to the canonical union, so the public ledger published 229 identities and 171 remaining while the governed union stood at 347. The definition of a trial is where the measurement was run, not which checkout ran it, so the ledgers were imported with a hash-bound receipt; nothing was regraded, admitted or withdrawn.",
+    "recorded_at": "2026-09-14",
+    "guard": "scripts/audit_external_experiment_ledgers.py runs nightly as C11-external-ledgers and fails the board whenever an engine checkout on this machine holds identities the canonical union cannot see.",
+    "status": "IMPORTED"
+  },
+  "staged_reviews_held": {
+    "320": {
+      "reached_on": "2026-09-13",
+      "reached_in": "the codex/alphaforge-prospective-pause worktree, unseen by the canonical union until 2026-09-14",
+      "reviewed_on": "2026-09-14",
+      "reviewed_by": "operating session under the owner's delegation of 2026-09-14 (\"you are taking over everything\"); the owner merges this record",
+      "finding": "118 identities were spent in two days for zero admissions, almost all on re-measuring existing sleeves under corrected accounting (baseline, candidate and cost-stress arms of the same study each count as one identity by this policy's own definition). The budget's purpose is permission to test new economic mechanisms; it was consumed by variants.",
+      "decision": "Continue under the 400 ceiling with the 53 identities that remain. Every remaining identity is reserved through the v2 full-evidence reservation for a NEW economic mechanism; baseline re-measurements, cost or execution stress arms and accounting repairs of existing sleeves are declared supplemental measurements of their identity in the reservation before any result and are not new searches. No identity is reserved in any checkout other than the canonical tree. The next hard review is at 360 and is held before the 361st identity, not after it.",
+      "what_this_does_not_claim": "The 118 imported measurements are not judged here; the family tripwire of 40 was not assessed by this review because the audit does not yet compute families; no published deflated figure is restated by this record, the publish pipeline regenerates them from the union.",
+      "evidence": [
+        "artifacts/analysis/external_experiment_ledgers/result.json",
+        "artifacts/audit/external_ledger_import_20260914T095114Z.json",
+        "docs/design/TRIAL_LEDGER_RECONCILIATION_2026-09-14.md",
+        "docs/design/OPERATOR_LOG_2026-09.md"
+      ]
+    }
+  },
   "budget_review": {
     "authorization": "Explicit owner decision to fund the fourteen-sleeve programme, taken with the evidence cost on the table rather than inferred afterwards.",
     "authorized_by": "owner, 2026-08-21",
