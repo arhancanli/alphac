@@ -149,3 +149,10 @@ published number or spend a research identity are marked DECISION and name who m
   sealed episode's three fills are unchanged and a later fill is now reported as
   `subsequent_activity` (1 fill, 2026-09-10) instead of breaking the seal. Test added; the
   episode's numbers are asserted identical with and without the later fill.
+- 11:45Z. BRIEF (phase 2). `docs/design/DATA_UNLOCK_BRIEF_2026-09-14.md`, read from the
+  reachability screen and the eighteen feasibility results: two families already passed to
+  return pre-registration with no purchase (`earnings_narrative_change`,
+  `treasury_auction_concession`); two need a human reviewer (48 and 30 labels); thirteen need a
+  vendor, grouped so a rates vendor opens two families and an index provider opens two; four
+  cannot be bought (history, unpreserved record, non-executable marks). Decision requested:
+  reserve the two tier-0 identities, recruit the reviewer, obtain two quotes.
