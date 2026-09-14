@@ -77,9 +77,13 @@ def test_filing_reaction_window_follows_the_timing_clarification() -> None:
     assert cal.first_session_open_after(accepted) == dt.date(2026, 9, 2)
     assert cal.last_session_before(accepted) == dt.date(2026, 8, 31)
     # accepted Friday evening: the first session whose open is later is Tuesday (holiday skipped)
-    friday_evening = _ms(dt.date(2026, 9, 4), 21, 0)
+    friday_evening = _ms(dt.date(2026, 9, 4), 21, 0)  # 17:00 New York, after the close
     assert cal.first_session_open_after(friday_evening) == dt.date(2026, 9, 8)
-    assert cal.last_session_before(friday_evening) == dt.date(2026, 9, 3)
+    assert cal.last_session_before(friday_evening) == dt.date(2026, 9, 4)
+    # accepted before Wednesday's 09:30 open (06:00 UTC = 02:00 New York): ends the same day
+    early = _ms(dt.date(2026, 9, 2), 6, 0)
+    assert cal.first_session_open_after(early) == dt.date(2026, 9, 2)
+    assert cal.last_session_before(early) == dt.date(2026, 9, 1)
     # accepted after the calendar ends: no end session yet
     assert cal.first_session_open_after(_ms(dt.date(2026, 9, 10), 18)) is None
 

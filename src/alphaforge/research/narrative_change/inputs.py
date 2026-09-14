@@ -29,6 +29,7 @@ from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Literal
+from zoneinfo import ZoneInfo
 
 import numpy as np
 import pandas as pd
@@ -68,6 +69,15 @@ def _to_ms(values: pd.Series) -> pd.Series:
     # already be milliseconds while a nanosecond column would be a thousand times larger.
     epoch = pd.Timestamp(0, tz="UTC")
     return ((stamps - epoch) // pd.Timedelta(milliseconds=1)).astype("int64")
+
+
+_NEW_YORK = ZoneInfo("America/New_York")
+
+
+def _exchange_instant(day: dt.date, hour: int, minute: int) -> int:
+    """Epoch milliseconds of ``hour:minute`` New York time on ``day``."""
+    local = dt.datetime(day.year, day.month, day.day, hour, minute, tzinfo=_NEW_YORK)
+    return int(local.timestamp() * 1000)
 
 
 def _canonical(value: Any) -> bytes:
@@ -160,6 +170,14 @@ class SessionCalendar:
         self.opens = opens
         self.dates = [dt.datetime.fromtimestamp(x / 1000, tz=dt.UTC).date() for x in opens]
         self._index = {d: i for i, d in enumerate(self.dates)}
+        # The bar label is midnight UTC; the exchange opens at 09:30 and closes at 16:00 New
+        # York time. Acceptance timing is judged against those instants, never the label.
+        self.exchange_opens = np.asarray(
+            [_exchange_instant(d, 9, 30) for d in self.dates], dtype="int64"
+        )
+        self.exchange_closes = np.asarray(
+            [_exchange_instant(d, 16, 0) for d in self.dates], dtype="int64"
+        )
 
     @classmethod
     def from_spy_bars(cls, bars: pd.DataFrame) -> SessionCalendar:
@@ -184,17 +202,16 @@ class SessionCalendar:
         return self.dates[pos]
 
     def first_session_open_after(self, instant_ms: int) -> dt.date | None:
-        """Timing clarification: the first session whose opening timestamp is later than
-        ``instant_ms`` (the SEC acceptance instant). Session opens are the bar's ``ts_open``,
-        which the daily lake labels at 00:00 UTC of the session date; a filing accepted at
-        16:09 UTC on a session day therefore ends on the NEXT session, never the same one."""
-        pos = int(np.searchsorted(self.opens, instant_ms, side="right"))
+        """Timing clarification: the first session whose opening timestamp (09:30 New York)
+        is later than ``instant_ms``, the SEC acceptance instant. A filing accepted during a
+        session ends on the next session; one accepted before that day's open ends the same
+        day; one accepted after the close ends on the next session."""
+        pos = int(np.searchsorted(self.exchange_opens, instant_ms, side="right"))
         return self.dates[pos] if pos < len(self.dates) else None
 
     def last_session_before(self, instant_ms: int) -> dt.date | None:
-        """The latest session whose close (``ts_open + 1 day``) is before ``instant_ms``."""
-        closes = self.opens + DAY_MS
-        pos = int(np.searchsorted(closes, instant_ms, side="left")) - 1
+        """The latest session whose close (16:00 New York) is before ``instant_ms``."""
+        pos = int(np.searchsorted(self.exchange_closes, instant_ms, side="left")) - 1
         return self.dates[pos] if pos >= 0 else None
 
     def second_session_open_after_month_end(self, year: int, month: int) -> dt.date | None:
