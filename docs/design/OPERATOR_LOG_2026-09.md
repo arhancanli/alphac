@@ -319,3 +319,8 @@ published number or spend a research identity are marked DECISION and name who m
   hash 9ba408cb, reason recorded, authorization recorded as delegated), validated against the
   real packet and closure (WAIVED), and pinned by a test. The next ordinal (348) can be reserved
   through the v2 path; the tier-0 return runners are what remain before the first reservation.
+- 15:30Z. PLANNED. `docs/superpowers/plans/2026-09-14-earnings-narrative-change-return-runner-plan.md`:
+  seven tasks from the 2026-08-15 pre-registration to the first v2 reservation at ordinal 348,
+  each with its proof, building on the corpus tooling the feasibility pass already ran. Task 1
+  (the full 2005-2025 10-K corpus) is days of rate-limited downloads and runs unattended, never in
+  a tick. No identity is spent by the plan. The treasury-auction family follows the same shape.
