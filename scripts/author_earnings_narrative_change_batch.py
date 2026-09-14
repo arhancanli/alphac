@@ -463,6 +463,26 @@ def build(*, reserved_at: str) -> dict[str, Any]:
                     "selection_permitted": False,
                     "all_scenarios_must_publish": True,
                     "baseline_scenario_id": "cost_baseline",
+                    # Declared before any return: a diagnostic scenario PASSES when the
+                    # candidate's net Sharpe under it still clears the pre-registration's
+                    # stressed-cost kill floor (rule 1: stressed-cost Sharpe below 0.40 kills).
+                    # The same rule decides every cost, execution and capacity scenario and
+                    # every execution-dimension scenario; nothing is chosen after the result.
+                    "scenario_pass_rule": {
+                        "statistic": "net.annualized_sharpe",
+                        "operator": ">=",
+                        "threshold": 0.40,
+                        "source": "docs/design/PREREG_EARNINGS_NARRATIVE_CHANGE.md kill rule 1",
+                    },
+                    "capacity_curve_rule": {
+                        "fill_ratio": "scenario mean stock gross over the baseline scenario's",
+                        "stressed_cost_bps": "scenario cost drag per unit turnover, in bps",
+                        "net_sharpe": "scenario net annualized Sharpe",
+                        "qualifying_point": (
+                            "net_sharpe at or above the contract's net_sharpe_min and fill_ratio "
+                            "at or above capacity_minimum_stressed_fill_ratio"
+                        ),
+                    },
                     "minimum_capacity_points": thresholds["capacity_curve_min_points"],
                     "required_capacity_usd": thresholds["capacity_usd_min"],
                     "scenario_hashes_frozen_before_returns": True,
