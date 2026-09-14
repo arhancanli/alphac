@@ -156,3 +156,10 @@ published number or spend a research identity are marked DECISION and name who m
   vendor, grouped so a rates vendor opens two families and an index provider opens two; four
   cannot be bought (history, unpreserved record, non-executable marks). Decision requested:
   reserve the two tier-0 identities, recruit the reviewer, obtain two quotes.
+- 12:05Z. PUBLISHED. The 11:25Z tick's deploy (started 11:48Z) never finished its first upload
+  inside the tick's 600 s watchdog and was killed; Vercel shows no deployment for it, builds
+  themselves take ~25 s, and the Mac uploads at ~2 MB/s, so the stall was Vercel's file API
+  (500s all morning). A manual run of the same script at 12:01Z succeeded on attempt 1 in under
+  four minutes: landing and app deployed and aliased, IndexNow accepted 263 URLs. First publish
+  from the git worktree, first publish of the 347-identity ledger and the prospective register.
+  Tick watchdog raised 600 -> 1500 s so one slow upload plus a retry fits inside a tick.
