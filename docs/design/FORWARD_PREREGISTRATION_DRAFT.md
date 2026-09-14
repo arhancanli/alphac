@@ -65,7 +65,7 @@ restarts** — see §6.
 
 ### 2.2 The sizing configuration
 
-Bound to fingerprint `sha256:654432cc…ded4a6a`
+Bound to fingerprint `sha256:553aff51…b814e09`
 (`artifacts/engineering/live_config_fingerprint.json`, declared in
 `config/live_change_contract.json`; re-pinned 2026-09-14 when coverage was extended to the
 book-level drawdown brake with its activation flag false, a coverage change, not a trading change):
@@ -195,7 +195,7 @@ UNSIGNED — REQUIRES OWNER
 
 signed_by:
 signed_at:
-config_fingerprint:  sha256:654432cc37acab969f8b70af80b0ef551f624098a59e030c0133006efded4a6a
+config_fingerprint:  sha256:553aff517efdc069c2ee80747ef9a9d750da817ceeab8dbc344cae050b814e09
 record_start:        2026-08-07
 first_judgement:     2027-08-07  (1 year)
 ```

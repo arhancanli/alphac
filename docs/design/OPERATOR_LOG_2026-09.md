@@ -708,6 +708,17 @@ published number or spend a research identity are marked DECISION and name who m
   promoted mode), the tick writes the audit, a test pins `--write` on that step, and the audit
   artifact was rewritten in the publisher tree by hand so the next tick after the merge
   publishes. Lesson recorded: a gate I promote must be re-read everywhere it was asserted.
+- 2026-09-15 02:55Z. GATE BLOCKED THE PUBLISH, RE-PINNED (PR #48). The 22:25Z tick, the first
+  under the activated contract, was refused by the live-change gate: declared 654432cc, measured
+  553aff51, one key moved, `risk_path_settings.book_ladder_source: file -> https`. The activation
+  PR also moved BookLadderCfg.source's CODE default from file to https (so it equals base.yaml,
+  a fix for a CI failure), and the fingerprint surface reads that setting; the surface declared
+  at activation still said file because the default moved after the activation run. The traded
+  configuration is exactly what entry 11 declares (every sleeve reads the public artifact), so
+  this is a re-pin of the same declared change, not a new one and not a new epoch: the
+  declared fingerprint and surface, the forward-evidence contract, the current-book study pin
+  and the pre-registration draft now carry 553aff51, and entry 11 says why. The web deploy was
+  skipped by the gate for that one tick, as designed; nothing traded differently.
 - 2026-09-15 02:45Z. ROLLOUT VERIFIER (PR #47). The tick's rollout verifier refused the Frankfurt
   receipt every run: "deployment receipt after-snapshot does not cover exactly the contract's
   required_files paths". The deployment tool snapshots every path the contract carries (the three
