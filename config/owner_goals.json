@@ -29,9 +29,9 @@
       "quoted_outcome": "Combined portfolio maximum drawdown **no greater than 10%**",
       "statistic": "REALIZED_MAXIMUM_DRAWDOWN_BOUND",
       "stronger_than": "expected_maximum_drawdown, the statistic config/forward_evidence_contract.json evaluates as expected_max_drawdown_target and config/sleeve_admission_contract.json gates as book_expected_max_drawdown_max, both sealed at 0.11 and published beside this bound as the modeled objective, never mixed with it",
-      "mechanism": "config/drawdown_control_contract.json declares half gross at 5.5 percent below the high-water mark and flat at 11 percent, absorbing until an owner rearm. That ladder was measured against the superseded 11 percent objective and CANNOT enforce a 10 percent bound; a ladder consistent with this bound (flat at or below 10 percent) must be measured with scripts/analyze_drawdown_control.py and declared before activation. A brake bounds each episode up to a one-day overshoot and does not make losses impossible.",
+      "mechanism": "config/drawdown_control_contract.json v1.1 declares half gross at 5 percent below the high-water mark and flat at 10 percent, absorbing until an owner rearm; every parameter is derived from this bound (half = bound / 2, flat = bound) and measured by docs/design/DRAWDOWN_CONTROL_V1_PROTOCOL.md on the current-composition study paths. A brake bounds each episode up to a one-day overshoot and does not make losses impossible. It is not activated.",
       "reported_in": "artifacts/engineering/forward_evidence_maturity.json drawdown_evidence (realized_live_max_drawdown against realized_max_drawdown_bound) and artifacts/engineering/book_drawdown_ladder.json",
-      "mechanism_status": "DECLARED_LADDER_INCONSISTENT_WITH_BOUND_REMEASUREMENT_REQUIRED_BEFORE_ACTIVATION"
+      "mechanism_status": "DECLARED_LADDER_DERIVED_FROM_BOUND_MEASURED_NOT_LIVE"
     },
     "qualified_economically_distinct_sleeves": {
       "minimum": 14,

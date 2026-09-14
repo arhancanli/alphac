@@ -10,6 +10,8 @@ from pathlib import Path
 import numpy as np
 import pytest
 
+from alphaforge.research.owner_goals import load_owner_goals
+
 ROOT = Path(__file__).resolve().parents[2]
 SCRIPT = ROOT / "scripts" / "analyze_drawdown_control.py"
 _SPEC = importlib.util.spec_from_file_location("analyze_drawdown_control", SCRIPT)
@@ -42,12 +44,24 @@ def test_ladder_specs_are_read_from_the_contract_not_typed() -> None:
 
 
 def test_the_contract_is_declared_before_measurement_and_its_bound_is_the_owner_goal() -> None:
-    assert CONTRACT["bound"] == 0.11
+    # The bound is the owner's (config/owner_goals.json), never typed here.
+    assert CONTRACT["bound"] == load_owner_goals()["goals"]["combined_max_drawdown"]["bound"]
+    assert CONTRACT["bound_source"] == "config/owner_goals.json goals.combined_max_drawdown.bound"
     assert CONTRACT["acceptance_rule"]["declared_before_measurement"] is True
     assert CONTRACT["trial_accounting"]["hypothesis_identities_spent"] == 0
     assert CONTRACT["activation"]["live"] is False
     protocol = MOD.PROTOCOL.read_text()
     assert "Frozen:** 2026-09-14, before executing the study" in protocol
+    assert "## v1.1: the ladder re-derived from the 10 percent bound" in protocol
+    assert CONTRACT["history"][0]["bound"] == 0.11 and CONTRACT["history"][0]["superseded_on"]
+    rule = CONTRACT["acceptance_rule"]
+    old_rule = CONTRACT["history"][0]["acceptance_rule"]
+    old_bound = CONTRACT["history"][0]["bound"]
+    for key in (
+        "p95_max_drawdown_with_absorbing_ladder_max",
+        "p99_max_drawdown_with_absorbing_ladder_max",
+    ):
+        assert rule[key] == pytest.approx(old_rule[key] / old_bound * CONTRACT["bound"], abs=1e-6)
 
 
 def test_baseline_check_fails_closed_when_the_published_study_is_not_reproduced() -> None:
@@ -96,14 +110,19 @@ def test_acceptance_applies_the_declared_thresholds_to_the_worse_model() -> None
     def cell(p95, p99):
         return {"zero_drift": {"absorbing": {"max_drawdown": {"p95": p95, "p99": p99}}}}
 
+    rule = CONTRACT["acceptance_rule"]
+    p95_max = float(rule["p95_max_drawdown_with_absorbing_ladder_max"])
+    p99_max = float(rule["p99_max_drawdown_with_absorbing_ladder_max"])
+    # Cells sit exactly on the declared thresholds (derived from the contract, never typed):
+    # the worse model decides, and exactly-at-threshold is accepted.
     results = {
-        "circular_moving_block_bootstrap_63": cell(0.09, 0.10),
-        "correlation_regime": cell(0.11, 0.12),
+        "circular_moving_block_bootstrap_63": cell(p95_max - 0.02, p99_max - 0.02),
+        "correlation_regime": cell(p95_max, p99_max),
     }
     verdict = MOD.acceptance(results, CONTRACT)
-    assert verdict["conservative_p95_with_absorbing_ladder"] == 0.11
+    assert verdict["conservative_p95_with_absorbing_ladder"] == p95_max
     assert verdict["accepted_as_bound_mechanism"] is True
-    results["correlation_regime"] = cell(0.125, 0.12)
+    results["correlation_regime"] = cell(p95_max + 0.015, p99_max)
     assert MOD.acceptance(results, CONTRACT)["accepted_as_bound_mechanism"] is False
 
 

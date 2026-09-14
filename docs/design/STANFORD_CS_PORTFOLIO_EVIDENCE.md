@@ -92,7 +92,7 @@ Boundary: Archive integrity is not result replay or rights clearance; no DOI, ex
 - `sharpe_status`: IMMATURE_RECORD_TOO_SHORT
 - `current_sleeves`: 4
 - `target_sleeves`: 14
-- `provenance_passes`: True
+- `provenance_passes`: False
 
 Boundary: The forward Sharpe, drawdown and diversification objectives are not established.
 
