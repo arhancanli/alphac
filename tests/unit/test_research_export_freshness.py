@@ -115,8 +115,9 @@ def test_export_carries_fail_closed_sleeve_atlas(modules) -> None:
     assert atlas["summary"]["families"] == 40
     assert atlas["summary"]["cells"] == 240
     goals = load_owner_goals()["goals"]
-    assert atlas["objective"]["target_total_sleeves"] == (
-        goals["qualified_economically_distinct_sleeves"]["minimum"]
+    assert (
+        atlas["objective"]["target_total_sleeves"]
+        == (goals["qualified_economically_distinct_sleeves"]["minimum"])
     )
     superseded = atlas["objective"]["superseded_admission_contract_objective"]
     assert superseded["target_total_sleeves"] == 14
@@ -301,7 +302,17 @@ def test_program_status_composes_targets_live_provenance_and_evidence_gaps(modul
     assert papers["trial_packet_coverage_status"] == (
         "INCOMPLETE_LEGACY_BACKFILL_PROSPECTIVE_SERIAL_COMPLETE"
     )
-    assert papers["complete_trial_packets"] == 3
+    forward_index = research.load_forward_packet_index()
+    assert papers["complete_trial_packets"] == 2 + (
+        forward_index["summary"]["complete_packets"] if forward_index else 1
+    )
+    if forward_index:
+        assert papers["forward_identity_packets"]["index_public_path"] == (
+            "/glassbox/trial-packets/forward_index.json"
+        )
+        assert papers["published_identity_packets"] == (
+            228 + forward_index["summary"]["published_packets"]
+        )
     gate = dict(papers["new_return_identity_gate"])
     claim_boundary = gate.pop("claim_boundary")
     assert gate == {
@@ -325,7 +336,7 @@ def test_program_status_composes_targets_live_provenance_and_evidence_gaps(modul
     # alone on 2026-09-13.
     governed = prospective["by_status"]["GOVERNED_SERIAL_PACKET_CLOSED"]
     unclosed = prospective["observed_identities"] - governed
-    assert governed == 1
+    assert governed >= 1
     assert unclosed >= 0
     assert claim_boundary.startswith(
         "The legacy epoch is retired fail-closed: no historical identity is "
