@@ -324,3 +324,10 @@ published number or spend a research identity are marked DECISION and name who m
   each with its proof, building on the corpus tooling the feasibility pass already ran. Task 1
   (the full 2005-2025 10-K corpus) is days of rate-limited downloads and runs unattended, never in
   a tick. No identity is spent by the plan. The treasury-auction family follows the same shape.
+- 15:50Z. CORRECTED. The return-runner plan's Tasks 1 and 2 were already done on 2026-08-15/16:
+  `artifacts/ingest/earnings_narrative_change/` holds the whole 10-K corpus (83,070 filings,
+  8,122 CIKs, 2005-2025, 73,744 Item 1A sections, 331 hash-bound parts, `complete: true`) and
+  65,050 predecessor pairs with Jaccard already computed. I wrote "days of downloads" from the
+  feasibility probe's sample counts without opening the ingest directory; the plan now says so
+  and the remaining work is Tasks 3 to 7: market inputs, signal, portfolio, evaluation with the
+  v2 reservation at ordinal 348, and the run.
