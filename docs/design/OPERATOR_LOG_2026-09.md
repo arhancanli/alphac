@@ -144,3 +144,8 @@ published number or spend a research identity are marked DECISION and name who m
   removed it. On reading `scripts/lib/bounded.sh` afterwards: `deploy_lock_acquire` already steals
   a lock older than 30 minutes, so the 11:25Z tick would have cleared it unaided. Harmless, and
   not needed; recorded so the next reader does not repeat it.
+- 11:40Z. FIXED. `audit_crypto_lab_carry_crash.py` raised "expected the frozen three-fill LAB
+  sequence, got 4" every tick since the 2026-09-10 rebalance added a fourth LABUSDT fill; the
+  sealed episode's three fills are unchanged and a later fill is now reported as
+  `subsequent_activity` (1 fill, 2026-09-10) instead of breaking the seal. Test added; the
+  episode's numbers are asserted identical with and without the later fill.

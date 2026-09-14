@@ -13,9 +13,7 @@ import pandas as pd
 
 ROOT = Path(__file__).resolve().parents[1]
 DB_PATH = ROOT / "var/trading_crypto_perp.sqlite"
-FUNDING_PATH = (
-    ROOT / "data/lake/funding/instrument_id=BINANCE:PERP:LABUSDT/year=2026/data.parquet"
-)
+FUNDING_PATH = ROOT / "data/lake/funding/instrument_id=BINANCE:PERP:LABUSDT/year=2026/data.parquet"
 OUTPUT_PATH = ROOT / "artifacts/engineering/crypto_lab_carry_crash_incident.json"
 INSTRUMENT = "BINANCE:PERP:LABUSDT"
 
@@ -30,9 +28,15 @@ def _sha256(data: bytes) -> str:
 
 def analyze(fills: list[dict[str, Any]], funding: pd.DataFrame) -> dict[str, Any]:
     ordered = sorted(fills, key=lambda row: int(row["ts"]))
-    if len(ordered) != 3:
+    # The sealed episode is the first three fills (long entry, long close, short reversal).
+    # The instrument kept trading after the seal (a fourth fill arrived with the 2026-09-10
+    # rebalance), and the audit used to raise on any count other than three, which turned an
+    # ordinary later trade into an hourly WARN and a stale incident record. Later fills are
+    # reported as subsequent activity; the episode's numbers do not move.
+    if len(ordered) < 3:
         raise ValueError(f"expected the frozen three-fill LAB sequence, got {len(ordered)}")
-    entry, close, reversal = ordered
+    entry, close, reversal = ordered[:3]
+    subsequent = ordered[3:]
     if not (
         entry["side"] == "buy"
         and close["side"] == "sell"
@@ -103,6 +107,28 @@ def analyze(fills: list[dict[str, Any]], funding: pd.DataFrame) -> dict[str, Any
             "classification": "PRE_FLAGSHIP_WINDOW_DOES_NOT_EXPLAIN_CURRENT_FORWARD_LOSS",
         },
         "decision": "PRESERVE_LOSS_NO_PRICE_JUMP_GUARD_NO_WEIGHT_CHANGE",
+        "subsequent_activity": {
+            "fills_after_sealed_episode": len(subsequent),
+            "first_utc": (
+                pd.to_datetime(int(subsequent[0]["ts"]), unit="ms", utc=True)
+                .isoformat()
+                .replace("+00:00", "Z")
+                if subsequent
+                else None
+            ),
+            "last_utc": (
+                pd.to_datetime(int(subsequent[-1]["ts"]), unit="ms", utc=True)
+                .isoformat()
+                .replace("+00:00", "Z")
+                if subsequent
+                else None
+            ),
+            "note": (
+                "Fills after the short reversal belong to ordinary later rebalances and are "
+                "not part of the sealed episode; they are counted here so the record says the "
+                "instrument kept trading rather than pretending the story ended."
+            ),
+        },
     }
 
 
@@ -134,8 +160,7 @@ def build_document() -> dict[str, Any]:
             },
             "point_in_time_funding": {
                 "path": (
-                    "data/lake/funding/instrument_id=BINANCE:PERP:LABUSDT/"
-                    "year=2026/data.parquet"
+                    "data/lake/funding/instrument_id=BINANCE:PERP:LABUSDT/year=2026/data.parquet"
                 ),
                 "sha256": _sha256(FUNDING_PATH.read_bytes()),
             },
