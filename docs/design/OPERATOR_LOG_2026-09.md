@@ -374,3 +374,15 @@ published number or spend a research identity are marked DECISION and name who m
   close 124.81, raw 499.23 over four); the probe's local inversion is retired so it cannot
   double-invert. The neutralized rows are being classified next: a small split, or a stored
   reciprocal that the fix will turn wrong and that needs a versioned repair.
+- 16:45Z. VERIFIED AFTER THE FIX. The same whole-lake audit under the corrected kernel:
+  data/lake 3,857 of 4,662 determined splits neutralized (was 228), 89 still doubled (was
+  4,135); data/lake_sharadar 3,746 neutralized (was 208), 93 still doubled (was 4,000). Reading
+  each stored ratio's convention off the raw ex-date move: 4,116 and 3,984 rows follow the
+  vendor convention, 90 and 93 are stored as the reciprocal (Amarin 2025-04-11 stored 20.0 with a
+  raw move of +3.02, AstraZeneca's ADR ratio changes, Bank of Chile's), the ADR-ratio class the
+  corrected-lake work already isolates as `adrratiosplit`. Those rows are listed in the audit
+  artifact (`reciprocal_rows`) for a versioned lake repair with its own receipt; they are not
+  re-inverted anywhere. The kernel fix is committed signed (19b8fdc), the audit artifact tracked
+  (13435db). Live effect: the equity walk-forwards regenerate on the next tick after this lands
+  on main and the publisher tree switches; the equity target books change on names that split
+  within 252 sessions.
