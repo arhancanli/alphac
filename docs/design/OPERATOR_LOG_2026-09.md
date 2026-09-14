@@ -409,3 +409,22 @@ published number or spend a research identity are marked DECISION and name who m
   (adjusted 124.81 the day before, 129.04 after), Apple's action rows equal the base lake's
   (56 dividends, 4 splits), and the 2007-03 cohort that lost 749 of 1,759 mapped issuers on the
   base lake loses none. The full 2006 to 2015 calibration is running on it.
+- 17:02Z. CALIBRATION, 2006 TO 2015, ON THE FULL LAKE (plumbing only, by the pre-registration;
+  no parameter may change and nothing is promoted or killed by it). 116 acceptance-month
+  cohorts, 5,529 instruments, 80 seconds. 59 cohorts ranked; 40 had fewer than 20 eligible
+  issuers, 15 saturated the one-hot industry design (fewer than 10 residual degrees of
+  freedom), 2 had fewer than 5 names in a tail. Attrition of 32,386 pairs: 11,098 below the
+  $5 million median dollar-volume floor, 8,097 below the $5 close, 1,408 issuers with no
+  Sharadar ticker row at entry, 91 with no close before entry (was thousands on the base lake).
+  56 force-flats over ten years, every one a delisting the full lake now shows. The plumbing
+  holds: turnover 9.7 times a year, average stock gross 0.88 plus a near-zero hedge (beta to
+  SPY minus 0.02), capacity bound by one 2009 name at 1 percent of ADV. The number the
+  pre-registration says calibration cannot act on, reported anyway because hiding it would be
+  worse: at the locked direction (long stable, short changed) the 2007 to 2015 net Sharpe is
+  minus 0.81, Newey-West t minus 2.31, stressed minus 1.28, maximum drawdown 42.7 percent,
+  below 98.4 percent of mean-zero block-bootstrap controls. Every year but 2010 and 2015 is
+  negative. This is not the out-of-sample test and it changes nothing about the locked identity;
+  it is disclosed so the owner spends the 2016 to 2025 identity knowing what the earlier
+  interval looked like. The deflated-Sharpe union count in this run (191) is an artifact of
+  running from a scratch tree that cannot see every ledger; the canonical union is 347 and the
+  out-of-sample run must be made from the main tree.
