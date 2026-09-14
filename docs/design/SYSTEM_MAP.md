@@ -8,9 +8,9 @@ line of its own docstring, each pipeline's steps are the scripts it actually inv
 contract's boundary is the boundary it states about itself. A script with no docstring appears as
 having none.
 
-At a glance: **359 Python scripts**, **17 shell entry points**,
+At a glance: **360 Python scripts**, **17 shell entry points**,
 **33 configuration contracts**, **30 engineering artifacts**,
-**431 unit test files**, **23 data directories**, **9 scheduled jobs**.
+**432 unit test files**, **23 data directories**, **9 scheduled jobs**.
 
 
 ## What runs on a timer
@@ -532,7 +532,7 @@ and is worth more than a hand-made taxonomy that would drift.
 | `verify_sleeve_publication_replays.py` | Replay audit-only sleeve evidence builders and prove no result or trial ledger changed. |
 | `verify_transparency.py` | Verify the public track-record chain, signatures and disclosed payloads. |
 
-### everything else (129)
+### everything else (130)
 
 | script | first line of its docstring |
 |---|---|
@@ -580,6 +580,7 @@ and is worth more than a hand-made taxonomy that would drift.
 | `health_check.py` | Canli Capital / AlphaForge — daily health monitor. |
 | `import_active_ownership_blind_labels.py` | Validate and import a completed independent Item 4 blind review. |
 | `import_external_experiment_ledgers.py` | Bring experiment ledgers recorded in another checkout into the canonical union, with a receipt. |
+| `import_external_identity_packets.py` | Bring the 118 externally measured identities' packets home, each with a decided closure. |
 | `live_cycle.py` | Genuine broker-executed live paper cycle — turns a sleeve from SIMULATION into REAL Alpaca fills. |
 | `macro_refresh_transport.py` | Bounded retry for read-only public-source downloads; permanent failures fail fast. |
 | `maker_shadow.py` | MAKER SHADOW VALIDATION — measure, forward and honestly, what post-only execution |

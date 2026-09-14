@@ -542,3 +542,24 @@ published number or spend a research identity are marked DECISION and name who m
   columns. The Item 7 corpus is being parsed offline from the 82,491 cached documents
   (`scripts/build_sec_10k_item7_corpus.py`, no network read, 92.5 percent extraction on the first
   120 filings), into `artifacts/ingest/earnings_narrative_change/item7_parts`.
+- 19:36Z. DECISION (owner, delegated) and IMPORT. The seriality guard blocked every new
+  reservation, correctly: the 2026-09-14 reconciliation had imported the 52 experiment ledgers
+  of the second checkout (118 forward-epoch identities, union 347) but not their packets, so
+  118 identities stood undecided in the canonical tree. `scripts/import_external_identity_packets.py`
+  brought each packet home (content hash verified, bound evidence copied and hash-checked),
+  wrote one canonical admission closure per identity with disposition KILL, and re-sealed the
+  packet. The basis is each packet's own decision statement: 2 studies said REJECT under their
+  frozen scenario, 1 said RETAIN FOR FURTHER TESTING (recorded verbatim, flagged as a
+  construction retained for a NEW identity; this identity is spent and final), and the other
+  115 describe retrospective, known-history or development measurements on inspected history,
+  which the admission contract can never admit as they are. None was admitted; the union count
+  is unchanged; the record is `config/trial_accounting_reviews.json` external_packet_import.
+  Seriality after: 119 forward identities decided (118 KILL, 1 waived).
+- 19:38Z. PROVEN (dry run). `scripts/author_earnings_narrative_change_batch.py` authored the
+  narrative-change batch in the worktree: registry sealed; existing-book snapshot and
+  bottom-decile stress mask frozen; drawdown specification, overlay configuration and an
+  execution scenario manifest (17 applicable dimensions x 3 scenarios, 9 excused with hash-bound
+  evidence) written; both reservations validated by the in-force guard at ordinals 348 and 349
+  as one atomic batch; both filled-reservation audits SATISFIABLE with disposition ceiling
+  ADMIT. No return was read. The real authoring and the single out-of-sample batch run happen
+  in the publisher tree once #40 lands, because the reservation binds the merged runner's hash.
