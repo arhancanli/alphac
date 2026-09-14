@@ -370,3 +370,16 @@ published number or spend a research identity are marked DECISION and name who m
   cell is `artifacts/scratch_dd_ladder_5_10/result.json` in the goals worktree and is not
   published. Until that PR lands, `owner_goals.json` keeps
   `mechanism_status` INCONSISTENT_WITH_BOUND and the brake stays off.
+- 18:50Z. AUDIT. Cost realism on the paper-live record, cost by cost against research, with file
+  and line evidence: `docs/design/COST_REALISM_AUDIT_2026-09-14.md`. The crypto sleeve charges
+  commission, real spread and impact (fills walk the live book) and perpetual funding since
+  2026-08-06. The equity sleeves' published NAV is Alpaca's paper equity verbatim: no commission,
+  no spread or impact, no borrow, no financing. Cash yield and FX are unmodelled everywhere.
+  The forward record is therefore gross of equity frictions while the owner's Sharpe target is
+  net. Repair shape (next PR): a declared cost contract; the equity curve charged by the same
+  cost model research uses, borrow on short notional, financing on margin, cash yield on idle
+  cash; broker NAV retained as the original beside the cost-charged curve; the change declared
+  in the live-change contract so the epoch rule decides. `owner_goals.json` says
+  EQUITY_PAPER_LIVE_GROSS_OF_FRICTIONS_REPAIR_PENDING.
+- 18:55Z. PR. #38 `governance/owner-goals-in-force-20260914` opened on main; canlicapital #12
+  (claim relabel) waits for the first publish that carries the goals.
