@@ -52,6 +52,7 @@ PREREG = REPO / "docs" / "design" / "PREREG_EARNINGS_NARRATIVE_CHANGE.md"
 V2_TEMPLATE = REPO / "config" / "forward_full_evidence_reservation_v2_template.json"
 OUT_ROOT = REPO / "artifacts" / "research" / "earnings_narrative_change_v1"
 SPY_LAKE = REPO / "data" / "lake_mf"
+FULL_LAKE = REPO / "data" / "lake_sharadar_full"
 PACKAGE = REPO / "src" / "alphaforge" / "research" / "narrative_change"
 
 WINDOWS = {
@@ -120,7 +121,14 @@ def refuse_oos_without_authorization(reservation: Path | None) -> None:
         raise SystemExit("--reservation is required for the out-of-sample window")
 
 
-def run(window: str, *, max_cohorts: int | None, out_root: Path, reservation: Path | None) -> Path:
+def run(
+    window: str,
+    *,
+    max_cohorts: int | None,
+    out_root: Path,
+    reservation: Path | None,
+    lake: Path | None = None,
+) -> Path:
     t0 = time.time()
     if window == "oos":
         refuse_oos_without_authorization(reservation)
@@ -178,7 +186,15 @@ def run(window: str, *, max_cohorts: int | None, out_root: Path, reservation: Pa
     exit_bound = min(end, calendar.dates[-1])
     panel_end = _ms(exit_bound) + inputs.DAY_MS
     settings = load_settings("sharadar")
-    reader = PITDataReader(LakePaths(settings.paths.lake_dir))
+    # The survivorship-inclusive lake (scripts/build_sharadar_full_history_lake.py) is the
+    # default when it exists; the base lake is survivor-only (43 percent of a 2007 cohort had no
+    # partition there) and is accepted only when named explicitly.
+    lake_dir = (
+        lake
+        if lake is not None
+        else (FULL_LAKE if FULL_LAKE.exists() else Path(settings.paths.lake_dir))
+    )
+    reader = PITDataReader(LakePaths(lake_dir))
     print(
         f"[{window}] {len(months)} cohorts, {len(ids)} instruments, loading panel ...", flush=True
     )
@@ -190,7 +206,7 @@ def run(window: str, *, max_cohorts: int | None, out_root: Path, reservation: Pa
         calendar=calendar,
         ticker_history_sha256=history.source_sha256,
         spy_source=str(SPY_LAKE.relative_to(REPO)),
-        lake_dir=Path(settings.paths.lake_dir),
+        lake_dir=lake_dir,
     )
     spy_id = inputs.SPY_INSTRUMENT_ID
     spy_adjusted = spy_panel.adjusted_close[spy_id]
@@ -318,8 +334,15 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--max-cohorts", type=int, default=None, help="smoke runs only")
     ap.add_argument("--out", type=Path, default=OUT_ROOT)
     ap.add_argument("--reservation", type=Path, default=None)
+    ap.add_argument("--lake", type=Path, default=None, help="price lake (default: the full one)")
     args = ap.parse_args(argv)
-    run(args.window, max_cohorts=args.max_cohorts, out_root=args.out, reservation=args.reservation)
+    run(
+        args.window,
+        max_cohorts=args.max_cohorts,
+        out_root=args.out,
+        reservation=args.reservation,
+        lake=args.lake,
+    )
     return 0
 
 
