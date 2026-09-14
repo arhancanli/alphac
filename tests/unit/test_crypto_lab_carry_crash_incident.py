@@ -33,3 +33,25 @@ def test_genuine_crash_sequence_is_preserved_without_authorizing_change() -> Non
     assert result["long_episode"]["net_price_pnl_after_entry_and_close_fees_quote"] == -99.11
     assert result["decision"] == "PRESERVE_LOSS_NO_PRICE_JUMP_GUARD_NO_WEIGHT_CHANGE"
     assert result["forward_record_relation"]["classification"].startswith("PRE_FLAGSHIP")
+
+
+def test_a_fill_after_the_sealed_episode_is_subsequent_activity_not_a_broken_seal() -> None:
+    """2026-09-14: the 2026-09-10 rebalance added a fourth LAB fill and the audit raised on any
+    count other than three, turning an ordinary later trade into an hourly WARN. The episode's
+    numbers must be identical with and without the later fill."""
+    fills = [
+        {"ts": 1_000, "side": "buy", "qty": 1.0, "price": 100.0, "fee_quote": 0.05},
+        {"ts": 2_000, "side": "sell", "qty": 1.0, "price": 1.0, "fee_quote": 0.05},
+        {"ts": 2_000, "side": "sell", "qty": 5.0, "price": 1.0, "fee_quote": 0.01},
+    ]
+    later = {"ts": 9_000, "side": "sell", "qty": 20.0, "price": 0.5, "fee_quote": 0.01}
+    funding = pd.DataFrame(
+        {"ts_funding": [pd.Timestamp(1_500, unit="ms", tz="UTC")], "rate": [-0.01]}
+    )
+    sealed = MODULE.analyze(fills, funding)
+    extended = MODULE.analyze([*fills, later], funding)
+    assert sealed["long_episode"] == extended["long_episode"]
+    assert sealed["execution_sequence"] == extended["execution_sequence"]
+    assert sealed["subsequent_activity"]["fills_after_sealed_episode"] == 0
+    assert extended["subsequent_activity"]["fills_after_sealed_episode"] == 1
+    assert extended["subsequent_activity"]["first_utc"] == "1970-01-01T00:00:09Z"
