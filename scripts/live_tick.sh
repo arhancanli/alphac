@@ -206,7 +206,11 @@ WATCHDOG_S=2400   # 40 min cap: hourly cache-hit cycles are ~3 min; the once-dai
   # (This no longer broad-kills `vercel deploy`: that would also kill the nightly publish,
   #  which overlaps this job by schedule. The deploy is now bounded by PID inside the
   #  script itself and the two jobs share a lock — see scripts/lib/bounded.sh.)
-  ( sleep 600; pkill -TERM -f "live_deploy_hourly" 2>/dev/null; \
+  # 2026-09-14: 600 s killed a deploy whose FIRST upload attempt alone exceeded ten minutes
+  # (Vercel's file API returned 500s all morning and uploads crawled; builds themselves take
+  # ~25 s). The bound still protects the trading lock; it is now long enough for one slow upload
+  # plus one retry. The health run's tick-lock wait (300 s) may WARN C7c on a night this fires.
+  ( sleep 1500; pkill -TERM -f "live_deploy_hourly" 2>/dev/null; \
     sleep 15; pkill -KILL -f "live_deploy_hourly" 2>/dev/null ) &
   _DWD=$!
   if [ "$_PUBLISHABLE" -eq 1 ]; then
