@@ -673,3 +673,14 @@ published number or spend a research identity are marked DECISION and name who m
   companion-file rollout to Frankfurt (contract and base.yaml), which is the next step and is
   currently refused by the rollout contract's own drift check because PR #40 moved
   trial_reservation.py: the contract must be re-authored with desired_revisions before --apply.
+- 2026-09-15 02:55Z. GATE BLOCKED THE PUBLISH, RE-PINNED (PR #48). The 22:25Z tick, the first
+  under the activated contract, was refused by the live-change gate: declared 654432cc, measured
+  553aff51, one key moved, `risk_path_settings.book_ladder_source: file -> https`. The activation
+  PR also moved BookLadderCfg.source's CODE default from file to https (so it equals base.yaml,
+  a fix for a CI failure), and the fingerprint surface reads that setting; the surface declared
+  at activation still said file because the default moved after the activation run. The traded
+  configuration is exactly what entry 11 declares (every sleeve reads the public artifact), so
+  this is a re-pin of the same declared change, not a new one and not a new epoch: the
+  declared fingerprint and surface, the forward-evidence contract, the current-book study pin
+  and the pre-registration draft now carry 553aff51, and entry 11 says why. The web deploy was
+  skipped by the gate for that one tick, as designed; nothing traded differently.
