@@ -806,7 +806,13 @@ def seal_identity(
             },
             "diversification_report": _binding(diversification_file),
             "admission_evidence": _binding(evidence_file),
-            "runner": _binding(REPO / "scripts" / "run_earnings_narrative_change_v1.py"),
+            # The runner that produced the result is the one the reservation bound at
+            # authorization; the seal may run under a later revision (the re-run path was added
+            # after the batch ran), so both hashes are recorded rather than one pretending to be
+            # the other. The deterministic re-run under the later revision reproducing the
+            # sealed series is evidence that the revision did not touch the computation.
+            "runner_at_authorization": reservation["evidence"]["runner"],
+            "runner_at_seal": _binding(REPO / "scripts" / "run_earnings_narrative_change_v1.py"),
             "python_project": _binding(REPO / "pyproject.toml"),
             "locked_environment": _binding(REPO / "uv.lock"),
             "ledger": result["ledger_record"],
@@ -897,7 +903,11 @@ def build_packet(
         "code_environment_and_reproduction": {
             "status": verified,
             "evidence": [
-                _binding(REPO / "scripts" / "run_earnings_narrative_change_v1.py"),
+                {**reservation["evidence"]["runner"], "type": "runner_at_authorization"},
+                {
+                    **_binding(REPO / "scripts" / "run_earnings_narrative_change_v1.py"),
+                    "type": "runner_at_seal",
+                },
                 _binding(REPO / "pyproject.toml"),
                 _binding(REPO / "uv.lock"),
             ],
