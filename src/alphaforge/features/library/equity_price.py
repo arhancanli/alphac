@@ -166,7 +166,7 @@ def adjusted_close(
     decision-usable at its close ``s + Δ``), so the adjustment is computed PER ROW
     using ONLY what that row's own decision could know::
 
-        CF(i, s)  = Π { ratio_a  :  a is a split of i with
+        CF(i, s)  = Π { 1 / ratio_a  :  a is a split of i with
                         available_at_a <= ts_open_s + Δ  AND  ex_date_a > ts_open_s }
         DF(i, s)  = Π { 1 - cash_a / C_raw(i, ex_open_a)  :  a is a dividend of i with
                         available_at_a <= ts_open_s + Δ  AND  ex_date_a > ts_open_s }
@@ -251,8 +251,24 @@ def adjusted_close(
             # pre-ex bars; a split AFTER T cancels in any ratio factor (both endpoints
             # adjusted) -> PIT-safe and batch/as-of FACTOR-parity-safe.
             applies = grid < ex_date
+            ratio = float(a_ratio[k])
+            if not math.isfinite(ratio) or ratio <= 0.0:
+                raise ValueError(
+                    f"adjusted_close: split ratio for {a_iid[k]!r} must be a positive finite "
+                    f"new-shares-per-old factor, got {ratio!r}"
+                )
             if applies.any():
-                factor[applies, j] *= float(a_ratio[k])
+                # ``ratio`` is the VENDOR factor, new shares per old share (Polygon
+                # split_to/split_from, Sharadar ACTIONS.value; see data/schemas.py): a 4-for-1
+                # stores 4.0. A pre-ex price expressed in post-split share terms is the raw price
+                # DIVIDED by that factor. 2026-09-14: this kernel multiplied by ``ratio`` while
+                # every lake stored the vendor factor, so every applied split back-adjusted in
+                # the wrong direction (Apple 2020: 499.23 x 4 = 1,996.92 instead of 124.81; the
+                # alphamax beta-neutral probe had disclosed it and worked around it locally).
+                # Measured before the fix: 128 of 142 determined splits in data/lake produced an
+                # adjusted ex-date jump of exactly twice the raw jump
+                # (artifacts/audit/split_adjustment_direction.json).
+                factor[applies, j] /= ratio
         elif action_type == "dividend":
             # Dividends keep the per-row PIT gate (the total-return factor anchors on the
             # ex-close, so it is path-dependent, NOT a window-invariant ratio). v1 factor

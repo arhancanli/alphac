@@ -150,6 +150,7 @@ COUNTED in the report.
     uv run python scripts/probe_alphamax_betaneutral.py                # both panels
     uv run python scripts/probe_alphamax_betaneutral.py --panel live   # live replica only
 """
+
 # ruff: noqa: E501
 from __future__ import annotations
 
@@ -173,24 +174,24 @@ K30_WF = _REPO / "artifacts" / "walkforward" / "k30_dn_63" / "walkforward.json"
 SPY_GLOB = "data/lake_mf/ohlcv_1d/instrument_id=XUSE:CASH:SPYUSD/*/*.parquet"
 
 # ---- construction constants (configs/equity.yaml, configs/base.yaml, optimizer.py) ----
-ANN = 365.0             # repo headline annualization basis (matches stored summaries)
-TRADING_DAYS = 252.0    # borrow accrual + the honest calendar-Sharpe cross-check
-VOL_WINDOW = 63         # trailing sessions for the inverse-vol denominator
+ANN = 365.0  # repo headline annualization basis (matches stored summaries)
+TRADING_DAYS = 252.0  # borrow accrual + the honest calendar-Sharpe cross-check
+VOL_WINDOW = 63  # trailing sessions for the inverse-vol denominator
 VOL_MINP = 30
-W_MAX = 0.15            # portfolio.w_max
-COST_ONEWAY = 6e-4      # 1bp commission + 3bp half-spread + 2bp latency (equity.yaml)
-BORROW_ANN = 50e-4      # 50 bp/yr GC borrow on the short gross (equity.yaml)
-NO_TRADE_BAND = 0.001   # base.yaml no_trade_band
-REFORM_BARS = 63        # rebalance_bars (quarterly production cadence)
-HEDGE_RESET_BARS = 21   # V2m monthly hedge refresh
-BETA_WINDOW = 252       # trailing sessions for the PIT name-beta regression
-BETA_MINOBS = 120       # min joint obs before a name's beta is trusted
+W_MAX = 0.15  # portfolio.w_max
+COST_ONEWAY = 6e-4  # 1bp commission + 3bp half-spread + 2bp latency (equity.yaml)
+BORROW_ANN = 50e-4  # 50 bp/yr GC borrow on the short gross (equity.yaml)
+NO_TRADE_BAND = 0.001  # base.yaml no_trade_band
+REFORM_BARS = 63  # rebalance_bars (quarterly production cadence)
+HEDGE_RESET_BARS = 21  # V2m monthly hedge refresh
+BETA_WINDOW = 252  # trailing sessions for the PIT name-beta regression
+BETA_MINOBS = 120  # min joint obs before a name's beta is trusted
 BETA_CLIP = (-2.0, 4.0)
-ROLL_BETA_WINDOW = 63   # realized-beta diagnostic window (63d, the production horizon)
+ROLL_BETA_WINDOW = 63  # realized-beta diagnostic window (63d, the production horizon)
 ROLL_BETA_MINP = 40
 RET_CLIP = (-0.5, 1.0)  # template return hygiene (repo precedent)
-RET_ARTEFACT = 3.0      # |ret| beyond this = unrepaired corporate action -> flattened, counted
-LEG_RATIO_CLIP = (0.5, 2.0)   # V1 guard on gS/gL
+RET_ARTEFACT = 3.0  # |ret| beyond this = unrepaired corporate action -> flattened, counted
+LEG_RATIO_CLIP = (0.5, 2.0)  # V1 guard on gS/gL
 
 # WINDOW NOTE (mechanical, disclosed — not a window search): the pre-registration asked for a
 # 2003-01-01 book start, but src/alphaforge/config/sleeve.py's XNYSCalendar has NO sessions
@@ -202,10 +203,20 @@ LEG_RATIO_CLIP = (0.5, 2.0)   # V1 guard on gS/gL
 # stress episode except nothing is still inside the window (2009, 2020, 2020-11, 2021, 2022,
 # 2026-07 all covered); the GFC/2008 and the 2000-02 tech unwind are NOT reachable and this is
 # a stated limitation of the result, not a choice.
-RESEARCH = {"panel_start": "2004-01-01", "book_start": "2005-01-03", "end": "2026-08-01",
-            "K": 100, "gross_leg": 0.50}
-LIVE = {"panel_start": "2021-01-01", "book_start": "2023-07-06", "end": "2026-08-01",
-        "K": 30, "gross_leg": 0.345}
+RESEARCH = {
+    "panel_start": "2004-01-01",
+    "book_start": "2005-01-03",
+    "end": "2026-08-01",
+    "K": 100,
+    "gross_leg": 0.50,
+}
+LIVE = {
+    "panel_start": "2021-01-01",
+    "book_start": "2023-07-06",
+    "end": "2026-08-01",
+    "K": 30,
+    "gross_leg": 0.345,
+}
 
 EPISODES: list[tuple[str, str, str]] = [
     ("2009 mom crash Mar-May", "2009-03-01", "2009-05-31"),
@@ -217,7 +228,14 @@ EPISODES: list[tuple[str, str, str]] = [
     ("2026-07 junk squeeze", "2026-07-01", "2026-07-30"),
 ]
 JULY26 = "2026-07 junk squeeze"
-ARM_ORDER = ("BASE", "V1_betaneutral", "V2_betahedged", "V2m_hedge_21d", "CTRL_NETLONG", "BASE_asis")
+ARM_ORDER = (
+    "BASE",
+    "V1_betaneutral",
+    "V2_betahedged",
+    "V2m_hedge_21d",
+    "CTRL_NETLONG",
+    "BASE_asis",
+)
 CANDIDATES = ("V1_betaneutral", "V2_betahedged", "V2m_hedge_21d")
 
 
@@ -234,10 +252,11 @@ def _fixed_panel(ctx):
     if actions.empty:
         return raw
     a = actions.copy()
-    is_split = a["action_type"].to_numpy(dtype=object) == "split"
     r = a["ratio"].to_numpy(dtype="float64").copy()
-    ok = is_split & np.isfinite(r) & (r > 0.0)
-    r[ok] = 1.0 / r[ok]
+    # 2026-09-14: the kernel itself now divides by the vendor factor (the disclosed defect is
+    # fixed in src/alphaforge/features/library/equity_price.py and guarded by
+    # tests/unit/test_split_adjustment_direction_guard.py), so the ratios pass through
+    # unchanged; inverting them here again would recreate the fake moves this probe measured.
     a["ratio"] = r
     return adjusted_close(raw, a, tf_ms=Timeframe.D1.ms, include_dividends=False)
 
@@ -266,19 +285,30 @@ def _register(reg) -> None:
     from alphaforge.features.spec import Family, FeatureSpec
 
     have = {s.name for s in reg.all_specs()}
-    for nm, fn, lb in (("probe_mom_fix", _mom_fix_fn, 253),
-                       ("probe_dret_fix", _dret_fix_fn, 2),
-                       ("probe_dret_asis", _dret_asis_fn, 2)):
+    for nm, fn, lb in (
+        ("probe_mom_fix", _mom_fix_fn, 253),
+        ("probe_dret_fix", _dret_fix_fn, 2),
+        ("probe_dret_asis", _dret_asis_fn, 2),
+    ):
         if nm in have:
             continue
-        reg.register(lambda nm=nm, fn=fn, lb=lb: FeatureSpec(
-            name=nm, family=Family.MOMENTUM, direction=1, cross_sectional=False,
-            lookback_bars=lb, params={}, fn=fn))
+        reg.register(
+            lambda nm=nm, fn=fn, lb=lb: FeatureSpec(
+                name=nm,
+                family=Family.MOMENTUM,
+                direction=1,
+                cross_sectional=False,
+                lookback_bars=lb,
+                params={},
+                fn=fn,
+            )
+        )
 
 
 # ===================================================================== panel builder
-def build_panels(profile: str, ids_filter: set[str] | None, panel_start: str, end: str,
-                 chunk_years: int) -> dict:
+def build_panels(
+    profile: str, ids_filter: set[str] | None, panel_start: str, end: str, chunk_years: int
+) -> dict:
     """Wide float64 panels (index = session epoch-ms, columns = instrument ids).
 
     Computed in multi-year CHUNKS: every chunk's FeatureContext carries its own >=252-session
@@ -327,10 +357,13 @@ def build_panels(profile: str, ids_filter: set[str] | None, panel_start: str, en
         ids = sorted(i for i in (members & in_lake) if i.startswith("XUSE"))
         if ids_filter is not None:
             ids = sorted(set(ids) & ids_filter)
-        print(f"  universe: {len(ids)} PIT-ever-member equity ids with bars | panel {panel_start}..{end} | tf={tf.name}")
+        print(
+            f"  universe: {len(ids)} PIT-ever-member equity ids with bars | panel {panel_start}..{end} | tf={tf.name}"
+        )
         for lo, hi in windows:
             raw = engine.compute_history(
-                specs, ids,
+                specs,
+                ids,
                 start=parse_utc(lo.strftime("%Y-%m-%dT00:00:00Z")),
                 end=parse_utc(hi.strftime("%Y-%m-%dT00:00:00Z")),
             )
@@ -347,12 +380,17 @@ def build_panels(profile: str, ids_filter: set[str] | None, panel_start: str, en
     gc.collect()
 
     out: dict = {}
-    for key, col in (("mom_fix", "probe_mom_fix"), ("ret_fix", "probe_dret_fix"),
-                     ("mom_asis", "eq_mom_252_21"), ("ret_asis", "probe_dret_asis")):
+    for key, col in (
+        ("mom_fix", "probe_mom_fix"),
+        ("ret_fix", "probe_dret_fix"),
+        ("mom_asis", "eq_mom_252_21"),
+        ("ret_asis", "probe_dret_asis"),
+    ):
         out[key] = raw[col].unstack("instrument_id").sort_index()
     ref = out["mom_fix"]
-    out["member"] = mask.unstack("instrument_id").reindex(index=ref.index, columns=ref.columns,
-                                                          fill_value=False)
+    out["member"] = mask.unstack("instrument_id").reindex(
+        index=ref.index, columns=ref.columns, fill_value=False
+    )
     for k in ("ret_fix", "mom_asis", "ret_asis"):
         out[k] = out[k].reindex(index=ref.index, columns=ref.columns)
     del raw, mask
@@ -379,8 +417,8 @@ def betas_at_index(ret: np.ndarray, mkt: np.ndarray, t: int) -> np.ndarray:
     """PIT trailing-252-session OLS beta of every column on the market, using ONLY rows
     <= t (pairwise complete, min BETA_MINOBS joint obs). NaN where not estimable."""
     lo = max(0, t - BETA_WINDOW + 1)
-    X = ret[lo:t + 1, :]
-    m = mkt[lo:t + 1]
+    X = ret[lo : t + 1, :]
+    m = mkt[lo : t + 1]
     ok_m = np.isfinite(m)
     okX = np.isfinite(X) & ok_m[:, None]
     Xs = np.where(okX, X, 0.0)
@@ -389,10 +427,10 @@ def betas_at_index(ret: np.ndarray, mkt: np.ndarray, t: int) -> np.ndarray:
     Sx = Xs.sum(axis=0)
     Sm = (ms * okX).sum(axis=0)
     Sxm = (Xs * ms).sum(axis=0)
-    Smm = ((ms ** 2) * okX).sum(axis=0)
+    Smm = ((ms**2) * okX).sum(axis=0)
     with np.errstate(invalid="ignore", divide="ignore"):
         cov = Sxm - Sx * Sm / n
-        var = Smm - Sm ** 2 / n
+        var = Smm - Sm**2 / n
         beta = cov / var
     beta = np.where((n >= BETA_MINOBS) & np.isfinite(beta) & (var > 0), beta, np.nan)
     return np.clip(beta, BETA_CLIP[0], BETA_CLIP[1])
@@ -427,8 +465,22 @@ def clean_returns(ret: np.ndarray) -> tuple[np.ndarray, int]:
     return np.clip(r, RET_CLIP[0], RET_CLIP[1]), n_art
 
 
-def simulate(mom, ret_use, member, vol, mkt_use, betas, dates, t0, *, K, gross_leg,
-             sizing="dollar", hedge_mode=None, hedge_static=0.0) -> dict:
+def simulate(
+    mom,
+    ret_use,
+    member,
+    vol,
+    mkt_use,
+    betas,
+    dates,
+    t0,
+    *,
+    K,
+    gross_leg,
+    sizing="dollar",
+    hedge_mode=None,
+    hedge_static=0.0,
+) -> dict:
     """One arm. `betas` maps a bar index -> the PIT name-beta vector at that bar.
 
     sizing:      'dollar' (Sigma w = 0)  |  'beta' (ex-ante portfolio beta = 0, gross held at 2G)
@@ -543,9 +595,17 @@ def simulate(mom, ret_use, member, vol, mkt_use, betas, dates, t0, *, K, gross_l
         "avg_short_names": float(np.mean([y for _, y in legcounts])) if legcounts else float("nan"),
         "legbeta_long": float(np.nanmean([x for x, _ in legbetas])) if legbetas else float("nan"),
         "legbeta_short": float(np.nanmean([y for _, y in legbetas])) if legbetas else float("nan"),
-        "legbeta_spread_min": float(np.nanmin([x - y for x, y in legbetas])) if legbetas else float("nan"),
-        "legbeta_spread_max": float(np.nanmax([x - y for x, y in legbetas])) if legbetas else float("nan"),
-        "legbeta_spread_frac_neg": float(np.mean([1.0 if (x - y) < 0 else 0.0 for x, y in legbetas])) if legbetas else float("nan"),
+        "legbeta_spread_min": float(np.nanmin([x - y for x, y in legbetas]))
+        if legbetas
+        else float("nan"),
+        "legbeta_spread_max": float(np.nanmax([x - y for x, y in legbetas]))
+        if legbetas
+        else float("nan"),
+        "legbeta_spread_frac_neg": float(
+            np.mean([1.0 if (x - y) < 0 else 0.0 for x, y in legbetas])
+        )
+        if legbetas
+        else float("nan"),
         "exante_hedge_mean": float(np.mean(exante_hedge)) if exante_hedge else float("nan"),
         "hedge_mean": float(np.mean(hedges)) if hedges else 0.0,
         "hedge_min": float(np.min(hedges)) if hedges else 0.0,
@@ -562,8 +622,9 @@ def _sharpe(v: np.ndarray) -> float:
     return float(np.mean(v)) / sd * math.sqrt(ANN) if sd > 0 else float("nan")
 
 
-def block_bootstrap_dsharpe(arm: np.ndarray, base: np.ndarray, block: int = 63,
-                            n_boot: int = 2000, seed: int = 7) -> dict:
+def block_bootstrap_dsharpe(
+    arm: np.ndarray, base: np.ndarray, block: int = 63, n_boot: int = 2000, seed: int = 7
+) -> dict:
     """Moving-block bootstrap of the PAIRED net-Sharpe difference (arm - BASE).
 
     Blocks of `block` consecutive sessions are drawn with replacement and applied to BOTH
@@ -572,8 +633,13 @@ def block_bootstrap_dsharpe(arm: np.ndarray, base: np.ndarray, block: int = 63,
     Sharpe alone. Block length 63 = the quarterly rebalance cadence (one holding period)."""
     T = arm.size
     if 4 * block > T:
-        return {"mean": float("nan"), "p05": float("nan"), "p95": float("nan"),
-                "frac_le_zero": float("nan"), "n_boot": 0}
+        return {
+            "mean": float("nan"),
+            "p05": float("nan"),
+            "p95": float("nan"),
+            "frac_le_zero": float("nan"),
+            "n_boot": 0,
+        }
     rng = np.random.default_rng(seed)
     nb = int(np.ceil(T / block))
     off = np.arange(block)
@@ -582,9 +648,13 @@ def block_bootstrap_dsharpe(arm: np.ndarray, base: np.ndarray, block: int = 63,
         starts = rng.integers(0, T - block + 1, nb)
         idx = (starts[:, None] + off[None, :]).ravel()[:T]
         diffs[i] = _sharpe(arm[idx]) - _sharpe(base[idx])
-    return {"mean": float(np.mean(diffs)), "p05": float(np.quantile(diffs, 0.05)),
-            "p95": float(np.quantile(diffs, 0.95)),
-            "frac_le_zero": float(np.mean(diffs <= 0.0)), "n_boot": n_boot}
+    return {
+        "mean": float(np.mean(diffs)),
+        "p05": float(np.quantile(diffs, 0.05)),
+        "p95": float(np.quantile(diffs, 0.95)),
+        "frac_le_zero": float(np.mean(diffs <= 0.0)),
+        "n_boot": n_boot,
+    }
 
 
 def _maxdd(v: np.ndarray) -> float:
@@ -632,26 +702,50 @@ def metrics(sim: dict, mkt_s: pd.Series) -> dict:
     nd = sim["netdollar"]
     out = {
         "net_sharpe_ann365": float(np.mean(v)) / sd * math.sqrt(ANN) if sd > 0 else float("nan"),
-        "net_sharpe_ann252": float(np.mean(v)) / sd * math.sqrt(TRADING_DAYS) if sd > 0 else float("nan"),
+        "net_sharpe_ann252": float(np.mean(v)) / sd * math.sqrt(TRADING_DAYS)
+        if sd > 0
+        else float("nan"),
         "gross_sharpe_ann365": float(np.mean(g)) / float(np.std(g, ddof=1)) * math.sqrt(ANN),
         "vol_ann365": sd * math.sqrt(ANN),
         "max_dd": _maxdd(v),
         "skew": float(pd.Series(v).skew()),
-        "cagr": float(np.prod(1.0 + v)) ** (TRADING_DAYS / len(v)) - 1.0 if len(v) else float("nan"),
+        "cagr": float(np.prod(1.0 + v)) ** (TRADING_DAYS / len(v)) - 1.0
+        if len(v)
+        else float("nan"),
         "total_return": float(np.prod(1.0 + v)) - 1.0,
-        "roll_beta_mean": float(rb.mean()), "roll_beta_median": float(rb.median()),
-        "roll_beta_p10": float(rb.quantile(0.10)), "roll_beta_p90": float(rb.quantile(0.90)),
-        "roll_beta_frac_neg": float((rb < 0).mean()), "roll_beta_n": int(rb.size),
-        "fullsample_beta": beta_fs, "fullsample_beta_t": t_beta,
-        "alpha_ann365_bps": alpha * ANN * 1e4, "alpha_t_nw": t_alpha,
-        "netdollar_mean": float(nd.mean()), "netdollar_min": float(nd.min()),
+        "roll_beta_mean": float(rb.mean()),
+        "roll_beta_median": float(rb.median()),
+        "roll_beta_p10": float(rb.quantile(0.10)),
+        "roll_beta_p90": float(rb.quantile(0.90)),
+        "roll_beta_frac_neg": float((rb < 0).mean()),
+        "roll_beta_n": int(rb.size),
+        "fullsample_beta": beta_fs,
+        "fullsample_beta_t": t_beta,
+        "alpha_ann365_bps": alpha * ANN * 1e4,
+        "alpha_t_nw": t_alpha,
+        "netdollar_mean": float(nd.mean()),
+        "netdollar_min": float(nd.min()),
         "netdollar_max": float(nd.max()),
         "episodes": episode_table(net),
     }
-    for k in ("turnover_ann", "cost_drag_ann_bps", "borrow_drag_ann_bps", "n_reforms", "n_days",
-              "avg_long_names", "avg_short_names", "legbeta_long", "legbeta_short",
-              "legbeta_spread_min", "legbeta_spread_max", "legbeta_spread_frac_neg",
-              "hedge_mean", "hedge_min", "hedge_max", "exante_hedge_mean"):
+    for k in (
+        "turnover_ann",
+        "cost_drag_ann_bps",
+        "borrow_drag_ann_bps",
+        "n_reforms",
+        "n_days",
+        "avg_long_names",
+        "avg_short_names",
+        "legbeta_long",
+        "legbeta_short",
+        "legbeta_spread_min",
+        "legbeta_spread_max",
+        "legbeta_spread_frac_neg",
+        "hedge_mean",
+        "hedge_min",
+        "hedge_max",
+        "exante_hedge_mean",
+    ):
         out[k] = sim[k]
     out["_net"] = net
     return out
@@ -663,10 +757,12 @@ def episode_table(net: pd.Series) -> dict:
     for label, lo, hi in EPISODES:
         w = s.loc[(s.index >= pd.Timestamp(lo, tz="UTC")) & (s.index <= pd.Timestamp(hi, tz="UTC"))]
         v = w.to_numpy(dtype=np.float64)
-        out[label] = {"n_days": int(v.size),
-                      "total_return": float(np.prod(1.0 + v) - 1.0) if v.size else float("nan"),
-                      "max_dd": _maxdd(v),
-                      "worst_day": float(np.min(v)) if v.size else float("nan")}
+        out[label] = {
+            "n_days": int(v.size),
+            "total_return": float(np.prod(1.0 + v) - 1.0) if v.size else float("nan"),
+            "max_dd": _maxdd(v),
+            "worst_day": float(np.min(v)) if v.size else float("nan"),
+        }
     return out
 
 
@@ -689,10 +785,12 @@ def run_panel(tag: str, cfg: dict, profile: str, ids_filter, chunk_years: int) -
     del P
     gc.collect()
 
-    vol_fix = (pd.DataFrame(ret_fix_raw).rolling(VOL_WINDOW, min_periods=VOL_MINP).std()
-               * math.sqrt(ANN)).to_numpy(dtype=np.float64)
-    vol_asis = (pd.DataFrame(ret_asis_raw).rolling(VOL_WINDOW, min_periods=VOL_MINP).std()
-                * math.sqrt(ANN)).to_numpy(dtype=np.float64)
+    vol_fix = (
+        pd.DataFrame(ret_fix_raw).rolling(VOL_WINDOW, min_periods=VOL_MINP).std() * math.sqrt(ANN)
+    ).to_numpy(dtype=np.float64)
+    vol_asis = (
+        pd.DataFrame(ret_asis_raw).rolling(VOL_WINDOW, min_periods=VOL_MINP).std() * math.sqrt(ANN)
+    ).to_numpy(dtype=np.float64)
     ret_fix, n_art_fix = clean_returns(ret_fix_raw)
     ret_asis, n_art_asis = clean_returns(ret_asis_raw)
     del ret_fix_raw, ret_asis_raw
@@ -702,23 +800,34 @@ def run_panel(tag: str, cfg: dict, profile: str, ids_filter, chunk_years: int) -
     both = np.isfinite(mom_fix) & np.isfinite(mom_asis)
     mom_diff = both & (np.abs(mom_fix - mom_asis) > 1e-9)
     diff_pct = float(mom_diff.sum()) / max(1, int(both.sum()))
-    print(f"  sessions T={len(dates)} ({pd.Timestamp(dates[0], unit='ms').date()} .. "
-          f"{pd.Timestamp(dates[-1], unit='ms').date()}) x N={mom_fix.shape[1]} | market-NaN sessions {n_miss}")
-    print(f"  SPLIT-BUG SIZE: 12-1 momentum cells where FIXED != AS-IS: {diff_pct:.2%} of jointly-finite "
-          f"cells ({int(mom_diff.sum()):,}) | |ret|>{RET_ARTEFACT:.0f} artefact cells fixed {n_art_fix:,} "
-          f"vs as-is {n_art_asis:,}")
+    print(
+        f"  sessions T={len(dates)} ({pd.Timestamp(dates[0], unit='ms').date()} .. "
+        f"{pd.Timestamp(dates[-1], unit='ms').date()}) x N={mom_fix.shape[1]} | market-NaN sessions {n_miss}"
+    )
+    print(
+        f"  SPLIT-BUG SIZE: 12-1 momentum cells where FIXED != AS-IS: {diff_pct:.2%} of jointly-finite "
+        f"cells ({int(mom_diff.sum()):,}) | |ret|>{RET_ARTEFACT:.0f} artefact cells fixed {n_art_fix:,} "
+        f"vs as-is {n_art_asis:,}"
+    )
 
-    t0 = int(np.searchsorted(dates, int(pd.Timestamp(cfg["book_start"], tz="UTC").value // 10**6),
-                             side="left"))
-    print(f"  book t0 idx={t0} ({cfg['book_start']}) -> {len(dates) - t0} sessions | "
-          f"K={cfg['K']}/side gross_leg={cfg['gross_leg']}")
+    t0 = int(
+        np.searchsorted(
+            dates, int(pd.Timestamp(cfg["book_start"], tz="UTC").value // 10**6), side="left"
+        )
+    )
+    print(
+        f"  book t0 idx={t0} ({cfg['book_start']}) -> {len(dates) - t0} sessions | "
+        f"K={cfg['K']}/side gross_leg={cfg['gross_leg']}"
+    )
 
-    reform_idx = sorted(set(range(t0, len(dates), REFORM_BARS))
-                        | set(range(t0, len(dates), HEDGE_RESET_BARS)))
+    reform_idx = sorted(
+        set(range(t0, len(dates), REFORM_BARS)) | set(range(t0, len(dates), HEDGE_RESET_BARS))
+    )
     print(f"  estimating PIT trailing-{BETA_WINDOW}d betas at {len(reform_idx)} decision bars ...")
     betas = {t: betas_at_index(ret_fix, mkt, t) for t in reform_idx}
-    betas_asis = {t: betas_at_index(ret_asis, mkt, t)
-                  for t in sorted(set(range(t0, len(dates), REFORM_BARS)))}
+    betas_asis = {
+        t: betas_at_index(ret_asis, mkt, t) for t in sorted(set(range(t0, len(dates), REFORM_BARS)))
+    }
 
     mkt_s = pd.Series(mkt, index=dates)
     common = {"K": cfg["K"], "gross_leg": cfg["gross_leg"]}
@@ -730,20 +839,39 @@ def run_panel(tag: str, cfg: dict, profile: str, ids_filter, chunk_years: int) -
     sims["V2_betahedged"] = simulate(*args_fix, sizing="dollar", hedge_mode="reform", **common)
     sims["V2m_hedge_21d"] = simulate(*args_fix, sizing="dollar", hedge_mode="monthly", **common)
     h_static = float(sims["V2_betahedged"]["hedge_mean"])
-    sims["CTRL_NETLONG"] = simulate(*args_fix, sizing="dollar", hedge_mode="static",
-                                    hedge_static=h_static, **common)
-    sims["BASE_asis"] = simulate(mom_asis, ret_asis, member, vol_asis, mkt_use, betas_asis,
-                                 dates, t0, sizing="dollar", hedge_mode=None, **common)
+    sims["CTRL_NETLONG"] = simulate(
+        *args_fix, sizing="dollar", hedge_mode="static", hedge_static=h_static, **common
+    )
+    sims["BASE_asis"] = simulate(
+        mom_asis,
+        ret_asis,
+        member,
+        vol_asis,
+        mkt_use,
+        betas_asis,
+        dates,
+        t0,
+        sizing="dollar",
+        hedge_mode=None,
+        **common,
+    )
 
     res = {name: metrics(sim, mkt_s) for name, sim in sims.items()}
-    return {"results": res, "h_static": h_static,
-            "first": str(pd.Timestamp(dates[0], unit="ms").date()),
-            "last": str(pd.Timestamp(dates[-1], unit="ms").date()),
-            "n_names": int(mom_fix.shape[1]), "book_start": cfg["book_start"],
-            "K": cfg["K"], "gross_leg": cfg["gross_leg"],
-            "split_bug_mom_cells_pct": diff_pct, "split_bug_mom_cells_n": int(mom_diff.sum()),
-            "artefact_cells_fix": n_art_fix, "artefact_cells_asis": n_art_asis,
-            "market_nan_sessions": n_miss}
+    return {
+        "results": res,
+        "h_static": h_static,
+        "first": str(pd.Timestamp(dates[0], unit="ms").date()),
+        "last": str(pd.Timestamp(dates[-1], unit="ms").date()),
+        "n_names": int(mom_fix.shape[1]),
+        "book_start": cfg["book_start"],
+        "K": cfg["K"],
+        "gross_leg": cfg["gross_leg"],
+        "split_bug_mom_cells_pct": diff_pct,
+        "split_bug_mom_cells_n": int(mom_diff.sum()),
+        "artefact_cells_fix": n_art_fix,
+        "artefact_cells_asis": n_art_asis,
+        "market_nan_sessions": n_miss,
+    }
 
 
 def evaluate_gate(res: dict) -> dict:
@@ -753,36 +881,53 @@ def evaluate_gate(res: dict) -> dict:
     active = [e[0] for e in EPISODES if base["episodes"][e[0]]["n_days"] > 0]
     evaluable = len(active) >= 4
     worst_ep = max(active, key=lambda lb: base["episodes"][lb]["max_dd"])
-    out = {"premise_holds": bool(premise), "base_roll_beta_mean": base["roll_beta_mean"],
-           "base_roll_beta_frac_neg": base["roll_beta_frac_neg"],
-           "worst_episode_base": worst_ep, "active_episodes": active,
-           "gate_evaluable": bool(evaluable), "arms": {}}
+    out = {
+        "premise_holds": bool(premise),
+        "base_roll_beta_mean": base["roll_beta_mean"],
+        "base_roll_beta_frac_neg": base["roll_beta_frac_neg"],
+        "worst_episode_base": worst_ep,
+        "active_episodes": active,
+        "gate_evaluable": bool(evaluable),
+        "arms": {},
+    }
     base_drag = base["cost_drag_ann_bps"] + base["borrow_drag_ann_bps"]
     for arm in CANDIDATES:
         r = res[arm]
         A = (abs(r["roll_beta_mean"]) <= 0.05) and (
-            abs(r["roll_beta_mean"]) <= 0.5 * abs(base["roll_beta_mean"]))
+            abs(r["roll_beta_mean"]) <= 0.5 * abs(base["roll_beta_mean"])
+        )
         B = r["net_sharpe_ann365"] >= base["net_sharpe_ann365"] - 0.10
         bw = base["episodes"][worst_ep]["max_dd"]
         rw = r["episodes"][worst_ep]["max_dd"]
         C1 = (bw > 0) and ((bw - rw) / bw >= 0.25)
-        C2 = all(r["episodes"][lb]["max_dd"] - base["episodes"][lb]["max_dd"] <= 0.02
-                 for lb in active)
-        improved = [lb for lb in active
-                    if r["episodes"][lb]["max_dd"] < base["episodes"][lb]["max_dd"]]
+        C2 = all(
+            r["episodes"][lb]["max_dd"] - base["episodes"][lb]["max_dd"] <= 0.02 for lb in active
+        )
+        improved = [
+            lb for lb in active if r["episodes"][lb]["max_dd"] < base["episodes"][lb]["max_dd"]
+        ]
         D = evaluable and (len(improved) >= 4) and (len([x for x in improved if x != JULY26]) >= 3)
         r_drag = r["cost_drag_ann_bps"] + r["borrow_drag_ann_bps"]
-        E = (((r["turnover_ann"] - base["turnover_ann"]) / base["turnover_ann"] <= 0.25)
-             and (base_drag <= 0 or (r_drag - base_drag) / base_drag <= 0.25))
+        E = ((r["turnover_ann"] - base["turnover_ann"]) / base["turnover_ann"] <= 0.25) and (
+            base_drag <= 0 or (r_drag - base_drag) / base_drag <= 0.25
+        )
         cw = ctrl["episodes"][worst_ep]["max_dd"]
         F = (r["net_sharpe_ann365"] - ctrl["net_sharpe_ann365"] >= 0.05) or (
-            (cw > 0) and ((cw - rw) / cw >= 0.10))
+            (cw > 0) and ((cw - rw) / cw >= 0.10)
+        )
         out["arms"][arm] = {
-            "A_beta": bool(A), "B_sharpe": bool(B), "C_tail": bool(C1 and C2),
-            "D_notfitted": bool(D), "E_cost": bool(E), "F_beatsctrl": bool(F),
-            "episodes_improved": improved, "n_improved": len(improved),
+            "A_beta": bool(A),
+            "B_sharpe": bool(B),
+            "C_tail": bool(C1 and C2),
+            "D_notfitted": bool(D),
+            "E_cost": bool(E),
+            "F_beatsctrl": bool(F),
+            "episodes_improved": improved,
+            "n_improved": len(improved),
             "n_improved_ex_july26": len([x for x in improved if x != JULY26]),
-            "worst_ep_dd_base": bw, "worst_ep_dd_arm": rw, "worst_ep_dd_ctrl": cw,
+            "worst_ep_dd_base": bw,
+            "worst_ep_dd_arm": rw,
+            "worst_ep_dd_ctrl": cw,
             "PASS": bool(evaluable and premise and A and B and C1 and C2 and D and E and F),
         }
     return out
@@ -792,46 +937,64 @@ def print_panel(tag: str, panel: dict) -> dict:
     res = panel["results"]
     base = res["BASE"]
     print("\n" + "=" * 140)
-    print(f"PANEL {tag}: K={panel['K']}/side, quarterly 63-bar reform, inverse-vol, "
-          f"{panel['n_names']} names, book {panel['book_start']}..{panel['last']} "
-          f"({base['n_days']} sessions, {base['n_reforms']} reforms), total gross {2 * panel['gross_leg']:.2f}")
+    print(
+        f"PANEL {tag}: K={panel['K']}/side, quarterly 63-bar reform, inverse-vol, "
+        f"{panel['n_names']} names, book {panel['book_start']}..{panel['last']} "
+        f"({base['n_days']} sessions, {base['n_reforms']} reforms), total gross {2 * panel['gross_leg']:.2f}"
+    )
     print("=" * 140)
 
     print("\n--- V3 DIAGNOSTIC, REPORTED FIRST: is the premise even true? ---")
-    print(f"  BASE realized net beta (rolling {ROLL_BETA_WINDOW}d OLS vs SPY): "
-          f"mean {base['roll_beta_mean']:+.3f} | median {base['roll_beta_median']:+.3f} | "
-          f"p10 {base['roll_beta_p10']:+.3f} | p90 {base['roll_beta_p90']:+.3f} | "
-          f"negative in {base['roll_beta_frac_neg']:.1%} of {base['roll_beta_n']} windows")
-    print(f"  BASE full-sample OLS beta {base['fullsample_beta']:+.3f} (NW t {base['fullsample_beta_t']:+.2f}); "
-          f"ann alpha {base['alpha_ann365_bps']:+.0f} bp (NW t {base['alpha_t_nw']:+.2f})   [DIAGNOSTIC: full-sample]")
-    print(f"  EX-ANTE leg betas at reform (inverse-vol weighted): LONG {base['legbeta_long']:.3f} vs "
-          f"SHORT {base['legbeta_short']:.3f} -> spread {base['legbeta_long'] - base['legbeta_short']:+.3f} "
-          f"(negative = losers higher beta = the hypothesised mechanism); spread negative at "
-          f"{base['legbeta_spread_frac_neg']:.0%} of reforms, range "
-          f"[{base['legbeta_spread_min']:+.2f}, {base['legbeta_spread_max']:+.2f}]")
-    print(f"  AS-IS (repo split-broken panel) BASE: beta mean {res['BASE_asis']['roll_beta_mean']:+.3f}, "
-          f"net Sharpe {res['BASE_asis']['net_sharpe_ann365']:+.3f} vs FIXED {base['net_sharpe_ann365']:+.3f}, "
-          f"maxDD {res['BASE_asis']['max_dd']:.3f} vs {base['max_dd']:.3f}")
+    print(
+        f"  BASE realized net beta (rolling {ROLL_BETA_WINDOW}d OLS vs SPY): "
+        f"mean {base['roll_beta_mean']:+.3f} | median {base['roll_beta_median']:+.3f} | "
+        f"p10 {base['roll_beta_p10']:+.3f} | p90 {base['roll_beta_p90']:+.3f} | "
+        f"negative in {base['roll_beta_frac_neg']:.1%} of {base['roll_beta_n']} windows"
+    )
+    print(
+        f"  BASE full-sample OLS beta {base['fullsample_beta']:+.3f} (NW t {base['fullsample_beta_t']:+.2f}); "
+        f"ann alpha {base['alpha_ann365_bps']:+.0f} bp (NW t {base['alpha_t_nw']:+.2f})   [DIAGNOSTIC: full-sample]"
+    )
+    print(
+        f"  EX-ANTE leg betas at reform (inverse-vol weighted): LONG {base['legbeta_long']:.3f} vs "
+        f"SHORT {base['legbeta_short']:.3f} -> spread {base['legbeta_long'] - base['legbeta_short']:+.3f} "
+        f"(negative = losers higher beta = the hypothesised mechanism); spread negative at "
+        f"{base['legbeta_spread_frac_neg']:.0%} of reforms, range "
+        f"[{base['legbeta_spread_min']:+.2f}, {base['legbeta_spread_max']:+.2f}]"
+    )
+    print(
+        f"  AS-IS (repo split-broken panel) BASE: beta mean {res['BASE_asis']['roll_beta_mean']:+.3f}, "
+        f"net Sharpe {res['BASE_asis']['net_sharpe_ann365']:+.3f} vs FIXED {base['net_sharpe_ann365']:+.3f}, "
+        f"maxDD {res['BASE_asis']['max_dd']:.3f} vs {base['max_dd']:.3f}"
+    )
 
     print("\n--- ARM TABLE (net of 6 bp one-way + 50 bp/yr borrow; ann basis 365) ---")
-    print(f"{'arm':<16}{'netSR365':>9}{'netSR252':>9}{'volAnn':>8}{'maxDD':>8}{'skew':>7}"
-          f"{'rollBeta':>9}{'FSbeta':>8}{'alphaBp':>9}{'a_t':>7}{'net$':>8}{'turn':>7}"
-          f"{'costBp':>8}{'borrBp':>8}")
+    print(
+        f"{'arm':<16}{'netSR365':>9}{'netSR252':>9}{'volAnn':>8}{'maxDD':>8}{'skew':>7}"
+        f"{'rollBeta':>9}{'FSbeta':>8}{'alphaBp':>9}{'a_t':>7}{'net$':>8}{'turn':>7}"
+        f"{'costBp':>8}{'borrBp':>8}"
+    )
     for arm in ARM_ORDER:
         r = res[arm]
-        print(f"{arm:<16}{r['net_sharpe_ann365']:>9.3f}{r['net_sharpe_ann252']:>9.3f}"
-              f"{r['vol_ann365']:>8.3f}{r['max_dd']:>8.3f}{r['skew']:>7.2f}"
-              f"{r['roll_beta_mean']:>+9.3f}{r['fullsample_beta']:>+8.3f}"
-              f"{r['alpha_ann365_bps']:>9.0f}{r['alpha_t_nw']:>+7.2f}{r['netdollar_mean']:>+8.3f}"
-              f"{r['turnover_ann']:>7.2f}{r['cost_drag_ann_bps']:>8.0f}{r['borrow_drag_ann_bps']:>8.0f}")
+        print(
+            f"{arm:<16}{r['net_sharpe_ann365']:>9.3f}{r['net_sharpe_ann252']:>9.3f}"
+            f"{r['vol_ann365']:>8.3f}{r['max_dd']:>8.3f}{r['skew']:>7.2f}"
+            f"{r['roll_beta_mean']:>+9.3f}{r['fullsample_beta']:>+8.3f}"
+            f"{r['alpha_ann365_bps']:>9.0f}{r['alpha_t_nw']:>+7.2f}{r['netdollar_mean']:>+8.3f}"
+            f"{r['turnover_ann']:>7.2f}{r['cost_drag_ann_bps']:>8.0f}{r['borrow_drag_ann_bps']:>8.0f}"
+        )
     v2 = res["V2_betahedged"]
     v1 = res["V1_betaneutral"]
-    print(f"  V2 hedge: mean {v2['hedge_mean']:+.3f} [{v2['hedge_min']:+.3f}, {v2['hedge_max']:+.3f}] "
-          f"of total gross {2 * panel['gross_leg']:.2f}.  CTRL_NETLONG static hedge {panel['h_static']:+.3f} "
-          f"(FULL-SAMPLE constant: deliberate look-ahead, generous to the null).")
-    print(f"  V1 net dollar exposure: mean {v1['netdollar_mean']:+.3f} "
-          f"[{v1['netdollar_min']:+.3f}, {v1['netdollar_max']:+.3f}] (BASE is 0.000 by construction) "
-          f"— this is the dollar-neutrality SACRIFICED to buy beta neutrality.")
+    print(
+        f"  V2 hedge: mean {v2['hedge_mean']:+.3f} [{v2['hedge_min']:+.3f}, {v2['hedge_max']:+.3f}] "
+        f"of total gross {2 * panel['gross_leg']:.2f}.  CTRL_NETLONG static hedge {panel['h_static']:+.3f} "
+        f"(FULL-SAMPLE constant: deliberate look-ahead, generous to the null)."
+    )
+    print(
+        f"  V1 net dollar exposure: mean {v1['netdollar_mean']:+.3f} "
+        f"[{v1['netdollar_min']:+.3f}, {v1['netdollar_max']:+.3f}] (BASE is 0.000 by construction) "
+        f"— this is the dollar-neutrality SACRIFICED to buy beta neutrality."
+    )
 
     print("\n--- MULTI-EPISODE STRESS TABLE  (total return / within-episode maxDD) ---")
     print(f"{'episode':<24}{'days':>5}" + "".join(f"{a[:15]:>18}" for a in ARM_ORDER))
@@ -851,16 +1014,22 @@ def print_panel(tag: str, panel: dict) -> dict:
     idx = pd.to_datetime(base["_net"].index, unit="ms", utc=True)
     years = sorted({int(y) for y in idx.year})
     half = len(base["_net"]) // 2
-    print(f"{'arm':<16}{'H1 SR':>8}{'H2 SR':>8}{'ex-2009H1 SR':>14}{'ex-2009H1 maxDD':>17}"
-          f"{'corr(BASE)':>12}{'yrs SR>BASE':>13}")
+    print(
+        f"{'arm':<16}{'H1 SR':>8}{'H2 SR':>8}{'ex-2009H1 SR':>14}{'ex-2009H1 maxDD':>17}"
+        f"{'corr(BASE)':>12}{'yrs SR>BASE':>13}"
+    )
     base_net = base["_net"]
     for arm in ARM_ORDER:
         r = res[arm]
         s = pd.Series(r["_net"].to_numpy(), index=idx)
         h1 = _sharpe(s.iloc[:half].to_numpy())
         h2 = _sharpe(s.iloc[half:].to_numpy())
-        keep = s.loc[~((s.index >= pd.Timestamp("2009-01-01", tz="UTC"))
-                       & (s.index <= pd.Timestamp("2009-06-30", tz="UTC")))]
+        keep = s.loc[
+            ~(
+                (s.index >= pd.Timestamp("2009-01-01", tz="UTC"))
+                & (s.index <= pd.Timestamp("2009-06-30", tz="UTC"))
+            )
+        ]
         corr = float(pd.Series(r["_net"].to_numpy()).corr(pd.Series(base_net.to_numpy())))
         wins = 0
         for y in years:
@@ -868,8 +1037,10 @@ def print_panel(tag: str, panel: dict) -> dict:
             by = pd.Series(base_net.to_numpy(), index=idx).loc[idx.year == y].to_numpy()
             if sy.size > 60 and _sharpe(sy) > _sharpe(by):
                 wins += 1
-        print(f"{arm:<16}{h1:>8.3f}{h2:>8.3f}{_sharpe(keep.to_numpy()):>14.3f}"
-              f"{_maxdd(keep.to_numpy()):>17.3f}{corr:>12.4f}{wins:>9}/{len(years):<3}")
+        print(
+            f"{arm:<16}{h1:>8.3f}{h2:>8.3f}{_sharpe(keep.to_numpy()):>14.3f}"
+            f"{_maxdd(keep.to_numpy()):>17.3f}{corr:>12.4f}{wins:>9}/{len(years):<3}"
+        )
 
     print("\n--- NET SHARPE BY CALENDAR YEAR ---")
     print(f"{'arm':<16}" + "".join(f"{str(y)[2:]:>7}" for y in years))
@@ -881,32 +1052,44 @@ def print_panel(tag: str, panel: dict) -> dict:
             row += f"{_sharpe(sy):>7.2f}" if sy.size > 30 else f"{'n/a':>7}"
         print(row)
 
-    print("\n--- PAIRED MOVING-BLOCK BOOTSTRAP of the net-Sharpe DIFFERENCE vs BASE "
-          "(block=63 sessions = one holding period, 2000 draws) ---")
+    print(
+        "\n--- PAIRED MOVING-BLOCK BOOTSTRAP of the net-Sharpe DIFFERENCE vs BASE "
+        "(block=63 sessions = one holding period, 2000 draws) ---"
+    )
     bv = base_net.to_numpy(dtype=np.float64)
     for arm in ARM_ORDER[1:]:
         bs = block_bootstrap_dsharpe(res[arm]["_net"].to_numpy(dtype=np.float64), bv)
         res[arm]["bootstrap_dsharpe"] = bs
-        print(f"  {arm:<16} dSR mean {bs['mean']:+.3f}  90% CI [{bs['p05']:+.3f}, {bs['p95']:+.3f}]  "
-              f"P(dSR <= 0) = {bs['frac_le_zero']:.3f}")
+        print(
+            f"  {arm:<16} dSR mean {bs['mean']:+.3f}  90% CI [{bs['p05']:+.3f}, {bs['p95']:+.3f}]  "
+            f"P(dSR <= 0) = {bs['frac_le_zero']:.3f}"
+        )
 
     gate = evaluate_gate(res)
     print("\n--- PRE-REGISTERED GATE ---")
-    print(f"  STEP 0 PREMISE (BASE mean rolling beta <= -0.05 AND negative in >= 60% of windows): "
-          f"{'HOLDS' if gate['premise_holds'] else 'FAILS'} "
-          f"(mean {gate['base_roll_beta_mean']:+.3f}, negative {gate['base_roll_beta_frac_neg']:.1%})")
+    print(
+        f"  STEP 0 PREMISE (BASE mean rolling beta <= -0.05 AND negative in >= 60% of windows): "
+        f"{'HOLDS' if gate['premise_holds'] else 'FAILS'} "
+        f"(mean {gate['base_roll_beta_mean']:+.3f}, negative {gate['base_roll_beta_frac_neg']:.1%})"
+    )
     n_act = len(gate["active_episodes"])
     if not gate["gate_evaluable"]:
-        print(f"  !! GATE NOT FULLY EVALUABLE on this panel: only {n_act}/7 pre-registered episodes "
-              f"fall inside its window (gate D needs >= 4). This panel is DIAGNOSTIC; the RESEARCH "
-              f"panel carries the verdict.")
-    print(f"  worst BASE episode (of the {n_act} in-window) = {gate['worst_episode_base']} "
-          f"(maxDD {base['episodes'][gate['worst_episode_base']]['max_dd']:.1%})")
+        print(
+            f"  !! GATE NOT FULLY EVALUABLE on this panel: only {n_act}/7 pre-registered episodes "
+            f"fall inside its window (gate D needs >= 4). This panel is DIAGNOSTIC; the RESEARCH "
+            f"panel carries the verdict."
+        )
+    print(
+        f"  worst BASE episode (of the {n_act} in-window) = {gate['worst_episode_base']} "
+        f"(maxDD {base['episodes'][gate['worst_episode_base']]['max_dd']:.1%})"
+    )
     keys = ("A_beta", "B_sharpe", "C_tail", "D_notfitted", "E_cost", "F_beatsctrl")
     for arm, g in gate["arms"].items():
         flags = " ".join(f"{k[0]}{'+' if g[k] else '-'}" for k in keys)
-        print(f"  {arm:<16} {flags}   maxDD improved in {g['n_improved']}/{n_act} in-window episodes "
-              f"({g['n_improved_ex_july26']} excluding 2026-07)  -> {'PASS' if g['PASS'] else 'FAIL'}")
+        print(
+            f"  {arm:<16} {flags}   maxDD improved in {g['n_improved']}/{n_act} in-window episodes "
+            f"({g['n_improved_ex_july26']} excluding 2026-07)  -> {'PASS' if g['PASS'] else 'FAIL'}"
+        )
     return gate
 
 
@@ -921,17 +1104,25 @@ def main(argv=None) -> int:
     from alphaforge.validation.probe_ledger import selection_context
 
     OUT_DIR.mkdir(parents=True, exist_ok=True)
-    payload: dict = {"probe": "alphamax_betaneutral", "trials_burned": 0,
-                     "note": "SCREEN ONLY — no experiments-ledger append; DSR read-only.",
-                     "panels": {}}
+    payload: dict = {
+        "probe": "alphamax_betaneutral",
+        "trials_burned": 0,
+        "note": "SCREEN ONLY — no experiments-ledger append; DSR read-only.",
+        "panels": {},
+    }
     leds = {"selection_union": selection_context(root=_REPO)}
     payload["ledgers"] = {k: {"N": v[0], "var_sr": v[1]} for k, v in leds.items()}
     print(f"ledgers (read-only, NO trial appended): {payload['ledgers']}")
 
     jobs = []
     if a.panel in ("both", "live"):
-        jobs.append(("LIVE-REPLICA k30_dn_63",
-                     LIVE, set(json.loads(K30_WF.read_text())["config"]["instrument_ids"])))
+        jobs.append(
+            (
+                "LIVE-REPLICA k30_dn_63",
+                LIVE,
+                set(json.loads(K30_WF.read_text())["config"]["instrument_ids"]),
+            )
+        )
     if a.panel in ("both", "research"):
         jobs.append(("RESEARCH top-2000 K=100", RESEARCH, None))
 
@@ -946,12 +1137,16 @@ def main(argv=None) -> int:
             net = r.pop("_net")
             for lname, (n_led, var_sr) in leds.items():
                 rep = dsr_from_returns(net, max(2, n_led), var_sr, ANN)
-                r.setdefault("dsr", {})[lname] = {"N": n_led, "dsr": float(np.real(rep.dsr)),
-                                                  "psr": float(np.real(rep.psr))}
+                r.setdefault("dsr", {})[lname] = {
+                    "N": n_led,
+                    "dsr": float(np.real(rep.dsr)),
+                    "psr": float(np.real(rep.psr)),
+                }
         payload["panels"][tag] = panel
 
-    (OUT_DIR / "report.json").write_text(json.dumps(payload, indent=2, default=float) + "\n",
-                                         encoding="utf-8")
+    (OUT_DIR / "report.json").write_text(
+        json.dumps(payload, indent=2, default=float) + "\n", encoding="utf-8"
+    )
     print(f"\npersisted: {OUT_DIR / 'report.json'} and net_returns_*.csv")
     print("TRIALS BURNED THIS RUN: 0 (cheap construction screen; no experiments-ledger append).")
     return 0
