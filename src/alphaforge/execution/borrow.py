@@ -30,7 +30,7 @@ __all__ = [
     "recall_instruction",
 ]
 
-_MS_PER_YEAR = 365.0 * 86_400_000.0
+_MS_PER_DAY = 86_400_000.0
 
 
 def _finite(name: str, value: float) -> None:
@@ -81,6 +81,7 @@ class BorrowQuote:
     available_qty: float
     annual_fee_bps: float
     utilization: float | None = None
+    day_count_basis: int = 365
 
     def __post_init__(self) -> None:
         if not self.instrument_id:
@@ -91,6 +92,8 @@ class BorrowQuote:
             raise ValueError("valid_from must precede valid_until")
         _nonnegative_finite("available_qty", self.available_qty)
         _nonnegative_finite("annual_fee_bps", self.annual_fee_bps)
+        if type(self.day_count_basis) is not int or self.day_count_basis not in (360, 365):
+            raise ValueError("day_count_basis must be integer 360 or 365")
         if self.utilization is not None:
             _finite("utilization", self.utilization)
             if not 0.0 <= self.utilization <= 1.0:
@@ -181,7 +184,11 @@ def accrue_borrow_charge(
     end_ts: Ms,
     decision_ts: Ms,
 ) -> float:
-    """Positive ACT/365 borrow charge when one quote covers the entire accrual interval."""
+    """Borrow charge on the quote's ACT/360 or ACT/365 basis over a covered interval.
+
+    This models continuous accrual, not broker-specific nightly valuation,
+    minimum charges or rounded collateral. Adapters must supply a sourced basis.
+    """
     _nonnegative_finite("short_qty", short_qty)
     _nonnegative_finite("mark_price", mark_price)
     if mark_price == 0.0:
@@ -191,7 +198,7 @@ def accrue_borrow_charge(
     quote.require_effective(decision_ts)
     if start_ts < quote.valid_from or end_ts > quote.valid_until:
         raise ValueError("borrow quote does not cover the full accrual interval")
-    elapsed_years = (end_ts - start_ts) / _MS_PER_YEAR
+    elapsed_years = (end_ts - start_ts) / (quote.day_count_basis * _MS_PER_DAY)
     return short_qty * mark_price * quote.annual_fee_bps * 1e-4 * elapsed_years
 
 
@@ -281,6 +288,8 @@ def recall_instruction(
         reason=(
             "forced_buy_in_deadline_reached"
             if forced
-            else "recall_cover_required" if buy_qty > 0.0 else "no_short_remaining"
+            else "recall_cover_required"
+            if buy_qty > 0.0
+            else "no_short_remaining"
         ),
     )

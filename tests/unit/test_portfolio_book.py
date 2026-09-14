@@ -29,6 +29,29 @@ def _rng(seed: int) -> np.random.Generator:
     return np.random.default_rng(seed)
 
 
+@pytest.mark.parametrize(
+    ("returns", "expected"),
+    [([-0.1, 0.0], -0.1), ([-0.1, -0.1], -0.19),
+     ([0.1, -0.1], -0.1), ([0.1, 0.1], 0.0), ([-0.1, 0.2], -0.1)],
+)
+def test_drawdown_includes_starting_capital(returns, expected):
+    stream = np.asarray(returns)
+    book = combine_book([_curve("a", stream)], scheme="fixed", fixed_weights={"a": 1.0})
+    assert book.maxdd == pytest.approx(expected)
+    np.testing.assert_allclose(book.book_returns, stream)
+    np.testing.assert_allclose(book.equity_curve, np.cumprod(1 + stream))
+    assert len(book.days) == len(book.equity_curve) == len(stream)
+
+
+def test_initial_overlay_loss_counts_in_combined_drawdown():
+    curve = _curve("a", np.zeros(2))
+    book = combine_book(
+        [curve], scheme="fixed", fixed_weights={"a": 1.0}, strategic_tilt_pct=.1,
+        strategic_tilt_market={19001: -.5, 19002: 0.0},
+    )
+    assert book.maxdd == pytest.approx(-.05)
+
+
 class TestDailyResample:
     def test_returns_recovered_from_equity(self) -> None:
         rets = np.array([0.01, -0.02, 0.015, 0.0, 0.03])

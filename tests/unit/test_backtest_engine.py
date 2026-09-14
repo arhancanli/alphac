@@ -478,9 +478,7 @@ def test_participation_fill_surfaces_partial_and_canceled_residual(tmp_path: Pat
         bars,
         [],
         [make_instrument(BTC)],
-        fill_model=ParticipationCappedFill(
-            TransactionCostModel(), max_bar_participation=0.10
-        ),
+        fill_model=ParticipationCappedFill(TransactionCostModel(), max_bar_participation=0.10),
     )
     result = engine.run(
         ScriptedStrategy({T0 + HOUR: {BTC: 0.10}}),
@@ -603,9 +601,7 @@ def test_pit_financing_accrues_and_persists_every_covered_interval(tmp_path: Pat
         start=T0,
         end=T0 + 4 * HOUR,
     )
-    baseline = build_engine(
-        tmp_path / "baseline", bars, [], [make_instrument(BTC)]
-    ).run(
+    baseline = build_engine(tmp_path / "baseline", bars, [], [make_instrument(BTC)]).run(
         ScriptedStrategy({T0 + HOUR: {BTC: 0.10}}),
         [BTC],
         start=T0,
@@ -1205,3 +1201,37 @@ def test_market_status_provider_requires_full_run_coverage_before_any_order(tmp_
             start=T0,
             end=T0 + 4 * HOUR,
         )
+
+
+def test_dynamic_borrow_respects_quote_day_count_basis(tmp_path: Path) -> None:
+    from dataclasses import replace
+
+    charges = {}
+    for basis in (360, 365):
+        provider = StaticBorrowDataProvider(
+            quotes=(
+                replace(
+                    _borrow_quote(available_qty=3.0, status=BorrowStatus.HARD),
+                    day_count_basis=basis,
+                ),
+            )
+        )
+        engine = build_engine(
+            tmp_path / str(basis),
+            [bar_row(BTC, T0 + k * HOUR, open_=100.0, close=100.0) for k in range(8)],
+            [],
+            [make_instrument(BTC)],
+            no_trade_band_frac=0.0,
+            borrow_data=provider,
+        )
+        result = engine.run(
+            ScriptedStrategy({T0 + HOUR: {BTC: -0.01}}),
+            [BTC],
+            start=T0,
+            end=T0 + 8 * HOUR,
+            initial_cash=CASH0,
+        )
+        charges[basis] = result.config["borrow_total"]
+        assert list(result.fills["qty"]) == [3.0]
+    assert charges[365] < 0
+    assert charges[360] / charges[365] == pytest.approx(365 / 360)

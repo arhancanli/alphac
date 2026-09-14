@@ -1,0 +1,14 @@
+[
+  {
+    "date": "2024-05-10",
+    "source_sha256": "c9297c194e118767801bfab831fbda6e93c06e894f09c574641010b599812969",
+    "fixture_sha256": "771505afb58f66479d19a4dae8297fe5b30b0f67d3215935b4aa1e6aea2eaca6",
+    "transformation": "Selected three US grain pages; universal newline normalization"
+  },
+  {
+    "date": "2024-08-12",
+    "source_sha256": "9a47d7a7efb1f6f372a99411654024fde80c253fb5293058382cff49963a0416",
+    "fixture_sha256": "4ce450be50a992a8697ecb45e5e1df1cdfba901a1c6f36396e295c243c4de16f",
+    "transformation": "Selected three US grain pages; universal newline normalization"
+  }
+]

@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
+
 import pytest
 
 from alphaforge.core.errors import LookaheadError
@@ -87,6 +89,25 @@ def test_borrow_charge_uses_exact_act_365_interval() -> None:
         decision_ts=100,
     )
     assert charge == pytest.approx(1.0)
+
+
+def test_borrow_charge_explicit_act_360_includes_fractional_days() -> None:
+    quote = replace(_quote(fee_bps=360.0), day_count_basis=360)
+    charge = accrue_borrow_charge(
+        quote,
+        short_qty=10.0,
+        mark_price=100.0,
+        start_ts=100,
+        end_ts=100 + DAY // 2,
+        decision_ts=100,
+    )
+    assert charge == pytest.approx(0.05)
+
+
+@pytest.mark.parametrize("basis", [0, -360, 366, True, 360.0, "360"])
+def test_borrow_quote_rejects_unsupported_day_count(basis) -> None:
+    with pytest.raises(ValueError, match="day_count_basis"):
+        replace(_quote(), day_count_basis=basis)
 
 
 def test_borrow_charge_rejects_interval_beyond_quote_validity() -> None:

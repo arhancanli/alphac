@@ -1,0 +1,9 @@
+# Extended core input assembly
+
+The AlphaMax/crypto snapshot is assembled and all 9,048 copied/derived output hashes were reverified. It contains 4,839 equity-price partitions, 229 crypto-price partitions, 228 funding partitions, 527 complete membership partitions, and 1,606 filtered corporate-action partitions (4,952 action rows). Original corporate-action files are retained separately; three crypto overrides incorporate the 312 recovered warmup hours without replacing existing observations. Source bindings cover 7,445 files. Production and previous experiments were not modified.
+
+Exact engine warmup starts 2011-12-22, one session earlier than the initial inventory's 2011-12-23. All 244 required additional listed-name observations exist and were checked. This corrects the input inventory to match existing engine behavior; training, evaluation dates, algorithm settings and warmup length are unchanged. The original inventory and protocol remain retained.
+
+Of twelve scoped split-validation failures, ten precede first retained observations. HLT (2017) and RIOT (2012) remain unresolved two-sided boundaries in shared EWMA history. The corrected reference retains its original action floor, 2019-12-30, including the disclosed older raw-price artifacts. No zero-effect claim or full-history corporate-action certification is made. Calendar decay coefficients in the dependency audit are conditional variance-perturbation factors, not measured signal or portfolio effects.
+
+No new signals/returns were computed, and no new trial was reserved. This is a diagnostic input snapshot, not strategy qualification or complete combined replay preparation. Next: bind confirmedTrend inputs and implementation, compile isolated modeled metadata/cost stores, freeze normal/stress replay scenarios and boundary-exposure checks, then reserve identities before computation. Keep the whole 2023–June 2026 evaluation and fixed annual reports.

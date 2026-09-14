@@ -1,0 +1,6 @@
+{
+  "source": "evidence/wasde-format-recovery/2015-01-12-f55fa5712f.xml",
+  "source_sha256": "6e272dd59689e64d83a16dc9f100e6c65006930241d9ea920da81a297dbbe812",
+  "fixture_sha256": "2e80e404e71392fe7585e006c8b80672461575cb61e1c211b18c657eff94b78e",
+  "transformation": "Retain target report metadata, seven field subtrees and unit-descriptor cells; XML reserialization"
+}

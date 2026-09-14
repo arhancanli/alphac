@@ -1,0 +1,9 @@
+# Scheduled turnover: one-rank retention candidate
+
+Reviewed98 accessible local experiment logs with no parse failures;37 carry-related identities included2MVO runs. Their recorded sharpe_ann fields are-0.212399 (three carry factors) and0.271105 (singlecarry_fund_21). Data/timing and benchmark comparability to the corrected reference are not established. Retained maker-execution scripts also exist; their assumed passive-fill benefits are not new verified executable alpha. No simple MVO switch or assumed maker fee improvement is being repeated.
+
+Preregistered one rank of same-side incumbent retention at each selection boundary. The isolated allocator preserves the original inverse-vol sizing, caps, half-gross normalization and objective reporting. It delegates exactly for flat starts, disabled retention and small cross-sections where bands would overlap. It does not claim a calibrated cost penalty or eliminate turnover from within-book sizing.
+
+Six synthetic tests pass: flat/control parity, retention and outside-band exits, forbidden shorts/caps/no mutation, sizing delegation, deterministic ties/small universes, and rejection of unregistered widths. The first fixture violated the existing annualized expected-return ceiling; the failed attempt is retained, the fixture was corrected, and the safety check remains. No production source was changed.
+
+Next: research-only engine integration replacing only the rank allocator; verify integration preserves risk exits and no historical computation occurs before trial reservation. Then normal/stress crypto and combined reference comparisons, requiring measured normalized scheduled-turnover reduction and all frozen full/annual performance gates. No historical candidate signals/returns, new trial identity, qualified sleeve or deployment yet.

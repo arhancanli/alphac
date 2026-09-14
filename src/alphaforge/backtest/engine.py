@@ -842,7 +842,7 @@ class EventDrivenBacktester:
             else self._cost_inputs
         )
 
-        ledger = Ledger(initial_cash, insts)
+        ledger = self._create_ledger(initial_cash, insts)
         counters: dict[str, int] = dict.fromkeys(COUNTER_NAMES, 0)
         if isinstance(self._fill_model, ParticipationCappedFill):
             counters.update(
@@ -953,7 +953,7 @@ class EventDrivenBacktester:
                         decision_ts=prev_bar_ts,
                     )
                     days = (t - prev_bar_ts) / _DAY_MS
-                    rate_per_day = quote.annual_fee_bps * 1e-4 / 365.0
+                    rate_per_day = quote.annual_fee_bps * 1e-4 / quote.day_count_basis
                     ledger.apply_borrow(iid, t, rate_per_day, days, mark)
                     counters["borrow_charges_applied"] += 1
                     counters["dynamic_borrow_charges_applied"] += 1
@@ -1006,18 +1006,9 @@ class EventDrivenBacktester:
                         break
             pending = []
 
-            # (1) stored funding events with ts_funding in (prev_close, t];
-            #     pointer per instrument is monotone, so "<= t" is exact.
-            for iid, events in funding_events.items():
-                ptr = funding_ptr[iid]
-                while ptr < len(events) and events[ptr][0] <= t:
-                    ts_funding, rate = events[ptr]
-                    ptr += 1
-                    bar = bars[iid].get(prev_open)
-                    mark = bar.close if bar is not None else last_close.get(iid)
-                    if mark is not None:  # no close ever seen => provably flat: no-op
-                        ledger.apply_funding(iid, ts_funding, rate, mark)
-                funding_ptr[iid] = ptr
+            self._process_interval_funding(
+                ledger, funding_events, funding_ptr, bars, prev_open, last_close, t
+            )
 
             # (2) mark at close[t] (last-known closes carry across per-
             #     instrument gaps so open positions always mark — documented).
@@ -1133,6 +1124,23 @@ class EventDrivenBacktester:
             reason_by_order=reason_by_order,
             market_status_coverage_hash=market_status_coverage_hash,
         )
+
+    def _create_ledger(self, initial_cash, instruments):
+        return Ledger(initial_cash, instruments)
+
+    def _process_interval_funding(
+        self, ledger, funding_events, funding_ptr, bars, prev_open, last_close, t
+    ):
+        for iid, events in funding_events.items():
+            ptr = funding_ptr[iid]
+            while ptr < len(events) and events[ptr][0] <= t:
+                ts_funding, rate = events[ptr]
+                ptr += 1
+                bar = bars[iid].get(prev_open)
+                mark = bar.close if bar is not None else last_close.get(iid)
+                if mark is not None:  # no close ever seen => provably flat: no-op
+                    ledger.apply_funding(iid, ts_funding, rate, mark)
+            funding_ptr[iid] = ptr
 
     # ----------------------------------------------------------- loop pieces
 

@@ -1,0 +1,15 @@
+# AlphaMax causal total-return momentum: source review and kernel
+
+Phase completed2026-09-13. No historical candidate scores, labels, returns or new trial.
+
+The retained AlphaMax price basis is deliberately split-only. equity_price.adjusted_close documents that enabling its legacy dividend option can depend on a future ex-date close and break batch/as-of parity. Therefore simply setting include_dividends=True is not an acceptable repair. This was a known deliberate limitation, not a newly discovered accidental toggle. Trend already has a forward wealth-index mechanism; that established equation informed the isolated equity candidate.
+
+The new kernel recognizes cash entitlements only on their effective session, using(q*P_t+D)/P_previous, and forms the same252/21momentum window from those daily wealth changes. D is per prior share; q is new shares per old. This is a synthetic signal index, not a payment-date cash ledger or a claim that receivables can finance actual trades. Sigma,covariance,execution andcash treatment remain unchanged to isolate the forecast input. The mechanism may improve or worsen net performance; only the fixed combined comparison decides.
+
+Frozen source audit:4952actions for358ids from2019-12-30 through2026-06-01,including4907dividends across219issuers and45splits. No zero/negative/nonfinite dividends,duplicates bykind/date,events after modeledexclose availability,or simultaneoussplit/dividenddates found. These checks concern stored source fields, not independent event completeness, historical dissemination or issuer cash-amount verification. Raw-source hashes retained.
+
+scripts/alphamax_total_return_momentum.py rejects late,duplicate,off-grid and ambiguous simultaneous events. It never uses a future ex-close to rewrite an earlier return. Gaps remain NaN through the formation window. Ten synthetic tests pass:ex-dividend loss neutrality,future-ex-price/prefix independence,split conservation,no-action control agreement,independent reinvestment identity,input immutability,gap/skipbehavior and malformed action rejection.
+
+NEXT integrate this exact input into an isolated versioned AlphaMax service/runner. Bind the full XNYSgrid and original inputmanifest; verify forward split-only momentum agrees with the retained control on the frozen source and disclose any extra exclusions. Follow normalstandalone/accountpacket→normalcombined→stress onlyifpass→separate2022noharm. Keep original split-only baseline and all failed trials. No fresh market-data acquisition is needed for this candidate. DESIG N is contained in DESIGN.json; no historical scores inspected for choosing the rule.
+
+This is an existing-sleeve measurement enhancement, not a distinct new sleeve. Current combined reference remains0.742413normal/0.418865stress excessSharpe; measuredunion338pluspriorfailedunmeasuredreservation; no additional qualified sleeves. Previous turn progress(closedpathfailure);currentaddssourceevidence andcausal testedkernel. Goalactive;alljobs terminal.

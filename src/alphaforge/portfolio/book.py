@@ -299,7 +299,9 @@ def combine_book(
     final = float(equity_curve[-1])
     cagr = final ** (trading_days / n) - 1.0 if final > 0 else -1.0
     vol = _annualized_vol(book_returns, trading_days)
-    running_max = np.maximum.accumulate(equity_curve)
+    # Starting capital is a peak too: omitting it hides losses on the first day.
+    # Preserve the public series length and negative maxdd sign convention.
+    running_max = np.maximum.accumulate(np.concatenate(([1.0], equity_curve)))[1:]
     maxdd = float(np.min(equity_curve / running_max - 1.0))
 
     # pairwise correlation on days where BOTH sleeves are genuinely active (no padded zeros)

@@ -1,0 +1,11 @@
+# Direction-confirmation implementation checkpoint
+
+Research-only strategy and bundle implemented. The exact rule is sealed in EXPERIMENT_SPEC.json; historical registration and measurement remain pending. No return trial was spent and union244 is unchanged.
+
+Initial nonzero entry is immediate. Reversal requires two consecutive successful scheduled rebalances. Same-direction observations cancel pending reversal, zero resets, missing instruments lose their memory, and cold/stale whole-book attempts do not advance confirmation. Parent shortability, per-name limits, daily drawdown ladder and execution filters retain control. State follows instrument identity, not vector order. Continuous-process research only; restart persistence is not implemented or qualified.
+
+The bundle explicitly selects the existing baseline's cross_sectional_zscore normalization. Inspection caught the generic bundle's directional_rms default before any historical run; it was corrected locally so the new experiment isolates confirmation. No existing bundle or signal implementation was changed.
+
+Ten relevant tests pass in2.22 seconds, including four state/wiring tests, one synthetic full-engine test, and five existing runner tests. Synthetic execution checks cover raw fill prices, correct prior weights using raw marks, exact10-session confirmation cadence, finite equity, bound signal tamper rejection and settings mismatch rejection. State tests cover nonpersistent reversal, confirmed reversal, zero/missing resets, identity reordering and failed-allocation rollback. Inheritance retains daily risk dispatch; these tests do not prove every real-world risk path or profitability. Ruff passes for all four new files.
+
+Next: build the registered experiment runner with complete source/configuration binding. Reuse sealed baseline forecasts only after verifying their hashes and preserving their provenance; do not regenerate a different signal stream inadvertently. Reserve the primary confirmation path and both mandatory doubled-cost paths before measurement, then close all canonical packets. Report the fixed gates whether passed or failed. Later combined replacement comparisons need their own sealed alignment and identities. No production changes or admission.

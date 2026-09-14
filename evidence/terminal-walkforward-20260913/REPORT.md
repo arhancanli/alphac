@@ -1,0 +1,17 @@
+# Terminal eligibility across replay legs and funding control
+
+Implemented explicit parent_interval_close and interval_open_proxy funding policies in the research TerminalBacktester. Open-price funding can now run without terminal events, providing the necessary matched funding-policy control. Defaults remain parent funding without events and open proxy with events. Both policies remain modeled prices, not exchange funding marks.
+
+Opt-in carry_terminal_eligibility permits events before/after a leg's interval. Only events within(start,end] enter its settlement ledger. Past events keep their order block without duplicate settlement or a change to inherited opening cash; future events do not prematurely block trading. Every configured source hash, instrument identity, duplicate identity and modeled opt-in is checked on every run, including past/future events. This relies on the existing runner's flat position restart; it does not implement a continuous position ledger across legs. Blocked target allocations are left as cash rather than silently redistributed, and source membership intervals are not rewritten.
+
+WalkForwardRunner accepts an optional engine factory paired with a mandatory nonempty research configuration. The copied configuration enters preflight trial registration, the input snapshot's declared run and the result configuration. Defaults add no research-engine key. This records the declaration; the final frozen historical runner must bind its actual factory, source and environment hashes. Arbitrary caller declarations are not automatically certified against executable behavior.
+
+## Evidence
+
+76 tests passed across terminal engine, terminal ledger, terminal walk-forward integration, base walk-forward, base engine and payable engine. Subsequently added a future-event test; all11 terminal-engine tests pass (77 distinct tests across the covered set). Ruff passes on changed code/tests. The actual three-leg synthetic walk-forward settles once and retains execution blocks in later legs, with cash continuity. A moving-price funding test gives identical market fills and exactly20 quote units difference from changing a100 mark to120 on100 units at1% funding. Registration inspection stops before signal computation and verifies the engine binding is present. Missing custom-engine bindings fail. Source tampering is rejected even in a later flat leg.
+
+The preserved pre-hook engine, current default engine and no-event terminal adapter still produce identical golden-fixture equity, fills, positions, funding, orders and counters. Original versions of the modified adapter/walk-forward file are retained here with hashes; older result packets have not been relabeled as reproducible under changed source bindings.
+
+## Research boundary and next action
+
+No historical signals/returns, new trial identity, qualified sleeve or production activation. Union273. The seven-arm comparison design remains fixed. Next assemble the historical runner against the375-partition snapshot plus original overrides, explicitly compile modeled metadata applicability and terminal source timing, bind actual scenario/factory/environment configuration, then reserve each identity before computing returns. A generic injectable engine is now available; the seven-arm historical runner is not yet assembled or preregistered. Full-year2022 and combined crisis qualification remain outstanding.

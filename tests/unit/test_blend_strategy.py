@@ -370,3 +370,28 @@ def test_mvo_run_reports_fallback_count(world: World) -> None:
     # Every rebalance is either an optimal solve or a counted fallback.
     assert 0 <= c["n_fallback_used"] <= c["n_rebalances"]
     assert "n_fallback_used" in c
+
+
+def test_cash_retention_masks_after_overlay_without_redistribution(world: World) -> None:
+    frame = _signal_frame(world.closes, mu=0.1)
+    settings = world.settings.model_copy(
+        update={"portfolio": world.settings.portfolio.model_copy(update={"w_max": 0.8})}
+    )
+    kwargs = {"allocator": "trend", "cov_min_periods": 120}
+    base = BlendStrategy(settings, signal_frame=frame, **kwargs)
+    gated = frame.copy()
+    gated["cash_retention_eligible"] = gated.index.get_level_values("instrument_id") != IDS[0]
+    candidate = BlendStrategy(settings, signal_frame=gated, **kwargs)
+    ctx = _ctx(world, bar=300, equity=100000.0, positions={})
+    expected = base.on_bar_close(ctx)
+    actual = candidate.on_bar_close(ctx)
+    assert expected[IDS[0]] != 0
+    assert actual[IDS[0]] == 0
+    for iid in IDS[1:]:
+        assert actual[iid] == expected[iid]
+    assert sum(abs(v) for v in actual.values()) < sum(abs(v) for v in expected.values())
+    # A new leg must not retain eligibility from the previous leg.
+    gated["cash_retention_eligible"] = True
+    candidate.load_leg(gated)
+    restored = candidate.on_bar_close(ctx)
+    assert restored == expected

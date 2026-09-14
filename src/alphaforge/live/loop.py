@@ -1582,6 +1582,7 @@ class LiveLoop:
         makes the difference observable, and it must be allowed to reach CRITICAL.
         """
         if self._funding_source is None:
+            self._note_funding_dry(cycle_ts, instruments, reason="funding source unavailable")
             return
         prev = cycle_ts - self._bar_ms
         try:
@@ -1593,6 +1594,7 @@ class LiveLoop:
             self._note_funding_dry(cycle_ts, instruments, reason=f"read failed ({exc})")
             return
         total, applied = 0.0, 0
+        held_perps = self._held_perpetuals(cycle_ts)
         for iid, ts_funding, rate in events:
             mark = self._book_mid(iid, cycle_ts)
             if mark is None or not (mark > 0.0):
@@ -1604,12 +1606,14 @@ class LiveLoop:
                     AlertLevel.WARN, f"cycle {cycle_ts}: funding skipped for {iid}: {exc}"
                 )
                 continue
-            if paid != 0.0:
-                total += paid
+            total += paid
+            # A valid zero-rate settlement is still an observed settlement.
+            # Flat instruments cannot reset a held position's failure streak.
+            if iid in held_perps:
                 applied += 1
         if applied:
             _log.info("funding_settled", cycle_ts=cycle_ts, events=applied, quote=round(total, 6))
-            self._funding_dry_cycles = 0
+            self._funding_dry_cycles = self._store.record_funding_health(cycle_ts, dry=False)
         else:
             self._note_funding_dry(cycle_ts, instruments, reason="no events booked")
 
@@ -1617,6 +1621,12 @@ class LiveLoop:
     #: treated as normal. 8h is the longest funding interval any venue we trade uses, so on
     #: an hourly loop ~8 dry cycles is ordinary and 24 is not physically possible.
     _FUNDING_DRY_LIMIT: Final[int] = 24
+
+    def _held_perpetuals(self, cycle_ts: Ms) -> set[str]:
+        return {
+            p.instrument_id for p in self._broker.account_at(cycle_ts).positions
+            if p.qty != 0 and ":PERP:" in p.instrument_id
+        }
 
     def _note_funding_dry(
         self, cycle_ts: Ms, instruments: Mapping[str, object], *, reason: str
@@ -1628,15 +1638,12 @@ class LiveLoop:
         system -- and a check that cries wolf gets muted, which is how you end up with no
         check at all.
         """
-        holds_perp = any(
-            getattr(getattr(i, "market_type", None), "name", "") == "PERP"
-            for i in instruments.values()
-        )
+        holds_perp = bool(self._held_perpetuals(cycle_ts))
         if not holds_perp:
-            self._funding_dry_cycles = 0
+            self._funding_dry_cycles = self._store.record_funding_health(cycle_ts, dry=False)
             return
-        self._funding_dry_cycles += 1
-        if self._funding_dry_cycles == self._FUNDING_DRY_LIMIT:
+        self._funding_dry_cycles = self._store.record_funding_health(cycle_ts, dry=True)
+        if self._funding_dry_cycles >= self._FUNDING_DRY_LIMIT:
             self._alerter.alert(
                 AlertLevel.CRITICAL,
                 f"cycle {cycle_ts}: {self._funding_dry_cycles} consecutive cycles holding PERP "

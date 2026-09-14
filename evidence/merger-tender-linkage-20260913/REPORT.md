@@ -1,0 +1,11 @@
+# Tender subject-linkage phase
+
+The2,444 original index rows represent1,225 distinct SC TO-T filings. The deterministic first stage selected only the205 accessions already present in211 frozen same-indexed-CIK/date relations; all1,020 other accessions remain in deferred_pool.json. Selection used no filing text, prices or deal outcomes. All indexedCIK roles were retained, and one request per accession avoided duplicate downloads.
+
+All205 selected headers were acquired with no failed or skipped requests. Bytes, hashes, exact accession/form, request URL and indexedCIK membership verified. All205 parsed without errors. Of211 relations,209 have the anchor indexedCIK as the sole SUBJECT-COMPANY; two instead identify the FILED-BY bidder. The209 metadata matches cover172 distinct frozen anchors. A separate line-state parser independently reproduced every subjectCIK and relation disposition. Four synthetic tests cover subject versus bidder and missing/multiple subject cases.
+
+The two mismatches are anchorCIK1103982 / anchor0001193125-09-255952 against source0001193125-09-247364 (subject744473), and anchorCIK1487357 / anchor0000950123-10-031009 against source0000950123-10-030999 (subject1015923). They remain preserved, not silently relabeled as target links. This does not establish whether the original anchors themselves are eligible transactions.
+
+No match establishes cash terms, binding status, same-transaction identity, public availability or independent human accuracy. Exact temporal eligibility and earliest-source completeness remain unresolved. Raw clocks are preserved without UTC conversion. Deferred1,020 filings are not negatives; no completeness claim can omit them. No body acquisition, labels, return hypotheses or performance changes occurred.
+
+Next: rejoin the205 verified subject identities to all400 frozen anchors and their raw acceptance clocks, checking for cross-indexed-role omissions and date-boundary anomalies before deciding the next bounded acquisition scope. Keep independent review and outcome-source requirements explicit. Do not repeat completed205-header acquisition. Trial union321 and combined316/317 reference are unchanged; overall >2 excessSharpe and15+qualifiedsleeve goals remain unmet.

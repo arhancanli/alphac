@@ -1,0 +1,161 @@
+WASDE - 648 - 11                        May 2024
+                                        
+                          U.S. Wheat Supply and Use  1/
+================================================================================
+                               2022/23  2023/24 Est. 2024/25 Proj. 2024/25 Proj.
+Item                                                           Apr           May
+================================================================================
+                                                 Million Acres
+Area Planted                      45.8          49.6            NA         47.5*
+Area Harvested                    35.5          37.3            NA         38.0*
+
+                                                  Bushels
+Yield per Harvested Acre          46.5          48.6            NA         48.9*
+
+                                                Million Bushels
+Beginning Stocks                   674           570            NA           688
+Production                        1650          1812            NA          1858
+Imports                            122           140            NA           120
+  Supply, Total                   2446          2522            NA          2665
+Food                               973           960            NA           962
+Seed                                68            64            NA            62
+Feed and Residual                   77            90            NA           100
+  Domestic, Total                 1118          1114            NA          1124
+Exports                            759           720            NA           775
+  Use, Total                      1876          1834            NA          1899
+Ending Stocks                      570           688            NA           766
+Avg.FarmPrice ($/bu)  2/          8.83          7.10            NA          6.00
+================================================================================
+                                                                                
+                      U.S. Wheat by Class: Supply and Use
+================================================================================
+Year begining            Hard Red Hard Red Soft Red                           
+  June 1                   Winter   Spring   Winter    White    Durum    Total
+================================================================================
+
+                                                Million Bushels
+2023/24 (Est.)          
+Beginning Stocks              223      155       90       74       28      570
+Production                    601      468      449      235       59     1812
+Imports                        18       65        7        6       44      140
+  Supply, Total 3/            842      688      546      315      131     2522
+Food                          382      253      158       84       83      960
+Seed                           27       16       12        6        3       64
+Feed and Residual              25      -10       90      -10       -5       90
+  Domestic Use                434      259      260       80       81     1114
+Exports                       138      240      160      155       27      720
+  Use, Total                  572      499      420      235      108     1834
+Ending Stocks, Total    
+                     May      270      189      126       80       23      688
+                     Apr      277      197      119       80       25      698
+================================================================================
+                                
+WASDE - 648 - 12                        May 2024
+                                        
+                  U.S. Feed Grain and Corn Supply and Use  1/
+================================================================================
+                               2022/23  2023/24 Est. 2024/25 Proj. 2024/25 Proj.
+Item                                                           Apr           May
+================================================================================
+                                                 Million Acres
+FEED GRAINS
+Area Planted                     100.0         107.5            NA        101.3*
+Area Harvested                    86.6          96.0            NA         90.5*
+
+                                                 Metric Tons
+Yield per Harvested Acre          4.11          4.19            NA          4.33
+
+                                               Million Metric Tons
+Beginning Stocks                  37.5          37.1            NA          54.1
+Production                       356.1         402.6            NA         391.5
+Imports                            2.9           2.2            NA           2.2
+  Supply, Total                  396.5         442.0            NA         447.8
+Feed and Residual                142.3         148.3            NA         149.8
+Food, Seed & Industrial          172.1         178.7            NA         179.1
+  Domestic, Total                314.4         327.0            NA         328.9
+Exports                           45.0          61.0            NA          62.6
+  Use, Total                     359.4         387.9            NA         391.4
+Ending Stocks                     37.1          54.1            NA          56.4
+
+                                                 Million Acres
+
+CORN
+Area Planted                      88.2          94.6            NA         90.0*
+Area Harvested                    78.7          86.5            NA         82.1*
+
+                                                  Bushels
+Yield per Harvested Acre         173.4         177.3            NA        181.0*
+
+                                                Million Bushels
+Beginning Stocks                  1377          1360            NA          2022
+Production                       13651         15342            NA         14860
+Imports                             39            25            NA            25
+  Supply, Total                  15066         16727            NA         16907
+Feed and Residual                 5486          5700            NA          5750
+Food,Seed& Industrial 2/          6558          6855            NA          6855
+Ethanol & by-products 3/          5176          5450            NA          5450
+  Domestic, Total                12045         12555            NA         12605
+Exports                           1661          2150            NA          2200
+  Use, Total                     13706         14705            NA         14805
+Ending Stocks                     1360          2022            NA          2102
+Avg.FarmPrice ($/bu)  4/          6.54          4.65            NA          4.40
+================================================================================
+                                
+WASDE - 648 - 15                        May 2024
+                                        
+        U.S. Soybeans and Products Supply and Use (Domestic Measure)  1/
+================================================================================
+                               2022/23  2023/24 Est. 2024/25 Proj. 2024/25 Proj.
+Item                                                           Apr           May
+================================================================================
+                                                 Million Acres
+SOYBEANS
+Area Planted                      87.5          83.6            NA         86.5*
+Area Harvested                    86.2          82.4            NA         85.6*
+
+                                                  Bushels
+Yield per Harvested Acre          49.6          50.6            NA         52.0*
+
+                                                Million Bushels
+Beginning Stocks                   274           264            NA           340
+Production                        4270          4165            NA          4450
+Imports                             25            25            NA            15
+  Supply, Total                   4569          4454            NA          4805
+Crushings                         2212          2300            NA          2425
+Exports                           1992          1700            NA          1825
+Seed                                75            77            NA            78
+Residual                            27            37            NA            32
+  Use, Total                      4305          4114            NA          4360
+Ending Stocks                      264           340            NA           445
+Avg.FarmPrice ($/bu)  2/         14.20         12.55            NA         11.20
+
+                                                Million Pounds
+
+SOYBEAN OIL
+Beginning Stocks                  1991          1607            NA          1677
+Production 4/                    26227         27070            NA         28515
+Imports                            376           550            NA           450
+  Supply, Total                  28594         29227            NA         30642
+Domestic Disappearance           26609         27200            NA         28300
+   Biofuel 3/                    12491         13000            NA         14000
+   Food, Feed & other
+   Industrial                    14118         14200            NA         14300
+Exports                            378           350            NA           500
+   Use, Total                    26987         27550            NA         28800
+Ending stocks                     1607          1677            NA          1842
+Avg. Price (c/lb)  2/            65.26         48.00            NA         42.00
+
+                                               Thousand Short Tons
+
+SOYBEAN MEAL
+Beginning Stocks                   311           371            NA           400
+Production 4/                    52493         54254            NA         57075
+Imports                            632           600            NA           600
+  Supply, Total                  53436         55225            NA         58075
+Domestic Disappearance           38402         39025            NA         40325
+Exports                          14664         15800            NA         17300
+  Use, Total                     53065         54825            NA         57625
+Ending Stocks                      371           400            NA           450
+Avg. Price ($/s.t.)  2/         451.91        380.00            NA        330.00
+================================================================================
+                                

@@ -200,9 +200,9 @@ class BlendStrategy:
         constraints = PortfolioConstraints.from_settings(settings)
         self._allocator_name: Literal["rank", "rank_long", "mvo", "trend"] = allocator
         if allocator == "rank":
-            self._allocator: (
-                RankEqualVolFallback | MeanVarianceOptimizer | TrendVolTarget
-            ) = RankEqualVolFallback(constraints)
+            self._allocator: RankEqualVolFallback | MeanVarianceOptimizer | TrendVolTarget = (
+                RankEqualVolFallback(constraints)
+            )
         elif allocator == "rank_long":
             # Long-only factor-tilt book (no short leg): top-K longs at full gross. Earns
             # market beta + the factor tilt, not market-neutral alpha (evaluate vs a
@@ -255,6 +255,8 @@ class BlendStrategy:
         else:
             self._mu = None
             self._signal_ts = np.array([], dtype=np.int64)
+
+        self._load_cash_retention(signal_frame)
 
         # Mutable per-run state (the engine calls strictly forward in time).
         self._next_rebalance_ts: Ms | None = None
@@ -325,7 +327,30 @@ class BlendStrategy:
                 "load_leg is precomputed-mode only; live mode has no per-leg signal frame"
             )
         self._mu, self._signal_ts = _validate_signal_frame(signal_frame)
+        self._load_cash_retention(signal_frame)
         self._next_rebalance_ts = None
+
+    def _load_cash_retention(self, frame: pd.DataFrame | None) -> None:
+        self._cash_retention = None
+        if frame is not None and "cash_retention_eligible" in frame:
+            if self._allocator_name != "trend":
+                raise ValueError("Cash retention is supported only for the trend allocator")
+            eligible = frame["cash_retention_eligible"]
+            if eligible.dtype != bool or eligible.isna().any():
+                raise ValueError("Cash-retention eligibility must contain explicit booleans")
+            self._cash_retention = eligible.copy()
+
+    def _retain_cash(self, weights: np.ndarray, ids: list[str], ctx: StrategyContext) -> np.ndarray:
+        if self._cash_retention is None:
+            return weights
+        want = ctx.calendar.floor_bar(ctx.ts - 1, ctx.tf)
+        pos = int(np.searchsorted(self._signal_ts, want, side="right")) - 1
+        if pos < 0:
+            raise ValueError("No cash-retention observation at the signal timestamp")
+        row = self._cash_retention.xs(int(self._signal_ts[pos]), level="ts_open")
+        if not all(iid in row.index for iid in ids):
+            raise ValueError("Incomplete cash-retention cross-section")
+        return weights * np.array([bool(row.loc[iid]) for iid in ids])
 
     # ------------------------------------------------------------ diagnostics
 
@@ -637,6 +662,9 @@ class BlendStrategy:
         # shortfall from clipping is ACCEPTED — we do NOT re-scale the book back
         # up after clipping (that would just push another name past the cap).
         w_clip = np.clip(w_vt, -self._w_max, self._w_max)
+        # Mask AFTER both allocation and volatility scaling. No subsequent
+        # gross normalization may give rejected allocations to surviving names.
+        w_clip = self._retain_cash(w_clip, ids, ctx)
         mult = self._ladder.gross_multiplier()
 
         self._last_result = result

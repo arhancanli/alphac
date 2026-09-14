@@ -36,7 +36,7 @@ def build_contract() -> dict[str, object]:
             "easy, hard, and unavailable borrow states",
             "quantity-bounded granted, partial, and denied locate outcomes",
             "incremental-short locate quantity net of long inventory and existing shorts",
-            "ACT/365 fee accrual over an exactly covered quote-validity interval",
+            "quote-specific ACT/360 or ACT/365 accrual over an exactly covered validity interval",
             "point-in-time recall notices capped by the outstanding short",
             "forced-buy-in escalation at the explicit cover deadline",
             "optional event-driven short-entry locate denial and quantity caps",

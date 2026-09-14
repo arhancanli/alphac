@@ -1,0 +1,11 @@
+# Broader replay funding and lifecycle audit
+
+Inspected 216,948 funding records across 51 crypto instruments over the frozen context/evaluation scope. There are zero duplicate funding timestamps, nonfinite rates, negative availability lags, or consecutive-event gaps above eight hours plus one second. Every retained availability timestamp uses a modeled five-minute lag. AXS, BLZ, REEF, SOL and TIA include shorter-than-eight-hour cadences. The engine loads individual stored events; it does not derive payments from a fixed metadata interval.
+
+These checks establish internal consistency, not exchange schedule completeness. In particular, they cannot detect a missing four-hour event inside an eight-hour interval. No records were filled or removed.
+
+Boundary exceptions are retained separately. SXP funding ends 2025-12-05 08:00 UTC while price history continues into June 2026 (4,264 hours between last funding and last bar close). Its only selected membership is May 2023, ending June 1, 2023. APT/ARB/INJ/OP contain funding preceding first retained price. EOS/MATIC/RNDR/TOMO have funding beyond the final retained price. Their suspect terminal regions follow retained membership exits; this does not by itself prove zero carried positions. Replay must independently check exposure and funding application at those boundaries and fail if unsupported exposure occurs.
+
+Twenty-six modeled terminal boundaries were inventoried (14 equities, 12 crypto). The engine can administratively close at the last retained close when metadata indicates delisting inside the leg. That modeled price is not independently verified terminal proceeds. LUNA requires the existing explicit terminal overlay; its post-terminal missing bars must not be manufactured. Later delistings with potential exposure require either retained settlement evidence or an explicitly labeled diagnostic with terminal-price sensitivity before qualification.
+
+Next research gate: resolve consumed-feature applicability of historical equity split failures, assemble frozen extended inputs, then preregister a replay with explicit boundary exposure checks. Preserve 2023–June 2026 and annual evaluation windows. This audit computed no strategy signals or returns, consumed no trial identity, and does not qualify any sleeve or clear the full replay.

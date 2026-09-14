@@ -392,6 +392,7 @@ def blend(
     universe_mask: pd.Series,
     *,
     min_members: int = 5,
+    normalization: str = "cross_sectional_zscore",
 ) -> pd.Series:
     """Blend processed directional alpha z-scores into Ã (alphaDesign.md §9.1).
 
@@ -408,6 +409,8 @@ def blend(
 
     Returns a float Series named ``"alpha_blend"`` aligned to the input index.
     """
+    if normalization not in ("cross_sectional_zscore", "directional_rms"):
+        raise ValueError("Unknown blend normalization")
     if set(factor_zs) != set(weights.alpha_names):
         raise ValueError(
             f"factor_zs alphas {sorted(factor_zs)} must equal weights.alpha_names "
@@ -429,5 +432,13 @@ def blend(
     a_values = (zs.to_numpy(dtype=float) * w_rows).sum(axis=1)  # NaN z propagates
     a = pd.Series(a_values, index=zs.index)
     mask = universe_mask.reindex(zs.index, fill_value=False).astype(bool)
-    a_tilde = cs_zscore(a.where(mask), min_members=min_members)
+    if normalization == "directional_rms":
+        # Positive scaling without subtracting the cross-sectional mean preserves
+        # time-series direction. Mask BEFORE moments; incomplete factors stay NaN.
+        selected = a.where(mask)
+        count = selected.groupby(level=0).transform("count")
+        rms = np.sqrt(selected.pow(2).groupby(level=0).transform("mean"))
+        a_tilde = (selected / rms).where((count >= min_members) & (rms > 0))
+    else:
+        a_tilde = cs_zscore(a.where(mask), min_members=min_members)
     return a_tilde.rename(ALPHA_BLEND_COLUMN)

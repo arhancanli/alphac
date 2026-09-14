@@ -1,0 +1,1 @@
+Independent CSV validation found 23,105 multi-filing groups versus pandas 23,097. Default pandas NA parsing discarded literal NA ticker groups. Prior report claim of completed independent verification was premature and is superseded by v3. No returns computed.

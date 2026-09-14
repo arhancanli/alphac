@@ -33,8 +33,20 @@ def _module():
 
 
 @pytest.fixture(scope="module")
-def evaluator():
-    return _module()
+def evaluator(tmp_path_factory):
+    module = _module()
+    original_root = module.REPO
+    sandbox = tmp_path_factory.mktemp("forward-evidence")
+    # Pure fixtures must not depend on a workstation's mutable publication outputs.
+    # The synthetic signed inputs below bind these local placeholder bytes.
+    for name, path in list(vars(module).items()):
+        if isinstance(path, Path) and name != "REPO":
+            target = sandbox / path.relative_to(original_root.parent)
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_bytes(path.read_bytes() if path.exists() else b"{}")
+            setattr(module, name, target)
+    module.REPO = sandbox / original_root.name
+    return module
 
 
 def _curve(returns: list[float]) -> list[dict[str, Any]]:
@@ -268,6 +280,69 @@ def _alternating_returns(n: int, mean: float) -> list[float]:
     return [mean + (0.006 if i % 2 else -0.006) for i in range(n)]
 
 
+def test_gap_preserves_loss_and_discloses_missing_days(evaluator):
+    curve = [
+        {"date": "2026-08-08", "equity": 100.0},
+        {"date": "2026-08-11", "equity": 80.0},
+        {"date": "2026-08-12", "equity": 88.0},
+    ]
+    before = json.dumps(curve)
+    returns, drawdown, first, last = evaluator._curve_metrics(curve)
+    assert returns.tolist() == pytest.approx([.1])
+    assert drawdown == pytest.approx(.2)
+    coverage = evaluator._curve_intervals(curve)
+    assert coverage["adjacent_mark_intervals"] == 2
+    assert coverage["one_day_intervals"] == 1
+    assert coverage["missing_daily_marks"] == 2
+    assert coverage["multi_day_intervals"][0]["observed_return"] == pytest.approx(-.2)
+    assert (first, last) == ("2026-08-08", "2026-08-12")
+    assert json.dumps(curve) == before
+
+
+@pytest.mark.parametrize("days", [[0, 0], [1, 0]])
+def test_interval_validation_rejects_duplicate_or_reversed_dates(evaluator, days):
+    curve = [{"date": f"2026-01-0{d+1}", "equity": 100} for d in days]
+    with pytest.raises(ValueError, match="strictly increasing"):
+        evaluator._curve_intervals(curve)
+
+
+@pytest.mark.parametrize("n", [14, 252, 758])
+def test_gapped_record_cannot_publish_sharpe_even_when_provenance_passes(
+    evaluator, monkeypatch, n
+):
+    original_curve = _curve
+    def missing_marks(returns):
+        points = original_curve(returns)
+        del points[5:7]
+        return points
+    monkeypatch.setattr(__import__(__name__, fromlist=["_curve"]), "_curve", missing_marks)
+    inputs = _inputs(evaluator, _alternating_returns(n, .001))
+    report = evaluator.evaluate(**inputs)
+    assert report["provenance_gate"]["passes"] is True
+    assert report["status"] == "FAIL_CLOSED_IRREGULAR_DAILY_RECORD"
+    assert report["record"]["daily_return_observations"] == n - 3
+    assert report["record"]["return_frequency"] == "IRREGULAR_PUBLISHED_UTC_MARKS_NO_SYNTHETIC_FILL"
+    assert report["record"]["interval_coverage"]["missing_daily_marks"] == 2
+    assert report["record"]["cumulative_return"] == pytest.approx(
+        inputs["state"]["live_curve"][-1]["equity"] / 100000 - 1)
+    assert report["sharpe_evidence"]["annualized_point_estimate"] is None
+    assert report["sharpe_evidence"]["probability_true_sharpe_exceeds_target"] is None
+    assert report["sharpe_evidence"]["target_observed"] is False
+    assert report["sharpe_evidence"]["target_statistically_established"] is False
+    assert report["content_hash"] == evaluator._canonical_hash(report)
+
+
+def test_all_intervals_missing_has_no_daily_sample(evaluator):
+    curve = [{"date": "2026-01-01", "equity": 100},
+             {"date": "2026-01-04", "equity": 90}]
+    returns, drawdown, _, _ = evaluator._curve_metrics(curve)
+    assert len(returns) == 0
+    assert drawdown == pytest.approx(.1)
+    contract = json.loads(evaluator.CONTRACT_JSON.read_text())
+    result = evaluator._sharpe_evidence(returns, contract, consecutive_daily_marks=False)
+    assert result["status"] == "FAIL_CLOSED_IRREGULAR_DAILY_RECORD"
+
+
 def test_short_record_does_not_publish_a_sharpe_estimate(evaluator) -> None:
     report = evaluator.evaluate(**_inputs(evaluator, _alternating_returns(14, -0.0005)))
     evidence = report["sharpe_evidence"]
@@ -353,6 +428,9 @@ def test_chain_head_must_equal_the_exact_state_used_for_sharpe(evaluator) -> Non
 
 @pytest.mark.workspace_evidence
 def test_current_workspace_record_is_honestly_immature(evaluator) -> None:
+    evaluator = _module()
+    if not evaluator.OUTPUT_JSON.exists():
+        pytest.skip("No published workstation maturity artifact in this isolated checkout")
     report = json.loads(evaluator.OUTPUT_JSON.read_text())
     provenance = report["provenance_gate"]
     failed_checks = [name for name, passes in provenance["checks"].items() if not passes]
