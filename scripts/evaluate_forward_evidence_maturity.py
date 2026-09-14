@@ -27,6 +27,7 @@ from alphaforge.validation.transparency import validate_transparency_document
 
 REPO: Final[Path] = Path(__file__).resolve().parent.parent
 CONTRACT_JSON: Final[Path] = REPO / "config" / "forward_evidence_contract.json"
+LIVE_CHANGE_JSON: Final[Path] = REPO / "config" / "live_change_contract.json"
 STATE_JSON: Final[Path] = REPO / "data" / "paper" / "state.json"
 CONTINUITY_JSON: Final[Path] = REPO / "artifacts" / "engineering" / "record_continuity.json"
 BROKER_JSON: Final[Path] = REPO / "artifacts" / "engineering" / "alpaca_broker_reconciliation.json"
@@ -81,6 +82,51 @@ def _curve_from_state(state: dict[str, Any]) -> list[dict[str, Any]]:
     if not isinstance(curve, list) or len(curve) < 2:
         raise ValueError("flagship live curve needs at least two marks")
     return curve
+
+
+def evidence_epoch(live_change: dict[str, Any] | None) -> dict[str, Any] | None:
+    """The current evidence epoch, derived from the live-change contract.
+
+    The contract's rule: a live-configuration change starts a new evidence epoch and pre-change
+    and post-change returns are never pooled. Which changes count is not a judgement made here:
+    it is the change_log entry's own ``contaminates_forward_record`` flag (coverage extensions
+    say false; a change that re-sizes the traded book says true). The latest such entry's date
+    is the first mark of the current epoch; everything before it is a prior epoch, published
+    beside the current one, never added to it. No contaminating entry means one epoch from the
+    first mark, exactly as before 2026-09-14.
+    """
+    if not live_change:
+        return None
+    entries = [
+        entry
+        for entry in live_change.get("change_log", [])
+        if isinstance(entry, dict) and entry.get("contaminates_forward_record") is True
+    ]
+    if not entries:
+        return None
+    latest = max(entries, key=lambda entry: str(entry.get("date", "")))
+    dt.date.fromisoformat(str(latest["date"]))
+    return {
+        "starts_on": str(latest["date"]),
+        "declared_change": str(latest.get("change", ""))[:400],
+        "rule": (
+            "the latest live_change_contract change_log entry with "
+            "contaminates_forward_record true starts the current epoch; prior returns are "
+            "published separately and never pooled"
+        ),
+    }
+
+
+def _split_epochs(
+    curve: list[dict[str, Any]], epoch: dict[str, Any] | None
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    """(current-epoch marks, prior-epoch marks). The mark ON the epoch date is the new boot mark."""
+    if epoch is None:
+        return list(curve), []
+    starts_on = epoch["starts_on"]
+    current = [point for point in curve if str(point["date"]) >= starts_on]
+    prior = [point for point in curve if str(point["date"]) < starts_on]
+    return current, prior
 
 
 def _curve_metrics(curve: list[dict[str, Any]]) -> tuple[np.ndarray, float, str, str]:
@@ -172,11 +218,42 @@ def evaluate(
     crypto_attribution_rollout: dict[str, Any],
     contract: dict[str, Any],
     evaluated_at: dt.datetime,
+    live_change: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Return a content-hashed, fail-closed evidence-maturity report."""
     evaluated_at = evaluated_at.astimezone(dt.UTC)
     curve = _curve_from_state(state)
-    returns, realized_max_dd, first_mark, last_mark = _curve_metrics(curve)
+    whole_returns, realized_max_dd, whole_first_mark, last_mark = _curve_metrics(curve)
+    epoch = evidence_epoch(live_change)
+    epoch_curve, prior_curve = _split_epochs(curve, epoch)
+    prior_epochs: list[dict[str, Any]] = []
+    if epoch is None:
+        returns, first_mark = whole_returns, whole_first_mark
+    else:
+        # The current epoch's returns are the only ones the Sharpe evidence may use. Realized
+        # maximum drawdown stays descriptive over the whole record: a peak before the change is
+        # still a peak the book fell from.
+        if len(epoch_curve) >= 2:
+            returns, _dd, first_mark, _last = _curve_metrics(epoch_curve)
+        else:
+            returns = np.asarray([], dtype=np.float64)
+            first_mark = epoch_curve[0]["date"] if epoch_curve else epoch["starts_on"]
+        if len(prior_curve) >= 2:
+            prior_returns, prior_dd, prior_first, prior_last = _curve_metrics(prior_curve)
+            prior_epochs.append(
+                {
+                    "first_mark": prior_first,
+                    "last_mark": prior_last,
+                    "curve_points": len(prior_curve),
+                    "daily_return_observations": int(prior_returns.size),
+                    "cumulative_return": float(
+                        prior_curve[-1]["equity"] / prior_curve[0]["equity"] - 1.0
+                    ),
+                    "realized_max_drawdown": prior_dd,
+                    "ended_by": epoch["declared_change"][:200],
+                    "pooled_with_current_epoch": False,
+                }
+            )
     live_config = state.get("live_config", {})
     broker_time = _parse_time(str(broker["generated_at"]))
     state_time = _parse_time(str(state["generated_at"]))
@@ -234,17 +311,13 @@ def evaluate(
         == contract["required_drawdown_model_schema"],
         "current_book_drawdown_schema": current_book_drawdown.get("schema")
         == contract["required_current_book_drawdown_study_schema"],
-        "current_book_drawdown_content_hash": _verified_embedded_hash(
-            current_book_drawdown
-        ),
+        "current_book_drawdown_content_hash": _verified_embedded_hash(current_book_drawdown),
         "current_book_drawdown_binds_live_configuration": (
             current_book_drawdown.get("configuration", {}).get("live_fingerprint")
             == contract["required_live_config_fingerprint"]
         ),
         "current_book_drawdown_remains_non_establishing": (
-            current_book_drawdown.get("objective", {}).get(
-                "live_expected_max_drawdown_established"
-            )
+            current_book_drawdown.get("objective", {}).get("live_expected_max_drawdown_established")
             is False
             and bool(current_book_drawdown.get("failed_establishment_dimensions"))
         ),
@@ -275,12 +348,9 @@ def evaluate(
         "drawdown_evidence_schema": drawdown_evidence.get("schema")
         == contract["required_drawdown_evidence_schema"],
         "drawdown_evidence_content_hash": _verified_embedded_hash(drawdown_evidence),
-        "drawdown_evidence_integrity_passes": drawdown_evidence.get("integrity_passes")
-        is True,
+        "drawdown_evidence_integrity_passes": drawdown_evidence.get("integrity_passes") is True,
         "drawdown_evidence_binds_model_bytes": (
-            drawdown_evidence.get("source_bindings", {})
-            .get("drawdown_model", {})
-            .get("sha256")
+            drawdown_evidence.get("source_bindings", {}).get("drawdown_model", {}).get("sha256")
             == hashlib.sha256(DRAWDOWN_JSON.read_bytes()).hexdigest()
         ),
         "drawdown_evidence_binds_current_book_model_bytes": (
@@ -290,20 +360,14 @@ def evaluate(
             == hashlib.sha256(CURRENT_BOOK_DRAWDOWN_JSON.read_bytes()).hexdigest()
         ),
         "drawdown_evidence_binds_contract_bytes": (
-            drawdown_evidence.get("source_bindings", {})
-            .get("forward_contract", {})
-            .get("sha256")
+            drawdown_evidence.get("source_bindings", {}).get("forward_contract", {}).get("sha256")
             == hashlib.sha256(CONTRACT_JSON.read_bytes()).hexdigest()
         ),
         "drawdown_live_non_equivalence_disclosed": (
             drawdown_evidence.get("production_equivalence", {}).get("passes") is False
-            and drawdown_evidence.get("objective", {}).get(
-                "live_expected_max_drawdown_established"
-            )
+            and drawdown_evidence.get("objective", {}).get("live_expected_max_drawdown_established")
             is False
-            and drawdown_evidence.get("objective", {}).get(
-                "live_p95_max_drawdown_established"
-            )
+            and drawdown_evidence.get("objective", {}).get("live_p95_max_drawdown_established")
             is False
         ),
         "drawdown_evidence_matches_current_book_model": (
@@ -373,16 +437,12 @@ def evaluate(
         sharpe["target_statistically_established"] = False
 
     drawdown_objective = drawdown_evidence["objective"]
-    expected_dd = float(
-        drawdown_objective["study_production_labelled_expected_max_drawdown"]
-    )
+    expected_dd = float(drawdown_objective["study_production_labelled_expected_max_drawdown"])
     p95_dd = float(drawdown_objective["study_production_labelled_p95_max_drawdown"])
     current_expected_dd = float(
         drawdown_objective["current_composition_conservative_expected_max_drawdown"]
     )
-    current_p95_dd = float(
-        drawdown_objective["current_composition_conservative_p95_max_drawdown"]
-    )
+    current_p95_dd = float(drawdown_objective["current_composition_conservative_p95_max_drawdown"])
     dd_target = float(contract["expected_max_drawdown_target"])
     if float(drawdown_objective["expected_max_drawdown_target"]) != dd_target:
         raise ValueError("sealed drawdown target differs from the forward contract")
@@ -405,11 +465,24 @@ def evaluate(
         "record": {
             "first_mark": first_mark,
             "last_mark": last_mark,
-            "curve_points": len(curve),
+            "curve_points": len(epoch_curve),
             "daily_return_observations": int(returns.size),
-            "cumulative_return": float(curve[-1]["equity"] / curve[0]["equity"] - 1.0),
+            "cumulative_return": (
+                float(epoch_curve[-1]["equity"] / epoch_curve[0]["equity"] - 1.0)
+                if len(epoch_curve) >= 1
+                else 0.0
+            ),
             "return_frequency": contract["return_frequency"],
             "configuration_fingerprint": live_config.get("fingerprint"),
+            "evidence_epoch": epoch,
+            "prior_epochs": prior_epochs,
+            "whole_record": {
+                "first_mark": whole_first_mark,
+                "last_mark": last_mark,
+                "curve_points": len(curve),
+                "daily_return_observations": int(whole_returns.size),
+                "cumulative_return": float(curve[-1]["equity"] / curve[0]["equity"] - 1.0),
+            },
         },
         "sharpe_evidence": sharpe,
         "drawdown_evidence": {
@@ -418,25 +491,19 @@ def evaluate(
             "expected_max_drawdown_target": dd_target,
             "study_production_labelled_expected_max_drawdown": expected_dd,
             "study_production_labelled_p95_max_drawdown": p95_dd,
-            "current_composition_conservative_expected_max_drawdown": (
-                current_expected_dd
-            ),
+            "current_composition_conservative_expected_max_drawdown": (current_expected_dd),
             "current_composition_conservative_p95_max_drawdown": current_p95_dd,
             "current_composition_study_status": current_book_drawdown["status"],
-            "current_composition_expected_within_objective": (
-                current_expected_dd <= dd_target
-            ),
+            "current_composition_expected_within_objective": (current_expected_dd <= dd_target),
             "current_composition_p95_within_objective": current_p95_dd <= dd_target,
             "current_composition_failed_establishment_dimensions": (
                 current_book_drawdown["failed_establishment_dimensions"]
             ),
             "study_status": drawdown_evidence["status"],
-            "production_equivalence_passes": drawdown_evidence[
-                "production_equivalence"
-            ]["passes"],
-            "production_equivalence_failed_checks": drawdown_evidence[
-                "production_equivalence"
-            ]["failed_checks"],
+            "production_equivalence_passes": drawdown_evidence["production_equivalence"]["passes"],
+            "production_equivalence_failed_checks": drawdown_evidence["production_equivalence"][
+                "failed_checks"
+            ],
             "objective_status": (
                 "MODELED_CURRENT_COMPOSITION_WITHIN_OBJECTIVE_"
                 "LIVE_EXPECTED_MAX_DRAWDOWN_NOT_ESTABLISHED"
@@ -464,18 +531,14 @@ def evaluate(
             "historical_v6_global_average_correlation_point_gate": float(
                 diversification["historical_v6_global_average_correlation_point_gate"]
             ),
-            "average_pairwise_upper_95": float(
-                diversification["average_pairwise_upper_95"]
-            ),
+            "average_pairwise_upper_95": float(diversification["average_pairwise_upper_95"]),
             "average_pairwise_upper_95_gate": float(
                 diversification["average_pairwise_correlation_upper_95_gate"]
             ),
             "maximum_pairwise_correlation": float(
                 observed_diversification["maximum_pairwise_correlation"]
             ),
-            "maximum_pairwise_upper_95": float(
-                diversification["maximum_pairwise_upper_95"]
-            ),
+            "maximum_pairwise_upper_95": float(diversification["maximum_pairwise_upper_95"]),
             "stressed_pairwise_design_value_not_observed": float(
                 diversification["stressed_pairwise_design_value_not_observed"]
             ),
@@ -483,9 +546,7 @@ def evaluate(
                 observed_diversification["diversification_ratio_sleeves_only"]
             ),
             "effective_independent_sleeves_participation_ratio": float(
-                observed_diversification[
-                    "effective_independent_sleeves_participation_ratio"
-                ]
+                observed_diversification["effective_independent_sleeves_participation_ratio"]
             ),
             "marginal_book_sharpe_research_diagnostics": observed_diversification[
                 "marginal_book_sharpe_research_diagnostics"
@@ -499,8 +560,7 @@ def evaluate(
                 "failed_establishment_dimensions"
             ],
             "objective_status": (
-                "CURRENT_COMPOSITION_AVERAGE_CORRELATION_OBJECTIVE_MET_"
-                "LIVE_FORWARD_NOT_ESTABLISHED"
+                "CURRENT_COMPOSITION_AVERAGE_CORRELATION_OBJECTIVE_MET_LIVE_FORWARD_NOT_ESTABLISHED"
                 if diversification["meets_active_correlation_objective"]
                 else "CURRENT_COMPOSITION_AVERAGE_CORRELATION_OBJECTIVE_GAP_"
                 "LIVE_FORWARD_NOT_ESTABLISHED"
@@ -512,15 +572,11 @@ def evaluate(
             "record_continuity": {"path": str(CONTINUITY_JSON.relative_to(REPO))},
             "broker_reconciliation": {"path": str(BROKER_JSON.relative_to(REPO))},
             "drawdown_model": {"path": str(DRAWDOWN_JSON.relative_to(REPO))},
-            "current_book_drawdown": {
-                "path": str(CURRENT_BOOK_DRAWDOWN_JSON.relative_to(REPO))
-            },
+            "current_book_drawdown": {"path": str(CURRENT_BOOK_DRAWDOWN_JSON.relative_to(REPO))},
             "current_book_diversification": {
                 "path": str(CURRENT_BOOK_DIVERSIFICATION_JSON.relative_to(REPO))
             },
-            "drawdown_evidence": {
-                "path": str(DRAWDOWN_EVIDENCE_JSON.relative_to(REPO))
-            },
+            "drawdown_evidence": {"path": str(DRAWDOWN_EVIDENCE_JSON.relative_to(REPO))},
             "methodology_paper": {"path": str(METHODOLOGY_PAPER.relative_to(REPO))},
             "transparency_chain": {"path": str(TRANSPARENCY_JSON.relative_to(REPO.parent))},
             "crypto_position_attribution": {"path": str(CRYPTO_ATTRIBUTION_JSON.relative_to(REPO))},
@@ -562,14 +618,13 @@ def main(output: Path = OUTPUT_JSON, *, evaluated_at: dt.datetime | None = None)
         broker=json.loads(BROKER_JSON.read_text()),
         drawdown=json.loads(DRAWDOWN_JSON.read_text()),
         current_book_drawdown=json.loads(CURRENT_BOOK_DRAWDOWN_JSON.read_text()),
-        current_book_diversification=json.loads(
-            CURRENT_BOOK_DIVERSIFICATION_JSON.read_text()
-        ),
+        current_book_diversification=json.loads(CURRENT_BOOK_DIVERSIFICATION_JSON.read_text()),
         drawdown_evidence=json.loads(DRAWDOWN_EVIDENCE_JSON.read_text()),
         transparency=json.loads(TRANSPARENCY_JSON.read_text()),
         crypto_attribution=json.loads(CRYPTO_ATTRIBUTION_JSON.read_text()),
         crypto_attribution_rollout=json.loads(CRYPTO_ATTRIBUTION_ROLLOUT_JSON.read_text()),
         contract=json.loads(CONTRACT_JSON.read_text()),
+        live_change=json.loads(LIVE_CHANGE_JSON.read_text()),
         evaluated_at=evaluated_at or dt.datetime.now(tz=dt.UTC),
     )
     output.parent.mkdir(parents=True, exist_ok=True)

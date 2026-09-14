@@ -404,6 +404,9 @@ def _run_cycle(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, broker: _FakeBro
                weights)
     monkeypatch.chdir(tmp_path)
     monkeypatch.setenv("AF_PATHS__VAR_DIR", str(tmp_path / "var"))
+    # The book-ladder provider reads the local consumer file here whatever configs/base.yaml
+    # says (production may read the public artifact over HTTPS); a test must never fetch.
+    monkeypatch.setenv("AF_RISK__BOOK_LADDER__SOURCE", "file")
     import alphaforge.execution.alpaca_broker as ab
 
     monkeypatch.setattr(ab, "AlpacaBroker", lambda **kw: broker)
@@ -562,6 +565,9 @@ def test_dry_run_submits_nothing_and_writes_no_audit_rows(
     _write_leg(tmp_path, "mf_live_fwd", {"DBA": 0.044})
     monkeypatch.chdir(tmp_path)
     monkeypatch.setenv("AF_PATHS__VAR_DIR", str(tmp_path / "var"))
+    # The book-ladder provider reads the local consumer file here whatever configs/base.yaml
+    # says (production may read the public artifact over HTTPS); a test must never fetch.
+    monkeypatch.setenv("AF_RISK__BOOK_LADDER__SOURCE", "file")
     import alphaforge.execution.alpaca_broker as ab
 
     monkeypatch.setattr(ab, "AlpacaBroker", lambda **kw: broker)

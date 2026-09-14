@@ -20,6 +20,20 @@ def _replace_once(text: str, pattern: str, replacement: str) -> str:
     return updated
 
 
+def _epoch_clause(record: dict[str, Any]) -> str:
+    """Name the evidence epoch when a declared live change split the record (never pooled)."""
+    epoch = record.get("evidence_epoch")
+    priors = record.get("prior_epochs") or []
+    if not epoch or not priors:
+        return ""
+    prior = priors[-1]
+    return (
+        f"; evidence epoch since {epoch['starts_on']}, the prior epoch's "
+        f"{prior['daily_return_observations']} returns from {prior['first_mark']} through "
+        f"{prior['last_mark']} are published separately and not pooled"
+    )
+
+
 def _percentage(value: float, places: int) -> str:
     rendered = f"{value:.{places}%}"
     return rendered.replace("-", chr(0x2212))
@@ -33,9 +47,7 @@ def synchronize(evidence: dict[str, Any], readme: str) -> str:
     provenance = evidence["provenance_gate"]
     provenance_passes = bool(provenance["passes"])
     failed_checks = set(provenance.get("failed_checks", []))
-    attribution_stale_only = failed_checks == {
-        "crypto_position_attribution_covers_last_mark"
-    }
+    attribution_stale_only = failed_checks == {"crypto_position_attribution_covers_last_mark"}
     if provenance_passes:
         provenance_summary = "provenance currently passes the publication gate"
         provenance_sentence = "its provenance gate currently passes."
@@ -78,7 +90,8 @@ def synchronize(evidence: dict[str, Any], readme: str) -> str:
         "| Forward record | "
         f"**{record['daily_return_observations']} daily returns** from {record['first_mark']} "
         f"through {record['last_mark']}; cumulative return "
-        f"**{_percentage(float(record['cumulative_return']), 5)}**; {provenance_summary} |",
+        f"**{_percentage(float(record['cumulative_return']), 5)}**; {provenance_summary}"
+        f"{_epoch_clause(record)} |",
     )
     readme = _replace_once(
         readme,

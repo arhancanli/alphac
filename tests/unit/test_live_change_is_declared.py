@@ -203,7 +203,17 @@ def test_the_flagship_aggregation_policy_is_inside_the_surface() -> None:
     assert aggregation["scheme"] == paper_state.BOOK_AGGREGATION_SCHEME == "fixed"
     assert aggregation["book_level_vol_target_ann"] is paper_state.BOOK_LEVEL_VOL_TARGET_ANN
     assert aggregation["book_level_vol_target_ann"] is None
-    assert aggregation["book_level_drawdown_ladder"] is None
+    # The book-level ladder is DERIVED from the drawdown-control contract: None until the owner
+    # activates it, the declared ladder afterwards (never a typed constant edited at activation).
+    control = json.loads((REPO / "config" / "drawdown_control_contract.json").read_text())
+    expected_ladder = paper_state.declared_book_level_drawdown_ladder()
+    assert aggregation["book_level_drawdown_ladder"] == expected_ladder
+    if control["activation"]["live"]:
+        assert expected_ladder["dd_half_frac"] == control["ladder"]["dd_half_frac"]
+        assert expected_ladder["dd_flat_frac"] == control["ladder"]["dd_flat_frac"]
+        assert "drawdown ladder" in aggregation["claim_boundary"]
+    else:
+        assert expected_ladder is None
     assert aggregation["strategic_overlay_is_book_vol_scaled"] is False
     assert aggregation["missing_mark_policy"] == paper_state.BOOK_MISSING_MARK_POLICY
 
