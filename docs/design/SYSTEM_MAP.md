@@ -10,7 +10,7 @@ having none.
 
 At a glance: **350 Python scripts**, **17 shell entry points**,
 **28 configuration contracts**, **29 engineering artifacts**,
-**416 unit test files**, **22 data directories**, **9 scheduled jobs**.
+**417 unit test files**, **22 data directories**, **9 scheduled jobs**.
 
 
 ## What runs on a timer
@@ -93,24 +93,25 @@ Canli Capital - daily PUBLISH of the live track record to the public sites.
 | 18 | `scripts/verify_crypto_position_attribution_rollout.py` | Verify the first non-empty natural crypto cycle after attribution rollout. |
 | 19 | `scripts/analyze_current_book_drawdown.py` | Measure current-composition drawdown under a frozen two-model protocol. |
 | 20 | `scripts/analyze_current_book_diversification.py` | Measure exact current-book diversification under the frozen retrospective protocol. |
-| 21 | `scripts/seal_forward_drawdown_evidence.py` | Seal the drawdown study and expose its exact live-equivalence boundary. |
-| 22 | `scripts/evaluate_forward_evidence_maturity.py` | Evaluate the ALPHAC paper record against a frozen forward-evidence contract. |
-| 23 | `scripts/sync_readme_forward_evidence.py` | Synchronize README forward headlines with the canonical maturity artifact. |
-| 24 | `scripts/analyze_forward_sleeve_contribution.py` | Attribute the published forward book to its realized sleeve curves. |
-| 25 | `scripts/audit_crypto_lab_carry_crash.py` | Seal the LABUSDT carry-crash incident from immutable local execution evidence. |
-| 26 | `scripts/package_all_sleeve_review_archives.py` | Build deterministic raw-row-free review archives for all sleeve papers. |
-| 27 | `scripts/audit_all_sleeve_data_rights.py` | Audit all sleeve bundles for raw-row exclusion and conservative source mapping. |
-| 28 | `scripts/audit_clean_workspace_reproduction_contracts.py` | Audit whether each publication archive can genuinely reproduce its result cleanly. |
-| 29 | `scripts/audit_wave1_data_rights.py` | Audit Wave 1 publication bundles against the conservative data-rights policy. |
-| 30 | `scripts/package_wave1_release_candidates.py` | Create deterministic, raw-row-free Wave 1 archive candidates and verify extraction. |
-| 31 | `scripts/build_repository_submission_worksheets.py` | Build fail-closed repository worksheets without performing account actions. |
-| 32 | `scripts/audit_publication_manuscript_style.py` | Audit mechanical manuscript-style and authorship boundaries without scoring prose quality. |
-| 33 | `scripts/audit_inflation_breakeven_feasibility.py` | Audit inflation-breakeven source feasibility without opening any return data. |
-| 34 | `scripts/build_stanford_evidence_map.py` | Build a compact, source-bound Stanford CS portfolio evidence map. |
-| 35 | `scripts/audit_external_publication_readiness.py` | Fail closed on external-publication claims and report the exact sleeve-paper blockers. |
-| 36 | `scripts/research_export.py` | Research data layer: emit research.json — the FULL honest gauntlet — from REAL artifacts. |
-| 37 | `scripts/reproduce.py` | Reproduce our numbers — the outsider's one-command verifier of the Canli Capital glass box. |
-| 38 | `scripts/check_retracted_claims.py` | Refuse to publish a claim this record has already withdrawn. |
+| 21 | `scripts/analyze_drawdown_control.py` | Measure the declared book-level drawdown ladder on the published drawdown study's own paths. |
+| 22 | `scripts/seal_forward_drawdown_evidence.py` | Seal the drawdown study and expose its exact live-equivalence boundary. |
+| 23 | `scripts/evaluate_forward_evidence_maturity.py` | Evaluate the ALPHAC paper record against a frozen forward-evidence contract. |
+| 24 | `scripts/sync_readme_forward_evidence.py` | Synchronize README forward headlines with the canonical maturity artifact. |
+| 25 | `scripts/analyze_forward_sleeve_contribution.py` | Attribute the published forward book to its realized sleeve curves. |
+| 26 | `scripts/audit_crypto_lab_carry_crash.py` | Seal the LABUSDT carry-crash incident from immutable local execution evidence. |
+| 27 | `scripts/package_all_sleeve_review_archives.py` | Build deterministic raw-row-free review archives for all sleeve papers. |
+| 28 | `scripts/audit_all_sleeve_data_rights.py` | Audit all sleeve bundles for raw-row exclusion and conservative source mapping. |
+| 29 | `scripts/audit_clean_workspace_reproduction_contracts.py` | Audit whether each publication archive can genuinely reproduce its result cleanly. |
+| 30 | `scripts/audit_wave1_data_rights.py` | Audit Wave 1 publication bundles against the conservative data-rights policy. |
+| 31 | `scripts/package_wave1_release_candidates.py` | Create deterministic, raw-row-free Wave 1 archive candidates and verify extraction. |
+| 32 | `scripts/build_repository_submission_worksheets.py` | Build fail-closed repository worksheets without performing account actions. |
+| 33 | `scripts/audit_publication_manuscript_style.py` | Audit mechanical manuscript-style and authorship boundaries without scoring prose quality. |
+| 34 | `scripts/audit_inflation_breakeven_feasibility.py` | Audit inflation-breakeven source feasibility without opening any return data. |
+| 35 | `scripts/build_stanford_evidence_map.py` | Build a compact, source-bound Stanford CS portfolio evidence map. |
+| 36 | `scripts/audit_external_publication_readiness.py` | Fail closed on external-publication claims and report the exact sleeve-paper blockers. |
+| 37 | `scripts/research_export.py` | Research data layer: emit research.json — the FULL honest gauntlet — from REAL artifacts. |
+| 38 | `scripts/reproduce.py` | Reproduce our numbers — the outsider's one-command verifier of the Canli Capital glass box. |
+| 39 | `scripts/check_retracted_claims.py` | Refuse to publish a claim this record has already withdrawn. |
 
 ### `scripts/live_tick.sh`
 

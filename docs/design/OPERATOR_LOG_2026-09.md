@@ -116,3 +116,15 @@ published number or spend a research identity are marked DECISION and name who m
   updated to five hashed sources and the derived unclosed count; core tests 5/5. Two freshness
   pins in the engine (a typed 229 and a pinned paragraph) converted to derived assertions; the
   cross-host test stays red until the 11:25Z tick republishes in order.
+- 11:00Z. Site: `npm run build && npm run verify` green on the design worktree with the
+  2026-09-14 exports mirrored in exactly as the production overlay does (0 failures; the first
+  two runs failed on the verifier's four-source pin and on stale September 8 exports beside fresh
+  sources, both real). Committed `be1f4662` on design/glassbox-website-20260908 (PR #11) and pushed.
+- 11:02Z. DECISION. `config/site_landing_design_source.txt` repointed from the git-less release
+  copy to the design worktree, so the fix can deploy and every future site change has a commit.
+  Committed on the register branch (PR #26). The 11:25Z tick is the first deploy from it.
+- 11:03Z. Drawdown control v1 wired: `analyze_drawdown_control.py` runs in the nightly publish
+  after the current-book drawdown study (publish-only edges declared), `research_export.py`
+  publishes `/glassbox/drawdown_control_v1.json` to both hosts, the contract records that the
+  declared rule was applied once and accepted. Study re-run after the contract's status changed
+  so its contract binding matches; results unchanged by construction (same seeds).

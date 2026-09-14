@@ -110,6 +110,9 @@ LEDOIT_WOLF_JSON: Final[Path] = (
 DRAWDOWN_LIVE_ESTIMATOR_JSON: Final[Path] = (
     REPO / "artifacts" / "analysis" / "drawdown_live_estimator" / "result.json"
 )
+DRAWDOWN_CONTROL_JSON: Final[Path] = (
+    REPO / "artifacts" / "analysis" / "drawdown_control_v1" / "result.json"
+)
 CURRENT_BOOK_DRAWDOWN_JSON: Final[Path] = (
     REPO / "artifacts" / "analysis" / "current_book_drawdown" / "result.json"
 )
@@ -3786,6 +3789,8 @@ def main(out_dir: Path = OUT_DIR) -> Path:
             DRAWDOWN_LIVE_ESTIMATOR_JSON.read_text()
         )
     (out_dir / "current_book_drawdown.json").write_text(CURRENT_BOOK_DRAWDOWN_JSON.read_text())
+    if DRAWDOWN_CONTROL_JSON.exists():
+        (out_dir / "drawdown_control_v1.json").write_text(DRAWDOWN_CONTROL_JSON.read_text())
     (out_dir / "current_book_diversification.json").write_text(
         CURRENT_BOOK_DIVERSIFICATION_JSON.read_text()
     )
@@ -4371,6 +4376,8 @@ def main(out_dir: Path = OUT_DIR) -> Path:
                 DRAWDOWN_LIVE_ESTIMATOR_JSON.read_text()
             )
         (app_dir / "current_book_drawdown.json").write_text(CURRENT_BOOK_DRAWDOWN_JSON.read_text())
+        if DRAWDOWN_CONTROL_JSON.exists():
+            (app_dir / "drawdown_control_v1.json").write_text(DRAWDOWN_CONTROL_JSON.read_text())
         (app_dir / "current_book_diversification.json").write_text(
             CURRENT_BOOK_DIVERSIFICATION_JSON.read_text()
         )
