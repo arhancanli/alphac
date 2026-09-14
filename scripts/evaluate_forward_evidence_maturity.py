@@ -74,14 +74,41 @@ def _verified_embedded_hash(payload: dict[str, Any]) -> bool:
     return isinstance(claimed, str) and claimed == _canonical_hash(payload)
 
 
-def _curve_from_state(state: dict[str, Any]) -> list[dict[str, Any]]:
+def _cost_realism(state: dict[str, Any], curve_basis: str) -> dict[str, Any]:
+    """What the evaluated curve is net of: the published cost charges, sleeve by sleeve."""
+    charges = state.get("cost_charges") or {}
+    sleeves = charges.get("sleeves") or {}
+    return {
+        "contract": "config/cost_realism_contract.json",
+        "curve_basis": curve_basis,
+        "status": charges.get("status", "NOT_PUBLISHED"),
+        "sleeves": {
+            key: {
+                "status": row.get("status"),
+                "cumulative_drag_bps_of_base": row.get("cumulative_drag_bps_of_base"),
+                "total_charged_usd": (row.get("totals_usd") or {}).get("total"),
+                "not_charged": row.get("not_charged", []),
+            }
+            for key, row in sleeves.items()
+        },
+    }
+
+
+def _curve_from_state(state: dict[str, Any]) -> tuple[list[dict[str, Any]], str]:
+    """The flagship curve the evidence reads, and which one it is.
+
+    Since 2026-09-15 (config/cost_realism_contract.json) the evidence reads the cost-charged
+    curve when the state publishes one: the broker NAV less the model charges a funded book
+    would pay. The broker curve stays published beside it; it is not what the target is net of.
+    """
     matches = [row for row in state["algorithms"] if row.get("flagship") is True]
     if len(matches) != 1:
         raise ValueError(f"expected exactly one flagship algorithm; got {len(matches)}")
-    curve = matches[0].get("live_curve")
+    basis = "cost_charged_curve" if matches[0].get("cost_charged_curve") else "live_curve"
+    curve = matches[0].get(basis)
     if not isinstance(curve, list) or len(curve) < 2:
         raise ValueError("flagship live curve needs at least two marks")
-    return curve
+    return curve, basis
 
 
 def evidence_epoch(live_change: dict[str, Any] | None) -> dict[str, Any] | None:
@@ -224,7 +251,7 @@ def evaluate(
 ) -> dict[str, Any]:
     """Return a content-hashed, fail-closed evidence-maturity report."""
     evaluated_at = evaluated_at.astimezone(dt.UTC)
-    curve = _curve_from_state(state)
+    curve, curve_basis = _curve_from_state(state)
     whole_returns, realized_max_dd, whole_first_mark, last_mark = _curve_metrics(curve)
     epoch = evidence_epoch(live_change)
     epoch_curve, prior_curve = _split_epochs(curve, epoch)
@@ -454,6 +481,8 @@ def evaluate(
 
     payload: dict[str, Any] = {
         "schema": "canli.alphac-forward-evidence-maturity.v1",
+        "curve_basis": curve_basis,
+        "cost_realism": _cost_realism(state, curve_basis),
         "generated_at": evaluated_at.isoformat(),
         "author": "Arhan Canli",
         "capital_kind": contract["capital_kind"],

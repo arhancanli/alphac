@@ -29,6 +29,7 @@ artifact-bound publication pipeline; this is not a real-time broker display.
 | Forward record | **36 daily returns** from 2026-08-07 through 2026-09-14; cumulative return **−2.85165%**; provenance currently fails closed on incomplete evidence |
 | Forward Sharpe | **Not reportable** — 252 observations are required for an estimate and 756 for the project's establishment test; the governing forward target is **2.0** (owner goal, in force from 2026-09-14) |
 | Drawdown | Realized **3.87084%** to date against the owner's realized bound of **10%**, descriptive only; the current-composition model estimates **9.318% expected / 16.451% p95**, neither established by live evidence |
+| Cost drag | The evaluated curve is the **live curve** until the first cost-charged publish; see config/cost_realism_contract.json |
 | Diversification | Research-curve average pairwise correlation **+0.02483** across 4 sleeves; live-forward diversification is not established |
 | DSR policy | Mandatory to measure and publish; **0.95 is a full-union portfolio-maturity threshold, not a per-sleeve or incremental-admission gate** |
 

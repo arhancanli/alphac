@@ -69,10 +69,12 @@
     "real_life_costs_on_paper_live": {
       "goal": "The paper-live record carries every cost a funded book would pay where it occurs: commissions, spread and slippage, financing and funding, borrow, market impact at the intended capacity; none assumed away and none applied only in research.",
       "quoted": "not forgeting reach life cosst which may occur on it on our paper live",
-      "status": "EQUITY_PAPER_LIVE_GROSS_OF_FRICTIONS_REPAIR_PENDING",
+      "status": "EQUITY_PAPER_LIVE_CHARGED_BY_MODEL_BESIDE_BROKER_NAV_LATENCY_FINANCING_CASH_YIELD_NOT_CHARGED",
       "reported_in": "docs/design/COST_REALISM_AUDIT_2026-09-14.md (cost by cost, research against paper-live, with file and line evidence); src/alphaforge/costs; the per-sleeve execution disclosures in the publication bundle",
       "audit": "docs/design/COST_REALISM_AUDIT_2026-09-14.md",
-      "finding_2026_09_14": "The crypto sleeve charges commission, real spread and impact (fills walk the live book) and perpetual funding; the equity sleeves' published NAV is the broker's paper equity verbatim and charges no commission, spread, impact, borrow or financing; cash yield and FX are unmodelled on every path. Until the repair lands the forward record is gross of equity frictions."
+      "finding_2026_09_14": "The crypto sleeve charges commission, real spread and impact (fills walk the live book) and perpetual funding; the equity sleeves' published NAV is the broker's paper equity verbatim and charges no commission, spread, impact, borrow or financing; cash yield and FX are unmodelled on every path. Until the repair lands the forward record is gross of equity frictions.",
+      "contract": "config/cost_realism_contract.json",
+      "repair_2026_09_15": "scripts/derive_cost_charged_live_curves.py charges every Alpaca fill commission, half spread and square-root impact through research's own cost model and the reconstructed short book the borrow rate; data/paper/state.json publishes cost_charged_curve beside live_curve per sleeve and for the book; the broker NAV is unchanged. Latency, financing, cash yield and FX remain NOT_CHARGED with reasons in the contract, so the record is net of the charged rows and still gross of those."
     },
     "real_hedge_fund": {
       "goal": "Eventually a real hedge fund, downstream of the paper evidence.",
