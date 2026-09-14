@@ -39,7 +39,11 @@ OUTPUT = REPO / "artifacts" / "engineering" / "live_config_fingerprint.json"
 # call site, or non-numeric plumbing. Everything else is fingerprinted. Listing the exclusions
 # rather than the inclusions is deliberate -- a new sizing parameter is then covered by default,
 # and forgetting to add it cannot silently drop it from the fingerprint.
-_NOT_SIZING = frozenset({"self", "settings", "signal_frame", "mu_provider"})
+# book_multiplier (2026-09-14) is the BOOK-level drawdown brake's callable seam, supplied by the
+# call site exactly like mu_provider; what it DOES is fingerprinted below in risk_path_settings
+# (the contract's activation flag and thresholds), not here as a constructor default.
+_NOT_SIZING = frozenset({"self", "settings", "signal_frame", "mu_provider", "book_multiplier"})
+DRAWDOWN_CONTROL_CONTRACT = REPO / "config" / "drawdown_control_contract.json"
 
 
 def strategy_settings() -> dict[str, Any]:
@@ -65,14 +69,29 @@ def risk_path_settings() -> dict[str, Any]:
       staleness_max_bars                          when the book refuses to trade on stale data
       w_max                                       the inviolable per-name cap applied after
                                                   the overlay and before the ladder multiplier
+      book_ladder_*                               the BOOK-level drawdown brake (drawdown control
+                                                  v1, 2026-09-14): whether it is live, its depths
+                                                  and release, and where a sleeve reads it. The
+                                                  one switch is the contract's activation.live;
+                                                  flipping it re-sizes every sleeve, so it is
+                                                  fingerprinted like any other threshold.
 
     Read through Settings and PortfolioConstraints.from_settings rather than transcribed, so a
-    config change reaches this fingerprint by the same path it reaches the book.
+    config change reaches this fingerprint by the same path it reaches the book; the book-ladder
+    keys are read from the same contract file the provider reads at trade time.
     """
     settings = Settings()
     portfolio, risk = settings.portfolio, settings.risk
     constraints = PortfolioConstraints.from_settings(settings)
+    control = json.loads(DRAWDOWN_CONTROL_CONTRACT.read_text())
+    ladder = control["ladder"]
     return {
+        "book_ladder_activation_live": bool(control.get("activation", {}).get("live", False)),
+        "book_ladder_dd_half_frac": float(ladder["dd_half_frac"]),
+        "book_ladder_dd_flat_frac": float(ladder["dd_flat_frac"]),
+        "book_ladder_release_frac_of_half": float(ladder["release_frac_of_half"]),
+        "book_ladder_source": risk.book_ladder.source,
+        "book_ladder_max_age_days": risk.book_ladder.max_age_days,
         "vol_target_ann": portfolio.vol_target_ann,
         "vol_scale_max": portfolio.vol_scale_max,
         "gross_max": portfolio.gross_max,
@@ -125,9 +144,7 @@ def canonical_fingerprint(surface: dict[str, Any]) -> str:
     return f"sha256:{hashlib.sha256(canonical).hexdigest()}"
 
 
-def build_fingerprint(
-    *, book_aggregation: dict[str, Any] | None = None
-) -> dict[str, Any]:
+def build_fingerprint(*, book_aggregation: dict[str, Any] | None = None) -> dict[str, Any]:
     surface = {
         "strategy_settings": strategy_settings(),
         "risk_path_settings": risk_path_settings(),

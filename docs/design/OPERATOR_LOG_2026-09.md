@@ -163,3 +163,76 @@ published number or spend a research identity are marked DECISION and name who m
   four minutes: landing and app deployed and aliased, IndexNow accepted 263 URLs. First publish
   from the git worktree, first publish of the 347-identity ledger and the prospective register.
   Tick watchdog raised 600 -> 1500 s so one slow upload plus a retry fits inside a tick.
+- 12:40Z. BUILT (phase 3b, step 1). The live half of drawdown control v1:
+  `scripts/book_drawdown_ladder.py` replays the combined book's published daily marks
+  (`data/paper/state.json` `live_curve`, 37 marks) through the declared 5.5 / 11 percent ladder
+  every publish and writes `artifacts/engineering/book_drawdown_ladder.json` (published to both
+  hosts as `/glassbox/book_drawdown_ladder.json`) plus the consumer file
+  `var/book_ladder/current.json`, bound by content hash. State is derived from the whole marked
+  history each run, never stored, so no process can lose it. A halt is absorbing until the owner
+  writes a dated entry into `config/book_ladder_rearms.json` (created, empty); a rearm restarts
+  the ladder with the high-water mark reset to that mark. Tests: replay equals the study's
+  vectorized twin on the twin's realized curve (three seeds), first-day loss counts from the
+  boot mark, halt absorbing until rearm, unused rearms reported, invalid curves fail closed,
+  bindings and hash. Today's reading: NORMAL, multiplier 1.00, drawdown 2.81 percent from the
+  100,108.02 high-water mark, all-time maximum drawdown 3.87 percent, 0 halts. No live cycle
+  reads the file yet (`activation.live` stays false); that is step 2. Health board gains
+  `C12-book-ladder` (FAIL when the artifact or consumer file is missing or unbound, FAIL critical
+  on FLAT_HALTED so a halt pages the owner, WARN at HALF_GROSS or when stale), compiled under the
+  launchd interpreter. Pipeline edges declared for both jobs; `live_tick.sh` is edited only
+  after the running 12:25Z tick exits (zsh reads a script incrementally).
+- 12:39Z. BLOCKED, CORRECTLY. The 12:25Z tick's deploy was skipped by the live-change gate:
+  measured fingerprint 0d291e23 against the declared fe82c4ee. Cause: my `BlendStrategy`
+  constructor gained the `book_multiplier` seam (default None) while the tick was running, and
+  `strategy_settings()` fingerprints every constructor default. The guard did exactly what its
+  2026-08-21 incident asked of it ("a default nobody overrides is the production setting").
+  Nothing traded differently; the seam is call-site wiring like `mu_provider`.
+- 12:45Z. DECLARED (phase 3b, step 3). Coverage extension, following the 2026-08-21 and
+  2026-08-23 precedents: `book_multiplier` joins `_NOT_SIZING`, and `risk_path_settings()` now
+  hashes what the seam does: `book_ladder_activation_live` (false), the two depths, the release
+  fraction, the read source and staleness horizon, read from the same contract file the provider
+  reads at trade time. New fingerprint 70eef97c; `live_change_contract.json` re-pinned with a
+  seventh change_log entry (`contaminates_forward_record: false`), `forward_evidence_contract`
+  and the current-book drawdown study re-pinned, the pre-registration draft's pins updated. The
+  three current-composition studies, the drawdown-evidence seal, the maturity evaluation and the
+  fingerprint export re-run locally against the new pin; the published stamp catches up at the
+  13:25Z tick. Test `test_the_published_stamp_agrees_with_the_declaration` is red until then.
+- 12:50Z. BUILT (phase 3b, step 2). Consumers, default-off behind that one switch:
+  `alphaforge.risk.book_ladder.BookLadderProvider` (file or HTTPS source, last-good cache,
+  staleness flag, fail-open to 1.0 with the error in the reading, never raises; 16 tests);
+  `scripts/live_cycle.py` multiplies the equity sleeves' target weights by the reading and prints
+  one loud line per cycle (4 harness tests: half gross halves the submitted book, a halt sends a
+  flatten, not-activated ignores a halt, a missing file sizes at full gross and says READ FAILED);
+  `BlendStrategy(book_multiplier=...)` applies it after the sleeve ladder, halts every bar at 0,
+  rescales every bar below 1, with two new counters (5 tests, including a broken provider and an
+  out-of-range value); `paper_cmds._build_loop` passes the provider to the strategy and the loop,
+  which logs the reading each cycle and alerts once per process on a read error. The live-path
+  repair that rides along: the pre-multiplier book is persisted per cycle (`strategy_last_targets`)
+  and restored on boot, so under --once a de-gross acts on the next hold bar (store round-trip and
+  loop restore tests). `RiskCfg.book_ladder` carries only the transport (source, path, url,
+  contract path, max age, timeout). Frankfurt takes effect only after the owner's rsync; the
+  crypto loop there is on the old code until then, which is safe because activation is false.
+- 12:52Z. PUBLISHED. A manual tick (12:51Z) ran the whole ordered chain with the new step:
+  ladder artifact written, live-change gate green on 70eef97c, landing and app deployed on
+  attempt 1, IndexNow 263 URLs. canlicapital.com serves `/glassbox/book_drawdown_ladder.json`
+  (NORMAL, x1.00, 37 marks, activation false), the paper-state stamp carries the new
+  fingerprint, and the maturity status is back to IMMATURE_RECORD_TOO_SHORT.
+- 13:05Z. REPAIRED (found by the full unit suite, 16 red). Three classes, all from today's
+  work, none from the brake itself. (1) Mine, this branch: system map regenerated; three
+  guards had no registered mutation (`test_book_ladder_provider`,
+  `test_audit_external_experiment_ledgers`, `test_prospective_epoch_register`), now registered
+  and proven CAUGHT with `mutation_ledger.py --only`; the crypto-carry bundle rebound to the
+  edited strategy module the way af0191b did (3 files, 4 lines; the seal script's `_ro_crate`
+  writes a different layout, so the crate hash was replaced surgically). (2) From the import PR:
+  recording the 320 review INSIDE `config/trial_accounting.json` drifted five sealed bindings
+  (the v7 promotion receipt embeds the policy byte-for-byte; every v2 reservation and the
+  crypto-carry closure hash it). The policy bytes are restored exactly; the event record now
+  lives in `config/trial_accounting_reviews.json`, which the audit reads beside the policy. No
+  rule changed, so no receipt is re-sealed. (3) From the import: the alphatrend family has 49
+  identities in the union and 21 trial packets (packets are built for the legacy epoch), so the
+  bundle builder's "family count equals manifest" gate could not pass. The family result now
+  publishes `identities_with_trial_packets` beside the total, the builder binds that count to
+  the manifest and requires total >= packetized, and the alphatrend bundle is rebound to the
+  edited audit script. Still red and owner-only: the Frankfurt preflight (two tests) says the
+  local `live/store.py` differs from what was deployed, which is true until the owner runs the
+  guarded deploy; the lint-debt copies on the hosts catch up at the next tick.
