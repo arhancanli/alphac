@@ -264,3 +264,7 @@ published number or spend a research identity are marked DECISION and name who m
   strategy's counter keys exactly, which the unit run I used locally never executes. The two
   book-brake counters are acknowledged there the same way the 2026-08-18 key was. Lesson recorded:
   run `tests/integration` locally before pushing a counter or schema change.
+- 14:26Z. CI GREEN on `risk/book-ladder-live-half-20260914` (run 34852748404, dispatched by hand):
+  offline pytest, browser fixture, ruff, mypy --strict, publication integrity (clean checkout),
+  PostgreSQL contract. Local integration and property suites green. PR #32 is ready for the owner's
+  merge at the end of the chain.
