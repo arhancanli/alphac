@@ -128,3 +128,14 @@ published number or spend a research identity are marked DECISION and name who m
   publishes `/glassbox/drawdown_control_v1.json` to both hosts, the contract records that the
   declared rule was applied once and accepted. Study re-run after the contract's status changed
   so its contract binding matches; results unchanged by construction (same seeds).
+- 11:05Z. DESIGN (phase 1, not in force). `docs/design/SUPPLEMENTAL_MEASUREMENT_CLASS_V1.md`:
+  a reservation may declare, before any result, a primary configuration and a closed set of
+  supplemental scenarios on named axes (cost rate, cost stress, execution scenario, baseline
+  arm) that cannot flatter; supplemental rows stay immutable records and are published, but
+  selection N counts the primary once. Prospective only: the 118 stay 118 because none declared
+  scenarios before its result. At the observed mix a study costs one identity instead of four.
+  Implementation and tests listed; promotion is the owner's.
+- 11:05Z. STATE. Branch chain on alphac: #23 (Codex integrations + nightly) -> #24 (external
+  ledger audit) -> #25 (import + 320 review) -> #26 (prospective register + publisher repoint)
+  -> #27 (drawdown control v1). canlicapital #11 carries the site (design worktree, deployed
+  from 11:25Z). Owner merge order is the chain order.
