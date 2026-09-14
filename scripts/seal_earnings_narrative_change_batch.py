@@ -549,7 +549,7 @@ def build_evidence(
         "pbo": {
             "status": "MEASURED",
             "value": float(matrix["pbo"]),
-            "columns": int(len(matrix["identity_columns"])),
+            "columns": len(matrix["identity_columns"]),
             "batch_id": matrix["batch_id"],
         },
     }
