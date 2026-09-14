@@ -402,7 +402,14 @@ def test_prospective_trial_projection_preserves_result_and_claim_boundaries(modu
         record["packet"]["completion_assessment"]["candidate_evidence_complete_for_admission"]
         is False
     )
-    assert record["future_protocol"]["status"] == ("TEMPLATE_NOT_IN_FORCE_NO_RETURN_AUTHORIZATION")
+    # The template's published status is whatever the template file says, consistent with its
+    # receipt: not in force before 2026-09-14, IN_FORCE (by the promotion receipt) after.
+    template = json.loads(research.FORWARD_FULL_EVIDENCE_TEMPLATE_JSON.read_text())
+    assert record["future_protocol"]["status"] == template["status"]
+    assert record["future_protocol"]["status"] in {
+        "TEMPLATE_NOT_IN_FORCE_NO_RETURN_AUTHORIZATION",
+        "IN_FORCE",
+    }
 
 
 @pytest.mark.workspace_evidence

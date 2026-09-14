@@ -72,3 +72,16 @@ def test_template_rejects_outcome_fields(monkeypatch: pytest.MonkeyPatch) -> Non
     monkeypatch.setattr(module, "_load", mutate)
     with pytest.raises(module.TemplateAuditError, match="forbidden outcome keys"):
         module.build(ROOT)
+
+
+def test_the_tick_rewrites_the_audit_rather_than_printing_it() -> None:
+    """The audit script writes its artifact only with --write; without it the tick printed a
+    fresh audit to /dev/null and left the 2026-08-24 file in place, so research_export read a
+    pre-promotion audit against the promoted template and failed closed for two hours."""
+    tick = (ROOT / "scripts" / "live_tick.sh").read_text()
+    line = next(
+        ln
+        for ln in tick.splitlines()
+        if "audit_forward_full_evidence_reservation_v2_template.py" in ln and "uv run" in ln
+    )
+    assert "--write" in line, line

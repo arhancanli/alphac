@@ -693,3 +693,18 @@ published number or spend a research identity are marked DECISION and name who m
   sleeve therefore applies the brake from that cycle. Batch: the Item 1A section finished
   (52 of 120 cohorts ranked, 60 force-flats; the seal decides, not this log); Item 7 is building
   cohorts; the seal, with its mandatory re-runs, follows.
+- 2026-09-15 02:40Z. PUBLISH STALLED FOR TWO HOURS, FOUND AND FIXED (PR #46). Every tick since
+  the publisher tree took #40 at 20:25Z ran research_export to a fail-closed error:
+  "prospective trial publication fails closed: future_template_is_not_active,
+  future_template_bound_by_audit". Two defects, both mine. The crypto carry prospective record
+  asserted the v2 template was NOT in force, which #40's promotion made false by design. And the
+  tick step I added in #40 ran the template audit without `--write`, so it printed a fresh audit
+  to /dev/null and left the 2026-08-24 file in place; the export then compared a pre-promotion
+  audit against the promoted template. The site's research.json therefore stayed at 19:50Z
+  (program_status, trial ledger and the forward index were not republished; the paper state and
+  the ladder, written by other steps, kept publishing). Fixed: the record now requires the
+  template's state to be CONSISTENT with its receipt and audit (not in force with the zero-return
+  checks, or IN_FORCE with the promotion receipt binding this exact template and the audit in
+  promoted mode), the tick writes the audit, a test pins `--write` on that step, and the audit
+  artifact was rewritten in the publisher tree by hand so the next tick after the merge
+  publishes. Lesson recorded: a gate I promote must be re-read everywhere it was asserted.
