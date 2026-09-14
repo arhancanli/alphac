@@ -574,9 +574,40 @@ CRYPTO_CARRY_PORTABLE_PAPER_MD: Final[Path] = (
 FORWARD_FULL_EVIDENCE_TEMPLATE_JSON: Final[Path] = (
     REPO / "config" / "forward_full_evidence_reservation_v2_template.json"
 )
+FORWARD_FULL_EVIDENCE_PROMOTION_JSON: Final[Path] = (
+    REPO / "config" / "forward_full_evidence_reservation_v2_promotion.json"
+)
 FORWARD_FULL_EVIDENCE_TEMPLATE_AUDIT_JSON: Final[Path] = (
     REPO / "artifacts" / "audit" / "forward_full_evidence_reservation_v2_template.json"
 )
+
+
+def _forward_full_evidence_promotion(
+    template: dict[str, Any], template_audit: dict[str, Any]
+) -> dict[str, Any] | None:
+    """The promotion receipt as the audit bound it, or None while the template is unpromoted.
+
+    Derived, never typed: the receipt's content hash must equal what the audit recorded, so a
+    receipt edited after the audit ran cannot be projected as if it were the audited one.
+    """
+    if template.get("status") != "IN_FORCE":
+        return None
+    if not FORWARD_FULL_EVIDENCE_PROMOTION_JSON.exists():
+        raise ValueError("template is in force but the promotion receipt is missing")
+    receipt = json.loads(FORWARD_FULL_EVIDENCE_PROMOTION_JSON.read_text())
+    audited = template_audit.get("promotion_receipt") or {}
+    if audited.get("content_hash") != receipt.get("content_hash"):
+        raise ValueError("promotion receipt does not match the audited receipt")
+    return {
+        "receipt_public_path": "/glassbox/forward_full_evidence_reservation_v2_promotion.json",
+        "content_hash": receipt["content_hash"],
+        "promoted_at": receipt["promoted_at"],
+        "authorized_by": receipt["authorized_by"],
+        "effective_on_or_after_reservation_ordinal": receipt[
+            "effective_on_or_after_reservation_ordinal"
+        ],
+        "applies_to_known_results": receipt["applies_to_known_results"],
+    }
 CRYPTO_CARRY_PORTABLE_LAKE_READINESS_JSON: Final[Path] = (
     REPO / "artifacts" / "audit" / "crypto_carry_portable_lake_readiness.json"
 )
@@ -2150,6 +2181,7 @@ def build_prospective_trial_record() -> dict[str, Any]:
             "scope": template["scope"],
             "audit_status": template_audit["status"],
             "remaining_before_promotion": template_audit["remaining_before_promotion"],
+            "promotion": _forward_full_evidence_promotion(template, template_audit),
             "claim_boundary": template["claim_boundary"],
         },
         "public_paths": {

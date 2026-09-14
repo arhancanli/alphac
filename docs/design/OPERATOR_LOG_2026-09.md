@@ -518,6 +518,61 @@ published number or spend a research identity are marked DECISION and name who m
   cost-realism repair so every sleeve's published figures are net; (6) activate the brake with
   the v1.1 ladder once the crypto host reads the flipped contract. Every activation remains a
   declared, fingerprinted change.
+- 19:05Z. BUILT (branch `research/v2-batch-reservation-promotion-20260914`, from main). The gate
+  every new sleeve waited behind: (1) `config/trial_accounting_evidence_classes.json` defines the
+  selectable identity, the mandatory diagnostic and the atomic identity batch beside the sealed
+  trial policy; (2) the reservation validator now validates declared diagnostics (assumptions
+  only before the run), atomic batches (registry sealed before the first return; no member added,
+  removed or reordered; every earlier sibling reserved on disk), batch-aware seriality (siblings
+  decide together; any other open batch blocks) and ordinals that move past reserved-but-unrun
+  siblings; (3) `scripts/audit_forward_full_evidence_reservation.py` audits a FILLED reservation
+  return-blind (every stress scenario able to fail, the governing capacity point present, ADMIT
+  reachable only with two PBO columns, every execution dimension applicable or excused);
+  (4) `scripts/promote_forward_full_evidence_reservation_v2.py` promoted the template.
+- 19:12Z. DECISION (owner, delegated). The v2 full-evidence reservation template is IN FORCE from
+  reservation ordinal 348 (`config/forward_full_evidence_reservation_v2_promotion.json`, receipt
+  sha256:b909390b…), authorized by the owner's words of 18:50Z. Nothing is authorized by the
+  promotion itself: a return opens only behind a filled reservation that passes the validator
+  and the filled-reservation audit. The template's ordinal follows the validator's arithmetic
+  (228 legacy identities + 119 forward identities in the ledgers + 1), not the trial-accounting
+  union, which also counts window-only remeasurements. Five new mutations proven CAUGHT.
+- 19:15Z. PREREGISTERED. `docs/design/PREREG_EARNINGS_NARRATIVE_CHANGE_MDNA.md`: the family's
+  second and final identity (10-K Item 7 stability, same signal, same portfolio, same gates),
+  declared before any return so the two identities form one atomic batch and PBO is defined on two
+  columns. The Item 7 corpus is being parsed offline from the 82,491 cached documents
+  (`scripts/build_sec_10k_item7_corpus.py`, no network read, 92.5 percent extraction on the first
+  120 filings), into `artifacts/ingest/earnings_narrative_change/item7_parts`.
+- 19:36Z. DECISION (owner, delegated) and IMPORT. The seriality guard blocked every new
+  reservation, correctly: the 2026-09-14 reconciliation had imported the 52 experiment ledgers
+  of the second checkout (118 forward-epoch identities, union 347) but not their packets, so
+  118 identities stood undecided in the canonical tree. `scripts/import_external_identity_packets.py`
+  brought each packet home (content hash verified, bound evidence copied and hash-checked),
+  wrote one canonical admission closure per identity with disposition KILL, and re-sealed the
+  packet. The basis is each packet's own decision statement: 2 studies said REJECT under their
+  frozen scenario, 1 said RETAIN FOR FURTHER TESTING (recorded verbatim, flagged as a
+  construction retained for a NEW identity; this identity is spent and final), and the other
+  115 describe retrospective, known-history or development measurements on inspected history,
+  which the admission contract can never admit as they are. None was admitted; the union count
+  is unchanged; the record is `config/trial_accounting_reviews.json` external_packet_import.
+  Seriality after: 119 forward identities decided (118 KILL, 1 waived).
+- 19:38Z. PROVEN (dry run). `scripts/author_earnings_narrative_change_batch.py` authored the
+  narrative-change batch in the worktree: registry sealed; existing-book snapshot and
+  bottom-decile stress mask frozen; drawdown specification, overlay configuration and an
+  execution scenario manifest (17 applicable dimensions x 3 scenarios, 9 excused with hash-bound
+  evidence) written; both reservations validated by the in-force guard at ordinals 348 and 349
+  as one atomic batch; both filled-reservation audits SATISFIABLE with disposition ceiling
+  ADMIT. No return was read. The real authoring and the single out-of-sample batch run happen
+  in the publisher tree once #40 lands, because the reservation binds the merged runner's hash.
+- 19:42Z. RUNNER. With a reservation the out-of-sample runner now also measures the candidate
+  against the frozen existing-book snapshot the reservation binds: correlations, stressed
+  correlations and their one-sided bounds, the fixed-weight book deltas through the shared
+  diversification engine, and the expected and 95th-percentile maximum drawdown of the
+  zero-drift book with and without the candidate at the frozen 10 percent weight (the
+  current-composition study's generator, seed and 63-day block). The candidate sits on the
+  snapshot's UTC calendar with 0.0 on non-sessions, the convention the composite already uses
+  for its equity sleeve. Exercised on the dry-run reservation with a synthetic series: 1,061
+  aligned days, REPORTED. The publisher-tree chain (authoring, then the single batch run) is
+  armed and waits for #40 to land and the tick to be idle.
 - 2026-09-15 00:40Z. COST REALISM v1.0 (PR #43). The equity paper-live record charged no
   friction (audit of 09-14). `config/cost_realism_contract.json` now names every cost a funded
   book would pay and where the record charges it. `scripts/derive_cost_charged_live_curves.py`

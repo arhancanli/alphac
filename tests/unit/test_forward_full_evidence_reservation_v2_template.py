@@ -21,7 +21,15 @@ def _module():
 def test_template_is_fail_closed_and_return_blind() -> None:
     module = _module()
     document = module.build(ROOT)
-    assert document["status"] == "PASS_TEMPLATE_FAIL_CLOSED_NOT_ACTIVE_ZERO_RETURN"
+    template = json.loads(
+        (ROOT / "config" / "forward_full_evidence_reservation_v2_template.json").read_text()
+    )
+    promoted = template["status"] == "IN_FORCE"
+    assert document["status"] == (
+        "PASS_TEMPLATE_PROMOTED_IN_FORCE_RETURN_BY_VALIDATED_RESERVATION_ONLY"
+        if promoted
+        else "PASS_TEMPLATE_FAIL_CLOSED_NOT_ACTIVE_ZERO_RETURN"
+    )
     checks = document["fail_closed_checks"]
     assert checks["known_results_excluded"] is True
     assert checks["return_artifacts_read"] == 0
@@ -29,7 +37,8 @@ def test_template_is_fail_closed_and_return_blind() -> None:
     assert checks["hypotheses_spent"] == 0
     assert checks["active_policy_changed"] is False
     assert checks["return_authorized"] is False
-    assert len(document["remaining_before_promotion"]) == 5
+    assert len(document["remaining_before_promotion"]) == (0 if promoted else 5)
+    assert (document["promotion_receipt"] is not None) is promoted
     assert document["content_hash"] == module._content_hash(document)
 
 

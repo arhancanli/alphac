@@ -205,6 +205,15 @@ EDGES: tuple[
         ("research_export.py",),
         ("live_publish.sh",),
     ),
+    # v2 full-evidence template audit (2026-09-14): the export copies it and projects the
+    # promotion receipt it bound; after promotion a stale audit makes the export fail closed.
+    # Hourly, because the tick is what publishes.
+    (
+        "audit_forward_full_evidence_reservation_v2_template.py",
+        "artifacts/audit/forward_full_evidence_reservation_v2_template.json",
+        ("research_export.py",),
+        ("live_tick.sh",),
+    ),
     # SLEEVE-PUBLICATION EVIDENCE CHAIN (added 2026-09-06). Each of these reads the previous
     # one's output, and every one of them drifted silently for the same reason: nothing in
     # either publish job ever ran them, so "persisted receipt matches current sources" tests

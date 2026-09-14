@@ -46,6 +46,28 @@ ACTIVE_TRIAL_POLICY: Final[Path] = Path("config/trial_accounting.json")
 ADMISSION_PROMOTION_RECEIPT: Final[Path] = Path("config/admission_v7_promotion.json")
 SERIALITY_WAIVER_DIR: Final[Path] = Path("artifacts/research/seriality_waivers")
 SERIALITY_WAIVER_SCHEMA: Final[str] = "canli.alphac-seriality-waiver.v1"
+EVIDENCE_CLASSES_POLICY: Final[Path] = Path("config/trial_accounting_evidence_classes.json")
+EVIDENCE_CLASSES_SCHEMA: Final[str] = "canli.alphac-trial-evidence-classes.v1"
+IDENTITY_BATCH_DIR: Final[Path] = Path("artifacts/research/identity_batches")
+IDENTITY_BATCH_SCHEMA: Final[str] = "canli.alphac-identity-batch.v1"
+RESERVATION_DIR: Final[Path] = Path("artifacts/research/preregistrations")
+RESERVATION_FILENAME: Final[str] = "return_identity_reservation.json"
+IDENTITY_BATCH_REQUIRED_FIELDS: Final[frozenset[str]] = frozenset(
+    {
+        "batch_id",
+        "family_trial_account",
+        "identity_configs",
+        "identity_hashes",
+        "batch_content_hash",
+        "registry_path",
+        "all_identities_reserved_before_first_return",
+        "interim_result_access_forbidden",
+        "pbo_columns",
+    }
+)
+DECLARED_DIAGNOSTIC_FIELDS: Final[frozenset[str]] = frozenset(
+    {"scenario_id", "assumptions", "assumptions_sha256"}
+)
 
 
 class ReservationError(ValueError):
@@ -284,11 +306,67 @@ def _validate_historical_packet_coverage(repo: Path) -> dict[str, Any]:
     }
 
 
+def _identity_is_decided(repo: Path, identity: str) -> bool:
+    """True when the identity has a complete packet whose closure is ADMIT, KILL or waived."""
+    path = repo / IDENTITY_PACKET_DIR / f"{identity}.json"
+    if not path.is_file():
+        return False
+    try:
+        packet = json.loads(path.read_text(encoding="utf-8"))
+        if (
+            packet.get("schema") != "canli.alphac-identity-trial-packet.v2"
+            or packet.get("complete") is not True
+            or packet.get("content_hash") != _observed_content_hash(packet)
+        ):
+            return False
+        _validate_prior_identity_admission_disposition(repo, identity, packet)
+    except (json.JSONDecodeError, OSError, ReservationError, KeyError):
+        return False
+    return True
+
+
+def _open_identity_batches(repo: Path) -> dict[str, list[str]]:
+    """Sealed batches with at least one member not yet decided, keyed by batch id.
+
+    A batch is atomic: while any member is undecided, no reservation outside the batch may be
+    made (protocol: "block any unrelated reservation until every batch packet is complete").
+    """
+    registry_dir = repo / IDENTITY_BATCH_DIR
+    if not registry_dir.is_dir():
+        return {}
+    open_batches: dict[str, list[str]] = {}
+    for path in sorted(registry_dir.glob("*.json")):
+        try:
+            registry = json.loads(path.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, OSError) as error:
+            raise ReservationError(f"identity batch registry is unreadable: {path.name}") from error
+        if registry.get("schema") != IDENTITY_BATCH_SCHEMA:
+            raise ReservationError(f"identity batch registry schema mismatch: {path.name}")
+        if registry.get("content_hash") != _observed_content_hash(registry):
+            raise ReservationError(f"identity batch registry content hash mismatch: {path.name}")
+        members = registry.get("identity_hashes")
+        if not isinstance(members, list) or not members:
+            raise ReservationError(f"identity batch registry has no members: {path.name}")
+        undecided = [str(m) for m in members if not _identity_is_decided(repo, str(m))]
+        if undecided:
+            open_batches[str(registry["batch_id"])] = undecided
+    return open_batches
+
+
 def _validate_forward_epoch_serial_completion(
     repo: Path,
     *,
     reserved_hypothesis_identity: str,
+    batch_id: str | None = None,
+    batch_members: frozenset[str] = frozenset(),
 ) -> dict[str, Any]:
+    for open_batch_id, undecided in _open_identity_batches(repo).items():
+        if open_batch_id != batch_id:
+            raise ReservationError(
+                "new return identity blocked: identity batch "
+                f"{open_batch_id} is open with undecided members "
+                f"({', '.join(undecided)}); unrelated reservations wait for the batch"
+            )
     closure_path = repo / LEGACY_EPOCH_CLOSURE
     legacy_keys: set[str] = set()
     if closure_path.is_file():
@@ -326,7 +404,14 @@ def _validate_forward_epoch_serial_completion(
     else:
         forward_keys = ordered_forward_keys
     verified_packets: list[dict[str, str]] = []
+    same_batch_pending: list[str] = []
     for identity in forward_keys:
+        if identity in batch_members:
+            # Atomic batch: a sibling reserved in the same sealed batch is allowed to be
+            # undecided (the batch decides together); it is never allowed to be unreserved,
+            # which _validate_identity_batch enforces against the registry and the disk.
+            same_batch_pending.append(identity)
+            continue
         path = repo / IDENTITY_PACKET_DIR / f"{identity}.json"
         if not path.is_file():
             raise ReservationError(
@@ -363,11 +448,17 @@ def _validate_forward_epoch_serial_completion(
             }
         )
     return {
-        "policy": "SERIAL_COMPLETE_PACKET_BEFORE_NEXT_FORWARD_IDENTITY",
+        "policy": (
+            "SERIAL_COMPLETE_PACKET_BEFORE_NEXT_FORWARD_IDENTITY"
+            if batch_id is None
+            else "ATOMIC_BATCH_SIBLINGS_PENDING_TOGETHER_UNRELATED_IDENTITIES_BLOCKED"
+        ),
         "prior_identities_must_be_decided": True,
         "forward_identities_already_logged": len(forward_keys),
+        "forward_identity_keys_logged": list(forward_keys),
         "complete_forward_packets_verified": len(verified_packets),
         "verified_packets": verified_packets,
+        "same_batch_pending": same_batch_pending,
     }
 
 
@@ -457,8 +548,14 @@ def _validate_governance_epoch(
     repo: Path,
     historical_identities: int,
     forward_identities_already_logged: int,
+    reserved_unlogged_predecessors: int = 0,
 ) -> dict[str, Any]:
-    """Bind a new identity to the exact in-force gate and staged trial-budget epoch."""
+    """Bind a new identity to the exact in-force gate and staged trial-budget epoch.
+
+    ``reserved_unlogged_predecessors`` counts batch siblings sealed before this identity that
+    have not yet reached the ledger: each holds an ordinal, so the next governed ordinal moves
+    past them even though nothing has run.
+    """
     governance = payload.get("governance_epoch")
     required = {
         "admission_contract_path": ACTIVE_ADMISSION_CONTRACT.as_posix(),
@@ -526,7 +623,12 @@ def _validate_governance_epoch(
         raise ReservationError("active trial policy does not bind the v7 contract")
 
     ordinal = governance.get("reservation_ordinal")
-    expected_ordinal = historical_identities + forward_identities_already_logged + 1
+    expected_ordinal = (
+        historical_identities
+        + forward_identities_already_logged
+        + reserved_unlogged_predecessors
+        + 1
+    )
     first_effective = contract["prospective_scope"]["effective_on_or_after_reservation_ordinal"]
     budget = policy.get("hypothesis_identity_budget")
     if ordinal != expected_ordinal or ordinal < first_effective:
@@ -632,6 +734,180 @@ def _validate_diagnostic_scenarios(
     return {"diagnostic_scenario_count": scenario_count}
 
 
+def _validate_declared_diagnostic_scenarios(payload: dict[str, Any]) -> dict[str, Any]:
+    """Pre-result shape of the diagnostics: frozen assumptions, no results, unique ids.
+
+    Wired 2026-09-14 (plan task 1, owner-delegated). Before the first return a diagnostic
+    scenario is an assumptions manifest bound by hash; its result and its binding to the sealed
+    primary decision path arrive only when the run seals, where `_validate_diagnostic_scenarios`
+    checks them. A result field here is an outcome field and is refused.
+    """
+    diagnostic_scenarios = payload.get("diagnostic_scenarios")
+    if diagnostic_scenarios is None:
+        return {"declared_diagnostic_scenarios": 0, "classes": {}}
+    if not isinstance(diagnostic_scenarios, dict) or not set(diagnostic_scenarios).issubset(
+        DIAGNOSTIC_SCENARIO_CLASSES
+    ):
+        raise ReservationError(
+            "diagnostic_scenarios must be keyed by a subset of: "
+            + ", ".join(sorted(DIAGNOSTIC_SCENARIO_CLASSES))
+        )
+    seen: set[str] = set()
+    counts: dict[str, int] = {}
+    for scenario_class, scenarios in diagnostic_scenarios.items():
+        if not isinstance(scenarios, list):
+            raise ReservationError(f"diagnostic scenario class must be a list: {scenario_class}")
+        for index, scenario in enumerate(scenarios):
+            if not isinstance(scenario, dict) or set(scenario) != DECLARED_DIAGNOSTIC_FIELDS:
+                raise ReservationError(
+                    f"declared diagnostic {scenario_class}[{index}] must carry exactly: "
+                    + ", ".join(sorted(DECLARED_DIAGNOSTIC_FIELDS))
+                    + " (a result before the run is an outcome field)"
+                )
+            scenario_id = scenario["scenario_id"]
+            if not isinstance(scenario_id, str) or IDENTIFIER.fullmatch(scenario_id) is None:
+                raise ReservationError(
+                    f"declared diagnostic {scenario_class}[{index}] scenario_id must be a "
+                    "stable snake-case identifier"
+                )
+            if scenario_id in seen:
+                raise ReservationError(f"duplicate diagnostic scenario_id: {scenario_id}")
+            seen.add(scenario_id)
+            assumptions = scenario["assumptions"]
+            if not isinstance(assumptions, dict) or not assumptions:
+                raise ReservationError(
+                    f"declared diagnostic {scenario_id} assumptions must be a non-empty object"
+                )
+            if not _matches_canonical_sha256(scenario["assumptions_sha256"], assumptions):
+                raise ReservationError(
+                    f"declared diagnostic {scenario_id} assumptions_sha256 does not match"
+                )
+        counts[scenario_class] = len(scenarios)
+    return {"declared_diagnostic_scenarios": len(seen), "classes": counts}
+
+
+def batch_content_hash(batch_id: str, family_trial_account: str, identity_hashes: list[str]) -> str:
+    """The hash that seals a batch: its id, family and ordered member identities, nothing else."""
+    body = {
+        "batch_id": batch_id,
+        "family_trial_account": family_trial_account,
+        "identity_hashes": list(identity_hashes),
+    }
+    canonical = json.dumps(body, sort_keys=True, separators=(",", ":")).encode()
+    return "sha256:" + hashlib.sha256(canonical).hexdigest()
+
+
+def _reservations_on_disk(repo: Path) -> list[dict[str, Any]]:
+    found: list[dict[str, Any]] = []
+    root = repo / RESERVATION_DIR
+    if not root.is_dir():
+        return found
+    for path in sorted(root.glob(f"*/{RESERVATION_FILENAME}")):
+        try:
+            found.append(json.loads(path.read_text(encoding="utf-8")))
+        except (json.JSONDecodeError, OSError) as error:
+            raise ReservationError(f"reservation on disk is unreadable: {path}") from error
+    return found
+
+
+def _validate_identity_batch(payload: dict[str, Any], repo: Path) -> dict[str, Any] | None:
+    """An atomic, predeclared batch of selectable identities (spec: batch accounting).
+
+    Every member is a counted hypothesis identity with its own reservation; the batch registry
+    (`artifacts/research/identity_batches/<batch_id>.json`) is sealed before the first return
+    and this reservation must match it exactly: no member added, removed or reordered. Every
+    sibling sealed BEFORE this one must already be reserved on disk under the same batch hash,
+    so an identity cannot claim membership of a batch that never reserved it.
+    """
+    batch = payload.get("identity_batch")
+    if batch is None:
+        return None
+    if not isinstance(batch, dict) or set(batch) != IDENTITY_BATCH_REQUIRED_FIELDS:
+        raise ReservationError(
+            "identity_batch must carry exactly: "
+            + ", ".join(sorted(IDENTITY_BATCH_REQUIRED_FIELDS))
+        )
+    batch_id = batch["batch_id"]
+    if not isinstance(batch_id, str) or IDENTIFIER.fullmatch(batch_id) is None:
+        raise ReservationError("identity_batch.batch_id must be a stable snake-case identifier")
+    if batch["family_trial_account"] != payload.get("family_trial_account"):
+        raise ReservationError("identity_batch.family_trial_account must equal the reservation's")
+    configs = batch["identity_configs"]
+    if (
+        not isinstance(configs, list)
+        or not configs
+        or not all(isinstance(c, dict) and c for c in configs)
+    ):
+        raise ReservationError(
+            "identity_batch.identity_configs must be a non-empty list of configs"
+        )
+    hashes = [hypothesis_hash(config) for config in configs]
+    if batch["identity_hashes"] != hashes:
+        raise ReservationError(
+            "identity_batch.identity_hashes must be the hypothesis hashes of identity_configs, "
+            "in order"
+        )
+    if len(set(hashes)) != len(hashes):
+        raise ReservationError("identity_batch contains the same hypothesis identity twice")
+    reserved = payload.get("hypothesis_identity")
+    if reserved not in hashes:
+        raise ReservationError("reserved identity is not a member of its own identity_batch")
+    if batch["all_identities_reserved_before_first_return"] is not True:
+        raise ReservationError("identity_batch must reserve every identity before the first return")
+    if batch["interim_result_access_forbidden"] is not True:
+        raise ReservationError("identity_batch must forbid interim result access")
+    if batch["pbo_columns"] != len(hashes):
+        raise ReservationError("identity_batch.pbo_columns must equal the number of members")
+    expected_hash = batch_content_hash(batch_id, str(batch["family_trial_account"]), hashes)
+    if batch["batch_content_hash"] != expected_hash:
+        raise ReservationError("identity_batch.batch_content_hash does not seal its members")
+    registry_relative = batch["registry_path"]
+    if registry_relative != (IDENTITY_BATCH_DIR / f"{batch_id}.json").as_posix():
+        raise ReservationError("identity_batch.registry_path must be the canonical registry file")
+    registry = json.loads(_repo_file(repo, registry_relative).read_text(encoding="utf-8"))
+    if (
+        registry.get("schema") != IDENTITY_BATCH_SCHEMA
+        or registry.get("content_hash") != _observed_content_hash(registry)
+        or registry.get("batch_id") != batch_id
+        or registry.get("family_trial_account") != batch["family_trial_account"]
+        or registry.get("identity_configs") != configs
+        or registry.get("identity_hashes") != hashes
+        or registry.get("batch_content_hash") != expected_hash
+        or registry.get("pbo_columns") != len(hashes)
+        or registry.get("all_identities_reserved_before_first_return") is not True
+        or registry.get("interim_result_access_forbidden") is not True
+    ):
+        raise ReservationError(
+            "identity_batch does not match its sealed registry: a member was added, removed or "
+            "reordered after the batch was sealed, or the registry is invalid"
+        )
+    _parse_utc(registry.get("sealed_at"))
+    position = hashes.index(str(reserved))
+    predecessors = hashes[:position]
+    on_disk = {
+        str(r.get("hypothesis_identity")): r
+        for r in _reservations_on_disk(repo)
+        if isinstance(r.get("identity_batch"), dict)
+        and r["identity_batch"].get("batch_content_hash") == expected_hash
+    }
+    for sibling in predecessors:
+        if sibling not in on_disk:
+            raise ReservationError(
+                f"identity batch member {sibling} precedes this identity in the sealed batch "
+                "but has no reservation on disk under the same batch hash"
+            )
+    return {
+        "batch_id": batch_id,
+        "batch_content_hash": expected_hash,
+        "registry_path": registry_relative,
+        "members": len(hashes),
+        "position": position + 1,
+        "pbo_columns": len(hashes),
+        "predecessors": predecessors,
+        "pbo_defined": len(hashes) >= 2,
+    }
+
+
 def validate_reservation(
     payload: dict[str, Any],
     *,
@@ -661,10 +937,24 @@ def validate_reservation(
     observed_identity = hypothesis_hash(trial_config)
     if payload.get("hypothesis_identity") != observed_identity:
         raise ReservationError("reservation hypothesis_identity does not match trial_config")
+    declared_diagnostics = _validate_declared_diagnostic_scenarios(payload)
+    identity_batch = _validate_identity_batch(payload, repo)
     packet_coverage = _validate_historical_packet_coverage(repo)
     forward_epoch_seriality = _validate_forward_epoch_serial_completion(
         repo,
         reserved_hypothesis_identity=payload["hypothesis_identity"],
+        batch_id=None if identity_batch is None else identity_batch["batch_id"],
+        batch_members=(
+            frozenset()
+            if identity_batch is None
+            else frozenset(payload["identity_batch"]["identity_hashes"])
+        ),
+    )
+    logged = set(forward_epoch_seriality["forward_identity_keys_logged"])
+    reserved_unlogged_predecessors = (
+        0
+        if identity_batch is None
+        else sum(1 for sibling in identity_batch["predecessors"] if sibling not in logged)
     )
     governance_epoch = _validate_governance_epoch(
         payload,
@@ -673,6 +963,7 @@ def validate_reservation(
         forward_identities_already_logged=forward_epoch_seriality[
             "forward_identities_already_logged"
         ],
+        reserved_unlogged_predecessors=reserved_unlogged_predecessors,
     )
 
     packet_path = payload.get("packet_public_path")
@@ -715,5 +1006,7 @@ def validate_reservation(
         "historical_packet_coverage": packet_coverage,
         "forward_epoch_seriality": forward_epoch_seriality,
         "governance_epoch": governance_epoch,
+        "declared_diagnostic_scenarios": declared_diagnostics,
+        "identity_batch": identity_batch,
         "evidence": validated,
     }
