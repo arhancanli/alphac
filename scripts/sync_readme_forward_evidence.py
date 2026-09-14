@@ -137,6 +137,26 @@ def synchronize(evidence: dict[str, Any], readme: str) -> str:
         f"**{expected_drawdown} expected / {p95_drawdown} "
         "p95**, neither established by live evidence |",
     )
+    cost = evidence.get("cost_realism") or {}
+    if cost.get("sleeves"):
+        charged = {
+            key: row
+            for key, row in cost["sleeves"].items()
+            if row.get("cumulative_drag_bps_of_base") is not None
+        }
+        drag_text = ", ".join(
+            f"{key} **{float(row['cumulative_drag_bps_of_base']):.1f} bp**"
+            for key, row in sorted(charged.items())
+        )
+        readme = _replace_once(
+            readme,
+            r"^\| Cost drag \|.*$",
+            "| Cost drag | The evaluated curve is the "
+            f"**{cost.get('curve_basis', 'live_curve').replace('_', ' ')}**: model-charged "
+            "commission, spread, impact and borrow on every Alpaca fill, cumulative drag on the "
+            f"base {drag_text}; latency, financing and cash yield are not charged "
+            "(config/cost_realism_contract.json) |",
+        )
     readme = _replace_once(
         readme,
         r"^\| Diversification \|.*$",

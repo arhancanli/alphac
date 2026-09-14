@@ -80,6 +80,10 @@ deploy_prod() {
   # in paper-state.json and track_record.json kept asserting the withdrawn 0.3403 for another
   # cycle. The dependency is file-mediated and therefore invisible in the call order; pinned by
   # tests/unit/test_publish_pipeline_order.py.
+  # Cost realism (2026-09-15): charge every Alpaca fill and the reconstructed short book through
+  # research's own cost model; paper_trading_state.py publishes the result beside the broker NAV.
+  uv run python scripts/derive_cost_charged_live_curves.py \
+    || { echo "derive_cost_charged_live_curves FAILED"; FAIL=1; }
   uv run python scripts/paper_trading_state.py || { echo "paper_trading_state FAILED"; FAIL=1; }
   # Book drawdown ladder (2026-09-14): replays the marks paper_trading_state.py just wrote through the
   # declared 5.5/11 percent ladder and writes the multiplier in force (artifact + var/book_ladder).

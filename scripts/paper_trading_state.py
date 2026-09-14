@@ -28,6 +28,7 @@ from __future__ import annotations
 
 import datetime as dt
 import glob
+import hashlib
 import json
 import math
 import sqlite3
@@ -374,13 +375,98 @@ def sample_curve(days, eq, *, target: int = 180, scale: float = 100000.0) -> lis
 _LOG_ACCOUNT_SWITCH: list[str] = []
 
 
-def read_live_db(db: Path, go_live: str = GO_LIVE) -> list[dict]:
+# Cost realism (2026-09-15, config/cost_realism_contract.json). The Alpaca sleeves' broker NAV
+# charges no commission, spread, impact or borrow; scripts/derive_cost_charged_live_curves.py
+# charges every filled order and the reconstructed short book through research's own cost model
+# and writes the cumulative charges by date here. read_live_db subtracts them, in the broker's
+# own dollars, before the $100k normalization, so the cost-charged curve shares the broker
+# curve's base and the two differ by exactly the charges. The broker NAV stays published.
+COST_CHARGES_JSON = Path("artifacts/engineering/cost_charged_live_curves.json")
+COST_CHARGES_SCHEMA = "canli.alphac-cost-charged-live-curves.v1"
+
+
+def read_cost_charges(path: Path = COST_CHARGES_JSON) -> dict[str, dict]:
+    """sleeve key -> the derivation's sleeve block (charges_by_date, totals, counts), or {}."""
+    if not path.exists():
+        return {}
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    if payload.get("schema") != COST_CHARGES_SCHEMA:
+        raise ValueError(f"unexpected cost-charged curves schema in {path}")
+    body = {k: v for k, v in payload.items() if k != "content_hash"}
+    canonical = json.dumps(body, sort_keys=True, separators=(",", ":")).encode()
+    if payload.get("content_hash") != "sha256:" + hashlib.sha256(canonical).hexdigest():
+        raise ValueError(f"cost-charged curves content hash mismatch in {path}")
+    return dict(payload["sleeves"])
+
+
+def _cumulative_charge_through(charges_by_date: dict[str, dict], date: str) -> float:
+    """Cumulative charges on or before `date`, in the broker's dollars; 0 before the first."""
+    total = 0.0
+    for d in sorted(charges_by_date):
+        if d > date:
+            break
+        total = float(charges_by_date[d]["cumulative"])
+    return total
+
+
+def cost_charges_summary(sleeve: dict, base_equity: float) -> dict:
+    """What the published cost-charged curve was charged, beside the curve itself."""
+    totals = dict(sleeve["totals_usd"])
+    return {
+        "status": "CHARGED_BY_MODEL",
+        "contract": "config/cost_realism_contract.json",
+        "totals_usd": totals,
+        "cumulative_drag_bps_of_base": (
+            round(10_000.0 * float(totals["total"]) / base_equity, 2) if base_equity > 0 else None
+        ),
+        "fills_total": sleeve["fills_total"],
+        "fills_priced_for_impact": sleeve["fills_priced_for_impact"],
+        "fills_unpriced_for_impact": sleeve["fills_unpriced_for_impact"],
+        "fills_impact_floored_at_tripwire": sleeve["fills_impact_floored_at_tripwire"],
+        "short_calendar_days_charged": sleeve["short_calendar_days_charged"],
+        "traded_notional_usd": sleeve["traded_notional"],
+        "model": sleeve["model"],
+        "not_charged": [
+            "latency_slippage",
+            "financing_margin_interest",
+            "cash_yield_on_idle_capital",
+        ],
+    }
+
+
+def read_live_db(
+    db: Path, go_live: str = GO_LIVE, charges: dict[str, dict] | None = None
+) -> list[dict]:
     """Realized live paper marks from a per-sleeve trading DB (equity_curve), or the honest
     go-live $100k seed until the loop has written its first cycle. No fabricated history.
-    ``go_live`` lets a newer sleeve (e.g. AlphaTrend) seed from its OWN start, never backdated."""
-    seed = [{"date": go_live, "equity": 100000.0}]
+    ``go_live`` lets a newer sleeve (e.g. AlphaTrend) seed from its OWN start, never backdated.
+    With ``charges`` (the derivation's charges_by_date), the cumulative model charges through
+    each date are subtracted in broker dollars before normalization: the cost-charged curve."""
+    pts = _live_points(db, go_live)
+    if pts is None:
+        return [{"date": go_live, "equity": 100000.0}]
+    # Normalize to a common $100k display base at go-live so sleeves on different-sized accounts
+    # (AlphaTrend $100k, AlphaMax $1M) are directly comparable: it is the % path that matters, not the
+    # raw balance. Already-$100k sleeves (crypto, AlphaTrend) are unchanged (base ~= 100k).
+    # The base is the BROKER's first mark even for the cost-charged curve, so both curves start
+    # from one point and differ afterwards by exactly the charges.
+    base = pts[0][1] or 100000.0
+    if charges:
+        pts = [(d, eq - _cumulative_charge_through(charges, d)) for d, eq in pts]
+    return [{"date": d, "equity": round(100000.0 * eq / base, 2)} for d, eq in pts]
+
+
+def _raw_first_mark(db: Path, go_live: str) -> float:
+    """The broker's first mark after every guard, in its own dollars (the curves' base)."""
+    pts = _live_points(db, go_live)
+    return float(pts[0][1]) if pts else 100000.0
+
+
+def _live_points(db: Path, go_live: str) -> list[tuple[str, float]] | None:
+    """(date, broker equity) per day after the go-live floor, the one-mark-per-day collapse and
+    the account-switch guard; None when the database has nothing usable yet."""
     if not db.exists():
-        return seed
+        return None
     try:
         con = sqlite3.connect(f"file:{db}?mode=ro", uri=True)
         rows = con.execute(
@@ -388,15 +474,15 @@ def read_live_db(db: Path, go_live: str = GO_LIVE) -> list[dict]:
         ).fetchall()
         con.close()
     except sqlite3.Error:
-        return seed
+        return None
     if not rows:
-        return seed
+        return None
     # Floor at go-live: a broker account that existed (idle, flat) before this sleeve went live must
     # not contribute pre-go-live marks to the sleeve's record. Crypto's marks are all >= GO_LIVE, so
     # this is a no-op there; for AlphaTrend it drops the days the account sat at $100k before launch.
     pts = [(d, float(eq)) for ts, eq in rows if (d := _epoch_to_date(ts)) >= go_live]
     if not pts:
-        return seed
+        return None
 
     # ---- ONE MARK PER DAY -------------------------------------------------------------------
     # equity_curve holds several marks per day (the daily live_cycle writes one, the hourly state
@@ -437,12 +523,7 @@ def read_live_db(db: Path, go_live: str = GO_LIVE) -> list[dict]:
             f"({dropped[0][0]}..{dropped[-1][0]}, ${dropped[-1][1]:,.0f}) — superseded account"
         )
         pts = pts[seg_start:]
-
-    # Normalize to a common $100k display base at go-live so sleeves on different-sized accounts
-    # (AlphaTrend $100k, AlphaMax $1M) are directly comparable: it is the % path that matters, not the
-    # raw balance. Already-$100k sleeves (crypto, AlphaTrend) are unchanged (base ~= 100k).
-    base = pts[0][1] or 100000.0
-    return [{"date": d, "equity": round(100000.0 * eq / base, 2)} for d, eq in pts]
+    return pts
 
 
 def read_fwd_curve(path: Path, go_live: str = GO_LIVE) -> list[dict] | None:
@@ -1667,10 +1748,63 @@ def main():
     # AlphaVintage: REALIZED equity from its own Alpaca paper account (PA39G6N49JRY), seeded from
     # its own go-live. live_cycle.py --profile alphavintage writes a mark each daily run.
     vintage_live = read_live_db(VINTAGE_LIVE_DB, go_live=VINTAGE_GO_LIVE)
+    # Cost-charged twins of the three Alpaca curves (config/cost_realism_contract.json). The
+    # crypto sleeve charges its frictions at the source, so its charged curve IS its live curve.
+    cost_charges = read_cost_charges()
+    equity_charged = read_live_db(
+        EQUITY_LIVE_DB,
+        go_live=EQ_GO_LIVE,
+        charges=(cost_charges.get("alphamax") or {}).get("charges_by_date"),
+    )
+    mf_charged = read_live_db(
+        MF_LIVE_DB,
+        go_live=MF_GO_LIVE,
+        charges=(cost_charges.get("managed_futures") or {}).get("charges_by_date"),
+    )
+    vintage_charged = read_live_db(
+        VINTAGE_LIVE_DB,
+        go_live=VINTAGE_GO_LIVE,
+        charges=(cost_charges.get("alphavintage") or {}).get("charges_by_date"),
+    )
     crypto_live = clamp_live(crypto_live)
     equity_live = clamp_live(equity_live)
     mf_live = clamp_live(mf_live) or [{"date": MF_GO_LIVE, "equity": 100000.0}]
     vintage_live = clamp_live(vintage_live) or [{"date": VINTAGE_GO_LIVE, "equity": 100000.0}]
+    equity_charged = clamp_live(equity_charged)
+    mf_charged = clamp_live(mf_charged) or [{"date": MF_GO_LIVE, "equity": 100000.0}]
+    vintage_charged = clamp_live(vintage_charged) or [{"date": VINTAGE_GO_LIVE, "equity": 100000.0}]
+    charged = {
+        "alphaforge": crypto_live,
+        "alphamax": equity_charged,
+        "managed_futures": mf_charged,
+        "alphavintage": vintage_charged,
+        "alphac": clamp_live(
+            combined_live(
+                {
+                    "crypto": crypto_live,
+                    "equity": equity_charged,
+                    "mf": mf_charged,
+                    "vintage": vintage_charged,
+                },
+                mkt_by_date,
+                STRATEGIC_TILT_PCT,
+            )
+        ),
+    }
+    charged_summary = {
+        key: cost_charges_summary(cost_charges[key], _raw_first_mark(db, go_live))
+        for key, db, go_live in (
+            ("alphamax", EQUITY_LIVE_DB, EQ_GO_LIVE),
+            ("managed_futures", MF_LIVE_DB, MF_GO_LIVE),
+            ("alphavintage", VINTAGE_LIVE_DB, VINTAGE_GO_LIVE),
+        )
+        if key in cost_charges
+    }
+    charged_summary["alphaforge"] = {
+        "status": "CHARGED_AT_SOURCE",
+        "contract": "config/cost_realism_contract.json",
+        "note": "commission, spread, impact and funding are debited by the paper engine per fill",
+    }
     live = {
         "alphaforge": crypto_live,
         "alphamax": equity_live,
@@ -1749,6 +1883,15 @@ def main():
                 "live_days": live_days_elapsed(live[a["key"]], algo_go_live),
                 "research_curve": research[a["key"]],
                 "live_curve": live[a["key"]],
+                "cost_charged_curve": charged[a["key"]],
+                "cost_charges": charged_summary.get(
+                    a["key"],
+                    {
+                        "status": "NOT_CHARGED",
+                        "contract": "config/cost_realism_contract.json",
+                        "note": "no cost derivation on file for this sleeve; the charged curve equals the broker curve",
+                    },
+                ),
                 "holdings": holdings[a["key"]],
                 # Machine-readable uptime for the one sleeve that runs its own hourly loop. A reader
                 # comparing "live_days" against reality deserves the denominator too: elapsed days
@@ -1957,6 +2100,12 @@ def main():
         },
         "research_curve": research["alphac"],
         "live_curve": live["alphac"],
+        "cost_charged_curve": charged["alphac"],
+        "cost_charges": {
+            "status": "CHARGED_BY_MODEL_ON_ALPACA_SLEEVES",
+            "contract": "config/cost_realism_contract.json",
+            "sleeves": charged_summary,
+        },
     }
     # ---- PUBLISH GATE — the last thing between a computed number and a public page ----------
     # Every other guard in this repo protects an INPUT. Nothing protected the OUTPUT, so on

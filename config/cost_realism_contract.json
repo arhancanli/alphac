@@ -1,0 +1,46 @@
+{
+  "schema": "canli.alphac-cost-realism-contract.v1",
+  "version": "1.0",
+  "declared_at": "2026-09-15",
+  "author": "Arhan Canli",
+  "owner_goal": "config/owner_goals.json program.real_life_costs_on_paper_live",
+  "audit": "docs/design/COST_REALISM_AUDIT_2026-09-14.md",
+  "purpose": "Every cost a funded book would pay, and for each one where the paper-live record charges it: at the venue (CHARGED_AT_SOURCE), by model on the published curve (CHARGED_BY_MODEL), or not at all (NOT_CHARGED, with the reason). The record is read as net of the charged rows and gross of the rest; nothing here is a forecast.",
+  "statuses": ["CHARGED_AT_SOURCE", "CHARGED_BY_MODEL", "NOT_CHARGED"],
+  "model": {
+    "implementation": "src/alphaforge/costs/model.py TransactionCostModel.from_settings(load_settings(profile))",
+    "derivation": "scripts/derive_cost_charged_live_curves.py",
+    "artifact": "artifacts/engineering/cost_charged_live_curves.json",
+    "published_as": "cost_charged_curve beside live_curve on every Alpaca sleeve and on the book in data/paper/state.json; the broker NAV is the original and is never replaced",
+    "parameters_source": "configs/<profile>.yaml costs: equity_commission_bps, equity_half_spread_bps, impact_coef, equity_borrow_bps_annual (research's own values; nothing typed here)"
+  },
+  "equity_paper_live": {
+    "sleeves": ["alphamax", "managed_futures", "alphavintage"],
+    "venue": "Alpaca paper trading; fills carry fee_quote 0.0 and the account equity is published verbatim",
+    "rows": {
+      "commission": {"status": "CHARGED_BY_MODEL", "model": "filled notional x equity_commission_bps", "source": "CostsCfg.equity_commission_bps"},
+      "bid_ask_spread": {"status": "CHARGED_BY_MODEL", "model": "filled notional x equity_half_spread_bps", "source": "CostsCfg.equity_half_spread_bps"},
+      "market_impact": {"status": "CHARGED_BY_MODEL", "model": "filled notional x impact_coef x sigma_daily x sqrt(notional / ADV); ADV = 30-session median quote volume and sigma = EWMA (halflife 240 sessions) daily volatility from the daily-bar lakes, both as of the session before the fill; a fill above the model's 5 percent participation tripwire is charged at the tripwire and counted as floored (understated), never skipped; a fill with no priceable ADV is counted unpriced and charged commission and spread only", "source": "CostsCfg.impact_coef; data/lake and data/lake_mf ohlcv_1d"},
+      "latency_slippage": {"status": "NOT_CHARGED", "reason": "research adds a flat 2 bp intra-second arrival add-on; live equity submit-to-fill is measured in hours (artifacts/analysis/cost_model_realism/result.json), a different kind of quantity, and no reference mid is recorded at submission from which an implementation shortfall could be measured. Charging 2 bp would be typing a number. The fix is one recorded field (the mid at submitted_ts), named in that study.", "will_charge_when": "the order audit records the reference mid at submission and a measured arrival slippage exists"},
+      "short_borrow": {"status": "CHARGED_BY_MODEL", "model": "reconstructed short notional x equity_borrow_bps_annual / 365 per calendar day; short notional = cumulative signed filled quantity per symbol, marked at the last lake close on or before the day, because the broker persists no daily positions", "source": "CostsCfg.equity_borrow_bps_annual"},
+      "financing_margin_interest": {"status": "NOT_CHARGED", "reason": "src/alphaforge/execution/financing.py exists with no production caller and no rate source is wired; the sleeves run gross at or under 1.0x so the margin debit is small but not zero", "will_charge_when": "a financing quote provider is bound and declared"},
+      "cash_yield_on_idle_capital": {"status": "NOT_CHARGED", "reason": "no cash-rate source is wired; omitting it understates the record (a funded book earns the cash rate on idle capital), so the cost-charged curve is conservative on this row", "will_charge_when": "a financing quote provider is bound and declared"},
+      "fx_conversion": {"status": "NOT_CHARGED", "reason": "every sleeve is USD-only; a mixed-currency book fails closed in research"}
+    }
+  },
+  "crypto_paper_live": {
+    "sleeves": ["alphaforge"],
+    "venue": "the sleeve's own paper engine walks the live order book",
+    "rows": {
+      "commission": {"status": "CHARGED_AT_SOURCE", "source": "src/alphaforge/execution/paper.py taker fee debited per fill"},
+      "bid_ask_spread": {"status": "CHARGED_AT_SOURCE", "source": "fills walk the live book; marks at mid"},
+      "market_impact": {"status": "CHARGED_AT_SOURCE", "source": "book walk"},
+      "latency_slippage": {"status": "NOT_CHARGED", "reason": "recorded as an audit row per fill, not debited"},
+      "perpetual_funding": {"status": "CHARGED_AT_SOURCE", "source": "src/alphaforge/live/loop.py, point-in-time funding since 2026-08-06"},
+      "financing_margin_interest": {"status": "NOT_CHARGED", "reason": "no rate source is wired"},
+      "cash_yield_on_idle_capital": {"status": "NOT_CHARGED", "reason": "no rate source is wired"}
+    }
+  },
+  "accounting_rule": "A correction to the record keeps the original and discloses the correction (docs/design/ALPHAC_OWNER_GOALS_2026-09-12.md). The broker NAV stays published as live_curve; the cost-charged curve is published beside it as cost_charged_curve and is the series the forward-evidence evaluation reads from the date this contract takes force. The change is declared in config/live_change_contract.json.",
+  "claim_boundary": "Model-charged frictions are a conservative accounting of what a funded book would pay on these exact fills, not a measurement of what one paid. NOT_CHARGED rows make the cost-charged curve still gross of those items, and the two omissions that understate the record (financing) and overstate it (cash yield) are named rather than netted."
+}
