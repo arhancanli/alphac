@@ -9,8 +9,8 @@ contract's boundary is the boundary it states about itself. A script with no doc
 having none.
 
 At a glance: **352 Python scripts**, **17 shell entry points**,
-**30 configuration contracts**, **30 engineering artifacts**,
-**421 unit test files**, **22 data directories**, **9 scheduled jobs**.
+**31 configuration contracts**, **30 engineering artifacts**,
+**422 unit test files**, **23 data directories**, **9 scheduled jobs**.
 
 
 ## What runs on a timer
@@ -202,6 +202,7 @@ are the ones a reader has to know about; everything else is derived from them.
 | `config/legacy_dsr_exceptions.json` | No executable raw-row DSR implementation remains. |
 | `config/live_change_contract.json` | _(no stated boundary)_ |
 | `config/merger_announcement_confirmatory_design_inputs.json` | Binds already published no-return exploratory metadata and reserves a disjoint confirmation period. |
+| `config/owner_goals.json` | These are the owner's governing goals for a paper-trading programme that intends to become an open glassbox platform and, later, a real hedge fund. |
 | `config/scholarly_repository_requirements.json` | This dated snapshot records requirements observed on official repository pages. |
 | `config/sleeve_admission_contract.json` | This in-force contract applies only to return identities reserved at ordinal 229 or later under its exact effective hash. |
 | `config/sleeve_admission_contract_v7_proposed.json` | This is a prospective proposal, not an in-force gate change. |
@@ -673,6 +674,7 @@ and is worth more than a hand-made taxonomy that would drift.
 | `data/lake_mf_exp/` |  |
 | `data/lake_sec/` |  |
 | `data/lake_sharadar/` |  |
+| `data/lake_sharadar_full/` |  |
 | `data/lake_shortint/` |  |
 | `data/paper/` |  |
 | `data/predictions/` |  |

@@ -4,6 +4,8 @@ import json
 from pathlib import Path
 from runpy import run_path
 
+from alphaforge.research.owner_goals import load_owner_goals
+
 MODULE = run_path(str(Path(__file__).parents[2] / "scripts/build_sleeve_atlas.py"))
 FAMILY_SPECS = MODULE["FAMILY_SPECS"]
 build_atlas = MODULE["build_atlas"]
@@ -29,11 +31,20 @@ def test_atlas_is_fail_closed_before_returns() -> None:
     contract_objective = json.loads(
         (Path(__file__).parents[2] / "config" / "sleeve_admission_contract.json").read_text()
     )["objective"]
+    goals = load_owner_goals()["goals"]
 
-    assert atlas["objective"]["target_total_sleeves"] == 14
-    assert atlas["objective"]["minimum_new_sleeves"] == 10
+    # The atlas publishes the owner's objective (config/owner_goals.json), with the sealed
+    # contract's 14-sleeve objective inside it as dated history, never as a second target.
+    assert atlas["objective"]["target_total_sleeves"] == (
+        goals["qualified_economically_distinct_sleeves"]["minimum"]
+    )
+    assert atlas["objective"]["honest_forward_sharpe_target"] == (
+        goals["combined_forward_sharpe"]["target"]
+    )
     assert atlas["objective"]["targets_are_promises"] is False
-    assert {key: atlas["objective"][key] for key in contract_objective} == contract_objective
+    superseded = atlas["objective"]["superseded_admission_contract_objective"]
+    assert {key: superseded[key] for key in contract_objective} == contract_objective
+    assert superseded["target_total_sleeves"] == 14 and superseded["minimum_new_sleeves"] == 10
     assert atlas["governance"]["family_wise_accounting"] is True
     assert atlas["governance"]["cell_is_independent_trial"] is False
     assert atlas["summary"]["return_data_opened"] == 0

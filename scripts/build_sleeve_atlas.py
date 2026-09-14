@@ -19,6 +19,12 @@ from itertools import product
 from pathlib import Path
 from typing import Any
 
+from alphaforge.research.owner_goals import (
+    current_sleeve_count,
+    governing_objective,
+    load_owner_goals,
+)
+
 LINEAGE_CONFIG = Path(__file__).parents[1] / "config" / "sleeve_family_lineage.json"
 ADMISSION_CONTRACT = Path(__file__).parents[1] / "config" / "sleeve_admission_contract.json"
 LINEAGE_CLASSES = {
@@ -613,14 +619,17 @@ def build_atlas() -> dict[str, Any]:
                 }
             )
 
-    contract_objective = json.loads(ADMISSION_CONTRACT.read_text())["objective"]
+    objective = governing_objective(
+        load_owner_goals(), ADMISSION_CONTRACT, current_sleeves=current_sleeve_count()
+    )
     payload: dict[str, Any] = {
         "schema": "canli.alphac-sleeve-atlas.v2",
         "as_of": "2026-08-22",
-        # The atlas owns taxonomy, not target-setting. Derive its objective from the admission
-        # contract so an old target cannot survive in the candidate funnel after governance has
-        # superseded it.
-        "objective": {**contract_objective, "targets_are_promises": False},
+        # The atlas owns taxonomy, not target-setting. Derive its objective from the owner's
+        # goals projected on the sealed admission contract, so an old target cannot survive in
+        # the candidate funnel after governance has superseded it; the contract's own objective
+        # rides inside as dated history.
+        "objective": {**objective, "targets_are_promises": False},
         "governance": {
             "stage": "taxonomy_before_returns",
             "cells_per_family": 6,
