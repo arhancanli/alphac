@@ -386,3 +386,15 @@ published number or spend a research identity are marked DECISION and name who m
   (13435db). Live effect: the equity walk-forwards regenerate on the next tick after this lands
   on main and the publisher tree switches; the equity target books change on names that split
   within 252 sessions.
+  each with its proof, building on the corpus tooling the feasibility pass already ran. Task 1
+  (the full 2005-2025 10-K corpus) is days of rate-limited downloads and runs unattended, never in
+  a tick. No identity is spent by the plan. The treasury-auction family follows the same shape.
+- 16:36Z. MERGED. #36 (the signed chain, #24 through #34) landed on main by the owner's
+  `gh pr merge 36 --squash --auto` once CI went green; the publisher tree is on main (8561336).
+  The two earlier attempts taught two rules now in memory: deleting a stacked PR's base branch
+  closes its dependents for good, and main requires signed commits, so every branch today had to
+  be rebuilt with signing on.
+- 16:55Z. BRANCH. `research/narrative-change-runner-and-split-fix-20260914` from main, ten
+  signed commits: the runner (tasks 3 to 6, the calibration driver, the survivorship-inclusive
+  lake builder) and the split-direction repair with its audit and guard. One PR, because the
+  repair's guard test lives in the runner's test file and the owner merges once.
