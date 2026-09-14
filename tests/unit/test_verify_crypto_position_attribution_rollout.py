@@ -34,11 +34,12 @@ def _contract(verifier: ModuleType) -> dict[str, object]:
 def _receipt(
     deploy: ModuleType, contract: dict[str, object], *, baseline: int = 1_000
 ) -> dict[str, object]:
-    files = contract["required_files"]
+    files = [*contract["required_files"], *(contract.get("companion_files") or [])]
     assert isinstance(files, list)
     return deploy.build_receipt(
         before={"latest_equity_cycle_ts": baseline},
         after={
+            # the deployment tool snapshots every contract path: required files and companions
             "files": {item["path"]: item["desired_sha256"] for item in files},
             "position_snapshot_columns": ["cycle_ts", *deploy.REQUIRED_COLUMNS],
         },
@@ -192,3 +193,36 @@ def test_frozen_success_thaws_when_the_contract_repins_a_required_file(modules) 
     repinned = json.loads(json.dumps(contract))
     repinned["required_files"][0]["desired_sha256"] = "e" * 64
     assert not verifier.is_frozen_success(document, receipt_sha256="a" * 64, contract=repinned)
+
+
+def test_receipt_must_cover_every_companion_and_nothing_else(modules) -> None:
+    """The 2026-09-15 rollout shipped eight companions (the activated drawdown contract and
+    base.yaml among them); the tool snapshots all of them, and the verifier once demanded a
+    snapshot of exactly the three required files, so a correct receipt failed closed every tick."""
+    verifier, deploy, _attribution = modules
+    contract = _contract(verifier)
+    receipt = _receipt(deploy, contract)
+    companions = contract.get("companion_files") or []
+    if not companions:
+        pytest.skip("the workspace contract carries no companion files")
+    only_required = dict(receipt)
+    only_required["after"] = {
+        **receipt["after"],
+        "files": {item["path"]: item["desired_sha256"] for item in contract["required_files"]},
+    }
+    only_required["content_hash"] = deploy._content_hash(
+        {k: v for k, v in only_required.items() if k != "content_hash"}
+    )
+    with pytest.raises(verifier.VerificationError, match="companion_files paths"):
+        verifier.validate_receipt(only_required, contract, deploy)
+    extra = dict(receipt)
+    extra["after"] = {
+        **receipt["after"],
+        "files": {**receipt["after"]["files"], "src/alphaforge/extra.py": "0" * 64},
+    }
+    extra["content_hash"] = deploy._content_hash(
+        {k: v for k, v in extra.items() if k != "content_hash"}
+    )
+    with pytest.raises(verifier.VerificationError, match="companion_files paths"):
+        verifier.validate_receipt(extra, contract, deploy)
+    assert verifier.validate_receipt(receipt, contract, deploy) == 1_000

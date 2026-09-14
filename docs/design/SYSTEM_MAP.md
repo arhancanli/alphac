@@ -9,8 +9,8 @@ contract's boundary is the boundary it states about itself. A script with no doc
 having none.
 
 At a glance: **363 Python scripts**, **17 shell entry points**,
-**34 configuration contracts**, **30 engineering artifacts**,
-**435 unit test files**, **23 data directories**, **9 scheduled jobs**.
+**34 configuration contracts**, **31 engineering artifacts**,
+**435 unit test files**, **0 data directories**, **9 scheduled jobs**.
 
 
 ## What runs on a timer
@@ -227,6 +227,7 @@ are the ones a reader has to know about; everything else is derived from them.
 | `artifacts/engineering/claim_coverage_map.json` | Maps each PUBLISHED ARTIFACT to the mechanisms that guard it and records when each mechanism last ran, by running it. |
 | `artifacts/engineering/contract_and_unit_audit.json` | Three audit dimensions worked against the contract in force and the published bundle. |
 | `artifacts/engineering/corporate_action_contract.json` | The event-driven engine now accounts for source-bound splits, cash dividends, and metadata-confirmed delistings. |
+| `artifacts/engineering/cost_charged_live_curves.json` | Model-charged frictions on the Alpaca paper record, derived from every filled order and the reconstructed daily short book, at research's own cost par… |
 | `artifacts/engineering/crowding_risk_contract.json` | The gate and stress arithmetic are implemented. |
 | `artifacts/engineering/crypto_lab_carry_crash_incident.json` | Forensic description of one paper-traded LABUSDT episode. |
 | `artifacts/engineering/crypto_position_attribution.json` | Latest-cycle arithmetic attribution for the locally simulated crypto paper account. |
@@ -679,29 +680,6 @@ and is worth more than a hand-made taxonomy that would drift.
 
 | directory |  |
 |---|---|
-| `data/corrections/` |  |
-| `data/deribit/` |  |
-| `data/features/` |  |
-| `data/lake/` |  |
-| `data/lake_fut_db/` |  |
-| `data/lake_fut_real/` |  |
-| `data/lake_insider/` |  |
-| `data/lake_inventory/` |  |
-| `data/lake_inventory_releases/` |  |
-| `data/lake_macro_vintage/` |  |
-| `data/lake_mf/` |  |
-| `data/lake_mf_exp/` |  |
-| `data/lake_sec/` |  |
-| `data/lake_sharadar/` |  |
-| `data/lake_sharadar_full/` |  |
-| `data/lake_shortint/` |  |
-| `data/paper/` |  |
-| `data/predictions/` |  |
-| `data/quality/` |  |
-| `data/raw/` |  |
-| `data/reproduction/` |  |
-| `data/research/` |  |
-| `data/sharadar_raw/` |  |
 
 Deliberately no file counts: the collectors write into these every day, and a number
 committed here would be wrong by the time anybody read it — and would make the currency

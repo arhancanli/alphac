@@ -673,3 +673,12 @@ published number or spend a research identity are marked DECISION and name who m
   companion-file rollout to Frankfurt (contract and base.yaml), which is the next step and is
   currently refused by the rollout contract's own drift check because PR #40 moved
   trial_reservation.py: the contract must be re-authored with desired_revisions before --apply.
+- 2026-09-15 02:45Z. ROLLOUT VERIFIER (PR #47). The tick's rollout verifier refused the Frankfurt
+  receipt every run: "deployment receipt after-snapshot does not cover exactly the contract's
+  required_files paths". The deployment tool snapshots every path the contract carries (the three
+  required files and, since this rollout, eight companions), while the verifier demanded a snapshot
+  of exactly the three. A correct receipt therefore failed closed. The verifier now requires the
+  after-snapshot to cover exactly required plus companion paths, and checks every companion's
+  deployed hash by the same rule as a required file (the current desired hash, or a recorded
+  revision that postdates the receipt). Test fixture receipts now cover the companions; a new test
+  refuses a receipt that omits a companion or carries a path the contract does not name.
