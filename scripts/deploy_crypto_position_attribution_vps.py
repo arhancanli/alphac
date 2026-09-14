@@ -52,6 +52,19 @@ REQUIRED_COLUMNS: Final = (
     "market_value_quote",
     "unrealized_pnl_quote",
 )
+#: Companion files (2026-09-14). A rollout may carry, beside the three attribution files, any
+#: other tracked source the crypto host must run: hash-locked, staged, backed up, rolled back and
+#: verified exactly like them. They live in the contract's ``companion_files`` and never change
+#: what the rollout verifier binds (``required_files`` stays the three). A companion absent on
+#: the host (``remote_sha256`` null) is installed fresh and removed again on rollback.
+SCHEMA_STATES: Final = ("PRE_MIGRATION", "MIGRATED")
+#: Import smoke test run on the host after install, before the timer restarts: a file set that
+#: does not import is caught here, inside the rollback trap, not by the next natural cycle.
+SMOKE_IMPORTS: Final = (
+    "alphaforge.live.loop",
+    "alphaforge.cli.paper_cmds",
+    "alphaforge.portfolio.strategy",
+)
 _SHA256 = re.compile(r"^[0-9a-f]{64}$")
 
 
@@ -72,8 +85,55 @@ def _content_hash(document: Mapping[str, Any]) -> str:
     return f"sha256:{hashlib.sha256(_canonical(body)).hexdigest()}"
 
 
+def _validate_hash_field(item: Mapping[str, Any], key: str, *, allow_none: bool) -> None:
+    value = item.get(key)
+    if value is None and allow_none:
+        return
+    if not isinstance(value, str) or _SHA256.fullmatch(value) is None:
+        raise PreflightError(f"invalid {key} for {item.get('path')}")
+
+
+def companion_files(contract: Mapping[str, Any]) -> list[dict[str, Any]]:
+    companions = contract.get("companion_files") or []
+    if not isinstance(companions, list):
+        raise PreflightError("companion_files must be a list")
+    return [dict(item) for item in companions]
+
+
+def all_files(contract: Mapping[str, Any]) -> list[dict[str, Any]]:
+    """The three attribution files first, then every companion, in contract order."""
+    return [dict(item) for item in contract["required_files"]] + companion_files(contract)
+
+
+def contract_paths(contract: Mapping[str, Any]) -> list[str]:
+    return [str(item["path"]) for item in all_files(contract)]
+
+
+def expected_pre_rollout_schema(contract: Mapping[str, Any]) -> str:
+    """Which attribution schema the host must hold BEFORE this rollout.
+
+    The original contract deployed the attribution migration itself, so the host had to be
+    PRE_MIGRATION. Every later rollout lands on a MIGRATED host; declaring which is expected
+    keeps the pre-apply check meaningful instead of a gate nobody could pass twice.
+    """
+    state = contract.get("expected_pre_rollout_schema", "PRE_MIGRATION")
+    if state not in SCHEMA_STATES:
+        raise PreflightError(f"expected_pre_rollout_schema must be one of {SCHEMA_STATES}")
+    return str(state)
+
+
+def required_tables(contract: Mapping[str, Any]) -> tuple[str, ...]:
+    tables = contract.get("required_tables_after_rollout") or []
+    if not isinstance(tables, list) or not all(isinstance(t, str) for t in tables):
+        raise PreflightError("required_tables_after_rollout must be a list of table names")
+    return tuple(str(t) for t in tables)
+
+
 def load_and_validate_contract(path: Path) -> dict[str, Any]:
-    payload = json.loads(path.read_text(encoding="utf-8"))
+    loaded = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(loaded, dict):
+        raise PreflightError("preflight contract is not a JSON object")
+    payload: dict[str, Any] = dict(loaded)
     if payload.get("schema") != "canli.alphac-crypto-position-attribution-vps-preflight.v1":
         raise PreflightError("unexpected preflight schema")
     if payload.get("status") != "READY_FOR_AUTHORIZED_DEPLOYMENT":
@@ -85,17 +145,30 @@ def load_and_validate_contract(path: Path) -> dict[str, Any]:
     if not isinstance(files, list) or tuple(item.get("path") for item in files) != EXPECTED_PATHS:
         raise PreflightError("deployment file set is not the exact three-file contract")
     for item in files:
-        remote_hash = item.get("remote_sha256")
-        desired_hash = item.get("desired_sha256")
-        if not isinstance(remote_hash, str) or _SHA256.fullmatch(remote_hash) is None:
-            raise PreflightError(f"invalid remote hash for {item['path']}")
-        if not isinstance(desired_hash, str) or _SHA256.fullmatch(desired_hash) is None:
-            raise PreflightError(f"invalid desired hash for {item['path']}")
-        actual = _sha256(ROOT / item["path"])
-        if actual != desired_hash:
+        _validate_hash_field(item, "remote_sha256", allow_none=False)
+        _validate_hash_field(item, "desired_sha256", allow_none=False)
+    seen = set(EXPECTED_PATHS)
+    for item in companion_files(payload):
+        rel = item.get("path")
+        if not isinstance(rel, str) or not rel or rel.startswith("/") or ".." in rel.split("/"):
+            raise PreflightError(f"invalid companion path {rel!r}")
+        if rel in seen:
+            raise PreflightError(f"companion path listed twice or already required: {rel}")
+        seen.add(rel)
+        _validate_hash_field(item, "remote_sha256", allow_none=True)
+        _validate_hash_field(item, "desired_sha256", allow_none=False)
+    for item in all_files(payload):
+        local = ROOT / item["path"]
+        if not local.is_file():
+            raise PreflightError(f"local source missing: {item['path']}")
+        actual = _sha256(local)
+        if actual != item["desired_sha256"]:
             raise PreflightError(
-                f"local source drift for {item['path']}: expected {desired_hash}, got {actual}"
+                f"local source drift for {item['path']}: expected {item['desired_sha256']}, "
+                f"got {actual}"
             )
+    expected_pre_rollout_schema(payload)
+    required_tables(payload)
     return payload
 
 
@@ -131,11 +204,14 @@ def _run(
     )
 
 
-def remote_snapshot(*, host: str, identity: Path) -> dict[str, Any]:
+def remote_snapshot(
+    *, host: str, identity: Path, paths: Sequence[str] | None = None
+) -> dict[str, Any]:
+    inspected = list(EXPECTED_PATHS) if paths is None else [str(p) for p in paths]
     code = f"""
 import hashlib, json, pathlib, sqlite3, subprocess
 root = pathlib.Path({REMOTE_ROOT!r})
-paths = {EXPECTED_PATHS!r}
+paths = {inspected!r}
 db = pathlib.Path({REMOTE_DB!r})
 def digest(path):
     return hashlib.sha256(path.read_bytes()).hexdigest() if path.is_file() else None
@@ -143,11 +219,14 @@ def state(unit):
     result = subprocess.run(['systemctl', 'is-active', unit], text=True, capture_output=True)
     return result.stdout.strip() or 'unknown'
 columns = []
+tables = []
 latest_equity_cycle_ts = None
 if db.is_file():
     con = sqlite3.connect('file:' + str(db) + '?mode=ro', uri=True)
     try:
         columns = [row[1] for row in con.execute('PRAGMA table_info(positions_snapshots)')]
+        tables = sorted(row[0] for row in con.execute(
+            "SELECT name FROM sqlite_master WHERE type = 'table'"))
         row = con.execute('SELECT MAX(cycle_ts) FROM equity_curve').fetchone()
         latest_equity_cycle_ts = None if row is None or row[0] is None else int(row[0])
     finally:
@@ -157,6 +236,7 @@ print(json.dumps({{
     'database_exists': db.is_file(),
     'database_sha256': digest(db),
     'position_snapshot_columns': columns,
+    'tables': tables,
     'latest_equity_cycle_ts': latest_equity_cycle_ts,
     'timer_state': state({REMOTE_TIMER!r}),
     'service_state': state({REMOTE_SERVICE!r}),
@@ -170,9 +250,12 @@ print(json.dumps({{
         input_text=code,
     )
     try:
-        return json.loads(result.stdout)
+        snapshot = json.loads(result.stdout)
     except json.JSONDecodeError as exc:
         raise PreflightError("remote preflight did not return valid JSON") from exc
+    if not isinstance(snapshot, dict):
+        raise PreflightError("remote preflight did not return a JSON object")
+    return dict(snapshot)
 
 
 def validate_remote_snapshot(
@@ -192,15 +275,25 @@ def validate_remote_snapshot(
         )
 
     key = "remote_sha256" if before_apply else "desired_sha256"
-    expected = {item["path"]: item[key] for item in contract["required_files"]}
+    expected = {item["path"]: item.get(key) for item in all_files(contract)}
     if snapshot.get("files") != expected:
         raise PreflightError(f"remote source hash mismatch for {key}")
 
     columns = set(snapshot.get("position_snapshot_columns", []))
-    if before_apply and columns.intersection(REQUIRED_COLUMNS):
-        raise PreflightError("remote schema is no longer the declared pre-migration schema")
-    if not before_apply and not set(REQUIRED_COLUMNS).issubset(columns):
-        raise PreflightError("post-deployment schema is missing attribution columns")
+    if before_apply:
+        migrated = set(REQUIRED_COLUMNS).issubset(columns)
+        expected_state = expected_pre_rollout_schema(contract)
+        if expected_state == "PRE_MIGRATION" and columns.intersection(REQUIRED_COLUMNS):
+            raise PreflightError("remote schema is no longer the declared pre-migration schema")
+        if expected_state == "MIGRATED" and not migrated:
+            raise PreflightError("remote schema is not the declared migrated schema")
+    if not before_apply:
+        if not set(REQUIRED_COLUMNS).issubset(columns):
+            raise PreflightError("post-deployment schema is missing attribution columns")
+        tables = set(snapshot.get("tables", []))
+        missing = sorted(set(required_tables(contract)) - tables)
+        if missing:
+            raise PreflightError(f"post-deployment schema is missing tables: {missing}")
 
 
 def build_preflight_observation(
@@ -249,55 +342,65 @@ def write_preflight_observation(
     return output
 
 
-def _remote_apply_script(contract: Mapping[str, Any], stamp: str) -> str:
-    files = contract["required_files"]
+def _stage_dirs(stamp: str) -> tuple[str, str]:
     stage = f"{REMOTE_ROOT}/var/deploy_staging/crypto-position-attribution/{stamp}"
     backup = f"{REMOTE_ROOT}/var/deploy_backups/crypto-position-attribution/{stamp}"
+    return stage, backup
+
+
+def _remote_apply_script(contract: Mapping[str, Any], stamp: str) -> str:
+    files = all_files(contract)
+    stage, backup = _stage_dirs(stamp)
+    q = shlex.quote
+
+    def live(item: Mapping[str, Any]) -> str:
+        return q(REMOTE_ROOT + "/" + item["path"])
+
     live_checks = "\n".join(
-        f"require_hash {shlex.quote(REMOTE_ROOT + '/' + item['path'])} {item['remote_sha256']}"
+        f"require_hash {live(item)} {item['remote_sha256']}"
+        if item.get("remote_sha256") is not None
+        else (
+            f"[ ! -e {live(item)} ] || "
+            f"{{ echo 'unexpected file on host: {item['path']}' >&2; false; }}"
+        )
         for item in files
     )
     stage_checks = "\n".join(
-        "require_hash "
-        f"{shlex.quote(stage + '/' + Path(item['path']).name)} "
-        f"{item['desired_sha256']}"
-        for item in files
+        f"require_hash {q(stage + '/' + item['path'])} {item['desired_sha256']}" for item in files
     )
     backup_commands = "\n".join(
-        f"mkdir -p {shlex.quote(backup + '/' + str(Path(item['path']).parent))}\n"
-        f"cp -p {shlex.quote(REMOTE_ROOT + '/' + item['path'])} "
-        f"{shlex.quote(backup + '/' + item['path'])}"
+        f"mkdir -p {q(backup + '/' + str(Path(item['path']).parent))}\n"
+        f"[ ! -f {live(item)} ] || cp -p {live(item)} {q(backup + '/' + item['path'])}"
         for item in files
     )
     install_commands = "\n".join(
-        f"cp -p {shlex.quote(stage + '/' + Path(item['path']).name)} "
-        f"{shlex.quote(REMOTE_ROOT + '/' + item['path'] + '.new')}\n"
-        f"mv {shlex.quote(REMOTE_ROOT + '/' + item['path'] + '.new')} "
-        f"{shlex.quote(REMOTE_ROOT + '/' + item['path'])}"
+        f"mkdir -p {q(str(Path(REMOTE_ROOT + '/' + item['path']).parent))}\n"
+        f"cp -p {q(stage + '/' + item['path'])} {q(REMOTE_ROOT + '/' + item['path'] + '.new')}\n"
+        f"mv {q(REMOTE_ROOT + '/' + item['path'] + '.new')} {live(item)}"
         for item in files
     )
     restore_commands = "\n".join(
-        f"if [ -f {shlex.quote(backup + '/' + item['path'])} ]; then\n"
-        f"  cp -p {shlex.quote(backup + '/' + item['path'])} "
-        f"{shlex.quote(REMOTE_ROOT + '/' + item['path'] + '.rollback')}\n"
-        f"  mv {shlex.quote(REMOTE_ROOT + '/' + item['path'] + '.rollback')} "
-        f"{shlex.quote(REMOTE_ROOT + '/' + item['path'])}\n"
-        "fi"
+        f"if [ -f {q(backup + '/' + item['path'])} ]; then\n"
+        f"  cp -p {q(backup + '/' + item['path'])} "
+        f"{q(REMOTE_ROOT + '/' + item['path'] + '.rollback')}\n"
+        f"  mv {q(REMOTE_ROOT + '/' + item['path'] + '.rollback')} {live(item)}\n"
+        f"else\n  rm -f {live(item)}\nfi"
         for item in files
     )
     desired_checks = "\n".join(
-        f"require_hash {shlex.quote(REMOTE_ROOT + '/' + item['path'])} {item['desired_sha256']}"
-        for item in files
+        f"require_hash {live(item)} {item['desired_sha256']}" for item in files
     )
     required_columns = repr(REQUIRED_COLUMNS)
+    required_tables_literal = repr(required_tables(contract))
+    smoke_imports = ", ".join(SMOKE_IMPORTS)
     return f"""#!/bin/bash
 set -Eeuo pipefail
-ROOT={shlex.quote(REMOTE_ROOT)}
-DB={shlex.quote(REMOTE_DB)}
-TIMER={shlex.quote(REMOTE_TIMER)}
-SERVICE={shlex.quote(REMOTE_SERVICE)}
-STAGE={shlex.quote(stage)}
-BACKUP={shlex.quote(backup)}
+ROOT={q(REMOTE_ROOT)}
+DB={q(REMOTE_DB)}
+TIMER={q(REMOTE_TIMER)}
+SERVICE={q(REMOTE_SERVICE)}
+STAGE={q(stage)}
+BACKUP={q(backup)}
 BACKUP_READY=0
 require_hash() {{
   actual=$(sha256sum "$1" | awk '{{print $1}}')
@@ -346,11 +449,14 @@ finally:
     source.close()
 PYBACKUP
 sha256sum "$BACKUP/trading_crypto_perp.sqlite" > "$BACKUP/SHA256SUMS"
-find "$BACKUP/src" -type f -print0 | sort -z | xargs -0 sha256sum >> "$BACKUP/SHA256SUMS"
+find "$BACKUP" -type f ! -name SHA256SUMS ! -name trading_crypto_perp.sqlite -print0 \\
+  | sort -z | xargs -0 -r sha256sum >> "$BACKUP/SHA256SUMS"
 BACKUP_READY=1
 {install_commands}
 {desired_checks}
 cd "$ROOT"
+find "$ROOT/src" -name __pycache__ -type d -prune -exec rm -rf {{}} +
+./.venv/bin/python -c "import {smoke_imports}"
 ./.venv/bin/python - "$DB" <<'PYMIGRATE'
 import sys
 from pathlib import Path
@@ -361,14 +467,20 @@ PYMIGRATE
 python3 - "$DB" <<'PYSCHEMA'
 import sqlite3, sys
 required = set({required_columns})
+required_tables = set({required_tables_literal})
 con = sqlite3.connect('file:' + sys.argv[1] + '?mode=ro', uri=True)
 try:
     columns = {{row[1] for row in con.execute('PRAGMA table_info(positions_snapshots)')}}
+    tables = {{row[0] for row in con.execute(
+        "SELECT name FROM sqlite_master WHERE type = 'table'")}}
 finally:
     con.close()
 missing = sorted(required - columns)
 if missing:
     raise SystemExit('missing attribution columns: ' + ','.join(missing))
+missing_tables = sorted(required_tables - tables)
+if missing_tables:
+    raise SystemExit('missing tables after migration: ' + ','.join(missing_tables))
 PYSCHEMA
 systemctl start "$TIMER"
 [ "$(systemctl is-active "$TIMER")" = active ]
@@ -378,9 +490,20 @@ echo DEPLOYMENT_APPLIED_WAITING_FOR_NATURAL_CYCLE
 
 
 def apply_deployment(*, host: str, identity: Path, contract: Mapping[str, Any], stamp: str) -> None:
-    stage = f"{REMOTE_ROOT}/var/deploy_staging/crypto-position-attribution/{stamp}"
-    _run([*_ssh_prefix(host, identity), "install", "-d", "-m", "700", stage])
-    for item in contract["required_files"]:
+    stage, _backup = _stage_dirs(stamp)
+    files = all_files(contract)
+    parents = sorted({str(Path(item["path"]).parent) for item in files})
+    _run(
+        [
+            *_ssh_prefix(host, identity),
+            "install",
+            "-d",
+            "-m",
+            "700",
+            *[f"{stage}/{parent}" for parent in parents],
+        ]
+    )
+    for item in files:
         _run(
             [
                 "scp",
@@ -390,7 +513,7 @@ def apply_deployment(*, host: str, identity: Path, contract: Mapping[str, Any], 
                 "-i",
                 str(identity),
                 str(ROOT / item["path"]),
-                f"{host}:{stage}/{Path(item['path']).name}",
+                f"{host}:{stage}/{item['path']}",
             ]
         )
     script = _remote_apply_script(contract, stamp)
@@ -399,25 +522,33 @@ def apply_deployment(*, host: str, identity: Path, contract: Mapping[str, Any], 
 
 def _remote_rollback_script(contract: Mapping[str, Any], stamp: str) -> str:
     """Restore exact pre-rollout sources and SQLite after client-side validation fails."""
-    backup = f"{REMOTE_ROOT}/var/deploy_backups/crypto-position-attribution/{stamp}"
+    _stage, backup = _stage_dirs(stamp)
+    q = shlex.quote
+    files = all_files(contract)
     restore_commands = "\n".join(
-        f"require_hash {shlex.quote(backup + '/' + item['path'])} {item['remote_sha256']}\n"
-        f"cp -p {shlex.quote(backup + '/' + item['path'])} "
-        f"{shlex.quote(REMOTE_ROOT + '/' + item['path'] + '.rollback')}\n"
-        f"mv {shlex.quote(REMOTE_ROOT + '/' + item['path'] + '.rollback')} "
-        f"{shlex.quote(REMOTE_ROOT + '/' + item['path'])}"
-        for item in contract["required_files"]
+        (
+            f"require_hash {q(backup + '/' + item['path'])} {item['remote_sha256']}\n"
+            f"cp -p {q(backup + '/' + item['path'])} "
+            f"{q(REMOTE_ROOT + '/' + item['path'] + '.rollback')}\n"
+            f"mv {q(REMOTE_ROOT + '/' + item['path'] + '.rollback')} "
+            f"{q(REMOTE_ROOT + '/' + item['path'])}"
+        )
+        if item.get("remote_sha256") is not None
+        else f"rm -f {q(REMOTE_ROOT + '/' + item['path'])}"
+        for item in files
     )
     restored_checks = "\n".join(
-        f"require_hash {shlex.quote(REMOTE_ROOT + '/' + item['path'])} {item['remote_sha256']}"
-        for item in contract["required_files"]
+        f"require_hash {q(REMOTE_ROOT + '/' + item['path'])} {item['remote_sha256']}"
+        if item.get("remote_sha256") is not None
+        else f"[ ! -e {q(REMOTE_ROOT + '/' + item['path'])} ]"
+        for item in files
     )
     return f"""#!/bin/bash
 set -Eeuo pipefail
-DB={shlex.quote(REMOTE_DB)}
-TIMER={shlex.quote(REMOTE_TIMER)}
-SERVICE={shlex.quote(REMOTE_SERVICE)}
-BACKUP={shlex.quote(backup)}
+DB={q(REMOTE_DB)}
+TIMER={q(REMOTE_TIMER)}
+SERVICE={q(REMOTE_SERVICE)}
+BACKUP={q(backup)}
 require_hash() {{
   actual=$(sha256sum "$1" | awk '{{print $1}}')
   [ "$actual" = "$2" ] || {{ echo "hash mismatch: $1" >&2; return 1; }}
@@ -440,6 +571,7 @@ finally:
     source.close()
 PYRESTORE
 {restored_checks}
+find "{REMOTE_ROOT}/src" -name __pycache__ -type d -prune -exec rm -rf {{}} +
 systemctl start "$TIMER"
 [ "$(systemctl is-active "$TIMER")" = active ]
 echo DEPLOYMENT_ROLLED_BACK_AFTER_POST_VALIDATION_FAILURE
@@ -462,15 +594,16 @@ def apply_and_validate(
     stamp: str,
 ) -> dict[str, Any]:
     """Apply once and guarantee rollback if the independent postflight does not pass."""
+    paths = contract_paths(contract)
     apply_deployment(host=host, identity=identity, contract=contract, stamp=stamp)
     try:
-        after = remote_snapshot(host=host, identity=identity)
+        after = remote_snapshot(host=host, identity=identity, paths=paths)
         validate_remote_snapshot(after, contract, before_apply=False)
         return after
     except Exception as exc:
         try:
             rollback_deployment(host=host, identity=identity, contract=contract, stamp=stamp)
-            restored = remote_snapshot(host=host, identity=identity)
+            restored = remote_snapshot(host=host, identity=identity, paths=paths)
             validate_remote_snapshot(restored, contract, before_apply=True)
         except Exception as rollback_exc:
             raise PreflightError(
@@ -494,6 +627,7 @@ def build_receipt(
         "deployed_at_utc": stamp,
         "status": "DEPLOYED_WAITING_FOR_FIRST_NATURAL_MARKED_CYCLE",
         "forced_cycle_run": False,
+        "files_deployed": sorted(after.get("files", {})),
         "before": dict(before),
         "after": dict(after),
         "source_bindings": {
@@ -543,7 +677,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     args = parse_args(argv)
     contract = load_and_validate_contract(args.contract)
     require_apply_authorization(apply=args.apply, environ=os.environ)
-    before = remote_snapshot(host=args.host, identity=args.identity)
+    before = remote_snapshot(host=args.host, identity=args.identity, paths=contract_paths(contract))
     validate_remote_snapshot(before, contract, before_apply=True)
     observation = write_preflight_observation(
         snapshot=before,

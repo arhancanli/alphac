@@ -155,8 +155,14 @@ def test_an_https_source_must_be_https() -> None:
 def test_from_settings_resolves_the_default_file_beside_var(tmp_path: Path) -> None:
     from alphaforge.config.settings import Settings
 
-    settings = Settings().model_copy(
-        update={"paths": Settings().paths.model_copy(update={"var_dir": tmp_path / "var"})}
+    base = Settings()
+    settings = base.model_copy(
+        update={
+            "paths": base.paths.model_copy(update={"var_dir": tmp_path / "var"}),
+            "risk": base.risk.model_copy(
+                update={"book_ladder": base.risk.book_ladder.model_copy(update={"source": "file"})}
+            ),
+        }
     )
     p = BookLadderProvider.from_settings(settings)
     assert p.source_description == str(tmp_path / "var" / "book_ladder" / "current.json")
