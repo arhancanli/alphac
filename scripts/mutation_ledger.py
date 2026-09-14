@@ -702,6 +702,83 @@ MUTATIONS: tuple[Mutation, ...] = (
         ],
     ),
     Mutation(
+        "test_forward_full_evidence_reservation_audit.py",
+        "let a stress scenario identical to its baseline count as measurable",
+        REPO / "scripts" / "audit_forward_full_evidence_reservation.py",
+        _replace(
+            '            if scenario["assumptions"] == baseline["assumptions"]:\n'
+            '                fail(f"stress scenario {scenario_id} equals the baseline and '
+            'cannot fail")',
+            '            if False and scenario["assumptions"] == baseline["assumptions"]:\n'
+            '                fail(f"stress scenario {scenario_id} equals the baseline and '
+            'cannot fail")',
+        ),
+        notes=[
+            "Decorative-pass risk 1 from the v2 design spec: a stress scenario that cannot fail "
+            "passes by construction. The audit must name it before a return exists.",
+        ],
+    ),
+    Mutation(
+        "test_forward_full_evidence_reservation_v2_promotion.py",
+        "accept a template that says IN_FORCE without a promotion receipt",
+        REPO / "scripts" / "audit_forward_full_evidence_reservation_v2_template.py",
+        _replace(
+            '        if not receipt_path.is_file():\n'
+            '            raise TemplateAuditError("template says IN_FORCE but no promotion '
+            'receipt exists")',
+            '        if False and not receipt_path.is_file():\n'
+            '            raise TemplateAuditError("template says IN_FORCE but no promotion '
+            'receipt exists")',
+        ),
+        notes=[
+            "IN_FORCE must never be a word somebody typed: the audit reads the receipt that binds "
+            "the template bytes, or the status is meaningless.",
+        ],
+    ),
+    Mutation(
+        "test_identity_batch_reservation.py",
+        "let an unrelated reservation through while an identity batch is still open",
+        REPO / "src/alphaforge/validation/trial_reservation.py",
+        _replace(
+            "        if open_batch_id != batch_id:\n            raise ReservationError(",
+            "        if False and open_batch_id != batch_id:\n            raise ReservationError(",
+        ),
+        notes=[
+            "v2 batch seriality: the protocol blocks every unrelated reservation until the batch "
+            "decides. A guard that cannot see this branch go dark would let a second family "
+            "reserve mid-batch and the union count would be wrong at the moment it matters.",
+        ],
+    ),
+    Mutation(
+        "test_identity_batch_reservation.py",
+        "accept a batch member that was never reserved on disk",
+        REPO / "src/alphaforge/validation/trial_reservation.py",
+        _replace(
+            "    for sibling in predecessors:\n        if sibling not in on_disk:",
+            "    for sibling in predecessors:\n        if False and sibling not in on_disk:",
+        ),
+        notes=[
+            "The registry alone is not enough: an identity could claim a sealed batch whose "
+            "earlier member was never actually reserved, which is the unreserved-identity hole "
+            "the protocol names.",
+        ],
+    ),
+    Mutation(
+        "test_identity_batch_reservation.py",
+        "let a declared diagnostic carry a result before the run",
+        REPO / "src/alphaforge/validation/trial_reservation.py",
+        _replace(
+            "            if not isinstance(scenario, dict) or set(scenario) != "
+            "DECLARED_DIAGNOSTIC_FIELDS:",
+            "            if not isinstance(scenario, dict) or not DECLARED_DIAGNOSTIC_FIELDS <= "
+            "set(scenario):",
+        ),
+        notes=[
+            "A result inside a pre-result reservation is an outcome field by another name; the "
+            "exact-set check is what keeps it out.",
+        ],
+    ),
+    Mutation(
         "test_owner_goals_in_force.py",
         "leave the drawdown-control bound at the superseded 11 percent",
         REPO / "config" / "drawdown_control_contract.json",

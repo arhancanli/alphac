@@ -8,9 +8,9 @@ line of its own docstring, each pipeline's steps are the scripts it actually inv
 contract's boundary is the boundary it states about itself. A script with no docstring appears as
 having none.
 
-At a glance: **355 Python scripts**, **17 shell entry points**,
-**31 configuration contracts**, **30 engineering artifacts**,
-**427 unit test files**, **23 data directories**, **9 scheduled jobs**.
+At a glance: **360 Python scripts**, **17 shell entry points**,
+**33 configuration contracts**, **30 engineering artifacts**,
+**432 unit test files**, **23 data directories**, **9 scheduled jobs**.
 
 
 ## What runs on a timer
@@ -143,9 +143,10 @@ Canli Capital - hourly live PAPER cycle (the running track record).
 | 21 | `scripts/analyze_forward_sleeve_contribution.py` | Attribute the published forward book to its realized sleeve curves. |
 | 22 | `scripts/audit_crypto_lab_carry_crash.py` | Seal the LABUSDT carry-crash incident from immutable local execution evidence. |
 | 23 | `scripts/build_stanford_evidence_map.py` | Build a compact, source-bound Stanford CS portfolio evidence map. |
-| 24 | `scripts/research_export.py` | Research data layer: emit research.json — the FULL honest gauntlet — from REAL artifacts. |
-| 25 | `scripts/check_retracted_claims.py` | Refuse to publish a claim this record has already withdrawn. |
-| 26 | `scripts/check_live_change_declared.py` | Block the publish if the live trading configuration has changed without being declared. |
+| 24 | `scripts/audit_forward_full_evidence_reservation_v2_template.py` | Audit the non-active full-evidence reservation template without reading returns. |
+| 25 | `scripts/research_export.py` | Research data layer: emit research.json — the FULL honest gauntlet — from REAL artifacts. |
+| 26 | `scripts/check_retracted_claims.py` | Refuse to publish a claim this record has already withdrawn. |
+| 27 | `scripts/check_live_change_declared.py` | Block the publish if the live trading configuration has changed without being declared. |
 
 ### `scripts/mf_tick.sh`
 
@@ -193,6 +194,7 @@ are the ones a reader has to know about; everything else is derived from them.
 | `config/external_publication_registry.json` | This registry is a preparation ledger. |
 | `config/external_review_protocol.json` | This protocol is a local plan. |
 | `config/forward_evidence_contract.json` | This contract freezes how forward evidence will be described before the record is mature. |
+| `config/forward_full_evidence_reservation_v2_promotion.json` | Promotion makes the template usable by reservations created at or after the effective ordinal. |
 | `config/forward_full_evidence_reservation_v2_template.json` | This is a fail-closed design template, not an active policy, reservation, candidate, result, or return authorization. |
 | `config/foundry_acceptance_receipt_contract.json` | This contract defines the evidence required before Foundry may be described as operational. |
 | `config/foundry_deployment_manifest.json` | This manifest describes the reviewed Foundry v1 deployment target. |
@@ -210,6 +212,7 @@ are the ones a reader has to know about; everything else is derived from them.
 | `config/sleeve_family_lineage.json` | This registry governs novelty only. |
 | `config/sleeve_publication_evidence.json` | This catalog maps already persisted research evidence into preparation bundles. |
 | `config/trial_accounting.json` | _(no stated boundary)_ |
+| `config/trial_accounting_evidence_classes.json` | This file classifies evidence for trial accounting. |
 | `config/trial_accounting_reviews.json` | _(no stated boundary)_ |
 | `config/trial_accounting_v7_proposed.json` | _(no stated boundary)_ |
 | `artifacts/engineering/alpaca_broker_reconciliation.json` | Self-published read-only reconciliation against three dedicated Alpaca paper accounts. |
@@ -279,7 +282,7 @@ and is worth more than a hand-made taxonomy that would drift.
 | `analyze_target_2p5.py` | ANALYSIS — what would a book Sharpe of 2.5 actually require, and is it reachable? |
 | `analyze_trial_budget_cost.py` | Price a prospective trial budget before it is authorized. |
 
-### `audit_*` (77)
+### `audit_*` (78)
 
 | script | first line of its docstring |
 |---|---|
@@ -312,6 +315,7 @@ and is worth more than a hand-made taxonomy that would drift.
 | `audit_equity_narrative_family.py` | Bind the single preregistered earnings-narrative trial to its sealed result. |
 | `audit_external_experiment_ledgers.py` | Find experiment ledgers outside the canonical union and price them against the trial budget. |
 | `audit_external_publication_readiness.py` | Fail closed on external-publication claims and report the exact sleeve-paper blockers. |
+| `audit_forward_full_evidence_reservation.py` | Return-blind satisfiability audit of ONE filled v2 full-evidence reservation. |
 | `audit_forward_full_evidence_reservation_v2_template.py` | Audit the non-active full-evidence reservation template without reading returns. |
 | `audit_fundamental_single_replay_failure.py` | Bind the selected fundamental replay's fail-closed data error to evidence. |
 | `audit_guards_that_cannot_fire.py` | Find the checks in this repository that are structurally unable to fail. |
@@ -361,7 +365,7 @@ and is worth more than a hand-made taxonomy that would drift.
 | `audit_vate_2020_dividend_vendor_resolution.py` | Resolve the unsupported VATE/HCHC 2020 dividend row without opening returns. |
 | `audit_wave1_data_rights.py` | Audit Wave 1 publication bundles against the conservative data-rights policy. |
 
-### `build_*` (39)
+### `build_*` (40)
 
 | script | first line of its docstring |
 |---|---|
@@ -393,6 +397,7 @@ and is worth more than a hand-made taxonomy that would drift.
 | `build_repurchase_issuance_manifest.py` | Build the sealed 600-CIK SEC schema sample without opening prices or returns. |
 | `build_repurchase_item703_blind_label_packet.py` | Build a deterministic offline packet for the frozen blind Item 703 review. |
 | `build_repurchase_item703_manifest.py` | Build sealed, year-balanced Item 703 document and label samples without returns. |
+| `build_sec_10k_item7_corpus.py` | Extract the 10-K Item 7 (MD&A) corpus from the filings already cached on disk. No returns. |
 | `build_sec_10k_manifest.py` | Build the preregistered SEC 10-K manifest without reading prices or returns. |
 | `build_sec_item1a_pairs.py` | Build immediate-predecessor Item 1A similarities without reading market data. |
 | `build_sharadar_corporate_action_corrected_lake.py` | Build a versioned Sharadar lake with normalized executable corporate actions. |
@@ -527,7 +532,7 @@ and is worth more than a hand-made taxonomy that would drift.
 | `verify_sleeve_publication_replays.py` | Replay audit-only sleeve evidence builders and prove no result or trial ledger changed. |
 | `verify_transparency.py` | Verify the public track-record chain, signatures and disclosed payloads. |
 
-### everything else (127)
+### everything else (130)
 
 | script | first line of its docstring |
 |---|---|
@@ -537,6 +542,7 @@ and is worth more than a hand-made taxonomy that would drift.
 | `anchor_transparency.py` | External anchoring of the transparency chain into Bitcoin via OpenTimestamps — the S-tier trust seal. |
 | `archive_live_record.py` | Freeze the live paper record before an account is re-seeded — a one-way, hashed snapshot. |
 | `atlas_reachability_screen.py` | Screen the twenty untouched atlas families on obtainability, before any of them is worked on. |
+| `author_earnings_narrative_change_batch.py` | Author, validate and audit the earnings-narrative-change identity batch, before any return. |
 | `benchmark_execution_models.py` | Benchmark the two built-in next-open fill paths on a deterministic workload. |
 | `book_drawdown_ladder.py` | Run the declared book-level drawdown ladder over the combined book's published daily marks. |
 | `capacity_commitment.py` | Public capacity commitment — a SIGNED governance pledge about how we treat capacity. |
@@ -574,6 +580,7 @@ and is worth more than a hand-made taxonomy that would drift.
 | `health_check.py` | Canli Capital / AlphaForge — daily health monitor. |
 | `import_active_ownership_blind_labels.py` | Validate and import a completed independent Item 4 blind review. |
 | `import_external_experiment_ledgers.py` | Bring experiment ledgers recorded in another checkout into the canonical union, with a receipt. |
+| `import_external_identity_packets.py` | Bring the 118 externally measured identities' packets home, each with a decided closure. |
 | `live_cycle.py` | Genuine broker-executed live paper cycle — turns a sleeve from SIMULATION into REAL Alpaca fills. |
 | `macro_refresh_transport.py` | Bounded retry for read-only public-source downloads; permanent failures fail fast. |
 | `maker_shadow.py` | MAKER SHADOW VALIDATION — measure, forward and honestly, what post-only execution |
@@ -593,6 +600,7 @@ and is worth more than a hand-made taxonomy that would drift.
 | `prepare_prereg_investment_upstream_replay_inputs.py` | Prepare private inputs for a raw-to-artifact ``prereg_investment`` replay. |
 | `preserve_replay_infrastructure_failure_inputs.py` | Recover and preserve the exact inputs bound by the operating-margin layout failure. |
 | `promote_admission_v7.py` | Promote the audited v7 admission contract and staged trial budget atomically. |
+| `promote_forward_full_evidence_reservation_v2.py` | Promote the v2 full-evidence reservation template into force, as one recorded decision. |
 | `reachability_harness.py` | Before writing a protocol for a family, ask whether its gate is reachable at all. |
 | `reconcile_trial_debt.py` | Reconcile persisted historical return configurations that bypassed the experiment ledger. |
 | `reconstruct_energy_inventory_source_provenance.py` | Reconstruct the energy-inventory ETF source identity without overstating scope. |
