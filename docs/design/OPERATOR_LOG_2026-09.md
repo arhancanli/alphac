@@ -236,3 +236,25 @@ published number or spend a research identity are marked DECISION and name who m
   edited audit script. Still red and owner-only: the Frankfurt preflight (two tests) says the
   local `live/store.py` differs from what was deployed, which is true until the owner runs the
   guarded deploy; the lint-debt copies on the hosts catch up at the next tick.
+- 13:22Z. COMMITTED. `risk/book-ladder-live-half-20260914` (3321e50, 48 files) pushed; alphac
+  **PR #32** opened on `ops/deploy-watchdog-20260914`, so the merge order is now #23 -> #24 -> #25
+  -> #26 -> #27 -> #28 -> #29 -> #30 -> #31 -> #32. The full unit suite after the repairs was red
+  only on receipts the nightly ceremony regenerates (archives, worksheets, Stanford map, readiness,
+  bundle parity, public copies of the two replay receipts, the restored policy's public copy) and
+  on the two Frankfurt preflight tests that stay red until the owner deploys. The nightly ceremony
+  is being run by hand now (the last two nightlies "COMPLETED WITH ERRORS" on the LAB incident and
+  the Vercel logout, both fixed) so those receipts catch up today rather than at 02:10.
+- 13:29Z. NIGHTLY OK BY HAND. `live_publish.sh` run manually: `=== publish OK 2026-09-14T13:28:54Z ===`,
+  the first clean nightly since the 09-12 LAB incident and the 09-13 Vercel logout (both nights
+  "COMPLETED WITH ERRORS"). It regenerated every publication receipt against the rebound bundles
+  and deployed both hosts; the 13:25Z launchd tick ran concurrently (gate green on 70eef97c) and
+  its deploy correctly yielded to the publish's lock ("next hour retries"). CI on the branch was
+  started by hand with `workflow_dispatch` (the workflow only triggers on PRs to main, so stacked
+  PRs get no checks until the chain is merged in order).
+- 13:31Z. SUITE. Full unit suite after the manual nightly: red only on the two Frankfurt preflight
+  tests (`test_crypto_position_attribution_vps_preflight`, `test_deploy_crypto_position_attribution_vps`),
+  which say the local `src/alphaforge/live/store.py` differs from what Frankfurt runs. True, and
+  owner-only: the guarded deploy (`scripts/deploy_crypto_position_attribution_vps.py`, preflight then
+  `--apply`) carries the book-ladder consumer and the last-targets persistence to the crypto loop
+  and refreshes the preflight contract. Live site verified: public `trial_accounting.json` equals the
+  restored policy byte for byte; the ladder artifact is from the 13:25Z tick.
