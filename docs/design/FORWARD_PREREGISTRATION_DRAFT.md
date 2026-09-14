@@ -65,9 +65,10 @@ restarts** — see §6.
 
 ### 2.2 The sizing configuration
 
-Bound to fingerprint `sha256:fe82c4ee…553706d`
+Bound to fingerprint `sha256:70eef97c…0bcb167`
 (`artifacts/engineering/live_config_fingerprint.json`, declared in
-`config/live_change_contract.json`):
+`config/live_change_contract.json`; re-pinned 2026-09-14 when coverage was extended to the
+book-level drawdown brake with its activation flag false, a coverage change, not a trading change):
 
 ```
 allocator                    rank
@@ -194,7 +195,7 @@ UNSIGNED — REQUIRES OWNER
 
 signed_by:
 signed_at:
-config_fingerprint:  sha256:fe82c4eeed742289bfcfee5d39856ee2bb8ca9cfe209bcc7e34abff98553706d
+config_fingerprint:  sha256:70eef97c2280e41b6cc543d6c6e6fb472b48dd5aa77e350abca95da970bcb167
 record_start:        2026-08-07
 first_judgement:     2027-08-07  (1 year)
 ```

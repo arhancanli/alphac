@@ -16,7 +16,7 @@ The nightly health board runs it as `C11-external-ledgers`.
 
 What it does NOT do: it never imports, moves or edits a ledger, never reserves an identity, and
 never decides which measurements were legitimate. Reconciling the union is an owner decision
-recorded in `config/trial_accounting.json` (the `staged_reviews_held` map clears a reached
+recorded in `config/trial_accounting_reviews.json` (the `staged_reviews_held` map clears a reached
 threshold), and importing ledgers is a governed change to the canonical tree.
 
 Identity arithmetic is the repository's own (`alphaforge.validation.experiments`): a hypothesis
@@ -110,16 +110,30 @@ def identities_of(tree: Path) -> tuple[dict[str, list[str]], int, int]:
     return keys, records, ledgers
 
 
+REVIEWS_FILENAME = "trial_accounting_reviews.json"
+
+
 def load_policy(path: Path) -> dict[str, Any]:
+    """The policy, plus the EVENT record kept beside it.
+
+    ``staged_reviews_held`` is read from ``trial_accounting_reviews.json`` next to the policy
+    (and, for tests that build a policy inline, from the policy itself). The policy file is
+    embedded byte-for-byte in the admission v7 promotion receipt and hash-bound by every v2
+    reservation, so a held review is recorded beside it, never inside it (2026-09-14: recording
+    the 320 review inside the policy drifted five sealed bindings without changing one rule).
+    """
     policy = json.loads(path.read_text(encoding="utf-8"))
     review = policy.get("prospective_v7_review") or {}
+    held: dict[str, Any] = dict(policy.get("staged_reviews_held") or {})
+    reviews_path = path.with_name(REVIEWS_FILENAME)
+    if reviews_path.exists():
+        reviews = json.loads(reviews_path.read_text(encoding="utf-8"))
+        held.update(reviews.get("staged_reviews_held") or {})
     return {
         "budget": int(policy["hypothesis_identity_budget"]),
         "staged_hard_reviews": [int(x) for x in review.get("staged_hard_reviews", [])],
-        # A reached threshold is cleared only by an owner-written record in the policy file.
-        "staged_reviews_held": {
-            int(k): v for k, v in (policy.get("staged_reviews_held") or {}).items()
-        },
+        # A reached threshold is cleared only by an owner-written record beside the policy.
+        "staged_reviews_held": {int(k): v for k, v in held.items()},
         "published_identities": int(policy["observed_hypothesis_identities"]),
         "research_status": str(policy.get("research_status")),
     }
@@ -176,7 +190,7 @@ def audit(
             "canonical tree, using the repository's own identity arithmetic. It does not judge "
             "whether those measurements were legitimate, does not import them, and does not "
             "change any published number. A reached staged review is cleared only by an owner "
-            "record in config/trial_accounting.json under staged_reviews_held."
+            "record in config/trial_accounting_reviews.json under staged_reviews_held."
         ),
         "canonical_tree": str(canonical),
         "canonical": {

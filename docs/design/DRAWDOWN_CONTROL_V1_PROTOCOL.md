@@ -82,6 +82,44 @@ Whatever the result, it is published. If the rule fails, the finding is that a c
 ladder cannot hold this bound at this volatility and the next design is intraday or a lower
 half-gross level, declared in a v2 protocol before it is measured.
 
+## The live half (built 2026-09-14, not activated)
+
+The measured ladder became a mechanism in three pieces, each behind the contract's single
+`activation.live` flag, which is false:
+
+- **Producer.** `scripts/book_drawdown_ladder.py` replays the combined book's published daily
+  marks (`data/paper/state.json` `live_curve`) through the declared ladder every publish and writes
+  `artifacts/engineering/book_drawdown_ladder.json` (published to both hosts as
+  `/glassbox/book_drawdown_ladder.json`) and the consumer file `var/book_ladder/current.json`,
+  bound by content hash. The state is derived from the whole marked history each run and never
+  stored, so no process can lose it. A halt is absorbing until the owner writes a dated entry
+  into `config/book_ladder_rearms.json`; the ladder then restarts with the high-water mark reset
+  to the first mark on or after that date. The replay equals the study's vectorized twin on the
+  twin's realized curve (`tests/unit/test_book_drawdown_ladder.py`).
+- **Consumers.** `alphaforge.risk.book_ladder.BookLadderProvider` reads the consumer file (or,
+  for a sleeve on another machine, the public artifact over HTTPS), caches the last good reading,
+  flags staleness, fails open to 1.0 with the error in the reading, and never raises.
+  `scripts/live_cycle.py` multiplies the equity sleeves' target weights by it; `BlendStrategy`
+  applies it after its own sleeve ladder in the crypto loop: a book halt flattens every bar, a
+  book de-gross rescales every bar. The pre-multiplier book is persisted per cycle and restored
+  on boot, so under the one-process-per-cycle deployment a de-gross acts on the next hold bar
+  instead of the next weekly boundary.
+- **Guards.** The activation flag, the two depths, the release fraction and the read source are
+  hashed into the live-configuration fingerprint; flipping the flag is a declared live change and
+  a new forward-evidence epoch. The nightly health board's `C12-book-ladder` fails when the
+  artifact or consumer file is missing or unbound, fails critical on `FLAT_HALTED`, and warns at
+  `HALF_GROSS` or when stale.
+
+Why fail-open. A missing or unreadable multiplier sizes at full gross and says so, the same choice
+the equity cycle's calendar gate makes: a plumbing failure must not put a hole in the forward
+record, and plumbing failures become alerts on the health board, not inside a trading cycle. The
+bound is therefore enforced whenever the publisher runs, which it does hourly, and a publisher
+outage is visible the same night.
+
+The activation procedure is written in the contract (`activation.activation_procedure`). Until the
+owner runs it, every reading the consumers make is `applied: false`, and the published
+multiplier is descriptive.
+
 ## What this study does not decide
 
 Activating the ladder on the live loops is a live-configuration change under

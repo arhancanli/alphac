@@ -20,8 +20,10 @@ the broker and the rows that land in ``var/trading_<profile>.sqlite``.
 from __future__ import annotations
 
 import importlib.util
+import json
 import sqlite3
 import sys
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -589,3 +591,70 @@ def test_reject_parsing_and_classification(reason: str, code: str, kind: str | N
     parsed_code, message = MOD._parse_reject(reason)
     assert parsed_code == code
     assert MOD._skip_kind(message) == kind
+
+
+# ------------------------------------------------------------------ book-level drawdown brake
+
+
+def _book_ladder_files(
+    root: Path, *, live: bool, mult: float | None, state: str = "NORMAL"
+) -> None:
+    """The contract switch and the publisher's consumer file, where the cycle's provider looks."""
+    contract = root / "config" / "drawdown_control_contract.json"
+    contract.parent.mkdir(parents=True, exist_ok=True)
+    contract.write_text(json.dumps({"activation": {"live": live}}))
+    if mult is not None:
+        cur = root / "var" / "book_ladder" / "current.json"
+        cur.parent.mkdir(parents=True, exist_ok=True)
+        cur.write_text(json.dumps({"gross_multiplier": mult, "state": state,
+                                   "as_of": datetime.now(UTC).date().isoformat()}))
+
+
+def _spy_buys(broker: _FakeBroker) -> list[float]:
+    spy = [o for o in broker.submitted if MOD_SYM(o.instrument_id) == "SPY"]
+    return [o.qty for o in spy if o.side == Side.BUY]
+
+
+def test_book_ladder_half_gross_halves_the_submitted_book(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    _book_ladder_files(tmp_path, live=True, mult=0.5, state="HALF_GROSS")
+    broker = _FakeBroker(equity=100_000.0, positions={}, prices={"SPY": 744.62},
+                         assets=[_asset("SPY")])
+    assert _run_cycle(tmp_path, monkeypatch, broker, {"SPY": 0.030}) == 0
+    assert _spy_buys(broker) == [pytest.approx(0.5 * 0.030 * 100_000.0 / 744.62, abs=1e-4)]
+    assert "book ladder: x0.50 HALF_GROSS" in capsys.readouterr().out
+
+
+def test_book_ladder_halt_flattens_the_sleeve(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _book_ladder_files(tmp_path, live=True, mult=0.0, state="FLAT_HALTED")
+    broker = _FakeBroker(equity=100_000.0, positions={_iid("SPY"): 4.0}, prices={"SPY": 744.62},
+                         assets=[_asset("SPY")])
+    assert _run_cycle(tmp_path, monkeypatch, broker, {"SPY": 0.030}) == 0
+    spy = [(o.side, o.qty) for o in broker.submitted if MOD_SYM(o.instrument_id) == "SPY"]
+    assert spy == [(Side.SELL, 4.0)]
+
+
+def test_book_ladder_not_activated_ignores_even_a_halt(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    _book_ladder_files(tmp_path, live=False, mult=0.0, state="FLAT_HALTED")
+    broker = _FakeBroker(equity=100_000.0, positions={}, prices={"SPY": 744.62},
+                         assets=[_asset("SPY")])
+    assert _run_cycle(tmp_path, monkeypatch, broker, {"SPY": 0.030}) == 0
+    assert _spy_buys(broker) == [pytest.approx(0.030 * 100_000.0 / 744.62, abs=1e-4)]
+    assert "not activated" in capsys.readouterr().out
+
+
+def test_book_ladder_missing_file_fails_open_loudly(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    _book_ladder_files(tmp_path, live=True, mult=None)
+    broker = _FakeBroker(equity=100_000.0, positions={}, prices={"SPY": 744.62},
+                         assets=[_asset("SPY")])
+    assert _run_cycle(tmp_path, monkeypatch, broker, {"SPY": 0.030}) == 0
+    assert _spy_buys(broker) == [pytest.approx(0.030 * 100_000.0 / 744.62, abs=1e-4)]
+    out = capsys.readouterr().out
+    assert "READ FAILED" in out and "FileNotFoundError" in out

@@ -49,7 +49,22 @@ EDGES: tuple[
     (
         "paper_trading_state.py",
         "data/paper/state.json",
-        ("glassbox_export.py", "transparency_log.py", "research_export.py"),
+        (
+            "glassbox_export.py",
+            "transparency_log.py",
+            "research_export.py",
+            "book_drawdown_ladder.py",
+        ),
+    ),
+    # Book drawdown ladder (2026-09-14): the live half of drawdown control v1. It replays the marks
+    # paper_trading_state.py just wrote, so it must follow that step, and the export copies its
+    # artifact to both hosts, so it must precede the export. Both pipelines: the multiplier in
+    # force is hourly-moving state, and a stale ladder is the failure mode the design exists to
+    # remove.
+    (
+        "book_drawdown_ladder.py",
+        "artifacts/engineering/book_drawdown_ladder.json",
+        ("research_export.py",),
     ),
     # The same producer also copies the state out to the site workspaces; the lineage audit reads
     # THAT copy, not data/paper/state.json. Declaring it against the wrong artifact is precisely
