@@ -120,6 +120,30 @@ The activation procedure is written in the contract (`activation.activation_proc
 owner runs it, every reading the consumers make is `applied: false`, and the published
 multiplier is descriptive.
 
+## v1.1: the ladder re-derived from the 10 percent bound (2026-09-14, evening)
+
+On 2026-09-14 the owner restated the maximum-drawdown goal as **10 percent**
+(`config/owner_goals.json`, `goals.combined_max_drawdown`). A ladder that goes flat at 11 percent
+cannot enforce a 10 percent bound, so v1.1 re-derives every parameter from the new bound by the
+same rule and re-measures it with the same study, seeds, paths and models. Nothing about v1.0 was
+wrong for the bound it served; it is kept in the contract's `history`.
+
+| parameter | v1.0 | v1.1 | derivation |
+| --- | --- | --- | --- |
+| bound `B` | 0.11 | 0.10 | the owner's restated goal |
+| half-gross level | 0.055 | 0.05 | `B / 2` |
+| flat level | 0.11 | 0.10 | `B` |
+| half-gross release | 0.04125 | 0.0375 | `0.75 x` the half level |
+| p95 acceptance | 0.12 | 0.1091 | v1.0's slack (0.12 / 0.11) applied to the new bound |
+| p99 acceptance | 0.13 | 0.1182 | v1.0's slack (0.13 / 0.11) applied to the new bound |
+
+Disclosure: a scratch cell at 5 / 10 was run at 18:30Z, before the rule was re-declared, to learn
+whether the bound was reachable at all; its figures (conservative p95 0.1007, p99 0.1020) were
+known when the v1.1 rule was written. The rule is v1.0's rule scaled to the bound, fixed without
+reference to those figures, and the official v1.1 run recorded in the contract's `measurement`
+block is the one that decides. The brake remains **not activated**; activation is the separate
+declared change described above, and the consumers are unchanged.
+
 ## What this study does not decide
 
 Activating the ladder on the live loops is a live-configuration change under

@@ -79,3 +79,19 @@ Read as governing goals (`config/owner_goals.json`, in force 2026-09-14):
 The drawdown brake declared in `config/drawdown_control_contract.json` (half gross at 5.5%, flat
 at 11%) was measured against the superseded 11% objective and cannot enforce a 10% bound. A ladder
 consistent with the bound must be measured and declared before the brake is activated.
+
+Update, 2026-09-14 (evening): drawdown control v1.1 re-derives the ladder from the 10% bound
+(half gross at 5%, flat at 10%) and re-measures it by the same protocol; v1.0 (5.5% / 11%) is kept
+as history in the contract. The brake is still not activated.
+## Owner direction, September 14 2026 (evening)
+
+Verbatim: "i want you to focus on adding sleeves improving each sleeves sharpe ratio returs cagr
+max dd and everything go agead make sure everything is perfect and i give you full permision for
+the activiations so you can go ahead"
+
+Read as: the research priority is breadth (new qualified, economically distinct sleeves) and the
+quality of every existing sleeve (Sharpe, return, CAGR, maximum drawdown), under the existing
+gates and trial accounting; the owner authorizes the operator to perform the activations that were
+reserved to the owner (drawdown-brake activation, the Frankfurt companion rollout, and the
+promotions those require), each still declared and logged as before. Nothing in this direction
+retroactively admits a rejected candidate or lowers a gate.
