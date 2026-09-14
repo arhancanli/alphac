@@ -2,7 +2,7 @@
   "schema": "canli.alphac-drawdown-control-contract.v1",
   "version": "1.1",
   "author": "Arhan Canli",
-  "status": "MEASURED_ACCEPTED_AS_BOUND_MECHANISM_NOT_LIVE",
+  "status": "MECHANISM_LIVE_BOUND_ENFORCED_UP_TO_ONE_DAY_OVERSHOOT",
   "frozen_at": "2026-09-14",
   "frozen_note": "v1.1 parameters re-derived from the restated bound on 2026-09-14 (evening), before the v1.1 study run; v1.0 was frozen and measured earlier the same day.",
   "measurement": {
@@ -92,7 +92,7 @@
     }
   ],
   "activation": {
-    "live": false,
+    "live": true,
     "one_switch": "This flag. Read at trade time by alphaforge.risk.book_ladder.BookLadderProvider (every sleeve) and hashed into the live-configuration fingerprint (scripts/export_live_config_fingerprint.py risk_path_settings.book_ladder_activation_live), so the public contract, the trading path and the live-change guard cannot disagree about whether the brake is on.",
     "requires": [
       "an owner decision recorded here as activation.decision, because a live-configuration fingerprint change starts a new forward-evidence epoch",
@@ -116,7 +116,14 @@
       "4. rsync the checkout to Frankfurt so the crypto loop reads the contract with live true (source https, the public artifact); confirm cycle.book_ladder appears in its log with book_applied true.",
       "5. Mark the forward record: returns before and after the activation date are separate evidence epochs and are not pooled."
     ],
-    "status_after_activation": "MECHANISM_LIVE_BOUND_ENFORCED_UP_TO_ONE_DAY_OVERSHOOT"
+    "status_after_activation": "MECHANISM_LIVE_BOUND_ENFORCED_UP_TO_ONE_DAY_OVERSHOOT",
+    "activated_on": "2026-09-15",
+    "decision": {
+      "recorded_at": "2026-09-14T20:46:56.027679+00:00",
+      "by": "Arhan Canli (owner)",
+      "words": "i give you full permision for the activiations so you can go ahead",
+      "how": "scripts/activate_book_drawdown_brake.py"
+    }
   },
   "claim_boundary": "This contract declares a risk policy and how it is measured. It does not establish a maximum drawdown for the live book, does not forecast returns, and changes no published performance figure. A brake bounds each drawdown episode up to a one-day overshoot; it does not make losses impossible."
 }

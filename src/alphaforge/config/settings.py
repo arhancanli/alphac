@@ -259,7 +259,10 @@ class BookLadderCfg(BaseModel):
 
     model_config = _SECTION_CONFIG
 
-    source: Literal["file", "https"] = "file"
+    # "https" since the 2026-09-15 activation: every sleeve, on this machine or another, reads
+    # the one public artifact the publisher writes, so a sleeve cannot read a stale local copy.
+    # configs/base.yaml states the same value; the two are kept equal by test_settings.
+    source: Literal["file", "https"] = "https"
     path: Path | None = None
     url: str = "https://canlicapital.com/glassbox/book_drawdown_ladder.json"
     contract_path: Path = Path("config/drawdown_control_contract.json")

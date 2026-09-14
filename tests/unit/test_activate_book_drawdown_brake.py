@@ -41,17 +41,33 @@ def _sandbox(monkeypatch: pytest.MonkeyPatch, tmp_path: Path):
         shutil.copyfile(src, dst)
         monkeypatch.setattr(module, name, dst)
         copies[name] = dst
+    # The repository's contract has been live since 2026-09-15. The script's job is the flip
+    # itself, so the sandbox starts from the not-live state the real activation started from:
+    # the flag off, no activation date or decision, the pre-activation status. Everything else
+    # (the pins, the yaml, the change log) is the real file, so the arithmetic is the real one.
+    control = json.loads(copies["CONTROL"].read_text())
+    control["activation"] = {
+        k: v for k, v in control["activation"].items() if k not in ("activated_on", "decision")
+    }
+    control["activation"]["live"] = False
+    control["status"] = "MEASURED_ACCEPTED_AS_BOUND_MECHANISM_NOT_LIVE"
+    copies["CONTROL"].write_text(json.dumps(control, indent=2) + "\n")
     live_change = json.loads(copies["LIVE_CHANGE"].read_text())
     old_fp = live_change["declared_fingerprint"]
 
     class _Fingerprinter:
+        OUTPUT = tmp_path / "live_config_fingerprint.json"
+
         @staticmethod
-        def build_fingerprint() -> dict[str, Any]:
+        def build_fingerprint(book_aggregation: dict[str, Any] | None = None) -> dict[str, Any]:
             control = json.loads(copies["CONTROL"].read_text())
             live = control["activation"]["live"]
             return {
                 "fingerprint": "sha256:" + ("b" * 64 if live else old_fp[7:]),
-                "surface": {"risk_path_settings": {"book_ladder_activation_live": live}},
+                "surface": {
+                    "risk_path_settings": {"book_ladder_activation_live": live},
+                    "book_aggregation_settings": book_aggregation or {},
+                },
             }
 
         @staticmethod
@@ -59,6 +75,13 @@ def _sandbox(monkeypatch: pytest.MonkeyPatch, tmp_path: Path):
             return 0
 
     monkeypatch.setattr(module, "_load_fingerprinter", lambda: _Fingerprinter)
+    # The fresh aggregation policy is what paper_trading_state publishes after the flip; the
+    # sandbox states it directly rather than importing the publisher against the real contract.
+    monkeypatch.setattr(
+        module,
+        "_fresh_book_aggregation",
+        lambda: {"scheme": "fixed", "book_level_drawdown_ladder": {"dd_half_frac": 0.05}},
+    )
     return module, copies, old_fp
 
 
@@ -101,8 +124,10 @@ def test_activation_refuses_when_the_fingerprint_does_not_move(monkeypatch, tmp_
     module, _copies, old_fp = _sandbox(monkeypatch, tmp_path)
 
     class _Frozen:
+        OUTPUT = tmp_path / "live_config_fingerprint.json"
+
         @staticmethod
-        def build_fingerprint() -> dict[str, Any]:
+        def build_fingerprint(book_aggregation: dict[str, Any] | None = None) -> dict[str, Any]:
             return {"fingerprint": old_fp, "surface": {}}
 
         @staticmethod
