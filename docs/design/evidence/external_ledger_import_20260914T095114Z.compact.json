@@ -1,0 +1,1257 @@
+{
+  "active_ledger_identical": true,
+  "author": "Arhan Canli",
+  "canonical_tree": "/Users/arhancanli/alphaforge",
+  "claim_boundary": "This receipt records which evidence files were copied from another checkout into the canonical union and what the union counted before and after. It does not judge the measurements, does not reserve or admit anything, and does not change a published number until the publish pipeline regenerates the ledger.",
+  "content_hash": "sha256:f376da8360469f50a30fb576f3cf3977d71891416733126137bfaa947abc9308",
+  "copied_bytes": 275668823,
+  "copied_files": 17887,
+  "directories_imported": [
+    {
+      "copied_bytes": 369740,
+      "copied_files": 33,
+      "ledger_hashes": {
+        "baseline/experiments.jsonl": "sha256:be640188e0719b25309617d1dc999514b05b381023f9c5820ee165f38eaa09d1",
+        "baseline_stress/experiments.jsonl": "sha256:bf67ded291777a3452a32efd4124323caff106f2108da81aa592ca9f02ffad1e",
+        "candidate/experiments.jsonl": "sha256:2b7f92945886390c2f842742868fa4b5ac189c121c3e8dc28474673a12825b45",
+        "candidate_stress/experiments.jsonl": "sha256:5a52ced4ada52c2bf19911e4e43659babe483269093f42617593f520c3f89b0c"
+      },
+      "ledgers": [
+        "baseline/experiments.jsonl",
+        "baseline_stress/experiments.jsonl",
+        "candidate/experiments.jsonl",
+        "candidate_stress/experiments.jsonl"
+      ],
+      "name": "alphac_capital_budget_20260913",
+      "skipped": {}
+    },
+    {
+      "copied_bytes": 399396,
+      "copied_files": 37,
+      "ledger_hashes": {
+        "baseline/experiments.jsonl": "sha256:2da70e2e05848197cfeb4cc88f12757934813715cbdc61953529ca0f35ab5e28",
+        "baseline_stress/experiments.jsonl": "sha256:e3c9097ec87a82f46acc95a611a07fb708828f3609094574a40cbb1d34754520",
+        "candidate/experiments.jsonl": "sha256:23d6b844bf9e21b65cdb1556034264882a1928c3a5a81e307dbdcd7b9dad3913",
+        "candidate_stress/experiments.jsonl": "sha256:4b523d2ba89e7a176a534d6d7d44007bc243d6cc0560b3fe123d074d32db6a96"
+      },
+      "ledgers": [
+        "baseline/experiments.jsonl",
+        "baseline_stress/experiments.jsonl",
+        "candidate/experiments.jsonl",
+        "candidate_stress/experiments.jsonl"
+      ],
+      "name": "alphac_category_targets_20260913",
+      "skipped": {}
+    },
+    {
+      "copied_bytes": 358085,
+      "copied_files": 35,
+      "ledger_hashes": {
+        "baseline/experiments.jsonl": "sha256:d9ddc6cbc35eecd7766e9be700b39f19f4988b7bd30cc739aad92e33e5b830ec",
+        "baseline_stress/experiments.jsonl": "sha256:96652d5a117ad9eb606c78bcc9c46c4f84f7ba556b53858c856fbbd8a18d1387",
+        "candidate/experiments.jsonl": "sha256:71ad78028dc937de075c8830efdf47a1759884f92ee57684c1d1c3d9b1561e04",
+        "candidate_stress/experiments.jsonl": "sha256:ab30ae4ff4711dad2f519a660d7098baabc902a647ff1ec7b6b88a98d7557bd5"
+      },
+      "ledgers": [
+        "baseline/experiments.jsonl",
+        "baseline_stress/experiments.jsonl",
+        "candidate/experiments.jsonl",
+        "candidate_stress/experiments.jsonl"
+      ],
+      "name": "alphac_confirmation_combined_20260913",
+      "skipped": {}
+    },
+    {
+      "copied_bytes": 288074,
+      "copied_files": 19,
+      "ledger_hashes": {
+        "cost_stress/experiments.jsonl": "sha256:19980b970c304d4b7fc0c78cedc2c049a3714952613fdb65e9ad977f9f416c94",
+        "primary/experiments.jsonl": "sha256:9844b462fa046525d7d778dee3f262249c652f3f2d717f7a3f561c3c9b15ebce"
+      },
+      "ledgers": [
+        "cost_stress/experiments.jsonl",
+        "primary/experiments.jsonl"
+      ],
+      "name": "alphac_inverse_vol_20260913",
+      "skipped": {}
+    },
+    {
+      "copied_bytes": 100099,
+      "copied_files": 10,
+      "ledger_hashes": {
+        "baseline/experiments.jsonl": "sha256:ee7dd7a109a911b31adb706b9482519867e0fb596198095941356e0f7b1904db"
+      },
+      "ledgers": [
+        "baseline/experiments.jsonl"
+      ],
+      "name": "alphac_positive_targets_20260913",
+      "skipped": {}
+    },
+    {
+      "copied_bytes": 393793,
+      "copied_files": 36,
+      "ledger_hashes": {
+        "baseline/experiments.jsonl": "sha256:3cec517e2b5df08a65710406b6891ee69f54e48596c8416213ac0952bee15f22",
+        "baseline_stress/experiments.jsonl": "sha256:a988b87fe8f6f7696b519a06e82e9133295e4c723e6175af92557a095d1f276b",
+        "candidate/experiments.jsonl": "sha256:1766fc937377db7f0d58f2d71c4b9ef3473e68f8b6fc2038da7d579778526144",
+        "candidate_stress/experiments.jsonl": "sha256:3c85ec08b9015814cfccb9377755b96dbe37c1af81052dacd57f4e874c9014f3"
+      },
+      "ledgers": [
+        "baseline/experiments.jsonl",
+        "baseline_stress/experiments.jsonl",
+        "candidate/experiments.jsonl",
+        "candidate_stress/experiments.jsonl"
+      ],
+      "name": "alphac_positive_targets_20260913_attempt2",
+      "skipped": {}
+    },
+    {
+      "copied_bytes": 199721,
+      "copied_files": 26,
+      "ledger_hashes": {
+        "cost_stress/experiments.jsonl": "sha256:c28248e9d8175dfe8953fbd5a3604bc1c74abd4b0ce5d6b33cdce06694058bea",
+        "primary/experiments.jsonl": "sha256:3572f04bc7a8df11b7efdb451cd65e93f1283caa5c79ed952bb912f89d59ba8e"
+      },
+      "ledgers": [
+        "cost_stress/experiments.jsonl",
+        "primary/experiments.jsonl"
+      ],
+      "name": "alphac_vol_control_20260913",
+      "skipped": {}
+    },
+    {
+      "copied_bytes": 20097069,
+      "copied_files": 1214,
+      "ledger_hashes": {
+        "sessions/experiments.jsonl": "sha256:9250c83a156df071c3bb8026dfb6d1d2145171e2cb5eab173b0a5b4850edd6a4",
+        "sessions_splits/experiments.jsonl": "sha256:b6b02be9a7b7d4610d3424135490a72fee0c5abae5869fcc79ce2c89b4202f52",
+        "sessions_splits_stress/experiments.jsonl": "sha256:dac2756a7473e6b6f8b368233a448650475efc6e9e966f8cd3fab5006fb8f4c7",
+        "sessions_stress/experiments.jsonl": "sha256:8b90ee56f5c0ba3f3948c5ad8406c00f4b734cb99cc3c4d02e114e4b48e12974"
+      },
+      "ledgers": [
+        "sessions/experiments.jsonl",
+        "sessions_splits/experiments.jsonl",
+        "sessions_splits_stress/experiments.jsonl",
+        "sessions_stress/experiments.jsonl"
+      ],
+      "name": "alphamax_covariance_basis_20260913",
+      "skipped": {
+        ".": {
+          "bytes": 360,
+          "files": 4
+        },
+        "sessions": {
+          "bytes": 23093841,
+          "files": 1637
+        },
+        "sessions_splits": {
+          "bytes": 23128346,
+          "files": 1637
+        },
+        "sessions_splits_stress": {
+          "bytes": 23140573,
+          "files": 1637
+        },
+        "sessions_stress": {
+          "bytes": 23153935,
+          "files": 1637
+        },
+        "state": {
+          "bytes": 51898844,
+          "files": 4628
+        }
+      }
+    },
+    {
+      "copied_bytes": 40105,
+      "copied_files": 9,
+      "ledger_hashes": {},
+      "ledgers": [
+        "workspace/var/experiments.jsonl"
+      ],
+      "name": "alphamax_durable_replay_20260912",
+      "skipped": {
+        ".": {
+          "bytes": 14072,
+          "files": 5
+        },
+        "workspace": {
+          "bytes": 617313206,
+          "files": 16536
+        }
+      }
+    },
+    {
+      "copied_bytes": 14837683,
+      "copied_files": 730,
+      "ledger_hashes": {
+        "baseline/experiments.jsonl": "sha256:e1eeddab353574cf119e9cc5d9c8134a5a1df1aa74abd4ac39536f07f8437e9a",
+        "baseline_stress/experiments.jsonl": "sha256:2dc70678847189d03e61689ea82c77bdf39666b2696b815cb193b24b4d661a35"
+      },
+      "ledgers": [
+        "baseline/experiments.jsonl",
+        "baseline_stress/experiments.jsonl"
+      ],
+      "name": "alphamax_extended_reference_20260913",
+      "skipped": {
+        "baseline": {
+          "bytes": 49209437,
+          "files": 3525
+        },
+        "baseline_stress": {
+          "bytes": 49273704,
+          "files": 3525
+        },
+        "state": {
+          "bytes": 98304,
+          "files": 2
+        }
+      }
+    },
+    {
+      "copied_bytes": 6714109,
+      "copied_files": 273,
+      "ledger_hashes": {
+        "baseline/experiments.jsonl": "sha256:b761fcab2477fc267b64b263698d9b2009a8e6fd377dfc0375615c49d0a7988f"
+      },
+      "ledgers": [
+        "baseline/experiments.jsonl"
+      ],
+      "name": "alphamax_full2022_baseline_20260913",
+      "skipped": {
+        ".": {
+          "bytes": 7954,
+          "files": 1
+        },
+        "baseline": {
+          "bytes": 20174723,
+          "files": 1567
+        },
+        "state": {
+          "bytes": 51898844,
+          "files": 4628
+        }
+      }
+    },
+    {
+      "copied_bytes": 10757083,
+      "copied_files": 609,
+      "ledger_hashes": {
+        "baseline/experiments.jsonl": "sha256:3f7e225f90456c349fd9271ecf5194eeaa1e3e85c960350a236c36b76a419855",
+        "cost_stress/experiments.jsonl": "sha256:a7949f8d69c402404494fc0aec14e4c99d8d870128554500a6612bb53d1ea67e"
+      },
+      "ledgers": [
+        "baseline/experiments.jsonl",
+        "cost_stress/experiments.jsonl"
+      ],
+      "name": "alphamax_full2022_baseline_v2_20260913",
+      "skipped": {
+        ".": {
+          "bytes": 169,
+          "files": 2
+        },
+        "baseline": {
+          "bytes": 23106555,
+          "files": 1637
+        },
+        "cost_stress": {
+          "bytes": 23090487,
+          "files": 1637
+        },
+        "state": {
+          "bytes": 51898844,
+          "files": 4628
+        }
+      }
+    },
+    {
+      "copied_bytes": 8333469,
+      "copied_files": 367,
+      "ledger_hashes": {
+        "candidate/experiments.jsonl": "sha256:d34a60b3b4befe8cd9ee17d71921b31ad879908d49b7f2798988956e624b252e"
+      },
+      "ledgers": [
+        "candidate/experiments.jsonl"
+      ],
+      "name": "alphamax_path_momentum_20260913",
+      "skipped": {
+        ".": {
+          "bytes": 1783,
+          "files": 2
+        },
+        "candidate": {
+          "bytes": 50686920,
+          "files": 3524
+        },
+        "state": {
+          "bytes": 98304,
+          "files": 2
+        }
+      }
+    },
+    {
+      "copied_bytes": 14849492,
+      "copied_files": 729,
+      "ledger_hashes": {
+        "candidate/experiments.jsonl": "sha256:983fed2238df3e0fe619ef3693e90514295e4aa38d30dfb865d69ef07685ec90",
+        "candidate_stress/experiments.jsonl": "sha256:7138e7a357eea194c55fa59bfac0d5982ff1b9093f579cae307ff6fa32b88306"
+      },
+      "ledgers": [
+        "candidate/experiments.jsonl",
+        "candidate_stress/experiments.jsonl"
+      ],
+      "name": "alphamax_session_cooldown_20260913",
+      "skipped": {
+        "candidate": {
+          "bytes": 50761033,
+          "files": 3525
+        },
+        "candidate_stress": {
+          "bytes": 50803718,
+          "files": 3525
+        },
+        "state": {
+          "bytes": 98304,
+          "files": 2
+        }
+      }
+    },
+    {
+      "copied_bytes": 29352443,
+      "copied_files": 1820,
+      "ledger_hashes": {
+        "baseline/experiments.jsonl": "sha256:9ca9eb2169e4145abe58cb335cd129c01f884a4ee6c6270c066fba917e633b2b",
+        "baseline_stress/experiments.jsonl": "sha256:47b5cfd1f1b062c1530f58b6bc3a56b5c94b9f69a611658e2e68cf0d969891a3",
+        "momentum/experiments.jsonl": "sha256:77565f2ea8059a68f6d36da9ea034392afaccbc2d6a2cb7b30f60cf8173640d5",
+        "momentum_sigma/experiments.jsonl": "sha256:248c0ab85b94b99d37e905ba0dff8ce6131d08a610f3932f61d525001b28aecb",
+        "momentum_sigma_stress/experiments.jsonl": "sha256:273aa9901c51a047379e031d3dbfe975815ebe4329b50aa86f002bed3af03d8a",
+        "momentum_stress/experiments.jsonl": "sha256:2662f14759c43343a8a763bca56df9b6ed26e9c0235a081edf81f08714aef113"
+      },
+      "ledgers": [
+        "baseline/experiments.jsonl",
+        "baseline_stress/experiments.jsonl",
+        "momentum/experiments.jsonl",
+        "momentum_sigma/experiments.jsonl",
+        "momentum_sigma_stress/experiments.jsonl",
+        "momentum_stress/experiments.jsonl"
+      ],
+      "name": "alphamax_share_ratio_20260913",
+      "skipped": {
+        ".": {
+          "bytes": 531,
+          "files": 6
+        },
+        "baseline": {
+          "bytes": 23106555,
+          "files": 1637
+        },
+        "baseline_stress": {
+          "bytes": 23090487,
+          "files": 1637
+        },
+        "momentum": {
+          "bytes": 23136499,
+          "files": 1637
+        },
+        "momentum_sigma": {
+          "bytes": 23138613,
+          "files": 1637
+        },
+        "momentum_sigma_stress": {
+          "bytes": 23133236,
+          "files": 1637
+        },
+        "momentum_stress": {
+          "bytes": 23131902,
+          "files": 1637
+        },
+        "state": {
+          "bytes": 51898844,
+          "files": 4628
+        }
+      }
+    },
+    {
+      "copied_bytes": 8361849,
+      "copied_files": 367,
+      "ledger_hashes": {
+        "candidate/experiments.jsonl": "sha256:d5834d66f8458943cbe8f86bacce42dc68ae75db51501f777fb39072b00eb9bc"
+      },
+      "ledgers": [
+        "candidate/experiments.jsonl"
+      ],
+      "name": "alphamax_total_return_momentum_20260913",
+      "skipped": {
+        ".": {
+          "bytes": 341,
+          "files": 1
+        },
+        "candidate": {
+          "bytes": 50701104,
+          "files": 3524
+        },
+        "state": {
+          "bytes": 98304,
+          "files": 2
+        }
+      }
+    },
+    {
+      "copied_bytes": 6642931,
+      "copied_files": 693,
+      "ledger_hashes": {
+        "experiments.jsonl": "sha256:a7c4f40e17fc979b17c22f5fa27425fd72a95ce9d8d6bc738d8774f2bbacc49c"
+      },
+      "ledgers": [
+        "experiments.jsonl"
+      ],
+      "name": "alphatrend_cash_retention_20260912",
+      "skipped": {
+        ".": {
+          "bytes": 207734,
+          "files": 1
+        },
+        "baseline": {
+          "bytes": 21113889,
+          "files": 721
+        },
+        "candidate": {
+          "bytes": 18236298,
+          "files": 721
+        },
+        "lake_mf": {
+          "bytes": 5936080,
+          "files": 408
+        },
+        "state": {
+          "bytes": 53248,
+          "files": 3
+        }
+      }
+    },
+    {
+      "copied_bytes": 5560809,
+      "copied_files": 47,
+      "ledger_hashes": {
+        "baseline/experiments.jsonl": "sha256:5f47e535c0557c2e1a929e6011565440d106fe9013476479f6ee23d5090966ca",
+        "baseline_stress/experiments.jsonl": "sha256:107dff9fc13f063ee1fe89796d9fb4998ca9aa43363b2a3e1e05d0a2fd656291",
+        "candidate/experiments.jsonl": "sha256:0838c0131c7d50162377fcdc72f3ad700eba1a836cc6a26888b170d5dd112844",
+        "candidate_stress/experiments.jsonl": "sha256:43a553242715a3ff052880d8e1f5f00d50d2bdaf57194dde423b0eb7d37a1cf9"
+      },
+      "ledgers": [
+        "baseline/experiments.jsonl",
+        "baseline_stress/experiments.jsonl",
+        "candidate/experiments.jsonl",
+        "candidate_stress/experiments.jsonl"
+      ],
+      "name": "alphatrend_category_targets_20260913",
+      "skipped": {
+        "baseline": {
+          "bytes": 9777010,
+          "files": 703
+        },
+        "baseline_stress": {
+          "bytes": 9777443,
+          "files": 703
+        },
+        "candidate": {
+          "bytes": 10303578,
+          "files": 703
+        },
+        "candidate_stress": {
+          "bytes": 10303965,
+          "files": 703
+        }
+      }
+    },
+    {
+      "copied_bytes": 6224814,
+      "copied_files": 452,
+      "ledger_hashes": {
+        "baseline/experiments.jsonl": "sha256:bda5fc720db4c0aef1671a77bff9679551215d7efea13ffc44c64fdf430fd1e7",
+        "candidate/experiments.jsonl": "sha256:18bd531190f45ef88b116d4fdec617800e08845df0ecd69195fd51bdea677c11"
+      },
+      "ledgers": [
+        "baseline/experiments.jsonl",
+        "candidate/experiments.jsonl"
+      ],
+      "name": "alphatrend_causal_continuous_20260912",
+      "skipped": {
+        "baseline": {
+          "bytes": 11312222,
+          "files": 394
+        },
+        "candidate": {
+          "bytes": 11338735,
+          "files": 394
+        }
+      }
+    },
+    {
+      "copied_bytes": 6229879,
+      "copied_files": 453,
+      "ledger_hashes": {
+        "baseline/experiments.jsonl": "sha256:a2202a67362f9511ba59a981e83d1eced03063aca1b7a15b6f10af4b8ecc0069",
+        "candidate/experiments.jsonl": "sha256:29de0f225b9b8a95e5dbb147e4573a78b4d6d75398875510245b782e04f5340c"
+      },
+      "ledgers": [
+        "baseline/experiments.jsonl",
+        "candidate/experiments.jsonl"
+      ],
+      "name": "alphatrend_causal_stress_20260912",
+      "skipped": {
+        "baseline": {
+          "bytes": 10898267,
+          "files": 393
+        },
+        "candidate": {
+          "bytes": 10917848,
+          "files": 393
+        }
+      }
+    },
+    {
+      "copied_bytes": 3200752,
+      "copied_files": 42,
+      "ledger_hashes": {
+        "baseline/experiments.jsonl": "sha256:16b473ceb700c81252b88a8165e504a962819ea0b451ced3f5db219477c64ab6",
+        "baseline_stress/experiments.jsonl": "sha256:16663e72c3e2afcc8c3db668ac6edc94571ff3e359ebef9259da636f42c74045",
+        "candidate/experiments.jsonl": "sha256:d2d1eae92fdfc7c8a106c648e9eae4ef240fa9db92f36cddb3cb6ca699b89ff8",
+        "candidate_stress/experiments.jsonl": "sha256:a9eb61f9c2b1950d4c611a63b7ff60ae0b0ed11fe946a94e03d8f5253d44a602"
+      },
+      "ledgers": [
+        "baseline/experiments.jsonl",
+        "baseline_stress/experiments.jsonl",
+        "candidate/experiments.jsonl",
+        "candidate_stress/experiments.jsonl"
+      ],
+      "name": "alphatrend_confirmation_20260913",
+      "skipped": {
+        "baseline": {
+          "bytes": 10447101,
+          "files": 703
+        },
+        "baseline_stress": {
+          "bytes": 10447788,
+          "files": 703
+        },
+        "candidate": {
+          "bytes": 10442986,
+          "files": 703
+        },
+        "candidate_stress": {
+          "bytes": 10443145,
+          "files": 703
+        }
+      }
+    },
+    {
+      "copied_bytes": 6637477,
+      "copied_files": 693,
+      "ledger_hashes": {
+        "experiments.jsonl": "sha256:91e5e20d30fa301fba588ea64e70978857788516c8d3732da4afca3371e952ad"
+      },
+      "ledgers": [
+        "experiments.jsonl"
+      ],
+      "name": "alphatrend_cost_development_20260911_attempt2",
+      "skipped": {
+        ".": {
+          "bytes": 187014,
+          "files": 1
+        },
+        "baseline": {
+          "bytes": 21113889,
+          "files": 721
+        },
+        "candidate": {
+          "bytes": 17588077,
+          "files": 721
+        },
+        "lake_mf": {
+          "bytes": 5936080,
+          "files": 408
+        },
+        "state": {
+          "bytes": 53248,
+          "files": 3
+        }
+      }
+    },
+    {
+      "copied_bytes": 6598077,
+      "copied_files": 692,
+      "ledger_hashes": {
+        "experiments.jsonl": "sha256:381099418d116ff19f1800ed49c50882dc3112d60fbc57e9a565b76bb39d9fea"
+      },
+      "ledgers": [
+        "experiments.jsonl"
+      ],
+      "name": "alphatrend_directional_20260912_attempt2",
+      "skipped": {
+        ".": {
+          "bytes": 253164,
+          "files": 1
+        },
+        "baseline": {
+          "bytes": 21113889,
+          "files": 721
+        },
+        "candidate": {
+          "bytes": 21167336,
+          "files": 721
+        },
+        "lake_mf": {
+          "bytes": 5936080,
+          "files": 408
+        },
+        "state": {
+          "bytes": 53248,
+          "files": 3
+        }
+      }
+    },
+    {
+      "copied_bytes": 6614766,
+      "copied_files": 701,
+      "ledger_hashes": {
+        "baseline/experiments.jsonl": "sha256:16efd2afe26d4387674efd5475c38a19aea5ffa3667207427a70a42f3308e0c5",
+        "candidate/experiments.jsonl": "sha256:5e6d6188a230b5298089193300499afabde24b0af65fd33e5c300395377be18b"
+      },
+      "ledgers": [
+        "baseline/experiments.jsonl",
+        "candidate/experiments.jsonl"
+      ],
+      "name": "alphatrend_directional_validation_20260912",
+      "skipped": {
+        ".": {
+          "bytes": 768264,
+          "files": 3
+        },
+        "baseline": {
+          "bytes": 21151351,
+          "files": 724
+        },
+        "candidate": {
+          "bytes": 21181548,
+          "files": 724
+        }
+      }
+    },
+    {
+      "copied_bytes": 5570633,
+      "copied_files": 47,
+      "ledger_hashes": {
+        "baseline/experiments.jsonl": "sha256:526acd23b219cfab57ce2bd5fa9d9fff46ea3052c8b11fd72334dd2cde9c37fb",
+        "baseline_stress/experiments.jsonl": "sha256:29593c276c7158cfed647fe3beba76c1527425f8fcb4d2a0339063ad8e996011",
+        "candidate/experiments.jsonl": "sha256:84043ea4f0a87101d3936ecdb49332020f65e86433dfc32b327b1388747d79ff",
+        "candidate_stress/experiments.jsonl": "sha256:7ed863505d8b9d941cc4c8c5584b7d2bd32d2bc22c9e7e7cd9ade069acebfe03"
+      },
+      "ledgers": [
+        "baseline/experiments.jsonl",
+        "baseline_stress/experiments.jsonl",
+        "candidate/experiments.jsonl",
+        "candidate_stress/experiments.jsonl"
+      ],
+      "name": "alphatrend_positive_targets_20260913",
+      "skipped": {
+        "baseline": {
+          "bytes": 10443074,
+          "files": 703
+        },
+        "baseline_stress": {
+          "bytes": 10443406,
+          "files": 703
+        },
+        "candidate": {
+          "bytes": 9777149,
+          "files": 703
+        },
+        "candidate_stress": {
+          "bytes": 9777459,
+          "files": 703
+        }
+      }
+    },
+    {
+      "copied_bytes": 1099808,
+      "copied_files": 23,
+      "ledger_hashes": {
+        "baseline/experiments.jsonl": "sha256:f6b46c5f0f6d6b4aa987247411085814db383f7d393473069534dcc5edc87044",
+        "candidate/experiments.jsonl": "sha256:7293d79e1ef6eff2b406bd616a88d479cad38973a0a61cf9d399be0a2b3baf6d"
+      },
+      "ledgers": [
+        "baseline/experiments.jsonl",
+        "candidate/experiments.jsonl"
+      ],
+      "name": "alphatrend_retrospective_comparison_20260912",
+      "skipped": {
+        ".": {
+          "bytes": 3293,
+          "files": 1
+        },
+        "baseline": {
+          "bytes": 10446653,
+          "files": 703
+        },
+        "candidate": {
+          "bytes": 10442968,
+          "files": 703
+        }
+      }
+    },
+    {
+      "copied_bytes": 318421,
+      "copied_files": 26,
+      "ledger_hashes": {
+        "normal/experiments.jsonl": "sha256:444c76e198e867791ac56ec59252be1602b2e72614ed97959bc070e1fb65007d",
+        "stress/experiments.jsonl": "sha256:2adb43e52584096b50c7ce41b42002104ba1a46e6cfeff9b19caf9950415b365"
+      },
+      "ledgers": [
+        "normal/experiments.jsonl",
+        "stress/experiments.jsonl"
+      ],
+      "name": "bil_cash_2022_20260913",
+      "skipped": {}
+    },
+    {
+      "copied_bytes": 705818,
+      "copied_files": 29,
+      "ledger_hashes": {
+        "normal/experiments.jsonl": "sha256:3327b0e57da8f9bf70ba932940aa524e9c162e9f2680bfd948d657165e14d22b",
+        "stress/experiments.jsonl": "sha256:17b865dcb7cfd7a84ab66cf1ea5440a8c201994bbcaef16a68dff40a9c4159e2"
+      },
+      "ledgers": [
+        "normal/experiments.jsonl",
+        "stress/experiments.jsonl"
+      ],
+      "name": "bil_cash_20260913",
+      "skipped": {}
+    },
+    {
+      "copied_bytes": 536569,
+      "copied_files": 25,
+      "ledger_hashes": {
+        "normal/experiments.jsonl": "sha256:8e044b0a88fe5a569a9815a2f57944a1c8fde3bd7bcef9a2be4f2c055320e52f",
+        "stress/experiments.jsonl": "sha256:85192c44ceda3f8441204b8897d6f4c1465401435d1a5a0102e6db91d47f211c"
+      },
+      "ledgers": [
+        "normal/experiments.jsonl",
+        "stress/experiments.jsonl"
+      ],
+      "name": "bil_funded_account_20260913",
+      "skipped": {}
+    },
+    {
+      "copied_bytes": 234032,
+      "copied_files": 24,
+      "ledger_hashes": {
+        "baseline/experiments.jsonl": "sha256:6a3f7fd3db35f27167e12452e024653f1eb7fa087c623659e3854cbfd5162d1c",
+        "baseline_stress/experiments.jsonl": "sha256:645aab95b880362064c926cb85822e1818f5c57a60193b41c5ccbb0c503f11bc"
+      },
+      "ledgers": [
+        "baseline/experiments.jsonl",
+        "baseline_stress/experiments.jsonl"
+      ],
+      "name": "combined_2022_corrected_max_20260913",
+      "skipped": {}
+    },
+    {
+      "copied_bytes": 407123,
+      "copied_files": 37,
+      "ledger_hashes": {
+        "baseline/experiments.jsonl": "sha256:2a414db34c9a8939b86f583dbf9b611ade190342326078461eedcafb2e768c80",
+        "baseline_stress/experiments.jsonl": "sha256:fc73aad4a8051cbf0ada78755f0f94fbf378e16d7d3bc2a5e77010fecde10a9a",
+        "candidate/experiments.jsonl": "sha256:b1df2d335f3bf9d4edc422efacbd3de415022fcb53d6939c7f96e8d9f42b2d37",
+        "candidate_stress/experiments.jsonl": "sha256:12e376e821a6e5b2c04007a9f0942ec37ec2beda23b180681cff5c86225964f1"
+      },
+      "ledgers": [
+        "baseline/experiments.jsonl",
+        "baseline_stress/experiments.jsonl",
+        "candidate/experiments.jsonl",
+        "candidate_stress/experiments.jsonl"
+      ],
+      "name": "combined_2022_diagnostic_20260913",
+      "skipped": {}
+    },
+    {
+      "copied_bytes": 222339,
+      "copied_files": 21,
+      "ledger_hashes": {
+        "baseline/experiments.jsonl": "sha256:e3a89dae8fbc2ff7201a1547df3072fe107cbd0045651319aab627920f10bd33",
+        "baseline_stress/experiments.jsonl": "sha256:5a9183a2c5ce8ec1211aa3ed949143e0d757dcf118315ec144175679c13fc959"
+      },
+      "ledgers": [
+        "baseline/experiments.jsonl",
+        "baseline_stress/experiments.jsonl"
+      ],
+      "name": "combined_2022_eligible_core_20260913",
+      "skipped": {}
+    },
+    {
+      "copied_bytes": 427204,
+      "copied_files": 22,
+      "ledger_hashes": {
+        "candidate/experiments.jsonl": "sha256:c9c4f2f6479481e5a96cd3c0788f00b61d3d5b77f4fdb2d6301fff1d49c1aa6c",
+        "candidate_stress/experiments.jsonl": "sha256:3ae8cdf13fa2175a09ffd9b331477ac5626473f1e64d129be6cdcb60c12c1149"
+      },
+      "ledgers": [
+        "candidate/experiments.jsonl",
+        "candidate_stress/experiments.jsonl"
+      ],
+      "name": "combined_crypto_observed_carry_20260913",
+      "skipped": {}
+    },
+    {
+      "copied_bytes": 425513,
+      "copied_files": 22,
+      "ledger_hashes": {
+        "candidate/experiments.jsonl": "sha256:e04fb988924c96c1208ac8c9911e6238b363e996d3d0ce257446a6130cf2d540",
+        "candidate_stress/experiments.jsonl": "sha256:739eeb98727000301fa830020abf386f4b72cf1bd147f9838c1369906a006102"
+      },
+      "ledgers": [
+        "candidate/experiments.jsonl",
+        "candidate_stress/experiments.jsonl"
+      ],
+      "name": "combined_crypto_retention_20260913",
+      "skipped": {}
+    },
+    {
+      "copied_bytes": 429461,
+      "copied_files": 22,
+      "ledger_hashes": {
+        "candidate/experiments.jsonl": "sha256:bc4528681e436f990ac6e4ee9633110e8f780eac84cb8421fd55065c625d1e21",
+        "candidate_stress/experiments.jsonl": "sha256:de6dd818d3ebc92208380aa31f975587b0ea495b96785921d5f25bc3bacaee1c"
+      },
+      "ledgers": [
+        "candidate/experiments.jsonl",
+        "candidate_stress/experiments.jsonl"
+      ],
+      "name": "combined_crypto_risk_rank_20260913",
+      "skipped": {}
+    },
+    {
+      "copied_bytes": 407279,
+      "copied_files": 22,
+      "ledger_hashes": {
+        "baseline/experiments.jsonl": "sha256:672417adec65c656c6d81021255f9c13051755d4f253ba50618e02414b3f8e88",
+        "baseline_stress/experiments.jsonl": "sha256:198de3f711c635844674facc813fcfc574393627d4fb27a936e8eb01305430a8"
+      },
+      "ledgers": [
+        "baseline/experiments.jsonl",
+        "baseline_stress/experiments.jsonl"
+      ],
+      "name": "combined_extended_reference_20260913",
+      "skipped": {}
+    },
+    {
+      "copied_bytes": 302636,
+      "copied_files": 16,
+      "ledger_hashes": {
+        "normal_v2/experiments.jsonl": "sha256:c0d1643ccba79a63b5143f4e26cf692289992dc0e69967a6cae3118398f88d23"
+      },
+      "ledgers": [
+        "normal_v2/experiments.jsonl"
+      ],
+      "name": "combined_group_risk_20260913",
+      "skipped": {}
+    },
+    {
+      "copied_bytes": 241242,
+      "copied_files": 11,
+      "ledger_hashes": {
+        "normal/experiments.jsonl": "sha256:f0fe1c4e348ae4fc8bc9ffcd2fbec40f86f540725c5ced89385aabec7d59b255"
+      },
+      "ledgers": [
+        "normal/experiments.jsonl"
+      ],
+      "name": "combined_path_momentum_20260913",
+      "skipped": {}
+    },
+    {
+      "copied_bytes": 423065,
+      "copied_files": 22,
+      "ledger_hashes": {
+        "candidate/experiments.jsonl": "sha256:ebf5a30c80598b7b2d3617069a56d067b5aaeb2e5d02962fe64e50f63143d321",
+        "candidate_stress/experiments.jsonl": "sha256:25e036197be44f64ed316d03dd67d0e2567bcb7a650796bd122b300351978522"
+      },
+      "ledgers": [
+        "candidate/experiments.jsonl",
+        "candidate_stress/experiments.jsonl"
+      ],
+      "name": "combined_session_cooldown_20260913",
+      "skipped": {}
+    },
+    {
+      "copied_bytes": 241937,
+      "copied_files": 11,
+      "ledger_hashes": {
+        "normal/experiments.jsonl": "sha256:5f3d779d9b2c8309f9c765690f730ee53c95cf358e1e6e2dd46d46a1ee4242d2"
+      },
+      "ledgers": [
+        "normal/experiments.jsonl"
+      ],
+      "name": "combined_total_return_momentum_20260913",
+      "skipped": {}
+    },
+    {
+      "copied_bytes": 9324414,
+      "copied_files": 571,
+      "ledger_hashes": {
+        "baseline/experiments.jsonl": "sha256:de0c6d8e6ea40dd22550d0624aa82ee6a70fd4c77d554a9225bd70acde5f7a62",
+        "baseline_stress/experiments.jsonl": "sha256:2027de45060f951f04ec1391684c28dba3b658c035f3f62640d8e2e24d33822e"
+      },
+      "ledgers": [
+        "baseline/experiments.jsonl",
+        "baseline_stress/experiments.jsonl"
+      ],
+      "name": "crypto_continuous_account_20260913",
+      "skipped": {
+        ".": {
+          "bytes": 324,
+          "files": 1
+        },
+        "baseline": {
+          "bytes": 111833752,
+          "files": 479
+        },
+        "baseline_stress": {
+          "bytes": 119942429,
+          "files": 479
+        },
+        "state": {
+          "bytes": 40960,
+          "files": 2
+        }
+      }
+    },
+    {
+      "copied_bytes": 9593845,
+      "copied_files": 800,
+      "ledger_hashes": {
+        "baseline/experiments.jsonl": "sha256:e1a5eae6cb560ca71e358e4f2369248990dfe4d4dad33f36dc4aa9e10d0b01b6",
+        "baseline_stress/experiments.jsonl": "sha256:cf1f455e57df6eac5d993467e66e75f60f88143ee4a3ac593be37aa9a5e332ed"
+      },
+      "ledgers": [
+        "baseline/experiments.jsonl",
+        "baseline_stress/experiments.jsonl"
+      ],
+      "name": "crypto_extended_reference_20260913",
+      "skipped": {
+        "baseline": {
+          "bytes": 112330884,
+          "files": 803
+        },
+        "baseline_stress": {
+          "bytes": 115950259,
+          "files": 803
+        },
+        "state": {
+          "bytes": 40960,
+          "files": 2
+        }
+      }
+    },
+    {
+      "copied_bytes": 13971506,
+      "copied_files": 1180,
+      "ledger_hashes": {
+        "terminal_lower/experiments.jsonl": "sha256:e262d5e12d7efd1aa4003812790f35e5a9c26a593d6a49be3c0e580175627073",
+        "terminal_lower_cost_stress/experiments.jsonl": "sha256:0978a9204c23dd1e394f7c8e8240f0c822e45aef7062f898aab4357530f86cf7",
+        "terminal_upper/experiments.jsonl": "sha256:e4c7cb7e20e49ae4da67382155dbb8499a8aef4686d668967a064684df0e902e",
+        "terminal_upper_cost_stress/experiments.jsonl": "sha256:abcd4b120777c37e11a21ff8915797959a07ecc323ad661eb3a377a73e605ae3"
+      },
+      "ledgers": [
+        "terminal_lower/experiments.jsonl",
+        "terminal_lower_cost_stress/experiments.jsonl",
+        "terminal_upper/experiments.jsonl",
+        "terminal_upper_cost_stress/experiments.jsonl"
+      ],
+      "name": "crypto_full2022_terminal_20260913",
+      "skipped": {
+        ".": {
+          "bytes": 380,
+          "files": 4
+        },
+        "state": {
+          "bytes": 85810324,
+          "files": 752
+        },
+        "terminal_lower": {
+          "bytes": 44564012,
+          "files": 246
+        },
+        "terminal_lower_cost_stress": {
+          "bytes": 44557541,
+          "files": 246
+        },
+        "terminal_upper": {
+          "bytes": 44564012,
+          "files": 246
+        },
+        "terminal_upper_cost_stress": {
+          "bytes": 44557541,
+          "files": 246
+        }
+      }
+    },
+    {
+      "copied_bytes": 5831724,
+      "copied_files": 402,
+      "ledger_hashes": {
+        "baseline/experiments.jsonl": "sha256:0c8d819ef083913b57260e9ff30ce42835975f6b6ed2ae5173a4f5b515958343"
+      },
+      "ledgers": [
+        "baseline/experiments.jsonl"
+      ],
+      "name": "crypto_funded_reference_20260913",
+      "skipped": {
+        ".": {
+          "bytes": 324,
+          "files": 1
+        },
+        "baseline": {
+          "bytes": 112480460,
+          "files": 802
+        },
+        "state": {
+          "bytes": 40960,
+          "files": 2
+        }
+      }
+    },
+    {
+      "copied_bytes": 9589424,
+      "copied_files": 796,
+      "ledger_hashes": {
+        "candidate/experiments.jsonl": "sha256:172a2edd26a8a84e355d8172a37e3444a45c4ba8a30a515ba8cd4fdb082c196e",
+        "candidate_stress/experiments.jsonl": "sha256:82425297a1633b6a1b090e484a252c381b7a5fa8328efed1ffc851623504e2c6"
+      },
+      "ledgers": [
+        "candidate/experiments.jsonl",
+        "candidate_stress/experiments.jsonl"
+      ],
+      "name": "crypto_observed_carry_20260913",
+      "skipped": {
+        "candidate": {
+          "bytes": 112530098,
+          "files": 802
+        },
+        "candidate_stress": {
+          "bytes": 116025059,
+          "files": 802
+        },
+        "state": {
+          "bytes": 40960,
+          "files": 2
+        }
+      }
+    },
+    {
+      "copied_bytes": 9598740,
+      "copied_files": 799,
+      "ledger_hashes": {
+        "candidate/experiments.jsonl": "sha256:70d8c254c1d33a1f2a0e11cb3455fc099d8807447550b9aa24fa572f8080c27c",
+        "candidate_stress/experiments.jsonl": "sha256:392e2115d1b057139efffe46a75ebd2dc97c40eef2cdbe0f53c449aaf0b72ba6"
+      },
+      "ledgers": [
+        "candidate/experiments.jsonl",
+        "candidate_stress/experiments.jsonl"
+      ],
+      "name": "crypto_rank_retention_20260913",
+      "skipped": {
+        "candidate": {
+          "bytes": 120301311,
+          "files": 802
+        },
+        "candidate_stress": {
+          "bytes": 121737743,
+          "files": 802
+        },
+        "state": {
+          "bytes": 40960,
+          "files": 2
+        }
+      }
+    },
+    {
+      "copied_bytes": 9605320,
+      "copied_files": 796,
+      "ledger_hashes": {
+        "candidate/experiments.jsonl": "sha256:f13c1c789dbd3f36be87fa16fda3eaa65544400adec4488361a8b6a083b746f9",
+        "candidate_stress/experiments.jsonl": "sha256:44cedcebd5b25444bee2bab5f5aa94ac4a63acf481064d36be878a501f779597"
+      },
+      "ledgers": [
+        "candidate/experiments.jsonl",
+        "candidate_stress/experiments.jsonl"
+      ],
+      "name": "crypto_risk_normalized_rank_20260913",
+      "skipped": {
+        "candidate": {
+          "bytes": 121905599,
+          "files": 802
+        },
+        "candidate_stress": {
+          "bytes": 125020143,
+          "files": 802
+        },
+        "state": {
+          "bytes": 40960,
+          "files": 2
+        }
+      }
+    },
+    {
+      "copied_bytes": 24270120,
+      "copied_files": 1974,
+      "ledger_hashes": {
+        "original_close_control/experiments.jsonl": "sha256:91281df2f86abd96a00398570447316b8852776dda1816849adbece140b3e0cb",
+        "repaired_close_control/experiments.jsonl": "sha256:5cbc3686a31864cf7cbf4e92883d91d4c26ec7d456a54f14e621cdbc7e637fa0",
+        "repaired_open_control/experiments.jsonl": "sha256:69133d21ecab98709be50b46871acdae2cc38e84d822219687f61daf79b32cb4",
+        "terminal_lower/experiments.jsonl": "sha256:f11667b01995f14f44b550286dc4f19c2545d5870074e36dfe43bac0d5cd4fa2",
+        "terminal_lower_cost_stress/experiments.jsonl": "sha256:9f385fa4511d1c2866d99523248e9f7686a8630647cc7103643328c37e1f2fcb",
+        "terminal_upper/experiments.jsonl": "sha256:a6d0f81d61127a1bd729f9aeb5898a776f8462214e9598ce2f656383e08e5c80",
+        "terminal_upper_cost_stress/experiments.jsonl": "sha256:5e88a330fd0d1932f74fcde6032f096fa8c656858ccd8f7077b1a9ee033b0ba0"
+      },
+      "ledgers": [
+        "original_close_control/experiments.jsonl",
+        "repaired_close_control/experiments.jsonl",
+        "repaired_open_control/experiments.jsonl",
+        "terminal_lower/experiments.jsonl",
+        "terminal_lower_cost_stress/experiments.jsonl",
+        "terminal_upper/experiments.jsonl",
+        "terminal_upper_cost_stress/experiments.jsonl"
+      ],
+      "name": "crypto_terminal_comparison_20260913_attempt2",
+      "skipped": {
+        ".": {
+          "bytes": 670,
+          "files": 7
+        },
+        "original_close_control": {
+          "bytes": 40122983,
+          "files": 214
+        },
+        "repaired_close_control": {
+          "bytes": 39833719,
+          "files": 214
+        },
+        "repaired_open_control": {
+          "bytes": 39832503,
+          "files": 214
+        },
+        "state": {
+          "bytes": 85810324,
+          "files": 752
+        },
+        "terminal_lower": {
+          "bytes": 39833166,
+          "files": 214
+        },
+        "terminal_lower_cost_stress": {
+          "bytes": 39887301,
+          "files": 214
+        },
+        "terminal_upper": {
+          "bytes": 39832965,
+          "files": 214
+        },
+        "terminal_upper_cost_stress": {
+          "bytes": 39887214,
+          "files": 214
+        }
+      }
+    },
+    {
+      "copied_bytes": 4118684,
+      "copied_files": 16,
+      "ledger_hashes": {
+        "normal/experiments.jsonl": "sha256:861828be0bdc78df7a86f3a1d8024dae110fed1486e849d42584adf1aec7eb58"
+      },
+      "ledgers": [
+        "normal/experiments.jsonl"
+      ],
+      "name": "earnings_change_20260913_v2",
+      "skipped": {
+        "normal": {
+          "bytes": 1418980,
+          "files": 9
+        }
+      }
+    },
+    {
+      "copied_bytes": 1601722,
+      "copied_files": 32,
+      "ledger_hashes": {
+        "baseline/experiments.jsonl": "sha256:691087cca091183ff1ba76fa21c57209df488f02d2e31ff1536e2d49eebcaab0",
+        "baseline_stress/experiments.jsonl": "sha256:7f05f428e8f68fe4ca49d5834da74324ac455a31a8bd78218d233b629b978065"
+      },
+      "ledgers": [
+        "baseline/experiments.jsonl",
+        "baseline_stress/experiments.jsonl"
+      ],
+      "name": "trend_extended_reference_20260913",
+      "skipped": {
+        "baseline": {
+          "bytes": 9390153,
+          "files": 704
+        },
+        "baseline_stress": {
+          "bytes": 9390813,
+          "files": 704
+        }
+      }
+    },
+    {
+      "copied_bytes": 1867803,
+      "copied_files": 36,
+      "ledger_hashes": {
+        "baseline/experiments.jsonl": "sha256:9b145331b4de56e70ea5304abf799212f066ebbf4224e0eda8568bd366f62b0b",
+        "baseline_stress/experiments.jsonl": "sha256:be0218b58878f9bc131876a0b5a3239515660bc0879c3885081ed328d1cedabd"
+      },
+      "ledgers": [
+        "baseline/experiments.jsonl",
+        "baseline_stress/experiments.jsonl"
+      ],
+      "name": "trend_funded_account_20260913",
+      "skipped": {
+        "baseline": {
+          "bytes": 9353118,
+          "files": 703
+        },
+        "baseline_stress": {
+          "bytes": 9352928,
+          "files": 703
+        }
+      }
+    },
+    {
+      "copied_bytes": 1140726,
+      "copied_files": 18,
+      "ledger_hashes": {
+        "baseline/experiments.jsonl": "sha256:79fa3c3e186ae0b1ac8ca294d475a94c95c356b9584f636e01a3a8727409730b"
+      },
+      "ledgers": [
+        "baseline/experiments.jsonl"
+      ],
+      "name": "trend_group_risk_20260913",
+      "skipped": {
+        "baseline": {
+          "bytes": 9386285,
+          "files": 703
+        }
+      }
+    }
+  ],
+  "directories_refused_already_present": [],
+  "dry_run": false,
+  "full_receipt": "artifacts/audit/external_ledger_import_20260914T095114Z.json",
+  "full_receipt_sha256": "sha256:4309b38d95fc3dbfbaeef27ebb441ffd0a87b6f7546e899959ff9ac753183f07",
+  "generated_at": "2026-09-14T09:51:14.892885+00:00",
+  "note": "Compact copy of the full receipt for version control; per-file hashes for every copied file are in the full receipt, which stays under artifacts/ with the evidence.",
+  "schema": "canli.alphac-external-ledger-import.v1",
+  "source_tree": "/Users/arhancanli/alphac-prospective-pause-20260911",
+  "union_identities_added": 118,
+  "union_identities_after": 347,
+  "union_identities_before": 229
+}
