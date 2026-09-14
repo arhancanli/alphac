@@ -1,0 +1,30 @@
+{
+ "author": "Arhan Canli",
+ "bars_written": 46079829,
+ "claim_boundary": "A data lake build. It opens no strategy, spends no hypothesis identity and repairs nothing in the base lake.",
+ "content_hash": "sha256:074e740dc338915d10a9f2e6702c0cd5e302252584c709d8af8c5bf63f5ccb71",
+ "conventions": {
+  "available_at": "equals ex_date",
+  "dividend_cash_amount": "vendor ACTIONS.value (vendor share basis, quarantined by the sealed dividend-basis audit; consumers use split-only adjustment)",
+  "executable_action_types": [
+   "split",
+   "dividend"
+  ],
+  "prices": "raw (SEP closeunadj; open/high/low scaled by closeunadj/close)",
+  "split_ratio": "vendor ACTIONS.value, new shares per old; the kernel divides"
+ },
+ "corporate_action_rows_written": 263516,
+ "elapsed_seconds": 1069.9,
+ "generated_at": "2026-09-14T17:00:01.353987+00:00",
+ "instruments_written": 21861,
+ "lake": "data/lake_sharadar_full",
+ "schema": "canli.alphac-sharadar-full-history-lake-build.v1",
+ "sep_rows_read": 46510601,
+ "skipped_tickers": [],
+ "sources": {
+  "ACTIONS.zip": "166d6ae17921b6a3a1f13a734e43bfd32ca5d9e88398030290a5246c89d7185c",
+  "SEP.zip": "d537322141302331cc3dc43f4eefe1222057e329525a835cc93bd0a079db92b3",
+  "TICKERS.zip": "8f3e03012dd25d0a2fb3950e39d81f1ddff106391cd20eb9e547cd53f92525f5"
+ },
+ "tickers_in_sep": 21861
+}

@@ -126,14 +126,15 @@ def _ohlcv_table(closes: dict[str, np.ndarray]) -> pa.Table:
 
 
 def _ca_table() -> pa.Table:
-    """One AAPL 2:1 split: ratio 0.5, declared at AVAILABLE_AT, ex at EX_DATE."""
+    """One AAPL 2:1 split: ratio 2.0 (new shares per old, the vendor convention every lake
+    stores; the kernel DIVIDES pre-ex prices by it), declared at AVAILABLE_AT, ex at EX_DATE."""
     return pa.table(
         {
             "instrument_id": [AAPL],
             "action_type": ["split"],
             "ex_date": pa.array([EX_DATE], type=pa.timestamp("ms", tz="UTC")),
             "available_at": pa.array([AVAILABLE_AT], type=pa.timestamp("ms", tz="UTC")),
-            "ratio": pa.array([0.5], type=pa.float64()),
+            "ratio": pa.array([2.0], type=pa.float64()),
             "cash_amount": pa.array([None], type=pa.float64()),
             "ingested_at": pa.array([AVAILABLE_AT + 1000], type=pa.timestamp("ms", tz="UTC")),
         },
