@@ -1,0 +1,17 @@
+# AlphaMax path-quality integration and registered normal run
+
+Integration completed2026-09-13; normal-cost historical run started and remains in progress at this checkpoint. No new performance result is claimed.
+
+scripts/alphamax_path_service.py substitutes only the AlphaMax forecast body in an isolated subclass. The retained corrected sigma, open-price feature, membership mask and cross-sectional processing are reused. It verifies the full XNYS context grid against the exchange calendar, uses the same corrected split-price basis and exact252/21parameters, and checks the control formula on shared valid cells. Parent source and registry are unchanged. The research-only live-call prohibition is inherited.
+
+The path kernel requires complete formation history, while the original momentum formula needs only endpoints. path_panels exposes candidate/control finite counts and extra missing cells. This difference must be measured and retained in the post-run feature audit; no claim that changes are purely rank weighting until actual coverage is inspected. The main service currently discards those diagnostics after each feature call, so the independent audit must reconstruct and persist them using the exact bound contexts after measurement.
+
+Ten synthetic tests pass: six kernel tests and four integration tests. Integration verifies actual XNYS-grid use, split conservation, preserved source inputs, exact spec metadata except forecast function, corrected sigma/open reuse, shared-row control parity, invalid parameters, missing-formation exclusions and incomplete-calendar rejection. These do not prove full engine execution, historical source availability or economic edge.
+
+scripts/run_alphamax_path_momentum.py versions the retained session-cooldown runner. Scope,358instruments,rank K30,dollar neutrality,63sessionrebalance,252/63train/test,21horizon,274embargo,10sessioncooldown,100kcapital,costs,covariance basis and lifecycle remain inherited. Candidate ranking input changes to the fixed path formula. Preparation bound9314files; preflight passed. Normal trial44da7a6140622ff6 received reservation ordinal337 and VALIDATED_BEFORE_RETURN_COMPUTE. This reservation is not itself a completed measured trial.
+
+Run location: artifacts/analysis/alphamax_path_momentum_20260913/candidate. Log: normal_run.log in its parent. LIVE process session9885 was polled and confirmed running. Do not restart on timeout. Runner currently rejects stress execution; a separately bound stress gate is required only after normal combined passes. It does not silently issue a stress or2022run.
+
+NEXT poll session9885. On terminal inspect result/failure and all durable legs. Independently reconcile fills,NAV,cash,corporate actions and feature coverage/shared-control parity; close the canonical standalone packet. Then register the one normal combined comparison against BILreference with unchanged weights. Normal combined failure stops candidate; pass permits a guarded stress stage. Do not treat standalone Sharpe as the combined goal or require every sleeve individually exceed2.
+
+Prior goal turn was progress(design/kernel); current adds working integration, frozen runner/data, verified registration and an active historical computation. Combined reference remains unchanged0.74241347normal/0.41886531stress excess. No new sleeve qualified. Existing measured union336 and prior failed unmeasured reservation remain; ordinal337new measurement completion pending. Goal active.

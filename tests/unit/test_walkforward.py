@@ -384,3 +384,84 @@ def test_deterministic(world: World) -> None:
     a = _runner(world).run(T0, T0 + 900 * HOUR, **kw)  # type: ignore[arg-type]
     b = _runner(world).run(T0, T0 + 900 * HOUR, **kw)  # type: ignore[arg-type]
     pd.testing.assert_series_equal(a.equity, b.equity)
+
+
+@pytest.mark.parametrize("mode", ["filter_then_allocate", "retain_cash"])
+def test_trend_cost_policy_runs_through_full_engine(world: World, mode: str) -> None:
+    from alphaforge.portfolio.trend_cost_policy import TrendCostPolicy, TrendCostRow
+
+    def policy(cost):
+        return TrendCostPolicy(
+            tuple(
+                TrendCostRow(iid, side, T0, T0 + N_BARS * HOUR, T0, cost, "synthetic-fixture")
+                for iid in IDS
+                for side in ("long", "short")
+            ),
+            "modeled",
+            allocation_mode=mode,
+        )
+
+    kwargs = {
+        "train_bars": _TRAIN,
+        "test_bars": _TEST,
+        "allocator": "trend",
+        "rebalance_bars": 24,
+        "cov_min_periods": 120,
+    }
+    base = _runner(world).run(T0, T0 + N_BARS * HOUR, **kwargs)
+    zero = _runner(world).run(T0, T0 + N_BARS * HOUR, **kwargs, trend_cost_policy=policy(0))
+    pd.testing.assert_series_equal(base.equity, zero.equity)
+    assert "trend_cost_gate" not in base.config
+    assert zero.config["trend_cost_gate"]["basis"] == "modeled"
+    blocked = _runner(world).run(T0, T0 + N_BARS * HOUR, **kwargs, trend_cost_policy=policy(1))
+    assert (blocked.equity == blocked.equity.iloc[0]).all()
+    assert all(leg.result.fills.empty for leg in blocked.legs)
+
+
+def test_trend_cost_policy_enters_registration_before_returns(world: World) -> None:
+    from alphaforge.portfolio.trend_cost_policy import TrendCostPolicy, TrendCostRow
+
+    policy = TrendCostPolicy(
+        (TrendCostRow(IDS[0], "long", T0, T0 + N_BARS * HOUR, T0, 0.001, "fixture"),), "modeled"
+    )
+
+    class PreflightStop(Exception):
+        pass
+
+    class PreflightLog:
+        def preflight_registration(self, config, reservation_path=None):
+            assert config["trend_cost_gate"]["rows"][0]["source"] == "fixture"
+            assert config["trend_cost_gate"]["horizon_bars"] == world.settings.signals.horizon_bars
+            raise PreflightStop
+
+    with pytest.raises(PreflightStop):
+        _runner(world).run(
+            T0,
+            T0 + N_BARS * HOUR,
+            train_bars=_TRAIN,
+            test_bars=_TEST,
+            allocator="trend",
+            trend_cost_policy=policy,
+            now_ms=T0,
+            experiment_log=PreflightLog(),
+        )
+
+
+def test_directional_binding_registered_before_signal_computation(world: World) -> None:
+    class PreflightStop(Exception):
+        pass
+
+    class PreflightLog:
+        def preflight_registration(self, config, reservation_path=None):
+            assert config['trend_blend_normalization'] == 'directional_rms'
+            assert 'trend_cost_gate' not in config
+            raise PreflightStop
+
+    runner = _runner(world)
+    runner._signals.trial_binding = {'trend_blend_normalization': 'directional_rms'}
+    with pytest.raises(PreflightStop):
+        runner.run(T0, T0 + N_BARS * HOUR, train_bars=_TRAIN, test_bars=_TEST,
+                   allocator='trend', now_ms=T0, experiment_log=PreflightLog())
+    with pytest.raises(ValueError, match='ungated trend'):
+        runner.run(T0, T0 + N_BARS * HOUR, train_bars=_TRAIN, test_bars=_TEST,
+                   allocator='rank')

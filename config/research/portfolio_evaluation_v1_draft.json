@@ -1,0 +1,89 @@
+{
+  "schema": "canli.alphac-portfolio-evaluation-design.v1",
+  "status": "DRAFT_NOT_IN_FORCE",
+  "capital_kind": "PAPER_ONLY",
+  "scope": "COMBINED_PORTFOLIO",
+  "owner_targets": {
+    "net_excess_sharpe_greater_than": 2.0,
+    "maximum_drawdown_at_most": 0.11,
+    "qualified_economic_sleeves_at_least": 15,
+    "per_sleeve_application": false
+  },
+  "valuation_design": {
+    "currency": "USD",
+    "cut": "00:00:00 UTC",
+    "frequency": "ONE_COMPLETE_UTC_DAY",
+    "capital_representation": "SUM_OF_DISJOINT_FUNDED_ACCOUNT_OR_LEDGER_PARTITIONS",
+    "equity_prices": "LATEST_COMPLETED_OFFICIAL_XNYS_CLOSE_BEFORE_CUT",
+    "crypto_prices": "EXPLICIT_VALUATION_PRICE_AS_OF_UTC_CUT",
+    "cash_and_holdings": "AS_OF_THE_SAME_CUT_INCLUDING_ALL_KNOWN_CASHFLOWS_AND_LIABILITIES",
+    "external_flows": "CLOSING_BOUNDARY_ONLY_IN_INITIAL_IMPLEMENTATION",
+    "unsupported_intraday_flows": "REJECT_PENDING_EVENT_LEVEL_TIME_WEIGHTED_ACCOUNTING",
+    "missing_required_component_or_price": "UNAVAILABLE_NEVER_ZERO_OR_SILENTLY_DROPPED",
+    "overlay": "SEPARATE_FUNDED_PARTITION_INCLUDED_IN_NAV_NOT_FREE_ADDITIVE_RETURN",
+    "supported_price_calendars": [
+      "XNYS",
+      "UTC24X7"
+    ],
+    "instrument_calendar_map": "FROZEN_IN_EACH_POLICY",
+    "receipt_delay_ms": null,
+    "reconciliation_tolerance_usd": null,
+    "implementation_tolerance_upper_bound_usd": "0.01"
+  },
+  "return_design": {
+    "formula": "(closing_NAV - closing_external_net_deposit) / opening_NAV - 1",
+    "excess_return": "net_portfolio_simple_return_minus_same_interval_cash_reference_return",
+    "cash_reference_is_not_cash_credit": true,
+    "fees_borrow_financing": "ALREADY_IN_CASH_AND_ACCRUED_LIABILITIES_NOT_DEDUCTED_TWICE",
+    "internal_transfers": "RECONCILE_BETWEEN_PARTITIONS_NOT_EXTERNAL_BOOK_FLOWS",
+    "insolvency": "REPORT_ZERO_OR_NEGATIVE_END_NAV_AND_FULL_LOSS_DO_NOT_DISCARD",
+    "cash_benchmark_source": null,
+    "cash_benchmark_knowledge_policy": null
+  },
+  "qualification_requirements": {
+    "actual_daily_mark_estimate_minimum_inherited": 252,
+    "actual_daily_mark_establishment_minimum_inherited": 756,
+    "annualization_for_this_daily_clock": 365,
+    "minimum_counts_are_not_statistical_qualification": true,
+    "sharpe_uncertainty_and_multiplicity_method": null,
+    "drawdown_evaluation_horizons": null,
+    "drawdown_stress_manifest": null,
+    "drawdown_includes_initial_capital": true,
+    "publish_observed_expected_and_tail_separately": true,
+    "qualified_sleeve_registry_sha256": null,
+    "compare_against_frozen_original_book": true,
+    "register_all_return_producing_variants_before_results": true,
+    "legacy_trials_remain_counted": true,
+    "new_baselines_need_economic_justification_and_versioning": true
+  },
+  "activation_requirements_unresolved": [
+    "Authenticated source/account and partition ownership binding",
+    "Retained raw broker timestamps mapped to economic session and valuation cut",
+    "Measured clock uncertainty and source reporting capability",
+    "Current-cut cash holdings receivables liabilities and cashflow coverage",
+    "Cut-time crypto valuation acquisition without backdating quotes",
+    "Source-bound cash benchmark and knowledge-time policy",
+    "Frozen allocation manifest including real overlay funding and transfer costs",
+    "Immutable implementation environment and calendar-version binding",
+    "Prospective contract migration and public schema compatibility",
+    "Frozen statistical and stress qualification methods"
+  ],
+  "claim_boundary": "Structural checks and synthetic arithmetic are not source authentication, execution permission, portfolio admission, or proof of any performance target. No real measurement epoch or contract promotion is performed by this draft.",
+  "payment_timing_design": {
+    "revision": "daily_nav_cost_timing_v1",
+    "status": "DRAFT_NOT_IN_FORCE",
+    "internal_costs": "Fees/funding already reconciled into opening/closing cash or liabilities affect NAV; never treat them as external-flow adjustments or deduct them twice.",
+    "date_level_evidence": "May support daily cost attribution under an explicit provider-calendar convention and reconciled boundary balances; a provider date alone does not establish posting at the UTC cut.",
+    "exact_timestamp_requirement": "Required where sequencing changes holdings, funding entitlement, external-flow return adjustment, or execution causality; not a universal prerequisite for daily cost evidence.",
+    "creation_time": "Acquisition/knowledge field; not interchangeable with economic date or cash posting time.",
+    "source_observation_time": "Retain when supplied; absence alone does not disqualify an independently reconciled daily cost. Local receipt time and provenance must still be retained.",
+    "late_posting": "Keep original as-known record; append a versioned correction/accrual reconciliation with knowledge time. No silent historical rewrite.",
+    "external_flows": "Existing closing-boundary-only rule unchanged; ambiguous intraday flows remain unsupported.",
+    "unknowns": "Unreconciled cash, missing liabilities, unexplained external flows and undefined provider-date timezone remain blockers.",
+    "implementation_boundary": "Existing exact-time payment application API unchanged; daily cost annotation and reconciliation require a separate path.",
+    "sources": [
+      "https://docs.alpaca.markets/us/docs/account-activities",
+      "https://docs.alpaca.markets/us/reference/getaccountactivities-2"
+    ]
+  }
+}

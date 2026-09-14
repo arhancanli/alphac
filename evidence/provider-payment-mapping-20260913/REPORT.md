@@ -1,0 +1,13 @@
+# Retained provider payment mapping
+
+Mapped four previously captured Alpaca paper-account responses locally. Three scans contain three FEE records each; the dedicated spot scan is empty. All nine records and their raw-object hashes are retained in private mappings, together with the page and account bindings. The mappings preserve amount, currency, provider status/date, creation timestamp and the original local response-receipt time.
+
+**Zero bookable payments** are emitted under the current exact-time contract. The provider records contain a date-level field but no explicit exact effective timestamp or source-observation timestamp. Creation time is not silently reused for those meanings, and a date is not converted to midnight. Local receipt clocks remain uncalibrated. Missing fields are explicit, not filled with inferred values.
+
+The adapter validates the original capture checksum and account identities, matches activity request windows, preserves source-object lineage and checks normalized pagination coverage. Missing creation timestamps prevent a usable creation-time coverage result; unknown activity types remain partial records. All inspected scans have exhausted pagination; none proves settlement completeness. These are retained local responses, not a fresh provider or account verification.
+
+**34 focused tests passed**, including six new mapper tests, plus payment-evidence and ledger regressions. Ruff passed. Tests cover date-only ambiguity, missing creation time, corrupted capture content, wrong account and changed request windows. Four source file hashes are checked against the preceding live-capture audit before mapping. Private mapping hashes are recorded and independently verified. No raw account identifiers or fee bodies were printed into the phase report.
+
+Private artifacts live under `~/.local/share/alphaforge/provider-payment-mapping-20260913/`. This packet contains sanitized counts/gaps, source snapshots and verification evidence. There were no broker calls, cash mutations, production changes, epochs, backfills or new strategy trials. Source authentication and valuation clearance remain false.
+
+Phase complete. Next proposed phase is a focused timing-contract review: determine which fields must have exact timestamps and where a documented date-level cash-accounting convention is economically sufficient. Check provider semantics before changing the contract, preserve actual timestamp uncertainty, and retain the current baseline. Do not demand unsupported precision merely to perpetuate a gate, or invent precision merely to pass it. The historical crypto cash residual and combined performance targets remain unresolved.

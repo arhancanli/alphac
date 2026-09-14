@@ -253,6 +253,12 @@ CREATE TABLE IF NOT EXISTS ladder_state (
     drawdown  REAL,
     gross_mult REAL   NOT NULL
 ) WITHOUT ROWID;
+
+CREATE TABLE IF NOT EXISTS funding_health (
+    cycle_ts INTEGER PRIMARY KEY,
+    dry INTEGER NOT NULL CHECK (dry IN (0, 1)),
+    consecutive_dry INTEGER NOT NULL CHECK (consecutive_dry >= 0)
+) WITHOUT ROWID;
 """
 
 
@@ -384,6 +390,34 @@ class TradingStore:
         }
         if "overlay_scale" not in present:
             self._conn.execute("ALTER TABLE equity_curve ADD COLUMN overlay_scale REAL")
+
+    def record_funding_health(self, cycle_ts: Ms, *, dry: bool) -> int:
+        """Persist one monitor observation per cycle, independent of process lifetime.
+
+        This is health evidence, not a funding cashflow ledger. No historical
+        observations are inferred when upgrading an existing database.
+        """
+        if type(cycle_ts) is not int or cycle_ts < 0 or type(dry) is not bool:
+            raise ValueError("Invalid funding-health observation")
+        if self._conn.in_transaction:
+            raise ValueError("Funding health requires an independent transaction")
+        with self._conn:
+            self._conn.execute("BEGIN IMMEDIATE")
+            existing = self._conn.execute(
+                "SELECT dry,consecutive_dry FROM funding_health WHERE cycle_ts=?", (cycle_ts,)
+            ).fetchone()
+            if existing is not None:
+                if existing["dry"] != int(dry):
+                    raise ValueError("Conflicting funding-health replay")
+                return int(existing["consecutive_dry"])
+            previous = self._conn.execute(
+                "SELECT cycle_ts,consecutive_dry FROM funding_health ORDER BY cycle_ts DESC LIMIT 1"
+            ).fetchone()
+            if previous is not None and previous["cycle_ts"] > cycle_ts:
+                raise ValueError("Out-of-order funding-health observation")
+            count = (int(previous["consecutive_dry"]) + 1 if previous else 1) if dry else 0
+            self._conn.execute("INSERT INTO funding_health VALUES (?,?,?)", (cycle_ts, int(dry), count))
+            return count
 
     def __enter__(self) -> Self:
         return self

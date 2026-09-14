@@ -1,0 +1,13 @@
+# Cadence mismatch exposure attribution
+
+Saved normal/stress positions from the original and observed-cadence candidates were joined to known funding-publication states. The diagnostic flags a21-gap window when at least one observed gap differs from the modeled interval by more than1second. It measures exposure at saved position timestamps, not a new tradable signal or exact counterfactual PnL. All underlying accounting/boundary bindings verify, and independent quantity×mark/NAV reconstruction matches saved weights within1e-12.
+
+In the normal reference, AXS/BLZ/REEF together average0.5900% of cryptoNAV in absolute positions, representing0.9605% of all gross-weight marks. Exposure overlapping the cadence-mismatch diagnostic averages0.3968% of cryptoNAV—about0.0893% of combinedNAV at the22.5%crypto weight. Stressed reference averages0.5343% total and0.3966% overlapping cryptoNAV exposure.
+
+AXS is held for2,015 of29,976hourlymarks in both controls and1,847in both candidates. Set comparison verifies exactly168removed heldmarks andzeroadded. BLZ(1,343marks) andREEF(672marks) have identical heldtimestamp sets between each matched control/candidate; identicalsets do not assert identicalquantities orfees. No cadence-unknown rows occurred among these heldpositions.
+
+The identified mismatch affected little capital in this evaluated book. This helps explain the small combinedgain but does not attribute everyreturn difference to these holdings: ranking othernames, riskstate, costs and equity paths can change. Thefailed+.10gate remainsfailed; no promotion or estimator retuning is justified.
+
+Next research candidate to assess before preregistration: risk-normalized ranking of expectedreturns at the crypto allocator. CurrentSignalSizer multiplies standardizedalpha byforecastvolatility; RankEqualVolFallback ranks thismu and subsequently sizesinversevol. Ranking bymu/covariancevolatility may select differentassets thanrankingrawmu. This is a newselectionhypothesis, not a provedbug or mathematicallyoptimal solution: featurevol andcovariancevol differ, caps andgross normalizationmatter. It is distinct from rejected cross-sleeveinversevolallocation andholding-retention rules. A targetedsource search found no matching implementation; prior trialconfigurations stillneed review beforeexperiment. Freeze one variant, preserve originalcarry and reference316/317, testsyntheticselection/sizing/riskproperties, and registerbeforehistoricalreturns. Do notclaim anewdistinctsleeve.
+
+Union325 unchanged; no newforecast/returntrial, no livejobs, no qualifiedsleeve. Mergerexpansion remainsparked.

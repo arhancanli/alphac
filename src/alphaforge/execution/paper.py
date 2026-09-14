@@ -356,10 +356,14 @@ class PaperBroker(Broker):
         book_source: OrderBookSource,
         initial_cash: float = 100_000.0,
         state: PaperState | None = None,
+        receipt_recorder=None,
     ) -> None:
         self._instruments: dict[str, Instrument] = dict(instruments)
         self._cost_model = cost_model
         self._book_source = book_source
+        self._receipt_recorder = receipt_recorder
+        self._last_mark_receipts: dict[str, str] = {}
+        self._last_account_receipt: str | None = None
         if state is None:
             _require_positive_finite("PaperBroker.initial_cash", initial_cash)
             self._state = PaperState(initial_cash=initial_cash, cash=initial_cash)
@@ -574,21 +578,37 @@ class PaperBroker(Broker):
         equity = self._state.cash
         positions: list[Position] = []
         marks: dict[str, tuple[float, str]] = {}
+        self._last_mark_receipts = {}
+        self._last_mark_ts = None
+        self._last_account_receipt = None
+        opening_state = self._state.copy() if self._receipt_recorder is not None else None
         for iid in sorted(self._state.positions):
             pos = self._state.positions[iid]
             mid, source = self._mark_or_entry(iid, pos, ts)
             equity += pos.qty * mid
             positions.append(pos.to_position())
             marks[iid] = (mid, source)
-        self._last_mark_ts = ts
-        self._last_position_marks = marks
         _require_finite("PaperBroker.account equity", equity)
-        return AccountState(
+        if opening_state is not None and self._state != opening_state:
+            raise ValueError("paper state changed during account marking")
+        account = AccountState(
             equity_quote=equity,
             cash_quote=self._state.cash,
             positions=tuple(positions),
             ts=ts,
         )
+        if self._receipt_recorder is not None:
+            self._last_account_receipt = self._receipt_recorder.bind_account(
+                account, marks, self._last_mark_receipts)
+        self._last_mark_ts = ts
+        self._last_position_marks = marks
+        return account
+
+    def account_receipt_at(self, ts: Ms) -> str:
+        """Return only a successfully committed account receipt ID."""
+        if self._last_mark_ts != ts or self._last_account_receipt is None:
+            raise ValueError("no committed account receipt at requested timestamp")
+        return self._last_account_receipt
 
     def position_marks_at(self, ts: Ms) -> dict[str, tuple[float, str]]:
         """Return the exact per-position marks used for ``account_at(ts)``.
@@ -601,6 +621,12 @@ class PaperBroker(Broker):
         if self._last_mark_ts != ts:
             self.account_at(ts)
         return dict(self._last_position_marks)
+
+    def position_mark_receipts_at(self, ts: Ms) -> dict[str, str]:
+        """IDs for the cached successful account mark; never refetch evidence."""
+        if self._last_mark_ts != ts:
+            raise ValueError("no completed account mark at requested timestamp")
+        return dict(self._last_mark_receipts)
 
     def order_book(self, instrument_id: str, *, depth: int = _DEFAULT_BOOK_DEPTH) -> OrderBook:
         """Proxy the configured :class:`OrderBookSource` snapshot for ``instrument_id``.
@@ -619,11 +645,18 @@ class PaperBroker(Broker):
         self, instrument_id: str, pos: PaperPosition, ts: Ms
     ) -> tuple[float, str]:
         """Return mark and provenance; fall back explicitly when a book is absent."""
+        from alphaforge.execution.crypto_receipts import classify_mark
+
+        if self._receipt_recorder is not None:
+            price, rule, identity = self._receipt_recorder.observe(
+                self._book_source, instrument_id, ts, pos.avg_entry_price)
+            self._last_mark_receipts[instrument_id] = identity
+            return price, rule
         try:
             book = self._book_source.snapshot(instrument_id, ts=ts)
         except KeyError:
-            return pos.avg_entry_price, "entry_fallback_missing_book"
-        return _book_mid(book, fallback=pos.avg_entry_price), "order_book_mid"
+            book = None
+        return classify_mark(book, pos.avg_entry_price)
 
     def _book_fill(
         self,

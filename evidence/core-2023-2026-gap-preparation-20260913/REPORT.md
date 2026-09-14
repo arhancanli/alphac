@@ -1,0 +1,9 @@
+# Broader AlphaC input recovery — 2026-09-13
+
+Frozen evaluation remains 2023-01-01 through 2026-06-01 inclusive. No new strategy signals or returns were computed; trial count remains 305. The preceding status-only goal turn made no research progress; this turn recovered and verified missing source observations.
+
+Recovered all 312 interior feature-warmup hours: LINA 120, MKR 120, WAVES 72. Thirteen official Binance daily archives returned HTTP 200, all with matching published SHA-256 checksums. Three isolated yearly partitions were built over the already repaired 2022 snapshot, preserving every existing row (including previous WAVES repairs). Written parquet was read back and checked for exact missing-timestamp inclusion and duplicate absence. Production was unchanged. Archive authenticity checks do not establish historical availability.
+
+The expanded 358-name equity scope has 26 historical split validation failures, 12 inside shared warmup, and one inside the training/test calendar: BMNR, 2025-05-16, missing a two-sided price boundary. Its first retained observation and latest modeled listing are 2025-06-05; retained universe entry is 2025-08-01. This is a pre-observation event, not evidence of a measured in-position price jump. Earlier HLT and RIOT unexplained boundaries remain in shared context. Do not treat calendar counts as sufficient feature or execution clearance.
+
+Remaining work before new returns: classify lifecycle boundaries and funding schedules, confirm the effect of historical split failures on consumed features/covariance, assemble immutable extended inputs incorporating these three overrides, and preregister the broader replay. LUNA's 449 active-grid gaps remain post-terminal and were not filled. No sleeve qualified and no new combined performance is claimed.

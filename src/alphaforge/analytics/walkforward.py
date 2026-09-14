@@ -113,6 +113,7 @@ if TYPE_CHECKING:
     from alphaforge.data.store.reader import PITDataReader
     from alphaforge.data.universe.store import UniverseStore
     from alphaforge.ml.registry import ModelRegistry
+    from alphaforge.portfolio.trend_cost_policy import TrendCostPolicy
     from alphaforge.validation.dsr import DSRReport
 
 __all__ = [
@@ -773,6 +774,8 @@ class WalkForwardRunner:
         regime_lag_days: int = _REGIME_LAG_DAYS,
         fill_model_factory: Callable[[TransactionCostModel], FillModel] | None = None,
         verified_split_events: Mapping[tuple[str, Ms], float] | None = None,
+        engine_factory: Callable[..., EventDrivenBacktester] | None = None,
+        engine_research_config: Mapping[str, object] | None = None,
     ) -> None:
         self._reader = reader
         self._instruments = instruments
@@ -798,6 +801,17 @@ class WalkForwardRunner:
         # for the maker-execution screen — it never alters a default run.
         self._fill_model_factory = fill_model_factory
         self._verified_split_events = dict(verified_split_events or {})
+        if (engine_factory is None) != (engine_research_config is None):
+            raise ValueError(
+                "Custom engine factory requires its research configuration and vice versa"
+            )
+        if engine_research_config is not None and not engine_research_config:
+            raise ValueError("Custom engine research configuration cannot be empty")
+        self._engine_factory = engine_factory or EventDrivenBacktester
+        self._engine_binding = (
+            {"research_engine": json.loads(json.dumps(engine_research_config))}
+            if engine_research_config is not None else {}
+        )
 
     def run(
         self,
@@ -824,6 +838,7 @@ class WalkForwardRunner:
         regime: bool = False,
         trial_reservation: Path | str | None = None,
         baseline_trial_reservation: Path | str | None = None,
+        trend_cost_policy: TrendCostPolicy | None = None,
     ) -> WalkForwardResult:
         """Run every leg over ``[start, end)``; return (and optionally save) the result.
 
@@ -835,6 +850,11 @@ class WalkForwardRunner:
         marked equity — the OOS curve compounds with no resets. Strategy
         knobs (``rebalance_bars`` etc.) pass through to
         :class:`~alphaforge.portfolio.strategy.BlendStrategy`.
+
+        ``trend_cost_policy`` optionally filters directional mu by dated, side-specific
+        round-trip cost scenarios before allocation. It uses the signal horizon (not
+        rebalance cadence), enters trial identity and the input snapshot, and cannot
+        be combined with ML/regime gates. Cost provenance remains caller-supplied.
 
         ``now_ms`` is the caller's wall-clock epoch-ms (never read from the clock
         here — determinism): it stamps the experiment-ledger trial. When it is
@@ -852,6 +872,27 @@ class WalkForwardRunner:
         or a grid too short for one leg (via the splitter).
         """
         tf = self._sleeve.anchor_tf
+        trend_cost_binding = {}
+        if trend_cost_policy is not None:
+            from alphaforge.portfolio.trend_cost_policy import TrendCostPolicy
+
+            if not isinstance(trend_cost_policy, TrendCostPolicy):
+                raise ValueError("Typed trend cost policy required")
+            if allocator != "trend" or ml or regime:
+                raise ValueError("Cost gate requires trend with ML/regime gates disabled")
+            trend_cost_binding = {
+                "trend_cost_gate": trend_cost_policy.binding(
+                    horizon_bars=self._settings.signals.horizon_bars,
+                    periods_per_year=self._calendar.periods_per_year(tf),
+                )
+            }
+        signal_binding = getattr(self._signals, "trial_binding", {})
+        if signal_binding:
+            if signal_binding != {"trend_blend_normalization": "directional_rms"}:
+                raise ValueError("Unsupported signal trial binding")
+            if allocator != "trend" or ml or regime or trend_cost_policy is not None:
+                raise ValueError("Directional blend requires ungated trend allocation")
+            trend_cost_binding.update(signal_binding)
         if end <= start:
             raise ValueError(f"end ({end}) must be > start ({start})")
         if start % tf.ms or end % tf.ms:
@@ -908,6 +949,8 @@ class WalkForwardRunner:
                 "instrument_ids": list(ids),
                 "alpha_names": list(alpha_names) if alpha_names is not None else None,
             }
+            base_trial_config.update(trend_cost_binding)
+            base_trial_config.update(self._engine_binding)
             variant_trial_config = {
                 **base_trial_config,
                 **self._gate_trial_config(ml=ml, regime=regime),
@@ -966,6 +1009,12 @@ class WalkForwardRunner:
         # weight estimate is. The equivalence is pinned by tests/integration/
         # test_walkforward_equivalence.py.
         full_frame = self._signals.compute_research(start, end)
+        if trend_cost_policy is not None:
+            full_frame = trend_cost_policy.apply(
+                full_frame,
+                horizon_bars=self._settings.signals.horizon_bars,
+                periods_per_year=self._calendar.periods_per_year(tf),
+            )
         full_ts = full_frame.index.get_level_values("ts_open").to_numpy(dtype=np.int64)
 
         # A persisted performance result without its exact derived inputs is not an
@@ -997,6 +1046,8 @@ class WalkForwardRunner:
                     for (iid, timestamp), ratio in self._verified_split_events.items()
                 ),
             }
+            declared_snapshot_run.update(trend_cost_binding)
+            declared_snapshot_run.update(self._engine_binding)
             input_snapshot_binding = seal_walkforward_input_snapshot(
                 out_dir / "input_snapshot",
                 signal_frame=full_frame,
@@ -1083,6 +1134,8 @@ class WalkForwardRunner:
         # D6/D7: the gate flags + their params enter the artifact echo ONLY when a gate
         # is on, so the OFF config dict (and walkforward.json) is byte-identical to today.
         config.update(self._gate_config(ml=ml, regime=regime))
+        config.update(trend_cost_binding)
+        config.update(self._engine_binding)
         if self._verified_split_events:
             canonical_verified_splits = json.dumps(
                 sorted(
@@ -1279,7 +1332,7 @@ class WalkForwardRunner:
             else:
                 strategy.load_leg(signal_frame)
             counters_before = strategy.counters
-            engine = EventDrivenBacktester(
+            engine = self._engine_factory(
                 self._reader,
                 self._instruments,
                 self._cost_model,

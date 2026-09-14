@@ -150,6 +150,7 @@ class SignalService:
         pipeline: CSPipeline | None = None,
         min_members: int = 5,
         sleeve: Sleeve = CRYPTO_PERP_SLEEVE,
+        blend_normalization: str = "cross_sectional_zscore",
     ) -> None:
         if alpha_names is None:
             specs = [s for s in registry.all_specs() if s.direction != 0]
@@ -167,6 +168,18 @@ class SignalService:
                 raise ValueError(
                     f"alpha name {spec.name!r} collides with a SignalService helper column"
                 )
+        if blend_normalization not in ("cross_sectional_zscore", "directional_rms"):
+            raise ValueError("Unknown blend normalization")
+        if blend_normalization == "directional_rms":
+            from alphaforge.core.types import AssetClass
+
+            if (
+                sleeve.asset_class is not AssetClass.EQUITY
+                or {s.name for s in specs} != {"mf_trend_63", "mf_trend_126", "mf_trend_252"}
+                or any(s.cross_sectional or s.direction != 1 for s in specs)
+            ):
+                raise ValueError("Directional RMS is restricted to the managed-futures trend slate")
+        self._blend_normalization = blend_normalization
         self._engine = engine
         self._universe = universe
         self._cfg = cfg
@@ -196,6 +209,13 @@ class SignalService:
     def alpha_names(self) -> tuple[str, ...]:
         """Blended alphas, in blend-column order."""
         return tuple(s.name for s in self._alpha_specs)
+
+    @property
+    def trial_binding(self) -> dict[str, str]:
+        """Nondefault signal construction must enter the measured return identity."""
+        if self._blend_normalization == "cross_sectional_zscore":
+            return {}
+        return {"trend_blend_normalization": self._blend_normalization}
 
     # ------------------------------------------------------------ research path
 
@@ -317,7 +337,13 @@ class SignalService:
         weights: BlendWeights,
     ) -> pd.DataFrame:
         """Blend → Ã → mu_ann; the single body both windows share (anti-skew)."""
-        a_tilde = blend(zs, weights, mask, min_members=self._min_members)
+        a_tilde = blend(
+            zs,
+            weights,
+            mask,
+            min_members=self._min_members,
+            normalization=self._blend_normalization,
+        )
         mu = self._sizer.mu_ann(a_tilde, frame[SIGMA_COLUMN])
         return pd.DataFrame({ALPHA_BLEND_COLUMN: a_tilde, MU_ANN_COLUMN: mu}, index=frame.index)
 

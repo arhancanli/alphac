@@ -84,19 +84,48 @@ def _curve_from_state(state: dict[str, Any]) -> list[dict[str, Any]]:
 
 
 def _curve_metrics(curve: list[dict[str, Any]]) -> tuple[np.ndarray, float, str, str]:
+    if len(curve) < 2:
+        raise ValueError("flagship curve needs at least two marks")
     dates = [dt.date.fromisoformat(str(point["date"])) for point in curve]
     if any(right <= left for left, right in itertools.pairwise(dates)):
         raise ValueError("flagship curve dates must be unique and strictly increasing")
     equity = np.asarray([float(point["equity"]) for point in curve], dtype=np.float64)
     if not np.all(np.isfinite(equity)) or np.any(equity <= 0.0):
         raise ValueError("flagship equity must be finite and strictly positive")
-    returns = equity[1:] / equity[:-1] - 1.0
+    one_day = np.asarray(
+        [(right - left).days == 1 for left, right in itertools.pairwise(dates)]
+    )
+    returns = (equity[1:] / equity[:-1] - 1.0)[one_day]
     running_peak = np.maximum.accumulate(equity)
     realized_max_drawdown = float(np.max(1.0 - equity / running_peak))
     return returns, realized_max_drawdown, dates[0].isoformat(), dates[-1].isoformat()
 
 
-def _sharpe_evidence(returns: np.ndarray, contract: dict[str, Any]) -> dict[str, Any]:
+def _curve_intervals(curve: list[dict[str, Any]]) -> dict[str, Any]:
+    """Retain every observed interval; never invent marks to bridge a gap."""
+    _curve_metrics(curve)  # Same chronology and equity validation as the metric path.
+    gaps = []
+    for left, right in itertools.pairwise(curve):
+        days = (dt.date.fromisoformat(right["date"]) - dt.date.fromisoformat(left["date"])).days
+        if days != 1:
+            gaps.append({
+                "start_mark": left["date"],
+                "end_mark": right["date"],
+                "elapsed_days": days,
+                "observed_return": float(right["equity"]) / float(left["equity"]) - 1.0,
+            })
+    return {
+        "adjacent_mark_intervals": len(curve) - 1,
+        "one_day_intervals": len(curve) - 1 - len(gaps),
+        "missing_daily_marks": sum(gap["elapsed_days"] - 1 for gap in gaps),
+        "consecutive_daily_marks": not gaps,
+        "multi_day_intervals": gaps,
+    }
+
+
+def _sharpe_evidence(
+    returns: np.ndarray, contract: dict[str, Any], *, consecutive_daily_marks: bool = True
+) -> dict[str, Any]:
     n_obs = int(returns.size)
     estimate_min = int(contract["minimum_daily_returns_for_estimate"])
     establish_min = int(contract["minimum_daily_returns_for_establishment"])
@@ -117,6 +146,11 @@ def _sharpe_evidence(returns: np.ndarray, contract: dict[str, Any]) -> dict[str,
         "target_observed": False,
         "target_statistically_established": False,
     }
+    if not consecutive_daily_marks:
+        # Even a large surviving sample cannot validate a record with unobserved
+        # daily outcomes. Do not publish a selectively gap-excluded Sharpe.
+        base["status"] = "FAIL_CLOSED_IRREGULAR_DAILY_RECORD"
+        return base
     if n_obs < estimate_min:
         base["status"] = "IMMATURE_RECORD_TOO_SHORT"
         return base
@@ -177,6 +211,7 @@ def evaluate(
     evaluated_at = evaluated_at.astimezone(dt.UTC)
     curve = _curve_from_state(state)
     returns, realized_max_dd, first_mark, last_mark = _curve_metrics(curve)
+    intervals = _curve_intervals(curve)
     live_config = state.get("live_config", {})
     broker_time = _parse_time(str(broker["generated_at"]))
     state_time = _parse_time(str(state["generated_at"]))
@@ -366,7 +401,9 @@ def evaluate(
         ),
     }
     provenance_passes = all(checks.values())
-    sharpe = _sharpe_evidence(returns, contract)
+    sharpe = _sharpe_evidence(
+        returns, contract, consecutive_daily_marks=intervals["consecutive_daily_marks"]
+    )
     if not provenance_passes:
         sharpe["underlying_status"] = sharpe["status"]
         sharpe["status"] = "FAIL_CLOSED_PROVENANCE"
@@ -403,12 +440,17 @@ def evaluate(
             "transparency_state_validation_error": transparency_state_error,
         },
         "record": {
+            "measurement_version": "daily_interval_validation_v2",
             "first_mark": first_mark,
             "last_mark": last_mark,
             "curve_points": len(curve),
             "daily_return_observations": int(returns.size),
             "cumulative_return": float(curve[-1]["equity"] / curve[0]["equity"] - 1.0),
-            "return_frequency": contract["return_frequency"],
+            "return_frequency": (
+                contract["return_frequency"] if intervals["consecutive_daily_marks"]
+                else "IRREGULAR_PUBLISHED_UTC_MARKS_NO_SYNTHETIC_FILL"
+            ),
+            "interval_coverage": intervals,
             "configuration_fingerprint": live_config.get("fingerprint"),
         },
         "sharpe_evidence": sharpe,

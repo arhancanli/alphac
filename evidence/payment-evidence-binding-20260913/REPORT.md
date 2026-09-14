@@ -1,0 +1,13 @@
+# Payment evidence bindings and acquisition windows
+
+Implemented an optional evidence-backed path for the isolated payment ledger. It verifies content-addressed normalized source objects, checks payment identity, currency, amount and timestamps against the retained source record, and requires the record to appear in the specified acquisition scan. Funding additionally binds declared contract, position, mark and rate evidence to the payment's instrument and effective boundary. The bundle is detached from caller mutation, embedded in the payment transaction and rechecked during recovery.
+
+The scan assessment checks account/source/scan identity, a fixed creation-time window, page cursor continuity, event identity uniqueness and an explicit empty terminal page. Partial scans are independently persistable as private exclusive files without cash mutation. Completed pagination is reported separately from settlement completeness, which remains false. Delayed effective dates are not silently substituted for creation-time filtering.
+
+**48 focused tests passed**, including 11 new evidence tests, 17 payment-ledger tests and 20 crypto-receipt tests. Ruff passed. Tests cover modified source objects, changed payment economics, absent scan membership, mixed page bindings, partial capture persistence, funding position mismatch and successful evidence-bound replay/recovery. Existing crash-recovery tests remain passing. Synthetic complete and partial window artifacts accompany this report.
+
+Scope limits: these are normalized local evidence schemas. No live provider adapter has yet established their provenance, source timestamp semantics or contract truth. Hashes verify retained-content consistency, not source authentication. The legacy unbound payment API remains available for isolated fixtures and still grants no clearance. This change neither authenticates those prior entries nor allows a completed scan to clear delayed funding/accruals. Unknown/unreceived payments cannot be inferred from the scan. Replaying a payment with different evidence content is a conflict, not an automatic evidence replacement.
+
+No production changes, broker requests, clock adjustments, historical backfills or real epochs occurred. The old cash residual remains unresolved at payment level; no performance claim or sleeve admission was made.
+
+Phase complete. Next proposed bounded phase: map actual retained provider responses into this evidence schema and test which event types can be bound without guessing missing creation, settlement, position or mark fields. Unsupported responses must remain partial evidence; runtime integration follows only after that capability is established.

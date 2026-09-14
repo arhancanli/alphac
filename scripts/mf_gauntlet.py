@@ -41,7 +41,20 @@ def main(argv=None) -> int:
     ap.add_argument("--alphas", default=",".join(_ALPHAS), help="comma list (diagnostic: single horizon vs blend)")
     ap.add_argument("--rebalance", type=int, default=21)
     ap.add_argument("--profile", default="managed_futures", help="any trend profile (managed_futures, crypto_trend, ...)")
+    ap.add_argument("--trend-cost-policy", type=Path, help="Explicit dated cost policy JSON; new trial")
+    ap.add_argument("--trial-reservation", type=Path, help="Canonical reservation for a new trial")
     a = ap.parse_args(argv)
+    trend_cost_policy = None
+    if a.trend_cost_policy is not None:
+        import json
+
+        from alphaforge.portfolio.trend_cost_policy import TrendCostPolicy, TrendCostRow
+
+        payload = json.loads(a.trend_cost_policy.read_text())
+        trend_cost_policy = TrendCostPolicy(
+            rows=tuple(TrendCostRow(**row) for row in payload["rows"]), basis=payload["basis"],
+            allocation_mode=payload.get("allocation_mode", "filter_then_allocate"),
+        )
 
     import alphaforge.features.library  # noqa: F401  canonical factors
     from alphaforge.research import zoo
@@ -91,6 +104,7 @@ def main(argv=None) -> int:
             start, end, train_bars=train_bars, test_bars=test_bars, allocator="trend",
             embargo_bars=embargo_bars, initial_cash=a.cash, rebalance_bars=a.rebalance,
             no_trade_band=0.0010, out_dir=out, now_ms=now, alpha_names=alphas,
+            trend_cost_policy=trend_cost_policy, trial_reservation=a.trial_reservation,
         )
 
     s = result.summary

@@ -1,0 +1,15 @@
+# Durable simulated account-to-price binding
+
+The isolated paper broker now commits its marked account snapshot and exact price-receipt references in one ACCOUNT event. Binding occurs under a SQLite write transaction after all referenced START/END hashes, instrument IDs, cycle labels, host/boot/session declarations and mark values are checked. Cash plus signed quantity times mark must reproduce the recorded equity using the legacy float arithmetic. This preserves the existing accounting convention; it does not establish exact decimal or venue contract accounting.
+
+The broker exposes an account receipt ID only after persistence succeeds. Failed marking or persistence leaves the successful-snapshot cache invalid. Opt-in recording also detects simulated state changes during book acquisition. Default operation avoids the additional full-state copy. Price observations remain durable independently: a failed account transaction leaves them unbound rather than pretending they belong to a complete account snapshot.
+
+`recover_accounts(path)` opens the existing evidence database read-only, checks account/price hashes and bindings, repeats the arithmetic, and reports unbound observations separately. It does not create missing databases, repair rows or resume execution. One ACCOUNT row contains both the account and its complete position-to-receipt mapping, so partial links cannot commit separately. Hashes protect consistency with retained content, not against coordinated rewriting of the entire evidence database.
+
+Validation: **88 focused tests passed**, including nine new account-binding/recovery tests, with Ruff clean. A real subprocess exited during an uncommitted insert; SQLite recovery retained the earlier committed account and removed the interrupted row. Additional cases cover insert failure, tampered price evidence, wrong-cycle references, changed equity, cash-only snapshots, mutation during marking and missing recovery files. The saved synthetic account recovers cash 820 plus two units marked at 100, giving equity 1020 quote units, with no unbound observations. Source snapshots and validation logs accompany this report.
+
+This phase does not add externally verified account identity, currency conversion, full funding/flow/accrual reconciliation, source-time verification, production database integration or a durable resumption of the trading service. Receipt linkage is to a simulated recording session. Flow completeness and valuation clearance remain false. The previous clock failure remains unresolved; no fresh clock or broker calls were necessary here. Production paper source matches the previously recorded hash.
+
+Phase complete. No new return trial, epoch, admission or performance claim. The combined Sharpe >2, maximum drawdown ≤11% and 15+ qualified sleeve targets remain unestablished.
+
+Next proposed bounded phase: define and test the explicit currency/contract/accounting bindings for the simulated crypto ledger, including funding and flow completeness. Use existing source evidence to distinguish what the ledger can reconstruct from what requires prospective acquisition; retain all old baselines.
