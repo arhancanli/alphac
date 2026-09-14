@@ -9,8 +9,8 @@ contract's boundary is the boundary it states about itself. A script with no doc
 having none.
 
 At a glance: **355 Python scripts**, **17 shell entry points**,
-**30 configuration contracts**, **2 engineering artifacts**,
-**426 unit test files**, **0 data directories**, **9 scheduled jobs**.
+**30 configuration contracts**, **3 engineering artifacts**,
+**426 unit test files**, **23 data directories**, **9 scheduled jobs**.
 
 
 ## What runs on a timer
@@ -213,6 +213,7 @@ are the ones a reader has to know about; everything else is derived from them.
 | `config/trial_accounting_v7_proposed.json` | _(no stated boundary)_ |
 | `artifacts/engineering/deflated_sharpe_calculator_contract.json` | This contract reproduces ALPHAC's PSR and DSR arithmetic for supplied inputs. |
 | `artifacts/engineering/foundry_local_contract_verification.json` | This receipt verifies committed local contracts. |
+| `artifacts/engineering/lint_debt_contract.json` | Ruff is clean for src/alphaforge and tests. |
 
 ## Scripts by kind
 
@@ -634,6 +635,29 @@ and is worth more than a hand-made taxonomy that would drift.
 
 | directory |  |
 |---|---|
+| `data/corrections/` |  |
+| `data/deribit/` |  |
+| `data/features/` |  |
+| `data/lake/` |  |
+| `data/lake_fut_db/` |  |
+| `data/lake_fut_real/` |  |
+| `data/lake_insider/` |  |
+| `data/lake_inventory/` |  |
+| `data/lake_inventory_releases/` |  |
+| `data/lake_macro_vintage/` |  |
+| `data/lake_mf/` |  |
+| `data/lake_mf_exp/` |  |
+| `data/lake_sec/` |  |
+| `data/lake_sharadar/` |  |
+| `data/lake_sharadar_full/` |  |
+| `data/lake_shortint/` |  |
+| `data/paper/` |  |
+| `data/predictions/` |  |
+| `data/quality/` |  |
+| `data/raw/` |  |
+| `data/reproduction/` |  |
+| `data/research/` |  |
+| `data/sharadar_raw/` |  |
 
 Deliberately no file counts: the collectors write into these every day, and a number
 committed here would be wrong by the time anybody read it — and would make the currency
