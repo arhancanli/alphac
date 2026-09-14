@@ -139,3 +139,8 @@ published number or spend a research identity are marked DECISION and name who m
   ledger audit) -> #25 (import + 320 review) -> #26 (prospective register + publisher repoint)
   -> #27 (drawdown control v1). canlicapital #11 carries the site (design worktree, deployed
   from 11:25Z). Owner merge order is the chain order.
+- 11:07Z. NOTE. Found `var/locks/vercel_deploy.lock` left by the 10:27Z tick's deploy (killed by
+  the tick's 600 s bound after three failed builds; a SIGKILL cannot run the release trap) and
+  removed it. On reading `scripts/lib/bounded.sh` afterwards: `deploy_lock_acquire` already steals
+  a lock older than 30 minutes, so the 11:25Z tick would have cleared it unaided. Harmless, and
+  not needed; recorded so the next reader does not repeat it.
