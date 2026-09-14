@@ -138,7 +138,11 @@ def test_receipt_must_bind_exact_deployed_sources(modules) -> None:
     receipt["after"]["files"][deploy.EXPECTED_PATHS[0]] = "f" * 64
     receipt["content_hash"] = deploy._content_hash(receipt)
 
-    with pytest.raises(verifier.VerificationError, match="desired source hashes"):
+    # An after-hash the contract has never declared, now or in any desired_revisions entry,
+    # is unreviewed drift and must fail closed (the message names the current desired hash).
+    with pytest.raises(
+        verifier.VerificationError, match="matches neither the current desired_sha256"
+    ):
         verifier.validate_receipt(receipt, contract, deploy)
 
 
@@ -149,7 +153,7 @@ def test_receipt_binds_the_deployment_and_verification_code(modules) -> None:
     receipt["source_bindings"]["deployment_tool_sha256"] = "f" * 64
     receipt["content_hash"] = deploy._content_hash(receipt)
 
-    with pytest.raises(verifier.VerificationError, match="source bindings"):
+    with pytest.raises(verifier.VerificationError, match="matches neither the current file"):
         verifier.validate_receipt(receipt, contract, deploy)
 
 
@@ -168,8 +172,23 @@ def test_no_receipt_is_deterministic_fail_closed_without_remote_query(modules) -
 def test_first_success_freezes_only_for_the_same_deployment_receipt(modules) -> None:
     verifier, _, _ = modules
     document = _document(modules)
+    contract = _contract(verifier)
 
-    assert verifier.is_frozen_success(document, receipt_sha256="a" * 64)
-    assert not verifier.is_frozen_success(document, receipt_sha256="b" * 64)
+    assert verifier.is_frozen_success(document, receipt_sha256="a" * 64, contract=contract)
+    assert not verifier.is_frozen_success(document, receipt_sha256="b" * 64, contract=contract)
     document["attribution"]["latest_cycle"]["equity_quote"] = 999.0
-    assert not verifier.is_frozen_success(document, receipt_sha256="a" * 64)
+    assert not verifier.is_frozen_success(document, receipt_sha256="a" * 64, contract=contract)
+
+
+def test_frozen_success_thaws_when_the_contract_repins_a_required_file(modules) -> None:
+    """A frozen document proves what was deployed against the desired hashes of ITS day. Once
+    the contract re-pins any required file, the shortcut must not keep answering for a state
+    nobody has re-checked remotely."""
+    verifier, _, _ = modules
+    document = _document(modules)
+    contract = _contract(verifier)
+    assert verifier.is_frozen_success(document, receipt_sha256="a" * 64, contract=contract)
+
+    repinned = json.loads(json.dumps(contract))
+    repinned["required_files"][0]["desired_sha256"] = "e" * 64
+    assert not verifier.is_frozen_success(document, receipt_sha256="a" * 64, contract=repinned)

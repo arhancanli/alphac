@@ -51,3 +51,6 @@ ruvector.db
 
 # local agent-tooling state (ruflo/agentdb), never tracked
 agentdb.rvf*
+
+# ruflo swarm state (agent tooling), never tracked
+.swarm/
