@@ -25,8 +25,20 @@ def _evidence(failed_checks: list[str]) -> dict:
             "last_mark": "2026-08-26",
             "cumulative_return": -0.02,
         },
+        "sharpe_evidence": {
+            "target": 2.0,
+            "target_history": [
+                {"target": 1.5, "in_force_from": "2026-08-21", "superseded_on": "2026-09-14"},
+                {"target": 2.0, "in_force_from": "2026-09-14"},
+            ],
+            "estimate_minimum": 252,
+            "establishment_minimum": 756,
+            "annualized_point_estimate": None,
+            "status": "IMMATURE_RECORD_TOO_SHORT",
+        },
         "drawdown_evidence": {
             "realized_live_max_drawdown": 0.024,
+            "realized_max_drawdown_bound": 0.10,
             "current_composition_conservative_expected_max_drawdown": 0.09,
             "current_composition_conservative_p95_max_drawdown": 0.16,
         },
@@ -42,6 +54,7 @@ README_TEMPLATE = """**Evidence snapshot:** 2026-08-25. Later marks follow.
 
 | Paper sleeves | old |
 | Forward record | old |
+| Forward Sharpe | old |
 | Drawdown | old |
 | Diversification | old |
 
@@ -66,3 +79,34 @@ def test_sync_reports_a_passing_provenance_gate_directly() -> None:
 
     assert "provenance currently passes the publication gate" in updated
     assert "its provenance gate currently passes" in updated
+
+
+def test_sync_derives_the_governing_target_and_the_realized_bound_from_the_evidence() -> None:
+    updated = _module().synchronize(_evidence([]), README_TEMPLATE)
+
+    assert "| Paper sleeves | **4 / 14 planned**" in updated
+    assert (
+        "| Forward Sharpe | **Not reportable** — 252 observations are required for an estimate "
+        "and 756 for the project's establishment test; the governing forward target is **2.0** "
+        "(owner goal, in force from 2026-09-14) |"
+    ) in updated
+    assert "against the owner's realized bound of **10%**" in updated
+
+
+def test_sync_publishes_a_point_estimate_only_once_the_evidence_carries_one() -> None:
+    evidence = _evidence([])
+    evidence["sharpe_evidence"].update(
+        {
+            "annualized_point_estimate": 1.234,
+            "probability_true_sharpe_exceeds_target": 0.235,
+            "status": "ESTIMATE_ELIGIBLE_TARGET_NOT_OBSERVED",
+        }
+    )
+    updated = _module().synchronize(evidence, README_TEMPLATE)
+
+    assert (
+        "| Forward Sharpe | Point estimate **1.23** against the governing target **2.0**; "
+        "probability the true Sharpe exceeds it **23.5%**; status "
+        "ESTIMATE_ELIGIBLE_TARGET_NOT_OBSERVED, not a real-money result |"
+    ) in updated
+    assert "Not reportable" not in updated

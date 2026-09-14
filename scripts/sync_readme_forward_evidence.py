@@ -20,6 +20,21 @@ def _replace_once(text: str, pattern: str, replacement: str) -> str:
     return updated
 
 
+def _target_text(target: float) -> str:
+    """2.0 stays 2.0 and 2.25 stays 2.25: one decimal at least, never a bare integer."""
+    text = f"{target:.4f}".rstrip("0")
+    return text + "0" if text.endswith(".") else text
+
+
+def _target_in_force(sharpe: dict[str, Any]) -> str:
+    """Name when the governing target took force, from the contract's own history."""
+    history = sharpe.get("target_history") or []
+    current = [entry for entry in history if float(entry["target"]) == float(sharpe["target"])]
+    if not current:
+        return "target history not published"
+    return f"in force from {current[-1]['in_force_from']}"
+
+
 def _epoch_clause(record: dict[str, Any]) -> str:
     """Name the evidence epoch when a declared live change split the record (never pooled)."""
     epoch = record.get("evidence_epoch")
@@ -93,11 +108,31 @@ def synchronize(evidence: dict[str, Any], readme: str) -> str:
         f"**{_percentage(float(record['cumulative_return']), 5)}**; {provenance_summary}"
         f"{_epoch_clause(record)} |",
     )
+    sharpe = evidence["sharpe_evidence"]
+    target = _target_text(float(sharpe["target"]))
+    if sharpe.get("annualized_point_estimate") is None:
+        sharpe_row = (
+            "| Forward Sharpe | **Not reportable** — "
+            f"{int(sharpe['estimate_minimum'])} observations are required for an estimate and "
+            f"{int(sharpe['establishment_minimum'])} for the project's establishment test; the "
+            f"governing forward target is **{target}** (owner goal, "
+            f"{_target_in_force(sharpe)}) |"
+        )
+    else:
+        probability = sharpe.get("probability_true_sharpe_exceeds_target")
+        sharpe_row = (
+            "| Forward Sharpe | Point estimate "
+            f"**{float(sharpe['annualized_point_estimate']):.2f}** against the governing target "
+            f"**{target}**; probability the true Sharpe exceeds it "
+            f"**{float(probability):.1%}**; status {sharpe['status']}, not a real-money result |"
+        )
+    readme = _replace_once(readme, r"^\| Forward Sharpe \|.*$", sharpe_row)
     readme = _replace_once(
         readme,
         r"^\| Drawdown \|.*$",
         "| Drawdown | Realized "
-        f"**{_percentage(float(drawdown['realized_live_max_drawdown']), 5)}** to date, "
+        f"**{_percentage(float(drawdown['realized_live_max_drawdown']), 5)}** to date against "
+        f"the owner's realized bound of **{float(drawdown['realized_max_drawdown_bound']):.0%}**, "
         "descriptive only; the current-composition model estimates "
         f"**{expected_drawdown} expected / {p95_drawdown} "
         "p95**, neither established by live evidence |",

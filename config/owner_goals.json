@@ -1,0 +1,124 @@
+{
+  "schema": "canli.alphac-owner-goals.v1",
+  "author": "Arhan Canli",
+  "status": "IN_FORCE_NOT_ACHIEVED",
+  "recorded_on": "2026-09-12",
+  "in_force_from": "2026-09-14",
+  "source_document": "docs/design/ALPHAC_OWNER_GOALS_2026-09-12.md",
+  "decision": {
+    "recorded_at": "2026-09-14T18:05:00+00:00",
+    "by": "Arhan Canli (owner)",
+    "words": "no let me break down the goals for you so basically we are trying to make alphac like the worlds first open glassbox style algorithm which devs can use via api keys and mcp servers to build there own mobdels fine tune it make it better and also we are making everything we do out in the open published all tests everything and for alphac the goal is 2 sharpe ratio 14 plus sleeves 10 percent max dd and also all of the other things being perfect and us doing extremely rigiourus tests on it and also not forgeting reach life cosst which may occur on it on our paper live and also eventually turning this into a real hedgefund",
+    "earlier_words_same_day": "no the sharpe target is 2 and also in general make sure everything is the best",
+    "context": "Operator session 2026-09-14 (docs/design/OPERATOR_LOG_2026-09.md). The owner corrected the operator twice: first that the forward Sharpe target is 2, not the admission contract's 1.5; then the full goal set, which moves the sleeve minimum to 14 and the maximum-drawdown bound to 10 percent from the 15 and 11 percent the 2026-09-12 document recorded.",
+    "how": "This file, projected by src/alphaforge/research/owner_goals.py into every public objective block; config/forward_evidence_contract.json forward_sharpe_target_history and realized_max_drawdown_bound record the same goals on the evaluation side."
+  },
+  "scope": "The combined paper portfolio, never any single sleeve. Nothing in this file is established by this file; each goal names the evidence that would establish it and the artifact that reports the current state.",
+  "goals": {
+    "combined_forward_sharpe": {
+      "target": 2.0,
+      "comparison": "ABOVE",
+      "quoted_outcome": "Combined portfolio Sharpe **above 2**, net of costs.",
+      "basis": "Annualized (365-day convention) from consecutive published UTC daily paper marks, net of modeled costs, zero excess-return benchmark, evaluated by scripts/evaluate_forward_evidence_maturity.py under config/forward_evidence_contract.json (252 returns before an estimate, 756 and PSR >= 0.95 before establishment).",
+      "reported_in": "artifacts/engineering/forward_evidence_maturity.json sharpe_evidence",
+      "not_interchangeable_with": "Any in-sample or development simulation Sharpe, including the 1.87 to 1.88 raw development figures recorded in the owner-goals document, which are not combined-book forward results."
+    },
+    "combined_max_drawdown": {
+      "bound": 0.1,
+      "comparison": "AT_MOST",
+      "quoted_outcome": "Combined portfolio maximum drawdown **no greater than 10%**",
+      "statistic": "REALIZED_MAXIMUM_DRAWDOWN_BOUND",
+      "stronger_than": "expected_maximum_drawdown, the statistic config/forward_evidence_contract.json evaluates as expected_max_drawdown_target and config/sleeve_admission_contract.json gates as book_expected_max_drawdown_max, both sealed at 0.11 and published beside this bound as the modeled objective, never mixed with it",
+      "mechanism": "config/drawdown_control_contract.json declares half gross at 5.5 percent below the high-water mark and flat at 11 percent, absorbing until an owner rearm. That ladder was measured against the superseded 11 percent objective and CANNOT enforce a 10 percent bound; a ladder consistent with this bound (flat at or below 10 percent) must be measured with scripts/analyze_drawdown_control.py and declared before activation. A brake bounds each episode up to a one-day overshoot and does not make losses impossible.",
+      "reported_in": "artifacts/engineering/forward_evidence_maturity.json drawdown_evidence (realized_live_max_drawdown against realized_max_drawdown_bound) and artifacts/engineering/book_drawdown_ladder.json",
+      "mechanism_status": "DECLARED_LADDER_INCONSISTENT_WITH_BOUND_REMEASUREMENT_REQUIRED_BEFORE_ACTIVATION"
+    },
+    "qualified_economically_distinct_sleeves": {
+      "minimum": 14,
+      "comparison": "AT_LEAST",
+      "quoted_outcome": "**At least 14 qualified economically distinct sleeves.**",
+      "admission_rule": "A target never creates a sleeve. Every sleeve clears config/sleeve_admission_contract.json thresholds under a registered trial; different tickers, parameters or names do not establish independent mechanisms.",
+      "reported_in": "artifacts/engineering/forward_evidence_maturity.json diversification_evidence (current_sleeves against target_total_sleeves)"
+    }
+  },
+  "program": {
+    "open_glassbox": {
+      "goal": "The world's first open glassbox-style algorithm: the method, every version, cost, uncertainty, failure and reproducible evidence published as they are produced.",
+      "quoted": "we are making everything we do out in the open published all tests everything",
+      "status": "IN_PROGRESS_NOT_A_NOVELTY_CLAIM",
+      "reported_in": "the canlicapital.com glassbox surface (public/glassbox), docs/design/OPERATOR_LOG_2026-09.md, every trial packet under artifacts/research"
+    },
+    "developer_platform": {
+      "goal": "Developers use ALPHAC through API keys and MCP servers to build their own models, fine-tune it and improve it.",
+      "quoted": "devs can use via api keys and mcp servers to build there own mobdels fine tune it make it better",
+      "status": "DOWNSTREAM_OF_ALGORITHM_AND_OPERATIONAL_EVIDENCE",
+      "launch_requirements": [
+        "access control",
+        "key lifecycle",
+        "usage limits",
+        "documentation",
+        "data rights"
+      ]
+    },
+    "rigorous_testing": {
+      "goal": "Extremely rigorous tests of everything, published: point-in-time data, cash and dividend accounting, leakage checks, full trial accounting, untouched prospective validation, stressed dependence, realistic execution and financing, capacity, reproducible outputs, restart and reconciliation, honest forward records, and mutation-tested guards.",
+      "quoted": "us doing extremely rigiourus tests on it",
+      "status": "ONGOING",
+      "reported_in": "tests/, artifacts/engineering/mutation_ledger.json, .github/workflows/ci.yml"
+    },
+    "real_life_costs_on_paper_live": {
+      "goal": "The paper-live record carries every cost a funded book would pay where it occurs: commissions, spread and slippage, financing and funding, borrow, market impact at the intended capacity; none assumed away and none applied only in research.",
+      "quoted": "not forgeting reach life cosst which may occur on it on our paper live",
+      "status": "EQUITY_PAPER_LIVE_GROSS_OF_FRICTIONS_REPAIR_PENDING",
+      "reported_in": "docs/design/COST_REALISM_AUDIT_2026-09-14.md (cost by cost, research against paper-live, with file and line evidence); src/alphaforge/costs; the per-sleeve execution disclosures in the publication bundle",
+      "audit": "docs/design/COST_REALISM_AUDIT_2026-09-14.md",
+      "finding_2026_09_14": "The crypto sleeve charges commission, real spread and impact (fills walk the live book) and perpetual funding; the equity sleeves' published NAV is the broker's paper equity verbatim and charges no commission, spread, impact, borrow or financing; cash yield and FX are unmodelled on every path. Until the repair lands the forward record is gross of equity frictions."
+    },
+    "real_hedge_fund": {
+      "goal": "Eventually a real hedge fund, downstream of the paper evidence.",
+      "quoted": "eventually turning this into a real hedgefund",
+      "status": "NOT_STARTED_PAPER_ONLY",
+      "boundary": "Paper results never convert into real capital by presentation; capital_kind stays PAPER_ONLY until a separately declared launch decision."
+    }
+  },
+  "supersedes": {
+    "sleeve_admission_contract_objective": {
+      "path": "config/sleeve_admission_contract.json",
+      "sha256": "6bc72c1f47675b4e14897e1ba3aad6e56aba9b5f013a7b9bae57f930e8d3b8b6",
+      "honest_forward_sharpe_target": 1.5,
+      "target_total_sleeves": 14,
+      "minimum_new_sleeves": 10,
+      "portfolio_max_drawdown_target": 0.11,
+      "in_force": "2026-08-21 (contract v6 objective, carried unchanged into v7) to 2026-09-14",
+      "why_the_bytes_stand": "The contract's bytes are sealed by config/admission_v7_promotion.json and its objective was never an admission gate (targets_are_admission_evidence is false), so the goals move without any gate moving. The superseded figures are published beside the governing ones, dated, as history."
+    },
+    "forward_evidence_contract_target": {
+      "path": "config/forward_evidence_contract.json",
+      "previous": 1.5,
+      "current": 2.0,
+      "history_key": "forward_sharpe_target_history",
+      "record_status_when_superseded": "IMMATURE_RECORD_TOO_SHORT: 36 daily returns; no point estimate was ever published against 1.5"
+    },
+    "owner_goals_document_2026_09_12": {
+      "path": "docs/design/ALPHAC_OWNER_GOALS_2026-09-12.md",
+      "recorded_outcomes": {
+        "combined_forward_sharpe_above": 2.0,
+        "combined_max_drawdown_at_most": 0.11,
+        "qualified_sleeves_at_least": 15
+      },
+      "restated_on": "2026-09-14",
+      "restated_outcomes": {
+        "combined_forward_sharpe_above": 2.0,
+        "combined_max_drawdown_at_most": 0.1,
+        "qualified_sleeves_at_least": 14
+      },
+      "note": "The document's September 14 restatement section carries the owner's words; the earlier numbers stay in the document as history."
+    },
+    "expected_max_drawdown_objective": {
+      "value": 0.11,
+      "statistic": "expected_maximum_drawdown",
+      "kept_as": "the sealed modeled objective in config/sleeve_admission_contract.json and config/forward_evidence_contract.json expected_max_drawdown_target, published beside the owner's realized bound and never mixed with it"
+    }
+  },
+  "claim_boundary": "These are the owner's governing goals for a paper-trading programme that intends to become an open glassbox platform and, later, a real hedge fund. None is achieved, none is a forecast, and none converts paper results into real capital. The sealed admission contract's objective is superseded as a target and preserved as history; its thresholds remain the gates in force."
+}

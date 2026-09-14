@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import Any, Final
 
 from alphaforge.portfolio.strategy import BlendStrategy
+from alphaforge.research.owner_goals import load_owner_goals
 
 REPO: Final[Path] = Path(__file__).resolve().parents[1]
 MODEL: Final[Path] = REPO / "artifacts/analysis/drawdown_live_estimator/result.json"
@@ -222,6 +223,12 @@ def build(
         or admission_objective["portfolio_p95_max_drawdown_is_gated"] is not False
     ):
         raise ValueError("drawdown objective or p95 disclosure policy drifted")
+    # The owner's bound (config/owner_goals.json) is on REALIZED maximum drawdown and is stronger
+    # than the expected-maximum-drawdown objective sealed above. The forward contract must carry
+    # exactly the owner's figure so the two statistics are published side by side, never mixed.
+    owner_bound = float(load_owner_goals()["goals"]["combined_max_drawdown"]["bound"])
+    if float(forward_contract.get("realized_max_drawdown_bound", float("nan"))) != owner_bound:
+        raise ValueError("forward contract realized_max_drawdown_bound is not the owner's bound")
     current_expected, current_p95 = _validate_current_book_model(
         current_book_model, live_change_contract, objective
     )
