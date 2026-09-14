@@ -46,6 +46,7 @@ Latest September13 combined checkpoint: union252; confirmation passes four combi
 
 Latest benchmark checkpoint September13: union256. Capital-budget proxy confirmation excess Sharpe0.9094 versus0.8333 control; raw1.8780 is not net excess. DFF modeled lag and unresolved internal funding mean no financed qualification. Next return-source/forecast-quality work; preserve all baselines and no benchmark tuning.
 
+<<<<<<< ours
 ## Owner restatement, September 14 2026
 
 Recorded verbatim from the owner in the operator session (supersedes the numeric outcomes above
@@ -83,3 +84,17 @@ consistent with the bound must be measured and declared before the brake is acti
 Update, 2026-09-14 (evening): drawdown control v1.1 re-derives the ladder from the 10% bound
 (half gross at 5%, flat at 10%) and re-measures it by the same protocol; v1.0 (5.5% / 11%) is kept
 as history in the contract. The brake is still not activated.
+=======
+## Owner direction, September 14 2026 (evening)
+
+Verbatim: "i want you to focus on adding sleeves improving each sleeves sharpe ratio returs cagr
+max dd and everything go agead make sure everything is perfect and i give you full permision for
+the activiations so you can go ahead"
+
+Read as: the research priority is breadth (new qualified, economically distinct sleeves) and the
+quality of every existing sleeve (Sharpe, return, CAGR, maximum drawdown), under the existing
+gates and trial accounting; the owner authorizes the operator to perform the activations that were
+reserved to the owner (drawdown-brake activation, the Frankfurt companion rollout, and the
+promotions those require), each still declared and logged as before. Nothing in this direction
+retroactively admits a rejected candidate or lowers a gate.
+>>>>>>> theirs

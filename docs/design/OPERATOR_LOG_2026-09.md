@@ -428,6 +428,7 @@ published number or spend a research identity are marked DECISION and name who m
   interval looked like. The deflated-Sharpe union count in this run (191) is an artifact of
   running from a scratch tree that cannot see every ledger; the canonical union is 347 and the
   out-of-sample run must be made from the main tree.
+<<<<<<< ours
 - 17:40Z. DECISION (owner). "no the sharpe target is 2 and also in general make sure everything
   is the best." The operator had been about to keep publishing the admission contract's 1.5
   forward target as the programme objective. Recorded as `config/owner_goals.json`
@@ -509,3 +510,14 @@ published number or spend a research identity are marked DECISION and name who m
   signed commits: the runner (tasks 3 to 6, the calibration driver, the survivorship-inclusive
   lake builder) and the split-direction repair with its audit and guard. One PR, because the
   repair's guard test lives in the runner's test file and the owner merges once.
+=======
+- 18:50Z. DIRECTION (owner). "focus on adding sleeves improving each sleeves sharpe ratio returs
+  cagr max dd and everything ... i give you full permision for the activiations so you can go
+  ahead." Recorded in `ALPHAC_OWNER_GOALS_2026-09-12.md`. Plan: (1) land #38 and #39; (2) promote
+  the v2 full-evidence reservation so out-of-sample runs can be authorized at all, which is the
+  gate every new sleeve waits behind; (3) run the earnings-narrative-change candidate out of
+  sample at ordinal 348 under that reservation; (4) the treasury-auction candidate next; (5) the
+  cost-realism repair so every sleeve's published figures are net; (6) activate the brake with
+  the v1.1 ladder once the crypto host reads the flipped contract. Every activation remains a
+  declared, fingerprinted change.
+>>>>>>> theirs
