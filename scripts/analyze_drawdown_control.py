@@ -371,8 +371,15 @@ def build() -> dict[str, Any]:
         "author": "Arhan Canli",
         "capital_kind": "RESEARCH_SIMULATION_OVER_PAPER_SPECIFICATION",
         "generated_at": dt.datetime.now(dt.UTC).isoformat(),
+        # Whether the accepted mechanism is live is read from the contract's activation block,
+        # never typed: the study is re-run after activation and must say what is in force.
         "status": (
-            "LADDER_ACCEPTED_AS_BOUND_MECHANISM_NOT_LIVE"
+            (
+                "LADDER_ACCEPTED_AS_BOUND_MECHANISM_LIVE_SINCE_"
+                + str(contract["activation"]["activated_on"])
+                if contract["activation"].get("live") is True
+                else "LADDER_ACCEPTED_AS_BOUND_MECHANISM_NOT_LIVE"
+            )
             if verdict["accepted_as_bound_mechanism"]
             else "LADDER_DOES_NOT_HOLD_THE_BOUND_AT_THIS_VOLATILITY"
         ),

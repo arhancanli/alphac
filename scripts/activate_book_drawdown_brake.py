@@ -32,6 +32,7 @@ from typing import Any
 
 REPO = Path(__file__).resolve().parents[1]
 CONTROL = REPO / "config" / "drawdown_control_contract.json"
+OWNER_GOALS = REPO / "config" / "owner_goals.json"
 BASE_YAML = REPO / "configs" / "base.yaml"
 LIVE_CHANGE = REPO / "config" / "live_change_contract.json"
 FORWARD_EVIDENCE = REPO / "config" / "forward_evidence_contract.json"
@@ -46,6 +47,29 @@ def _load_fingerprinter() -> Any:
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
+
+
+def _fresh_book_aggregation() -> dict[str, Any]:
+    """The aggregation policy the running code publishes, read AFTER the contract is written.
+
+    The fingerprinter's default reads the policy from the last published state, which was
+    stamped before activation and still says no ladder. Declaring that surface would put the
+    gate one publish behind the truth: the next paper_trading_state run publishes the ladder,
+    the exporter re-measures, and the declared fingerprint no longer matches. So the surface is
+    computed from a fresh import of paper_trading_state, exactly what the next publish writes.
+    """
+    spec = importlib.util.spec_from_file_location(
+        "paper_trading_state_for_activation", REPO / "scripts" / "paper_trading_state.py"
+    )
+    assert spec and spec.loader
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    metadata: dict[str, Any] = module.book_aggregation_metadata()
+    if not metadata.get("book_level_drawdown_ladder"):
+        raise SystemExit(
+            "the running aggregation policy does not carry the ladder after activation"
+        )
+    return metadata
 
 
 def _set_source_https(text: str) -> str:
@@ -94,6 +118,14 @@ def plan(*, decision: str, activated_on: str, now: dt.datetime | None = None) ->
     }
     control["status"] = control["activation"].get("status_after_activation", "MECHANISM_LIVE")
     ladder = control["ladder"]
+    # Every figure in the declaration is read from the governing sources, never typed: the bound
+    # from the owner's goals file and the accepted measurement from the contract that records it
+    # (v1.1 re-derived the ladder from the 10 percent bound; the v1.0 figures are its history).
+    goals = json.loads(OWNER_GOALS.read_text(encoding="utf-8"))
+    bound = float(goals["goals"]["combined_max_drawdown"]["bound"])
+    measurement = control["measurement"]
+    p95 = float(measurement["conservative_p95_with_absorbing_ladder"])
+    p99 = float(measurement["conservative_p99_with_absorbing_ladder"])
     entry = {
         "date": activated_on,
         "change": (
@@ -108,12 +140,15 @@ def plan(*, decision: str, activated_on: str, now: dt.datetime | None = None) ->
             "operator log."
         ),
         "reason": (
-            "The owner's 11 percent maximum-drawdown bound is a bound on the combined book. The "
-            "declared ladder was measured on the current-composition paths and accepted "
-            "(artifacts/analysis/drawdown_control_v1: regime p95 0.1645 to 0.1102, p99 0.2065 to "
-            "0.1116, halt probability 0.064, drift cost 0.0074 over two years), the consumers were "
-            "wired default-off and tested (PR #32), and the owner decided to activate: "
-            f"{decision!r}."
+            f"The owner's {bound:.0%} maximum-drawdown bound is a bound on the combined book "
+            "(config/owner_goals.json, restated 2026-09-14). The ladder is derived from that "
+            f"bound (half gross at {ladder['dd_half_frac']:.1%}, flat at "
+            f"{ladder['dd_flat_frac']:.1%}; contract version {control['version']}), was measured "
+            "on the current-composition paths by the declared protocol and accepted as the bound "
+            f"mechanism ({measurement['artifact']}: conservative p95 {p95:.4f} and p99 {p99:.4f} "
+            "with the absorbing ladder, within the pre-declared rule), the consumers were wired "
+            "default-off and tested (PR #32) and re-derived for v1.1 (PR #39), and the owner "
+            f"decided to activate: {decision!r}."
         ),
         "evidence": (
             "artifacts/engineering/live_config_fingerprint.json; "
@@ -146,7 +181,7 @@ def apply(p: dict[str, Any]) -> str:
     CONTROL.write_text(json.dumps(p["control"], indent=2, ensure_ascii=False) + "\n", "utf-8")
     BASE_YAML.write_text(p["base_yaml"], encoding="utf-8")
     fingerprinter = _load_fingerprinter()
-    fp = fingerprinter.build_fingerprint()
+    fp = fingerprinter.build_fingerprint(book_aggregation=_fresh_book_aggregation())
     new_fp = str(fp["fingerprint"])
     old_fp = p["old_fingerprint"]
     if new_fp == old_fp:
@@ -165,7 +200,10 @@ def apply(p: dict[str, Any]) -> str:
     draft = p["draft"].replace(old_fp, new_fp)
     draft = re.sub(rf"sha256:{short_old}…[0-9a-f]{{7}}", f"sha256:{short_new}…{new_fp[-7:]}", draft)
     PREREG_DRAFT.write_text(draft, encoding="utf-8")
-    fingerprinter.main()
+    # The exported stamp carries the same surface the declaration binds; the hourly exporter
+    # re-derives it from the next published state and must land on this exact fingerprint.
+    fingerprinter.OUTPUT.parent.mkdir(parents=True, exist_ok=True)
+    fingerprinter.OUTPUT.write_text(json.dumps(fp, indent=2, sort_keys=True) + "\n")
     return new_fp
 
 
