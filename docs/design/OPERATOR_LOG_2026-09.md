@@ -428,3 +428,62 @@ published number or spend a research identity are marked DECISION and name who m
   interval looked like. The deflated-Sharpe union count in this run (191) is an artifact of
   running from a scratch tree that cannot see every ledger; the canonical union is 347 and the
   out-of-sample run must be made from the main tree.
+- 17:40Z. DECISION (owner). "no the sharpe target is 2 and also in general make sure everything
+  is the best." The operator had been about to keep publishing the admission contract's 1.5
+  forward target as the programme objective. Recorded as `config/owner_goals.json`
+  (`canli.alphac-owner-goals.v1`, in force 2026-09-14): combined forward Sharpe ABOVE 2.0 net of
+  costs, realized maximum drawdown AT MOST 11 percent, AT LEAST 15 qualified economically distinct
+  sleeves, each quoted from `docs/design/ALPHAC_OWNER_GOALS_2026-09-12.md` in the owner's words.
+- 17:55Z. BRANCH. `governance/owner-goals-in-force-20260914`: one governing source, projected by
+  `src/alphaforge/research/owner_goals.py` into every public objective block (program status,
+  sleeve discovery, atlas, diversification study, orthogonality prior, Stanford map, README).
+  The sealed v7 admission contract is untouched, its sha256 pinned in the goals file, and its
+  objective is published inside the governing one as dated history. The forward-evidence contract
+  moved to v7: `forward_sharpe_target` 2.0 with a dated `forward_sharpe_target_history` (the 1.5
+  was never evaluated against; the record held 36 returns), plus the owner's realized-drawdown
+  bound published beside the modeled expected-drawdown objective, never mixed. The frontier
+  arithmetic is the sealed identity at 15 sleeves and forward 2.0: at the contract's measured
+  quality (0.464) the low end of the band needs rho_bar -0.0458 against a PSD floor of -0.0714,
+  and at the 0.00 gate a mean standalone Sharpe of 0.775. Reachable inside the floor; not bought
+  by the sleeve count. Nothing here establishes a target; no identity spent.
+- 17:58Z. FIX (PR #37). CI failed on `tests/integration/test_corp_actions_read_path.py`: the
+  planted 2:1 split was stored as 0.5, the old-per-new convention the inverted kernel happened
+  to fold correctly. Stored as 2.0 now (68eecbf, signed); the three assertions are unchanged.
+- 18:05Z. DECISION (owner), superseding the 17:40Z numbers. The owner restated the full goal set
+  in one message (quoted verbatim in `docs/design/ALPHAC_OWNER_GOALS_2026-09-12.md`, "Owner
+  restatement, September 14 2026"): the world's first open glassbox algorithm that developers use
+  through API keys and MCP servers to build, fine-tune and improve their own models; everything
+  published, every test included; for ALPHAC a Sharpe of 2, **14 or more** sleeves, **10 percent**
+  maximum drawdown; extremely rigorous testing; real-life costs on the paper-live record; and
+  eventually a real hedge fund. `config/owner_goals.json` now carries exactly that: sleeves AT
+  LEAST 14 (not 15), realized drawdown AT MOST 0.10 (not 0.11), plus a `program` block for the
+  glassbox platform, open publication, testing, cost realism and the fund. FINDING: the declared
+  drawdown brake goes flat at 11 percent and so cannot enforce a 10 percent bound; the goals file
+  says so (`mechanism_status` INCONSISTENT_WITH_BOUND) and the brake must not be activated until
+  a 5/10 ladder is measured and declared. The sealed 11 percent expected-drawdown objective stays
+  published beside the bound as the modeled objective, never mixed with it.
+- 18:30Z. MEASURED (scratch, not declared). The 10 percent bound needs a ladder that goes flat
+  at or below 10 percent, so the declared study (`scripts/analyze_drawdown_control.py`, same
+  generator, same seeds, same current-composition paths) was rerun on a scratch copy of the
+  contract with the ladder at 5.0 / 10.0 instead of 5.5 / 11.0. Result: conservative p95 maximum
+  drawdown 0.1007 and p99 0.1020 with the absorbing ladder (0.1102 / 0.1116 at 5.5 / 11), regime
+  halt probability 0.111 (0.064), two-year drift cost 0.0096 (0.0074); accepted under the study's
+  own p95 <= 0.12 / p99 <= 0.13 rule, which was declared for the 11 percent objective and must be
+  re-declared for the bound before the 5 / 10 ladder is written into
+  `config/drawdown_control_contract.json` (a versioned contract change, its own PR). The scratch
+  cell is `artifacts/scratch_dd_ladder_5_10/result.json` in the goals worktree and is not
+  published. Until that PR lands, `owner_goals.json` keeps
+  `mechanism_status` INCONSISTENT_WITH_BOUND and the brake stays off.
+- 18:50Z. AUDIT. Cost realism on the paper-live record, cost by cost against research, with file
+  and line evidence: `docs/design/COST_REALISM_AUDIT_2026-09-14.md`. The crypto sleeve charges
+  commission, real spread and impact (fills walk the live book) and perpetual funding since
+  2026-08-06. The equity sleeves' published NAV is Alpaca's paper equity verbatim: no commission,
+  no spread or impact, no borrow, no financing. Cash yield and FX are unmodelled everywhere.
+  The forward record is therefore gross of equity frictions while the owner's Sharpe target is
+  net. Repair shape (next PR): a declared cost contract; the equity curve charged by the same
+  cost model research uses, borrow on short notional, financing on margin, cash yield on idle
+  cash; broker NAV retained as the original beside the cost-charged curve; the change declared
+  in the live-change contract so the epoch rule decides. `owner_goals.json` says
+  EQUITY_PAPER_LIVE_GROSS_OF_FRICTIONS_REPAIR_PENDING.
+- 18:55Z. PR. #38 `governance/owner-goals-in-force-20260914` opened on main; canlicapital #12
+  (claim relabel) waits for the first publish that carries the goals.

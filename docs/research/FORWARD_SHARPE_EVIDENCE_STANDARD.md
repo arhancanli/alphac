@@ -7,7 +7,7 @@ be described as statistically established.
 
 **Author:** Arhan Canli  
 **Affiliation:** Canli Capital / AlphaC Algorithms  
-**Version:** 1.0, 2026  
+**Version:** 1.1, 2026 (target history in section 1.1)  
 **Capital boundary:** Alpaca and AlphaForge paper trading only; no real capital  
 **Machine contract:** `/glassbox/forward_evidence_contract.json`  
 **Current evaluation:** `/glassbox/forward_evidence_maturity.json`
@@ -21,8 +21,8 @@ estimate-eligible record, a point target that has been observed but not establis
 that has cleared a frozen sample-length and Probabilistic Sharpe Ratio threshold. The rule requires
 252 observed daily returns before publishing a mature point estimate and 756 before statistical
 establishment is possible. Establishment additionally requires an annualized point Sharpe of at
-least 1.5 and at least 0.95 probability, under the non-normal Probabilistic Sharpe Ratio formula,
-that the true annualized Sharpe exceeds 1.5. Configuration continuity, record continuity, and a
+least 2.0 and at least 0.95 probability, under the non-normal Probabilistic Sharpe Ratio formula,
+that the true annualized Sharpe exceeds 2.0. Configuration continuity, record continuity, and a
 fresh passing broker reconciliation are mandatory provenance gates. Realized drawdown, modeled
 expected maximum drawdown, and modeled tail drawdown are reported as different quantities. The
 standard is deliberately harder to satisfy than displaying a computed ratio because its purpose is
@@ -44,8 +44,21 @@ record supports one of these progressively stronger statements:
 4. the evidence supports the stronger claim that the true Sharpe exceeds the target with the
    precommitted probability and sample length.
 
-These statements are not interchangeable. In particular, a point estimate at or above 1.5 is an
-observation about the sample. It is not statistical establishment of a forward Sharpe of 1.5.
+These statements are not interchangeable. In particular, a point estimate at or above 2.0 is an
+observation about the sample. It is not statistical establishment of a forward Sharpe of 2.0.
+
+### 1.1 The governing target and its history
+
+The governing target is read from the machine contract's `forward_sharpe_target`, which is itself
+projected from the owner's goals (`config/owner_goals.json`). It has moved once. From 2026-08-21 to
+2026-09-14 the target was 1.5, the honest forward figure admission contract v6 adopted when it
+withdrew an in-sample 2.0 to 2.5 objective. From 2026-09-14 it is 2.0, the owner's combined-book
+goal net of costs, recorded on 2026-09-12 and confirmed on 2026-09-14. When the target moved the
+record held 36 daily returns, 216 short of the 252 an estimate needs, so no point estimate was ever
+published against 1.5 and nothing was regraded. A target change is an evaluation change, not a
+trading change: it restarts no forward-evidence epoch and pools nothing. Every change is appended to
+`forward_sharpe_target_history` in the contract with the record's status on the day it was
+superseded, and the record is always evaluated against the target in force at evaluation time.
 
 ## 2. Return series and annualization
 
@@ -91,9 +104,9 @@ PSR(SR^*) = \Phi\left(
 \right).
 \]
 
-ALPHAC sets (SR^*=1.5/\sqrt{365}). This is stricter and more relevant than testing only whether
+ALPHAC sets (SR^*=2.0/\sqrt{365}). This is stricter and more relevant than testing only whether
 Sharpe is positive. A probability that the true Sharpe exceeds zero may establish a positive edge;
-it does not establish that the governing 1.5 target has been reached.
+it does not establish that the governing 2.0 target has been reached.
 
 The implementation calls the same tested Probabilistic Sharpe Ratio routine used by the research
 engine. It does not feed an annualized ratio into a per-period formula. The annualized target is
@@ -104,9 +117,9 @@ converted to the daily benchmark first, and (T) remains the count of daily retur
 | State | Minimum evidence | Permitted public claim |
 |---|---:|---|
 | `IMMATURE_RECORD_TOO_SHORT` | Fewer than 252 returns | Publish cumulative return and realized drawdown, but no mature Sharpe point estimate. |
-| `ESTIMATE_ELIGIBLE_TARGET_NOT_OBSERVED` | At least 252 returns | Publish the point estimate and probability; state that the 1.5 target is not observed. |
-| `TARGET_OBSERVED_NOT_ESTABLISHED` | Point Sharpe at least 1.5, but the establishment conditions are incomplete | State that the sample point estimate crossed the target and explicitly state that it is not established. |
-| `TARGET_STATISTICALLY_ESTABLISHED` | At least 756 returns, point Sharpe at least 1.5, and (PSR(1.5)\ge0.95) | State that the forward paper record statistically establishes the target under this contract, while retaining the paper-capital boundary. |
+| `ESTIMATE_ELIGIBLE_TARGET_NOT_OBSERVED` | At least 252 returns | Publish the point estimate and probability; state that the 2.0 target is not observed. |
+| `TARGET_OBSERVED_NOT_ESTABLISHED` | Point Sharpe at least 2.0, but the establishment conditions are incomplete | State that the sample point estimate crossed the target and explicitly state that it is not established. |
+| `TARGET_STATISTICALLY_ESTABLISHED` | At least 756 returns, point Sharpe at least 2.0, and (PSR(2.0)\ge0.95) | State that the forward paper record statistically establishes the target under this contract, while retaining the paper-capital boundary. |
 | `FAIL_CLOSED_PROVENANCE` | Any mandatory provenance check fails | Suppress establishment regardless of the calculated ratio and publish the failed checks. |
 
 The 252-return estimate threshold prevents a few weeks or months of noise from becoming a polished
@@ -169,7 +182,11 @@ The public record distinguishes:
 
 The expected maximum-drawdown objective is not a stop-loss and does not imply that losses are
 bounded at 11%. A realized drawdown below 11% does not establish the modeled objective, and a model
-estimate below 11% does not guarantee future realized losses.
+estimate below 11% does not guarantee future realized losses. Separately, the owner's bound on
+realized maximum drawdown is 10% (`realized_max_drawdown_bound`, in force 2026-09-14): the
+evaluation publishes realized drawdown against it at every mark, never mixes it with the modeled
+11% objective, and a realized drawdown inside the bound to date establishes nothing about future
+drawdown.
 
 The sealed current study uses 96 two-year paths, fourteen daily sleeves and a 10% annualized
 book-level volatility target. The declared live paper composite has four sleeves, mixed hourly and

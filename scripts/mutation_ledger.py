@@ -702,6 +702,44 @@ MUTATIONS: tuple[Mutation, ...] = (
         ],
     ),
     Mutation(
+        "test_owner_goals_in_force.py",
+        "quietly move the forward-evidence target back to the superseded 1.5",
+        REPO / "config" / "forward_evidence_contract.json",
+        _replace('"forward_sharpe_target": 2.0,', '"forward_sharpe_target": 1.5,'),
+        notes=[
+            "Owner goals in force 2026-09-14: the evaluator's target must be the owner's, read "
+            "from one file. A contract that drifts back to the old figure would publish a softer "
+            "test than the one the owner set and nothing on the site would look wrong.",
+        ],
+    ),
+    Mutation(
+        "test_owner_goals_in_force.py",
+        "edit the sealed admission contract's objective in place to say 2.0",
+        CONTRACT,
+        _replace('"honest_forward_sharpe_target": 1.5,', '"honest_forward_sharpe_target": 2.0,'),
+        notes=[
+            "The tempting fix. The sealed bytes are pinned by the goals file, so a 'helpful' "
+            "in-place edit of the v7 objective (which the promotion receipt embeds) fails the "
+            "projection everywhere, rather than leaving two files that disagree about history.",
+        ],
+    ),
+    Mutation(
+        "test_owner_goals_in_force.py",
+        "project the sealed 1.5 as the governing target instead of the owner's 2.0",
+        REPO / "src" / "alphaforge" / "research" / "owner_goals.py",
+        _replace(
+            '        "honest_forward_sharpe_target": forward,\n'
+            '        "honest_forward_sharpe_comparison"',
+            '        "honest_forward_sharpe_target": sealed["honest_forward_sharpe_target"],\n'
+            '        "honest_forward_sharpe_comparison"',
+        ),
+        notes=[
+            "The projection is the only path from the goals file to every public objective; a "
+            "regression that reads the sealed figure there would republish 1.5 on the site with "
+            "the goals file still saying 2.0.",
+        ],
+    ),
+    Mutation(
         "test_seriality_waiver.py",
         "accept a seriality waiver bound to a stale packet content hash",
         REPO / "src/alphaforge/validation/trial_reservation.py",

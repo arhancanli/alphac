@@ -15,6 +15,8 @@ from typing import Any, Final
 import numpy as np
 import numpy.typing as npt
 
+from alphaforge.research.owner_goals import governing_objective, load_owner_goals
+
 REPO: Final[Path] = Path(__file__).resolve().parents[1]
 PROTOCOL: Final[Path] = REPO / "docs/design/CURRENT_BOOK_DIVERSIFICATION_STUDY_PROTOCOL.md"
 ADMISSION_CONTRACT: Final[Path] = REPO / "config/sleeve_admission_contract.json"
@@ -269,7 +271,12 @@ def build() -> dict[str, Any]:
         REPO / "artifacts/probe/cpi_surprise_size/equity.parquet",
     ]
     market_patterns = [str(REPO / pattern) for _, _, pattern in market.DEFAULT_MIX]
-    objective = admission["objective"]
+    # The objective is the owner's (config/owner_goals.json) projected on the sealed contract's
+    # identity; the contract's own objective is carried inside it, dated, as history.
+    sealed_objective = admission["objective"]
+    objective = governing_objective(
+        load_owner_goals(), ADMISSION_CONTRACT, current_sleeves=len(names)
+    )
     objective_met = average_correlation <= float(
         objective["average_pairwise_correlation_objective"]
     )
@@ -319,12 +326,25 @@ def build() -> dict[str, Any]:
             "results": bootstrap,
         },
         "governing_comparison": {
+            "objective_source": objective["source"],
+            "objective_in_force_from": objective["in_force_from"],
             "target_total_sleeves": int(objective["target_total_sleeves"]),
             "current_sleeves": len(names),
             "minimum_new_sleeves": int(objective["minimum_new_sleeves"]),
             "average_pairwise_correlation_objective": float(
                 objective["average_pairwise_correlation_objective"]
             ),
+            "average_pairwise_correlation_objective_note": objective[
+                "average_pairwise_correlation_objective_note"
+            ],
+            "superseded_admission_contract_objective": {
+                "target_total_sleeves": int(sealed_objective["target_total_sleeves"]),
+                "minimum_new_sleeves": int(sealed_objective["minimum_new_sleeves"]),
+                "average_pairwise_correlation_objective": float(
+                    sealed_objective["average_pairwise_correlation_objective"]
+                ),
+                "superseded_on": objective["in_force_from"],
+            },
             "active_v7_has_no_global_average_correlation_point_gate": True,
             "active_v7_candidate_average_correlation_gate": float(
                 thresholds["candidate_average_correlation_to_existing_book_max"]

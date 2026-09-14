@@ -29,7 +29,14 @@ def test_readme_headlines_match_the_dated_forward_evidence_artifact() -> None:
         f"**{diversification['current_sleeves']} / "
         f"{diversification['target_total_sleeves']} planned**" in readme
     )
-    assert "Forward Sharpe | **Not reportable**" in readme
+    sharpe = evidence["sharpe_evidence"]
+    if sharpe.get("annualized_point_estimate") is None:
+        assert "Forward Sharpe | **Not reportable**" in readme
+    target = f"{float(sharpe['target']):.4f}".rstrip("0")
+    target = target + "0" if target.endswith(".") else target
+    assert f"the governing forward target is **{target}**" in readme
+    bound = float(drawdown["realized_max_drawdown_bound"])
+    assert f"against the owner's realized bound of **{bound:.0%}**" in readme
     assert "Honest forward Sharpe" not in readme
     assert "Deflated Sharpe (gate 0.95)" not in readme
 

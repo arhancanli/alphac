@@ -45,3 +45,37 @@ Latest September13 checkpoint: direction-confirmation canonical245–248 complet
 Latest September13 combined checkpoint: union252; confirmation passes four combined development gates at raw Sharpe1.8689 versus matched1.7916. Bootstrap uncertainty includes zero. No qualification/production/new sleeves; standalone failed gate preserved. Next funded net-excess comparison feasibility.
 
 Latest benchmark checkpoint September13: union256. Capital-budget proxy confirmation excess Sharpe0.9094 versus0.8333 control; raw1.8780 is not net excess. DFF modeled lag and unresolved internal funding mean no financed qualification. Next return-source/forecast-quality work; preserve all baselines and no benchmark tuning.
+
+## Owner restatement, September 14 2026
+
+Recorded verbatim from the owner in the operator session (supersedes the numeric outcomes above
+where they differ; nothing below is established by this document):
+
+> no let me break down the goals for you so basically we are trying to make alphac like the worlds
+> first open glassbox style algorithm which devs can use via api keys and mcp servers to build
+> there own mobdels fine tune it make it better and also we are making everything we do out in the
+> open published all tests everything and for alphac the goal is 2 sharpe ratio 14 plus sleeves 10
+> percent max dd and also all of the other things being perfect and us doing extremely rigiourus
+> tests on it and also not forgeting reach life cosst which may occur on it on our paper live and
+> also eventually turning this into a real hedgefund
+
+Read as governing goals (`config/owner_goals.json`, in force 2026-09-14):
+
+1. Combined portfolio Sharpe **above 2**, net of costs.
+2. Combined portfolio maximum drawdown **no greater than 10%** (realized bound; stronger than the
+   expected-maximum-drawdown objective the sealed admission contract carries at 11%).
+3. **At least 14 qualified economically distinct sleeves.**
+4. Real-life costs on the paper-live record: commissions, spread and slippage, financing and
+   funding, borrow, and every cost a funded book would pay, modelled where they occur and never
+   assumed away.
+5. Extremely rigorous testing of everything, with every test published.
+6. Everything done in the open: the algorithm as the world's first open glassbox, every trial,
+   every test and every failure published.
+7. The glassbox platform: developers use ALPHAC through API keys and MCP servers to build their own
+   models, fine-tune it and improve it.
+8. Eventually a real hedge fund, downstream of the paper evidence; paper results never convert into
+   real capital by presentation.
+
+The drawdown brake declared in `config/drawdown_control_contract.json` (half gross at 5.5%, flat
+at 11%) was measured against the superseded 11% objective and cannot enforce a 10% bound. A ladder
+consistent with the bound must be measured and declared before the brake is activated.
