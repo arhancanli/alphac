@@ -151,6 +151,10 @@ deploy_prod() {
     || { echo "analyze_current_book_drawdown FAILED"; FAIL=1; }
   uv run python scripts/analyze_current_book_diversification.py \
     || { echo "analyze_current_book_diversification FAILED"; FAIL=1; }
+  # Drawdown control v1 (2026-09-14): the declared book ladder measured on the study above's own
+  # paths. Nightly only: its inputs are the frozen research curves, so it cannot move hourly.
+  uv run python scripts/analyze_drawdown_control.py \
+    || { echo "analyze_drawdown_control FAILED"; FAIL=1; }
   uv run python scripts/seal_forward_drawdown_evidence.py \
     || { echo "seal_forward_drawdown_evidence FAILED"; FAIL=1; }
   uv run python scripts/evaluate_forward_evidence_maturity.py \
