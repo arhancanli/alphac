@@ -204,10 +204,16 @@ def test_export_distinguishes_ledger_records_from_hypothesis_identities(modules)
     assert ledger["research_status"].startswith("PAUSED_") == over_budget, (
         "a ledger that is over budget must say research is paused, and one that is not must not"
     )
-    assert ledger["distinct_hypothesis_identities"] == 229, (
-        "the observed identity count is a fact about work already done; it must not move when a "
-        "budget is authorized"
+    # The observed identity count is a fact about work already done: it follows from the ledger's
+    # own accounting equation and can only grow (229 on 2026-08-23, 347 after the 2026-09-14
+    # external-ledger import). A typed constant here went red the moment real work was counted;
+    # a budget authorization must still not move it, which the equation guarantees.
+    assert ledger["distinct_hypothesis_identities"] == (
+        ledger["immutable_execution_records"]
+        - ledger["window_only_remeasurements"]
+        - ledger["cross_profile_duplicate_identities"]
     )
+    assert ledger["distinct_hypothesis_identities"] >= 229
     assert ledger["ledger_scope_correction"]["recovered_legacy_hypothesis_identities"] == 12
     assert ledger["ledger_scope_correction"]["new_experiments_run"] == 0
     assert (
@@ -290,7 +296,9 @@ def test_program_status_composes_targets_live_provenance_and_evidence_gaps(modul
         "INCOMPLETE_LEGACY_BACKFILL_PROSPECTIVE_SERIAL_COMPLETE"
     )
     assert papers["complete_trial_packets"] == 3
-    assert papers["new_return_identity_gate"] == {
+    gate = dict(papers["new_return_identity_gate"])
+    claim_boundary = gate.pop("claim_boundary")
+    assert gate == {
         "status": "OPEN_SERIAL_PACKET_COMPLETE",
         "enforced_before_return_compute": True,
         "incomplete_historical_packets": 226,
@@ -303,19 +311,37 @@ def test_program_status_composes_targets_live_provenance_and_evidence_gaps(modul
             "SERIAL_COMPLETE_PACKET_BEFORE_NEXT_FORWARD_IDENTITY"
         ),
         "legacy_epoch_closure_public_path": ("/glassbox/legacy_research_epoch_closure.json"),
-        "claim_boundary": (
-            "The legacy epoch is retired fail-closed: no historical identity is "
-            "admission-eligible or reusable, and missing packet sections remain missing. A "
-            "genuinely new identity may run only after its exact pre-result reservation "
-            "validates. Frozen live paper execution is unaffected. The first prospective "
-            "identity now has a complete, hash-valid evidence-accounting packet and a final "
-            "INCOMPLETE / NOT ADMITTED decision, so it no longer blocks the serial queue. Every "
-            "later forward identity remains subject to the same rule before another can compute "
-            "returns."
-        ),
     }
     prospective = papers["prospective_epoch"]
-    assert prospective["observed_identities"] == 1
+    # The prospective epoch is derived from the register (2026-09-14): one governed serial
+    # identity with a closed packet, plus every identity reserved and measured since. The prose
+    # must name the unclosed count rather than describe a single identity that stopped being
+    # alone on 2026-09-13.
+    governed = prospective["by_status"]["GOVERNED_SERIAL_PACKET_CLOSED"]
+    unclosed = prospective["observed_identities"] - governed
+    assert governed == 1
+    assert unclosed >= 0
+    assert claim_boundary.startswith(
+        "The legacy epoch is retired fail-closed: no historical identity is "
+        "admission-eligible or reusable, and missing packet sections remain missing. A "
+        "genuinely new identity may run only after its exact pre-result reservation "
+        "validates. Frozen live paper execution is unaffected. The first prospective "
+        "identity has a complete, hash-valid evidence-accounting packet and a final "
+        "INCOMPLETE / NOT ADMITTED decision, so it does not block the serial queue. "
+    )
+    assert claim_boundary.endswith(
+        "Every later forward identity remains subject to the same rule before another can "
+        "compute returns."
+    )
+    if unclosed:
+        assert f"{unclosed} later prospective identities were reserved and measured" in (
+            claim_boundary
+        )
+    assert prospective["register_public_path"] == "/glassbox/prospective_epoch_register.json"
+    assert (
+        prospective["latest_reservation_ordinal"]
+        == status["research_governance"]["trial_accounting"]["distinct_hypothesis_identities"]
+    )
     assert prospective["complete_identity_packets"] == 1
     assert prospective["candidate_evidence_complete_for_admission"] is False
     assert prospective["final_disposition"] == "INCOMPLETE"
@@ -807,15 +833,15 @@ def test_external_validation_audit_is_public_and_fail_closed(modules) -> None:
     assert all(not row["entry_claimed"] for row in opportunities)
 
     by_id = {row["id"]: row for row in opportunities}
-    assert by_id["regeneron_isef_2027"]["affiliated_fair_directory_query"][
-        "result"
-    ] == "NO_FAIRS_MATCH_YOUR_SEARCH_CRITERIA"
-    assert by_id["wharton_investment_2026_2027"]["eligibility"][
-        "team_leader"
-    ] == "at least 16 years old at the start of the competition"
-    assert by_id["wharton_investment_2026_2027"]["exact_deadline"] == (
-        "2026-09-11T17:00:00-04:00"
+    assert (
+        by_id["regeneron_isef_2027"]["affiliated_fair_directory_query"]["result"]
+        == "NO_FAIRS_MATCH_YOUR_SEARCH_CRITERIA"
     )
+    assert (
+        by_id["wharton_investment_2026_2027"]["eligibility"]["team_leader"]
+        == "at least 16 years old at the start of the competition"
+    )
+    assert by_id["wharton_investment_2026_2027"]["exact_deadline"] == ("2026-09-11T17:00:00-04:00")
     # The seventh row (priority 7): asserted explicitly so a silently curated addition is a
     # reviewed fact rather than a number the internal-consistency assertions above wave through.
     assert by_id["nyas_junior_academy_next_window"]["fall_2026_window"][

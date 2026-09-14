@@ -89,3 +89,30 @@ published number or spend a research identity are marked DECISION and name who m
   their real evidence grade) and `test_trial_debt_reconciliation` asserted the live union equals
   229 (now derived). `test_research_export_freshness` stays red until the next tick republishes
   the 347-identity ledger, which is the intended "publish is behind the tree" signal.
+- 10:31Z. FOUND. The first tick to carry the 347-identity ledger failed the site's production
+  build: `trial-accounting-core.js` asserts legacy 228 + prospective = N and the engine published
+  "prospective = 1", typed in three places in `research_export.py`. The check was right. Every
+  hourly deploy fails until the engine derives the prospective epoch; the site keeps serving the
+  09:58Z bundle (today's data, the old 229 count) meanwhile.
+- 10:40Z. SHIPPED (working tree, branch pending). `scripts/build_prospective_epoch_register.py`:
+  one row per identity measured after the legacy closure, derived from the union minus the sealed
+  legacy keys, each with its reservation (ordinal, family, arm, reserved_at), first measurement and
+  evidence status; fails closed on legacy + prospective != union or a shared ordinal. Real run:
+  119 identities (1 governed serial packet, 118 imported, reserved, measured, unclosed), ordinals
+  229..347 contiguous, 40 families. Wired into both pipelines after the legacy seal and declared
+  in the ordering test; `research_export.py` now derives every prospective-epoch figure and prose
+  from it and publishes the register; the prospective record carries an `epoch` block. A NaN
+  Sharpe on one imported row was serialised as bare `NaN` and broke the site's JSON parser;
+  published as null now.
+- 10:55Z. MEASURED (phase 3, no identities spent). `scripts/analyze_drawdown_control.py` on the
+  published drawdown study's own paths (baseline reproduced to 1e-12): the declared ladder (half
+  gross at 5.5%, flat at 11%, absorbing) takes the two-year maximum drawdown from 16.45% p95 /
+  20.65% p99 to 11.02% / 11.16% on the correlation-regime model and from 13.35% / 15.98% to 9.65% /
+  11.00% on the bootstrap; halt probability 6.4% / 1.1%; two-year return cost on research drift
+  0.74 / 0.18 percentage points; auto-rearm variant reaches 21.9% max, which is why the book
+  ladder is absorbing. Acceptance rule (declared first) met: `LADDER_ACCEPTED_AS_BOUND_MECHANISM_NOT_LIVE`.
+- 11:05Z. Site: `trial-accounting-core.js` reads the register (rows for every prospective
+  identity, epoch checks replace the single-record checks), tool and page updated, verifier
+  updated to five hashed sources and the derived unclosed count; core tests 5/5. Two freshness
+  pins in the engine (a typed 229 and a pinned paragraph) converted to derived assertions; the
+  cross-host test stays red until the 11:25Z tick republishes in order.
