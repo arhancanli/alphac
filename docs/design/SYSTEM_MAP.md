@@ -143,9 +143,10 @@ Canli Capital - hourly live PAPER cycle (the running track record).
 | 21 | `scripts/analyze_forward_sleeve_contribution.py` | Attribute the published forward book to its realized sleeve curves. |
 | 22 | `scripts/audit_crypto_lab_carry_crash.py` | Seal the LABUSDT carry-crash incident from immutable local execution evidence. |
 | 23 | `scripts/build_stanford_evidence_map.py` | Build a compact, source-bound Stanford CS portfolio evidence map. |
-| 24 | `scripts/research_export.py` | Research data layer: emit research.json — the FULL honest gauntlet — from REAL artifacts. |
-| 25 | `scripts/check_retracted_claims.py` | Refuse to publish a claim this record has already withdrawn. |
-| 26 | `scripts/check_live_change_declared.py` | Block the publish if the live trading configuration has changed without being declared. |
+| 24 | `scripts/audit_forward_full_evidence_reservation_v2_template.py` | Audit the non-active full-evidence reservation template without reading returns. |
+| 25 | `scripts/research_export.py` | Research data layer: emit research.json — the FULL honest gauntlet — from REAL artifacts. |
+| 26 | `scripts/check_retracted_claims.py` | Refuse to publish a claim this record has already withdrawn. |
+| 27 | `scripts/check_live_change_declared.py` | Block the publish if the live trading configuration has changed without being declared. |
 
 ### `scripts/mf_tick.sh`
 
