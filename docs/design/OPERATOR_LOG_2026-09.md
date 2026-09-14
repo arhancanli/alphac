@@ -428,3 +428,27 @@ published number or spend a research identity are marked DECISION and name who m
   interval looked like. The deflated-Sharpe union count in this run (191) is an artifact of
   running from a scratch tree that cannot see every ledger; the canonical union is 347 and the
   out-of-sample run must be made from the main tree.
+- 19:05Z. BUILT (branch `research/v2-batch-reservation-promotion-20260914`, from main). The gate
+  every new sleeve waited behind: (1) `config/trial_accounting_evidence_classes.json` defines the
+  selectable identity, the mandatory diagnostic and the atomic identity batch beside the sealed
+  trial policy; (2) the reservation validator now validates declared diagnostics (assumptions
+  only before the run), atomic batches (registry sealed before the first return; no member added,
+  removed or reordered; every earlier sibling reserved on disk), batch-aware seriality (siblings
+  decide together; any other open batch blocks) and ordinals that move past reserved-but-unrun
+  siblings; (3) `scripts/audit_forward_full_evidence_reservation.py` audits a FILLED reservation
+  return-blind (every stress scenario able to fail, the governing capacity point present, ADMIT
+  reachable only with two PBO columns, every execution dimension applicable or excused);
+  (4) `scripts/promote_forward_full_evidence_reservation_v2.py` promoted the template.
+- 19:12Z. DECISION (owner, delegated). The v2 full-evidence reservation template is IN FORCE from
+  reservation ordinal 348 (`config/forward_full_evidence_reservation_v2_promotion.json`, receipt
+  sha256:b909390b…), authorized by the owner's words of 18:50Z. Nothing is authorized by the
+  promotion itself: a return opens only behind a filled reservation that passes the validator
+  and the filled-reservation audit. The template's ordinal follows the validator's arithmetic
+  (228 legacy identities + 119 forward identities in the ledgers + 1), not the trial-accounting
+  union, which also counts window-only remeasurements. Five new mutations proven CAUGHT.
+- 19:15Z. PREREGISTERED. `docs/design/PREREG_EARNINGS_NARRATIVE_CHANGE_MDNA.md`: the family's
+  second and final identity (10-K Item 7 stability, same signal, same portfolio, same gates),
+  declared before any return so the two identities form one atomic batch and PBO is defined on two
+  columns. The Item 7 corpus is being parsed offline from the 82,491 cached documents
+  (`scripts/build_sec_10k_item7_corpus.py`, no network read, 92.5 percent extraction on the first
+  120 filings), into `artifacts/ingest/earnings_narrative_change/item7_parts`.

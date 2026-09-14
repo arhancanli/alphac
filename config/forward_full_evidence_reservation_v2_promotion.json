@@ -1,0 +1,53 @@
+{
+  "schema": "canli.alphac-forward-full-evidence-v2-promotion.v1",
+  "owner": "Arhan Canli",
+  "authorized_by": "i want you to focus on adding sleeves improving each sleeves sharpe ratio returs cagr max dd and everything go agead make sure everything is perfect and i give you full permision for the activiations so you can go ahead",
+  "promoted_at": "2026-09-14",
+  "effective_on_or_after_reservation_ordinal": 348,
+  "promoted_template_path": "config/forward_full_evidence_reservation_v2_template.json",
+  "promoted_template_sha256": "f3aca315937b2a02664a988ff7c402565a04b169ee79ba9a6ea8a10d1f75098b",
+  "protocol_path": "docs/design/FORWARD_FULL_EVIDENCE_RESERVATION_V2.md",
+  "protocol_sha256": "3a0bced3e2b063c4f04152335625218013446e1e9eafac3a9268933171426c27",
+  "admission_contract_sha256": "6bc72c1f47675b4e14897e1ba3aad6e56aba9b5f013a7b9bae57f930e8d3b8b6",
+  "gates": {
+    "SATISFIABILITY_AUDIT_PASSES": {
+      "template_audit_status": "PASS_TEMPLATE_FAIL_CLOSED_NOT_ACTIVE_ZERO_RETURN",
+      "template_audit_content_hash": "sha256:a90532f4c7ddfc83d292dc0c047ce3d1dbd29879ca08f8d9707fb0d992e6aa31",
+      "filled_reservation_audit": "scripts/audit_forward_full_evidence_reservation.py",
+      "filled_reservation_audit_sha256": "c98620e85b85093c07ece355cb36880266486db5f1568568fde8d7c6a40e50c2"
+    },
+    "TRIAL_ACCOUNTING_BATCH_AND_DIAGNOSTIC_CLASSIFICATION_PROMOTED": {
+      "evidence_classes_path": "config/trial_accounting_evidence_classes.json",
+      "evidence_classes_sha256": "cc087645fc117e81d8652142a2c7d49f66781d37898090701b0114aa299d5410",
+      "trial_policy_sha256": "f15af7c989aded5da6c5259a7f7e5587377ab33977b5cd3c5b2395a84ea45043",
+      "sealed_policy_bytes_changed": false
+    },
+    "SERIALITY_GUARD_SUPPORTS_PREDECLARED_BATCH": {
+      "validator_path": "src/alphaforge/validation/trial_reservation.py",
+      "validator_sha256": "2cffddd2d1e6e8401a4d2fc5115d50167779ee5a872e31087ad969c862b35f3a",
+      "guards": {
+        "tests/unit/test_identity_batch_reservation.py": "c4e4d4860b4c0208816c67d8a0578d6f4a8e1954b80687931b0f256342ac0a70",
+        "tests/unit/test_validate_forward_trial_reservation.py": "37a7a5afe35a4fd61160f9e4fe375f569a51f4b76c668e882d5a7a355ab94d0c",
+        "tests/unit/test_trial_accounting_diagnostic_class.py": "0d2c7d7319786672c838ae3c69654008b01c48c37294f6bb3130ae2e37de3539",
+        "tests/unit/test_seriality_waiver.py": "c3b26b66e016c4b3a2e262d36a5409e0132192df09faa361d8e21850208e7ba5",
+        "tests/unit/test_forward_full_evidence_reservation_v2_template.py": "d47d4c559ecdbaa88cf456ebfb31b0555d7e1bca02ce46fe3186a5c95eb53ba6",
+        "tests/unit/test_forward_full_evidence_reservation_audit.py": "c92eaaa14a646ffa78b9250b30f0ff00d7934508e5e0239b39e417bfeabc1da6",
+        "tests/unit/test_forward_full_evidence_reservation_v2_promotion.py": "c51e5f4f85152d5f579424cbea3309752164673859cb6776c71c5c1b25efe989"
+      }
+    },
+    "PUBLIC_PROJECTION_TESTS_PASS": {
+      "projection": "scripts/research_export.py derives the template status, the receipt and the audit from the canonical artifacts",
+      "guard": "tests/unit/test_forward_full_evidence_reservation_v2_promotion.py"
+    },
+    "OWNER_PROMOTION_RECORDED": {
+      "authorized_by": "i want you to focus on adding sleeves improving each sleeves sharpe ratio returs cagr max dd and everything go agead make sure everything is perfect and i give you full permision for the activiations so you can go ahead",
+      "promoted_at": "2026-09-14"
+    }
+  },
+  "applies_to_known_results": false,
+  "known_results_that_cannot_be_regraded": [
+    "crypto_carry_portable_v1"
+  ],
+  "claim_boundary": "Promotion makes the template usable by reservations created at or after the effective ordinal. It authorizes no return by itself, regrades no known result, and changes no threshold in config/sleeve_admission_contract.json.",
+  "content_hash": "sha256:b909390bc6d722691080049f6682f5ad033bc820dd206c81fd2d2715695b19ab"
+}
