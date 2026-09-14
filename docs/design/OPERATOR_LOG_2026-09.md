@@ -331,3 +331,17 @@ published number or spend a research identity are marked DECISION and name who m
   feasibility probe's sample counts without opening the ingest directory; the plan now says so
   and the remaining work is Tasks 3 to 7: market inputs, signal, portfolio, evaluation with the
   v2 reservation at ordinal 348, and the run.
+- 16:25Z. BUILT AND FOUND (narrative-change runner, tasks 3 to 6 plus the calibration driver).
+  `alphaforge.research.narrative_change` now holds inputs (issuer mapping, session calendar on
+  New York open and close instants, PIT daily panel through the shared adjustment engine, the
+  input manifest), signal (cohorts, filing reaction, momentum, eligibility, residual regression,
+  quintile sides), portfolio (scheduling, beta hedge, netted-turnover costs, missing-open
+  deferral, force-flat, capacity) and evaluation (Sharpe, Newey-West, deflated Sharpe, drawdown,
+  annual, leave-one-year-out, mean-zero control, the shared diversification engine); 32 tests.
+  `scripts/run_earnings_narrative_change_v1.py` runs calibration and refuses the out-of-sample
+  window until the v2 template is in force. A two-year calibration smoke ran in 28 seconds and
+  did exactly what calibration is for: it exposed a survivorship hole. The Sharadar lake holds
+  8,436 instruments; SEP's ticker table holds 21,859 (15,573 delisted). In the 2007-03 cohort
+  749 of 1,759 mapped issuers have no lake partition at all, every one a delisted name. A run on
+  the lake as it stands would be a survivor-only backtest, which the pre-registration forbids.
+  Nothing is decided by this; the fix is a full-history SEP lake (next entry), not a parameter.

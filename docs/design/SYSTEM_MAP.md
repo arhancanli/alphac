@@ -8,7 +8,7 @@ line of its own docstring, each pipeline's steps are the scripts it actually inv
 contract's boundary is the boundary it states about itself. A script with no docstring appears as
 having none.
 
-At a glance: **352 Python scripts**, **17 shell entry points**,
+At a glance: **353 Python scripts**, **17 shell entry points**,
 **30 configuration contracts**, **30 engineering artifacts**,
 **425 unit test files**, **22 data directories**, **9 scheduled jobs**.
 
@@ -498,7 +498,7 @@ and is worth more than a hand-made taxonomy that would drift.
 | `export_prereg_parameters.py` | Publish the earnings-narrative-change pre-registration's parameters as data, not prose. |
 | `export_validation_api_vectors.py` | Parity vectors for the canlicapital validation API. |
 
-### `run_*` (8)
+### `run_*` (9)
 
 | script | first line of its docstring |
 |---|---|
@@ -509,6 +509,7 @@ and is worth more than a hand-made taxonomy that would drift.
 | `run_alphatrend_upstream_clean_workspace.py` | Regenerate AlphaTrend from sealed inputs in a temporary pinned-source workspace. |
 | `run_alphavintage_full_decision_clean_workspace.py` | Execute and seal AlphaVintage's four-gate replay in a temporary clean workspace. |
 | `run_crypto_carry_portable_v1.py` | Dry-run by default; execute one reserved crypto_carry_portable_v1 trial explicitly. |
+| `run_earnings_narrative_change_v1.py` | Earnings narrative change v1: the pre-registered return runner (calibration now, OOS gated). |
 | `run_prereg_investment_upstream_clean_workspace.py` | Replay historical ``prereg_investment`` from raw archives in a clean workspace. |
 
 ### `verify_*` (7)
