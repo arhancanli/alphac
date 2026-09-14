@@ -370,3 +370,102 @@ def test_mvo_run_reports_fallback_count(world: World) -> None:
     # Every rebalance is either an optimal solve or a counted fallback.
     assert 0 <= c["n_fallback_used"] <= c["n_rebalances"]
     assert "n_fallback_used" in c
+
+
+# ------------------------------------------------------- book-level brake (drawdown control v1)
+
+
+def test_book_multiplier_scales_the_rebalance_and_degrosses_the_next_hold_bar(world: World) -> None:
+    """The BOOK-level multiplier (the combined book's published ladder) is an outer factor on
+    this sleeve's book: applied at the rebalance and, when it drops between rebalances, re-applied
+    on the very next bar from the pre-multiplier book, the same every-bar path as HALF_GROSS."""
+    book = {"mult": 1.0}
+    strat = BlendStrategy(
+        world.settings,
+        signal_frame=_signal_frame(world.closes, mu=0.05),
+        rebalance_bars=24,
+        cov_min_periods=120,
+        book_multiplier=lambda: book["mult"],
+    )
+    full = dict(strat.on_bar_close(_ctx(world, bar=300, equity=100_000.0, positions={})))
+    assert full and strat.ladder.gross_multiplier() == 1.0
+    assert strat.counters["bars_book_reduced"] == 0
+
+    book["mult"] = 0.5  # the BOOK is 5.5% below its high-water mark; this sleeve is not
+    halved = strat.on_bar_close(_ctx(world, bar=301, equity=100_500.0, positions={}))
+    assert strat.ladder.gross_multiplier() == 1.0  # the sleeve ladder is untouched
+    assert halved  # not a {} hold: de-grossed on the NEXT bar
+    for iid, w in halved.items():
+        assert w == pytest.approx(0.5 * full[iid], abs=1e-12)
+    assert strat.counters["bars_book_reduced"] == 1
+    assert strat.counters["bars_half_gross"] == 0
+
+    book["mult"] = 1.0  # released: NORMAL between rebalances holds again
+    assert strat.on_bar_close(_ctx(world, bar=302, equity=100_600.0, positions={})) == {}
+
+
+def test_book_halt_flattens_every_bar_whatever_the_sleeve_ladder_says(world: World) -> None:
+    strat = BlendStrategy(
+        world.settings,
+        signal_frame=_signal_frame(world.closes, mu=0.05),
+        rebalance_bars=24,
+        cov_min_periods=120,
+        book_multiplier=lambda: 0.0,
+    )
+    for bar in (300, 301):
+        out = strat.on_bar_close(_ctx(world, bar=bar, equity=100_000.0, positions={}))
+        assert out and set(out.values()) == {0.0}
+    assert strat.counters["bars_book_halted"] == 2
+    assert strat.counters["n_rebalances"] == 0  # a halted book never sizes
+    assert strat.ladder.gross_multiplier() == 1.0  # the sleeve's own ladder stays NORMAL
+
+
+def test_a_broken_book_provider_is_full_gross_never_an_exception(world: World) -> None:
+    def broken() -> float:
+        raise RuntimeError("provider bug")
+
+    strat = BlendStrategy(
+        world.settings,
+        signal_frame=_signal_frame(world.closes, mu=0.05),
+        rebalance_bars=24,
+        cov_min_periods=120,
+        book_multiplier=broken,
+    )
+    out = strat.on_bar_close(_ctx(world, bar=300, equity=100_000.0, positions={}))
+    assert out and strat.counters["bars_book_reduced"] == 0
+    strat2 = BlendStrategy(
+        world.settings,
+        signal_frame=_signal_frame(world.closes, mu=0.05),
+        rebalance_bars=24,
+        cov_min_periods=120,
+        book_multiplier=lambda: 7.0,  # out of range: ignored, not applied
+    )
+    out2 = strat2.on_bar_close(_ctx(world, bar=300, equity=100_000.0, positions={}))
+    assert out2 == pytest.approx(out)
+
+
+def test_seed_last_targets_restores_the_pre_multiplier_book_once(world: World) -> None:
+    """The live --once deployment (epoch anchor, one process per bar) has no in-memory book on a
+    hold bar; the seed is what lets a de-gross act there instead of at the next boundary."""
+    strat = BlendStrategy(
+        world.settings,
+        signal_frame=_signal_frame(world.closes, mu=0.05),
+        rebalance_bars=24,
+        rebalance_anchor="epoch",
+        cov_min_periods=120,
+        book_multiplier=lambda: 0.5,
+    )
+    assert strat.last_targets is None
+    assert strat.seed_last_targets({"X": 0.2, "Y": -0.1}) is True
+    assert strat.last_targets == {"X": 0.2, "Y": -0.1}
+    assert strat.seed_last_targets({"X": 0.9}) is False  # refused once one exists
+    with pytest.raises(ValueError, match="not finite"):
+        BlendStrategy(
+            world.settings, signal_frame=_signal_frame(world.closes, mu=0.05)
+        ).seed_last_targets({"X": float("nan")})
+    # a non-boundary bar with a non-flat book is a hold bar under the epoch anchor; with the
+    # book at half the seeded pre-multiplier book is re-emitted at 0.5
+    bar = 301 if (T0 + 301 * HOUR) % (24 * HOUR) else 302
+    out = strat.on_bar_close(_ctx(world, bar=bar, equity=100_000.0, positions={IDS[0]: 1.0}))
+    assert out == {"X": pytest.approx(0.1), "Y": pytest.approx(-0.05)}
+    assert strat.counters["n_rebalances"] == 0 and strat.counters["bars_book_reduced"] == 1

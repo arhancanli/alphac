@@ -75,6 +75,11 @@ WATCHDOG_S=2400   # 40 min cap: hourly cache-hit cycles are ~3 min; the once-dai
   # cycle. The dependency is file-mediated and therefore invisible in the call order; pinned by
   # tests/unit/test_publish_pipeline_order.py.
   uv run python scripts/paper_trading_state.py
+  # Book drawdown ladder (2026-09-14): replays the marks paper_trading_state.py just wrote through the
+  # declared 5.5/11 percent ladder and writes the multiplier in force (artifact + var/book_ladder).
+  # Derived every run, never stored. Soft-fail here: the consumers keep their last reading and the
+  # nightly C12-book-ladder check fails loudly if the artifact goes stale.
+  uv run python scripts/book_drawdown_ladder.py || echo "WARN: book_drawdown_ladder FAILED — consumers keep the last multiplier"
   uv run python scripts/glassbox_export.py
   # research.json IS part of the served bundle and was NOT regenerated here until 2026-08-19.
   # It is owned by the nightly ceremony, which last fired on 2026-08-18 -- the 02:10 schedule

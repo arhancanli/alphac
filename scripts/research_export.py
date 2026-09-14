@@ -113,6 +113,9 @@ DRAWDOWN_LIVE_ESTIMATOR_JSON: Final[Path] = (
 DRAWDOWN_CONTROL_JSON: Final[Path] = (
     REPO / "artifacts" / "analysis" / "drawdown_control_v1" / "result.json"
 )
+BOOK_DRAWDOWN_LADDER_JSON: Final[Path] = (
+    REPO / "artifacts" / "engineering" / "book_drawdown_ladder.json"
+)
 CURRENT_BOOK_DRAWDOWN_JSON: Final[Path] = (
     REPO / "artifacts" / "analysis" / "current_book_drawdown" / "result.json"
 )
@@ -3791,6 +3794,8 @@ def main(out_dir: Path = OUT_DIR) -> Path:
     (out_dir / "current_book_drawdown.json").write_text(CURRENT_BOOK_DRAWDOWN_JSON.read_text())
     if DRAWDOWN_CONTROL_JSON.exists():
         (out_dir / "drawdown_control_v1.json").write_text(DRAWDOWN_CONTROL_JSON.read_text())
+    if BOOK_DRAWDOWN_LADDER_JSON.exists():
+        (out_dir / "book_drawdown_ladder.json").write_text(BOOK_DRAWDOWN_LADDER_JSON.read_text())
     (out_dir / "current_book_diversification.json").write_text(
         CURRENT_BOOK_DIVERSIFICATION_JSON.read_text()
     )
@@ -4378,6 +4383,10 @@ def main(out_dir: Path = OUT_DIR) -> Path:
         (app_dir / "current_book_drawdown.json").write_text(CURRENT_BOOK_DRAWDOWN_JSON.read_text())
         if DRAWDOWN_CONTROL_JSON.exists():
             (app_dir / "drawdown_control_v1.json").write_text(DRAWDOWN_CONTROL_JSON.read_text())
+        if BOOK_DRAWDOWN_LADDER_JSON.exists():
+            (app_dir / "book_drawdown_ladder.json").write_text(
+                BOOK_DRAWDOWN_LADDER_JSON.read_text()
+            )
         (app_dir / "current_book_diversification.json").write_text(
             CURRENT_BOOK_DIVERSIFICATION_JSON.read_text()
         )

@@ -109,6 +109,17 @@ def _historical_summary(config: dict[str, Any]) -> tuple[Path, dict[str, Any]] |
     return None
 
 
+TRIAL_PACKET_MANIFEST: Final[Path] = REPO / "artifacts" / "research" / "trial_packet_manifest.json"
+
+
+def _trial_packet_keys() -> set[str]:
+    """Hypothesis keys that have a published trial packet (empty when the manifest is absent)."""
+    if not TRIAL_PACKET_MANIFEST.exists():
+        return set()
+    manifest = json.loads(TRIAL_PACKET_MANIFEST.read_text(encoding="utf-8"))
+    return {str(row["hypothesis_key"]) for row in manifest.get("identities", [])}
+
+
 def build() -> dict[str, Any]:
     records = _first_records()
     # The family had 21 identities when this packet was first built (2026-08). Fewer means the
@@ -194,6 +205,13 @@ def build() -> dict[str, Any]:
         if row["result"]["annualized_sharpe"] is not None
     ]
     dsr_rows = [row for row in identities if row["result"].get("artifact_era_dsr") is not None]
+    # Which of the family's identities carry a published trial packet. The packets are built for
+    # the legacy epoch (228 retired identities); the 28 identities imported on 2026-09-14 are
+    # prospective register rows without packets. Both counts are published so the publication
+    # bundle can bind the packetized count to the trial-packet manifest while the family total
+    # keeps following the union (a total pinned to the manifest would hide every import).
+    packet_keys = _trial_packet_keys()
+    with_packets = sum(1 for key in records if key in packet_keys)
     return {
         "schema": "canli.alphac-alphatrend-family.v1",
         "evidence_date": "2026-08-22",
@@ -205,6 +223,8 @@ def build() -> dict[str, Any]:
         ),
         "summary": {
             "distinct_hypothesis_identities": len(identities),
+            "identities_with_trial_packets": with_packets,
+            "identities_without_trial_packets": len(identities) - with_packets,
             "finite_sharpe_identities": len(finite_sharpes),
             "minimum_annualized_sharpe": min(finite_sharpes),
             "maximum_annualized_sharpe": max(finite_sharpes),

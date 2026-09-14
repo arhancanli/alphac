@@ -275,6 +275,9 @@ def test_save_writes_artifact_layout(world: World, tmp_path: Path) -> None:
         # are the operator's confession, so silently gaining or losing one changes what a run
         # reports about itself and must be acknowledged here.
         "realized_leg_bound",
+        # Added with drawdown control v1 (2026-09-14): the BOOK-level brake's bars.
+        "bars_book_halted",
+        "bars_book_reduced",
     }
     assert set(meta["config"]["risk_counters"]) == expected_keys
     for leg_row in meta["legs"]:
