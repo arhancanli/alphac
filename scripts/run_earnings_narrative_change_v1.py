@@ -595,6 +595,8 @@ def _evaluate_declared_diagnostics(
         outcome = {
             "net": evaluated["net"],
             "turnover_total": evaluated["turnover_total"],
+            "mean_stock_gross": evaluated["mean_stock_gross"],
+            "mean_hedge_abs_weight": evaluated["mean_hedge_abs_weight"],
             "events": evaluated["events"],
             "series_sha256": evaluated["series_sha256"],
         }
