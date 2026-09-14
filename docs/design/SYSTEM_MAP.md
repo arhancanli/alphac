@@ -8,9 +8,9 @@ line of its own docstring, each pipeline's steps are the scripts it actually inv
 contract's boundary is the boundary it states about itself. A script with no docstring appears as
 having none.
 
-At a glance: **351 Python scripts**, **17 shell entry points**,
+At a glance: **352 Python scripts**, **17 shell entry points**,
 **30 configuration contracts**, **30 engineering artifacts**,
-**420 unit test files**, **22 data directories**, **9 scheduled jobs**.
+**421 unit test files**, **22 data directories**, **9 scheduled jobs**.
 
 
 ## What runs on a timer
@@ -523,11 +523,12 @@ and is worth more than a hand-made taxonomy that would drift.
 | `verify_sleeve_publication_replays.py` | Replay audit-only sleeve evidence builders and prove no result or trial ledger changed. |
 | `verify_transparency.py` | Verify the public track-record chain, signatures and disclosed payloads. |
 
-### everything else (126)
+### everything else (127)
 
 | script | first line of its docstring |
 |---|---|
 | `acquire_alphamax_upstream_replay_inputs.py` | Reacquire the private inputs required to replay AlphaMax ``k30_dn_63``. |
+| `activate_book_drawdown_brake.py` | Flip drawdown control v1 live, as one declared, re-pinned, tested change. |
 | `alphavintage_target.py` | ALPHAVINTAGE — write the live target book as a walk-forward positions artifact. |
 | `anchor_transparency.py` | External anchoring of the transparency chain into Bitcoin via OpenTimestamps — the S-tier trust seal. |
 | `archive_live_record.py` | Freeze the live paper record before an account is re-seeded — a one-way, hashed snapshot. |
