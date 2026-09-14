@@ -707,9 +707,11 @@ MUTATIONS: tuple[Mutation, ...] = (
         REPO / "scripts" / "audit_forward_full_evidence_reservation.py",
         _replace(
             '            if scenario["assumptions"] == baseline["assumptions"]:\n'
-            '                fail(f"stress scenario {scenario_id} equals the baseline and cannot fail")',
+            '                fail(f"stress scenario {scenario_id} equals the baseline and '
+            'cannot fail")',
             '            if False and scenario["assumptions"] == baseline["assumptions"]:\n'
-            '                fail(f"stress scenario {scenario_id} equals the baseline and cannot fail")',
+            '                fail(f"stress scenario {scenario_id} equals the baseline and '
+            'cannot fail")',
         ),
         notes=[
             "Decorative-pass risk 1 from the v2 design spec: a stress scenario that cannot fail "
@@ -722,9 +724,11 @@ MUTATIONS: tuple[Mutation, ...] = (
         REPO / "scripts" / "audit_forward_full_evidence_reservation_v2_template.py",
         _replace(
             '        if not receipt_path.is_file():\n'
-            '            raise TemplateAuditError("template says IN_FORCE but no promotion receipt exists")',
+            '            raise TemplateAuditError("template says IN_FORCE but no promotion '
+            'receipt exists")',
             '        if False and not receipt_path.is_file():\n'
-            '            raise TemplateAuditError("template says IN_FORCE but no promotion receipt exists")',
+            '            raise TemplateAuditError("template says IN_FORCE but no promotion '
+            'receipt exists")',
         ),
         notes=[
             "IN_FORCE must never be a word somebody typed: the audit reads the receipt that binds "
@@ -764,12 +768,17 @@ MUTATIONS: tuple[Mutation, ...] = (
         "let a declared diagnostic carry a result before the run",
         REPO / "src/alphaforge/validation/trial_reservation.py",
         _replace(
-            "            if not isinstance(scenario, dict) or set(scenario) != DECLARED_DIAGNOSTIC_FIELDS:",
-            "            if not isinstance(scenario, dict) or not DECLARED_DIAGNOSTIC_FIELDS <= set(scenario):",
+            "            if not isinstance(scenario, dict) or set(scenario) != "
+            "DECLARED_DIAGNOSTIC_FIELDS:",
+            "            if not isinstance(scenario, dict) or not DECLARED_DIAGNOSTIC_FIELDS <= "
+            "set(scenario):",
         ),
         notes=[
             "A result inside a pre-result reservation is an outcome field by another name; the "
             "exact-set check is what keeps it out.",
+        ],
+    ),
+    Mutation(
         "test_owner_goals_in_force.py",
         "quietly move the forward-evidence target back to the superseded 1.5",
         REPO / "config" / "forward_evidence_contract.json",

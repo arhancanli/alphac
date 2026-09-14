@@ -44,13 +44,39 @@ from alphaforge.research.narrative_change import evaluation, inputs, portfolio, 
 from alphaforge.validation.probe_ledger import selection_context  # noqa: E402
 
 INGEST = REPO / "artifacts" / "ingest" / "earnings_narrative_change"
-CORPUS_RESULT = INGEST / "corpus_result.json"
 MANIFEST = INGEST / "filings_manifest.parquet"
-PAIRS = INGEST / "item1a_pairs.parquet"
 TICKER_HISTORY = INGEST / "issuer_ticker_history.parquet"
-PREREG = REPO / "docs" / "design" / "PREREG_EARNINGS_NARRATIVE_CHANGE.md"
+# One family, two pre-registered identities, one atomic batch (the v2 protocol needs two
+# counted columns for a PBO matrix). Every difference between the two is listed here and
+# nowhere else: the section parsed, the corpus and pairs files that carry it, the
+# pre-registration that locked it, and the alpha name that spends the identity.
+SECTIONS: dict[str, dict[str, Any]] = {
+    "item1a": {
+        "profile": "earnings_narrative_change_v1",
+        "alpha": "sec_10k_item1a_stability_jaccard5",
+        "label": "10-K Item 1A",
+        "corpus_result": INGEST / "corpus_result.json",
+        "pairs": INGEST / "item1a_pairs.parquet",
+        "prereg": REPO / "docs" / "design" / "PREREG_EARNINGS_NARRATIVE_CHANGE.md",
+        "out_root": REPO / "artifacts" / "research" / "earnings_narrative_change_v1",
+    },
+    "item7": {
+        "profile": "earnings_narrative_change_mdna_v1",
+        "alpha": "sec_10k_item7_stability_jaccard5",
+        "label": "10-K Item 7",
+        "corpus_result": INGEST / "item7_corpus_result.json",
+        "pairs": INGEST / "item7_pairs.parquet",
+        "prereg": REPO / "docs" / "design" / "PREREG_EARNINGS_NARRATIVE_CHANGE_MDNA.md",
+        "out_root": REPO / "artifacts" / "research" / "earnings_narrative_change_mdna_v1",
+    },
+}
+BATCH_ID = "earnings_narrative_change_batch_1"
+BATCH_MATRIX_DIR = REPO / "artifacts" / "research" / "identity_batches"
+LEDGER = REPO / "var" / "experiments.jsonl"
+PBO_N_SPLITS = 16
+PBO_MAX_COMBINATIONS = 12870
+PBO_SEED = 20260914
 V2_TEMPLATE = REPO / "config" / "forward_full_evidence_reservation_v2_template.json"
-OUT_ROOT = REPO / "artifacts" / "research" / "earnings_narrative_change_v1"
 SPY_LAKE = REPO / "data" / "lake_mf"
 FULL_LAKE = REPO / "data" / "lake_sharadar_full"
 PACKAGE = REPO / "src" / "alphaforge" / "research" / "narrative_change"
@@ -80,26 +106,54 @@ def _ms(day: dt.date) -> int:
     return int(dt.datetime(day.year, day.month, day.day, tzinfo=dt.UTC).timestamp() * 1000)
 
 
-def lineage_seal() -> dict[str, Any]:
+def trial_config(section: str) -> dict[str, Any]:
+    """The hypothesis identity, transcribed from the pre-registration's ``prereg`` block.
+
+    ``start`` and ``end`` are the out-of-sample window and are the only keys the trial policy
+    exempts from the identity; every other key spends the identity, so the two sections are two
+    counted hypotheses.
+    """
+    spec = SECTIONS[section]
+    start, end = WINDOWS["oos"]
+    return {
+        "profile": spec["profile"],
+        "lake_dir": "data/lake_sharadar_full",
+        "alpha_names": [spec["alpha"]],
+        "allocator": "monthly_residual_quintile_beta_hedged",
+        "section": spec["label"],
+        "parser_version": "sec-filing-sections-v2",
+        "direction": "long_stable_short_changed",
+        "hold_sessions": 63,
+        "start": _ms(start),
+        "end": _ms(end),
+    }
+
+
+def lineage_seal(section: str) -> dict[str, Any]:
     """Refuse a stale, replaced or partially rebuilt corpus before any return is loaded."""
-    corpus = json.loads(CORPUS_RESULT.read_text(encoding="utf-8"))
+    spec = SECTIONS[section]
+    corpus_result: Path = spec["corpus_result"]
+    pairs_path: Path = spec["pairs"]
+    prereg: Path = spec["prereg"]
+    corpus = json.loads(corpus_result.read_text(encoding="utf-8"))
     if corpus.get("complete") is not True:
         raise SystemExit("corpus result is not complete; refusing to load any return")
     manifest_sha = _sha256(MANIFEST)
     if corpus["source_manifest"]["sha256"] != manifest_sha:
         raise SystemExit("the filings manifest on disk is not the one the corpus result bound")
     return {
+        "section": section,
         "corpus_result": {
-            "path": str(CORPUS_RESULT.relative_to(REPO)),
-            "sha256": _sha256(CORPUS_RESULT),
+            "path": str(corpus_result.relative_to(REPO)),
+            "sha256": _sha256(corpus_result),
         },
         "filings_manifest": {"path": str(MANIFEST.relative_to(REPO)), "sha256": manifest_sha},
-        "pairs": {"path": str(PAIRS.relative_to(REPO)), "sha256": _sha256(PAIRS)},
+        "pairs": {"path": str(pairs_path.relative_to(REPO)), "sha256": _sha256(pairs_path)},
         "ticker_history": {
             "path": str(TICKER_HISTORY.relative_to(REPO)),
             "sha256": _sha256(TICKER_HISTORY),
         },
-        "preregistration": {"path": str(PREREG.relative_to(REPO)), "sha256": _sha256(PREREG)},
+        "preregistration": {"path": str(prereg.relative_to(REPO)), "sha256": _sha256(prereg)},
         "runner": {
             "script": _sha256(Path(__file__).resolve()),
             **{p.name: _sha256(p) for p in sorted(PACKAGE.glob("*.py"))},
@@ -121,20 +175,70 @@ def refuse_oos_without_authorization(reservation: Path | None) -> None:
         raise SystemExit("--reservation is required for the out-of-sample window")
 
 
+def authorize_oos(section: str, reservation: Path | None) -> dict[str, Any]:
+    """Three refusals before a single price is read, each with its receipt.
+
+    The template must be in force; the reservation must validate against THIS section's trial
+    config under the in-force guard (batch, seriality, ordinal, governance epoch, evidence
+    hashes, which include this very file); and the filled-reservation audit must find the
+    evidence conjunction satisfiable. Nothing here is an outcome.
+    """
+    refuse_oos_without_authorization(reservation)
+    assert reservation is not None
+    from alphaforge.validation.trial_reservation import validate_reservation
+
+    payload = json.loads(reservation.read_text(encoding="utf-8"))
+    validation = validate_reservation(payload, trial_config=trial_config(section), repo=REPO)
+    if validation["status"] != "VALIDATED_BEFORE_RETURN_COMPUTE":
+        raise SystemExit(f"reservation not validated: {validation['status']}")
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location(
+        "filled_reservation_audit", REPO / "scripts" / "audit_forward_full_evidence_reservation.py"
+    )
+    assert spec is not None and spec.loader is not None
+    audit_module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(audit_module)
+    audit = audit_module.audit(reservation, REPO)
+    if audit["status"] != "SATISFIABLE_RETURN_BLIND":
+        raise SystemExit(
+            "the filled reservation is not satisfiable as written: " + "; ".join(audit["failures"])
+        )
+    return {
+        "reservation_path": str(reservation.resolve().relative_to(REPO)),
+        "reservation_sha256": _sha256(reservation),
+        "validation": validation,
+        "audit_status": audit["status"],
+        "audit_content_hash": audit["content_hash"],
+        "disposition_ceiling": audit["disposition_ceiling"],
+    }
+
+
 def run(
     window: str,
     *,
+    section: str = "item1a",
     max_cohorts: int | None,
-    out_root: Path,
+    out_root: Path | None = None,
     reservation: Path | None,
     lake: Path | None = None,
-) -> Path:
+    defer_result: bool = False,
+) -> dict[str, Any]:
+    """One window of one section. Returns the run's out dir, result document and net returns.
+
+    With ``defer_result`` the result document is returned but NOT written and the ledger is
+    untouched; the batch runner writes both members together after the matrix exists, so no
+    member's evaluation is on disk before the other's curve is.
+    """
     t0 = time.time()
+    spec = SECTIONS[section]
+    out_root = out_root if out_root is not None else spec["out_root"]
+    authorization: dict[str, Any] | None = None
     if window == "oos":
-        refuse_oos_without_authorization(reservation)
+        authorization = authorize_oos(section, reservation)
     start, end = WINDOWS[window]
-    seal = lineage_seal()
-    pairs = signal.eligible_pairs(pd.read_parquet(PAIRS))
+    seal = lineage_seal(section)
+    pairs = signal.eligible_pairs(pd.read_parquet(spec["pairs"]))
     seal["pairs_rows_recorded"] = len(pairs)
     in_window = pairs[
         (pairs["current_acceptance"].dt.date >= start)
@@ -286,6 +390,10 @@ def run(
         "schema": "canli.alphac-earnings-narrative-change-v1-run.v1",
         "author": "Arhan Canli",
         "generated_at": evaluation.evaluation_date(),
+        "section": section,
+        "profile": spec["profile"],
+        "trial_config": trial_config(section),
+        "authorization": authorization,
         "window": window,
         "window_bounds": {"start": start.isoformat(), "end": end.isoformat()},
         "hypothesis_identities_spent": 0 if window == "calibration" else 1,
@@ -314,10 +422,12 @@ def run(
         "union_context": {"identities": n_union, "hypothesis_sharpe_variance": sr_var},
         "elapsed_seconds": round(time.time() - t0, 1),
     }
-    result["content_hash"] = _content_hash(result)
-    (out / "result.json").write_text(
-        json.dumps(result, indent=1, sort_keys=True) + "\n", encoding="utf-8"
-    )
+    net_returns = book.frame()["net_return"].astype("float64")
+    if not defer_result:
+        result["content_hash"] = _content_hash(result)
+        (out / "result.json").write_text(
+            json.dumps(result, indent=1, sort_keys=True) + "\n", encoding="utf-8"
+        )
     net = report["net"]
     print(
         f"[{window}] cohorts ranked {result['cohorts']['ranked']}/{len(months)}; net Sharpe "
@@ -325,19 +435,154 @@ def run(
         f"max DD {net['max_drawdown']:.4f}; "
         f"force-flats {report['events']['force_flat']}; {result['elapsed_seconds']}s -> {out}"
     )
-    return out
+    return {"out": out, "result": result, "net_returns": net_returns}
+
+
+def _record_identity(section: str, net_returns: pd.Series, reservation: Path) -> dict[str, Any]:
+    """Spend the identity: one append-only ledger record bound to its reservation.
+
+    The per-period statistics are recomputed from the daily net returns the evaluation used
+    (sample moments, non-excess kurtosis), the same convention the forward-evidence evaluator
+    records, so the ledger row and the packet describe one series.
+    """
+    from scipy.stats import kurtosis as scipy_kurtosis
+    from scipy.stats import skew as scipy_skew
+
+    from alphaforge.validation.experiments import ExperimentLog
+
+    values = net_returns.to_numpy(dtype="float64")
+    values = values[np.isfinite(values)]
+    std = float(np.std(values, ddof=1)) if values.size > 1 else 0.0
+    per_period = float(np.mean(values) / std) if std > 0 else 0.0
+    ledger = ExperimentLog(LEDGER)
+    record = ledger.record(
+        trial_config(section),
+        sharpe_ann=per_period * (252.0**0.5),
+        sharpe_per_period=per_period,
+        n_obs=int(values.size),
+        skew=float(scipy_skew(values, bias=True)) if values.size > 2 else 0.0,
+        kurtosis=float(scipy_kurtosis(values, fisher=False, bias=True)) if values.size > 3 else 3.0,
+        now_ms=int(time.time() * 1000),
+        reservation_path=reservation,
+    )
+    return {"ledger": str(LEDGER.relative_to(REPO)), "config_hash": record.config_hash}
+
+
+def run_batch(
+    reservations: dict[str, Path],
+    *,
+    max_cohorts: int | None = None,
+    lake: Path | None = None,
+) -> Path:
+    """The atomic batch: both identities run, PBO on both, then both results and both ledger rows.
+
+    Order of writes is the protocol's interim-result rule made concrete: every member's curve is
+    computed and the PBO matrix is sealed before any member's result document or ledger record
+    exists. Each member is charged to the family and the union; the matrix receipt binds both.
+    """
+    from alphaforge.validation.pbo import pbo_cscv
+
+    if set(reservations) != set(SECTIONS):
+        raise SystemExit("a batch run needs one reservation per section: " + ", ".join(SECTIONS))
+    runs: dict[str, dict[str, Any]] = {}
+    for section in SECTIONS:
+        runs[section] = run(
+            "oos",
+            section=section,
+            max_cohorts=max_cohorts,
+            reservation=reservations[section],
+            lake=lake,
+            defer_result=True,
+        )
+    frame = pd.concat(
+        {section: runs[section]["net_returns"] for section in SECTIONS}, axis=1
+    ).dropna(how="any")
+    columns = [
+        runs[s]["result"]["authorization"]["validation"]["hypothesis_identity"] for s in SECTIONS
+    ]
+    pbo = pbo_cscv(
+        frame.to_numpy(dtype="float64"),
+        n_splits=PBO_N_SPLITS,
+        max_combinations=PBO_MAX_COMBINATIONS,
+        seed=PBO_SEED,
+    )
+    matrix: dict[str, Any] = {
+        "schema": "canli.alphac-identity-batch-matrix-receipt.v1",
+        "author": "Arhan Canli",
+        "batch_id": BATCH_ID,
+        "identity_columns": columns,
+        "sections": list(SECTIONS),
+        "aligned_observations": len(frame),
+        "return_alignment": "intersection_without_internal_missing_rows",
+        "n_splits": PBO_N_SPLITS,
+        "maximum_combinations": PBO_MAX_COMBINATIONS,
+        "seed": PBO_SEED,
+        "pbo": float(pbo.pbo),
+        "combinations_evaluated": pbo.n_combinations,
+        "claim_boundary": (
+            "Probability of backtest overfitting over the batch's two counted columns, computed "
+            "exactly as frozen in the reservations. Two columns make a coarse matrix; the figure "
+            "is reported as computed and never rounded to zero."
+        ),
+    }
+    matrix["content_hash"] = _content_hash(matrix)
+    BATCH_MATRIX_DIR.mkdir(parents=True, exist_ok=True)
+    matrix_path = BATCH_MATRIX_DIR / f"{BATCH_ID}_matrix_receipt.json"
+    matrix_path.write_text(json.dumps(matrix, indent=1, sort_keys=True) + "\n", encoding="utf-8")
+    for section in SECTIONS:
+        result = runs[section]["result"]
+        result["batch"] = {
+            "batch_id": BATCH_ID,
+            "matrix_receipt": str(matrix_path.relative_to(REPO)),
+            "matrix_content_hash": matrix["content_hash"],
+            "pbo": matrix["pbo"],
+        }
+        result["ledger_recorded"] = True
+        result["ledger_record"] = _record_identity(
+            section, runs[section]["net_returns"], reservations[section]
+        )
+        result["content_hash"] = _content_hash(result)
+        (runs[section]["out"] / "result.json").write_text(
+            json.dumps(result, indent=1, sort_keys=True) + "\n", encoding="utf-8"
+        )
+    print(f"[batch] PBO {matrix['pbo']:.4f} over {len(frame)} aligned days -> {matrix_path}")
+    return matrix_path
 
 
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    ap.add_argument("--window", choices=sorted(WINDOWS), required=True)
+    ap.add_argument("--window", choices=sorted(WINDOWS), default=None)
+    ap.add_argument("--section", choices=sorted(SECTIONS), default="item1a")
     ap.add_argument("--max-cohorts", type=int, default=None, help="smoke runs only")
-    ap.add_argument("--out", type=Path, default=OUT_ROOT)
+    ap.add_argument("--out", type=Path, default=None)
     ap.add_argument("--reservation", type=Path, default=None)
     ap.add_argument("--lake", type=Path, default=None, help="price lake (default: the full one)")
+    ap.add_argument(
+        "--batch",
+        action="store_true",
+        help="run BOTH sections out of sample as one atomic batch (reservations per section)",
+    )
+    ap.add_argument("--reservation-item1a", type=Path, default=None)
+    ap.add_argument("--reservation-item7", type=Path, default=None)
     args = ap.parse_args(argv)
+    if args.batch:
+        if args.reservation_item1a is None or args.reservation_item7 is None:
+            ap.error("--batch needs --reservation-item1a and --reservation-item7")
+        run_batch(
+            {"item1a": args.reservation_item1a, "item7": args.reservation_item7},
+            max_cohorts=args.max_cohorts,
+            lake=args.lake,
+        )
+        return 0
+    if args.window is None:
+        ap.error("--window is required unless --batch")
+    if args.window == "oos" and args.reservation is not None:
+        # A single out-of-sample member cannot exist outside its batch: the reservation's batch
+        # block names both, and the ledger row is written only by the batch runner.
+        ap.error("the out-of-sample window runs only as --batch; single-member runs are refused")
     run(
         args.window,
+        section=args.section,
         max_cohorts=args.max_cohorts,
         out_root=args.out,
         reservation=args.reservation,

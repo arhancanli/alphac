@@ -588,7 +588,7 @@ and is worth more than a hand-made taxonomy that would drift.
 | `mf_etf_load.py` | Load the managed-futures ETF basket into a dedicated AlphaForge research lake. |
 | `mf_gauntlet.py` | Gauntlet the MANAGED-FUTURES TREND sleeve through the deflated purged walk-forward. |
 | `mf_strategy_search.py` | Brutal trend-strategy search for AlphaTrend — hundreds of configs, deflated honestly. |
-| `mutation_ledger.py` | _(unreadable)_ |
+| `mutation_ledger.py` | Prove every guard over a published claim can actually fail, and publish the result. |
 | `orthogonality_prior.py` | Rank the remaining families by expected orthogonality to this book — as a PRIOR, not a claim. |
 | `package_active_ownership_blind_review.py` | Build a deterministic, prediction-blind archive for an external reviewer. |
 | `package_all_sleeve_review_archives.py` | Build deterministic raw-row-free review archives for all sleeve papers. |

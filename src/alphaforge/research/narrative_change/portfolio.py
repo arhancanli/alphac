@@ -32,6 +32,7 @@ the cohorts Task 4 produced and the panel Task 3 loaded.
 from __future__ import annotations
 
 import datetime as dt
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -79,6 +80,9 @@ class ActiveCohort:
     exit_pos: int
     weights: dict[str, float]
     betas: dict[str, float]
+    #: Per-name early exits (session position, exclusive) a diagnostic scenario imposes, for
+    #: example a borrow recall. Empty for the primary path; never set by the signal.
+    name_exit_pos: dict[str, int] = field(default_factory=dict)
 
 
 @dataclass
@@ -87,6 +91,7 @@ class ExecutionEvent:
     instrument_id: str
     kind: str
     detail: str
+    weight: float = 0.0  # the held weight the event acted on (force-flat haircuts need it)
 
 
 @dataclass
@@ -209,6 +214,8 @@ def target_book(active: list[ActiveCohort], pos: int) -> tuple[dict[str, float],
     beta_sum: dict[str, float] = {}
     for cohort in live:
         for iid, w in cohort.weights.items():
+            if iid in cohort.name_exit_pos and pos >= cohort.name_exit_pos[iid]:
+                continue  # a scenario-imposed early exit: the name is flat from here on
             summed[iid] = summed.get(iid, 0.0) + w / len(live)
             beta_sum[iid] = beta_sum.get(iid, 0.0) + w * cohort.betas[iid] / len(live)
     stock_gross = sum(abs(w) for w in summed.values())
@@ -234,8 +241,15 @@ def simulate_book(
     end_pos: int,
     costs: CostSchedule = BASELINE_COSTS,
     stress: CostSchedule = STRESS_COSTS,
+    turnover_cost: Callable[[str, int, float], float] | None = None,
 ) -> BookResult:
-    """Run the book from ``start_pos`` to ``end_pos`` (session positions, end exclusive)."""
+    """Run the book from ``start_pos`` to ``end_pos`` (session positions, end exclusive).
+
+    ``turnover_cost(instrument_id, session_pos, abs_weight_change)`` is an optional extra cost
+    per unit of turnover a diagnostic scenario supplies (market impact at a capital point, for
+    example); it is charged to both the net and the stressed series and never to the primary
+    path, which passes nothing.
+    """
     aopen = adjusted_open(panel)
     spy_id = spy.instrument_ids[0]
     spy_open = adjusted_open(spy)[spy_id]
@@ -271,6 +285,7 @@ def simulate_book(
         # --- execute: change a stock's weight only on a session with an observed open ---
         new_held: dict[str, float] = {}
         session_turnover = 0.0
+        extra_cost = 0.0
         for iid in set(held) | set(target):
             wanted = 0.0 if iid in flattened else target.get(iid, 0.0)
             current = held.get(iid, 0.0)
@@ -293,6 +308,8 @@ def simulate_book(
                 )
                 continue
             session_turnover += abs(wanted - current)
+            if turnover_cost is not None:
+                extra_cost += turnover_cost(iid, pos, abs(wanted - current))
             if wanted != 0.0:
                 new_held[iid] = wanted
         held = new_held
@@ -313,7 +330,11 @@ def simulate_book(
                 # open. Force-flat here with normal cost; the move into this bar was realized
                 # on the previous session. Reported, and the runner labels DATA-ESCALATE.
                 session_turnover += abs(w)
-                events.append(ExecutionEvent(session, iid, "FORCE_FLAT", "no later observed open"))
+                if turnover_cost is not None:
+                    extra_cost += turnover_cost(iid, pos, abs(w))
+                events.append(
+                    ExecutionEvent(session, iid, "FORCE_FLAT", "no later observed open", weight=w)
+                )
                 del held[iid]
                 flattened.add(iid)
                 continue
@@ -346,8 +367,8 @@ def simulate_book(
             + short_gross * stress.borrow_per_session
         )
         gross[k] = day_return
-        net[k] = day_return - cost_base
-        stressed[k] = day_return - cost_stress
+        net[k] = day_return - cost_base - extra_cost
+        stressed[k] = day_return - cost_stress - extra_cost
         stock_gross[k] = sum(abs(w) for w in held.values())
         hedge_w[k] = held_hedge
         turnover[k] = session_turnover + hedge_turnover
