@@ -67,6 +67,9 @@ def test_vps_preflight_is_hash_locked_and_never_self_authorizes() -> None:
     for item in files:
         assert _sha256(ROOT / item["path"]) == item["desired_sha256"]
         assert len(item["remote_sha256"]) == 64
+    for item in payload.get("companion_files", []):
+        assert _sha256(ROOT / item["path"]) == item["desired_sha256"], item["path"]
+        assert item["remote_sha256"] is None or len(item["remote_sha256"]) == 64
 
 
 def test_vps_preflight_preserves_strategy_and_requires_safe_rollout() -> None:
@@ -80,15 +83,29 @@ def test_vps_preflight_preserves_strategy_and_requires_safe_rollout() -> None:
         "risk_limits_changed",
         "order_generation_changed",
         "trade_schedule_changed",
-        "strategy_fingerprint_changed",
     ):
         assert scope[key] is False
+    # A moved strategy fingerprint is allowed only when the live-change contract records the move
+    # as a coverage extension that does not contaminate the forward record (2026-09-14: the
+    # book-level brake's switch and thresholds joined the hashed surface with activation false).
+    if scope["strategy_fingerprint_changed"]:
+        entry_date = scope["strategy_fingerprint_live_change_entry_date"]
+        live_change = json.loads(
+            (ROOT / "config" / "live_change_contract.json").read_text(encoding="utf-8")
+        )
+        entries = [e for e in live_change["change_log"] if e["date"] == entry_date]
+        assert entries, f"no live-change entry dated {entry_date}"
+        assert all(e["contaminates_forward_record"] is False for e in entries)
 
     rollout = payload["rollout_contract"]
-    assert rollout[0] == "REVERIFY_ALL_THREE_REMOTE_SHA256_VALUES"
+    assert rollout[0].startswith("REVERIFY_") and "REMOTE_SHA256" in rollout[0]
     assert "REENABLE_TIMER_WITHOUT_FORCING_AN_EXTRA_TRADING_CYCLE" in rollout
     assert "WAIT_FOR_THE_NEXT_NATURAL_SCHEDULED_CYCLE" in rollout
-    assert payload["current_remote_state"]["attribution_gate_status"] == ("SCHEMA_NOT_YET_MIGRATED")
+    gate = payload["current_remote_state"]["attribution_gate_status"]
+    if payload.get("expected_pre_rollout_schema", "PRE_MIGRATION") == "MIGRATED":
+        assert gate.startswith("MIGRATED")
+    else:
+        assert gate == "SCHEMA_NOT_YET_MIGRATED"
     assert "does not claim deployment" in payload["claim_boundary"]
 
 
@@ -104,12 +121,20 @@ def test_latest_read_only_preflight_observation_is_current_and_fail_closed() -> 
     assert observation["forced_cycle_run"] is False
     assert observation["remote_snapshot"]["timer_state"] == "active"
     assert observation["remote_snapshot"]["service_state"] == "inactive"
-    assert observation["remote_snapshot"]["files"] == {
-        item["path"]: item["remote_sha256"] for item in contract["required_files"]
+    observed_files = observation["remote_snapshot"]["files"]
+    for item in contract["required_files"] + contract.get("companion_files", []):
+        assert observed_files[item["path"]] == item["remote_sha256"], item["path"]
+    attribution_columns = {
+        "mark_price",
+        "mark_source",
+        "market_value_quote",
+        "unrealized_pnl_quote",
     }
-    assert not set(observation["remote_snapshot"]["position_snapshot_columns"]).intersection(
-        {"mark_price", "mark_source", "market_value_quote", "unrealized_pnl_quote"}
-    )
+    observed_columns = set(observation["remote_snapshot"]["position_snapshot_columns"])
+    if contract.get("expected_pre_rollout_schema", "PRE_MIGRATION") == "MIGRATED":
+        assert attribution_columns.issubset(observed_columns)
+    else:
+        assert not observed_columns.intersection(attribution_columns)
     bindings = observation["source_bindings"]
     assert bindings["deployment_tool_sha256"] == _sha256(DEPLOY_SCRIPT)
 

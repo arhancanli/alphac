@@ -268,3 +268,32 @@ published number or spend a research identity are marked DECISION and name who m
   offline pytest, browser fixture, ruff, mypy --strict, publication integrity (clean checkout),
   PostgreSQL contract. Local integration and property suites green. PR #32 is ready for the owner's
   merge at the end of the chain.
+- 14:50Z. FRANKFURT, READ-ONLY. The owner asked for "all of those" (merge, Frankfurt, activation,
+  outreach). Merging is blocked for this session by the auto-mode classifier (`gh pr merge`), as
+  is mutating the host; both stay owner one-liners. What could be done was done: a read-only hash
+  snapshot of the crypto host through the repo's own deploy tool (allowed) showed 176 of 195
+  shipped files identical, 7 drifted (pyproject, paper_cmds, settings, loop, store, strategy,
+  trial_reservation) and 3 relevant files absent (book_ladder.py, ladder_paths.py, the
+  drawdown-control contract); the host's store/loop/paper equal the 2026-09-06 desired revisions,
+  so the 09-10 rsync did land. The last cycle (14:10Z) was a healthy hold. The deploy tool is
+  generalized (`companion_files`, declared pre-rollout schema, required tables after migration,
+  an import smoke test inside the rollback trap, absent-file install and removal on rollback);
+  the contract is re-pinned to reality with two desired_revisions entries and seven companions,
+  `pyproject.toml` deliberately excluded (dependency pins need their own environment rollout).
+  The read-only preflight PASSED against the host and wrote its observation. `--apply` with the
+  approval phrase was refused by the classifier; the owner runs it (one line, between the :10
+  cycles), then the 15:10Z-or-later natural cycle and the hourly verifier seal the receipt.
+- 15:05Z. ACTIVATION-READY. Everything the flip needs, except the flip: the published
+  aggregation policy's `book_level_drawdown_ladder` is now DERIVED from the drawdown-control
+  contract (None while inactive, the declared depths once live) so the stamp, the fingerprint
+  and the trading path cannot disagree; the drawdown-evidence seal accepts whichever the
+  contract declares and rejects anything else; the maturity evaluator gains evidence-epoch
+  semantics (the latest live-change entry with `contaminates_forward_record: true` starts the
+  current epoch; earlier returns are published as a prior epoch beside it, never pooled; realized
+  drawdown stays descriptive over the whole record; tests for one epoch, a split, an epoch that
+  has not marked yet); the README sync names the epoch when one exists. Today: one epoch, 36
+  returns, no change. `scripts/activate_book_drawdown_brake.py` performs the flip as one pass
+  over six files (contract live + decision, base.yaml source https, change_log entry with
+  contaminates true, three pins), refuses to run twice or when the fingerprint does not move,
+  and is tested on sandboxed copies. It will be run only after the owner's Frankfurt rollout
+  lands, so the crypto sleeve is never described as braked while it is not.
