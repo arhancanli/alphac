@@ -49,7 +49,17 @@ def test_the_contract_is_declared_before_measurement_and_its_bound_is_the_owner_
     assert CONTRACT["bound_source"] == "config/owner_goals.json goals.combined_max_drawdown.bound"
     assert CONTRACT["acceptance_rule"]["declared_before_measurement"] is True
     assert CONTRACT["trial_accounting"]["hypothesis_identities_spent"] == 0
-    assert CONTRACT["activation"]["live"] is False
+    # Activated 2026-09-15 by the owner's recorded decision (PR #44): live may be True only with
+    # the activation date, the owner's words and the measurement made BEFORE that date on file.
+    activation = CONTRACT["activation"]
+    if activation["live"] is True:
+        assert activation["activated_on"] == "2026-09-15"
+        assert activation["decision"]["by"].startswith("Arhan Canli")
+        assert activation["decision"]["words"]
+        assert CONTRACT["measurement"]["measured_on"] < activation["activated_on"]
+        assert CONTRACT["status"] == activation["status_after_activation"]
+    else:
+        assert activation["live"] is False
     protocol = MOD.PROTOCOL.read_text()
     assert "Frozen:** 2026-09-14, before executing the study" in protocol
     assert "## v1.1: the ladder re-derived from the 10 percent bound" in protocol
@@ -138,7 +148,13 @@ def test_the_published_study_binds_the_contract_and_reproduced_its_baseline() ->
             assert check["regenerated"] == check["published"]
     assert study["trial_accounting"]["hypothesis_identities_spent"] == 0
     assert study["acceptance"]["accepted_as_bound_mechanism"] == (
-        study["status"] == "LADDER_ACCEPTED_AS_BOUND_MECHANISM_NOT_LIVE"
+        study["status"]
+        == (
+            "LADDER_ACCEPTED_AS_BOUND_MECHANISM_LIVE_SINCE_"
+            + str(CONTRACT["activation"]["activated_on"])
+            if CONTRACT["activation"]["live"] is True
+            else "LADDER_ACCEPTED_AS_BOUND_MECHANISM_NOT_LIVE"
+        )
     )
     body = {k: v for k, v in study.items() if k != "content_hash"}
     assert study["content_hash"] == MOD._content_hash(body)

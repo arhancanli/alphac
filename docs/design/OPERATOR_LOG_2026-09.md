@@ -594,3 +594,24 @@ published number or spend a research identity are marked DECISION and name who m
   every charge reconciled to an independent recomputation, the charged curve at or below the
   broker curve and different by exactly the rebased charges, the gate iterating the curve, the
   contract's statuses and declaration.
+- 2026-09-15 00:50Z. ACTIVATED (owner, delegated; PR #44, stacked on #43). Drawdown control
+  v1.1 is switched live by `scripts/activate_book_drawdown_brake.py --activated-on 2026-09-15`
+  with the owner's recorded words: `config/drawdown_control_contract.json` activation.live true
+  (status MECHANISM_LIVE_BOUND_ENFORCED_UP_TO_ONE_DAY_OVERSHOOT), `configs/base.yaml`
+  risk.book_ladder.source https, live-change entry 11 (contaminates the forward record: the
+  evidence epoch restarts on 2026-09-15; returns before it are a prior epoch, never pooled),
+  fingerprint e2533899 to 654432cc re-pinned in the live-change and forward-evidence contracts,
+  the current-book study and the pre-registration draft. Two things fixed on the way. The
+  declaration's reason typed the superseded 11 percent bound and the v1.0 figures; it now reads
+  the bound from config/owner_goals.json and the accepted measurement from the contract (p95
+  0.1007, p99 0.1020 with the absorbing ladder). And the fingerprinter takes the aggregation
+  policy from the last PUBLISHED state, stamped before activation with no ladder, so the first
+  activation declared a surface one publish behind the truth and the gate would have blocked
+  the next publish; the script now computes the surface from a fresh import of
+  paper_trading_state, exactly what the next publish writes, and exports the same stamp. Both
+  drawdown studies re-run against the activated contract in the worktree reproduce the
+  acceptance (conservative p95 0.1007, p99 0.1020, accepted). In force from the next equity
+  cycle after the publisher tree carries this commit; the crypto sleeve applies it only after the
+  companion-file rollout to Frankfurt (contract and base.yaml), which is the next step and is
+  currently refused by the rollout contract's own drift check because PR #40 moved
+  trial_reservation.py: the contract must be re-authored with desired_revisions before --apply.

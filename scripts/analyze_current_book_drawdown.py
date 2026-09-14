@@ -195,7 +195,7 @@ def build() -> dict[str, Any]:
     if aggregation != paper.book_aggregation_metadata():
         raise ValueError("declared aggregation does not match the running combine path")
     if live_contract["declared_fingerprint"] != (
-        "sha256:e2533899d9ee182b4be2126229cd0f6feb9a1d20fc1c6896afc4c8a87b555656"
+        "sha256:654432cc37acab969f8b70af80b0ef551f624098a59e030c0133006efded4a6a"
     ):
         raise ValueError("current-book drawdown protocol is bound to a different live fingerprint")
 
