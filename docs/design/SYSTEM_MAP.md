@@ -8,9 +8,9 @@ line of its own docstring, each pipeline's steps are the scripts it actually inv
 contract's boundary is the boundary it states about itself. A script with no docstring appears as
 having none.
 
-At a glance: **353 Python scripts**, **17 shell entry points**,
+At a glance: **354 Python scripts**, **17 shell entry points**,
 **30 configuration contracts**, **30 engineering artifacts**,
-**425 unit test files**, **22 data directories**, **9 scheduled jobs**.
+**426 unit test files**, **22 data directories**, **9 scheduled jobs**.
 
 
 ## What runs on a timer
@@ -278,7 +278,7 @@ and is worth more than a hand-made taxonomy that would drift.
 | `analyze_target_2p5.py` | ANALYSIS — what would a book Sharpe of 2.5 actually require, and is it reachable? |
 | `analyze_trial_budget_cost.py` | Price a prospective trial budget before it is authorized. |
 
-### `audit_*` (76)
+### `audit_*` (77)
 
 | script | first line of its docstring |
 |---|---|
@@ -344,6 +344,7 @@ and is worth more than a hand-made taxonomy that would drift.
 | `audit_spinoff_document_schema.py` | Audit a frozen Form 10 document sample without opening prices or returns. |
 | `audit_spinoff_form10_lineage.py` | Build a hash-bound Form 10 candidate lineage without opening prices or returns. |
 | `audit_spinoff_form_universe.py` | Measure the two structural facts the spin-off redesign note rests on, so neither is a memory. |
+| `audit_split_adjustment_direction.py` | Measure, split by split, what the shared adjusted-close engine does across every ex-date. |
 | `audit_split_ratio_integrity.py` | AUDIT — how many stored split ratios disagree with the price move they should explain. |
 | `audit_tender_offer_document_feasibility.py` | Audit locked SC 14D9 document extraction without loading prices or returns. |
 | `audit_tender_offer_reachability.py` | Establish whether tender-offer parser work is justified, without opening returns. |

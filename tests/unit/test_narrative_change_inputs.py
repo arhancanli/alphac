@@ -206,7 +206,7 @@ def test_the_daily_panel_reads_the_lake_pit_and_folds_a_split(tmp_path) -> None:
                 "action_type": pa.array(["split"], type=pa.string()),
                 "ex_date": pa.array([split_ex], type=pa.timestamp("ms", tz="UTC")),
                 "available_at": pa.array([opens[4]], type=pa.timestamp("ms", tz="UTC")),
-                "ratio": pa.array([0.5], type=pa.float64()),
+                "ratio": pa.array([2.0], type=pa.float64()),  # vendor factor: 2-for-1
                 "cash_amount": pa.array([None], type=pa.float64()),
                 "ingested_at": pa.array([opens[4] + 1000], type=pa.timestamp("ms", tz="UTC")),
             }
@@ -231,7 +231,7 @@ def test_the_daily_panel_reads_the_lake_pit_and_folds_a_split(tmp_path) -> None:
     assert panel.adjusted_close.loc[opens[5], aaa] == pytest.approx(52.5)  # pre-ex bar folded
     assert panel.adjusted_close.loc[opens[6], aaa] == pytest.approx(53.0)  # post-ex untouched
     assert (
-        panel.actions.iloc[0]["ratio"] == 0.5 and int(panel.actions.iloc[0]["ex_date"]) == split_ex
+        panel.actions.iloc[0]["ratio"] == 2.0 and int(panel.actions.iloc[0]["ex_date"]) == split_ex
     )
     manifest = build_input_manifest(
         panel=panel,

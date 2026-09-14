@@ -345,3 +345,32 @@ published number or spend a research identity are marked DECISION and name who m
   749 of 1,759 mapped issuers have no lake partition at all, every one a delisted name. A run on
   the lake as it stands would be a survivor-only backtest, which the pre-registration forbids.
   Nothing is decided by this; the fix is a full-history SEP lake (next entry), not a parameter.
+- 16:30Z. FOUND, PRODUCTION. While checking the price path for the new sleeve I ran the shared
+  adjusted-close engine across Apple's 2020 four-for-one split on both production lakes:
+  raw close 499.23 the day before, 129.04 on the ex-date; ADJUSTED close 1,996.92 the day
+  before, 129.04 after, a fake 93.5 percent one-day drop. Cause: every lake stores the vendor's
+  factor, new shares per old (4.0), while the engine multiplies pre-ex prices by ``ratio`` and its
+  own tests encode a two-for-one as 0.5, old shares per new. Two conventions, never checked
+  against each other. A random sample of 80 real splits from data/lake (2020-2024): 57 come out
+  with an adjusted ex-date jump exactly twice the raw one in log terms, 3 plausible, 20
+  undetermined. `eq_mom_252_21`, the only alpha of both live equity walk-forwards, reads that
+  panel through `_adjusted_close_panel`, as do reversal, realized volatility and beta. The
+  2026-08 repair that made splits apply at all (they never had) applied them inverted; before it
+  the same names were unadjusted. Either way the momentum sleeve has been ranking split names on
+  garbage moves. Whole-lake audit running (`scripts/audit_split_adjustment_direction.py`);
+  the fix is one convention, declared, with a cross-lake guard that checks the engine against
+  a real split, then the walk-forwards regenerate. Nothing is changed until the audit is in.
+- 16:40Z. MEASURED, WHOLE LAKES (`artifacts/audit/split_adjustment_direction.json`). data/lake:
+  5,156 splits on 3,031 instruments; of the 4,662 determined, 4,135 (88.7 percent) come out of
+  the engine with an adjusted ex-date jump of twice the raw one (inverted), 228 neutralized,
+  299 other. data/lake_sharadar: 4,804 splits on 2,801 instruments; 4,000 of 4,440 determined
+  (90.1 percent) inverted, 208 neutralized. The Codex alphamax beta-neutral probe of 2026-09
+  had disclosed the same defect with the same Apple and Tesla numbers and worked around it
+  inside the probe, leaving `src/**` untouched; the live sleeves kept trading on it. Fixed at
+  the source: the kernel now divides pre-ex prices by the stored vendor factor (new shares per
+  old, the convention `data/schemas.py` documents and every lake follows) and refuses a
+  non-positive factor; the engine's eleven fixtures flip to the vendor convention; a cross-lake
+  guard checks Apple's 2020 split through the engine on both production lakes (pre-ex adjusted
+  close 124.81, raw 499.23 over four); the probe's local inversion is retired so it cannot
+  double-invert. The neutralized rows are being classified next: a small split, or a stored
+  reciprocal that the fix will turn wrong and that needs a versioned repair.
