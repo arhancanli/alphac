@@ -141,7 +141,32 @@ def validate_published(output_path: Path = OUTPUT, local_dir: Path = LOCAL_DIR) 
         if not local_path.is_file():
             raise RuntimeError(f"Local CPI source missing: {series}")
         local = pd.read_parquet(local_path)
+        if local[["obs_period", "vintage_date"]].isna().any().any():
+            raise RuntimeError(f"Missing CPI identity date: {series}")
+        if local.duplicated(["obs_period", "vintage_date"]).any():
+            raise RuntimeError(f"Duplicate CPI identity: {series}")
         local = local[local["vintage_date"] <= cutoff]
+        # V1 sealed a rectangular matrix, including blank cells. A later workbook
+        # can add an observation row whose cells in ALL earlier vintages are blank.
+        # Those cells were never part of the receipt's observation domain. Exclude
+        # only such blank extensions; never drop blanks within the sealed domain
+        # or discard a newly populated historical cell. The old hash stays exact.
+        records = document.get("fresh_source_manifest", {}).get("records", [])
+        record = next((item for item in records if item.get("series") == series), None)
+        if record is not None:
+            if (record["normalized_table_content_hash"] != comparison["local_table_content_hash"]
+                    or record["rows"] != comparison["rows_local_at_cutoff"]):
+                raise RuntimeError(f"Inconsistent sealed CPI domain: {series}")
+            first = pd.Timestamp(record["first_observation"])
+            last = pd.Timestamp(record["last_observation"])
+            if pd.isna(first) or pd.isna(last) or first > last:
+                raise RuntimeError(f"Invalid sealed CPI domain: {series}")
+            outside = (local["obs_period"] < first) | (local["obs_period"] > last)
+            if local.loc[outside, "value"].notna().any():
+                raise RuntimeError(f"Populated CPI cell outside sealed domain: {series}")
+            local = local[~outside]
+            if len(local) != record["rows"]:
+                raise RuntimeError(f"Sealed CPI row count changed: {series}")
         local = local.sort_values(["obs_period", "vintage_date"]).reset_index(drop=True)
         current_slice_hash = fetcher._table_content_hash(local)
         if current_slice_hash != comparison["local_table_content_hash"]:
