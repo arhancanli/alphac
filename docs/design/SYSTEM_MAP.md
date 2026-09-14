@@ -8,9 +8,9 @@ line of its own docstring, each pipeline's steps are the scripts it actually inv
 contract's boundary is the boundary it states about itself. A script with no docstring appears as
 having none.
 
-At a glance: **360 Python scripts**, **17 shell entry points**,
+At a glance: **361 Python scripts**, **17 shell entry points**,
 **33 configuration contracts**, **30 engineering artifacts**,
-**432 unit test files**, **23 data directories**, **9 scheduled jobs**.
+**433 unit test files**, **23 data directories**, **9 scheduled jobs**.
 
 
 ## What runs on a timer
@@ -532,7 +532,7 @@ and is worth more than a hand-made taxonomy that would drift.
 | `verify_sleeve_publication_replays.py` | Replay audit-only sleeve evidence builders and prove no result or trial ledger changed. |
 | `verify_transparency.py` | Verify the public track-record chain, signatures and disclosed payloads. |
 
-### everything else (130)
+### everything else (131)
 
 | script | first line of its docstring |
 |---|---|
@@ -629,6 +629,7 @@ and is worth more than a hand-made taxonomy that would drift.
 | `seal_crypto_carry_portable_v1_admission_closure.py` | Close portable-v1 as final INCOMPLETE without retroactive scenario design. |
 | `seal_crypto_carry_portable_v1_result.py` | Seal the immutable primary result without overstating admission evidence. |
 | `seal_crypto_carry_replay_correction.py` | Seal the crypto-carry non-reproduction as a publication correction incident. |
+| `seal_earnings_narrative_change_batch.py` | Seal the earnings-narrative-change batch: every v7 gate measured, one closure per identity. |
 | `seal_external_validation_opportunities.py` | Seal the current, official-source external-validation opportunity audit. |
 | `seal_forward_drawdown_evidence.py` | Seal the drawdown study and expose its exact live-equivalence boundary. |
 | `seal_fundamental_single_replay_divergence.py` | Seal a completed fundamental replay that failed exact reproduction. |
