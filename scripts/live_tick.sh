@@ -116,6 +116,9 @@ WATCHDOG_S=2400   # 40 min cap: hourly cache-hit cycles are ~3 min; the once-dai
   uv run python scripts/build_identity_trial_packets.py
   uv run python scripts/build_trial_packet_manifest.py
   uv run python scripts/seal_legacy_research_epoch.py
+  # Every identity measured after the legacy closure, derived; research_export reads it and
+  # the site checks legacy + prospective = N against it (2026-09-14).
+  uv run python scripts/build_prospective_epoch_register.py >/dev/null
   # Bind next-sleeve selection to the current unopened review packet before research_export copies
   # the receipt. This does not open labels, machine predictions, prices, or returns.
   uv run python scripts/seal_next_sleeve_selection.py
