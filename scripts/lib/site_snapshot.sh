@@ -3,18 +3,33 @@
 
 SITE_LANDING_SOURCE=${SITE_LANDING_SOURCE:-"$HOME/meridian"}
 SITE_APP_SOURCE=${SITE_APP_SOURCE:-"$HOME/meridian-app"}
+SITE_LANDING_DESIGN_SOURCE=${SITE_LANDING_DESIGN_SOURCE:-""}
+# Keep engine exports in meridian; an approved release may supply the presentation.
+# Explicit source overrides (including tests) never inherit the production pointer.
+if [ -z "$SITE_LANDING_DESIGN_SOURCE" ] && [ "$SITE_LANDING_SOURCE" = "$HOME/meridian" ] &&
+   [ -f "$HOME/alphaforge/config/site_landing_design_source.txt" ]; then
+  SITE_LANDING_DESIGN_SOURCE=$(head -n 1 "$HOME/alphaforge/config/site_landing_design_source.txt")
+fi
 
 # .claude/ and .firecrawl/ (2026-09-06): agent worktrees under .claude/worktrees are written to
 # continuously while agents build, so a snapshot that hashes them never sees a stable source and
 # the hourly deploy skips itself for as long as anyone is working. They are not site source.
 site_source_hash() {
-  find "$SITE_LANDING_SOURCE" "$SITE_APP_SOURCE" \
+  { find "$SITE_LANDING_SOURCE" "$SITE_APP_SOURCE" "${SITE_LANDING_DESIGN_SOURCE:-$SITE_LANDING_SOURCE}" \
     \( -path "$SITE_LANDING_SOURCE/artifacts" \
        -o -path "$SITE_APP_SOURCE/artifacts" \
+       -o -path "$SITE_LANDING_DESIGN_SOURCE/artifacts" \
        -o -name node_modules -o -name dist -o -name .next -o -name .vercel \
        -o -name .git -o -name .bak \
        -o -name .claude -o -name .firecrawl \) -prune -o \
-    -type f -print0 2>/dev/null \
+    -type f ! -name '.env*' -print0 2>/dev/null
+    for source_dir in "$SITE_LANDING_SOURCE" "$SITE_APP_SOURCE" "$SITE_LANDING_DESIGN_SOURCE"; do
+      [ -n "$source_dir" ] || continue
+      if [ -f "$source_dir/artifacts/qa/redesign-scope/inventory.json" ]; then
+        printf '%s\0' "$source_dir/artifacts/qa/redesign-scope/inventory.json"
+      fi
+    done
+  } \
     | sort -z \
     | xargs -0 shasum -a 256 2>/dev/null \
     | shasum -a 256 \
@@ -41,9 +56,34 @@ _site_snapshot_copy() {
     --exclude '/.bak/' \
     --exclude '/.claude/' \
     --exclude '/.firecrawl/' \
+    --exclude '.env*' \
     "$source_dir/" "$destination_dir/" || return 1
+  if [ -f "$source_dir/artifacts/qa/redesign-scope/inventory.json" ]; then
+    mkdir -p "$destination_dir/artifacts/qa/redesign-scope" || return 1
+    cp "$source_dir/artifacts/qa/redesign-scope/inventory.json" \
+      "$destination_dir/artifacts/qa/redesign-scope/inventory.json" || return 1
+  fi
   mkdir -p "$destination_dir/.vercel" || return 1
   cp "$source_dir/.vercel/project.json" "$destination_dir/.vercel/project.json" || return 1
+}
+
+_site_snapshot_landing() {
+  local destination_dir="$1" evidence_dir
+  if [ -z "$SITE_LANDING_DESIGN_SOURCE" ]; then
+    _site_snapshot_copy "$SITE_LANDING_SOURCE" "$destination_dir"
+    return $?
+  fi
+  [ -d "$SITE_LANDING_DESIGN_SOURCE" ] || return 1
+  _site_snapshot_copy "$SITE_LANDING_DESIGN_SOURCE" "$destination_dir" || return 1
+  # Replace only public export subtrees inside the newly created snapshot.
+  # Never overwrite the design source, export source, or immutable originals there.
+  for evidence_dir in glassbox research publication release-candidates; do
+    [ -d "$SITE_LANDING_SOURCE/public/$evidence_dir" ] || return 1
+    mkdir -p "$destination_dir/public/$evidence_dir" || return 1
+    rsync -a --delete "$SITE_LANDING_SOURCE/public/$evidence_dir/" \
+      "$destination_dir/public/$evidence_dir/" || return 1
+  done
+  cp "$SITE_LANDING_SOURCE/public/paper-state.json" "$destination_dir/public/paper-state.json" || return 1
 }
 
 site_snapshot_create() {
@@ -60,7 +100,7 @@ site_snapshot_create() {
   while [ "$snapshot_attempt" -le 3 ]; do
     before_hash=$(site_source_hash) || return 1
     candidate_root="$snapshot_parent/attempt-$snapshot_attempt"
-    _site_snapshot_copy "$SITE_LANDING_SOURCE" "$candidate_root/meridian" || return 1
+    _site_snapshot_landing "$candidate_root/meridian" || return 1
     _site_snapshot_copy "$SITE_APP_SOURCE" "$candidate_root/meridian-app" || return 1
     after_hash=$(site_source_hash) || return 1
 

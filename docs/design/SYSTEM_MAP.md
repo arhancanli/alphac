@@ -8,9 +8,9 @@ line of its own docstring, each pipeline's steps are the scripts it actually inv
 contract's boundary is the boundary it states about itself. A script with no docstring appears as
 having none.
 
-At a glance: **344 Python scripts**, **17 shell entry points**,
+At a glance: **346 Python scripts**, **17 shell entry points**,
 **27 configuration contracts**, **29 engineering artifacts**,
-**408 unit test files**, **22 data directories**, **9 scheduled jobs**.
+**410 unit test files**, **22 data directories**, **9 scheduled jobs**.
 
 
 ## What runs on a timer
@@ -141,14 +141,6 @@ Canli Capital - hourly live PAPER cycle (the running track record).
 | 22 | `scripts/research_export.py` | Research data layer: emit research.json — the FULL honest gauntlet — from REAL artifacts. |
 | 23 | `scripts/check_retracted_claims.py` | Refuse to publish a claim this record has already withdrawn. |
 | 24 | `scripts/check_live_change_declared.py` | Block the publish if the live trading configuration has changed without being declared. |
-
-### `scripts/macro_vintage_tick.sh`
-
-Daily PIT macro-vintage refresh — the job that starts AlphaVintage's arrival-lag clock.
-
-| # | step | what it is |
-|---|---|---|
-| 1 | `scripts/refresh_macro_vintage.py` | Refresh the PIT macro-vintage lake AND record when each vintage first reached us. |
 
 ### `scripts/mf_tick.sh`
 
@@ -519,7 +511,7 @@ and is worth more than a hand-made taxonomy that would drift.
 | `verify_sleeve_publication_replays.py` | Replay audit-only sleeve evidence builders and prove no result or trial ledger changed. |
 | `verify_transparency.py` | Verify the public track-record chain, signatures and disclosed payloads. |
 
-### everything else (122)
+### everything else (124)
 
 | script | first line of its docstring |
 |---|---|
@@ -564,6 +556,7 @@ and is worth more than a hand-made taxonomy that would drift.
 | `health_check.py` | Canli Capital / AlphaForge — daily health monitor. |
 | `import_active_ownership_blind_labels.py` | Validate and import a completed independent Item 4 blind review. |
 | `live_cycle.py` | Genuine broker-executed live paper cycle — turns a sleeve from SIMULATION into REAL Alpaca fills. |
+| `macro_refresh_transport.py` | Bounded retry for read-only public-source downloads; permanent failures fail fast. |
 | `maker_shadow.py` | MAKER SHADOW VALIDATION — measure, forward and honestly, what post-only execution |
 | `managed_futures_screen.py` | MANAGED-FUTURES TREND screen — the real breadth lever, prototyped on FREE ETF proxies. |
 | `mega_sweep.py` | Mega config sweep — the exhaustive, HONEST equity backtest grid. |
@@ -640,6 +633,7 @@ and is worth more than a hand-made taxonomy that would drift.
 | `seal_walkforward_input_snapshot_protocol.py` | Seal the prospective walk-forward derived-input snapshot control. |
 | `sentinel.py` | Read-only, 24/7 operational sentinel for the AlphaForge VPS. |
 | `sharadar_load.py` | Load Sharadar bulk-export zips (data/sharadar_raw/) into the AlphaForge lake. |
+| `stage_macro_vintage_refresh.py` | Prepare an isolated candidate lake. Never publish, promote, or mutate the source. |
 | `strategy_factory.py` | The strategy-factory math — how 'many uncorrelated strategies' actually moves the combined Sharpe. |
 | `sync_readme_forward_evidence.py` | Synchronize README forward headlines with the canonical maturity artifact. |
 | `transparency_log.py` | Tamper-evident transparency log for the live track record. |
