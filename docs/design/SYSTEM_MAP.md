@@ -9,8 +9,8 @@ contract's boundary is the boundary it states about itself. A script with no doc
 having none.
 
 At a glance: **355 Python scripts**, **17 shell entry points**,
-**30 configuration contracts**, **30 engineering artifacts**,
-**426 unit test files**, **22 data directories**, **9 scheduled jobs**.
+**30 configuration contracts**, **2 engineering artifacts**,
+**426 unit test files**, **0 data directories**, **9 scheduled jobs**.
 
 
 ## What runs on a timer
@@ -211,36 +211,8 @@ are the ones a reader has to know about; everything else is derived from them.
 | `config/trial_accounting.json` | _(no stated boundary)_ |
 | `config/trial_accounting_reviews.json` | _(no stated boundary)_ |
 | `config/trial_accounting_v7_proposed.json` | _(no stated boundary)_ |
-| `artifacts/engineering/alpaca_broker_reconciliation.json` | Self-published read-only reconciliation against three dedicated Alpaca paper accounts. |
-| `artifacts/engineering/alphavintage_sealed_outcome.json` | The figures the published correction paper quotes, recomputed from the probe's own artifacts so a reader can check them. |
-| `artifacts/engineering/book_drawdown_ladder.json` | The declared book-level drawdown ladder replayed over the combined book's published daily paper marks. |
-| `artifacts/engineering/borrow_execution_contract.json` | These primitives prevent current borrow flags and general-collateral rates from being silently treated as historical security-level evidence. |
-| `artifacts/engineering/claim_coverage_map.json` | Maps each PUBLISHED ARTIFACT to the mechanisms that guard it and records when each mechanism last ran, by running it. |
-| `artifacts/engineering/contract_and_unit_audit.json` | Three audit dimensions worked against the contract in force and the published bundle. |
-| `artifacts/engineering/corporate_action_contract.json` | The event-driven engine now accounts for source-bound splits, cash dividends, and metadata-confirmed delistings. |
-| `artifacts/engineering/crowding_risk_contract.json` | The gate and stress arithmetic are implemented. |
-| `artifacts/engineering/crypto_lab_carry_crash_incident.json` | Forensic description of one paper-traded LABUSDT episode. |
-| `artifacts/engineering/crypto_position_attribution.json` | Latest-cycle arithmetic attribution for the locally simulated crypto paper account. |
-| `artifacts/engineering/crypto_position_attribution_rollout_verification.json` | This verifies only prospective position-attribution operation on the first eligible natural cycle. |
-| `artifacts/engineering/crypto_position_attribution_vps_preflight.json` | This preflight proves deployment readiness only. |
-| `artifacts/engineering/crypto_position_attribution_vps_preflight_observation.json` | This receipt proves only a successful read-only preflight at the stated instant. |
-| `artifacts/engineering/crypto_position_attribution_vps_receipt.json` | Deployment and migration are verified; attribution remains incomplete until the next natural cycle reconciles exact position marks to account equity. |
-| `artifacts/engineering/data_lake_scale.json` | Counts what is on disk and what pytest collects. |
 | `artifacts/engineering/deflated_sharpe_calculator_contract.json` | This contract reproduces ALPHAC's PSR and DSR arithmetic for supplied inputs. |
-| `artifacts/engineering/financing_contract.json` | The event-driven engine can replay fully covered financing schedules and persist their cash effects. |
-| `artifacts/engineering/forward_drawdown_evidence.json` | The sealed study cell is a 96-path, two-year, fourteen-sleeve, daily simulation at a 10% book-level volatility target. |
-| `artifacts/engineering/forward_evidence_maturity.json` | Paper-only, self-published evidence. |
-| `artifacts/engineering/forward_sleeve_contribution.json` | Descriptive arithmetic attribution of the published paper curve only. |
 | `artifacts/engineering/foundry_local_contract_verification.json` | This receipt verifies committed local contracts. |
-| `artifacts/engineering/futures_execution_contract.json` | These primitives prevent several classes of futures lifecycle leakage and unsafe fallback. |
-| `artifacts/engineering/guards_that_cannot_fire.json` | A STRUCTURAL scan of source for checks that cannot fail. |
-| `artifacts/engineering/lint_debt_contract.json` | Ruff is clean for src/alphaforge and tests. |
-| `artifacts/engineering/live_config_fingerprint.json` | _(no stated boundary)_ |
-| `artifacts/engineering/market_status_contract.json` | Explicit status replay can block impossible fills, and reviewed source-bound manifests can normalize and exactly reconcile supplied official/vendor re… |
-| `artifacts/engineering/mutation_ledger.json` | Breaks what each guard watches and records whether the guard failed. |
-| `artifacts/engineering/options_execution_contract.json` | These primitives make option quote, cross-strike integrity, adjusted-deliverable normalization/reconciliation, source-byte archival, displayed-size pa… |
-| `artifacts/engineering/prereg_earnings_narrative_parameters.json` | The numeric parameters this pre-registration commits to, extracted from the committed document and stated as data. |
-| `artifacts/engineering/record_continuity.json` | Reads the per-sleeve trading databases read-only. |
 
 ## Scripts by kind
 
@@ -662,28 +634,6 @@ and is worth more than a hand-made taxonomy that would drift.
 
 | directory |  |
 |---|---|
-| `data/corrections/` |  |
-| `data/deribit/` |  |
-| `data/features/` |  |
-| `data/lake/` |  |
-| `data/lake_fut_db/` |  |
-| `data/lake_fut_real/` |  |
-| `data/lake_insider/` |  |
-| `data/lake_inventory/` |  |
-| `data/lake_inventory_releases/` |  |
-| `data/lake_macro_vintage/` |  |
-| `data/lake_mf/` |  |
-| `data/lake_mf_exp/` |  |
-| `data/lake_sec/` |  |
-| `data/lake_sharadar/` |  |
-| `data/lake_shortint/` |  |
-| `data/paper/` |  |
-| `data/predictions/` |  |
-| `data/quality/` |  |
-| `data/raw/` |  |
-| `data/reproduction/` |  |
-| `data/research/` |  |
-| `data/sharadar_raw/` |  |
 
 Deliberately no file counts: the collectors write into these every day, and a number
 committed here would be wrong by the time anybody read it — and would make the currency
