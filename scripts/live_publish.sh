@@ -133,6 +133,8 @@ deploy_prod() {
     || { echo "seal_legacy_research_epoch FAILED"; FAIL=1; }
   uv run python scripts/build_prospective_epoch_register.py \
     || { echo "build_prospective_epoch_register FAILED"; FAIL=1; }
+  uv run python scripts/build_forward_identity_packet_index.py \
+    || { echo "build_forward_identity_packet_index FAILED"; FAIL=1; }
   # Rebind the selected next-sleeve receipt to the current frozen blind packet. The packet is
   # intentionally not rebuilt here, but its verifier/instructions may be hardened while labels
   # remain unopened; publishing the previous manifest hash would make the selection lineage stale.
