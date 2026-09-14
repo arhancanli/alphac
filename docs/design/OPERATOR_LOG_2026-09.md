@@ -297,3 +297,25 @@ published number or spend a research identity are marked DECISION and name who m
   contaminates true, three pins), refuses to run twice or when the fingerprint does not move,
   and is tested on sandboxed copies. It will be run only after the owner's Frankfurt rollout
   lands, so the crypto sleeve is never described as braked while it is not.
+- 15:12Z. COMMITTED. `ops/frankfurt-rollout-activation-ready-20260914` (82ad246) pushed; alphac
+  **PR #33** opened on #32's branch. Chain: #23 -> ... -> #32 -> #33. CI dispatched by hand. The
+  pre-commit hook regenerated the lint-debt contract for the commit. Owner one-liners now: the
+  ten merges in order; the Frankfurt apply (between :10 cycles); then, once the natural cycle
+  after the apply is verified, `uv run python scripts/activate_book_drawdown_brake.py
+  --decision "<words>" --activated-on <UTC date>` followed by a second companion rollout of the
+  contract and base.yaml. Outreach: no recipient or fee exists in the repository, so nothing can
+  be sent from here; the drafts wait for a name and a number.
+- 15:20Z. WIRED (v2 reservation plan, Task 4; the owner checkpoint is met by the delegation of
+  2026-09-14 and today's "ok lets do all of those"). `_validate_forward_epoch_serial_completion`
+  now calls `_validate_prior_identity_admission_disposition` for every prior forward identity:
+  a complete packet no longer unblocks the next ordinal by itself; its sealed closure must say
+  ADMIT or KILL, or an owner waiver must be bound to that packet's exact content hash. The
+  end-to-end test replays the sealed v1 shape inside a full `validate_reservation` call and
+  proves the block, the waiver, and that a waiver bound to another hash is refused; the guard's
+  registered mutation is still CAUGHT. Consequence in the real repository, faced rather than
+  hidden: crypto_carry_portable_v1 closed FINAL INCOMPLETE, so every reservation would now be
+  blocked. The owner's waiver for that one identity is written and tracked
+  (`artifacts/research/seriality_waivers/da5f5f47f99f9bd2.json`, bound to the sealed packet
+  hash 9ba408cb, reason recorded, authorization recorded as delegated), validated against the
+  real packet and closure (WAIVED), and pinned by a test. The next ordinal (348) can be reserved
+  through the v2 path; the tier-0 return runners are what remain before the first reservation.
