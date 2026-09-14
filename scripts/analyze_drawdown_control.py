@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 """Measure the declared book-level drawdown ladder on the published drawdown study's own paths.
 
-WHY. The owner's goal is a HARD 11 percent maximum drawdown on the combined book, and a backtest
+WHY. The owner's goal is a HARD maximum drawdown on the combined book (11 percent when v1.0 was
+frozen; 10 percent since the 2026-09-14 restatement, read from config/owner_goals.json), and a
+backtest
 cannot promise one: the published current-composition study puts the two-year 95th percentile at
 16.5 percent under the admission contract's permitted stressed correlation. A bound that holds in
 the tail is a brake. This study measures the brake declared in
@@ -31,6 +33,7 @@ from typing import Any, Final
 import numpy as np
 import numpy.typing as npt
 
+from alphaforge.research.owner_goals import load_owner_goals
 from alphaforge.risk.ladder_paths import simulate_book_ladder
 
 REPO: Final[Path] = Path(__file__).resolve().parents[1]
@@ -306,10 +309,12 @@ def build() -> dict[str, Any]:
     drift = float(np.mean(book.book_returns))
     centered_book = book.book_returns - drift
     bound = float(contract["bound"])
-    if bound != float(admission["thresholds"]["book_expected_max_drawdown_max"]):
-        raise ValueError(
-            "contract bound does not equal the admission contract's drawdown objective"
-        )
+    # The bound is the owner's (config/owner_goals.json), a bound on REALIZED maximum drawdown.
+    # The admission contract's book_expected_max_drawdown_max is the sealed MODELED objective;
+    # since 2026-09-14 the two differ (0.10 against 0.11) and are published side by side.
+    owner_bound = float(load_owner_goals()["goals"]["combined_max_drawdown"]["bound"])
+    if bound != owner_bound:
+        raise ValueError("contract bound does not equal the owner's maximum-drawdown bound")
     specs = ladder_specs(contract)
     stress_correlation = float(admission["thresholds"]["stressed_pairwise_correlation_max"])
 

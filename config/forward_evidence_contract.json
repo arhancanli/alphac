@@ -34,7 +34,7 @@
   "realized_max_drawdown_bound_note": "The owner's bound on the combined book's realized maximum drawdown (10 percent, restated 2026-09-14), stronger than and separate from the expected-maximum-drawdown objective above, which stays at the sealed 11 percent as the modeled objective. The evaluation publishes realized drawdown against the bound every mark; a realized drawdown inside the bound to date establishes nothing about future drawdown. The declared drawdown-control ladder (flat at 11 percent) was measured against the 11 percent objective and cannot enforce this bound; a consistent ladder must be measured and declared before activation.",
   "broker_reconciliation_max_age_hours": 36,
   "broker_state_lag_tolerance_hours": 1,
-  "required_live_config_fingerprint": "sha256:70eef97c2280e41b6cc543d6c6e6fb472b48dd5aa77e350abca95da970bcb167",
+  "required_live_config_fingerprint": "sha256:e2533899d9ee182b4be2126229cd0f6feb9a1d20fc1c6896afc4c8a87b555656",
   "required_continuity_schema": "canli.alphac-record-continuity.v1",
   "required_broker_reconciliation_schema": "canli.alphac-alpaca-broker-reconciliation.v1",
   "required_drawdown_model_schema": "canli.alphac-drawdown-live-estimator.v1",

@@ -119,6 +119,12 @@ def test_the_forward_evidence_contract_carries_the_realized_bound_beside_the_exp
         assert (
             "INCONSISTENT_WITH_BOUND" in goals["goals"]["combined_max_drawdown"]["mechanism_status"]
         )
+    else:
+        # Drawdown control v1.1: the declared ladder IS derived from the owner's bound.
+        assert control["bound"] == bound
+        assert control["ladder"]["dd_flat_frac"] == bound
+        assert control["ladder"]["dd_half_frac"] == pytest.approx(bound / 2)
+        assert "INCONSISTENT" not in goals["goals"]["combined_max_drawdown"]["mechanism_status"]
 
 
 def test_the_sealed_admission_contract_has_not_moved_and_is_history_not_a_target(

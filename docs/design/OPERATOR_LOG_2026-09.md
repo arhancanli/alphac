@@ -487,6 +487,37 @@ published number or spend a research identity are marked DECISION and name who m
   EQUITY_PAPER_LIVE_GROSS_OF_FRICTIONS_REPAIR_PENDING.
 - 18:55Z. PR. #38 `governance/owner-goals-in-force-20260914` opened on main; canlicapital #12
   (claim relabel) waits for the first publish that carries the goals.
+- 19:20Z. DECLARED. Drawdown control v1.1 (`config/drawdown_control_contract.json` version 1.1):
+  the ladder re-derived from the owner's restated 10 percent bound by the same rule (half gross
+  at 5.0 percent, flat at 10.0 percent, release 0.75 of the half level), the acceptance rule
+  re-declared as v1.0's slack applied to the new bound (p95 <= 0.1091, p99 <= 0.1182, derived
+  before the official run; the 18:30Z scratch cell is disclosed in the contract), and v1.0 kept
+  in `history`. The hashed live surface moved (book_ladder_dd_half_frac / dd_flat_frac), so this
+  is change_log entry 9 in `config/live_change_contract.json`, re-pinned in the forward-evidence
+  contract, the current-book drawdown study and the pre-registration draft:
+  sha256:70eef97c… -> sha256:e2533899…. Not a trading change: activation.live is false, every
+  sleeve still applies a multiplier of exactly 1.0, the epoch does not restart. The official
+  v1.1 measurement is recorded in the contract's `measurement` block and the branch is
+  `risk/drawdown-control-v1-1-ladder-5-10`, stacked on #38 and opened against main once #38 lands.
+- (recorded late at 18:25Z; written in the publisher tree at the times shown and never committed there)
+- 16:36Z. MERGED. #36 (the signed chain, #24 through #34) landed on main by the owner's
+  `gh pr merge 36 --squash --auto` once CI went green; the publisher tree is on main (8561336).
+  The two earlier attempts taught two rules now in memory: deleting a stacked PR's base branch
+  closes its dependents for good, and main requires signed commits, so every branch today had to
+  be rebuilt with signing on.
+- 16:55Z. BRANCH. `research/narrative-change-runner-and-split-fix-20260914` from main, ten
+  signed commits: the runner (tasks 3 to 6, the calibration driver, the survivorship-inclusive
+  lake builder) and the split-direction repair with its audit and guard. One PR, because the
+  repair's guard test lives in the runner's test file and the owner merges once.
+- 18:50Z. DIRECTION (owner). "focus on adding sleeves improving each sleeves sharpe ratio returs
+  cagr max dd and everything ... i give you full permision for the activiations so you can go
+  ahead." Recorded in `ALPHAC_OWNER_GOALS_2026-09-12.md`. Plan: (1) land #38 and #39; (2) promote
+  the v2 full-evidence reservation so out-of-sample runs can be authorized at all, which is the
+  gate every new sleeve waits behind; (3) run the earnings-narrative-change candidate out of
+  sample at ordinal 348 under that reservation; (4) the treasury-auction candidate next; (5) the
+  cost-realism repair so every sleeve's published figures are net; (6) activate the brake with
+  the v1.1 ladder once the crypto host reads the flipped contract. Every activation remains a
+  declared, fingerprinted change.
 - 19:05Z. BUILT (branch `research/v2-batch-reservation-promotion-20260914`, from main). The gate
   every new sleeve waited behind: (1) `config/trial_accounting_evidence_classes.json` defines the
   selectable identity, the mandatory diagnostic and the atomic identity batch beside the sealed
