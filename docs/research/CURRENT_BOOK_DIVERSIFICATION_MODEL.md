@@ -98,7 +98,8 @@ the governing average-correlation point gate is not.
 It does not establish live-forward diversification. The frozen research curves end before the
 broker-reconciled forward record begins; the returns were known before the protocol; no independent
 human replication exists; and the window is not crisis-complete. It proves neither alpha nor the
-1.5 forward-Sharpe objective and spends zero new hypothesis identities.
+governing forward-Sharpe objective (1.5 when this study was sealed; 2.0 since 2026-09-14 under
+`config/owner_goals.json`) and spends zero new hypothesis identities.
 
 ## Reproduction
 

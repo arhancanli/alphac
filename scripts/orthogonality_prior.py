@@ -38,6 +38,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
+from alphaforge.research.owner_goals import governing_objective, load_owner_goals
+
 REPO = Path(__file__).resolve().parents[1]
 ATLAS = REPO / "artifacts" / "discovery" / "sleeve_atlas.json"
 CONTRACT = REPO / "config" / "sleeve_admission_contract.json"
@@ -45,7 +47,14 @@ BOOK = REPO / "artifacts" / "analysis" / "book_without_alphavintage" / "result.j
 STRESSED = REPO / "artifacts" / "analysis" / "stressed_correlation" / "result.json"
 OUTPUT = REPO / "artifacts" / "analysis" / "orthogonality_prior" / "result.json"
 
-S_BAR_MEASURED = 0.469  # live four, from the objective's own published figure
+# The live book's measured mean standalone Sharpe, READ from the sealed contract's frontier
+# (four-curve basis) rather than typed, so the objective correlation the owner-goals projection
+# derives at that quality and the arithmetic below agree to the digit.
+S_BAR_MEASURED = float(
+    json.loads(CONTRACT.read_text())["frontier_arithmetic"]["quality_precondition_at_the_gate"][
+        "s_bar_measured_four_curve_basis"
+    ]
+)
 
 # Factor families. Two sleeves in the same family trade the same idea in different clothes; the
 # one pair in this book that shares one is also the most correlated pair in this book.
@@ -268,6 +277,10 @@ def _measured_structure() -> dict[str, Any]:
     """
     book = json.loads(BOOK.read_text())["with_alphavintage"]
     pairs = book["pairwise_correlations"]
+    # N from the number of measured pairs: N(N-1)/2 pairs means N sleeves, never a typed 4.
+    sleeves_now = round((1.0 + math.sqrt(1.0 + 8.0 * len(pairs))) / 2.0)
+    if sleeves_now * (sleeves_now - 1) // 2 != len(pairs):
+        raise ValueError(f"{len(pairs)} pairs is not a complete pairwise set")
     n_days = book["n_days"]
     se = 1 / math.sqrt(n_days - 3)
 
@@ -288,6 +301,7 @@ def _measured_structure() -> dict[str, Any]:
         )
     resolved = [r for r in rows if r["resolved_at_95"]]
     return {
+        "sleeves_now": sleeves_now,
         "n_days": n_days,
         "standard_error_per_pair": round(se, 4),
         "pairs": rows,
@@ -317,13 +331,17 @@ def _measured_structure() -> dict[str, Any]:
     }
 
 
-def _arithmetic(contract: dict[str, Any], rho_bar_now: float) -> dict[str, Any]:
-    """What the new pairs must average — the number an ordering is only useful against."""
-    objective = contract["objective"]
+def _arithmetic(contract: dict[str, Any], rho_bar_now: float, n_now: int) -> dict[str, Any]:
+    """What the new pairs must average — the number an ordering is only useful against.
+
+    The objective is the owner's (config/owner_goals.json: forward 2.0 across at least 15
+    sleeves) projected on the sealed contract's identity and measured quality; the contract's
+    own 14-sleeve objective is history inside that projection, never a second target here.
+    """
+    objective = governing_objective(load_owner_goals(), CONTRACT, current_sleeves=n_now)
     target_rho = objective["average_pairwise_correlation_objective"]
     gate = contract["thresholds"]["candidate_average_correlation_to_existing_book_max"]
     n_target = objective["target_total_sleeves"]
-    n_now = 4
     haircut_low = objective["backtest_to_forward_haircut"]["range"][0]
 
     pairs_total = n_target * (n_target - 1) // 2
@@ -336,6 +354,8 @@ def _arithmetic(contract: dict[str, Any], rho_bar_now: float) -> dict[str, Any]:
     shortfall = objective["honest_forward_sharpe_target"] - forward_at_gate
 
     return {
+        "objective_source": objective["source"],
+        "honest_forward_sharpe_target": objective["honest_forward_sharpe_target"],
         "sleeves_now": n_now,
         "sleeves_target": n_target,
         "pairs_now": pairs_now,
@@ -384,7 +404,7 @@ def main() -> int:
         )
 
     structure = _measured_structure()
-    arithmetic = _arithmetic(contract, structure["rho_bar"])
+    arithmetic = _arithmetic(contract, structure["rho_bar"], structure["sleeves_now"])
     stressed = json.loads(STRESSED.read_text())["rho_bar"]
 
     rows = []

@@ -46,6 +46,12 @@ import shutil
 from pathlib import Path
 from typing import Any, Final
 
+from alphaforge.research.owner_goals import (
+    current_sleeve_count,
+    goal_frontier,
+    governing_objective,
+    load_owner_goals,
+)
 from alphaforge.validation.experiments import ExperimentLog, ExperimentUnion
 
 # ---------------------------------------------------------------------------
@@ -414,17 +420,22 @@ def _discovery_with_contract_gates() -> dict[str, Any]:
     """Project the in-force contract's objective and thresholds over discovery metadata."""
     discovery: dict[str, Any] = json.loads(SLEEVE_DISCOVERY_JSON.read_text())
     contract: dict[str, Any] = json.loads(SLEEVE_ADMISSION_CONTRACT_JSON.read_text())
-    contract_objective = contract["objective"]
     thresholds = contract["thresholds"]
     # The discovery file owns the candidate queue, not the portfolio objective. It used to carry
     # a handwritten 2.0--2.5 OOS target after contract v6 had explicitly withdrawn that target in
-    # favour of an honest forward 1.5 (and the 2.25--3.0 in-sample support band implied by the
-    # measured haircut). Preserve only discovery-specific programme metadata and derive every
-    # target from the contract in force.
+    # favour of an honest forward 1.5. Since 2026-09-14 the objective is the owner's
+    # (config/owner_goals.json: forward 2.0 net of costs, realized drawdown at most 11 percent,
+    # at least 15 sleeves), projected on the sealed contract's identity; the contract's own
+    # objective rides along inside it as dated history. Preserve only discovery-specific
+    # programme metadata and derive every target from the goals in force.
+    goals = load_owner_goals()
     discovery_metadata = discovery.get("objective", {})
     discovery["objective"] = {
-        **contract_objective,
-        "target_sleeve_count": contract_objective["target_total_sleeves"],
+        **governing_objective(
+            goals,
+            SLEEVE_ADMISSION_CONTRACT_JSON,
+            current_sleeves=current_sleeve_count(STATE_JSON),
+        ),
         **{
             key: discovery_metadata[key]
             for key in ("candidate_atlas_minimum", "portfolio_requirement", "admission_rule")
@@ -456,9 +467,13 @@ def _discovery_with_contract_gates() -> dict[str, Any]:
     discovery["admission_contract_public_path"] = "/glassbox/sleeve_admission_contract.json"
     # The relationship between the gate and the objective, published beside them both. Without it
     # the page states a target next to a ceiling and leaves the reader to discover that one
-    # forbids the other.
+    # forbids the other. The frontier is the sealed identity at the owner's sleeve count and
+    # target; the contract's own frontier (14 sleeves, forward 1.5) is kept beside it as history.
+    discovery["frontier_arithmetic"] = goal_frontier(goals, SLEEVE_ADMISSION_CONTRACT_JSON)
     if "frontier_arithmetic" in contract:
-        discovery["frontier_arithmetic"] = contract["frontier_arithmetic"]
+        discovery["superseded_admission_contract_frontier_arithmetic"] = contract[
+            "frontier_arithmetic"
+        ]
     return discovery
 
 
@@ -2175,11 +2190,13 @@ def build_program_status(state: dict[str, Any]) -> dict[str, Any]:
     """Compose the public programme status from governing and measured sources.
 
     This is deliberately an adapter, not another place to type targets or performance. The
-    admission contract owns objectives; the union ledger owns trial accounting; paper-state owns
-    the forward curve and execution provenance; the atlas owns breadth; and the continuity audit
-    owns missing-mark evidence.
+    owner's goals file owns objectives (config/owner_goals.json, projected on the sealed admission
+    contract's identity, with the contract's superseded objective carried inside as history); the
+    admission contract owns gates; the union ledger owns trial accounting; paper-state owns the
+    forward curve and execution provenance; the atlas owns breadth; and the continuity audit owns
+    missing-mark evidence.
     """
-    admission = json.loads(SLEEVE_ADMISSION_CONTRACT_JSON.read_text())
+    goals = load_owner_goals()
     trial_accounting = build_trial_accounting()
     atlas = json.loads(SLEEVE_ATLAS_JSON.read_text())
     atlas_audit = json.loads(SLEEVE_ATLAS_AUDIT_JSON.read_text())
@@ -2276,7 +2293,9 @@ def build_program_status(state: dict[str, Any]) -> dict[str, Any]:
             != hashlib.sha256(TRIAL_PACKET_MANIFEST_JSON.read_bytes()).hexdigest()
         ):
             raise ValueError("legacy research epoch closure does not bind current packet debt")
-    objective = admission["objective"]
+    objective = governing_objective(
+        goals, SLEEVE_ADMISSION_CONTRACT_JSON, current_sleeves=len(state["book"]["sleeves"])
+    )
     evidence_sources = forward_evidence["source_bindings"]
     for key, path in (
         ("contract", FORWARD_EVIDENCE_CONTRACT_JSON),
@@ -2298,7 +2317,11 @@ def build_program_status(state: dict[str, Any]) -> dict[str, Any]:
         or forward_evidence["sharpe_evidence"]["target"]
         != objective["honest_forward_sharpe_target"]
         or forward_evidence["drawdown_evidence"]["expected_max_drawdown_target"]
+        != objective["expected_max_drawdown_objective"]
+        or forward_evidence["drawdown_evidence"].get("realized_max_drawdown_bound")
         != objective["portfolio_max_drawdown_target"]
+        or forward_evidence["diversification_evidence"]["target_total_sleeves"]
+        != objective["target_total_sleeves"]
     ):
         raise ValueError("forward evidence maturity does not describe the current programme")
 
@@ -2317,16 +2340,37 @@ def build_program_status(state: dict[str, Any]) -> dict[str, Any]:
             "person_public_path": "/founder",
         },
         "objective": objective,
+        "objective_frontier": goal_frontier(goals, SLEEVE_ADMISSION_CONTRACT_JSON),
+        "governing_goals": {
+            "path": "config/owner_goals.json",
+            "schema": goals["schema"],
+            "status": goals["status"],
+            "recorded_on": goals["recorded_on"],
+            "in_force_from": goals["in_force_from"],
+            "source_document": goals["source_document"],
+            "decision": goals["decision"],
+            "program": goals["program"],
+        },
         "achievement": {
             "forward_sharpe_target": objective["honest_forward_sharpe_target"],
             "forward_sharpe_status": forward_evidence["sharpe_evidence"]["status"],
             "forward_sharpe_underlying_status": forward_evidence["sharpe_evidence"].get(
                 "underlying_status", forward_evidence["sharpe_evidence"]["status"]
             ),
-            "expected_max_drawdown_target": objective["portfolio_max_drawdown_target"],
+            "expected_max_drawdown_target": objective["expected_max_drawdown_objective"],
             "expected_max_drawdown_status": forward_evidence["drawdown_evidence"][
                 "objective_status"
             ],
+            "realized_max_drawdown_bound": objective["portfolio_max_drawdown_target"],
+            "realized_max_drawdown_bound_mechanism_status": objective[
+                "portfolio_max_drawdown_mechanism_status"
+            ],
+            "realized_max_drawdown_to_date": forward_evidence["drawdown_evidence"][
+                "realized_live_max_drawdown"
+            ],
+            "realized_within_bound_to_date": forward_evidence["drawdown_evidence"].get(
+                "realized_within_owner_bound"
+            ),
             "target_sleeves": objective["target_total_sleeves"],
             "current_sleeves": len(state["book"]["sleeves"]),
             "new_sleeves_admitted_by_atlas": atlas_audit["summary"]["new_sleeves_admitted"],

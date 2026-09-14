@@ -36,6 +36,8 @@ import re
 import sys
 from pathlib import Path
 
+from alphaforge.research.owner_goals import governing_objective, load_owner_goals
+
 _ROOT = Path(__file__).resolve().parent.parent
 DISCOVERY = _ROOT / "config" / "sleeve_discovery.json"
 FRONTIER = _ROOT / "artifacts" / "analysis" / "frontier_14" / "result.json"
@@ -149,8 +151,11 @@ def main() -> int:
 
     before = [(p, sum(1 for _ in p.open())) for p in LEDGERS if p.exists()]
 
-    n_target = int(obj["target_sleeve_count"])
-    lo, hi = (float(x) for x in obj["portfolio_sharpe_target"])
+    # Targets come from the owner's goals projected on the sealed contract, never from the
+    # discovery file, which owns the candidate queue and no longer carries typed targets.
+    governing = governing_objective(load_owner_goals())
+    n_target = int(governing["target_sleeve_count"])
+    lo, hi = (float(x) for x in governing["portfolio_sharpe_target"])
     candidate_rho_gate = float(gates["candidate_average_correlation_to_existing_book_max"])
     book_delta_gate = float(gates["book_average_pairwise_correlation_delta_max_exclusive"])
     zero_global_reference = 0.0

@@ -22,6 +22,8 @@ from pathlib import Path
 
 import pytest
 
+from alphaforge.research.owner_goals import load_owner_goals
+
 REPO = Path(__file__).parents[2]
 _spec = importlib.util.spec_from_file_location(
     "orthogonality_prior", REPO / "scripts" / "orthogonality_prior.py"
@@ -121,8 +123,16 @@ def test_the_gate_is_shown_to_be_insufficient_by_arithmetic_not_assertion() -> N
         a["rho_bar_if_the_aggregate_new_edges_sit_at_the_incremental_boundary"]
         > a["objective_rho_bar"]
     )
-    assert a["forward_sharpe_at_that_rho_bar_optimistic_haircut"] < 1.5
-    assert a["forward_sharpe_at_the_objective_optimistic_haircut"] == pytest.approx(1.5, abs=0.01)
+    # The target is the owner's, read from the goals file, never typed here.
+    target = load_owner_goals()["goals"]["combined_forward_sharpe"]["target"]
+    assert a["honest_forward_sharpe_target"] == target
+    assert a["sleeves_target"] == (
+        load_owner_goals()["goals"]["qualified_economically_distinct_sleeves"]["minimum"]
+    )
+    assert a["forward_sharpe_at_that_rho_bar_optimistic_haircut"] < target
+    assert a["forward_sharpe_at_the_objective_optimistic_haircut"] == pytest.approx(
+        target, abs=0.01
+    )
 
 
 def test_the_book_sharpe_identity_is_the_published_one() -> None:

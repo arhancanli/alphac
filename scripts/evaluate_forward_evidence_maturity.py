@@ -157,6 +157,8 @@ def _sharpe_evidence(returns: np.ndarray, contract: dict[str, Any]) -> dict[str,
         "observations_to_establishment": max(0, establish_min - n_obs),
         "annualization_days": annualization,
         "target": target,
+        "target_source": contract.get("forward_sharpe_target_source"),
+        "target_history": list(contract.get("forward_sharpe_target_history", [])),
         "target_exceedance_probability_min": probability_min,
         "annualized_point_estimate": None,
         "probability_true_sharpe_exceeds_target": None,
@@ -446,6 +448,7 @@ def evaluate(
     dd_target = float(contract["expected_max_drawdown_target"])
     if float(drawdown_objective["expected_max_drawdown_target"]) != dd_target:
         raise ValueError("sealed drawdown target differs from the forward contract")
+    realized_bound = float(contract["realized_max_drawdown_bound"])
     diversification = current_book_diversification["governing_comparison"]
     observed_diversification = current_book_diversification["observed"]
 
@@ -488,6 +491,17 @@ def evaluate(
         "drawdown_evidence": {
             "realized_live_max_drawdown": realized_max_dd,
             "realized_status": "DESCRIPTIVE_TO_DATE_NOT_EXPECTED_MAX_DRAWDOWN",
+            "realized_max_drawdown_bound": realized_bound,
+            "realized_max_drawdown_bound_statistic": contract[
+                "realized_max_drawdown_bound_statistic"
+            ],
+            "realized_max_drawdown_bound_source": contract["realized_max_drawdown_bound_source"],
+            "realized_within_owner_bound": realized_max_dd <= realized_bound,
+            "realized_within_owner_bound_note": (
+                "Descriptive: realized drawdown inside the bound to date establishes nothing "
+                "about future drawdown; the mechanism that acts on the bound is "
+                "config/drawdown_control_contract.json."
+            ),
             "expected_max_drawdown_target": dd_target,
             "study_production_labelled_expected_max_drawdown": expected_dd,
             "study_production_labelled_p95_max_drawdown": p95_dd,

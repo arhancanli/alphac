@@ -27,10 +27,15 @@ Boundary: Alpaca accounts are paper accounts; broker reconciliation is not funde
 
 ### Admission v7 separates incremental decisions from portfolio-maturity claims.
 
-- `honest_forward_sharpe_target`: 1.5
-- `expected_maximum_drawdown_target`: 0.11
+- `honest_forward_sharpe_target`: 2.0
+- `realized_maximum_drawdown_bound`: 0.1
+- `expected_maximum_drawdown_objective`: 0.11
 - `target_sleeves`: 14
-- `average_pairwise_correlation_objective`: -0.03
+- `average_pairwise_correlation_objective`: -0.05116116239316238
+- `objective_in_force_from`: 2026-09-14
+- `superseded_v7_forward_sharpe_target`: 1.5
+- `superseded_v7_target_sleeves`: 14
+- `superseded_v7_expected_maximum_drawdown_target`: 0.11
 - `prospective_gate_audit_read_candidate_returns`: 0
 
 Boundary: Targets are objectives, not achieved results; legacy trials cannot be regraded.
@@ -83,7 +88,7 @@ Boundary: Archive integrity is not result replay or rights clearance; no DOI, ex
 ### The project refuses to infer success from an immature forward record.
 
 - `daily_return_observations`: 36
-- `cumulative_return`: -0.027543800000000007
+- `cumulative_return`: -0.028516499999999945
 - `sharpe_status`: IMMATURE_RECORD_TOO_SHORT
 - `current_sleeves`: 4
 - `target_sleeves`: 14
