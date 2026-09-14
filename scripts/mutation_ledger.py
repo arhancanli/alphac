@@ -702,6 +702,36 @@ MUTATIONS: tuple[Mutation, ...] = (
         ],
     ),
     Mutation(
+        "test_forward_full_evidence_reservation_audit.py",
+        "let a stress scenario identical to its baseline count as measurable",
+        REPO / "scripts" / "audit_forward_full_evidence_reservation.py",
+        _replace(
+            '            if scenario["assumptions"] == baseline["assumptions"]:\n'
+            '                fail(f"stress scenario {scenario_id} equals the baseline and cannot fail")',
+            '            if False and scenario["assumptions"] == baseline["assumptions"]:\n'
+            '                fail(f"stress scenario {scenario_id} equals the baseline and cannot fail")',
+        ),
+        notes=[
+            "Decorative-pass risk 1 from the v2 design spec: a stress scenario that cannot fail "
+            "passes by construction. The audit must name it before a return exists.",
+        ],
+    ),
+    Mutation(
+        "test_forward_full_evidence_reservation_v2_promotion.py",
+        "accept a template that says IN_FORCE without a promotion receipt",
+        REPO / "scripts" / "audit_forward_full_evidence_reservation_v2_template.py",
+        _replace(
+            '        if not receipt_path.is_file():\n'
+            '            raise TemplateAuditError("template says IN_FORCE but no promotion receipt exists")',
+            '        if False and not receipt_path.is_file():\n'
+            '            raise TemplateAuditError("template says IN_FORCE but no promotion receipt exists")',
+        ),
+        notes=[
+            "IN_FORCE must never be a word somebody typed: the audit reads the receipt that binds "
+            "the template bytes, or the status is meaningless.",
+        ],
+    ),
+    Mutation(
         "test_identity_batch_reservation.py",
         "let an unrelated reservation through while an identity batch is still open",
         REPO / "src/alphaforge/validation/trial_reservation.py",
