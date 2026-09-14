@@ -398,3 +398,14 @@ published number or spend a research identity are marked DECISION and name who m
   signed commits: the runner (tasks 3 to 6, the calibration driver, the survivorship-inclusive
   lake builder) and the split-direction repair with its audit and guard. One PR, because the
   repair's guard test lives in the runner's test file and the owner merges once.
+- 17:00Z. BUILT. `data/lake_sharadar_full` from the raw SEP and ACTIONS archives
+  (`scripts/build_sharadar_full_history_lake.py`, receipt
+  `artifacts/audit/sharadar_full_history_lake_build.json`): 21,861 instruments, 46,079,829
+  daily bars, 263,516 executable corporate-action rows, 2.9 GB, 18 minutes, in the base lake's
+  layout and conventions (raw prices; the vendor split factor; dividends on the vendor basis,
+  which consumers do not fold). The runner reads it by default. The base lake (8,436
+  instruments) stays untouched for every sealed audit that binds it.
+  Verified through the branch's own code: Apple's 2020 split neutralizes on the full lake
+  (adjusted 124.81 the day before, 129.04 after), Apple's action rows equal the base lake's
+  (56 dividends, 4 splits), and the 2007-03 cohort that lost 749 of 1,759 mapped issuers on the
+  base lake loses none. The full 2006 to 2015 calibration is running on it.
