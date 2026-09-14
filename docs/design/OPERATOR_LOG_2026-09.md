@@ -258,3 +258,9 @@ published number or spend a research identity are marked DECISION and name who m
   `--apply`) carries the book-ladder consumer and the last-targets persistence to the crypto loop
   and refreshes the preflight contract. Live site verified: public `trial_accounting.json` equals the
   restored policy byte for byte; the ladder artifact is from the 13:25Z tick.
+- 13:59Z. CI (dispatched by hand on the branch): ruff, mypy --strict, publication integrity
+  (clean checkout), browser fixture and the PostgreSQL contract green; the offline pytest job red
+  on two INTEGRATION tests (`tests/integration/test_phase6_observability.py`) that assert the
+  strategy's counter keys exactly, which the unit run I used locally never executes. The two
+  book-brake counters are acknowledged there the same way the 2026-08-18 key was. Lesson recorded:
+  run `tests/integration` locally before pushing a counter or schema change.
