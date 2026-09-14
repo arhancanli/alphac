@@ -34,6 +34,7 @@ and :class:`alphaforge.data.ingest.checkpoints.CheckpointStore`.
 
 from __future__ import annotations
 
+import json
 import math
 import sqlite3
 import time
@@ -253,6 +254,12 @@ CREATE TABLE IF NOT EXISTS ladder_state (
     drawdown  REAL,
     gross_mult REAL   NOT NULL
 ) WITHOUT ROWID;
+
+CREATE TABLE IF NOT EXISTS strategy_last_targets (
+    id       INTEGER PRIMARY KEY CHECK (id = 1),
+    cycle_ts INTEGER NOT NULL,
+    blob     TEXT    NOT NULL
+) WITHOUT ROWID;
 """
 
 
@@ -370,9 +377,7 @@ class TradingStore:
         }
         for name, sql_type in columns.items():
             if name not in present:
-                self._conn.execute(
-                    f"ALTER TABLE positions_snapshots ADD COLUMN {name} {sql_type}"
-                )
+                self._conn.execute(f"ALTER TABLE positions_snapshots ADD COLUMN {name} {sql_type}")
 
     def _ensure_equity_curve_columns(self) -> None:
         """Additive, nullable: ``overlay_scale`` on the equity curve (2026-09-06). Same
@@ -675,6 +680,7 @@ class TradingStore:
         tearsheet has a per-bar book and recovery can rebuild the in-memory
         ledger from the last snapshot plus subsequent fills.
         """
+
         def row_for(position: Position) -> tuple[object, ...]:
             mark = None if marks is None else marks.get(position.instrument_id)
             mark_price = None if mark is None else mark[0]
@@ -719,9 +725,7 @@ class TradingStore:
                 mark_price=None if row["mark_price"] is None else float(row["mark_price"]),
                 mark_source=None if row["mark_source"] is None else str(row["mark_source"]),
                 market_value_quote=(
-                    None
-                    if row["market_value_quote"] is None
-                    else float(row["market_value_quote"])
+                    None if row["market_value_quote"] is None else float(row["market_value_quote"])
                 ),
                 unrealized_pnl_quote=(
                     None
@@ -896,6 +900,33 @@ class TradingStore:
             drawdown=math.nan if drawdown is None else float(drawdown),
             gross_mult=float(row["gross_mult"]),
         )
+
+    def record_last_targets(self, *, cycle_ts: Ms, targets: Mapping[str, float]) -> None:
+        """Upsert the strategy's latest PRE-multiplier target book (single row, max cycle_ts).
+
+        Companion to :meth:`record_ladder_state`, same reason: ``BlendStrategy`` keeps the book
+        it would re-emit on a de-gross bar in memory, so under ``--once`` every hold bar saw
+        ``None`` and the every-bar de-gross waited for the next rebalance. Same upsert rule as
+        the ladder: an older cycle never clobbers a newer recorded book.
+        """
+        blob = json.dumps({str(k): float(v) for k, v in targets.items()}, sort_keys=True)
+        with self._conn:
+            self._conn.execute(
+                "INSERT INTO strategy_last_targets (id, cycle_ts, blob) VALUES (1, ?, ?) "
+                "ON CONFLICT (id) DO UPDATE SET cycle_ts = excluded.cycle_ts, blob = excluded.blob "
+                "WHERE excluded.cycle_ts >= strategy_last_targets.cycle_ts",
+                (cycle_ts, blob),
+            )
+
+    def last_targets(self) -> tuple[Ms, dict[str, float]] | None:
+        """The latest recorded pre-multiplier book as ``(cycle_ts, targets)``, or ``None``."""
+        row = self._conn.execute(
+            "SELECT cycle_ts, blob FROM strategy_last_targets WHERE id = 1"
+        ).fetchone()
+        if row is None:
+            return None
+        raw = json.loads(str(row["blob"]))
+        return int(row["cycle_ts"]), {str(k): float(v) for k, v in raw.items()}
 
 
 _QTY_EPS: Final[float] = 1e-12

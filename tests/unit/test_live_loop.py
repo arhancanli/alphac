@@ -353,6 +353,7 @@ def build_loop(
     alerter: Alerter | None = None,
     clock: Clock | None = None,
     uncovered_instrument: str | None = None,
+    book_ladder: object | None = None,
 ) -> tuple[LiveLoop, TradingStore, PaperBroker, ScriptedStrategy | object]:
     """Wire a LiveLoop over real broker/store/risk + injected decision/data seams.
 
@@ -397,6 +398,7 @@ def build_loop(
         order_manager=order_manager,
         reconciler=reconciler,
         strategy=strat,  # type: ignore[arg-type]
+        book_ladder=book_ladder,  # type: ignore[arg-type]
         pretrade=pretrade,
         ladder=ladder,
         staleness=staleness,
@@ -1156,3 +1158,90 @@ class TestStrategyHistoryRestoration:
             loop.recover_on_boot()  # ScriptedStrategy has no seed_history: must not raise
         finally:
             store.close()
+
+
+class _TargetSeedableStrategy(ScriptedStrategy):
+    """A fresh process's strategy with the last-targets seam (drawdown control v1)."""
+
+    def __init__(self, targets: Mapping[str, float]) -> None:
+        super().__init__(targets)
+        self.last_targets: dict[str, float] | None = dict(targets)
+        self.seeded_targets: dict[str, float] | None = None
+
+    def seed_last_targets(self, targets: Mapping[str, float]) -> bool:
+        self.seeded_targets = dict(targets)
+        return True
+
+
+class TestLastTargetsRestoration:
+    """recover_on_boot must hand the strategy the recorded pre-multiplier book, so a de-gross
+    (this sleeve's ladder or the book-level brake) acts on the next hold bar in a --once process."""
+
+    def test_the_loop_records_the_book_and_a_fresh_boot_seeds_it(self, tmp_path: Path) -> None:
+        strat_a = _TargetSeedableStrategy({BTC: 0.10})
+        loop_a, store_a, _b, _ = build_loop(tmp_path, strategy=strat_a, clock=Clock(T0 + 3 * HOUR))
+        try:
+            assert loop_a.run_cycle(T0).status == "ok"
+            assert store_a.last_targets() == (T0, {BTC: 0.10})
+        finally:
+            store_a.close()
+        strat_b = _TargetSeedableStrategy({BTC: 0.10})
+        strat_b.last_targets = None
+        loop_b, store_b, _b2, _ = build_loop(tmp_path, strategy=strat_b, clock=Clock(T0 + 3 * HOUR))
+        try:
+            loop_b.recover_on_boot()
+            assert strat_b.seeded_targets == {BTC: 0.10}
+        finally:
+            store_b.close()
+
+    def test_a_strategy_without_the_seam_is_left_alone(self, tmp_path: Path) -> None:
+        loop, store, _b, _ = build_loop(tmp_path, clock=Clock(T0 + 2 * HOUR))
+        try:
+            assert loop.run_cycle(T0).status == "ok"
+            assert store.last_targets() is None
+            loop.recover_on_boot()  # ScriptedStrategy has neither seam: must not raise
+        finally:
+            store.close()
+
+
+class _BookLadderStub:
+    def __init__(self, reading: object) -> None:
+        self._reading = reading
+        self.reads = 0
+
+    @property
+    def last_reading(self) -> object:
+        return None
+
+    def read(self) -> object:
+        self.reads += 1
+        return self._reading
+
+
+class TestBookLadderLogging:
+    def test_a_read_error_alerts_once_per_process(self, tmp_path: Path) -> None:
+        from alphaforge.risk.book_ladder import BookLadderReading
+
+        reading = BookLadderReading(
+            multiplier=1.0,
+            applied=True,
+            state=None,
+            as_of=None,
+            generated_at=None,
+            source="var/book_ladder/current.json",
+            stale=False,
+            error="FileNotFoundError: x",
+        )
+        stub = _BookLadderStub(reading)
+        alerter = RecordingAlerter()
+        loop, store, _b, _ = build_loop(
+            tmp_path, clock=Clock(T0 + 4 * HOUR), alerter=alerter, book_ladder=stub
+        )
+        try:
+            for k in range(3):
+                assert loop.run_cycle(T0 + k * HOUR).status == "ok"
+        finally:
+            store.close()
+        assert stub.reads == 3
+        warns = [m for _lvl, m in alerter.records if "book ladder read failed" in m]
+        assert len(warns) == 1 and "fail-open at x1.00" in warns[0]

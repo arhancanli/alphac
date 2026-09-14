@@ -115,6 +115,7 @@ if TYPE_CHECKING:
     from alphaforge.execution.reconcile import InstrumentRecon
     from alphaforge.live.alerts import Alerter
     from alphaforge.risk import DrawdownLadder, KillSwitch, PreTradeChecker, StalenessBreaker
+    from alphaforge.risk.book_ladder import BookLadderProvider
 
 __all__ = [
     "ClockSanityCheck",
@@ -548,9 +549,15 @@ class LiveLoop:
         ledger_factory: _LedgerFactory | None = None,
         clock: _Clock | None = None,
         sleeper: _Sleeper | None = None,
+        # BOOK-level drawdown multiplier provider (drawdown control v1, 2026-09-14). Optional and
+        # defaulted so every existing caller and test is unaffected. The strategy applies its
+        # multiplier; the loop only logs the reading each cycle and alerts once on a read failure.
+        book_ladder: BookLadderProvider | None = None,
         initial_cash: float = 100_000.0,
     ) -> None:
         self._settings = settings
+        self._book_ladder = book_ladder
+        self._book_ladder_error_alerted = False
         self._store = store
         self._broker = broker
         self._om = order_manager
@@ -786,6 +793,9 @@ class LiveLoop:
         # the overlay scale in force at each cycle, so the realized-vol leg is not 0.0 by
         # construction in a fresh process (duck-typed; a strategy without the seam is left alone).
         self._restore_strategy_history()
+        # 2d. Same store, third consumer: the pre-multiplier target book, so a de-gross (this
+        # sleeve's ladder or the book-level brake) acts on the next hold bar in a fresh process.
+        self._restore_last_targets()
         # A TRULY fresh boot (no persisted state of any kind, broker untouched at
         # initial_cash) has nothing to recover or reconcile: there is no prior book
         # to diverge from. Short-circuit BEFORE seeding a synthetic opening-equity
@@ -899,9 +909,7 @@ class LiveLoop:
             )
         return recovered
 
-    def _sync_book_snapshot_after_recovery(
-        self, *, replayed: int, fetched: int, now: Ms
-    ) -> None:
+    def _sync_book_snapshot_after_recovery(self, *, replayed: int, fetched: int, now: Ms) -> None:
         """Adopt recovered broker truth into the book ONLY when reconcile says to (C7).
 
         After :meth:`_replay_recorded_fills` / :meth:`_recover_submitted_via_fetch_order`
@@ -967,9 +975,7 @@ class LiveLoop:
             n_adoptions=len(probe.adoptions),
         )
 
-    def _adoptions_backed_by_store_fills(
-        self, adoptions: Sequence[InstrumentRecon]
-    ) -> bool:
+    def _adoptions_backed_by_store_fills(self, adoptions: Sequence[InstrumentRecon]) -> bool:
         """True iff every adoption's broker qty is reproduced by the store's fills.
 
         The broker book is rebuilt from the store's durable fills on recovery, so a
@@ -1317,6 +1323,8 @@ class LiveLoop:
         # strategy and the loop share the SAME ladder instance, so this reads its
         # current (post-mark) state.
         self._record_ladder_state(cycle_ts)
+        self._record_last_targets(cycle_ts)
+        self._log_book_ladder(cycle_ts)
 
         # (5) discretize -> pre-trade -> accepted orders (deterministic ids).
         report = self._decide_and_place(
@@ -1339,6 +1347,48 @@ class LiveLoop:
                 f"equity={marked.equity_quote:.2f}",
             )
         return report
+
+    def _restore_last_targets(self) -> None:
+        """Hand the strategy its recorded pre-multiplier book (duck-typed seam, boot only)."""
+        seed = getattr(self._strategy, "seed_last_targets", None)
+        if seed is None:
+            return
+        recorded = self._store.last_targets()
+        if recorded is None:
+            return
+        cycle_ts, targets = recorded
+        try:
+            accepted = bool(seed(targets))
+        except ValueError as exc:
+            self._alerter.alert(AlertLevel.WARN, f"boot: last targets not restored: {exc}")
+            _log.warning("boot.last_targets_rejected", error=str(exc))
+            return
+        _log.info(
+            "boot.last_targets_restored", accepted=accepted, cycle_ts=cycle_ts, names=len(targets)
+        )
+
+    def _record_last_targets(self, cycle_ts: Ms) -> None:
+        """Persist the strategy's pre-multiplier book after the decision (duck-typed)."""
+        targets = getattr(self._strategy, "last_targets", None)
+        if targets is None:
+            return
+        self._store.record_last_targets(cycle_ts=cycle_ts, targets=dict(targets))
+
+    def _log_book_ladder(self, cycle_ts: Ms) -> None:
+        """Log the BOOK-level multiplier in force this cycle; alert once per process on error."""
+        if self._book_ladder is None:
+            return
+        reading = self._book_ladder.last_reading
+        if reading is None:
+            reading = self._book_ladder.read()
+        _log.info("cycle.book_ladder", cycle_ts=cycle_ts, **reading.as_log_fields())
+        if reading.error and not self._book_ladder_error_alerted:
+            self._book_ladder_error_alerted = True
+            self._alerter.alert(
+                AlertLevel.WARN,
+                f"book ladder read failed, fail-open at x{reading.multiplier:.2f} "
+                f"from {reading.source}: {reading.error}",
+            )
 
     def _record_ladder_state(self, cycle_ts: Ms) -> None:
         """Persist the live :class:`~alphaforge.risk.DrawdownLadder` snapshot (C4-persist).
@@ -1415,15 +1465,19 @@ class LiveLoop:
         # keeps its hard raise as the backstop for anything that slips past this filter, and
         # HELD positions are unaffected (marking those is the systemic-breach guard's domain).
         stale = [
-            iid for iid in targets
+            iid
+            for iid in targets
             if not isinstance((c := closes.get(iid)), int | float)
-            or not math.isfinite(c) or c <= 0.0
+            or not math.isfinite(c)
+            or c <= 0.0
         ]
         if stale:
             self._dropped_book_instruments += len(stale)
             _log.warning(
-                "cycle.stale_targets_dropped", cycle_ts=cycle_ts,
-                n=len(stale), instruments=sorted(stale)[:8],
+                "cycle.stale_targets_dropped",
+                cycle_ts=cycle_ts,
+                n=len(stale),
+                instruments=sorted(stale)[:8],
             )
             targets = {iid: w for iid, w in targets.items() if iid not in set(stale)}
         ledger = self._ledger_factory(self._initial_cash, instruments, account, closes)

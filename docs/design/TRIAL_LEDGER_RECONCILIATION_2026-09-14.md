@@ -96,3 +96,13 @@ ordinals the clone has already spent.
 It does not judge whether any clone measurement was economically meaningful, does not restate
 any Sharpe or drawdown from the clone's reports, and does not change a published number. The
 public ledger still reads 229 until the owner's decision is implemented and republished.
+
+## Addendum, 2026-09-14 13:05Z: where the record lives
+
+The 320 review and the reconciliation record were first written INSIDE `config/trial_accounting.json`.
+That drifted five sealed bindings (the admission v7 promotion receipt embeds the policy byte for
+byte; every v2 reservation and the crypto-carry closure hash it) without changing a single rule.
+The policy bytes are restored exactly, and the event record lives beside it in
+`config/trial_accounting_reviews.json`, which `scripts/audit_external_experiment_ledgers.py` reads
+for `staged_reviews_held`. Every reference above to recording the review "in
+`config/trial_accounting.json`" should be read as "beside it, in the reviews file".

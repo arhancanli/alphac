@@ -175,6 +175,7 @@ class BlendStrategy:
         cov_min_periods: int = 240,
         realized_vol_halflife_bars: int = 240,
         cost_frac_oneway: float = _DEFAULT_COST_FRAC,
+        book_multiplier: Callable[[], float] | None = None,
     ) -> None:
         if (signal_frame is None) == (mu_provider is None):
             raise ValueError(
@@ -200,9 +201,9 @@ class BlendStrategy:
         constraints = PortfolioConstraints.from_settings(settings)
         self._allocator_name: Literal["rank", "rank_long", "mvo", "trend"] = allocator
         if allocator == "rank":
-            self._allocator: (
-                RankEqualVolFallback | MeanVarianceOptimizer | TrendVolTarget
-            ) = RankEqualVolFallback(constraints)
+            self._allocator: RankEqualVolFallback | MeanVarianceOptimizer | TrendVolTarget = (
+                RankEqualVolFallback(constraints)
+            )
         elif allocator == "rank_long":
             # Long-only factor-tilt book (no short leg): top-K longs at full gross. Earns
             # market beta + the factor tilt, not market-neutral alpha (evaluate vs a
@@ -273,6 +274,11 @@ class BlendStrategy:
         # ladder de-gross takes effect EVERY bar, not only at the next rebalance
         # (F-B). None until the first completed rebalance.
         self._last_targets: dict[str, float] | None = None
+        # BOOK-level drawdown multiplier (drawdown control v1, 2026-09-14): an outer factor
+        # from the combined book's published ladder (alphaforge.risk.book_ladder), read once
+        # per bar and applied AFTER this sleeve's own ladder. None = no provider = 1.0.
+        self._book_multiplier = book_multiplier
+        self._book_mult_this_bar: float = 1.0
         # Observability counters (the operator's "confession" — never reset by
         # load_leg so a walk-forward run aggregates them across legs):
         #   allocator status (F-D): a run labelled allocator="mvo" that is mostly
@@ -291,6 +297,8 @@ class BlendStrategy:
         self._n_hold_degenerate_xsection: int = 0
         self._n_bars_halted_flat: int = 0
         self._n_bars_half_gross: int = 0
+        self._n_bars_book_halted: int = 0
+        self._n_bars_book_reduced: int = 0
 
     # ------------------------------------------------------- leg persistence
 
@@ -343,6 +351,41 @@ class BlendStrategy:
     def last_scale(self) -> float:
         """Vol-target scale ``s`` of the most recent rebalance (NaN before)."""
         return self._last_scale
+
+    @property
+    def last_targets(self) -> dict[str, float] | None:
+        """The most recent PRE-multiplier target book (None until the first rebalance).
+
+        Persisted by the live loop each cycle and handed back through
+        :meth:`seed_last_targets` on boot, so a fresh ``--once`` process can de-gross on a hold
+        bar instead of waiting for the next rebalance boundary (2026-09-14: before this seam the
+        F-B every-bar de-gross was documented as inert under ``--once``, and the BOOK-level brake
+        would have inherited the same week-long delay on a weekly-rebalanced sleeve).
+        """
+        return None if self._last_targets is None else dict(self._last_targets)
+
+    def seed_last_targets(self, targets: Mapping[str, float]) -> bool:
+        """Restore the pre-multiplier book from the durable store; refused once one exists."""
+        if self._last_targets is not None:
+            return False
+        seeded = {str(iid): float(w) for iid, w in targets.items()}
+        for iid, w in seeded.items():
+            if not math.isfinite(w):
+                raise ValueError(f"recorded target for {iid} is not finite: {w!r}")
+        self._last_targets = seeded
+        return True
+
+    def _book_gross_multiplier(self) -> float:
+        """The BOOK-level multiplier for this bar: 1.0 without a provider; never raises."""
+        if self._book_multiplier is None:
+            return 1.0
+        try:
+            value = float(self._book_multiplier())
+        except Exception:  # the provider is documented never to raise; belt and braces
+            return 1.0
+        if not math.isfinite(value) or value < 0.0 or value > 1.0:
+            return 1.0
+        return value
 
     def seed_history(self, history: Sequence[tuple[float, float]]) -> bool:
         """Restore the realized-vol leg's history from the durable equity curve.
@@ -414,6 +457,11 @@ class BlendStrategy:
                 large n_rebalances means the fast regime detector is inert -- the
                 exact failure that hid the pre-overlay/post-overlay scale defect,
                 which is why this is counted rather than assumed.
+            bars_book_halted: bars the BOOK-level multiplier (drawdown control v1)
+                was 0 and forced an all-zero target book, this sleeve's own ladder
+                notwithstanding.
+            bars_book_reduced: bars emitted with a BOOK-level multiplier below 1
+                (rebalance or every-bar re-emit).
             n_auto_rearms: times the ladder auto-rearmed out of FLAT_HALTED
                 after the cooldown elapsed (resumed trading from a reset HWM).
                 Zero here means either no full halt occurred or the run ended
@@ -429,6 +477,8 @@ class BlendStrategy:
             "hold_degenerate_xsection": self._n_hold_degenerate_xsection,
             "bars_halted_flat": self._n_bars_halted_flat,
             "bars_half_gross": self._n_bars_half_gross,
+            "bars_book_halted": self._n_bars_book_halted,
+            "bars_book_reduced": self._n_bars_book_reduced,
             "n_auto_rearms": self._ladder.n_auto_rearms,
         }
 
@@ -460,6 +510,14 @@ class BlendStrategy:
             # re-emitted every bar (the engine's band suppresses no-op orders).
             self._n_bars_halted_flat += 1
             return dict.fromkeys(ctx.instruments, 0.0)
+        # The BOOK-level brake (drawdown control v1) is read once per bar, after this sleeve's
+        # ladder: a book halt flattens every bar exactly like a sleeve halt; a book de-gross
+        # multiplies whatever this sleeve would otherwise emit, on every bar (below).
+        book = self._book_gross_multiplier()
+        self._book_mult_this_bar = book
+        if book <= 0.0:
+            self._n_bars_book_halted += 1
+            return dict.fromkeys(ctx.instruments, 0.0)
 
         if self._rebalance_anchor == "epoch":
             # Stateless cadence (fresh-process --once deployment): due on epoch-aligned
@@ -476,9 +534,12 @@ class BlendStrategy:
             # (epoch mode note: under --once _last_targets is process-local and
             # None, so a HALF_GROSS de-gross waits for the next boundary; the
             # critical FLAT_HALTED all-zeros brake above still acts every bar.)
-            if state is DDState.HALF_GROSS and self._last_targets is not None:
-                self._n_bars_half_gross += 1
-                mult = self._ladder.gross_multiplier()
+            if (state is DDState.HALF_GROSS or book < 1.0) and self._last_targets is not None:
+                if state is DDState.HALF_GROSS:
+                    self._n_bars_half_gross += 1
+                if book < 1.0:
+                    self._n_bars_book_reduced += 1
+                mult = self._ladder.gross_multiplier() * book
                 return {iid: w * mult for iid, w in self._last_targets.items()}
             self._n_hold_between_rebalance += 1
             return {}
@@ -637,7 +698,9 @@ class BlendStrategy:
         # shortfall from clipping is ACCEPTED — we do NOT re-scale the book back
         # up after clipping (that would just push another name past the cap).
         w_clip = np.clip(w_vt, -self._w_max, self._w_max)
-        mult = self._ladder.gross_multiplier()
+        mult = self._ladder.gross_multiplier() * self._book_mult_this_bar
+        if self._book_mult_this_bar < 1.0:
+            self._n_bars_book_reduced += 1
 
         self._last_result = result
         self._last_scale = scale

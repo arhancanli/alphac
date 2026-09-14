@@ -11,7 +11,7 @@
   "expected_max_drawdown_target": 0.11,
   "broker_reconciliation_max_age_hours": 36,
   "broker_state_lag_tolerance_hours": 1,
-  "required_live_config_fingerprint": "sha256:fe82c4eeed742289bfcfee5d39856ee2bb8ca9cfe209bcc7e34abff98553706d",
+  "required_live_config_fingerprint": "sha256:70eef97c2280e41b6cc543d6c6e6fb472b48dd5aa77e350abca95da970bcb167",
   "required_continuity_schema": "canli.alphac-record-continuity.v1",
   "required_broker_reconciliation_schema": "canli.alphac-alpaca-broker-reconciliation.v1",
   "required_drawdown_model_schema": "canli.alphac-drawdown-live-estimator.v1",

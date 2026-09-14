@@ -193,6 +193,18 @@ def _target_weights(profile: str) -> dict[str, float]:
     return {}
 
 
+def _describe_book_reading(book: Any) -> str:
+    """One loud line per cycle about the book-level multiplier (see main)."""
+    if not book.applied:
+        return "not activated (contract activation.live is false); sizing at full gross"
+    line = f"x{book.multiplier:.2f} {book.state or '?'} as_of {book.as_of or '?'} from {book.source}"
+    if book.stale:
+        line += "  | STALE reading (publisher has not run); last multiplier kept"
+    if book.error:
+        line += f"  | !!! READ FAILED, fail-open at x{book.multiplier:.2f}: {book.error}"
+    return line
+
+
 # ----------------------------------------------------------------------------- order building
 # A flip's two legs get their own client_order_ids (suffixes below) so idempotency still holds and
 # the stale-order cancel — which filters on the "<profile>-" PREFIX — still sweeps both.
@@ -632,6 +644,22 @@ def main(argv: list[str] | None = None) -> int:
     if not target_w:
         print(f"no target book for {a.profile} (run its walk-forward first)")
         return 1
+    # BOOK-LEVEL DRAWDOWN BRAKE (drawdown control v1, 2026-09-14). The owner's 11% maximum-drawdown
+    # bound is a bound on the COMBINED book, so it is enforced at the book: scripts/book_drawdown_ladder.py
+    # replays the published combined marks through the declared 5.5/11% ladder every publish and
+    # writes var/book_ladder/current.json with the multiplier in force (1.0 / 0.5 / 0.0). This cycle
+    # multiplies the sleeve's target weights by it, so every sleeve de-grosses together when the
+    # BOOK is in drawdown, whatever its own curve looks like; a multiplier of 0 turns the target book
+    # into zeros, which the order builder below executes as a flatten. The one switch is the
+    # contract's activation.live flag (config/drawdown_control_contract.json), the same file the
+    # public site publishes. Fail-open like the calendar gate: a missing or unreadable file sizes at
+    # full gross and says so here, and the nightly C12-book-ladder health check fails the same night.
+    from alphaforge.risk.book_ladder import BookLadderProvider
+
+    book = BookLadderProvider.from_settings(load_settings()).read()
+    print(f"book ladder: {_describe_book_reading(book)}")
+    if book.applied and book.multiplier < 1.0:
+        target_w = {iid: w * book.multiplier for iid, w in target_w.items()}
 
     broker = AlpacaBroker(env_path=_account_env(a.profile))
     # Real money is a DELIBERATE arming: a non-paper account requires the explicit flag AND this gated
