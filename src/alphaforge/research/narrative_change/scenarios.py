@@ -266,6 +266,20 @@ def evaluate_scenario(
         "assumptions_sha256": canonical_sha256(dict(assumptions)),
         "net": stats,
         "turnover_total": float(np.sum(book.turnover)),
+        "gross_cumulative": float(np.sum(np.asarray(book.gross_return, dtype="float64"))),
+        "net_cumulative_simple": float(np.sum(net)),
+        # Total cost drag per unit of turnover, in basis points: every charge the scenario
+        # applied (cost schedule, extra turnover cost, financing, haircuts) over the turnover
+        # it traded. This is the "stressed cost" a capacity curve reports per capital point.
+        "cost_drag_bps_per_turnover": (
+            float(
+                1e4
+                * (np.sum(np.asarray(book.gross_return, dtype="float64")) - np.sum(net))
+                / np.sum(book.turnover)
+            )
+            if float(np.sum(book.turnover)) > 0.0
+            else 0.0
+        ),
         "mean_stock_gross": float(np.mean(book.stock_gross)),
         "mean_hedge_abs_weight": float(np.mean(np.abs(book.hedge_weight))),
         "events": {
