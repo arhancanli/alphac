@@ -81,6 +81,10 @@ deploy_prod() {
   # cycle. The dependency is file-mediated and therefore invisible in the call order; pinned by
   # tests/unit/test_publish_pipeline_order.py.
   uv run python scripts/paper_trading_state.py || { echo "paper_trading_state FAILED"; FAIL=1; }
+  # Book drawdown ladder (2026-09-14): replays the marks paper_trading_state.py just wrote through the
+  # declared 5.5/11 percent ladder and writes the multiplier in force (artifact + var/book_ladder).
+  # Derived every run, never stored, so nothing can go stale in a process that dies.
+  uv run python scripts/book_drawdown_ladder.py || { echo "book_drawdown_ladder FAILED"; FAIL=1; }
   uv run python scripts/glassbox_export.py || { echo "glassbox_export FAILED"; FAIL=1; }
   # keep capacity.json fresh + hash-consistent (it grounds the commitment AND the reproducibility kit;
   # leaving it out of the pipeline is what let it go stale once). Soft-fail: it is near-static.
