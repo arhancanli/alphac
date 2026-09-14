@@ -350,15 +350,21 @@ def _validate_forward_epoch_serial_completion(
                 "new return identity blocked: prior forward packet is incomplete or invalid: "
                 f"{identity}"
             )
+        # Wired 2026-09-14 (plan task 4, owner-delegated): a complete packet is not a decided
+        # one. The prior identity's sealed closure must say ADMIT or KILL, or the owner must
+        # have waived it against this exact packet's content hash.
+        disposition = _validate_prior_identity_admission_disposition(repo, identity, packet)
         verified_packets.append(
             {
                 "hypothesis_key": identity,
                 "packet_path": str(IDENTITY_PACKET_DIR / f"{identity}.json"),
                 "packet_content_hash": packet["content_hash"],
+                "closure_disposition": disposition,
             }
         )
     return {
         "policy": "SERIAL_COMPLETE_PACKET_BEFORE_NEXT_FORWARD_IDENTITY",
+        "prior_identities_must_be_decided": True,
         "forward_identities_already_logged": len(forward_keys),
         "complete_forward_packets_verified": len(verified_packets),
         "verified_packets": verified_packets,
@@ -386,15 +392,15 @@ def _validate_prior_identity_admission_disposition(
     repo: Path,
     identity: str,
     packet: dict[str, Any],
-) -> None:
+) -> str:
     """Close the real seriality gap: a complete packet is not the same as a decided one.
 
-    Unwired: nothing in `validate_reservation` calls this yet (plan task 2, spec 2(b)).
-    `_validate_forward_epoch_serial_completion` unblocks the next reservation once a prior
-    packet has `complete: true` -- but packet completion records evidence accounting, not a gate
-    outcome, per that packet's own `governance_finding.seriality_interaction`. This requires,
-    for the prior identity's sealed closure, a disposition of ADMIT or KILL, or a signed waiver
-    bound to this exact packet's `content_hash` (so a re-seal invalidates the waiver).
+    Wired into `_validate_forward_epoch_serial_completion` on 2026-09-14 (plan task 4). Packet
+    completion records evidence accounting, not a gate outcome, per that packet's own
+    `governance_finding.seriality_interaction`. This requires, for the prior identity's sealed
+    closure, a disposition of ADMIT or KILL, or a signed owner waiver bound to this exact
+    packet's `content_hash` (so a re-seal invalidates the waiver). Returns the disposition that
+    let the reservation proceed: ``ADMIT``, ``KILL`` or ``WAIVED``.
     """
     closure_path = _repo_file(repo, _closure_path_from_packet(packet))
     try:
@@ -409,7 +415,7 @@ def _validate_prior_identity_admission_disposition(
         )
     disposition = closure.get("decision", {}).get("disposition")
     if disposition in {"ADMIT", "KILL"}:
-        return
+        return str(disposition)
 
     waiver_path = repo / SERIALITY_WAIVER_DIR / f"{identity}.json"
     if not waiver_path.is_file():
@@ -435,6 +441,7 @@ def _validate_prior_identity_admission_disposition(
     authorized_by = waiver.get("authorized_by")
     if not isinstance(authorized_by, str) or not authorized_by.startswith("Arhan Canli, owner,"):
         raise ReservationError(f"seriality waiver is not authorized by the owner: {identity}")
+    return "WAIVED"
 
 
 def _effective_contract_hash(contract: dict[str, Any]) -> str:
