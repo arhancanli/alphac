@@ -234,6 +234,10 @@ _EXPECTED_COUNTER_KEYS = {
     # changes what the run tells you about itself. Adding a key is therefore supposed to fail
     # here and be acknowledged, which is what happened.
     "realized_leg_bound",
+    # Added 2026-09-14 with drawdown control v1: the BOOK-level brake's bars, acknowledged here
+    # the same way (a halted or de-grossed book is a different confession from a halted sleeve).
+    "bars_book_halted",
+    "bars_book_reduced",
 }
 
 
