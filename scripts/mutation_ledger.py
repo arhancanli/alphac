@@ -703,6 +703,17 @@ MUTATIONS: tuple[Mutation, ...] = (
     ),
     Mutation(
         "test_owner_goals_in_force.py",
+        "leave the drawdown-control bound at the superseded 11 percent",
+        REPO / "config" / "drawdown_control_contract.json",
+        _replace('"bound": 0.1,', '"bound": 0.11,'),
+        notes=[
+            "Drawdown control v1.1: the bound is the owner's 10 percent, read from the goals file. "
+            "A contract that keeps the old bound would declare a ladder that cannot enforce the "
+            "goal while every other surface says the goal is 10.",
+        ],
+    ),
+    Mutation(
+        "test_owner_goals_in_force.py",
         "quietly move the forward-evidence target back to the superseded 1.5",
         REPO / "config" / "forward_evidence_contract.json",
         _replace('"forward_sharpe_target": 2.0,', '"forward_sharpe_target": 1.5,'),
