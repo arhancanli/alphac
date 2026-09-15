@@ -160,3 +160,48 @@ def test_design_release_keeps_fresh_exports_and_build_inventory(shell: str, tmp_
     ).read_text() == inventory.read_text()
     assert (landing / "index.html").read_text() == "old design"
     assert (design / "public/glassbox/stale.json").exists()
+
+
+def test_source_hash_ignores_agent_plugin_state_that_rewrites_itself(tmp_path: Path) -> None:
+    """A ruflo/serena session whose cwd is a site tree rewrites .claude-flow/*/state.json and
+    ruvector.db continuously; hashing them made the stable-source check fail on every attempt
+    whenever a capture took more than a few seconds (2026-09-15: three deploys lost to their
+    bound). Plugin state is not site source and must move neither the hash nor the copy."""
+    landing = _project(tmp_path, "landing")
+    application = _project(tmp_path, "application")
+    environment = os.environ | {
+        "SITE_LANDING_SOURCE": str(landing),
+        "SITE_APP_SOURCE": str(application),
+    }
+
+    def digest() -> str:
+        result = subprocess.run(
+            ["zsh", "-c", f'. "{HELPER}"; site_source_hash'],
+            capture_output=True,
+            text=True,
+            env=environment,
+            check=True,
+        )
+        return result.stdout.strip()
+
+    original = digest()
+    (landing / ".claude-flow/neural").mkdir(parents=True)
+    (landing / ".claude-flow/neural/stats.json").write_text('{"tick": 1}\n')
+    (landing / ".serena").mkdir()
+    (landing / ".serena/memories.json").write_text("{}\n")
+    (landing / "ruvector.db").write_bytes(b"sqlite")
+    (landing / "ruvector.db-journal").write_bytes(b"journal")
+    assert digest() == original
+    (landing / ".claude-flow/neural/stats.json").write_text('{"tick": 2}\n')
+    assert digest() == original
+    destination = tmp_path / "copy"
+    subprocess.run(
+        ["zsh", "-c", f'. "{HELPER}"; _site_snapshot_copy "{landing}" "{destination}"'],
+        capture_output=True,
+        text=True,
+        env=environment,
+        check=True,
+    )
+    assert (destination / "public/glassbox/evidence.json").is_file()
+    assert not (destination / ".claude-flow").exists()
+    assert not (destination / "ruvector.db").exists()
