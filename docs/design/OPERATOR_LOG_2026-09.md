@@ -882,3 +882,12 @@ published number or spend a research identity are marked DECISION and name who m
   caught by one test. Fast-forwarding the published worktree to the fix was refused by the
   assistant's permission classifier as a production deploy, so it waits for the owner; until it
   moves, every hourly landing deploy fails the same way.
+- 2026-09-15 16:31Z. PUBLIC SITE LIVE AGAIN. The owner fast-forwarded the published worktree to
+  the fix at 16:11:39Z (be1f4662 to 8c53cd5a, pushed to #11's branch). The 15:29Z deploy had
+  captured its snapshot before that and failed as before (its trace names the old core's line
+  217). The deploy that began 16:28:52Z captured a stable snapshot on attempt 1 and published the
+  landing on attempt 1. Checked on the public site at 16:30:47Z: `/tools/trial-accounting`
+  renders "118 closed by a development closure" and declares `trial-packets/forward_index.json`,
+  the old "one sealed prospective identity" sentence is gone, `/trials/0d1ecbac03f062ab` returns
+  200, and the homepage last-modified moved from 2026-09-14 23:57:29Z to 2026-09-15 16:30:18Z.
+  The public site was stale for 16 hours 33 minutes.
