@@ -3,6 +3,13 @@
 **Author:** Arhan Canli (operating session under the owner's delegation of 2026-09-14)  
 **Status:** DESIGN, NOT IN FORCE. Nothing here changes how any identity is counted until the
 policy is promoted and the ledger code below ships with its tests.  
+**Superseded in part (2026-09-15):** the cost, execution and capacity part of this rule is in
+force as `mandatory_diagnostic_scenario` in `config/trial_accounting_evidence_classes.json`, bound
+by the v2 full-evidence promotion receipt (`config/forward_full_evidence_reservation_v2_promotion.json`)
+from reservation ordinal 348: a deterministic recomputation on a sealed primary return path never
+spends a hypothesis identity. What that file does not define stays not in force. Under the same
+file a test that can reach ADMIT needs an identity batch of at least two selectable identities,
+because a one-column batch cannot define PBO; such a test therefore costs two identities.  
 **Owner goal served:** budget discipline (phase 1 of the 2026-09-14 plan); the 320 review's
 decision that "baseline re-measurements, cost or execution stress arms and accounting repairs
 of existing sleeves are declared supplemental measurements of their identity in the
