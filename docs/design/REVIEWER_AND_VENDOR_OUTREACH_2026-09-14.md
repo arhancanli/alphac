@@ -12,7 +12,7 @@ owner sends, records the receipt fields the protocol requires, and flips the fla
 | packet | rows | path | verify |
 | --- | --- | --- | --- |
 | active ownership, Schedule 13D Item 4 (v3) | 48 | `artifacts/labeling/active_ownership_13d_item4_v3_blind/` | `python3 verify_review.py` prints `PACKET_VALID` |
-| tender-offer spread accuracy set | 30 documents | `artifacts/feasibility/tender_offer_spread/frozen_human_labels.csv` (labels empty) | the same packet format is to be built by `build_active_ownership_blind_label_packet.py`'s sibling before sending |
+| tender offer, Schedule 14D9 Item 4 (v1) | 30 | `artifacts/labeling/tender_offer_item4_blind/` | `python3 verify_review.py` prints `PACKET_VALID` |
 
 The 48-row packet ships with `INSTRUCTIONS.md` (the frozen rubric: mark `human_specific_active_intent`
 only for a stated, specific, present action; copy one source sentence verbatim; one aggregate
@@ -107,8 +107,12 @@ students who have taken securities regulation and finance master's students
 (https://joinhandshake.com/employers/). Screening: a paid five-document trial on filings outside both
 frozen sets, so neither gate is touched. Budget: USD 1,000 to 1,400 fixed for both packets, about
 USD 100 for the trial, plus the platform fee. Timeline: week 1 post and shortlist; week 2 trial and
-attestation; weeks 3 and 4 labelling; week 5 verify and import. Two things must exist first: the
-tender-offer blind packet (not yet built) and the owner's `outreach_authorized` record.
+attestation; weeks 3 and 4 labelling; week 5 verify and import. One thing must exist first: the owner's
+`outreach_authorized` record. The tender-offer blind packet was built on 2026-09-16
+(`artifacts/labeling/tender_offer_item4_blind`, 30 documents, manifest content hash
+`sha256:3a620b79...`; handoff archive `artifacts/handoffs/tender_offer_item4_blind.tar.gz`,
+`sha256:5abb313b...`), so one engagement can now cover both packets: 48 Item 4 sections for active
+ownership and 30 SC 14D9 Item 4 sections for tender offers.
 
 **Rates (section 2a).** Free sources cover only part of the need: the FRED/H.15 ICE swap series stop
 on 2016-10-31 (https://fred.stlouisfed.org/series/DSWP10); Bank of England sterling OIS curves start
