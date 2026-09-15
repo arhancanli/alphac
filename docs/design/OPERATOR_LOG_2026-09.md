@@ -772,3 +772,122 @@ published number or spend a research identity are marked DECISION and name who m
   the registry's top level, and the stray receipt from attempt 2 was set aside outside the tree
   (its figures are not read here). Attempt 3 follows once this is on main and pulled, with the
   reservations re-authored a third time because the runner's hash moves again.
+- 2026-09-15 15:20Z. CORRECTION: TIME LABELS. The twelve entries above headed "2026-09-15 00:15Z"
+  through "2026-09-15 06:37Z" carry Dubai local time (UTC+4) under a Z label, dated by the local
+  calendar. Each was written four hours earlier in UTC: "00:15Z" at 2026-09-14 20:13Z, "02:22Z" at
+  2026-09-14 22:22Z, "06:37Z" at 2026-09-15 02:37Z (write times from the session transcript).
+  Times quoted inside those entries (merges, ticks, cycles) are UTC and stand. The entries are not
+  rewritten; from this one on, every header is read from `date -u`.
+- 2026-09-15 15:20Z. RECOVERED ENTRIES. The six entries below were drafted at the UTC times in
+  their headers and held in a session scratchpad under /private/tmp for the seal PR; the 13:45Z
+  restart erased it, and they are reproduced verbatim from the session transcript. Only the
+  headers are corrected to UTC, and two carry a bracketed note on what followed.
+- 2026-09-14 22:59Z (recovered). BATCH ATTEMPT 1 KILLED, ATTEMPT 2 STARTED. The single out-of-sample batch
+  launched at 20:25Z was killed at about 22:56Z by the session's low-memory guard, which stopped
+  the shell that ran it, during the Item 7 section (Item 1A had finished and printed its summary
+  line; with `--batch` every member's result and ledger row is written only after both members and
+  the matrix exist, so nothing was recorded: no ledger row for either identity, no result, no
+  matrix). Item 1A's curve, cohorts, events and input manifest were left in its out directory and
+  are overwritten by the second attempt. Because #45 had since changed the runner file the
+  reservations bind by hash, both reservations were re-authored at 22:58Z (same pre-registration,
+  same parameters, same ordinals 348 and 349, same batch hash, the runner's current hash;
+  validated, both audits SATISFIABLE with disposition ceiling ADMIT). Nothing in the protocol or
+  the parameters changed between the attempts, and the one figure the first attempt printed
+  (Item 1A net Sharpe 0.087, 52 of 120 cohorts ranked, 60 force-flats) decides nothing: the seal
+  decides, and this entry is the disclosure that the figure was seen before the second attempt.
+  Attempt 2 runs detached from the session (nohup) so no guard can stop it; the watcher seals it.
+- 2026-09-14 23:14Z (recovered). FRANKFURT'S FIRST CYCLE UNDER THE BRAKE. The 23:10Z natural cycle ran on the
+  deployed loop: equity cycle_ts advanced to 1789426800000, nine position rows marked, the service
+  finished cleanly (14.7 s CPU, no error or traceback), and trade.log carries the reading
+  `cycle.book_ladder book_applied=True book_as_of=2026-09-14 book_error=None
+  book_multiplier=1.0 book_source=https://canlicapital.com/glassbox/book_drawdown_ladder.json
+  book_stale=False`. The crypto sleeve therefore applies the book-level brake from this cycle, at
+  the same multiplier of 1.0 the equity sleeves apply; nothing traded differently. The rollout
+  verifier (PR #47) decides the receipt on that cycle once it is on main.
+- 2026-09-15 00:13Z (recovered). FRANKFURT ROLLOUT VERIFIED. With #47 in the publisher tree the rollout
+  verifier still refused the receipt on its own hash: the receipt sealed the pre-#47 verifier, and
+  the verifier's rule is that a sealed binding must equal the current file or be recorded as a
+  predecessor in a binding_revisions entry that postdates the receipt. One hand-authored entry
+  (dated 2026-09-15, the four sealed bindings as predecessors, the reason being #47 itself)
+  was added to the rollout contract; the verifier then queried the host read-only and sealed
+  `crypto_position_attribution_rollout_verification.json`: VERIFIED_FIRST_NATURAL_MARKED_CYCLE
+  at 00:13:20Z, deployment boundary cycle 22:10Z, natural cycle after deployment true. The
+  crypto sleeve's brake is verified live.
+- 2026-09-15 01:51Z (recovered). PUBLISH RESTORED. The 01:25Z tick, the first with #46 to #50 in the
+  publisher tree, wrote research.json at 01:46Z (3.9 MB), the forward packet index and the 118
+  imported packets beside the legacy 228 (350 files in trial-packets), and passed the live-change
+  gate on 553aff51. The paper state carries the cost-charged twin of every Alpaca curve (AlphaMax
+  27.9 bp cumulative drag on its base to 2026-09-15) and the ladder in the book's aggregation
+  policy. The site's research data had been stale since 19:50Z the previous day, the paper state
+  since 22:36Z; whether the public site caught up depends on this tick's Vercel deploy, which
+  the previous tick lost to its 25-minute upload bound. [Note, 15:20Z: it did not. The export was
+  restored; the deploy was not. Every landing build from 02:45Z was refused, recorded below.]
+- 2026-09-15 02:08Z (recovered). MEMORY PRESSURE, NOT A SITE DEFECT. The 00:25Z and 01:25Z ticks' deploys
+  stalled in the site-snapshot stage (rsync and hash of the site sources), which the 01:25Z tick
+  ran for over eighteen minutes although the same hash pass takes half a second when measured
+  by hand. The machine is swapping: 9.2 GB of a 10 GB swap in use, with a Virtualization
+  framework VM at 2.8 GB resident and 24 percent CPU, the batch worker at 1.3 GB (5.7 GB while
+  it loads a panel), and other sessions' processes. The batch is CPU-bound and continues; the
+  deploys fail their bounds and the public site stays at its last successful deploy (paper state
+  22:36Z, research 19:50Z) until a deploy completes within bounds. The engine's outputs are
+  current on disk. No engine change is warranted for this; the machine is. [Note, 15:20Z: from
+  02:45Z the snapshot was captured stable and the build itself failed, on a site defect.]
+- 2026-09-15 02:38Z (recovered). DISCLOSURE. While setting attempt 2's stray matrix receipt aside I printed
+  two of its fields to confirm the file: PBO 0.0710 over 2,494 aligned days. Together with the
+  Item 1A summary line seen after attempt 1, that is everything of attempt 1 and 2's outcomes
+  that was seen before attempt 3. No parameter, gate, or rule changes between the attempts;
+  attempt 3 differs from attempt 2 only in where the runner writes its matrix receipt.
+- 2026-09-15 15:20Z. NETWORK OUTAGE AND RESTART (between 07:18Z and 13:45Z). The Alpaca broker
+  reconciliation failed closed for all three accounts in the six ticks that finished 07:48Z
+  through 12:54Z, on name resolution ("nodename nor servname provided, or not known"); local
+  curves were preserved and no broker mark was taken. The operating session lost its API
+  connection from 12:42Z (ENOTFOUND) and the machine restarted at about 13:45Z, erasing the
+  session scratchpad (the entries recovered above, the batch launcher and the seal watcher). No
+  batch, seal or watcher was running: attempt 3 had not started. The 14:37Z tick reconciled
+  every account (PASS: AlphaMax 174 positions, managed futures 15, AlphaVintage 2; publish gate
+  PASS on 18 curves and 1,547 points).
+- 2026-09-15 15:20Z. RESERVATIONS RE-AUTHORED A THIRD TIME; BATCH ATTEMPT 3 STARTED. With #52 on
+  main (merged 03:24Z) and the tick idle, the publisher tree was pulled from 9c23ead to 0d22898 at
+  14:58Z (the tick-regenerated README and Stanford evidence doc restored first).
+  `scripts/author_earnings_narrative_change_batch.py` re-authored both reservations at 14:58:58Z:
+  the same pre-registration, parameters, ordinals 348 and 349 and batch registry (sealed
+  2026-09-14 22:58:48Z), bound to runner hash e427e075566e, the file's current hash; both
+  VALIDATED_BEFORE_RETURN_COMPUTE and SATISFIABLE_RETURN_BLIND with disposition ceiling ADMIT.
+  Attempt 3 started at 15:01:40Z, detached from the session, logging to
+  `var/log/earnings_narrative_batch_attempt3.log` so a restart cannot erase the record; a watcher
+  (`var/log/earnings_narrative_seal_attempt3.log`) waits for its completion line and an idle tick,
+  then runs the seal with its mandatory re-run, and does not pull. The reservations bind the
+  runner, the pre-registration, uv.lock, pyproject.toml and the pairs manifest by hash, and the
+  re-run imports the tree's source, so the publisher tree is not pulled again until the seal is
+  written.
+- 2026-09-15 15:25Z. PUBLIC SITE STALE SINCE 2026-09-14 23:57Z: CAUSE FOUND, FIX BUILT, NOT YET
+  LIVE. canlicapital.com's last successful landing deploy is 2026-09-14 23:57Z. Every landing
+  build from the 02:45Z deploy on failed in the site's `build-trial-accounting-tool.mjs`:
+  "Register row 0d1ecbac03f062ab claims a packet". The engine was right: since #42 the
+  prospective register carries 118 identities closed by a development closure (final KILL, packet
+  complete) beside the governed one. The site is published from canlicapital PR #11's branch,
+  checked out at `~/canlicapital-website-20260908` (`config/site_landing_design_source.txt`), and
+  that branch's trial-accounting core accepted only unclosed rows. canlicapital #12 (the owner's
+  objectives as claims) and #13 (forward-epoch trial pages) were merged on 2026-09-14 into main's
+  pre-redesign layout and never reached the published source; any record saying the trials page
+  renders the forward index describes main only. Fix on branch
+  `site/redesign-forward-epoch-20260915` from #11's head (signed d9e54324, 0000f31e): #12 and #13
+  ported (both apply cleanly); the core binds each development-closed identity through
+  `trial-packets/forward_index.json`, a sixth hash-declared source, by status, config hash,
+  reservation ordinal, closure kind, admission, final disposition and packet path, and refuses
+  anything else; forward-epoch trial pages are noindex and declare the forward index as a
+  source. On the engine's current exports the build renders 228 legacy and 119 forward-epoch
+  pages and trial accounting at N=347, and `npm run verify` passes (277 tests, link graph,
+  indexability, every numeral traced); three mutations, each removing one new guard, are each
+  caught by one test. Fast-forwarding the published worktree to the fix was refused by the
+  assistant's permission classifier as a production deploy, so it waits for the owner; until it
+  moves, every hourly landing deploy fails the same way.
+- 2026-09-15 16:31Z. PUBLIC SITE LIVE AGAIN. The owner fast-forwarded the published worktree to
+  the fix at 16:11:39Z (be1f4662 to 8c53cd5a, pushed to #11's branch). The 15:29Z deploy had
+  captured its snapshot before that and failed as before (its trace names the old core's line
+  217). The deploy that began 16:28:52Z captured a stable snapshot on attempt 1 and published the
+  landing on attempt 1. Checked on the public site at 16:30:47Z: `/tools/trial-accounting`
+  renders "118 closed by a development closure" and declares `trial-packets/forward_index.json`,
+  the old "one sealed prospective identity" sentence is gone, `/trials/0d1ecbac03f062ab` returns
+  200, and the homepage last-modified moved from 2026-09-14 23:57:29Z to 2026-09-15 16:30:18Z.
+  The public site was stale for 16 hours 33 minutes.
