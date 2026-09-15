@@ -1051,3 +1051,25 @@ published number or spend a research identity are marked DECISION and name who m
   when the publisher tree takes this commit, and the nightly publish regenerates it. Also in this
   branch: install, verification and rollback steps for the liquidation collector in
   `scripts/vps/README.md`.
+- 2026-09-15 19:47Z. BATCH ATTEMPT 3 COMPLETE; SEAL RUNNING. The single out-of-sample batch exited
+  cleanly at 19:37:24Z (started 15:01:40Z; about 20 minutes of that was the Mac hibernating). Both
+  sections wrote their out-of-sample results, and the matrix receipt sits inside the batch directory
+  (`artifacts/research/identity_batches/earnings_narrative_change_batch_1/matrix_receipt.json`) with
+  nothing at the registry top level, which is where attempt 2 failed. The watcher started the seal,
+  with its mandatory deterministic re-runs, at 19:37:27Z. No result was read here; the seal decides.
+- 2026-09-15 19:47Z. MARGIN FINANCING MEASURED ZERO; IDLE-CASH YIELD IS A SHARPE-BASIS DECISION.
+  `scripts/audit_paper_sleeve_cash_financing.py` reconstructs each Alpaca paper sleeve's daily cash
+  from filled orders, lake closes and broker equity marks (cash = equity - long + short), through
+  the cost derivation script's own loaders, and prices idle cash at the point-in-time federal funds
+  rate (mean 3.63 percent). On the record to 2026-09-15 (41, 41 and 40 calendar days) no sleeve was
+  ever in margin debit: minimum cash share 0.9172 AlphaMax, 0.6679 managed futures, 0.9962
+  AlphaVintage. The contract's `financing_margin_interest` row is therefore zero on this record and
+  needs no rate source. Idle cash would have earned USD 3,843.91, 2,919.11 and 3,972.82. Crediting
+  it against the current zero benchmark would raise every sleeve's return mechanically; the standard
+  excess-return Sharpe instead charges the rate on net exposure, because (P&L + rate x cash) -
+  rate x equity = P&L - rate x (long - short). With mean net exposure +0.0488 (AlphaMax), +0.2861
+  (managed futures) and -0.0002 (AlphaVintage), that drag is 0.18 percent a year, 1.04 percent a
+  year and nil. The current basis (no cash yield, zero benchmark) therefore slightly flatters the
+  net-long sleeve against the standard definition; the contract's note that omitting cash yield
+  understates the record is incomplete. `config/owner_goals.json` defines the Sharpe goal on the
+  zero benchmark, so changing the basis is the owner's decision. Nothing is charged or changed here.
