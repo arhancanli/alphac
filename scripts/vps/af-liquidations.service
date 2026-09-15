@@ -1,0 +1,24 @@
+[Unit]
+Description=AlphaForge forward crypto liquidation collector (Binance, Bybit and OKX streams)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+# A stream, not a oneshot: the process holds its connections open and writes every connection
+# attempt to data/lake_liquidations/_sessions, so a restart is a recorded gap, never a silent one.
+Type=simple
+WorkingDirectory=/opt/alphaforge
+ExecStart=/opt/alphaforge/.venv/bin/python /opt/alphaforge/collect_liquidations.py
+Restart=always
+RestartSec=15
+# SIGTERM sets the stop event; each venue flushes its buffer and writes its close record within
+# about 20 seconds (the receive timeout).
+TimeoutStopSec=60
+Nice=5
+# Research-only and independent of af-trade: bounded so a leak here can never starve the paper loop.
+MemoryMax=512M
+StandardOutput=append:/var/log/af-liquidations.log
+StandardError=append:/var/log/af-liquidations.log
+
+[Install]
+WantedBy=multi-user.target
