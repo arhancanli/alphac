@@ -14,6 +14,10 @@ fi
 # .claude/ and .firecrawl/ (2026-09-06): agent worktrees under .claude/worktrees are written to
 # continuously while agents build, so a snapshot that hashes them never sees a stable source and
 # the hourly deploy skips itself for as long as anyone is working. They are not site source.
+# Agent-plugin state is not site source. A ruflo/serena session whose cwd is one of these trees
+# rewrites .claude-flow/*/state.json and ruvector.db continuously; hashing them made the
+# "stable source" check fail on every attempt whenever a capture took more than a few seconds
+# (2026-09-15, under swap pressure, three deploys in a row lost to their bound this way).
 site_source_hash() {
   { find "$SITE_LANDING_SOURCE" "$SITE_APP_SOURCE" "${SITE_LANDING_DESIGN_SOURCE:-$SITE_LANDING_SOURCE}" \
     \( -path "$SITE_LANDING_SOURCE/artifacts" \
@@ -21,8 +25,9 @@ site_source_hash() {
        -o -path "$SITE_LANDING_DESIGN_SOURCE/artifacts" \
        -o -name node_modules -o -name dist -o -name .next -o -name .vercel \
        -o -name .git -o -name .bak \
-       -o -name .claude -o -name .firecrawl \) -prune -o \
-    -type f ! -name '.env*' -print0 2>/dev/null
+       -o -name .claude -o -name .firecrawl \
+       -o -name .claude-flow -o -name .serena \) -prune -o \
+    -type f ! -name '.env*' ! -name 'ruvector.db' ! -name 'ruvector.db-*' -print0 2>/dev/null
     for source_dir in "$SITE_LANDING_SOURCE" "$SITE_APP_SOURCE" "$SITE_LANDING_DESIGN_SOURCE"; do
       [ -n "$source_dir" ] || continue
       if [ -f "$source_dir/artifacts/qa/redesign-scope/inventory.json" ]; then
@@ -56,6 +61,10 @@ _site_snapshot_copy() {
     --exclude '/.bak/' \
     --exclude '/.claude/' \
     --exclude '/.firecrawl/' \
+    --exclude '/.claude-flow/' \
+    --exclude '/.serena/' \
+    --exclude 'ruvector.db' \
+    --exclude 'ruvector.db-*' \
     --exclude '.env*' \
     "$source_dir/" "$destination_dir/" || return 1
   if [ -f "$source_dir/artifacts/qa/redesign-scope/inventory.json" ]; then

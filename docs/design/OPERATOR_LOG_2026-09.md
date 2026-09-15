@@ -748,3 +748,14 @@ published number or spend a research identity are marked DECISION and name who m
   returns are of order 1e-3); the exact hash equality, the largest per-session difference and
   the tolerance are recorded beside the verdict, never as the gate. A 1e-15 relative noise
   reproduces; a 1e-9 shift or a missing session does not.
+- 2026-09-15 06:16Z. DEPLOY SNAPSHOT NEVER STABLE (PR #51). Three hourly deploys in a row were
+  lost to their 25-minute bound in the site-snapshot stage: "source changed during attempt 1;
+  retrying". The changing files were not site sources: an agent plugin (ruflo) running in a
+  session whose working directory is the landing design source rewrites `.claude-flow/*/state.json`
+  and `ruvector.db` continuously, and the snapshot's stability hash covered them. With a fast
+  capture the window is a second and the check usually passes; under this evening's swap pressure
+  (9.2 GB of a 10 GB swap in use) a capture takes minutes and the check fails every attempt.
+  `.claude-flow`, `.serena` and `ruvector.db*` are now pruned from the hash and excluded from the
+  copy, like `.claude` and `.firecrawl` before them; a test writes and rewrites them and asserts
+  the hash and the copy do not move. The memory pressure itself is the machine's, not the
+  engine's, and is recorded separately.
