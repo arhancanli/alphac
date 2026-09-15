@@ -992,3 +992,40 @@ published number or spend a research identity are marked DECISION and name who m
   a side on a top-2000 universe); that drift was disclosed and pinned on 2026-07-18
   (`scripts/alphamax_tick.sh`, `docs/research/ALPHAMAX_EQUITY_MOMENTUM_LINEAGE.md`) and is repeated
   here only because the 17:25Z entry quoted the study's pair.
+- 2026-09-15 18:25Z. FORWARD LIQUIDATION COLLECTOR BUILT, NOT DEPLOYED. `crypto_liquidation_pressure`
+  is marked NO_PIT by the reachability screen: venues stream forced liquidations and publish no
+  history, and the contract needs three years, so the only way the family ever becomes testable is
+  to start collecting. `scripts/vps/collect_liquidations.py` (with `scripts/vps/af-liquidations.service`
+  and nine tests) accumulates it and makes no claim. Venues, from a read-only review of their
+  documentation: Bybit `allLiquidation` is documented complete and is collected on every USDT
+  perpetual (766 at build time, 20,003 characters of subscription arguments against a documented
+  limit of 21,000; a truncation would be recorded); Binance `!forceOrder@arr` is sampled (at most
+  one order per symbol per second) and every row is tagged sampled; OKX is parsed but not collected,
+  because its API agreement limits market data to personal, non-commercial use without written
+  consent. Every row carries its event, push and receipt times and the raw payload; every
+  connection attempt is a session record (opened, acknowledged, last message, closed and why), so a
+  disconnect is an excludable gap, never a quiet market. Two live runs from the Mac: the first
+  exposed two defects before anything was deployed (a protocol-level heartbeat made Bybit and OKX
+  drop the connection with "No PONG received", and the old Binance `/ws/` path closed with code
+  1006); the second, after the fixes, held Bybit's 766-symbol subscription acknowledged for a
+  minute with no liquidation in it, took 6 Binance rows with 0 parse errors, and exited 1.6 seconds
+  after SIGTERM. Before deployment: record Bybit (and the Binance websocket route) in
+  `config/data_source_rights_policy.json` and regenerate the all-sleeve rights audit in the
+  publisher tree after the narrative seal; then install on Frankfurt, the running authority, as a
+  production change.
+- 2026-09-15 18:25Z. DATA RIGHTS GAP IN THE EXISTING VENUE COLLECTOR. The recovery copy
+  `scripts/vps/collect_venues.py` (with `af-venues.service` and `af-venues.timer`) collects Bybit,
+  OKX, Gate and Kraken funding and OKX positioning into `/opt/alphaforge/data/lake_venues`. None of
+  those four venues has an entry in `config/data_source_rights_policy.json`, whose ten sources name
+  Binance and Deribit as the only crypto venues. The OKX API agreement, per the same read-only
+  review, limits market data to personal, non-commercial use and forbids publishing or
+  redistribution without written consent. No raw rows from these venues are published, but storing
+  them and any derived research need a recorded decision: register each venue conservatively, stop
+  collecting OKX, or obtain consent. That decision is the owner's. Whether the timer still runs on
+  Frankfurt was not checked today, and nothing on Frankfurt was changed.
+- 2026-09-15 18:25Z. THE PUBLISHER MAC HIBERNATED ON BATTERY. `pmset` records low-power sleep at
+  17:54:10Z on battery at 1 percent charge and a wake from hibernate at 18:14:24Z on AC power. While
+  the Mac sleeps nothing on it runs: the hourly ticks, the equity sleeves' daily cycles, the batch
+  and its seal. The seal watcher now holds a sleep assertion (`caffeinate -i -s -w` on its process,
+  effective on AC power only), which ends when the watcher exits. The Mac has to stay on AC power
+  while it is the publisher.
