@@ -8,6 +8,44 @@ which of those decisions cost money. Every classification below is read from
 `artifacts/feasibility/*/result.json` (eighteen studies); nothing here re-derives a gate.  
 **Trial accounting:** zero identities spent. This brief opens no data and runs nothing.
 
+## Corrections, 2026-09-15
+
+This brief was wrong or out of date in the places below. The operator log entries of 2026-09-15
+17:25Z carry the evidence; the original text is left as written.
+
+- **Identities per test.** "each of the studies below costs one" is wrong under the rules in force.
+  `config/trial_accounting_evidence_classes.json`, bound by the v2 promotion receipt, makes declared
+  cost, execution and capacity diagnostics free, but a test that can reach ADMIT needs an identity
+  batch of at least two selectable identities. Fifty-one identities remain after ordinals 348 and
+  349, which buys 25 such tests.
+- **Tier 0 is empty.** `earnings_narrative_change` is the batch at ordinals 348 and 349, declared
+  the family's second and final identity (`docs/design/PREREG_EARNINGS_NARRATIVE_CHANGE_MDNA.md`);
+  no further identity goes to it. `treasury_auction_concession` is not ready: its later audits say
+  CALENDAR_LINEAGE_REQUIRED and IDENTITY_NOT_OBSERVABLE_AS_PREREGISTERED, its schedule-revision
+  state machine awaits the author's review with no answers, and a review found defects in the
+  revision audit and no Treasury cost model, price data or venue. Withdrawal of that version is
+  recommended to the author, whose decision it is.
+- **`pre_fomc_announcement_drift` is data-gated, not calendar-gated.** The row in tier 2 read the
+  first-stage result. The annual schedule lineage passed on 2026-08-16
+  (`artifacts/feasibility/pre_fomc_announcement_drift/annual_schedule_lineage.json`,
+  PASS_TO_RETURN_PREREGISTRATION); the blocker is historical quote data
+  (`artifacts/feasibility/pre_fomc_announcement_drift/market_data_readiness.json`, DATA_GATED). That
+  pass also relies on schedule releases fetched in 2026 rather than contemporaneous captures, does not
+  prove the March 2020 cancellation before entry, and leaves early-close control windows untyped, so
+  a point-in-time calendar audit would be needed before any return if the quote data were bought.
+- **`merger_arbitrage`** already has a sealed confirmatory redesign
+  (`artifacts/feasibility/merger_arbitrage/announcement_confirmatory_design.json`: SC 14D9 and
+  DEFM14A strata gated separately, 2006 to 2015 held out) awaiting the author's six answers. The
+  "tender-offer-only identity" in tier 2 would be a third design and is withdrawn.
+  `tender_offer_spread` is the same mechanism as that SC 14D9 stratum, so the two can yield at most
+  one sleeve, and its blind packet, importer and attestation do not exist yet.
+- **`spin_off_dislocation`'s** document schema audit already ran on 2026-08-16 and returned
+  DATA_GATED (`artifacts/feasibility/spin_off_dislocation/document_schema_result.json`); the next
+  step is a registration-keyed protocol, not the audit.
+- **Decision 1 below is withdrawn** (there is nothing in tier 0 to reserve). Section 4 of
+  `docs/design/REVIEWER_AND_VENDOR_OUTREACH_2026-09-14.md` now carries routes, prices and quote
+  questions for the reviewer and both purchases.
+
 ## The shape of the problem
 
 The reachability screen's own headline: none of the twenty untouched families is blocked on

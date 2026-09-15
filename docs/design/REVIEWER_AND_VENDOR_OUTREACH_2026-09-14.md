@@ -86,3 +86,63 @@ Opens `index_reconstitution_flow` and `fallen_angel_flow`.
 - Vendor: on a quote, the owner decides; on purchase, the source enters
   `config/data_source_rights_policy.json` with its exact publication terms before a single row is
   read into the lake, and the family enters feasibility, not return work.
+
+## 4. Research findings, 2026-09-15
+
+Read-only web research by the operating session: nobody was contacted, no form was submitted and
+no account was opened. Figures marked (unverified) come from third-party pages, not the vendor.
+
+**Who can sign.** Upwork requires the account holder to be 18 or older or a legal entity
+(https://support.upwork.com/hc/en-us/articles/211067778-Who-s-eligible-to-join-and-use-Upwork), and
+data licences are normally signed by a company. Each engagement below should be contracted by a
+registered company or an adult acting for it.
+
+**Reviewer plan (section 1).** Size: about 18 to 27 hours (48 Item 4 sections at 10 to 15 minutes
+each; 30 tender-offer documents estimated at 20 to 30 minutes each). Market rates: paralegal median
+USD 30.24 per hour (https://www.bls.gov/ooh/legal/paralegals-and-legal-assistants.htm); law-school
+research assistants USD 18 to 23 per hour (https://www.law.uci.edu/portals/ra-student-employment.html).
+Channels, in parallel: an Upwork fixed-price job for an SEC filings reviewer (client fee 5 percent
+plus a per-contract fee, https://www.upwork.com/pricing/client), and a free Handshake posting for law
+students who have taken securities regulation and finance master's students
+(https://joinhandshake.com/employers/). Screening: a paid five-document trial on filings outside both
+frozen sets, so neither gate is touched. Budget: USD 1,000 to 1,400 fixed for both packets, about
+USD 100 for the trial, plus the platform fee. Timeline: week 1 post and shortlist; week 2 trial and
+attestation; weeks 3 and 4 labelling; week 5 verify and import. Two things must exist first: the
+tender-offer blind packet (not yet built) and the owner's `outreach_authorized` record.
+
+**Rates (section 2a).** Free sources cover only part of the need: the FRED/H.15 ICE swap series stop
+on 2016-10-31 (https://fred.stlouisfed.org/series/DSWP10); Bank of England sterling OIS curves start
+in 2009 (https://www.bankofengland.co.uk/statistics/yield-curves; the licence for the curves is
+unverified); no free official G10 forward points were found. Recommended order: a quote from
+BlueGamma (FX forwards and SOFR, ESTR, SONIA, SARON and TONA swap curves by valuation date; price,
+depth and licence not public, https://www.bluegamma.io/product/interest-rate-api), then LSEG
+Workspace or Datastream (full coverage; USD 1,500 to 3,000 per user per month plus data packages,
+unverified, https://www.vendr.com/marketplace/refinitiv). Rejected: Databento (exchange futures only,
+a stand-in for the OTC instruments, with CME historical-distribution fees on top,
+https://databento.com/pricing); ICE Swap Rate direct (USD 23,000 to 36,000 a year for the swap leg
+alone, https://www.ice.com/publicdocs/IBA_MLA_Licensing_Data_Fee_Schedule_2026.pdf). Add to the 2a
+request: the daily start date of each series; whether prices are executable, composite or
+indicative, and their snapshot time; point-in-time or revised history; how the LIBOR to SOFR
+transition is handled; written permission to publish derived statistics, charts, backtests and
+instrument-level signal values on a public site and API, surviving termination; and the price for a
+non-financial startup with any pass-through fees.
+
+**Index constituents and ratings (section 2b).** The two cheapest point-in-time routes both bar
+sharing as licensed: Siblis Research at USD 576 a year
+(https://siblisresearch.com/data/historical-component-changes/; its terms prohibit "copying,
+distributing or sharing any data", https://siblisresearch.com/terms-of-use/), and Norgate Platinum at
+USD 630 a year (S&P 500 from 1957, Russell indices from July 1990; licensed for personal use by
+individuals only, https://norgatedata.com/faq.php). Recommended order: Siblis if it grants written
+derived-publication rights, else ask Norgate for a commercial exception, else S&P Dow Jones Indices
+or FTSE Russell directly (no public prices). Rating histories are free: rating agencies publish XBRL
+rating-action histories from June 2012 under SEC Rule 17g-7(b)
+(https://www.sec.gov/about/divisions-offices/office-credit-ratings/disclosure-of-credit-rating-histories;
+any publication lag and each agency's reuse terms are unverified). The equity index vendors carry no
+bond-index eligibility, so `fallen_angel_flow` opens only if ratings plus published index rules are
+enough. Add to the 2b request: the index list and start dates; the announcement timestamp and
+effective date of each change; whether Russell preliminary lists are kept point-in-time; permanent
+identifiers for delisted names; weights and float factors; and written permission for a company to
+publish security-level research without the lists themselves, surviving cancellation.
+
+**Per dollar.** The index route opens two families for about USD 600 a year if the publication
+permission is granted in writing; credible rates coverage costs five figures a year.
