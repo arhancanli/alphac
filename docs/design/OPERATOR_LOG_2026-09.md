@@ -860,3 +860,25 @@ published number or spend a research identity are marked DECISION and name who m
   runner, the pre-registration, uv.lock, pyproject.toml and the pairs manifest by hash, and the
   re-run imports the tree's source, so the publisher tree is not pulled again until the seal is
   written.
+- 2026-09-15 15:25Z. PUBLIC SITE STALE SINCE 2026-09-14 23:57Z: CAUSE FOUND, FIX BUILT, NOT YET
+  LIVE. canlicapital.com's last successful landing deploy is 2026-09-14 23:57Z. Every landing
+  build from the 02:45Z deploy on failed in the site's `build-trial-accounting-tool.mjs`:
+  "Register row 0d1ecbac03f062ab claims a packet". The engine was right: since #42 the
+  prospective register carries 118 identities closed by a development closure (final KILL, packet
+  complete) beside the governed one. The site is published from canlicapital PR #11's branch,
+  checked out at `~/canlicapital-website-20260908` (`config/site_landing_design_source.txt`), and
+  that branch's trial-accounting core accepted only unclosed rows. canlicapital #12 (the owner's
+  objectives as claims) and #13 (forward-epoch trial pages) were merged on 2026-09-14 into main's
+  pre-redesign layout and never reached the published source; any record saying the trials page
+  renders the forward index describes main only. Fix on branch
+  `site/redesign-forward-epoch-20260915` from #11's head (signed d9e54324, 0000f31e): #12 and #13
+  ported (both apply cleanly); the core binds each development-closed identity through
+  `trial-packets/forward_index.json`, a sixth hash-declared source, by status, config hash,
+  reservation ordinal, closure kind, admission, final disposition and packet path, and refuses
+  anything else; forward-epoch trial pages are noindex and declare the forward index as a
+  source. On the engine's current exports the build renders 228 legacy and 119 forward-epoch
+  pages and trial accounting at N=347, and `npm run verify` passes (277 tests, link graph,
+  indexability, every numeral traced); three mutations, each removing one new guard, are each
+  caught by one test. Fast-forwarding the published worktree to the fix was refused by the
+  assistant's permission classifier as a production deploy, so it waits for the owner; until it
+  moves, every hourly landing deploy fails the same way.
