@@ -738,3 +738,13 @@ published number or spend a research identity are marked DECISION and name who m
   whole. Verified against the publisher tree's regenerated maturity artifact before the push.
   The 23:25Z tick also ran under the pre-re-pin fingerprint, so its deploy was gated as designed;
   the publisher tree took #48 at 23:57Z and the gate now passes (553aff51).
+- 2026-09-15 04:50Z. SEAL RE-RUN TOLERANCE (PR #50). Attempt 2 of the batch reproduced attempt
+  1's Item 1A section to the seventeenth digit and not beyond: net Sharpe 0.08671115460783048
+  against 0.08671115460783049, Newey-West t likewise, the same 52 of 120 cohorts, the same 60
+  force-flats. That is floating-point summation order under a multi-threaded reduction, not a
+  different computation, and the seal's deterministic re-run compared the two series by byte
+  hash, so it would have called the batch irreproducible and the evaluator would have closed
+  both identities KILL. Reproduced now means every daily net return agrees within 1e-12 (daily
+  returns are of order 1e-3); the exact hash equality, the largest per-session difference and
+  the tolerance are recorded beside the verdict, never as the gate. A 1e-15 relative noise
+  reproduces; a 1e-9 shift or a missing session does not.

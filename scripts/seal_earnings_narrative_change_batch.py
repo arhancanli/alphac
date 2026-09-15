@@ -55,6 +55,9 @@ CLOSURE_SCHEMA: Final[str] = "canli.alphac-narrative-change-admission-closure.v1
 PACKET_SCHEMA: Final[str] = "canli.alphac-identity-trial-packet.v2"
 DIVERSIFICATION_SCHEMA: Final[str] = "canli.alphac-canonical-diversification.v1"
 SESSIONS_PER_YEAR: Final[float] = 252.0
+#: The largest per-session absolute difference two runs of the same code may show and still
+#: count as the same series: floating-point summation order, not a different computation.
+RERUN_ABS_TOLERANCE: Final[float] = 1e-12
 REGIME: Final[dict[str, Any]] = {
     "stress_correlation": 0.50,
     "stress_share": 0.12,
@@ -636,15 +639,33 @@ def deterministic_rerun(
             out_root=scratch,
             rerun_of=result_path,
         )
-        rerun_hash = hashlib.sha256(
-            again["net_returns"].to_numpy(dtype="float64").tobytes()
-        ).hexdigest()
+        rerun_series = again["net_returns"].to_numpy(dtype="float64")
+        rerun_hash = hashlib.sha256(rerun_series.tobytes()).hexdigest()
     finally:
         shutil.rmtree(scratch, ignore_errors=True)
-    sealed_hash = hashlib.sha256(np.asarray(sealed_series, dtype="float64").tobytes()).hexdigest()
+    sealed = np.asarray(sealed_series, dtype="float64")
+    sealed_hash = hashlib.sha256(sealed.tobytes()).hexdigest()
+    # Two runs of the same code on the same inputs agree to floating-point summation order:
+    # the batch's two Item 1A runs (attempt 1 killed, attempt 2) printed net Sharpe values that
+    # differ in the seventeenth digit, which is what a multi-threaded reduction does. A byte
+    # hash would call that a failure and the evaluator would turn it into KILL, which is final.
+    # Reproduced means every daily net return agrees within RERUN_ABS_TOLERANCE (1e-12, against
+    # daily returns of order 1e-3); the exact hash equality is recorded beside it, never as
+    # the gate.
+    same_length = rerun_series.shape == sealed.shape
+    max_abs_difference = (
+        float(np.max(np.abs(rerun_series - sealed))) if same_length and sealed.size else None
+    )
+    reproduced = bool(
+        same_length and max_abs_difference is not None and max_abs_difference <= RERUN_ABS_TOLERANCE
+    )
     return {
         "performed": True,
-        "reproduced": rerun_hash == sealed_hash,
+        "reproduced": reproduced,
+        "exact_hash_match": rerun_hash == sealed_hash,
+        "max_abs_difference": max_abs_difference,
+        "tolerance_abs": RERUN_ABS_TOLERANCE,
+        "sessions_compared": int(sealed.size),
         "sealed_series_sha256": sealed_hash,
         "rerun_series_sha256": rerun_hash,
         "rerun_out_root": "scratch directory, removed",

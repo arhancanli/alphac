@@ -289,6 +289,17 @@ def test_the_rerun_is_deferred_into_a_scratch_directory_and_compared_by_hash(
     assert call["rerun_of"] == result_path
     assert call["out_root"] != sealed_dir.parent and not call["out_root"].exists()  # removed
     assert (sealed_dir / "result.json").read_text() == "{}"
+    # Summation-order noise (the seventeenth digit) is the same series; a real divergence is not.
+    runner_noise = _FakeRunner(series * (1.0 + 1e-15))
+    out = MOD.deterministic_rerun(
+        runner_noise,
+        section="item1a",
+        reservation_path=tmp_path / "reservation.json",
+        result_path=result_path,
+        sealed_series=series,
+    )
+    assert out["reproduced"] is True and out["exact_hash_match"] is False
+    assert 0.0 < out["max_abs_difference"] <= out["tolerance_abs"]
     runner_diverging = _FakeRunner(series + 1e-9)
     out = MOD.deterministic_rerun(
         runner_diverging,
@@ -297,7 +308,16 @@ def test_the_rerun_is_deferred_into_a_scratch_directory_and_compared_by_hash(
         result_path=result_path,
         sealed_series=series,
     )
-    assert out["reproduced"] is False
+    assert out["reproduced"] is False and out["max_abs_difference"] > out["tolerance_abs"]
+    runner_short = _FakeRunner(series[:-1])
+    out = MOD.deterministic_rerun(
+        runner_short,
+        section="item1a",
+        reservation_path=tmp_path / "reservation.json",
+        result_path=result_path,
+        sealed_series=series,
+    )
+    assert out["reproduced"] is False and out["max_abs_difference"] is None
 
 
 def test_the_seal_has_no_way_to_skip_the_rerun() -> None:
