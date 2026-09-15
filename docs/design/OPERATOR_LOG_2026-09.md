@@ -748,3 +748,16 @@ published number or spend a research identity are marked DECISION and name who m
   returns are of order 1e-3); the exact hash equality, the largest per-session difference and
   the tolerance are recorded beside the verdict, never as the gate. A 1e-15 relative noise
   reproduces; a 1e-9 shift or a missing session does not.
+- 2026-09-15 06:37Z. BATCH ATTEMPT 2 FAILED AT ITS FIRST LEDGER RECORD (PR #52). Both sections
+  computed (Item 1A and Item 7, three and a half hours under swap pressure), the PBO matrix was
+  built and its receipt written, and the first `_record_identity` call was refused by the
+  reservation validator: "identity batch registry schema mismatch:
+  earnings_narrative_change_batch_1_matrix_receipt.json". The runner wrote the matrix receipt at
+  the top level of `artifacts/research/identity_batches/`, where the validator reads every JSON
+  as a batch registry and fails closed on any other schema; the receipt's own schema is
+  different by design. Nothing was recorded: no ledger row, no result, both identities still
+  unspent. The receipt now lives inside the batch's directory beside the filled-reservation
+  audits (`identity_batches/<batch>/matrix_receipt.json`), a test pins that it never sits at
+  the registry's top level, and the stray receipt from attempt 2 was set aside outside the tree
+  (its figures are not read here). Attempt 3 follows once this is on main and pulled, with the
+  reservations re-authored a third time because the runner's hash moves again.
