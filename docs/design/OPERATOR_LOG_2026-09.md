@@ -962,12 +962,16 @@ published number or spend a research identity are marked DECISION and name who m
   brief's "next step: the schema audit" is out of date; the next step is a registration-keyed
   protocol, whose first question is whether the annual count of initial registrations can meet
   the admission contract at all.
-- 2026-09-15 17:25Z. FIXES IN THIS BRANCH. `scripts/analyze_current_book_diversification.py`
-  typed "the 1.5 Sharpe objective" into its claim boundary although the script already reads the
-  governing objective from `config/owner_goals.json` (target 2.0); the boundary now names the
-  owner's forward Sharpe objective without a number. `docs/design/SUPPLEMENTAL_MEASUREMENT_CLASS_V1.md`
-  still said NOT IN FORCE; a dated note now says which part is in force through the evidence
-  classes and that an admissible test costs two identities.
+- 2026-09-15 17:25Z. FIXES IN THIS BRANCH. `docs/design/SUPPLEMENTAL_MEASUREMENT_CLASS_V1.md` still
+  said NOT IN FORCE; a dated note now says which part is in force through the evidence classes and
+  that an admissible test costs two identities. Not fixed, and why:
+  `scripts/analyze_current_book_diversification.py` types "the 1.5 Sharpe objective" into its claim
+  boundary although it reads the governing objective (target 2.0) from `config/owner_goals.json`.
+  Editing that sentence failed CI's publication integrity check, because the script is a code
+  binding of the sealed AlphaVintage publication bundle
+  (`publication/alphavintage/v1.0.0/reproduction.json`: "stale code binding"). The edit was
+  withdrawn; the sentence waits for that bundle's next governed version rather than a rebind for
+  one sentence.
 - 2026-09-15 17:50Z. CORRECTION: THE TREND LEVER IS WEAKER THAN WRITTEN AT 17:25Z. The 17:25Z entry
   called a trend identity residualized against equity momentum the one candidate that needs no
   data purchase and targets the binding constraint. A read-only review of both sleeves, checked

@@ -9,7 +9,7 @@ contract's boundary is the boundary it states about itself. A script with no doc
 having none.
 
 At a glance: **363 Python scripts**, **17 shell entry points**,
-**34 configuration contracts**, **2 engineering artifacts**,
+**34 configuration contracts**, **3 engineering artifacts**,
 **435 unit test files**, **0 data directories**, **9 scheduled jobs**.
 
 
@@ -222,6 +222,7 @@ are the ones a reader has to know about; everything else is derived from them.
 | `config/trial_accounting_v7_proposed.json` | _(no stated boundary)_ |
 | `artifacts/engineering/deflated_sharpe_calculator_contract.json` | This contract reproduces ALPHAC's PSR and DSR arithmetic for supplied inputs. |
 | `artifacts/engineering/foundry_local_contract_verification.json` | This receipt verifies committed local contracts. |
+| `artifacts/engineering/lint_debt_contract.json` | Ruff is clean for src/alphaforge and tests. |
 
 ## Scripts by kind
 
