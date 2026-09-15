@@ -84,6 +84,27 @@ Rows are partitioned by **observation** date, not fetch date. Naming files after
 ~21 days of observations in every file and produced 1.84x duplication after two days, on track for
 ~21x by day 21.
 
+## Installing the liquidation collector
+
+`collect_liquidations.py` is not a timer job: it holds Bybit and Binance streams open and writes
+`/opt/alphaforge/data/lake_liquidations/<venue>/<event date>/` plus `_sessions/<venue>.jsonl`.
+Install it only after `config/data_source_rights_policy.json` records Bybit and the Binance
+websocket route, so no row enters a lake without a recorded rights decision. Installing it is a
+production change on this host, run by the owner from the Mac:
+
+```
+scp -i ~/.ssh/moonshot_vps scripts/vps/collect_liquidations.py root@201.79.12.40:/opt/alphaforge/collect_liquidations.py
+scp -i ~/.ssh/moonshot_vps scripts/vps/af-liquidations.service root@201.79.12.40:/etc/systemd/system/af-liquidations.service
+ssh -i ~/.ssh/moonshot_vps root@201.79.12.40 'systemctl daemon-reload && systemctl enable --now af-liquidations.service'
+```
+
+Verify after a few minutes: `systemctl is-active af-liquidations.service` prints `active`, and the
+last line of each `_sessions/<venue>.jsonl` is an `open` record (Bybit's with an
+`acknowledged_at_ms` once its close is written). Roll back with
+`systemctl disable --now af-liquidations.service`; collected rows stay where they are. As with every
+file here, an edit made on the host must be copied back to this directory. The Mac does not yet
+sync `lake_liquidations`; nothing reads it until a study is pre-registered.
+
 ## Rebuilding this host from scratch
 
 1. Provision a droplet in a Binance-served region — **Frankfurt, Amsterdam or Singapore**. Not the
@@ -92,7 +113,8 @@ Rows are partitioned by **observation** date, not fetch date. Naming files after
    **aborts without installing anything** if the region is blocked — provisioning in the wrong place
    is the likeliest way to waste money here.
 3. Copy these five files to `/opt/alphaforge/`, recreate the three systemd timers
-   (`af-ingest` 03:15, `af-trade` `*:10`, `af-collect` `*:40`).
+   (`af-ingest` 03:15, `af-trade` `*:10`, `af-collect` `*:40`), and reinstall the liquidation
+   collector as above.
 4. Seed the lake from the Mac (the Mac is the superset after any merge) and ship `var/ops.sqlite`
    **pruned to `BINANCE:PERP:%`** — leaving the equity rows in makes `af data update` walk 20,663
    instruments Binance has never heard of and burn the whole window, and makes the paper loop chase

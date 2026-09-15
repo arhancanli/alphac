@@ -1029,3 +1029,25 @@ published number or spend a research identity are marked DECISION and name who m
   and its seal. The seal watcher now holds a sleep assertion (`caffeinate -i -s -w` on its process,
   effective on AC power only), which ends when the watcher exits. The Mac has to stay on AC power
   while it is the publisher.
+- 2026-09-15 19:08Z. VENUE DATA RIGHTS RECORDED; OKX AND GATE COLLECTION NEED THE OWNER. A read-only
+  preflight of the Frankfurt host at 18:50Z found `af-venues.timer` active (last run 02:42Z, next
+  02:41Z) and `/opt/alphaforge/data/lake_venues` holding OKX funding for 68 days (from 2026-07-10),
+  OKX positioning for 65 (from 2026-07-13), Bybit funding for 106 (from 2026-06-02), Gate funding
+  for 64 (from 2026-07-14) and Kraken funding for 401 (from 2025-08-11). The host's venv has aiohttp
+  3.14.3, pandas 3.0.5 and pyarrow 25.0.1, 62 GB is free, and it reaches Bybit and Binance.
+  `config/data_source_rights_policy.json` now records Bybit, OKX, Gate and Kraken and re-reviews
+  Binance for its websocket route, from a read-only review of each venue's terms; none grants
+  publication rights, and none separates raw rows from derived results. OKX: its API agreement
+  confines market data, public funding data included, to personal non-commercial trading and
+  forbids publishing it without written consent, so this collection is outside the licensed
+  purpose. Gate: its user agreement names the United Arab Emirates, where the owner resides, as a
+  restricted location. Kraken: its content is for the user's own benefit and other uses need
+  permission; automated collection is unresolved. Bybit: the API terms render only in a browser and
+  were not read, so its review is recorded incomplete under the conservative default. Binance: the
+  FZE terms bar storing or publishing Binance IP without saying whether market data is IP; recorded
+  unresolved. Owner decisions: stop the OKX and Gate collection, or obtain consent and a residency
+  answer; read Bybit's API terms in a browser before the liquidation collector is installed. The
+  persisted all-sleeve rights audit counts the policy's sources and hashes this file, so it changes
+  when the publisher tree takes this commit, and the nightly publish regenerates it. Also in this
+  branch: install, verification and rollback steps for the liquidation collector in
+  `scripts/vps/README.md`.
