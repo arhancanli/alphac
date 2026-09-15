@@ -78,6 +78,11 @@ SECTIONS: dict[str, dict[str, Any]] = {
 }
 BATCH_ID = "earnings_narrative_change_batch_1"
 BATCH_MATRIX_DIR = REPO / "artifacts" / "research" / "identity_batches"
+#: The matrix receipt lives INSIDE the batch's own directory, beside the filled-reservation
+#: audits, never at the registry's top level: the reservation validator reads every top-level
+#: JSON there as a batch registry and fails closed on any other schema, which is exactly what
+#: stopped the second batch attempt at its first ledger record (2026-09-15 02:32Z).
+BATCH_MATRIX_PATH = BATCH_MATRIX_DIR / BATCH_ID / "matrix_receipt.json"
 LEDGER = REPO / "var" / "experiments.jsonl"
 PBO_N_SPLITS = 16
 PBO_MAX_COMBINATIONS = 12870
@@ -760,8 +765,8 @@ def run_batch(
         ),
     }
     matrix["content_hash"] = _content_hash(matrix)
-    BATCH_MATRIX_DIR.mkdir(parents=True, exist_ok=True)
-    matrix_path = BATCH_MATRIX_DIR / f"{BATCH_ID}_matrix_receipt.json"
+    matrix_path = BATCH_MATRIX_PATH
+    matrix_path.parent.mkdir(parents=True, exist_ok=True)
     matrix_path.write_text(json.dumps(matrix, indent=1, sort_keys=True) + "\n", encoding="utf-8")
     for section in SECTIONS:
         result = runs[section]["result"]
