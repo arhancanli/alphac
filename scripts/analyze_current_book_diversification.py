@@ -436,9 +436,9 @@ def build() -> dict[str, Any]:
         "claim_boundary": (
             "Retrospective diversification measurement of the exact current four-sleeve research "
             "specification and strategic overlay. It does not establish live-forward correlation, "
-            "alpha, the 1.5 Sharpe objective, a reweighting decision, or retroactive admission. "
-            "The return data were known before this protocol and the research window ends before "
-            "the broker-reconciled forward record begins."
+            "alpha, the owner's forward Sharpe objective, a reweighting decision, or retroactive "
+            "admission. The return data were known before this protocol and the research window "
+            "ends before the broker-reconciled forward record begins."
         ),
     }
     payload["content_hash"] = _content_hash(payload)
