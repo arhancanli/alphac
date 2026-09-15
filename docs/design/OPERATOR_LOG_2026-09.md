@@ -891,3 +891,104 @@ published number or spend a research identity are marked DECISION and name who m
   the old "one sealed prospective identity" sentence is gone, `/trials/0d1ecbac03f062ab` returns
   200, and the homepage last-modified moved from 2026-09-14 23:57:29Z to 2026-09-15 16:30:18Z.
   The public site was stale for 16 hours 33 minutes.
+- 2026-09-15 17:25Z. OWNER DIRECTION, AND WHAT A DELEGATION CANNOT COVER. At 17:05Z the owner
+  wrote "ok go ahead you have my full permision you can also do the things you want me to do".
+  Under it PR #53 was squash-merged; the publisher tree was not pulled, because the reservations
+  for ordinals 348 and 349 bind the runner, the pre-registration, uv.lock, pyproject.toml and the
+  pairs manifest by hash, and the seal's re-run imports the tree's source. canlicapital main was
+  merged into the site fix branch (merge 7f3bf1a6; conflicts only in scripts/build-trials.mjs,
+  scripts/verify-trials.mjs and the generated trials.html, kept from the fix; the merged tree is
+  byte-identical to the published 8c53cd5a), but pushing it to PR #11's branch and queuing #11
+  was refused by the assistant's permission classifier as a production deploy, so #11 waits for
+  the owner. Three things stay with the owner whatever a delegation says, because the
+  repository's own rules reserve them: author protocol answers and approvals
+  (`config/author_protocol_review_registry.json` sets automation_may_invent_answers_or_approval
+  false, and `scripts/verify_author_protocol_approval.py` requires the statement "I, Arhan Canli,
+  reviewed this exact protocol and evidence version, wrote the answers"); blind human labels (the
+  active-ownership packet's instructions and the reviewer brief forbid automated assistance and
+  exclude the owner and anyone who has seen parser output); and account logins.
+- 2026-09-15 17:25Z. THE ROAD TO FOURTEEN, MEASURED. 349 of the 400 identities are spent once the
+  running batch records, leaving 51. Under the promoted evidence classes
+  (`config/trial_accounting_evidence_classes.json`, bound by the v2 promotion receipt) a declared
+  cost, execution or capacity diagnostic spends nothing, but a test that can reach ADMIT needs an
+  identity batch of at least two selectable identities, because a one-column batch cannot define
+  PBO. The 51 identities therefore buy 25 such tests. At the historical rate of 3 admissions in 46
+  tested candidates that is 1.63 expected admissions, a 0.815 probability of at least one, 0.221
+  of at least three, and 1.83e-6 of the ten new sleeves the owner's goal needs. Fourteen sleeves
+  inside the 400 ceiling is not plausible at that rate; whether to raise the ceiling is the
+  owner's decision at the 360 review, and every added identity raises the deflation bar for the
+  whole book. The binding constraint for the Sharpe goal is correlation. In the current-book
+  diversification study (`artifacts/analysis/current_book_diversification/result.json`;
+  retrospective research curves, not live evidence) the only material positive pair is AlphaMax
+  momentum (k30_dn_63) with managed-futures trend at +0.21; the other five pairs sum to -0.060, the
+  average is +0.025, and with that one pair at zero it would be -0.010. The same study's marginal
+  diagnostics: replacing managed futures with cash raises the research book Sharpe by 0.091,
+  while carry adds 0.533, momentum 0.147 and AlphaVintage -0.006. These are diagnostics, not a
+  reweighting decision. They point at one candidate that needs no data purchase and targets the
+  binding constraint: a trend identity residualized against equity momentum. Nothing in
+  `config/sleeve_family_lineage.json`, `config/sleeve_discovery.json` or the kill log records one.
+- 2026-09-15 17:25Z. TREASURY AUCTION CONCESSION IS NOT READY; WITHDRAWAL RECOMMENDED, DECISION
+  RESERVED TO THE AUTHOR. The 2026-09-14 data-unlock brief put this family in tier 0 from its first
+  feasibility result (PASS_TO_RETURN_PREREGISTRATION, 2026-08-16). Later sealed audits say
+  CALENDAR_LINEAGE_REQUIRED and IDENTITY_NOT_OBSERVABLE_AS_PREREGISTERED
+  (`docs/design/FEASIBILITY_TREASURY_AUCTION_IDENTITY_TIMING.md`), and the schedule-revision state
+  machine's author packet
+  (`artifacts/governance/author_protocol_review_packets/treasury-auction-state-machine/review_packet.json`)
+  is AWAITING_ARHAN_REVIEW_NO_APPROVAL_CLAIMED with 0 answers completed. A read-only review of the
+  state machine, its audit code and the sealed captures reported, beyond the author gate: the
+  debt-limit-postponed October 2015 auction matched to the following auction's date; revisions
+  timed by formal announcements although earlier captures show them; a re-schedule branch never
+  exercised; legs on Columbus Day and Veterans Day, when the Treasury cash market is closed; the
+  post-2020 schedules bound only to XML downloaded in 2026 (the archive script fetches the current
+  file, confirmed); and an undefined cutoff time, price time, hedge weights, roll rule and fee
+  split. Independently confirmed here: `config/cost_realism_contract.json` covers the Alpaca and
+  crypto paper books only, has no Treasury or repo rows, and charges no financing (its
+  margin-interest rows are NOT_CHARGED because no rate source is wired); and an admissible test
+  needs at least two identities, not the one the brief assumed. The operating
+  session reserves no identity for this family and recommends WITHDRAWN for this version; the
+  packet's decision field is the author's. It can return only as a new, at-least-two-identity
+  batch after those defects are fixed. No return data was opened and nothing was retuned.
+- 2026-09-15 17:25Z. EVENT FAMILIES: WHERE EACH STANDS. `merger_arbitrage`: a sealed confirmatory
+  redesign exists (`artifacts/feasibility/merger_arbitrage/announcement_confirmatory_design.json`,
+  AUTHOR_APPROVAL_REQUIRED: exploration 2016 to 2025, confirmation 2006 to 2015, SC 14D9 and
+  DEFM14A strata gated separately) and waits for the author's six answers in its review packet;
+  the brief's "tender-offer-only identity" would be a third design and is withdrawn.
+  `active_ownership_escalation`, the selected next candidate, waits only for its 48 blind labels;
+  `config/external_review_protocol.json` still records outreach_authorized false.
+  `tender_offer_spread` is the same mechanism as merger arbitrage's SC 14D9 stratum, so at most one
+  sleeve can come from the two, and it has no blind packet, importer or attestation yet.
+  `spin_off_dislocation`: its document schema audit already ran on 2026-08-16 and returned
+  DATA_GATED (`artifacts/feasibility/spin_off_dislocation/document_schema_result.json`), so the
+  brief's "next step: the schema audit" is out of date; the next step is a registration-keyed
+  protocol, whose first question is whether the annual count of initial registrations can meet
+  the admission contract at all.
+- 2026-09-15 17:25Z. FIXES IN THIS BRANCH. `docs/design/SUPPLEMENTAL_MEASUREMENT_CLASS_V1.md` still
+  said NOT IN FORCE; a dated note now says which part is in force through the evidence classes and
+  that an admissible test costs two identities. Not fixed, and why:
+  `scripts/analyze_current_book_diversification.py` types "the 1.5 Sharpe objective" into its claim
+  boundary although it reads the governing objective (target 2.0) from `config/owner_goals.json`.
+  Editing that sentence failed CI's publication integrity check, because the script is a code
+  binding of the sealed AlphaVintage publication bundle
+  (`publication/alphavintage/v1.0.0/reproduction.json`: "stale code binding"). The edit was
+  withdrawn; the sentence waits for that bundle's next governed version rather than a rebind for
+  one sentence.
+- 2026-09-15 17:50Z. CORRECTION: THE TREND LEVER IS WEAKER THAN WRITTEN AT 17:25Z. The 17:25Z entry
+  called a trend identity residualized against equity momentum the one candidate that needs no
+  data purchase and targets the binding constraint. A read-only review of both sleeves, checked
+  here against the files, says otherwise. The +0.21 is the deployed pair over 1,061 days since 2023
+  (`artifacts/analysis/stressed_correlation/result.json`, whose stress samples hold only 16 and 14
+  days); the same artifact's long-history momentum and trend family proxy is +0.008 over 5,382
+  days (a family proxy, "never quote as sleeve correlation"), so the positive pair may be an
+  episode rather than a structure. The trend family already holds 49 distinct hypothesis
+  identities (`/glassbox/alphatrend_family.json`) against the single-family tripwire of 40 in
+  `config/trial_accounting.json`; its fixed asset-group risk variants closed KILL at ordinals 335
+  and 336; and equity-subset and leave-out trend identities already exist among the legacy
+  records (`var_mf/experiments.jsonl`: d95808ca458a, b64bf369f965, f583cd411d24), so "nothing
+  records one" overstated the gap. The admission contract's absolute_beta_max of 0.1 is a further
+  hazard for any directional trend identity, the review found no admission rule for replacing a
+  live sleeve, and a replacement would move the declared book composition and restart the
+  evidence epoch. No identity is reserved for it. The AlphaMax construction the diversification
+  study measures (k30_dn_63) differs from the live tick's profile-default construction (100 names
+  a side on a top-2000 universe); that drift was disclosed and pinned on 2026-07-18
+  (`scripts/alphamax_tick.sh`, `docs/research/ALPHAMAX_EQUITY_MOMENTUM_LINEAGE.md`) and is repeated
+  here only because the 17:25Z entry quoted the study's pair.
