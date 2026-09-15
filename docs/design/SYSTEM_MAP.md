@@ -8,7 +8,7 @@ line of its own docstring, each pipeline's steps are the scripts it actually inv
 contract's boundary is the boundary it states about itself. A script with no docstring appears as
 having none.
 
-At a glance: **363 Python scripts**, **17 shell entry points**,
+At a glance: **364 Python scripts**, **17 shell entry points**,
 **34 configuration contracts**, **3 engineering artifacts**,
 **436 unit test files**, **0 data directories**, **9 scheduled jobs**.
 
@@ -260,7 +260,7 @@ and is worth more than a hand-made taxonomy that would drift.
 | `analyze_target_2p5.py` | ANALYSIS — what would a book Sharpe of 2.5 actually require, and is it reachable? |
 | `analyze_trial_budget_cost.py` | Price a prospective trial budget before it is authorized. |
 
-### `audit_*` (78)
+### `audit_*` (79)
 
 | script | first line of its docstring |
 |---|---|
@@ -304,6 +304,7 @@ and is worth more than a hand-made taxonomy that would drift.
 | `audit_natural_gas_storage_weather_feasibility.py` | Audit EIA/NOAA/CME source feasibility without requesting market records or returns. |
 | `audit_operating_margin_replay_infrastructure_failure.py` | Seal the failed symlink-lake replay attempt without calling it a strategy result. |
 | `audit_operating_margin_unresolved_split_exposure.py` | Intersect unresolved split events with the sealed operating-margin execution path. |
+| `audit_paper_sleeve_cash_financing.py` | Measure the Alpaca paper sleeves' daily cash, margin debit and idle-cash yield (read-only). |
 | `audit_polygon_split_crosscheck.py` | Cross-check failed Sharadar split boundaries against Polygon, GET-only. |
 | `audit_pre_fomc_feasibility.py` | No-return feasibility audit for the pre-FOMC announcement-drift candidate. |
 | `audit_pre_fomc_market_data_readiness.py` | Audit quote-file readiness for the sealed pre-FOMC identity without opening prices. |
