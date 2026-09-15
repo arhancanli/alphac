@@ -968,3 +968,23 @@ published number or spend a research identity are marked DECISION and name who m
   owner's forward Sharpe objective without a number. `docs/design/SUPPLEMENTAL_MEASUREMENT_CLASS_V1.md`
   still said NOT IN FORCE; a dated note now says which part is in force through the evidence
   classes and that an admissible test costs two identities.
+- 2026-09-15 17:50Z. CORRECTION: THE TREND LEVER IS WEAKER THAN WRITTEN AT 17:25Z. The 17:25Z entry
+  called a trend identity residualized against equity momentum the one candidate that needs no
+  data purchase and targets the binding constraint. A read-only review of both sleeves, checked
+  here against the files, says otherwise. The +0.21 is the deployed pair over 1,061 days since 2023
+  (`artifacts/analysis/stressed_correlation/result.json`, whose stress samples hold only 16 and 14
+  days); the same artifact's long-history momentum and trend family proxy is +0.008 over 5,382
+  days (a family proxy, "never quote as sleeve correlation"), so the positive pair may be an
+  episode rather than a structure. The trend family already holds 49 distinct hypothesis
+  identities (`/glassbox/alphatrend_family.json`) against the single-family tripwire of 40 in
+  `config/trial_accounting.json`; its fixed asset-group risk variants closed KILL at ordinals 335
+  and 336; and equity-subset and leave-out trend identities already exist among the legacy
+  records (`var_mf/experiments.jsonl`: d95808ca458a, b64bf369f965, f583cd411d24), so "nothing
+  records one" overstated the gap. The admission contract's absolute_beta_max of 0.1 is a further
+  hazard for any directional trend identity, the review found no admission rule for replacing a
+  live sleeve, and a replacement would move the declared book composition and restart the
+  evidence epoch. No identity is reserved for it. The AlphaMax construction the diversification
+  study measures (k30_dn_63) differs from the live tick's profile-default construction (100 names
+  a side on a top-2000 universe); that drift was disclosed and pinned on 2026-07-18
+  (`scripts/alphamax_tick.sh`, `docs/research/ALPHAMAX_EQUITY_MOMENTUM_LINEAGE.md`) and is repeated
+  here only because the 17:25Z entry quoted the study's pair.
