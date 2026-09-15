@@ -343,3 +343,23 @@ def test_the_evidence_classes_policy_binds_the_sealed_trial_policy_and_names_the
     }
     selectable = classes["classes"]["selectable_return_identity"]
     assert selectable["counts_in_union_dsr"] is True and selectable["may_become_winner"] is True
+
+
+def test_the_batch_matrix_receipt_never_sits_at_the_registry_top_level() -> None:
+    """The validator reads every top-level JSON in the registry directory as a batch registry
+    and fails closed on any other schema. The runner once wrote its PBO matrix receipt there and
+    the second batch attempt died at its first ledger record (2026-09-15 02:32Z), with both
+    sections computed and nothing recorded. The receipt lives inside the batch's directory."""
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location(
+        "narrative_runner_for_registry_test",
+        REPO / "scripts" / "run_earnings_narrative_change_v1.py",
+    )
+    assert spec is not None and spec.loader is not None
+    runner = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(runner)
+    registry_dir = REPO / IDENTITY_BATCH_DIR
+    assert runner.BATCH_MATRIX_PATH.parent != registry_dir
+    assert runner.BATCH_MATRIX_PATH.parent.parent == registry_dir
+    assert runner.BATCH_MATRIX_PATH.parent.name == runner.BATCH_ID

@@ -1012,7 +1012,7 @@ def seal() -> dict[str, Any]:
         REPO / "scripts" / "analyze_current_book_drawdown.py", "narrative_seal_drawdown_study"
     )
     contract = load_admission_contract(CONTRACT)
-    matrix_path = runner.BATCH_MATRIX_DIR / f"{runner.BATCH_ID}_matrix_receipt.json"
+    matrix_path = runner.BATCH_MATRIX_PATH
     matrix = json.loads(matrix_path.read_text(encoding="utf-8"))
     if matrix.get("content_hash") != runner._content_hash(matrix):
         raise SystemExit("batch matrix receipt content hash mismatch")
