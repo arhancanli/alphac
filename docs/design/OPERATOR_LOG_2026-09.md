@@ -728,3 +728,13 @@ published number or spend a research identity are marked DECISION and name who m
   deployed hash by the same rule as a required file (the current desired hash, or a recorded
   revision that postdates the receipt). Test fixture receipts now cover the companions; a new test
   refuses a receipt that omits a companion or carries a path the contract does not name.
+- 2026-09-15 04:00Z. FOURTH EXPORT DEFECT (PR #49). With #46 in the publisher tree the 23:25Z
+  tick's export got past the prospective record and failed one step later: "forward evidence
+  maturity does not describe the current programme". Since the activation the maturity
+  evaluator's `record` describes the CURRENT evidence epoch (first mark 2026-09-15, zero marks so
+  far) and carries the whole published curve in `record.whole_record`; the export compared the
+  epoch record to the whole curve. It now compares the whole-record block, and checks that the
+  epoch record starts no earlier than the declared change and holds no more points than the
+  whole. Verified against the publisher tree's regenerated maturity artifact before the push.
+  The 23:25Z tick also ran under the pre-re-pin fingerprint, so its deploy was gated as designed;
+  the publisher tree took #48 at 23:57Z and the gate now passes (553aff51).
