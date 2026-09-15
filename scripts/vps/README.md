@@ -29,6 +29,8 @@ Frankfurt answers HTTP 200. That is the only reason this host exists.
 | `collect_positioning.py` | the positioning/order-flow archive (see below) |
 | `collect.sh` | hourly :40 — wraps the collector with a lock and a bound |
 | `stale_lock.py` | releases the ingest PID lock **only** when its holder is provably gone |
+| `collect_liquidations.py` | the forward forced-liquidation archive (Binance, Bybit and OKX streams): no claim, no test; writes `data/lake_liquidations/<venue>/<event date>/` and a per-venue session log that marks every gap |
+| `af-liquidations.service` | keeps that collector running (`Restart=always`, `MemoryMax=512M`), independent of `af-trade` |
 
 **This host holds no secrets.** The crypto sleeve is paper-only on public market data: there is no
 Binance credential file anywhere in the system, and `CCXTBroker` refuses to act unless *both*
