@@ -233,13 +233,24 @@ def validate_receipt(receipt: dict[str, Any], contract: dict[str, Any], deploy: 
     after = receipt.get("after", {})
     after_files = after.get("files") if isinstance(after.get("files"), dict) else {}
     required_paths = {item["path"] for item in contract["required_files"]}
-    if set(after_files) != required_paths:
+    # The deployment tool snapshots every path the contract carries: the three required files
+    # and every companion (the 2026-09-15 rollout shipped eight companions, among them the
+    # activated drawdown contract and base.yaml). The receipt must cover exactly that set: a
+    # path the contract does not name is a file the rollout had no authority to touch, and a
+    # missing companion is a file whose deployed state went unrecorded.
+    companion_items = [
+        dict(item)
+        for item in (contract.get("companion_files") or [])
+        if isinstance(item, dict) and isinstance(item.get("path"), str)
+    ]
+    contract_paths = required_paths | {item["path"] for item in companion_items}
+    if set(after_files) != contract_paths:
         raise VerificationError(
             "deployment receipt after-snapshot does not cover exactly the contract's "
-            "required_files paths"
+            "required_files and companion_files paths"
         )
     file_revisions = _desired_revisions(contract)
-    for item in contract["required_files"]:
+    for item in [*contract["required_files"], *companion_items]:
         _check_required_file(
             item["path"],
             after_files.get(item["path"]),

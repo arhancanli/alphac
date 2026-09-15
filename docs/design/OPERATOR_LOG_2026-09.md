@@ -719,6 +719,15 @@ published number or spend a research identity are marked DECISION and name who m
   declared fingerprint and surface, the forward-evidence contract, the current-book study pin
   and the pre-registration draft now carry 553aff51, and entry 11 says why. The web deploy was
   skipped by the gate for that one tick, as designed; nothing traded differently.
+- 2026-09-15 02:45Z. ROLLOUT VERIFIER (PR #47). The tick's rollout verifier refused the Frankfurt
+  receipt every run: "deployment receipt after-snapshot does not cover exactly the contract's
+  required_files paths". The deployment tool snapshots every path the contract carries (the three
+  required files and, since this rollout, eight companions), while the verifier demanded a snapshot
+  of exactly the three. A correct receipt therefore failed closed. The verifier now requires the
+  after-snapshot to cover exactly required plus companion paths, and checks every companion's
+  deployed hash by the same rule as a required file (the current desired hash, or a recorded
+  revision that postdates the receipt). Test fixture receipts now cover the companions; a new test
+  refuses a receipt that omits a companion or carries a path the contract does not name.
 - 2026-09-15 04:00Z. FOURTH EXPORT DEFECT (PR #49). With #46 in the publisher tree the 23:25Z
   tick's export got past the prospective record and failed one step later: "forward evidence
   maturity does not describe the current programme". Since the activation the maturity
