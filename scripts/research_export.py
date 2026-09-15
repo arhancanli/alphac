@@ -2412,10 +2412,24 @@ def build_program_status(state: dict[str, Any]) -> dict[str, Any]:
     ):
         if evidence_sources[key]["sha256"] != hashlib.sha256(path.read_bytes()).hexdigest():
             raise ValueError(f"forward evidence maturity source drift: {key}")
+    # Since the 2026-09-15 activation the evaluator's `record` describes the CURRENT evidence
+    # epoch (its first mark is the epoch's start, its points only the marks since), and the
+    # whole published curve lives in `record.whole_record`. Comparing the epoch record to the
+    # whole curve, as this did until then, refused every publish after the epoch restarted.
+    record = forward_evidence["record"]
+    whole = record.get("whole_record") or record
+    epoch = record.get("evidence_epoch")
     if (
-        forward_evidence["record"]["first_mark"] != str(first["date"])
-        or forward_evidence["record"]["last_mark"] != str(last["date"])
-        or forward_evidence["record"]["curve_points"] != len(curve)
+        whole["first_mark"] != str(first["date"])
+        or whole["last_mark"] != str(last["date"])
+        or whole["curve_points"] != len(curve)
+        or (
+            epoch is not None
+            and (
+                record["first_mark"] < str(epoch["starts_on"])
+                or record["curve_points"] > whole["curve_points"]
+            )
+        )
         or forward_evidence["sharpe_evidence"]["target"]
         != objective["honest_forward_sharpe_target"]
         or forward_evidence["drawdown_evidence"]["expected_max_drawdown_target"]
