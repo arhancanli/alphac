@@ -316,6 +316,20 @@ MUTATIONS: tuple[Mutation, ...] = (
         ],
     ),
     Mutation(
+        "test_hooks_are_tracked_and_installed.py",
+        "let the pre-commit hook regenerate the system map in a tree that cannot render it",
+        REPO / "scripts" / "hooks" / "pre-commit",
+        _replace(
+            '  if [ -d "$REPO/artifacts" ] && [ -d "$REPO/data" ]; then\n',
+            "  if true; then\n",
+        ),
+        notes=[
+            "This guard became discoverable on 2026-09-16, when the docstring explaining its own "
+            "rule gained the marker 'artifacts/'. The honest answer to a newly discovered guard is "
+            "a mutation, not a reworded docstring that slips past the discovery rule.",
+        ],
+    ),
+    Mutation(
         "test_research_export_freshness.py",
         "let a published contract go stale against its source",
         REPO / "artifacts" / "engineering" / "lint_debt_contract.json",
