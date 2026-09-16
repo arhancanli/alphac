@@ -39,14 +39,26 @@ if git diff --cached --name-only | grep -qE '\.py$|\.sh$|^pyproject\.toml$|^conf
       echo "pre-commit: lint-debt contract regenerated for this commit's source changes"
     fi
   else
-    echo "pre-commit: WARNING — could not regenerate the lint-debt contract; its guard will fail"
+    if [ -d "$REPO/artifacts" ]; then
+      echo "pre-commit: WARNING — could not regenerate the lint-debt contract; its guard will fail"
+    else
+      echo "pre-commit: lint-debt contract NOT regenerated — this tree has no artifacts/ (a scratch worktree), where it cannot be written"
+    fi
   fi
 
   # The system map is generated from the same files: a new script, a renamed pipeline step or a
   # changed contract all move it. Regenerating here is what stops its currency guard becoming the
   # kind of failure a reader learns to ignore.
   MAP="docs/design/SYSTEM_MAP.md"
-  if "$PYTHON" "$REPO/scripts/build_system_map.py" >/dev/null 2>&1; then
+  # ONLY where the machine is. The map counts the engineering contracts under artifacts/ and the
+  # lake directories under data/, and both are gitignored: a scratch worktree renders 3 and 0 where
+  # the publisher tree renders 31 and 23. Regenerating there stages a map that REVERTS the
+  # publisher's and cannot satisfy the guard on the one machine the guard is written for. That
+  # happened on 2026-09-16: one commit put the right map in main and the next worktree commit
+  # silently undid it.
+  if [ ! -d "$REPO/artifacts" ] || [ ! -d "$REPO/data" ]; then
+    echo "pre-commit: system map NOT regenerated — this tree has no artifacts/ or data/, so the render would be wrong here"
+  elif "$PYTHON" "$REPO/scripts/build_system_map.py" >/dev/null 2>&1; then
     if ! git -C "$REPO" diff --quiet -- "$MAP" 2>/dev/null; then
       git -C "$REPO" add "$MAP"
       echo "pre-commit: system map regenerated and staged"
