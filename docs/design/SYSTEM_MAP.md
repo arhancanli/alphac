@@ -8,9 +8,9 @@ line of its own docstring, each pipeline's steps are the scripts it actually inv
 contract's boundary is the boundary it states about itself. A script with no docstring appears as
 having none.
 
-At a glance: **364 Python scripts**, **17 shell entry points**,
+At a glance: **368 Python scripts**, **17 shell entry points**,
 **34 configuration contracts**, **3 engineering artifacts**,
-**436 unit test files**, **0 data directories**, **9 scheduled jobs**.
+**438 unit test files**, **0 data directories**, **9 scheduled jobs**.
 
 
 ## What runs on a timer
@@ -344,7 +344,7 @@ and is worth more than a hand-made taxonomy that would drift.
 | `audit_vate_2020_dividend_vendor_resolution.py` | Resolve the unsupported VATE/HCHC 2020 dividend row without opening returns. |
 | `audit_wave1_data_rights.py` | Audit Wave 1 publication bundles against the conservative data-rights policy. |
 
-### `build_*` (41)
+### `build_*` (42)
 
 | script | first line of its docstring |
 |---|---|
@@ -387,6 +387,7 @@ and is worth more than a hand-made taxonomy that would drift.
 | `build_sleeve_publication_bundles.py` | Build deterministic, fail-closed preparation bundles for every sleeve lineage. |
 | `build_stanford_evidence_map.py` | Build a compact, source-bound Stanford CS portfolio evidence map. |
 | `build_system_map.py` | Render docs/design/SYSTEM_MAP.md from the repository, not from memory. |
+| `build_tender_offer_blind_label_packet.py` | Build a deterministic, prediction-blind reviewer packet for the frozen SC 14D9 audit. |
 | `build_trial_accounting_v7.py` | Build the prospective staged trial-budget proposal authorized by the v7 power audit. |
 | `build_trial_packet_manifest.py` | Inventory one permanent evidence packet for every union hypothesis identity. |
 
@@ -512,7 +513,7 @@ and is worth more than a hand-made taxonomy that would drift.
 | `verify_sleeve_publication_replays.py` | Replay audit-only sleeve evidence builders and prove no result or trial ledger changed. |
 | `verify_transparency.py` | Verify the public track-record chain, signatures and disclosed payloads. |
 
-### everything else (132)
+### everything else (135)
 
 | script | first line of its docstring |
 |---|---|
@@ -562,6 +563,7 @@ and is worth more than a hand-made taxonomy that would drift.
 | `import_active_ownership_blind_labels.py` | Validate and import a completed independent Item 4 blind review. |
 | `import_external_experiment_ledgers.py` | Bring experiment ledgers recorded in another checkout into the canonical union, with a receipt. |
 | `import_external_identity_packets.py` | Bring the 118 externally measured identities' packets home, each with a decided closure. |
+| `import_tender_offer_blind_labels.py` | Validate and import a completed independent SC 14D9 Item 4 blind review. |
 | `live_cycle.py` | Genuine broker-executed live paper cycle — turns a sleeve from SIMULATION into REAL Alpaca fills. |
 | `macro_refresh_transport.py` | Bounded retry for read-only public-source downloads; permanent failures fail fast. |
 | `maker_shadow.py` | MAKER SHADOW VALIDATION — measure, forward and honestly, what post-only execution |
@@ -575,6 +577,7 @@ and is worth more than a hand-made taxonomy that would drift.
 | `orthogonality_prior.py` | Rank the remaining families by expected orthogonality to this book — as a PRIOR, not a claim. |
 | `package_active_ownership_blind_review.py` | Build a deterministic, prediction-blind archive for an external reviewer. |
 | `package_all_sleeve_review_archives.py` | Build deterministic raw-row-free review archives for all sleeve papers. |
+| `package_tender_offer_blind_review.py` | Build a deterministic, prediction-blind archive of the SC 14D9 packet for a reviewer. |
 | `package_wave1_release_candidates.py` | Create deterministic, raw-row-free Wave 1 archive candidates and verify extraction. |
 | `paper_trading_state.py` | Generate the paper-trading state JSON the Meridian web app + landing render. |
 | `parse_repurchase_item703_documents.py` | Parse frozen Item 703 documents with a parser hash sealed before evaluation. |
@@ -597,6 +600,7 @@ and is worth more than a hand-made taxonomy that would drift.
 | `research_export.py` | Research data layer: emit research.json — the FULL honest gauntlet — from REAL artifacts. |
 | `restate_legacy_dsr.py` | Restate reproducible legacy DSR outputs against the current selection union. |
 | `reviewer_verify_active_ownership.py` | Dependency-free verifier shipped inside the Active Ownership blind-review packet. |
+| `reviewer_verify_tender_offer.py` | Verify a blind SC 14D9 review packet, and a completed return, with the standard library only. |
 | `seal_active_ownership_confirmatory_design.py` | Seal the pre-outcome Active Ownership confirmatory-corpus design. |
 | `seal_active_ownership_confirmatory_inputs.py` | Seal the compact source receipt used by the Active Ownership confirmation design. |
 | `seal_alphamax_upstream_replay_inputs.py` | Seal a public hash manifest for AlphaMax's private reacquired replay inputs. |
