@@ -39,6 +39,22 @@ def test_the_hook_regenerates_the_artifact_it_exists_for() -> None:
     assert r"\.py$" in body
 
 
+def test_the_map_is_regenerated_only_where_its_inputs_exist() -> None:
+    """A worktree renders a DIFFERENT map, and staging it reverts the publisher tree's.
+
+    The map counts the engineering contracts under artifacts/ and the lake directories under
+    data/, both gitignored. On 2026-09-16 a commit put the publisher-rendered map in main and the
+    very next commit from a scratch worktree, which has neither directory, silently replaced it
+    with one claiming 3 contracts and 0 lakes — reverting the fix and re-failing the guard on the
+    only machine that can satisfy it.
+    """
+    body = HOOK.read_text()
+    assert '[ -d "$REPO/artifacts" ] && [ -d "$REPO/data" ]' in body
+    # Decided before the lint-debt exporter runs, because that exporter creates artifacts/ itself.
+    assert body.index("MACHINE_INPUTS_PRESENT=no") < body.index("export_lint_debt_contract.py")
+    assert "system map NOT regenerated" in body
+
+
 def test_the_installer_points_git_at_the_tracked_hooks() -> None:
     assert "core.hooksPath" in INSTALLER.read_text()
 
