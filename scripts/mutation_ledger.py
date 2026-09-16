@@ -285,6 +285,37 @@ MUTATIONS: tuple[Mutation, ...] = (
         ],
     ),
     Mutation(
+        "test_forward_identity_packet_index.py",
+        "let one identity be claimed by both the legacy epoch and the forward register",
+        REPO / "scripts" / "build_forward_identity_packet_index.py",
+        _replace(
+            "        if key in legacy_keys:\n",
+            "        if False:\n",
+        ),
+        notes=[
+            "Registered 2026-09-16 after test_mutation_coverage reported this guard and the "
+            "importer below as never proven able to fail. Both are pure tests over synthetic "
+            "trees, so each mutation targets the script the test execs rather than a published "
+            "artifact; the discovery rule selects them because their fixtures name artifact "
+            "paths as strings.",
+            "Two epochs claiming one identity is how a retired key silently re-enters selection N.",
+        ],
+    ),
+    Mutation(
+        "test_import_external_identity_packets.py",
+        "accept external evidence whose hash disagrees with the copy already in this tree",
+        REPO / "scripts" / "import_external_identity_packets.py",
+        _replace(
+            "            if claimed and _sha256(here) != claimed:\n",
+            "            if False:\n",
+        ),
+        notes=[
+            "The import brings identities decided in a second checkout into this one. Evidence "
+            "that differs between the trees is exactly the case where an imported closure would "
+            "describe a measurement this repository does not hold.",
+        ],
+    ),
+    Mutation(
         "test_research_export_freshness.py",
         "let a published contract go stale against its source",
         REPO / "artifacts" / "engineering" / "lint_debt_contract.json",
@@ -723,10 +754,10 @@ MUTATIONS: tuple[Mutation, ...] = (
         "accept a template that says IN_FORCE without a promotion receipt",
         REPO / "scripts" / "audit_forward_full_evidence_reservation_v2_template.py",
         _replace(
-            '        if not receipt_path.is_file():\n'
+            "        if not receipt_path.is_file():\n"
             '            raise TemplateAuditError("template says IN_FORCE but no promotion '
             'receipt exists")',
-            '        if False and not receipt_path.is_file():\n'
+            "        if False and not receipt_path.is_file():\n"
             '            raise TemplateAuditError("template says IN_FORCE but no promotion '
             'receipt exists")',
         ),
