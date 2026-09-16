@@ -1137,3 +1137,42 @@ published number or spend a research identity are marked DECISION and name who m
   production deploy, so it needs the owner:
   `git -C ~/canlicapital-website-20260908 merge --ff-only site/redesign-forward-epoch-20260915`.
   Until then the hourly deploy keeps failing on the landing project; the app project is unaffected.
+- 2026-09-16 00:44Z. THE 56 SCRIPTS THIS WORKSTATION NEVER TRACKED ARE NOW IN THE REPOSITORY (#60).
+  A read-only classification of every untracked Python file under `scripts/` found no scratch at
+  all. Each one is named, with a sha256, inside a persisted trial packet or reservation: the
+  `close_*` scripts append their own path to the evidence list they write, so a packet such as
+  `artifacts/research/trial_packets/44da7a6140622ff6.json` binds both its closer and its auditor by
+  name. The repository already demands exactly that of published evidence —
+  `scripts/verify_publication_clean_checkout.py` refuses an "untracked or missing code binding" and
+  `src/alphaforge/validation/trial_reservation.py` refuses "reserved evidence is missing" — so the
+  provenance was absent from the repository while the evidence claimed it. Nothing had failed only
+  because the packets are themselves untracked. What the commit does not claim: these are earlier
+  sessions' scripts, committed for provenance, not reviewed line by line and not production code.
+  They carry 494 Ruff violations, which land in the lint-debt contract's `historical_scripts` scope
+  where script debt is confessed rather than hidden; the governed Ruff scope (`src/alphaforge`,
+  `tests`) and mypy's package scope are unchanged and still clean. At least seven modules these
+  scripts import or hash-bind are gone from disk and untracked, `combined_2022_alignment.py`,
+  `alphamax_replay_support_v2.py`, `alphamax_covariance_engine.py`,
+  `run_crypto_continuous_account.py` and `funded_inception_runner.py` among them, so several of the
+  committed scripts cannot run today. That gap is recorded rather than repaired: a script that
+  imports a deleted module is still better provenance than no script, because the packet binding it
+  can now be resolved to the code that wrote it. All 56 were scanned before committing: 333 KB, no
+  credentials, no absolute home paths.
+- 2026-09-16 01:05Z. A CORRECTION: THE MAP WAS BEING RENDERED WHERE THE MACHINE IS NOT (#61).
+  The entry above was committed expecting it to clear `tests/unit/test_system_map_is_current.py`,
+  and after the publisher tree pulled it, with 430 scripts tracked and none untracked, the guard
+  still failed. The untracked scripts were one cause, not the cause. The map also counts the
+  engineering contracts under `artifacts/` and the lake directories under `data/`, and both trees
+  are gitignored, so they exist on this workstation and in no clean checkout. Every recent
+  regeneration, including the two in this session, happened inside a scratch git worktree that has
+  neither, so the committed map claimed 3 engineering artifacts and 0 data directories while the
+  publisher tree renders 31 and 23. The guard could not pass on the one machine it was written for,
+  whatever was committed. The test says so in its own words: it is marked `workspace_evidence`
+  deliberately, because "the map includes the launchd agents installed on THIS machine", and "the
+  guard belongs where the machine is". `docs/system-map-rendered-on-the-publisher-20260916`, open
+  as #61, is the map as the publisher tree renders it; regenerated there, all four system-map tests
+  passed, and the tree was restored to the committed copy afterwards so that it can still pull.
+  This removes one of the two reasons the suite is red, not both. The persisted all-sleeve rights
+  audit is still a night stale and clears at the next nightly publish chain. Until the suite is
+  green the health check will keep refusing its own repair, so the stale landing still cannot heal
+  itself even once the site fix is live.
