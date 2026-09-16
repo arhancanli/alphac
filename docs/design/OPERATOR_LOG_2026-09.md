@@ -1176,3 +1176,53 @@ published number or spend a research identity are marked DECISION and name who m
   audit is still a night stale and clears at the next nightly publish chain. Until the suite is
   green the health check will keep refusing its own repair, so the stale landing still cannot heal
   itself even once the site fix is live.
+- 2026-09-16 05:40Z. THREE GUARDS THAT COULD NOT FAIL, AND ONE I BROKE CLOSING THEM. The full local
+  suite, run deliberately rather than waited for, reported eighteen failures across twelve modules
+  and not the two this session had predicted. Every one of those modules is registered in the
+  clean-checkout policy, so CI was green throughout and could not have found any of it. One failure
+  was actionable immediately: `test_mutation_coverage` named two guards that had never been proven
+  able to fail, `test_forward_identity_packet_index.py` and `test_import_external_identity_packets.py`,
+  both from earlier work. Both are pure tests over synthetic trees in a temporary directory; the
+  discovery rule selects them because it matches the marker `artifacts/` anywhere in a test's source
+  and their fixtures name such paths as strings. Narrowing that rule would risk the precise failure
+  this ledger exists inside, so #63 registers a mutation against the script each test execs instead,
+  which is the ledger's own idiom: twenty of its fifty-four targets are source files. The forward
+  index stops refusing an identity present in both epochs, and the import stops refusing evidence
+  whose hash disagrees with the copy already here. Both reported CAUGHT and both targets were
+  restored byte-for-byte.
+  #64 then fixed the cause of the map problem rather than its symptom: the hook regenerates the map
+  whenever a commit stages Python, which is right on the publisher tree and wrong in a worktree, so
+  it now skips and says so when `artifacts/` or `data/` is missing. The condition is decided once,
+  at the top of the block, because the lint-debt exporter CREATES `artifacts/` as a side effect and
+  a check made at the point of use would see a directory the tree never had.
+  #64 also reopened the gap it had just helped close. The docstring explaining the new rule contains
+  the words "under artifacts/", which is the discovery marker, so the hook's own test became a guard
+  over a published claim with no mutation registered. #65 closes it with a real mutation — flipping
+  the guard to unconditional, which deletes the string the test asserts and describes a genuine
+  defect — rather than by rewording the docstring to slip past the rule. Making a gate pass by
+  keeping a keyword out of a comment is the evasion the ledger exists to prevent.
+- 2026-09-16 13:31Z. THE SITE IS LIVE AGAIN, TWENTY-ONE HOURS STALE. The owner authorized the
+  fast-forward that had been refused as a production deploy. The live presentation worktree moved
+  8c53cd5a to 894ec07d, `design/glassbox-website-20260908` was pushed, and canlicapital PR #11
+  merged at 13:12:08Z. Before any of it, the site was rebuilt against the CURRENT exports rather
+  than last night's: the register now carries three governed rows, 121 closed identities and none
+  unclosed, and the build produced 121 forward-epoch pages with `npm run verify` clean and every
+  numeral traced. The 13:27:55Z hourly deploy reported `hourly deploy OK` at 13:31:43Z, the first
+  landing success after fourteen consecutive failures since 21:30Z yesterday, and IndexNow accepted
+  263 URLs. Checked in public, not inferred: the homepage `last-modified` is 13:30:05Z, having been
+  frozen at 2026-09-15T16:28:52Z, and `/tools/trial-accounting` renders selection N 349 with "2
+  closed by a governed batch closure" beside "118 closed by a development closure".
+  Tonight's two new health failures are already resolved in fact. Both hosts now report the same
+  `generated_at`, 2026-09-16T13:26:25.996461+00:00, and the glass-box artifacts sampled across the
+  two hosts agree by content hash, so `C1-hosts-match` and `C1b-glassbox-match` clear at 23:32Z
+  without anyone doing anything.
+  One operational trap, recorded because it cost forty-five minutes of watching a run that had
+  already succeeded: the deploy log's success marker is `=== hourly deploy OK <timestamp> ===`. A
+  watcher grepping for "done" or "INCOMPLETE" sees every failure and no success.
+  What is still red is unchanged by any of this. The persisted rights audit clears at tonight's
+  publish chain. `test_forward_drawdown_evidence` expects no live equivalence and now reads the
+  drawdown brake's own record saying it activated on 2026-09-15; `test_crypto_carry_portable_v1_*`
+  reports a frozen run binding drifted on `base_settings`; and the crypto attribution preflight
+  observation is bound to a superseded contract hash and needs its read-only SSH run. Those are
+  decisions and a remote check, not a publish cycle, so the health suite's self-heal stays disabled
+  until they are made.
