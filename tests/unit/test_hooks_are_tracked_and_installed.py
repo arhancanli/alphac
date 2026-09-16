@@ -49,7 +49,9 @@ def test_the_map_is_regenerated_only_where_its_inputs_exist() -> None:
     only machine that can satisfy it.
     """
     body = HOOK.read_text()
-    assert '[ ! -d "$REPO/artifacts" ] || [ ! -d "$REPO/data" ]' in body
+    assert '[ -d "$REPO/artifacts" ] && [ -d "$REPO/data" ]' in body
+    # Decided before the lint-debt exporter runs, because that exporter creates artifacts/ itself.
+    assert body.index("MACHINE_INPUTS_PRESENT=no") < body.index("export_lint_debt_contract.py")
     assert "system map NOT regenerated" in body
 
 

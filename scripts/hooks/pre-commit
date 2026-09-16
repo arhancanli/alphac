@@ -30,6 +30,13 @@ CONTRACT="artifacts/engineering/lint_debt_contract.json"
 # Only when a source file the contract covers is part of this commit. A docs-only commit should
 # not pay for a ruff pass over the repository.
 if git diff --cached --name-only | grep -qE '\.py$|\.sh$|^pyproject\.toml$|^config/.*\.json$'; then
+  # Decided ONCE, before anything runs. The lint-debt exporter CREATES artifacts/ as a side
+  # effect, so the same test made further down would see a directory this tree did not have and
+  # would regenerate the map in a worktree after all.
+  MACHINE_INPUTS_PRESENT=no
+  if [ -d "$REPO/artifacts" ] && [ -d "$REPO/data" ]; then
+    MACHINE_INPUTS_PRESENT=yes
+  fi
   before=$( [ -f "$REPO/$CONTRACT" ] && shasum -a 256 "$REPO/$CONTRACT" | cut -d' ' -f1 || echo none )
   if "$PYTHON" "$REPO/scripts/export_lint_debt_contract.py" >/dev/null 2>&1; then
     after=$(shasum -a 256 "$REPO/$CONTRACT" | cut -d' ' -f1)
@@ -39,7 +46,7 @@ if git diff --cached --name-only | grep -qE '\.py$|\.sh$|^pyproject\.toml$|^conf
       echo "pre-commit: lint-debt contract regenerated for this commit's source changes"
     fi
   else
-    if [ -d "$REPO/artifacts" ]; then
+    if [ "$MACHINE_INPUTS_PRESENT" = yes ]; then
       echo "pre-commit: WARNING — could not regenerate the lint-debt contract; its guard will fail"
     else
       echo "pre-commit: lint-debt contract NOT regenerated — this tree has no artifacts/ (a scratch worktree), where it cannot be written"
@@ -56,7 +63,7 @@ if git diff --cached --name-only | grep -qE '\.py$|\.sh$|^pyproject\.toml$|^conf
   # publisher's and cannot satisfy the guard on the one machine the guard is written for. That
   # happened on 2026-09-16: one commit put the right map in main and the next worktree commit
   # silently undid it.
-  if [ ! -d "$REPO/artifacts" ] || [ ! -d "$REPO/data" ]; then
+  if [ "$MACHINE_INPUTS_PRESENT" != yes ]; then
     echo "pre-commit: system map NOT regenerated — this tree has no artifacts/ or data/, so the render would be wrong here"
   elif "$PYTHON" "$REPO/scripts/build_system_map.py" >/dev/null 2>&1; then
     if ! git -C "$REPO" diff --quiet -- "$MAP" 2>/dev/null; then
