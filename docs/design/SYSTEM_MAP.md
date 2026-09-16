@@ -8,9 +8,9 @@ line of its own docstring, each pipeline's steps are the scripts it actually inv
 contract's boundary is the boundary it states about itself. A script with no docstring appears as
 having none.
 
-At a glance: **364 Python scripts**, **17 shell entry points**,
+At a glance: **424 Python scripts**, **17 shell entry points**,
 **34 configuration contracts**, **3 engineering artifacts**,
-**436 unit test files**, **0 data directories**, **9 scheduled jobs**.
+**438 unit test files**, **0 data directories**, **9 scheduled jobs**.
 
 
 ## What runs on a timer
@@ -260,7 +260,7 @@ and is worth more than a hand-made taxonomy that would drift.
 | `analyze_target_2p5.py` | ANALYSIS — what would a book Sharpe of 2.5 actually require, and is it reachable? |
 | `analyze_trial_budget_cost.py` | Price a prospective trial budget before it is authorized. |
 
-### `audit_*` (79)
+### `audit_*` (103)
 
 | script | first line of its docstring |
 |---|---|
@@ -271,6 +271,13 @@ and is worth more than a hand-made taxonomy that would drift.
 | `audit_active_ownership_13d_schema_v2.py` | Run the schema-aware v2 Schedule 13D metadata audit without documents or returns. |
 | `audit_active_ownership_human_gate.py` | Prospectively audit the frozen Active Ownership human-label gate without returns. |
 | `audit_all_sleeve_data_rights.py` | Audit all sleeve bundles for raw-row exclusion and conservative source mapping. |
+| `audit_alphamax_covariance_basis.py` | Audit saved equity sessions and independently reconstruct each ledger mark. |
+| `audit_alphamax_extended_reference.py` | Audit saved equity sessions and independently reconstruct each ledger mark. |
+| `audit_alphamax_full2022_v2.py` | Audit saved equity sessions and independently reconstruct each ledger mark. |
+| `audit_alphamax_path_accounting.py` | Audit saved equity sessions and independently reconstruct each ledger mark. |
+| `audit_alphamax_session_cooldown.py` | Audit saved equity sessions and independently reconstruct each ledger mark. |
+| `audit_alphamax_share_ratio.py` | Audit saved equity sessions and independently reconstruct each ledger mark. |
+| `audit_alphamax_total_return_accounting.py` | Audit saved equity sessions and independently reconstruct each ledger mark. |
 | `audit_alphatrend_family.py` | Build deterministic evidence for every managed-futures trend hypothesis. |
 | `audit_bond_etf_nav_dislocation_feasibility.py` | Audit bond-ETF NAV-dislocation sources without opening market or return data. |
 | `audit_bond_etf_nav_reachability.py` | Classify whether engineering can close the locked bond-ETF NAV source gates. |
@@ -282,9 +289,26 @@ and is worth more than a hand-made taxonomy that would drift.
 | `audit_crypto_carry_first_rebalance_drift.py` | Exactly reproduce the crypto-carry replay's first-rebalance sizing drift. |
 | `audit_crypto_carry_full_path_drift.py` | Delimit the crypto-carry replay drift without pretending it is additive. |
 | `audit_crypto_carry_portable_prerun_readiness.py` | Fail-closed, zero-return readiness audit for crypto_carry_portable_v1. |
+| `audit_crypto_extended_accounting.py` | Independently reconcile saved crypto control; computes no new strategy paths. |
+| `audit_crypto_extended_boundaries.py` | Check saved exposures against retained source bounds, without imputing funding. |
+| `audit_crypto_extended_horizon.py` | Verify complete calendar-year2022 returns from saved corrected replay observations. |
+| `audit_crypto_full2022_accounting.py` | Independently reconcile saved crypto control; computes no new strategy paths. |
+| `audit_crypto_full2022_horizon.py` | Verify complete calendar-year2022 returns from saved corrected replay observations. |
+| `audit_crypto_funded_quantities_v4.py` | Replay quantities/average costs from fills independently of saved PnL fields. |
 | `audit_crypto_lab_carry_crash.py` | Seal the LABUSDT carry-crash incident from immutable local execution evidence. |
 | `audit_crypto_momentum_family.py` | Build the deterministic evidence packet for every crypto-momentum hypothesis. |
 | `audit_crypto_multifactor_family.py` | Bind all seven crypto multi-factor engine identities to the grand-matrix evidence. |
+| `audit_crypto_observed_accounting.py` | Independently reconcile saved crypto control; computes no new strategy paths. |
+| `audit_crypto_observed_boundaries.py` | Check saved exposures against retained source bounds, without imputing funding. |
+| `audit_crypto_observed_horizon.py` | Verify complete calendar-year2022 returns from saved corrected replay observations. |
+| `audit_crypto_retention_accounting.py` | Independently reconcile saved crypto control; computes no new strategy paths. |
+| `audit_crypto_retention_boundaries.py` | Check saved exposures against retained source bounds, without imputing funding. |
+| `audit_crypto_retention_horizon.py` | Verify complete calendar-year2022 returns from saved corrected replay observations. |
+| `audit_crypto_risk_rank_accounting.py` | Independently reconcile saved crypto control; computes no new strategy paths. |
+| `audit_crypto_risk_rank_boundaries.py` | Check saved exposures against retained source bounds, without imputing funding. |
+| `audit_crypto_risk_rank_horizon.py` | Verify complete calendar-year2022 returns from saved corrected replay observations. |
+| `audit_crypto_terminal_arm.py` | Independently reconcile saved crypto control; computes no new strategy paths. |
+| `audit_crypto_terminal_control.py` | Independently reconcile saved crypto control; computes no new strategy paths. |
 | `audit_crypto_vrp_family.py` | Build deterministic evidence for the single crypto VRP proxy hypothesis. |
 | `audit_customer_supplier_propagation_feasibility.py` | Audit public 10-K major-customer source feasibility without opening return data. |
 | `audit_data_lake_scale.py` | Measure every scale figure the site puts on a page, with a definition for each. |
@@ -344,7 +368,7 @@ and is worth more than a hand-made taxonomy that would drift.
 | `audit_vate_2020_dividend_vendor_resolution.py` | Resolve the unsupported VATE/HCHC 2020 dividend row without opening returns. |
 | `audit_wave1_data_rights.py` | Audit Wave 1 publication bundles against the conservative data-rights policy. |
 
-### `build_*` (41)
+### `build_*` (42)
 
 | script | first line of its docstring |
 |---|---|
@@ -387,6 +411,7 @@ and is worth more than a hand-made taxonomy that would drift.
 | `build_sleeve_publication_bundles.py` | Build deterministic, fail-closed preparation bundles for every sleeve lineage. |
 | `build_stanford_evidence_map.py` | Build a compact, source-bound Stanford CS portfolio evidence map. |
 | `build_system_map.py` | Render docs/design/SYSTEM_MAP.md from the repository, not from memory. |
+| `build_tender_offer_blind_label_packet.py` | Build a deterministic, prediction-blind reviewer packet for the frozen SC 14D9 audit. |
 | `build_trial_accounting_v7.py` | Build the prospective staged trial-budget proposal authorized by the v7 power audit. |
 | `build_trial_packet_manifest.py` | Inventory one permanent evidence packet for every union hypothesis identity. |
 
@@ -486,7 +511,7 @@ and is worth more than a hand-made taxonomy that would drift.
 | `export_prereg_parameters.py` | Publish the earnings-narrative-change pre-registration's parameters as data, not prose. |
 | `export_validation_api_vectors.py` | Parity vectors for the canlicapital validation API. |
 
-### `run_*` (9)
+### `run_*` (17)
 
 | script | first line of its docstring |
 |---|---|
@@ -496,6 +521,14 @@ and is worth more than a hand-made taxonomy that would drift.
 | `run_alphamax_upstream_clean_workspace.py` | Replay AlphaMax from sealed reacquired inputs in a pinned clean workspace. |
 | `run_alphatrend_upstream_clean_workspace.py` | Regenerate AlphaTrend from sealed inputs in a temporary pinned-source workspace. |
 | `run_alphavintage_full_decision_clean_workspace.py` | Execute and seal AlphaVintage's four-gate replay in a temporary clean workspace. |
+| `run_combined_2022_corrected_max.py` | Frozen four-arm source-day combined2022 diagnostic, not admission evidence. |
+| `run_combined_2022_diagnostic.py` | Frozen four-arm source-day combined2022 diagnostic, not admission evidence. |
+| `run_combined_2022_eligible_core.py` | Frozen four-arm source-day combined2022 diagnostic, not admission evidence. |
+| `run_combined_crypto_observed_carry.py` | Frozen four-arm source-day combined2022 diagnostic, not admission evidence. |
+| `run_combined_crypto_retention.py` | Frozen four-arm source-day combined2022 diagnostic, not admission evidence. |
+| `run_combined_crypto_risk_rank.py` | Frozen four-arm source-day combined2022 diagnostic, not admission evidence. |
+| `run_combined_extended_reference.py` | Frozen four-arm source-day combined2022 diagnostic, not admission evidence. |
+| `run_combined_session_cooldown.py` | Frozen four-arm source-day combined2022 diagnostic, not admission evidence. |
 | `run_crypto_carry_portable_v1.py` | Dry-run by default; execute one reserved crypto_carry_portable_v1 trial explicitly. |
 | `run_earnings_narrative_change_v1.py` | Earnings narrative change v1: the pre-registered return runner (calibration now, OOS gated). |
 | `run_prereg_investment_upstream_clean_workspace.py` | Replay historical ``prereg_investment`` from raw archives in a clean workspace. |
@@ -512,7 +545,7 @@ and is worth more than a hand-made taxonomy that would drift.
 | `verify_sleeve_publication_replays.py` | Replay audit-only sleeve evidence builders and prove no result or trial ledger changed. |
 | `verify_transparency.py` | Verify the public track-record chain, signatures and disclosed payloads. |
 
-### everything else (132)
+### everything else (159)
 
 | script | first line of its docstring |
 |---|---|
@@ -528,7 +561,31 @@ and is worth more than a hand-made taxonomy that would drift.
 | `capacity_commitment.py` | Public capacity commitment — a SIGNED governance pledge about how we treat capacity. |
 | `capacity_export.py` | Capacity & scalability export: emit the honest book capacity curve as JSON. |
 | `capture_eia930_vintages.py` | CAPTURE — append-only EIA-930 demand/forecast vintages with receipt timestamps. |
+| `close_alphamax_covariance_basis.py` | Benchmark retained session returns and close an AlphaMax evidence packet. |
+| `close_alphamax_extended_reference.py` | Benchmark retained session returns and close an AlphaMax evidence packet. |
+| `close_alphamax_failed_baseline_20260913.py` | Preserve the consumed failed AlphaMax trial without invented performance. |
+| `close_alphamax_full2022_v2.py` | Benchmark retained session returns and close an AlphaMax evidence packet. |
+| `close_alphamax_path_momentum.py` | Benchmark retained session returns and close an AlphaMax evidence packet. |
+| `close_alphamax_session_cooldown.py` | Benchmark retained session returns and close an AlphaMax evidence packet. |
+| `close_alphamax_share_ratio.py` | Benchmark retained session returns and close an AlphaMax evidence packet. |
+| `close_alphamax_total_return_momentum.py` | Benchmark retained session returns and close an AlphaMax evidence packet. |
+| `close_bil_cash_2022_trial.py` | Close measured diagnostic identity with explicit nonqualification limits. |
+| `close_bil_cash_trial.py` | Close measured diagnostic identity with explicit nonqualification limits. |
+| `close_bil_funded_trial.py` | Close measured diagnostic identity with explicit nonqualification limits. |
+| `close_combined_path_momentum.py` | Close the measured failed path-momentum combined identity without admission. |
+| `close_combined_total_return_momentum.py` | Close the measured failed dividend-aware momentum combined identity without admission. |
+| `close_crypto_extended_arm.py` | Validate saved full2022 terminal evidence and close its research packet. |
+| `close_crypto_extended_arm_v2.py` | Validate saved full2022 terminal evidence and close its research packet. |
+| `close_crypto_full2022_arm.py` | Validate saved full2022 terminal evidence and close its research packet. |
+| `close_crypto_observed_arm.py` | Validate saved full2022 terminal evidence and close its research packet. |
+| `close_crypto_retention_arm.py` | Validate saved full2022 terminal evidence and close its research packet. |
+| `close_crypto_risk_rank_arm.py` | Validate saved full2022 terminal evidence and close its research packet. |
+| `close_crypto_terminal_arm.py` | Close a reconciled diagnostic packet; never execute strategy returns. |
+| `close_crypto_terminal_arm_v2.py` | Close a reconciled diagnostic packet; never execute strategy returns. |
+| `close_earnings_failed_trial.py` | Close the failed normal identity with explicit limits; prohibit stress progression. |
+| `close_group_risk_identity.py` | Close accounted group-risk diagnostic identities without admission claims. |
 | `compare_crypto_carry_fresh_inputs.py` | Compare a fresh Binance archive acquisition with the frozen crypto-carry lake. |
+| `continuous_crypto_runner.py` | Research-only continuous crypto ledger with scheduled signal-frame changes. |
 | `cross_asset_book.py` | Reproducible cross-asset book report — the unified multi-sleeve book. |
 | `crypto_vrp_probe.py` | Crypto VRP (vol-risk-premium) probe — is selling crypto vol a real, decorrelated sleeve? |
 | `databento_build_continuous.py` | Build back-adjusted continuous futures series from the raw Databento contracts, into a lake. |
@@ -562,6 +619,7 @@ and is worth more than a hand-made taxonomy that would drift.
 | `import_active_ownership_blind_labels.py` | Validate and import a completed independent Item 4 blind review. |
 | `import_external_experiment_ledgers.py` | Bring experiment ledgers recorded in another checkout into the canonical union, with a receipt. |
 | `import_external_identity_packets.py` | Bring the 118 externally measured identities' packets home, each with a decided closure. |
+| `import_tender_offer_blind_labels.py` | Validate and import a completed independent SC 14D9 Item 4 blind review. |
 | `live_cycle.py` | Genuine broker-executed live paper cycle — turns a sleeve from SIMULATION into REAL Alpaca fills. |
 | `macro_refresh_transport.py` | Bounded retry for read-only public-source downloads; permanent failures fail fast. |
 | `maker_shadow.py` | MAKER SHADOW VALIDATION — measure, forward and honestly, what post-only execution |
@@ -575,6 +633,7 @@ and is worth more than a hand-made taxonomy that would drift.
 | `orthogonality_prior.py` | Rank the remaining families by expected orthogonality to this book — as a PRIOR, not a claim. |
 | `package_active_ownership_blind_review.py` | Build a deterministic, prediction-blind archive for an external reviewer. |
 | `package_all_sleeve_review_archives.py` | Build deterministic raw-row-free review archives for all sleeve papers. |
+| `package_tender_offer_blind_review.py` | Build a deterministic, prediction-blind archive of the SC 14D9 packet for a reviewer. |
 | `package_wave1_release_candidates.py` | Create deterministic, raw-row-free Wave 1 archive candidates and verify extraction. |
 | `paper_trading_state.py` | Generate the paper-trading state JSON the Meridian web app + landing render. |
 | `parse_repurchase_item703_documents.py` | Parse frozen Item 703 documents with a parser hash sealed before evaluation. |
@@ -597,6 +656,7 @@ and is worth more than a hand-made taxonomy that would drift.
 | `research_export.py` | Research data layer: emit research.json — the FULL honest gauntlet — from REAL artifacts. |
 | `restate_legacy_dsr.py` | Restate reproducible legacy DSR outputs against the current selection union. |
 | `reviewer_verify_active_ownership.py` | Dependency-free verifier shipped inside the Active Ownership blind-review packet. |
+| `reviewer_verify_tender_offer.py` | Verify a blind SC 14D9 review packet, and a completed return, with the standard library only. |
 | `seal_active_ownership_confirmatory_design.py` | Seal the pre-outcome Active Ownership confirmatory-corpus design. |
 | `seal_active_ownership_confirmatory_inputs.py` | Seal the compact source receipt used by the Active Ownership confirmation design. |
 | `seal_alphamax_upstream_replay_inputs.py` | Seal a public hash manifest for AlphaMax's private reacquired replay inputs. |
