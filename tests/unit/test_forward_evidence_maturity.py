@@ -265,8 +265,9 @@ def _alternating_returns(n: int, mean: float) -> list[float]:
     return [mean + (0.006 if i % 2 else -0.006) for i in range(n)]
 
 
-def test_short_record_does_not_publish_a_sharpe_estimate(evaluator) -> None:
-    report = evaluator.evaluate(**_inputs(evaluator, _alternating_returns(14, -0.0005)))
+@pytest.mark.parametrize("mean", [-0.0005, 0.0, 0.001])
+def test_short_record_does_not_publish_a_sharpe_estimate(evaluator, mean: float) -> None:
+    report = evaluator.evaluate(**_inputs(evaluator, _alternating_returns(14, mean)))
     evidence = report["sharpe_evidence"]
     assert report["status"] == "IMMATURE_RECORD_TOO_SHORT"
     assert evidence["annualized_point_estimate"] is None
@@ -360,7 +361,13 @@ def test_current_workspace_record_is_honestly_immature(evaluator) -> None:
     else:
         assert report["status"] == "FAIL_CLOSED_PROVENANCE"
         assert report["sharpe_evidence"]["underlying_status"] == "IMMATURE_RECORD_TOO_SHORT"
-    assert report["record"]["cumulative_return"] < 0.0
+    # An immature record may gain or lose money. Its observation count, never
+    # the sign of its return, determines whether a Sharpe estimate is publishable.
+    evidence = report["sharpe_evidence"]
+    observations = report["record"]["daily_return_observations"]
+    assert observations == evidence["daily_return_observations"]
+    assert observations < evidence["estimate_minimum"]
+    assert evidence["observations_to_estimate"] == evidence["estimate_minimum"] - observations
     assert report["sharpe_evidence"]["annualized_point_estimate"] is None
     assert report["sharpe_evidence"]["target_statistically_established"] is False
     assert report["content_hash"] == evaluator._canonical_hash(report)
