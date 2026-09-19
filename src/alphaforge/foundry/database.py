@@ -11,7 +11,7 @@ from dataclasses import dataclass
 from typing import Any, Final, cast
 
 from alphaforge.foundry.contract import FoundryContract, canonical_sha256
-from alphaforge.foundry.migration import LegacyMigrationPacket
+from alphaforge.foundry.migration import LegacyMigrationPacket, assert_replay_environment
 from alphaforge.foundry.policy import FoundryPolicy
 
 BROKER_ENVIRONMENT_KEY: Final[re.Pattern[str]] = re.compile(
@@ -312,6 +312,7 @@ class FoundryDatabase:
         source_commit: str,
     ) -> dict[str, Any]:
         """Queue the packet's exact one-shot, no-network replay manifest."""
+        assert_replay_environment(packet)
         replay = cast(dict[str, Any], packet.document["replay"])
         quota = cast(dict[str, int], replay["quota"])
         job_manifest_hash = canonical_sha256(
