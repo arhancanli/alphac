@@ -4,11 +4,7 @@ from pathlib import Path
 from runpy import run_path
 
 MODULE = run_path(
-    str(
-        Path(__file__).parents[2]
-        / "scripts"
-        / "collect_repurchase_issuance_companyfacts.py"
-    )
+    str(Path(__file__).parents[2] / "scripts" / "collect_repurchase_issuance_companyfacts.py")
 )
 parse_companyfacts = MODULE["parse_companyfacts"]
 custom_fact_inventory = MODULE["custom_fact_inventory"]
@@ -95,16 +91,10 @@ def test_stock_compensation_and_acquisitions_are_not_ordinary_issuance() -> None
         "facts": {
             "us-gaap": {
                 "ProceedsFromStockOptionsExercised": {
-                    "units": {
-                        "USD": [{"val": 2, "filed": "2020-01-01", "form": "10-K"}]
-                    }
+                    "units": {"USD": [{"val": 2, "filed": "2020-01-01", "form": "10-K"}]}
                 },
                 "StockIssuedDuringPeriodSharesAcquisitions": {
-                    "units": {
-                        "shares": [
-                            {"val": 3, "filed": "2020-01-01", "form": "10-K"}
-                        ]
-                    }
+                    "units": {"shares": [{"val": 3, "filed": "2020-01-01", "form": "10-K"}]}
                 },
             }
         }
@@ -149,11 +139,7 @@ def test_balance_sheet_common_shares_are_reconciliation_not_flow() -> None:
         "facts": {
             "us-gaap": {
                 "CommonStockSharesIssued": {
-                    "units": {
-                        "shares": [
-                            {"val": 100, "filed": "2020-01-01", "form": "10-K"}
-                        ]
-                    }
+                    "units": {"shares": [{"val": 100, "filed": "2020-01-01", "form": "10-K"}]}
                 }
             }
         }
@@ -167,11 +153,7 @@ def test_missing_context_is_preserved_for_fail_closed_audit() -> None:
         "facts": {
             "us-gaap": {
                 "CommonStockSharesOutstanding": {
-                    "units": {
-                        "shares": [
-                            {"val": 10, "filed": "2020-01-01", "form": "10-K"}
-                        ]
-                    }
+                    "units": {"shares": [{"val": 10, "filed": "2020-01-01", "form": "10-K"}]}
                 }
             }
         }
@@ -264,3 +246,145 @@ def test_summary_accounts_for_terminal_404_without_claiming_a_fetch(tmp_path: Pa
     assert result["terminal_unavailable_404_ciks"] == 1
     assert result["terminal_accounted_ciks"] == 1
     assert result["collection_error_ciks"] == 0
+
+
+def test_invalid_cached_entity_is_not_complete_and_retains_source_bytes(tmp_path: Path) -> None:
+    import gzip
+    import hashlib
+    import json
+
+    raw = json.dumps({"cik": "0000000001", "entityName": "", "facts": {}}).encode()
+    source = tmp_path / "CIK0000000001.json.gz"
+    source.write_bytes(gzip.compress(raw))
+    before = source.read_bytes()
+    status, facts = MODULE["process_issuer"](object(), 1, tmp_path)
+    assert status["source_status"] == "invalid_payload"
+    assert status["raw_sha256"] == hashlib.sha256(raw).hexdigest()
+    assert status["raw_from_cache"] is True
+    assert facts == []
+    assert source.read_bytes() == before
+    parts = tmp_path / "parts"
+    write_parts(parts, 0, [status], facts)
+    assert completed_ciks(parts) == set()
+    report = summarize(parts, {1}, {"content_hash": "sealed", "sample_sha256": "manifest"})
+    assert report["complete"] is False
+    assert report["successful_ciks"] == 0
+    assert report["collection_error_ciks"] == 1
+
+
+def test_corrupt_gzip_is_preserved_and_does_not_trigger_silent_refetch(tmp_path: Path) -> None:
+    source = tmp_path / "CIK0000000001.json.gz"
+    source.write_bytes(b"damaged historical gzip")
+    status, facts = MODULE["process_issuer"](object(), 1, tmp_path)
+    assert status["source_status"] == "error"
+    assert source.read_bytes() == b"damaged historical gzip"
+    assert facts == []
+
+
+def test_invalid_json_and_shapes_cannot_be_successful_fetches(tmp_path: Path) -> None:
+    import gzip
+    import json
+
+    valid = {"cik": 1, "entityName": "Example issuer", "facts": {}}
+    cases = [b"{broken", json.dumps([]).encode()]
+    for field, value in [("cik", True), ("cik", 2), ("entityName", "  "), ("facts", [])]:
+        cases.append(json.dumps({**valid, field: value}).encode())
+    cases.append(
+        json.dumps({**valid, "facts": {"us-gaap": {"Assets": {"units": {"USD": {}}}}}}).encode()
+    )
+    source = tmp_path / "CIK0000000001.json.gz"
+    for raw in cases:
+        source.write_bytes(gzip.compress(raw))
+        status, facts = MODULE["process_issuer"](object(), 1, tmp_path)
+        assert status["source_status"] == "invalid_payload"
+        assert facts == []
+
+
+def test_valid_entity_with_no_relevant_tags_is_not_conflated_with_invalid_response(
+    tmp_path: Path,
+) -> None:
+    import gzip
+    import json
+
+    source = tmp_path / "CIK0000000001.json.gz"
+    source.write_bytes(
+        gzip.compress(json.dumps({"cik": 1, "entityName": "Example", "facts": {}}).encode())
+    )
+    status, facts = MODULE["process_issuer"](object(), 1, tmp_path)
+    assert status["source_status"] == "fetched"
+    assert status["relevant_fact_rows"] == 0
+    assert facts == []
+
+
+def test_prior_parser_success_does_not_skip_new_identity_validation(tmp_path: Path) -> None:
+    status = {
+        "cik": 1,
+        "parser_version": "repurchase-issuance-companyfacts-v3",
+        "source_status": "fetched",
+        "error": None,
+    }
+    write_parts(tmp_path, 0, [status], [])
+    assert completed_ciks(tmp_path) == set()
+
+
+def test_legacy_or_missing_status_cannot_be_counted_as_current_success(tmp_path: Path) -> None:
+    status = {
+        "cik": 1,
+        "parser_version": "repurchase-issuance-companyfacts-v3",
+        "source_status": "fetched",
+        "error": None,
+    }
+    write_parts(tmp_path, 0, [status], [])
+    report = summarize(tmp_path, {1}, {"content_hash": "sealed", "sample_sha256": "manifest"})
+    assert report["successful_ciks"] == 0
+    assert report["legacy_parser_ciks"] == 1
+    assert report["complete"] is False
+    status.update(parser_version=MODULE["PARSER_VERSION"], source_status=None)
+    write_parts(tmp_path, 1, [status], [])
+    assert completed_ciks(tmp_path) == set()
+
+
+def test_fresh_invalid_response_is_retained_but_not_counted_as_success(tmp_path: Path) -> None:
+    import gzip
+
+    raw = b'{"cik": 1, "entityName": "", "facts": {}}'
+
+    class Client:
+        def get_bytes(self, url: str) -> bytes:
+            assert url.endswith("CIK0000000001.json")
+            return raw
+
+    status, facts = MODULE["process_issuer"](Client(), 1, tmp_path)
+    assert status["source_status"] == "invalid_payload"
+    assert status["raw_from_cache"] is False
+    assert gzip.decompress((tmp_path / "CIK0000000001.json.gz").read_bytes()) == raw
+    assert facts == []
+
+
+def test_capture_receipt_binds_new_bytes_and_legacy_cache_time_stays_unknown(
+    tmp_path: Path,
+) -> None:
+    import gzip
+    import json
+
+    raw = b'{"cik": 1, "entityName": "Example", "facts": {}}'
+
+    class Client:
+        def get_bytes(self, url: str) -> bytes:
+            return raw
+
+    status, _ = MODULE["process_issuer"](Client(), 1, tmp_path)
+    assert status["captured_at"] is not None
+    receipt_path = tmp_path / "CIK0000000001.capture.json"
+    receipt = json.loads(receipt_path.read_text())
+    assert receipt["raw_sha256"] == status["raw_sha256"]
+    receipt["raw_sha256"] = "0" * 64
+    receipt_path.write_text(json.dumps(receipt))
+    status, _ = MODULE["process_issuer"](object(), 1, tmp_path)
+    assert status["source_status"] == "invalid_payload"
+    assert status["captured_at"] is None
+    receipt_path.unlink()
+    status, _ = MODULE["process_issuer"](object(), 1, tmp_path)
+    assert status["source_status"] == "fetched"
+    assert status["captured_at"] is None
+    assert gzip.decompress((tmp_path / "CIK0000000001.json.gz").read_bytes()) == raw
