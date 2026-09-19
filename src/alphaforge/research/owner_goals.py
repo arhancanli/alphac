@@ -50,7 +50,11 @@ def load_owner_goals(path: Path = OWNER_GOALS_PATH) -> dict[str, Any]:
     sharpe = outcomes["combined_forward_sharpe"]
     drawdown = outcomes["combined_max_drawdown"]
     sleeves = outcomes["qualified_economically_distinct_sleeves"]
-    if not (isinstance(sharpe["target"], int | float) and sharpe["target"] > 0.0):
+    if not (
+        type(sharpe["target"]) in (int, float)
+        and math.isfinite(sharpe["target"])
+        and sharpe["target"] > 0.0
+    ):
         raise ValueError("combined_forward_sharpe.target must be a positive number")
     if sharpe["comparison"] != "ABOVE":
         raise ValueError("combined_forward_sharpe.comparison must be ABOVE")
@@ -245,6 +249,7 @@ def governing_objective(
     contract_path: Path = ADMISSION_CONTRACT_PATH,
     *,
     current_sleeves: int | None = None,
+    drawdown_contract_path: Path = OWNER_GOALS_PATH.parent / "drawdown_control_contract.json",
 ) -> dict[str, Any]:
     """The objective block every public surface publishes, projected from the owner's goals.
 
@@ -258,6 +263,37 @@ def governing_objective(
     outcomes = goals["goals"]
     forward = float(outcomes["combined_forward_sharpe"]["target"])
     bound = float(outcomes["combined_max_drawdown"]["bound"])
+    # The goal decision is historical; activation can change later. Project the
+    # current declared mechanism from its contract so the site cannot keep saying
+    # "not live" after activation while the evidence epoch says it is active.
+    drawdown = json.loads(drawdown_contract_path.read_text(encoding="utf-8"))
+    if drawdown.get("schema") != "canli.alphac-drawdown-control-contract.v1":
+        raise ValueError("drawdown mechanism contract schema is invalid")
+    ladder = drawdown["ladder"]
+    if (
+        drawdown["bound"] != bound
+        or ladder["dd_half_frac"] != bound / 2
+        or ladder["dd_flat_frac"] != bound
+    ):
+        raise ValueError("drawdown mechanism disagrees with the owner's bound")
+    live = drawdown["activation"]["live"]
+    if type(live) is not bool:
+        raise ValueError("drawdown mechanism activation.live must be boolean")
+    status = drawdown["status"]
+    live_status = drawdown["activation"]["status_after_activation"]
+    if live_status != "MECHANISM_LIVE_BOUND_ENFORCED_UP_TO_ONE_DAY_OVERSHOOT":
+        raise ValueError("drawdown mechanism live status is unrecognized")
+    if not isinstance(status, str) or not status:
+        raise ValueError("drawdown mechanism status must be nonempty")
+    if (status == live_status) is not live:
+        raise ValueError("drawdown mechanism status disagrees with activation.live")
+    mechanism = (
+        f"config/drawdown_control_contract.json declares half gross at {bound * 50:g}% "
+        f"below the high-water mark and flat at {bound * 100:g}%, absorbing until an owner rearm. "
+        f"Activation is declared {'live' if live else 'off'} in that contract. "
+        "A daily brake can overshoot within a day; it does not guarantee the future bound. "
+        "This declaration is not independent evidence of runtime enforcement."
+    )
     n = int(outcomes["qualified_economically_distinct_sleeves"]["minimum"])
     haircuts = _haircut_multipliers(sealed)
     band = frontier["in_sample_support_band"]
@@ -275,10 +311,12 @@ def governing_objective(
         "portfolio_max_drawdown_target": bound,
         "portfolio_max_drawdown_comparison": outcomes["combined_max_drawdown"]["comparison"],
         "portfolio_max_drawdown_statistic": outcomes["combined_max_drawdown"]["statistic"],
-        "portfolio_max_drawdown_mechanism": outcomes["combined_max_drawdown"]["mechanism"],
-        "portfolio_max_drawdown_mechanism_status": outcomes["combined_max_drawdown"][
-            "mechanism_status"
-        ],
+        "portfolio_max_drawdown_mechanism": mechanism,
+        "portfolio_max_drawdown_mechanism_status": status,
+        "portfolio_max_drawdown_mechanism_source": "config/drawdown_control_contract.json",
+        "portfolio_max_drawdown_mechanism_status_at_goal_recording": outcomes[
+            "combined_max_drawdown"
+        ]["mechanism_status"],
         # The sealed MODELED objective stays published beside the owner's REALIZED bound. They
         # are different statistics; the site labels them separately and nothing mixes them.
         "expected_max_drawdown_objective": float(sealed["portfolio_max_drawdown_target"]),
