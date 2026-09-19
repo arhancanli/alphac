@@ -74,22 +74,34 @@ def _verified_embedded_hash(payload: dict[str, Any]) -> bool:
     return isinstance(claimed, str) and claimed == _canonical_hash(payload)
 
 
+COST_CONTRACT_JSON = REPO / "config" / "cost_realism_contract.json"
+
+
 def _cost_realism(state: dict[str, Any], curve_basis: str) -> dict[str, Any]:
     """What the evaluated curve is net of: the published cost charges, sleeve by sleeve."""
     charges = state.get("cost_charges") or {}
     sleeves = charges.get("sleeves") or {}
+    contract = json.loads(COST_CONTRACT_JSON.read_text())
+    if contract.get("schema") != "canli.alphac-cost-realism-contract.v1":
+        raise ValueError("invalid cost realism contract schema")
+    declared: dict[str, list[str]] = {}
+    for section in ("equity_paper_live", "crypto_paper_live"):
+        group = contract[section]
+        omissions = [name for name, row in group["rows"].items() if row["status"] == "NOT_CHARGED"]
+        for sleeve in group["sleeves"]:
+            declared[sleeve] = omissions
     return {
         "contract": "config/cost_realism_contract.json",
         "curve_basis": curve_basis,
         "status": charges.get("status", "NOT_PUBLISHED"),
         "sleeves": {
             key: {
-                "status": row.get("status"),
+                "status": row.get("status", "NOT_PUBLISHED"),
                 "cumulative_drag_bps_of_base": row.get("cumulative_drag_bps_of_base"),
                 "total_charged_usd": (row.get("totals_usd") or {}).get("total"),
-                "not_charged": row.get("not_charged", []),
+                "not_charged": sorted(set(declared.get(key, []) + row.get("not_charged", []))),
             }
-            for key, row in sleeves.items()
+            for key, row in {**{key: {} for key in declared}, **sleeves}.items()
         },
     }
 
@@ -611,6 +623,7 @@ def evaluate(
         },
         "source_bindings": {
             "contract": {"path": str(CONTRACT_JSON.relative_to(REPO))},
+            "cost_contract": {"path": str(COST_CONTRACT_JSON.relative_to(REPO))},
             "paper_state": {"path": str(STATE_JSON.relative_to(REPO))},
             "record_continuity": {"path": str(CONTINUITY_JSON.relative_to(REPO))},
             "broker_reconciliation": {"path": str(BROKER_JSON.relative_to(REPO))},
@@ -635,6 +648,7 @@ def evaluate(
     }
     for binding, path in (
         ("contract", CONTRACT_JSON),
+        ("cost_contract", COST_CONTRACT_JSON),
         ("paper_state", STATE_JSON),
         ("record_continuity", CONTINUITY_JSON),
         ("broker_reconciliation", BROKER_JSON),
