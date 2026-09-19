@@ -7,10 +7,11 @@ import json
 import re
 import uuid
 from collections.abc import Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import Any, Final, cast
 
+from alphaforge.environment_archive import resolve_environment_binding
 from alphaforge.foundry.contract import canonical_sha256
 
 MIGRATION_SCHEMA: Final[str] = "canli.foundry-legacy-killed-migration.v1"
@@ -96,6 +97,7 @@ class LegacyMigrationPacket:
     input_snapshot_hash: str
     expected_result_hash: str
     prior_replay_receipt_hash: str
+    repository_root: Path | None = None
 
     @property
     def migration_key(self) -> str:
@@ -215,6 +217,7 @@ def _verify_binding(
     binding: dict[str, Any],
     *,
     verify_private_snapshot: bool,
+    environment_receipts: list[dict[str, str | None]],
 ) -> tuple[str, bool]:
     name = _string(binding.get("name"), "source binding name")
     availability = binding.get("availability")
@@ -222,6 +225,19 @@ def _verify_binding(
         raise MigrationContractError(f"unsupported availability for source binding: {name}")
     if availability == "PRIVATE_SNAPSHOT_REQUIRED" and not verify_private_snapshot:
         return name, False
+    if name in {"research_lockfile", "python_project"}:
+        expected_path = "uv.lock" if name == "research_lockfile" else "pyproject.toml"
+        if binding.get("path") != expected_path:
+            raise MigrationContractError(f"unexpected environment binding path: {name}")
+        expected = _digest(binding.get("sha256"), f"source binding {name}.sha256", prefix=False)
+        try:
+            resolution = resolve_environment_binding(root, expected_path, expected)
+        except ValueError as error:
+            raise MigrationContractError(
+                f"source binding hash mismatch: {name}: {error}"
+            ) from error
+        environment_receipts.append(resolution.receipt())
+        return name, True
     path = _safe_path(root, binding.get("path"), f"source binding {name}.path")
     if not path.is_file():
         raise MigrationContractError(f"required source binding is missing: {name}")
@@ -289,9 +305,7 @@ def _verify_snapshot_references(root: Path, snapshot_document: dict[str, Any]) -
     for index, raw_item in enumerate(release_files):
         item = _mapping(raw_item, f"first-release files[{index}]")
         path = _safe_path(root, item.get("path"), f"first-release files[{index}].path")
-        expected = _digest(
-            item.get("sha256"), f"first-release files[{index}].sha256", prefix=False
-        )
+        expected = _digest(item.get("sha256"), f"first-release files[{index}].sha256", prefix=False)
         if not path.is_file() or _sha256_file(path) != expected:
             raise MigrationContractError(f"first-release source mismatch at index {index}")
         verified += 1
@@ -308,6 +322,8 @@ def load_and_verify_legacy_migration(
     document = _load_json(path, "legacy migration packet")
     packet = _validate_packet_shape(path, document)
     root = repository_root.resolve()
+    packet = replace(packet, repository_root=root)
+    environment_receipts: list[dict[str, str | None]] = []
 
     raw_bindings = cast(list[object], document["source_bindings"])
     verified_files: list[str] = []
@@ -315,7 +331,10 @@ def load_and_verify_legacy_migration(
     for raw_binding in raw_bindings:
         binding = _mapping(raw_binding, "source binding")
         name, verified = _verify_binding(
-            root, binding, verify_private_snapshot=verify_private_snapshot
+            root,
+            binding,
+            verify_private_snapshot=verify_private_snapshot,
+            environment_receipts=environment_receipts,
         )
         (verified_files if verified else deferred_files).append(name)
 
@@ -396,6 +415,10 @@ def load_and_verify_legacy_migration(
         "historical_identity_key": packet.historical_identity_key,
         "migration_manifest_hash": packet.manifest_hash,
         "verified_source_bindings": sorted(verified_files),
+        "environment_resolution": environment_receipts,
+        "replay_environment_files_match": all(
+            r["status"] == "ACTIVE_FILE_MATCH" for r in environment_receipts
+        ),
         "deferred_private_source_bindings": sorted(deferred_files),
         "private_snapshot_objects_verified": snapshot_objects_verified,
         "new_identity_spent": False,
@@ -404,3 +427,24 @@ def load_and_verify_legacy_migration(
     }
     report["content_hash"] = canonical_sha256(report)
     return packet, report
+
+
+def assert_replay_environment(packet: LegacyMigrationPacket) -> None:
+    """Recheck actual workspace files immediately before enqueue; archive-only is insufficient."""
+    if packet.repository_root is None:
+        raise MigrationContractError("replay workspace has not been verified")
+    bindings = cast(list[dict[str, Any]], packet.document["source_bindings"])
+    for name, relative in (("research_lockfile", "uv.lock"), ("python_project", "pyproject.toml")):
+        matches = [binding for binding in bindings if binding.get("name") == name]
+        if len(matches) != 1 or matches[0].get("path") != relative:
+            raise MigrationContractError(f"replay environment binding missing or ambiguous: {name}")
+        try:
+            resolve_environment_binding(
+                packet.repository_root, relative, matches[0]["sha256"], allow_archive=False
+            )
+        except ValueError as error:
+            raise MigrationContractError(
+                "Replay blocked: materialize the exact historical project and lock files "
+                "in a disposable "
+                f"workspace; archival verification alone cannot authorize replay: {error}"
+            ) from error

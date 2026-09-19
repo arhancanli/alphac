@@ -14,10 +14,14 @@ import hashlib
 import json
 import re
 import subprocess
+import sys
 from pathlib import Path, PurePosixPath
 from typing import Any, Final
 
 ROOT: Final = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "src"))
+from alphaforge.environment_archive import resolve_environment_binding  # noqa: E402
+
 REGISTRY: Final = ROOT / "config/external_publication_registry.json"
 AUTHOR: Final = "Arhan Canli"
 HEX64: Final = re.compile(r"^[0-9a-f]{64}$")
@@ -75,9 +79,7 @@ def _tracked_paths() -> set[str]:
 
 
 def _git_head() -> str:
-    return subprocess.check_output(
-        ["git", "rev-parse", "HEAD"], cwd=ROOT, text=True
-    ).strip()
+    return subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()
 
 
 def _checksum_inventory(bundle: Path) -> dict[str, str]:
@@ -114,7 +116,8 @@ def _assert_false(document: dict[str, Any], field: str, source: Path) -> None:
 
 def _verify_bindings(
     reproduction: dict[str, Any], tracked: set[str], source: Path
-) -> tuple[int, int]:
+) -> tuple[int, int, list[dict[str, str | None]]]:
+    environment_receipts: list[dict[str, str | None]] = []
     code_bindings = reproduction.get("code_bindings", {})
     environment_bindings = reproduction.get("environment_bindings", {})
     for collection, label in (
@@ -125,12 +128,20 @@ def _verify_bindings(
             raise ValueError(f"{source}: missing {label} bindings")
         for raw, expected in collection.items():
             relative = _safe_relative(str(raw)).as_posix()
+            if label == "environment":
+                binding = resolve_environment_binding(ROOT, relative, expected)
+                if binding.resolved_path not in tracked:
+                    raise ValueError(
+                        f"{source}: untracked environment binding {binding.resolved_path}"
+                    )
+                environment_receipts.append(binding.receipt())
+                continue
             path = ROOT / relative
             if relative not in tracked or not path.is_file() or path.is_symlink():
                 raise ValueError(f"{source}: untracked or missing {label} binding {relative}")
             if not isinstance(expected, str) or _sha256(path) != expected:
                 raise ValueError(f"{source}: stale {label} binding {relative}")
-    return len(code_bindings), len(environment_bindings)
+    return len(code_bindings), len(environment_bindings), environment_receipts
 
 
 def _verify_result_copies(bundle: Path, data_manifest: dict[str, Any]) -> int:
@@ -180,9 +191,7 @@ def build() -> dict[str, Any]:
             bundle = manifest_path.parent
             inventory = _checksum_inventory(bundle)
             bundle_files = {
-                path.relative_to(ROOT).as_posix()
-                for path in bundle.rglob("*")
-                if path.is_file()
+                path.relative_to(ROOT).as_posix() for path in bundle.rglob("*") if path.is_file()
             }
             untracked = sorted(bundle_files - tracked)
             if untracked:
@@ -213,7 +222,7 @@ def build() -> dict[str, Any]:
 
             reproduction_path = bundle / "reproduction.json"
             reproduction = json.loads(reproduction_path.read_text(encoding="utf-8"))
-            code_count, env_count = _verify_bindings(
+            code_count, env_count, environment_receipts = _verify_bindings(
                 reproduction, tracked, reproduction_path
             )
             _assert_false(
@@ -228,16 +237,12 @@ def build() -> dict[str, Any]:
             if full_pipeline is not False:
                 raise ValueError("full clean result reproduction must remain false")
 
-            data_manifest = json.loads(
-                (bundle / "data_manifest.json").read_text(encoding="utf-8")
-            )
+            data_manifest = json.loads((bundle / "data_manifest.json").read_text(encoding="utf-8"))
             if data_manifest.get("license_review_complete") is True:
                 raise ValueError("unexpected data-rights clearance claim")
             result_copies = _verify_result_copies(bundle, data_manifest)
 
-            trial = json.loads(
-                (bundle / "trial_accounting.json").read_text(encoding="utf-8")
-            )
+            trial = json.loads((bundle / "trial_accounting.json").read_text(encoding="utf-8"))
             union_complete = trial.get(
                 "complete_recorded_union_extracted",
                 trial.get("sleeve_complete_union_extracted"),
@@ -267,6 +272,8 @@ def build() -> dict[str, Any]:
                     "checksum_bound_files": len(inventory),
                     "code_bindings": code_count,
                     "environment_bindings": env_count,
+                    "environment_resolution": environment_receipts,
+                    "active_environment_replay_established": False,
                     "released_result_copies": result_copies,
                     "recorded_hypothesis_identities": identities,
                     "pdf_pages": int(pdf["pages"]),
@@ -300,6 +307,10 @@ def build() -> dict[str, Any]:
             "registry": {
                 "path": REGISTRY.relative_to(ROOT).as_posix(),
                 "sha256": _sha256(REGISTRY),
+            },
+            "environment_resolver": {
+                "path": "src/alphaforge/environment_archive.py",
+                "sha256": _sha256(ROOT / "src/alphaforge/environment_archive.py"),
             },
             "verifier": {
                 "path": Path(__file__).resolve().relative_to(ROOT).as_posix(),
