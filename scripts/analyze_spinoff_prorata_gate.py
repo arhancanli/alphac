@@ -43,20 +43,53 @@ TOLERANT = re.compile(
 )
 
 
+def verified_documents(schema: Path, docs: Path) -> list[tuple[Path, bytes]]:
+    """Require exactly the frozen document population before measuring language."""
+    rows = pd.read_parquet(schema)
+    hashes = rows["primary_document_sha256"].tolist()
+    if len(hashes) != 98 or any(
+        not isinstance(value, str) or re.fullmatch(r"[0-9a-f]{64}", value) is None
+        for value in hashes
+    ):
+        raise ValueError("expected 98 valid frozen document hashes")
+    if len(set(hashes)) != len(hashes):
+        raise ValueError("duplicate frozen document hash")
+    paths = sorted(docs.iterdir())
+    if len(paths) != len(hashes):
+        raise ValueError("cached document count differs from frozen population")
+    remaining = set(hashes)
+    verified = []
+    for path in paths:
+        raw = gzip.decompress(path.read_bytes())
+        digest = hashlib.sha256(raw).hexdigest()
+        if digest not in remaining:
+            raise ValueError(f"unrecognized or duplicate cached document: {path.name}")
+        remaining.remove(digest)
+        verified.append((path, raw))
+    if remaining:
+        raise ValueError("frozen documents missing from cache")
+    return verified
+
+
+def gate_verdict(tokens: int, documents: int) -> str:
+    return (
+        "GATE_UNREACHABLE_BY_DETECTOR_REPAIR"
+        if tokens / documents < GATE
+        else "LANGUAGE_CEILING_DOES_NOT_RULE_OUT_GATE_REQUIRES_SEMANTIC_REVIEW"
+    )
+
+
 def main() -> int:
     if not SCHEMA.exists() or not DOCS.exists():
         print("frozen document cache or schema missing; refusing to guess")
         return 1
-    recorded = set(pd.read_parquet(SCHEMA)["primary_document_sha256"].dropna())
-    paths = sorted(DOCS.iterdir())
+    documents = verified_documents(SCHEMA, DOCS)
 
     verified = shipped = token = tolerant = 0
     shipped_without_token = []
     token_without_shipped = []
-    for path in paths:
-        raw = gzip.decompress(path.read_bytes())
-        if hashlib.sha256(raw).hexdigest() in recorded:
-            verified += 1
+    for path, raw in documents:
+        verified += 1
         text = html_to_text(raw)
         s, t, v = (
             bool(PRO_RATA_PATTERN.search(text)),
@@ -71,7 +104,7 @@ def main() -> int:
         if t and not s:
             token_without_shipped.append(path.name)
 
-    n = len(paths)
+    n = len(documents)
     result = {
         "schema": "canli.alphac-spinoff-prorata-gate.v1",
         "claim_boundary": (
@@ -88,7 +121,9 @@ def main() -> int:
         "documents_containing_any_pro_rata_token": token,
         "any_pro_rata_token_rate": token / n,
         "tolerant_near_distribution_rate": tolerant / n,
-        "verdict": "GATE_UNREACHABLE_BY_DETECTOR_REPAIR",
+        "verdict": gate_verdict(token, n),
+        "source_schema_sha256": hashlib.sha256(SCHEMA.read_bytes()).hexdigest(),
+        "analysis_code_sha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
         "why": (
             f"Only {token} of {n} documents contain a pro-rata token in ANY written form "
             f"({token / n:.1%}), and only {tolerant} contain one near a distribution reference "
@@ -96,6 +131,9 @@ def main() -> int:
             f"reaches at most {token / n:.1%}: the shortfall is not extraction, it is that this "
             "language is not in these documents. Widening the pattern until the number cleared "
             "would have been tuning a measurement to agree with a target."
+        ) if token / n < GATE else (
+            "The token ceiling reaches the gate, but tokens alone do not establish "
+            "distribution semantics or authorize changing the frozen detector."
         ),
         "⚠️_the_shipped_detector_OVERSTATES_the_rate": {
             "shipped_hits": shipped,
@@ -110,13 +148,13 @@ def main() -> int:
             ),
             "affected_documents": sorted(shipped_without_token),
         },
-        "false_negatives_reviewed": {
+        "token_only_documents_requiring_semantic_review": {
             "count": len(token_without_shipped),
             "documents": sorted(token_without_shipped),
             "note": (
-                "Each was read. They are preemptive-rights and similar boilerplate uses of 'pro "
-                "rata share', not a spin-off distribution, so they are correct negatives for the "
-                "intended meaning rather than misses."
+                "This automatic diagnostic does not establish whether these token-only "
+                "matches describe distributions or unrelated boilerplate. No human review "
+                "or semantic classification is asserted by this run."
             ),
         },
         "what_this_implies": (
@@ -126,6 +164,9 @@ def main() -> int:
             "carry distribution mechanics at the rate this protocol assumed, and any redesign "
             "must name the document that does before it names a threshold. Lowering the "
             "threshold on the existing protocol would be fitting the gate to the result."
+        ) if token / n < GATE else (
+            "Semantic review remains required. This diagnostic does not change the "
+            "frozen feasibility decision or authorize prices, returns, or admission."
         ),
     }
 

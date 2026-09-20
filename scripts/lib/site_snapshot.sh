@@ -59,10 +59,10 @@ _site_snapshot_copy() {
     --exclude '/.vercel/' \
     --exclude '/.git/' \
     --exclude '/.bak/' \
-    --exclude '/.claude/' \
-    --exclude '/.firecrawl/' \
-    --exclude '/.claude-flow/' \
-    --exclude '/.serena/' \
+    --exclude '.claude/' \
+    --exclude '.firecrawl/' \
+    --exclude '.claude-flow/' \
+    --exclude '.serena/' \
     --exclude 'ruvector.db' \
     --exclude 'ruvector.db-*' \
     --exclude '.env*' \
@@ -89,7 +89,13 @@ _site_snapshot_landing() {
   for evidence_dir in glassbox research publication release-candidates; do
     [ -d "$SITE_LANDING_SOURCE/public/$evidence_dir" ] || return 1
     mkdir -p "$destination_dir/public/$evidence_dir" || return 1
-    rsync -a --delete "$SITE_LANDING_SOURCE/public/$evidence_dir/" \
+    # Exports can contain nested agent state. It is excluded from the source
+    # hash and must also be excluded from the served snapshot at every depth.
+    rsync -a --delete \
+      --exclude '.claude/' --exclude '.firecrawl/' \
+      --exclude '.claude-flow/' --exclude '.serena/' \
+      --exclude 'ruvector.db' --exclude 'ruvector.db-*' --exclude '.env*' \
+      "$SITE_LANDING_SOURCE/public/$evidence_dir/" \
       "$destination_dir/public/$evidence_dir/" || return 1
   done
   cp "$SITE_LANDING_SOURCE/public/paper-state.json" "$destination_dir/public/paper-state.json" || return 1

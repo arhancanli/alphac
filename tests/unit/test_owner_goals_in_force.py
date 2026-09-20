@@ -177,6 +177,69 @@ def test_the_governing_objective_keeps_every_registry_pointer_and_derives_the_re
     assert objective["implied_in_sample_target"]["at_1_5x_haircut"] == pytest.approx(3.0)
 
 
+def test_mechanism_status_follows_activation_not_historical_goal_text(
+    goals: dict[str, Any],
+    tmp_path: Path,
+) -> None:
+    contract = json.loads((REPO / "config/drawdown_control_contract.json").read_text())
+    path = tmp_path / "drawdown.json"
+    for live in (True, False):
+        contract["activation"]["live"] = live
+        contract["status"] = (
+            contract["activation"]["status_after_activation"]
+            if live
+            else "DECLARED_LADDER_DERIVED_FROM_BOUND_MEASURED_NOT_LIVE"
+        )
+        path.write_text(json.dumps(contract))
+        objective = og.governing_objective(goals, drawdown_contract_path=path)
+        assert objective["portfolio_max_drawdown_mechanism_status"] == contract["status"]
+        assert (
+            f"declared {'live' if live else 'off'}" in objective["portfolio_max_drawdown_mechanism"]
+        )
+        assert (
+            objective["portfolio_max_drawdown_mechanism_status_at_goal_recording"]
+            == (goals["goals"]["combined_max_drawdown"]["mechanism_status"])
+        )
+
+
+@pytest.mark.parametrize("mutation", ["bound", "ladder", "activation", "status", "schema"])
+def test_inconsistent_drawdown_declaration_cannot_publish_an_objective(
+    goals: dict[str, Any],
+    tmp_path: Path,
+    mutation: str,
+) -> None:
+    contract = json.loads((REPO / "config/drawdown_control_contract.json").read_text())
+    if mutation == "bound":
+        contract["bound"] = 0.11
+    elif mutation == "ladder":
+        contract["ladder"]["dd_flat_frac"] = 0.11
+    elif mutation == "activation":
+        contract["activation"]["live"] = "true"
+    elif mutation == "status":
+        contract["status"] = "NOT_LIVE"
+        contract["activation"]["live"] = True
+    else:
+        contract["schema"] = "unknown"
+    path = tmp_path / "drawdown.json"
+    path.write_text(json.dumps(contract))
+    with pytest.raises(ValueError):
+        og.governing_objective(goals, drawdown_contract_path=path)
+
+
+@pytest.mark.parametrize("target", [True, float("inf"), float("nan")])
+def test_nonfinite_or_boolean_sharpe_target_fails_closed(
+    goals: dict[str, Any],
+    tmp_path: Path,
+    target: float,
+) -> None:
+    invalid = json.loads(json.dumps(goals))
+    invalid["goals"]["combined_forward_sharpe"]["target"] = target
+    path = tmp_path / "goals.json"
+    path.write_text(json.dumps(invalid))
+    with pytest.raises(ValueError, match="positive number"):
+        og.load_owner_goals(path)
+
+
 def test_the_frontier_is_the_sealed_identity_at_the_owners_n_and_round_trips(
     goals: dict[str, Any],
 ) -> None:
