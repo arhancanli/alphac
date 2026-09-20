@@ -22,27 +22,21 @@ from build_sec_10k_manifest import SecClient
 MANIFEST: Final = Path(
     "artifacts/feasibility/repurchase_issuance_flow/issuer_schema_sample.parquet"
 )
-MANIFEST_RESULT: Final = Path(
-    "artifacts/feasibility/repurchase_issuance_flow/manifest_result.json"
-)
+MANIFEST_RESULT: Final = Path("artifacts/feasibility/repurchase_issuance_flow/manifest_result.json")
 RAW_DIR: Final = Path("data/raw/repurchase_issuance_flow/companyfacts")
 OUT_DIR: Final = Path("artifacts/feasibility/repurchase_issuance_flow/companyfacts_parts")
 RESULT: Final = Path(
     "artifacts/feasibility/repurchase_issuance_flow/companyfacts_collection_result.json"
 )
-PARSER_VERSION: Final = "repurchase-issuance-companyfacts-v3"
+PARSER_VERSION: Final = "repurchase-issuance-companyfacts-v4"
 FACTS_URL: Final = "https://data.sec.gov/api/xbrl/companyfacts/CIK{cik:010d}.json"
 START_FILED: Final = "2013-01-01"
 END_FILED: Final = "2025-12-31"
 FORMS: Final = {"10-K", "10-K/A", "10-Q", "10-Q/A"}
 
 TAG_FAMILIES: Final[dict[str, tuple[str, ...]]] = {
-    "repurchase_cash": (
-        "PaymentsForRepurchaseOfCommonStock",
-    ),
-    "issuance_cash": (
-        "ProceedsFromIssuanceOfCommonStock",
-    ),
+    "repurchase_cash": ("PaymentsForRepurchaseOfCommonStock",),
+    "issuance_cash": ("ProceedsFromIssuanceOfCommonStock",),
     "contamination_preferred_mixed": (
         "PaymentsForRepurchaseOfCommonAndPreferredStock",
         "ProceedsFromIssuanceOfCommonAndPreferredStock",
@@ -57,9 +51,7 @@ TAG_FAMILIES: Final[dict[str, tuple[str, ...]]] = {
         "StockRepurchasedAndRetiredDuringPeriodShares",
         "TreasuryStockSharesAcquired",
     ),
-    "issuance_shares": (
-        "StockIssuedDuringPeriodSharesNewIssues",
-    ),
+    "issuance_shares": ("StockIssuedDuringPeriodSharesNewIssues",),
     "contamination_acquisition": (
         "StockIssuedDuringPeriodSharesAcquisitions",
         "StockIssuedDuringPeriodValueAcquisitions",
@@ -78,9 +70,7 @@ TAG_FAMILIES: Final[dict[str, tuple[str, ...]]] = {
         "WeightedAverageNumberOfSharesOutstandingBasic",
     ),
 }
-TAG_TO_FAMILY: Final = {
-    tag: family for family, tags in TAG_FAMILIES.items() for tag in tags
-}
+TAG_TO_FAMILY: Final = {tag: family for family, tags in TAG_FAMILIES.items() for tag in tags}
 STATUS_COLUMNS: Final = (
     "cik",
     "parser_version",
@@ -88,6 +78,7 @@ STATUS_COLUMNS: Final = (
     "raw_sha256",
     "raw_bytes",
     "raw_from_cache",
+    "captured_at",
     "relevant_fact_rows",
     "relevant_tags",
     "custom_namespaces",
@@ -239,23 +230,97 @@ def custom_fact_inventory(payload: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+class InvalidCompanyFacts(ValueError):
+    """A response cannot be attributed to a usable company-facts entity."""
+
+
+def validate_companyfacts(cik: int, payload: Any) -> None:
+    if not isinstance(payload, dict):
+        raise InvalidCompanyFacts("companyfacts response must be an object")
+    identity = payload.get("cik")
+    if type(identity) is not int or identity != cik or identity < 1:
+        raise InvalidCompanyFacts("companyfacts entity identity mismatch")
+    name = payload.get("entityName")
+    if not isinstance(name, str) or not name.strip():
+        raise InvalidCompanyFacts("companyfacts entity name is missing")
+    namespaces = payload.get("facts")
+    if not isinstance(namespaces, dict):
+        raise InvalidCompanyFacts("companyfacts taxonomy collection must be an object")
+    for nodes in namespaces.values():
+        if not isinstance(nodes, dict):
+            raise InvalidCompanyFacts("companyfacts taxonomy must be an object")
+        for node in nodes.values():
+            if not isinstance(node, dict) or not isinstance(node.get("units"), dict):
+                raise InvalidCompanyFacts("companyfacts concept units must be an object")
+            for observations in node["units"].values():
+                if not isinstance(observations, list) or any(
+                    not isinstance(row, dict) for row in observations
+                ):
+                    raise InvalidCompanyFacts("companyfacts observations must be object arrays")
+
+
 def cached_companyfacts(client: SecClient, cik: int, raw_dir: Path) -> tuple[bytes, bool]:
     path = raw_dir / f"CIK{cik:010d}.json.gz"
     if path.exists():
-        try:
-            return gzip_read(path), True
-        except (EOFError, OSError):
-            path.unlink()
+        # Never erase historical bytes because a cache entry is malformed. Record an
+        # error and use a separately captured source directory for a deliberate refresh.
+        return gzip_read(path), True
     raw = client.get_bytes(FACTS_URL.format(cik=cik))
+    captured_at = datetime.now(UTC).isoformat()
     gzip_write(path, raw)
+    receipt = {
+        "schema": "canli.sec-companyfacts-capture.v1",
+        "cik": cik,
+        "source_url": FACTS_URL.format(cik=cik),
+        "raw_sha256": sha256_bytes(raw),
+        "captured_at": captured_at,
+    }
+    receipt_path = raw_dir / f"CIK{cik:010d}.capture.json"
+    temporary = receipt_path.with_suffix(".json.pending")
+    temporary.write_text(json.dumps(receipt, indent=2) + "\n")
+    temporary.replace(receipt_path)
     return raw, False
+
+
+def capture_time(cik: int, raw: bytes, raw_dir: Path) -> str | None:
+    path = raw_dir / f"CIK{cik:010d}.capture.json"
+    if not path.exists():
+        return None  # Legacy caches have no verified individual retrieval time.
+    try:
+        receipt = json.loads(path.read_text())
+        captured = receipt["captured_at"]
+        instant = datetime.fromisoformat(captured)
+        if (
+            receipt["schema"] != "canli.sec-companyfacts-capture.v1"
+            or type(receipt["cik"]) is not int
+            or receipt["cik"] != cik
+            or receipt["source_url"] != FACTS_URL.format(cik=cik)
+            or receipt["raw_sha256"] != sha256_bytes(raw)
+            or instant.tzinfo is None
+            or instant.utcoffset() != UTC.utcoffset(None)
+            or instant > datetime.now(UTC)
+        ):
+            raise ValueError("capture binding mismatch")
+        return str(captured)
+    except (KeyError, TypeError, ValueError) as error:
+        raise InvalidCompanyFacts(
+            "companyfacts capture receipt is invalid or mismatched"
+        ) from error
 
 
 def process_issuer(client: SecClient, cik: int, raw_dir: Path) -> tuple[dict, list[dict]]:
     base = {"cik": int(cik), "parser_version": PARSER_VERSION}
+    raw: bytes | None = None
+    cached = False
+    base["captured_at"] = None
     try:
         raw, cached = cached_companyfacts(client, cik, raw_dir)
-        payload = json.loads(raw)
+        base["captured_at"] = capture_time(cik, raw, raw_dir)
+        try:
+            payload = json.loads(raw)
+        except (json.JSONDecodeError, UnicodeDecodeError) as error:
+            raise InvalidCompanyFacts("companyfacts response is not valid JSON") from error
+        validate_companyfacts(cik, payload)
         facts = parse_companyfacts(cik, payload)
         custom = custom_fact_inventory(payload)
         return (
@@ -272,14 +337,29 @@ def process_issuer(client: SecClient, cik: int, raw_dir: Path) -> tuple[dict, li
             },
             facts,
         )
+    except InvalidCompanyFacts as error:
+        return (
+            {
+                **base,
+                "source_status": "invalid_payload",
+                "raw_sha256": sha256_bytes(raw) if raw is not None else None,
+                "raw_bytes": len(raw) if raw is not None else 0,
+                "raw_from_cache": cached,
+                "relevant_fact_rows": 0,
+                "relevant_tags": 0,
+                "custom_namespaces": "[]",
+                "custom_tags": 0,
+                "custom_fact_rows": 0,
+                "error": str(error),
+            },
+            [],
+        )
     except httpx.HTTPStatusError as error:
         is_terminal_absence = error.response.status_code == 404
         return (
             {
                 **base,
-                "source_status": (
-                    "not_available_404" if is_terminal_absence else "error"
-                ),
+                "source_status": ("not_available_404" if is_terminal_absence else "error"),
                 "raw_sha256": None,
                 "raw_bytes": 0,
                 "raw_from_cache": False,
@@ -326,10 +406,7 @@ def completed_ciks(out_dir: Path) -> set[int]:
                 part,
                 pd.isna(row["error"])
                 and row["parser_version"] == PARSER_VERSION
-                and (
-                    pd.isna(source_status)
-                    or source_status in {"fetched", "not_available_404"}
-                ),
+                and source_status in {"fetched", "not_available_404"},
             )
     return {cik for cik, (_, complete) in latest.items() if complete}
 
@@ -345,9 +422,7 @@ def write_parts(out_dir: Path, part: int, statuses: list[dict], facts: list[dict
     pd.DataFrame(statuses, columns=STATUS_COLUMNS).to_parquet(
         status_tmp, index=False, compression="zstd"
     )
-    pd.DataFrame(facts, columns=FACT_COLUMNS).to_parquet(
-        fact_tmp, index=False, compression="zstd"
-    )
+    pd.DataFrame(facts, columns=FACT_COLUMNS).to_parquet(fact_tmp, index=False, compression="zstd")
     status_tmp.replace(status_path)
     fact_tmp.replace(fact_path)
 
@@ -356,15 +431,11 @@ def parts_lineage(out_dir: Path) -> tuple[int, str]:
     digest = hashlib.sha256()
     paths = sorted(out_dir.glob("*.parquet"))
     for path in paths:
-        digest.update(
-            f"{path.name}\0{path.stat().st_size}\0{file_sha256(path)}\n".encode()
-        )
+        digest.update(f"{path.name}\0{path.stat().st_size}\0{file_sha256(path)}\n".encode())
     return len(paths), digest.hexdigest()
 
 
-def summarize(
-    out_dir: Path, expected_ciks: set[int], manifest: dict[str, Any]
-) -> dict[str, Any]:
+def summarize(out_dir: Path, expected_ciks: set[int], manifest: dict[str, Any]) -> dict[str, Any]:
     statuses = []
     for path in sorted(out_dir.glob("issuer-status-*.parquet")):
         frame = pd.read_parquet(path)
@@ -372,39 +443,24 @@ def summarize(
         statuses.append(frame)
     status = pd.concat(statuses, ignore_index=True) if statuses else pd.DataFrame()
     if len(status):
-        status = status.sort_values(["cik", "part_number"]).drop_duplicates(
-            "cik", keep="last"
-        )
+        status = status.sort_values(["cik", "part_number"]).drop_duplicates("cik", keep="last")
     source_status = (
         status.get("source_status", pd.Series(index=status.index, dtype=object))
         if len(status)
         else pd.Series(dtype=object)
     )
+    current = status["parser_version"].eq(PARSER_VERSION) if len(status) else pd.Series(dtype=bool)
     terminal = (
-        status["error"].isna()
-        & source_status.isin({"fetched", "not_available_404"})
+        current & status["error"].isna() & source_status.isin({"fetched", "not_available_404"})
         if len(status)
         else pd.Series(dtype=bool)
     )
-    fetched = (
-        terminal & source_status.eq("fetched")
-        if len(status)
-        else pd.Series(dtype=bool)
-    )
+    fetched = terminal & source_status.eq("fetched") if len(status) else pd.Series(dtype=bool)
     unavailable = (
-        terminal & source_status.eq("not_available_404")
-        if len(status)
-        else pd.Series(dtype=bool)
-    )
-    current = (
-        status["parser_version"].eq(PARSER_VERSION)
-        if len(status)
-        else pd.Series(dtype=bool)
+        terminal & source_status.eq("not_available_404") if len(status) else pd.Series(dtype=bool)
     )
     current_terminal = (
-        set(status.loc[terminal & current, "cik"].astype(int))
-        if len(status)
-        else set()
+        set(status.loc[terminal & current, "cik"].astype(int)) if len(status) else set()
     )
     missing = sorted(expected_ciks - current_terminal)
     unexpected = sorted(current_terminal - expected_ciks)
@@ -425,32 +481,30 @@ def summarize(
         "terminal_accounted_ciks": int(terminal.sum()) if len(status) else 0,
         "collection_error_ciks": int((current & ~terminal).sum()) if len(status) else 0,
         "current_parser_ciks": int(current.sum()) if len(status) else 0,
+        "legacy_parser_ciks": int((~current).sum()) if len(status) else 0,
+        "invalid_payload_ciks": int((current & source_status.eq("invalid_payload")).sum())
+        if len(status)
+        else 0,
         "missing_ciks": missing,
         "unexpected_ciks": unexpected,
         "exact_manifest_identity_set": exact_identity_set,
         "relevant_fact_rows": int(status.loc[fetched, "relevant_fact_rows"].sum())
         if len(status)
         else 0,
-        "zero_relevant_fact_ciks": int(
-            (fetched & status["relevant_fact_rows"].eq(0)).sum()
-        )
+        "zero_relevant_fact_ciks": int((fetched & status["relevant_fact_rows"].eq(0)).sum())
         if len(status)
         else 0,
         "custom_fact_rows": int(status.loc[fetched, "custom_fact_rows"].sum())
         if len(status)
         else 0,
-        "custom_tags": int(status.loc[fetched, "custom_tags"].sum())
-        if len(status)
-        else 0,
+        "custom_tags": int(status.loc[fetched, "custom_tags"].sum()) if len(status) else 0,
         "part_files": part_count,
         "parts_sha256": part_hash,
         "return_data_opened": False,
         "return_hypotheses_spent": 0,
         "complete": exact_identity_set,
         "decision": (
-            "READY_FOR_COMPANYFACTS_AUDIT"
-            if exact_identity_set
-            else "COLLECTION_INCOMPLETE"
+            "READY_FOR_COMPANYFACTS_AUDIT" if exact_identity_set else "COLLECTION_INCOMPLETE"
         ),
     }
 
@@ -471,9 +525,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     client = SecClient(Path(args.raw_dir) / "network_metadata_cache")
     try:
         with ThreadPoolExecutor(max_workers=args.workers) as pool:
-            results = pool.map(
-                lambda cik: process_issuer(client, cik, Path(args.raw_dir)), pending
-            )
+            results = pool.map(lambda cik: process_issuer(client, cik, Path(args.raw_dir)), pending)
             for number, (status, facts) in enumerate(results, 1):
                 status_buffer.append(status)
                 fact_buffer.extend(facts)

@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import importlib
+import json
 import os
+import shutil
 import uuid
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
@@ -9,6 +11,7 @@ from typing import Any
 
 import pytest
 
+from alphaforge.environment_archive import resolve_environment_binding
 from alphaforge.foundry.contract import FoundryContract
 from alphaforge.foundry.database import FoundryDatabase, TransitionRequest
 from alphaforge.foundry.migration import LegacyMigrationPacket, load_and_verify_legacy_migration
@@ -87,13 +90,29 @@ def reserved_trial() -> dict[str, object]:
 @pytest.fixture(scope="module")
 def migrated_kill(
     reserved_trial: dict[str, object],
+    tmp_path_factory: pytest.TempPathFactory,
 ) -> tuple[LegacyMigrationPacket, dict[str, Any]]:
     assert reserved_trial["state"] == "RESERVED"
     assert MIGRATOR_DSN is not None
     root = Path(__file__).resolve().parents[2]
+    packet_path = root / "config/foundry_legacy_migrations/eia_petroleum_inventory_v1.json"
+    # Exercise the database lifecycle with exact historical bound files. This fixture
+    # does not install packages or execute research; private inputs remain deferred.
+    workspace = tmp_path_factory.mktemp("historical-migration")
+    for binding in json.loads(packet_path.read_text())["source_bindings"]:
+        if binding["availability"] != "TRACKED":
+            continue
+        relative = binding["path"]
+        source = root / relative
+        if binding["name"] == "research_lockfile":
+            resolved = resolve_environment_binding(root, relative, binding["sha256"])
+            source = root / resolved.resolved_path
+        destination = workspace / relative
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(source, destination)
     packet, _ = load_and_verify_legacy_migration(
-        root / "config/foundry_legacy_migrations/eia_petroleum_inventory_v1.json",
-        repository_root=root,
+        packet_path,
+        repository_root=workspace,
         verify_private_snapshot=False,
     )
     trial = FoundryDatabase(MIGRATOR_DSN).import_legacy_killed(

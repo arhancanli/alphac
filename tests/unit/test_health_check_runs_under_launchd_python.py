@@ -31,13 +31,81 @@ HEALTH_PY = _ROOT / "scripts" / "health_check.py"
 PLIST = Path.home() / "Library" / "LaunchAgents" / "com.accapital.health.plist"
 
 
+def _repository_identity(root: Path) -> Path:
+    result = subprocess.run(
+        ["git", "rev-parse", "--path-format=absolute", "--git-common-dir"],
+        cwd=root,
+        capture_output=True,
+        text=True,
+        timeout=10,
+        check=True,
+    )
+    return Path(result.stdout.strip()).resolve()
+
+
 def _launchd_interpreter() -> str:
     if not PLIST.exists():
         pytest.skip(f"{PLIST} absent: not the machine that runs the monitor")
     with PLIST.open("rb") as fh:
         args = plistlib.load(fh)["ProgramArguments"]
-    assert args[1] == str(HEALTH_PY), args
+    assert isinstance(args, list) and len(args) >= 2, args
+    configured = Path(args[1]).resolve()
+    assert configured.name == HEALTH_PY.name and configured.parent.name == "scripts", args
+    # A linked candidate worktree must not require repointing the live monitor.
+    # Still reject a plist for an unrelated repository. The child below runs the
+    # candidate HEALTH_PY under the configured interpreter, never the live script.
+    assert _repository_identity(configured.parent.parent) == _repository_identity(_ROOT), args
     return args[0]
+
+
+def test_launchd_configuration_accepts_same_repository_worktree_only(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    repo = tmp_path / "source"
+    repo.mkdir()
+    subprocess.run(["git", "init", str(repo)], check=True, capture_output=True)
+    subprocess.run(
+        [
+            "git",
+            "-C",
+            str(repo),
+            "-c",
+            "user.name=Fixture",
+            "-c",
+            "user.email=fixture@example.invalid",
+            "commit",
+            "--allow-empty",
+            "-m",
+            "fixture",
+        ],
+        check=True,
+        capture_output=True,
+    )
+    worktree = tmp_path / "candidate"
+    subprocess.run(
+        ["git", "-C", str(repo), "worktree", "add", "--detach", str(worktree)],
+        check=True,
+        capture_output=True,
+    )
+    configured = repo / "scripts" / "health_check.py"
+    configured.parent.mkdir()
+    configured.write_text("# fixture\n")
+    plist = tmp_path / "monitor.plist"
+    plist.write_bytes(plistlib.dumps({"ProgramArguments": [sys.executable, str(configured)]}))
+    monkeypatch.setattr(sys.modules[__name__], "PLIST", plist)
+    monkeypatch.setattr(sys.modules[__name__], "_ROOT", worktree)
+    assert _launchd_interpreter() == sys.executable
+
+    unrelated = tmp_path / "unrelated"
+    unrelated.mkdir()
+    subprocess.run(["git", "init", str(unrelated)], check=True, capture_output=True)
+    unrelated_script = unrelated / "scripts" / "health_check.py"
+    unrelated_script.parent.mkdir()
+    unrelated_script.write_text("# fixture\n")
+    plist.write_bytes(plistlib.dumps({"ProgramArguments": [sys.executable, str(unrelated_script)]}))
+    with pytest.raises(AssertionError):
+        _launchd_interpreter()
 
 
 _CHILD = textwrap.dedent(

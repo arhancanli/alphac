@@ -205,3 +205,47 @@ def test_source_hash_ignores_agent_plugin_state_that_rewrites_itself(tmp_path: P
     assert (destination / "public/glassbox/evidence.json").is_file()
     assert not (destination / ".claude-flow").exists()
     assert not (destination / "ruvector.db").exists()
+
+
+@pytest.mark.parametrize("shell", ["zsh", "bash"])
+@pytest.mark.parametrize("use_design", [False, True])
+def test_nested_agent_state_never_enters_public_snapshot(
+    shell: str, use_design: bool, tmp_path: Path
+) -> None:
+    if shutil.which(shell) is None:
+        pytest.skip(f"{shell} is unavailable")
+    landing = _project(tmp_path, "landing")
+    application = _project(tmp_path, "application")
+    design = _project(tmp_path, "design")
+    forbidden = [
+        ".claude/state.json", ".firecrawl/cache.json",
+        ".claude-flow/neural/stats.json", ".serena/memory.json",
+        "ruvector.db", "ruvector.db-wal", ".env.local",
+    ]
+    for project in (landing, application, design):
+        for family in ("glassbox", "research", "publication", "release-candidates"):
+            folder = project / "public" / family
+            folder.mkdir(exist_ok=True)
+            (folder / "retained.json").write_text('{"evidence":true}')
+            for name in forbidden:
+                path = folder / "nested" / name
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text("not public evidence")
+        (project / "public/paper-state.json").write_text("{}")
+    environment = os.environ | {
+        "SITE_LANDING_SOURCE": str(landing),
+        "SITE_APP_SOURCE": str(application),
+        "SITE_LANDING_DESIGN_SOURCE": str(design) if use_design else "",
+    }
+    result = subprocess.run(
+        [shell, "-c", f'. "{HELPER}"; site_snapshot_create "{tmp_path}/canli-publish.test"'],
+        env=environment, capture_output=True, text=True, check=False,
+    )
+    assert result.returncode == 0, result.stderr or result.stdout
+    for site in ("meridian", "meridian-app"):
+        root = tmp_path / "canli-publish.test/attempt-1" / site / "public"
+        for family in ("glassbox", "research", "publication", "release-candidates"):
+            assert (root / family / "retained.json").is_file()
+            for name in forbidden:
+                assert not (root / family / "nested" / name).exists()
+    assert (landing / "public/glassbox/nested/ruvector.db").exists()
