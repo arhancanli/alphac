@@ -30,7 +30,7 @@ def test_all_sleeves_exclude_raw_rows_without_claiming_rights_clearance() -> Non
         "data_license_reviews_complete": 0,
         "public_terms_reviews_complete": 16,
         "external_publication_clearances_complete": 0,
-        "policy_source_classes": 10,
+        "policy_source_classes": 14,
     }
     assert report["raw_third_party_rows_released"] is False
     assert report["redistribution_rights_cleared_for_all_sleeves"] is False

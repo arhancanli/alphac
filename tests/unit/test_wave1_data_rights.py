@@ -21,7 +21,7 @@ def test_wave1_raw_vendor_rows_are_excluded_and_sources_are_mapped() -> None:
     report = module.build()
     assert report["status"] == "PASS_PUBLIC_TERMS_REVIEW_COMPLETE_CLEARANCE_REQUIRED"
     assert report["wave1_papers"] == 5
-    assert report["source_classes"] == 10
+    assert report["source_classes"] == 14
     assert report["wave1_source_classes"] == 6
     assert report["public_terms_reviews_complete"] == 6
     assert report["external_publication_clearances_recorded"] == 0
