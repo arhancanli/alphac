@@ -1,7 +1,7 @@
 {
   "schema": "canli.alphac-data-source-rights-policy.v2",
   "owner": "Arhan Canli",
-  "review_date": "2026-09-15",
+  "review_date": "2026-09-21",
   "review_boundary": "Operational publication policy, not legal advice. Absence of a clear redistribution grant is treated as no permission to redistribute raw records.",
   "sources": {
     "ALPACA_PRIVATE_ACCOUNT": {
@@ -10,11 +10,11 @@
       "raw_redistribution": "PROHIBITED_BY_PROJECT_POLICY",
       "permitted_release": "sanitized aggregate reconciliation with account identifiers and credentials removed",
       "portable_reproduction_route": "reviewer supplies a separate paper account or verifies released aggregates",
-      "terms_observed_on": "2026-08-26",
+      "terms_observed_on": "2026-09-21",
       "public_terms_review_status": "COMPLETE_CONSERVATIVE_DECISION_RECORDED",
       "external_publication_clearance_recorded": false,
       "derived_result_publication": "ACCOUNT_AGGREGATES_ONLY_MARKET_DATA_EXCLUDED_OWNER_AND_CURRENT_TERMS_REVIEW_REQUIRED",
-      "terms_evidence": "The current customer agreement prohibits reproducing, distributing, selling, or commercially exploiting Alpaca-supplied market data without written consent. The project therefore excludes market-data rows, credentials, account identifiers, orders, and positions from publication bundles; sanitized paper-account aggregates remain subject to owner approval and a final current-terms check."
+      "terms_evidence": "The current customer agreement prohibits reproducing, distributing, selling, or commercially exploiting Alpaca-supplied market data without written consent. The project therefore excludes market-data rows, credentials, account identifiers, orders, and positions from publication bundles; sanitized paper-account aggregates remain subject to owner approval and a final current-terms check. Re-reviewed on 2026-09-21: the current Alpaca Customer Agreement (version V26.2026.07) still states \"I agree not to reproduce, distribute, sell or commercially exploit the market data in any manner without written consent from Alpaca.\" Decision unchanged."
     },
     "BINANCE_EXCHANGE_MARKET_DATA": {
       "access_kind": "exchange API accessed through CCXT, and public USD-M futures websocket market streams (forced-liquidation orders)",
@@ -23,11 +23,11 @@
       "raw_redistribution": "WITHHELD_PENDING_EXPLICIT_RIGHTS_CONFIRMATION",
       "permitted_release": "code, query specification, symbols, timestamps, hashes and derived non-row-level results",
       "portable_reproduction_route": "fresh API acquisition under the reviewer's own access and then hash/coverage comparison",
-      "terms_observed_on": "2026-09-15",
+      "terms_observed_on": "2026-09-21",
       "public_terms_review_status": "COMPLETE_CONSERVATIVE_DECISION_RECORDED",
       "external_publication_clearance_recorded": false,
       "derived_result_publication": "NOT_EXPLICITLY_CLEARED_BY_PUBLIC_API_DOCUMENTATION",
-      "terms_evidence": "Binance's current official developer documentation authorizes supported API access to public market data and describes analytics and dashboard integrations, but the reviewed public documentation does not provide an explicit redistribution grant for historical rows or research-derived outputs. Raw rows remain withheld and external publication requires a final provider or qualified-rights confirmation. Re-reviewed on 2026-09-15 for the liquidation stream: the Binance FZE Terms of Use (updated 5 January 2026; the VARA-licensed entity for Dubai residents) license Binance IP only as needed to use the services for non-commercial personal or internal business use (clause 25), and clause 27(m), paraphrased, bars copying, downloading, storing, publishing or creating derivative works of that intellectual property. The terms do not say whether public market data is Binance IP, so storage for internal research is recorded as unresolved, not cleared."
+      "terms_evidence": "Binance's current official developer documentation authorizes supported API access to public market data and describes analytics and dashboard integrations, but the reviewed public documentation does not provide an explicit redistribution grant for historical rows or research-derived outputs. Raw rows remain withheld and external publication requires a final provider or qualified-rights confirmation. Re-reviewed on 2026-09-15 for the liquidation stream: the Binance FZE Terms of Use (updated 5 January 2026; the VARA-licensed entity for Dubai residents) license Binance IP only as needed to use the services for non-commercial personal or internal business use (clause 25), and clause 27(m), paraphrased, bars copying, downloading, storing, publishing or creating derivative works of that intellectual property. The terms do not say whether public market data is Binance IP, so storage for internal research is recorded as unresolved, not cleared. Re-reviewed on 2026-09-21: the Binance FZE Terms of Use still show Last Updated 5 January 2026, with the same licence limited to non-commercial personal or internal business use and the same prohibition on creating derivative works of Binance intellectual property. Decision unchanged."
     },
     "BYBIT_EXCHANGE_MARKET_DATA": {
       "access_kind": "public v5 REST and websocket market data read without an account (funding-rate history; allLiquidation stream)",
@@ -107,11 +107,11 @@
       "raw_redistribution": "PROHIBITED_WITHOUT_SEPARATE_PERMISSION",
       "permitted_release": "source-independent code and methodology only until an applicable business order form or express written consent is recorded",
       "portable_reproduction_route": "reviewer supplies separately licensed Massive/Polygon access",
-      "terms_observed_on": "2026-08-26",
+      "terms_observed_on": "2026-09-21",
       "public_terms_review_status": "COMPLETE_CONSERVATIVE_DECISION_RECORDED",
       "external_publication_clearance_recorded": false,
       "derived_result_publication": "REQUIRES_APPLICABLE_ORDER_FORM_OR_EXPRESS_WRITTEN_CONSENT",
-      "terms_evidence": "Massive's market-data terms, last updated August 28, 2025, restrict publication or transfer of market data and expressly include charts, analytics, research, and other derived works. The account-specific order form has not been reviewed and no express publication consent is recorded."
+      "terms_evidence": "Massive's market-data terms, last updated August 28, 2025, restrict publication or transfer of market data and expressly include charts, analytics, research, and other derived works. The account-specific order form has not been reviewed and no express publication consent is recorded. Re-reviewed on 2026-09-21: the Market Data Terms of Service still show Last Updated August 28, 2025 and still bar copying, republishing or distributing Market Data and transferring Derived Works (data, charts, analytics, research) without express prior written consent. Decision unchanged."
     },
     "NASDAQ_SHARADAR": {
       "access_kind": "licensed Nasdaq Data Link dataset",
@@ -119,11 +119,11 @@
       "raw_redistribution": "PROHIBITED_WITHOUT_SEPARATE_PERMISSION",
       "permitted_release": "source-independent code and methodology only until the applicable order form or prior written approval permits external distribution",
       "portable_reproduction_route": "reviewer supplies a separately licensed Sharadar dataset",
-      "terms_observed_on": "2026-08-26",
+      "terms_observed_on": "2026-09-21",
       "public_terms_review_status": "COMPLETE_CONSERVATIVE_DECISION_RECORDED",
       "external_publication_clearance_recorded": false,
       "derived_result_publication": "REQUIRES_APPLICABLE_ORDER_FORM_PERMISSION_OR_PRIOR_WRITTEN_APPROVAL",
-      "terms_evidence": "Nasdaq Data Link's public data-license terms prohibit redistributing licensed data and state that derived data cannot be distributed outside the client except as allowed by the order form or with prior written approval. No applicable order-form permission or written approval is recorded."
+      "terms_evidence": "Nasdaq Data Link's public data-license terms prohibit redistributing licensed data and state that derived data cannot be distributed outside the client except as allowed by the order form or with prior written approval. No applicable order-form permission or written approval is recorded. Re-reviewed on 2026-09-21: the current Nasdaq Data Link terms (section 1.2) allow Derived Data only if it cannot be reverse engineered to the Data and cannot substitute for a Nasdaq service, and bar redistributing or providing access to the Data except as the Order Form allows. Nasdaq has posted updated Terms and Conditions that apply from November 1, 2026; they must be reviewed before that date. Decision unchanged."
     },
     "OKX_EXCHANGE_MARKET_DATA": {
       "access_kind": "public v5 REST market data read without an account (funding-rate history; long/short account ratio)",
@@ -144,11 +144,11 @@
       "raw_redistribution": "WITHHELD_PENDING_EXPLICIT_RIGHTS_CONFIRMATION",
       "permitted_release": "download recipe, series names, vintage semantics, coverage manifest, hashes and derived results",
       "portable_reproduction_route": "fresh download from the official source",
-      "terms_observed_on": "2026-08-26",
+      "terms_observed_on": "2026-09-21",
       "public_terms_review_status": "COMPLETE_CONSERVATIVE_DECISION_RECORDED",
       "external_publication_clearance_recorded": false,
       "derived_result_publication": "RESEARCH_USE_AND_PREFERRED_CITATION_DOCUMENTED_RAW_REDISTRIBUTION_NOT_CLEARED",
-      "terms_evidence": "The RTDSM page states that the dataset may be used by macroeconomic researchers and identifies the preferred technical citation. It does not state an explicit raw-data redistribution grant, so the bundle contains recipes, provenance, and derived results but no RTDSM rows."
+      "terms_evidence": "The RTDSM page states that the dataset may be used by macroeconomic researchers and identifies the preferred technical citation. It does not state an explicit raw-data redistribution grant, so the bundle contains recipes, provenance, and derived results but no RTDSM rows. Re-reviewed on 2026-09-21: the RTDSM page still states the data set may be used by macroeconomic researchers to verify empirical results, analyze policy or forecast, and still names Croushore and Stark (2001) as the preferred citation. The recorded official_terms PDF now returns HTTP 404, and /about-us/terms-of-use and /about-us/legal-notice return the site's not-found page, so no current terms document was located. No redistribution grant is established; decision unchanged."
     },
     "SEC_PUBLIC_DATA_AND_FILINGS": {
       "access_kind": "SEC government-created datasets and public EDGAR filings",
@@ -168,11 +168,11 @@
       "raw_redistribution": "PROHIBITED_WITHOUT_EXPLICIT_PERMISSION",
       "permitted_release": "instrument/date specification and source-independent code only until the relevant market-data rights are confirmed",
       "portable_reproduction_route": "reviewer independently acquires equivalent licensed benchmark data",
-      "terms_observed_on": "2026-08-26",
+      "terms_observed_on": "2026-09-21",
       "public_terms_review_status": "COMPLETE_CONSERVATIVE_DECISION_RECORDED",
       "external_publication_clearance_recorded": false,
       "derived_result_publication": "NOT_CLEARED_FOR_UNOFFICIAL_FINANCE_DATA_ACCESS_PATH",
-      "terms_evidence": "Yahoo's current public terms preserve Yahoo and vendor rights in service content. The project did not use a documented licensed Yahoo Finance market-data API with an external-publication grant, so raw rows remain withheld and research-derived publication clearance is not inferred."
+      "terms_evidence": "Yahoo's current public terms preserve Yahoo and vendor rights in service content. The project did not use a documented licensed Yahoo Finance market-data API with an external-publication grant, so raw rows remain withheld and research-derived publication clearance is not inferred. Re-reviewed on 2026-09-21: the current Yahoo Terms of Service go further than the earlier note. They prohibit accessing or collecting data from the Services \"using any automated means\" for any purpose without Yahoo's express prior permission, and prohibit using Yahoo content or data to create any database, archive or data feed. The project's unofficial automated access path is therefore not permitted by the public terms for collection itself, not only for publication. Raw rows stay withheld, derived publication is not cleared, and a licensed replacement is required before any live or external use."
     }
   },
   "project_default": "DO_NOT_BUNDLE_RAW_THIRD_PARTY_ROWS_UNLESS_A SOURCE-SPECIFIC WRITTEN GRANT IS RECORDED",
