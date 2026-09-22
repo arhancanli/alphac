@@ -14,11 +14,14 @@ def test_readme_headlines_match_the_dated_forward_evidence_artifact() -> None:
     record = evidence["record"]
     drawdown = evidence["drawdown_evidence"]
     diversification = evidence["diversification_evidence"]
-    minus_sign = chr(0x2212)
+    # Mirror scripts/sync_readme_forward_evidence.py _percentage: the sign comes from
+    # the value, rendered with the typographic minus. The previous form prefixed a
+    # minus unconditionally and could only pass while the forward record was negative.
+    cumulative = f"{record['cumulative_return']:.5%}".replace("-", chr(0x2212))
 
     assert f"**Evidence snapshot:** {evidence['generated_at'][:10]}." in readme
     assert f"**{record['daily_return_observations']} daily returns**" in readme
-    assert f"**{minus_sign}{abs(record['cumulative_return']):.5%}**" in readme
+    assert f"**{cumulative}**" in readme
     assert f"**{drawdown['realized_live_max_drawdown']:.5%}**" in readme
     assert (
         f"**{drawdown['current_composition_conservative_expected_max_drawdown']:.3%} expected / "
