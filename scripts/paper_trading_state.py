@@ -94,6 +94,10 @@ V3_ENDED = "2026-09-24"
 # or bad. The accounts are NOT reset — the brokers' own histories stay whole —
 # and v3 is frozen with a manifest digest by scripts/archive_live_record.py before v4's first mark.
 V4_GO_LIVE = "2026-09-24"
+#: The v3 freeze (scripts/archive_live_record.py --write, 2026-09-23T23:40:09Z): the manifest over
+#: every sleeve's broker history, positions, local trading DB and the published state, kept at
+#: artifacts/archive/live_record_20260923T234009Z. Published so a stranger can check the freeze.
+V3_FREEZE_MANIFEST_SHA256 = "a12a15bfcf8583138315a04bb9182b4f44fb2fe7d9d1a47771da8676374cf0fb"
 GO_LIVE = V4_GO_LIVE  # the day the CURRENT live paper track record begins
 # SUSPENDED FROM THE BOOK, 2026-09-23 (owner). AlphaForge, the crypto funding-carry sleeve, has the
 # longest defect history in the book: funding never booked for its first 44 days (2026-08-12), the
@@ -1671,8 +1675,8 @@ def transparency_entries() -> list[str]:
         "rows that contradict the raw bars were served as stored until reader corrections on "
         "2026-09-23; and the equity NAV was gross of frictions until 2026-09-15. How much this "
         "moved v3's returns was not measured, so NO v3 result is claimed, good or bad. v3 is not "
-        "deleted: the broker accounts were not reset and the record is frozen with a manifest "
-        f"digest. v4 restarts the forward record on {V4_GO_LIVE}, and its evidence epoch never "
+        "deleted: the broker accounts were not reset and the record is frozen with manifest "
+        f"digest {V3_FREEZE_MANIFEST_SHA256}. v4 restarts the forward record on {V4_GO_LIVE}, and its evidence epoch never "
         "pools v3's returns. AlphaForge, the crypto funding-carry sleeve, is SUSPENDED from "
         "the book and from these pages from the same day: its defect history (funding never "
         "booked for 44 days, a rebalance frozen for five weeks, an upgrade closed INCOMPLETE) "
@@ -2107,6 +2111,7 @@ def main():
                     "the equity sleeves' published NAV was gross of every friction until the "
                     "cost-charged curve of 2026-09-15",
                 ],
+                "frozen_manifest_sha256": V3_FREEZE_MANIFEST_SHA256,
                 "not_claimed": "the effect of these defects on v3's returns was not measured; "
                 "v3 is withdrawn because its inputs cannot support any result, good or bad",
             },

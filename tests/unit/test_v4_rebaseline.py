@@ -92,3 +92,14 @@ def test_the_published_correlation_is_the_one_the_book_curves_give() -> None:
     pairs = itertools.combinations(range(corr.shape[0]), 2)
     measured = float(np.mean([corr[i, j] for i, j in pairs]))
     assert abs(measured - paper.RHO_BAR) < 5e-5, measured
+
+
+@pytest.mark.workspace_evidence
+def test_the_published_v3_freeze_digest_is_the_archive_manifests() -> None:
+    """The digest the record publishes is recomputed from the frozen archive, never trusted."""
+    import hashlib
+
+    archive = REPO / "artifacts" / "archive" / "live_record_20260923T234009Z"
+    digest = hashlib.sha256((archive / "MANIFEST.json").read_bytes()).hexdigest()
+    assert digest == paper.V3_FREEZE_MANIFEST_SHA256
+    assert (archive / "MANIFEST.sha256").read_text().strip() == digest
