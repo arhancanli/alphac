@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>com.accapital.corpactions</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/zsh</string>
+    <string>/Users/arhancanli/alphaforge/scripts/corp_actions_weekly.sh</string>
+  </array>
+  <key>StartCalendarInterval</key>
+  <!-- Saturday 22:00 local: a full pass is ~2 h and the script's watchdog caps it at 6 h, so even
+       the worst case ends before Sunday 04:00, clear of the publish (02:10) lock-free and of every
+       sleeve tick (09:00 onward). Weekly, because new dividends and splits are fetched 45 days
+       ahead of their ex-date. Health C6h fails if the lake goes more than 15 days unwritten. -->
+  <dict><key>Weekday</key><integer>6</integer><key>Hour</key><integer>22</integer><key>Minute</key><integer>0</integer></dict>
+  <key>StandardOutPath</key><string>/Users/arhancanli/alphaforge/var/log/corpactions.launchd.out</string>
+  <key>StandardErrorPath</key><string>/Users/arhancanli/alphaforge/var/log/corpactions.launchd.err</string>
+  <key>ProcessType</key><string>Background</string>
+  <key>RunAtLoad</key><false/>
+</dict>
+</plist>

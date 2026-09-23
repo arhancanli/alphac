@@ -10,7 +10,7 @@ having none.
 
 At a glance: **424 Python scripts**, **17 shell entry points**,
 **34 configuration contracts**, **31 engineering artifacts**,
-**438 unit test files**, **23 data directories**, **9 scheduled jobs**.
+**443 unit test files**, **23 data directories**, **10 scheduled jobs**.
 
 
 ## What runs on a timer
@@ -20,10 +20,11 @@ At a glance: **424 Python scripts**, **17 shell entry points**,
 | com.accapital.alphamax | `alphamax_tick.sh` | 09:00 daily |
 | com.accapital.alphatrend | `mf_tick.sh` | 09:30 daily |
 | com.accapital.alphavintage | `alphavintage_tick.sh` | 10:00 daily |
+| com.accapital.corpactions | `corp_actions_weekly.sh` | Sat 22:00 weekly |
 | com.accapital.deribit | `deribit_capture.py` | 13:00 daily |
 | com.accapital.eia930 | `eia930_sweep.sh` | 4 times daily |
 | com.accapital.health | `health_check.py` | 03:32 daily |
-| com.accapital.livetick | `live_tick.sh` | 0*:25 daily |
+| com.accapital.livetick | `live_tick.sh` | hourly at :25 |
 | com.accapital.macrovintage | `macro_vintage_tick.sh` | 08:20 daily |
 | com.accapital.publish | `live_publish.sh` | 02:10 daily |
 
