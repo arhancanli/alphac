@@ -45,6 +45,11 @@
 # splits+dividends endpoints (every ticker's actions in ~1 call per window), but that needs a
 # source-adapter change in src/alphaforge/data/sources/, outside this script.
 #
+# SCHEDULED 2026-09-23 (deploy/com.accapital.corpactions.plist.template, Saturday 22:00 local).
+# Until then this job had run exactly once, by hand, on 2026-08-02: no split or dividend reached
+# data/lake for seven weeks and nothing on the health board could see it. Health C6h now reads the
+# lake's newest partition and fails after 15 days without a write.
+#
 # NO STRATEGY KNOB LIVES HERE. This job writes only the corporate_actions dataset + its
 # per-instrument watermarks. Alphas, K, cadence, weights, universe and costs are untouched.
 
