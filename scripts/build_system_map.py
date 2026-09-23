@@ -65,6 +65,22 @@ def _steps_of(shell: Path) -> list[str]:
     return seen
 
 
+_WEEKDAYS = ("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat")
+
+
+def _calendar_label(calendar: Any) -> str:
+    """launchd StartCalendarInterval as a reader would say it (Weekday 0 and 7 are Sunday)."""
+    if isinstance(calendar, list):
+        return f"{len(calendar)} times daily"
+    minute = f"{calendar.get('Minute', 0):02d}"
+    if "Hour" not in calendar:
+        return f"hourly at :{minute}"
+    at = f"{calendar['Hour']:02d}:{minute}"
+    if "Weekday" in calendar:
+        return f"{_WEEKDAYS[calendar['Weekday'] % 7]} {at} weekly"
+    return f"{at} daily"
+
+
 def _scheduled_jobs() -> list[dict[str, Any]]:
     jobs = []
     if not LAUNCH_AGENTS.is_dir():
@@ -80,10 +96,8 @@ def _scheduled_jobs() -> list[dict[str, Any]]:
             continue
         calendar = data.get("StartCalendarInterval")
         interval = data.get("StartInterval")
-        if isinstance(calendar, dict):
-            when = f"{calendar.get('Hour', '*'):0>2}:{calendar.get('Minute', 0):0>2} daily"
-        elif isinstance(calendar, list):
-            when = f"{len(calendar)} times daily"
+        if calendar:
+            when = _calendar_label(calendar)
         elif interval:
             when = f"every {int(interval) // 60} min"
         else:
