@@ -1297,3 +1297,12 @@ published number or spend a research identity are marked DECISION and name who m
   published. Activation waits for two v4 marks (2026-09-25 after 01:00Z): the ladder, the evidence
   evaluator and the contribution analysis all refuse a one-mark curve. Repairing AlphaForge is
   the highest-value next item: it was the research book's largest contributor.
+- 2026-09-23 19:45Z. ONE SEALED BUNDLE REBOUND, BY THE DOCUMENTED PROCEDURE. CI's publication
+  integrity job refused #80: `scripts/analyze_current_book_diversification.py` is a code binding
+  of `publication/alphavintage/v1.0.0`, and the three-sleeve book changed it (it now rebuilds the
+  composition from `book_sleeve_curves()`). The bundle claims preparation integrity, not result
+  reproduction, so the verifier demands the current binding; the rebind followed the af0191b
+  procedure: the one `code_bindings` hash (b1beabaf -> 91717643), the RO-Crate and SHA256SUMS,
+  three files and four lines. No paper was re-rendered and the human visual-inspection receipt is
+  untouched. The bundle's own `current_book_diversification.json` remains the four-sleeve result
+  it was sealed with; this binding says which code exists now, not that it reproduces that file.
