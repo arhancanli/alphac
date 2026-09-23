@@ -11,6 +11,7 @@ from typing import Any, Final
 
 from alphaforge.validation.experiments import ExperimentLog, hypothesis_hash
 from alphaforge.validation.sleeve_admission import _matches_canonical_sha256
+from alphaforge.validation.trial_budget import BudgetAmendmentError, effective_budget
 
 SCHEMA: Final[str] = "canli.alphac-forward-trial-reservation.v1"
 STATUS: Final[str] = "RETURN_IDENTITY_RESERVED"
@@ -572,6 +573,10 @@ def _validate_governance_epoch(
         "effective_contract_hash",
         "reservation_ordinal",
     }
+    # An ordinal above the policy's own budget also binds the owner's budget amendment
+    # (alphaforge.validation.trial_budget); at or below it the block is exactly as before.
+    if "budget_amendment_sha256" in governance:
+        expected_keys.add("budget_amendment_sha256")
     if set(governance) != expected_keys:
         raise ReservationError("governance_epoch fields are incomplete or unexpected")
     for key, expected_path in required.items():
@@ -630,24 +635,45 @@ def _validate_governance_epoch(
         + 1
     )
     first_effective = contract["prospective_scope"]["effective_on_or_after_reservation_ordinal"]
-    budget = policy.get("hypothesis_identity_budget")
+    policy_budget = policy.get("hypothesis_identity_budget")
     if ordinal != expected_ordinal or ordinal < first_effective:
         raise ReservationError(
             f"reservation_ordinal must be the next governed identity: {expected_ordinal}"
         )
-    if not isinstance(budget, int) or ordinal > budget:
+    if not isinstance(policy_budget, int) or not isinstance(ordinal, int):
         raise ReservationError("staged hypothesis-identity budget is exhausted")
-    return {
+    try:
+        in_force = effective_budget(repo, paths["trial_policy"])
+    except BudgetAmendmentError as error:
+        raise ReservationError(str(error)) from error
+    amendment_claim = governance.get("budget_amendment_sha256")
+    if ordinal > policy_budget:
+        if in_force.amendment_sha256 is None or amendment_claim is None:
+            raise ReservationError("staged hypothesis-identity budget is exhausted")
+        if f"sha256:{amendment_claim}" != in_force.amendment_sha256:
+            raise ReservationError("governance_epoch budget amendment hash mismatch")
+        if ordinal > in_force.ceiling:
+            raise ReservationError("staged hypothesis-identity budget is exhausted")
+    elif amendment_claim is not None:
+        raise ReservationError(
+            "governance_epoch binds a budget amendment the ordinal does not need"
+        )
+    out: dict[str, Any] = {
         "admission_contract_schema": contract["schema"],
         "admission_contract_sha256": _sha256(paths["admission_contract"]),
         "effective_contract_hash": effective_hash,
         "trial_policy_schema": policy["schema"],
         "trial_policy_sha256": _sha256(paths["trial_policy"]),
-        "hypothesis_identity_budget": budget,
+        "hypothesis_identity_budget": policy_budget,
         "staged_hard_reviews": policy["prospective_v7_review"]["staged_hard_reviews"],
         "promotion_receipt_sha256": _sha256(paths["promotion_receipt"]),
         "reservation_ordinal": ordinal,
     }
+    if ordinal > policy_budget:
+        out["hypothesis_identity_ceiling"] = in_force.ceiling
+        out["staged_hard_reviews"] = list(in_force.staged_hard_reviews)
+        out["budget_amendment_sha256"] = amendment_claim
+    return out
 
 
 DIAGNOSTIC_SCENARIO_CLASSES: Final[frozenset[str]] = frozenset(

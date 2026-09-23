@@ -37,6 +37,7 @@ from pathlib import Path
 from typing import Any
 
 from alphaforge.validation.experiments import ExperimentLog, ExperimentUnion, hypothesis_hash
+from alphaforge.validation.trial_budget import AMENDMENTS, effective_budget
 
 REPO = Path(__file__).resolve().parents[1]
 POLICY = REPO / "config" / "trial_accounting.json"
@@ -129,9 +130,18 @@ def load_policy(path: Path) -> dict[str, Any]:
     if reviews_path.exists():
         reviews = json.loads(reviews_path.read_text(encoding="utf-8"))
         held.update(reviews.get("staged_reviews_held") or {})
+    budget = int(policy["hypothesis_identity_budget"])
+    staged = [int(x) for x in review.get("staged_hard_reviews", [])]
+    amendments_path = path.with_name(AMENDMENTS.name)
+    if amendments_path.exists():
+        # The owner's budget amendment (alphaforge.validation.trial_budget) raises the ceiling
+        # and adds staged reviews above it; the policy file itself never changes.
+        in_force = effective_budget(path.parent.parent, path)
+        budget = in_force.ceiling
+        staged = list(in_force.staged_hard_reviews)
     return {
-        "budget": int(policy["hypothesis_identity_budget"]),
-        "staged_hard_reviews": [int(x) for x in review.get("staged_hard_reviews", [])],
+        "budget": budget,
+        "staged_hard_reviews": staged,
         # A reached threshold is cleared only by an owner-written record beside the policy.
         "staged_reviews_held": {int(k): v for k, v in held.items()},
         "published_identities": int(policy["observed_hypothesis_identities"]),

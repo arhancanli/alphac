@@ -899,6 +899,21 @@ MUTATIONS: tuple[Mutation, ...] = (
             "that forgets the correction file serves the reciprocal and phantom rows again.",
         ],
     ),
+    Mutation(
+        "test_trial_budget_amendment.py",
+        "let an ordinal above the amended ceiling through",
+        REPO / "src" / "alphaforge" / "validation" / "trial_reservation.py",
+        _replace(
+            "        if ordinal > in_force.ceiling:\n"
+            "            raise ReservationError("
+            '"staged hypothesis-identity budget is exhausted")\n',
+            "",
+        ),
+        notes=[
+            "The amendment raises the ceiling to 500, not to infinity; without this check an "
+            "identity at 501 would validate with no owner decision behind it.",
+        ],
+    ),
 )
 
 
