@@ -127,9 +127,7 @@ def circular_block_correlation_bootstrap(
         "average_pairwise_correlation": {
             "mean": float(np.mean(average)),
             "upper_95": float(np.quantile(average, 0.95)),
-            "mean_monte_carlo_standard_error": float(
-                np.std(average, ddof=1) / math.sqrt(samples)
-            ),
+            "mean_monte_carlo_standard_error": float(np.std(average, ddof=1) / math.sqrt(samples)),
             "upper_95_monte_carlo_standard_error": _mc_quantile_standard_error(average),
         },
         "pairs": pair_summaries,
@@ -154,14 +152,8 @@ def build() -> dict[str, Any]:
     ):
         raise ValueError("declared aggregation does not match the running combine path")
 
-    sleeves = [
-        paper.load_wf(paper.EQUITY_WF),
-        paper.load_wf(paper.CRYPTO_WF),
-        paper.load_wf(paper.MF_WF),
-        paper.load_probe_curve(
-            paper.VINTAGE_WF, "artifacts/probe/cpi_surprise_size/equity.parquet"
-        ),
-    ]
+    # The book as it is composed now (BOOK_WEIGHTS), never a hand-kept list of sleeves.
+    sleeves = paper.book_sleeve_curves()
     book = paper.combine_book(
         sleeves,
         scheme=paper.BOOK_AGGREGATION_SCHEME,
@@ -182,9 +174,10 @@ def build() -> dict[str, Any]:
         raise ValueError("component contributions do not reconstruct the exact book")
     if drawdown_result["configuration"]["sleeves"] != names:
         raise ValueError("sleeve order differs from the sealed current-book drawdown study")
-    if drawdown_result["configuration"]["live_fingerprint"] != live_contract[
-        "declared_fingerprint"
-    ]:
+    if (
+        drawdown_result["configuration"]["live_fingerprint"]
+        != live_contract["declared_fingerprint"]
+    ):
         raise ValueError("live fingerprint differs from the sealed current-book drawdown study")
 
     correlation = np.corrcoef(sleeve_returns, rowvar=False)
@@ -224,23 +217,19 @@ def build() -> dict[str, Any]:
     maximum_pairwise_upper_95 = float(primary["maximum_pairwise_upper_95"])
     thresholds = admission["thresholds"]
     legacy_v6_thresholds = legacy_v6["thresholds"]
-    stressed_correlation = float(
-        drawdown_result["design"]["regime_stress_correlation"]
-    )
+    stressed_correlation = float(drawdown_result["design"]["regime_stress_correlation"])
     checks = {
         "minimum_correlation_observations": (
             book.n_days >= int(thresholds["minimum_correlation_observations"])
         ),
         "average_pairwise_upper_95": (
-            average_upper_95
-            <= float(thresholds["average_pairwise_correlation_upper_95_max"])
+            average_upper_95 <= float(thresholds["average_pairwise_correlation_upper_95_max"])
         ),
         "ordinary_pairwise_point": (
             maximum_pairwise <= float(thresholds["ordinary_pairwise_correlation_max"])
         ),
         "ordinary_pairwise_upper_95": (
-            maximum_pairwise_upper_95
-            <= float(thresholds["pairwise_correlation_upper_95_max"])
+            maximum_pairwise_upper_95 <= float(thresholds["pairwise_correlation_upper_95_max"])
         ),
         "stressed_pairwise_design": (
             stressed_correlation <= float(thresholds["stressed_pairwise_correlation_max"])
@@ -258,8 +247,7 @@ def build() -> dict[str, Any]:
     }
     for row in marginal.values():
         row["marginal_book_sharpe_delta"] = (
-            row["book_sharpe_with_sleeve"]
-            - row["book_sharpe_with_sleeve_replaced_by_cash"]
+            row["book_sharpe_with_sleeve"] - row["book_sharpe_with_sleeve_replaced_by_cash"]
         )
 
     start = EPOCH + dt.timedelta(days=int(book.window[0]))

@@ -37,6 +37,11 @@ def _load_paper_state_module() -> Any:
 
 _PAPER_STATE = _load_paper_state_module()
 WEIGHT_SCHEDULE = _PAPER_STATE.WEIGHT_SCHEDULE
+#: Sleeves out of the book (paper_trading_state.SUSPENDED_SLEEVES) publish no curve and carry no
+#: weight, so they are not attributed; the suspension list is read, never repeated here.
+ACTIVE_STATE_KEYS = {
+    key: public for key, public in STATE_KEYS.items() if key not in _PAPER_STATE.SUSPENDED_SLEEVES
+}
 _daily_returns = _PAPER_STATE._daily_returns
 _weights_on = _PAPER_STATE._weights_on
 
@@ -53,7 +58,7 @@ def attribute(
     state: dict[str, Any], schedule: list[tuple[str, dict[str, float]]]
 ) -> dict[str, Any]:
     algorithms = {item["key"]: item for item in state["algorithms"]}
-    missing = sorted(({"alphac"} | set(STATE_KEYS)) - set(algorithms))
+    missing = sorted(({"alphac"} | set(ACTIVE_STATE_KEYS)) - set(algorithms))
     if missing:
         raise ValueError(f"published state is missing algorithms: {missing}")
 
@@ -61,16 +66,23 @@ def attribute(
     sleeve_returns = {
         public_key: _daily_returns(algorithms[state_key]["live_curve"])
         for state_key, public_key in STATE_KEYS.items()
+        # A suspended sleeve is not required, but a state that carries it (an older record) is
+        # still attributed in full.
+        if state_key in algorithms
     }
     dates = sorted(book_returns)
     if len(dates) < 2:
         raise ValueError("at least two published flagship marks are required")
 
     schedule_keys = {
-        "crypto": "crypto",
-        "equity": "equity",
-        "mf": "managed_futures",
-        "vintage": "macro_surprise",
+        schedule_key: public_key
+        for schedule_key, public_key in {
+            "crypto": "crypto",
+            "equity": "equity",
+            "mf": "managed_futures",
+            "vintage": "macro_surprise",
+        }.items()
+        if public_key in sleeve_returns
     }
     totals = dict.fromkeys(sleeve_returns, 0.0)
     daily: list[dict[str, Any]] = []

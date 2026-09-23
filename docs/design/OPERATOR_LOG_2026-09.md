@@ -1280,3 +1280,20 @@ published number or spend a research identity are marked DECISION and name who m
   v4 state in a sandbox that could not write to the publisher. Activation order: v3 frozen with
   `scripts/archive_live_record.py --write --reason ...`, split corrections written, then merge
   after the first 2026-09-24 mark so the book curve is never empty.
+- 2026-09-23 23:20Z. ALPHAFORGE SUSPENDED; V4 IS A THREE-SLEEVE BOOK. The owner asked for the
+  crypto funding-carry sleeve to come out of every book calculation and off the site until it is
+  fully repaired, its history hidden from public pages but kept in the frozen archive. v4 therefore
+  starts as AlphaMax, AlphaTrend and AlphaVintage at equal thirds (`SUSPENDED_SLEEVES`,
+  `BOOK_WEIGHTS`, `WEIGHT_SCHEDULE`, and `book_sleeve_curves()`, now the one composition every
+  study rebuilds). AlphaForge keeps paper-trading on Frankfurt off the record. What it costs, in
+  the engine's own numbers: the research book's in-sample Sharpe falls from 1.78 to 1.17 (neutral
+  core 0.66), and the average pairwise correlation rises from +0.0274 to +0.0345; the
+  current-composition drawdown study's conservative expected maximum drawdown is 0.0899, inside
+  the 0.11 objective. The live-config fingerprint moves 553aff51 -> dd8dfa13 and is re-pinned in
+  the live-change contract, the forward-evidence contract, the drawdown study and the unsigned
+  preregistration draft; `check_live_change_declared.py` passes on a sandbox-generated v4 state.
+  The site needed one change (canlicapital #212): the performance page's AlphaForge block would
+  otherwise have kept its authored "Holding cash" text for a sleeve whose state is no longer
+  published. Activation waits for two v4 marks (2026-09-25 after 01:00Z): the ladder, the evidence
+  evaluator and the contribution analysis all refuse a one-mark curve. Repairing AlphaForge is
+  the highest-value next item: it was the research book's largest contributor.

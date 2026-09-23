@@ -15,6 +15,8 @@ import json
 import sys
 from pathlib import Path
 
+import pytest
+
 REPO = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO / "scripts"))
 _spec = importlib.util.spec_from_file_location(
@@ -56,3 +58,37 @@ def test_v3_stays_published_as_withdrawn_with_its_reasons() -> None:
     assert paper.V4_GO_LIVE in last
     # The disclosure claims no v3 result; a withdrawn number must not be restated as a finding.
     assert "NO v3 result is claimed" in last
+
+
+def test_a_suspended_sleeve_is_in_no_part_of_the_book() -> None:
+    """AlphaForge is suspended (owner, 2026-09-23): out of the weights, the live schedule and the
+    composition every study rebuilds, and listed as suspended, never silently missing."""
+    assert "alphaforge" in paper.SUSPENDED_SLEEVES
+    assert paper.CRYPTO_WF not in paper.BOOK_WEIGHTS
+    assert set(paper.WEIGHT_SCHEDULE[-1][1]) == {"equity", "mf", "vintage"}
+    assert abs(sum(paper.BOOK_WEIGHTS.values()) - 1.0) < 1e-12
+    assert paper.N_SLEEVES == len(paper.BOOK_WEIGHTS) == 3
+    source = (REPO / "scripts" / "paper_trading_state.py").read_text()
+    assert 'if a["key"] in SUSPENDED_SLEEVES:' in source
+    assert '"suspended_sleeves": [' in source
+
+
+@pytest.mark.workspace_evidence
+def test_the_published_correlation_is_the_one_the_book_curves_give() -> None:
+    """RHO_BAR is typed for the import-time prose; this recomputes it from the book's own curves."""
+    import itertools
+
+    import numpy as np
+    import pandas as pd
+
+    def daily(curve: object) -> pd.Series:
+        days = pd.to_datetime(np.asarray(curve.ts_ms), unit="ms").normalize()  # type: ignore[attr-defined]
+        values = pd.Series(np.asarray(curve.equity, dtype=float), index=days)  # type: ignore[attr-defined]
+        return values.groupby(level=0).last().pct_change().dropna()
+
+    frame = pd.concat([daily(c) for c in paper.book_sleeve_curves()], axis=1, sort=True).dropna()
+    frame = frame.loc[paper.RHO_BAR_WINDOW[0] : paper.RHO_BAR_WINDOW[1]]
+    corr = frame.corr().to_numpy()
+    pairs = itertools.combinations(range(corr.shape[0]), 2)
+    measured = float(np.mean([corr[i, j] for i, j in pairs]))
+    assert abs(measured - paper.RHO_BAR) < 5e-5, measured
