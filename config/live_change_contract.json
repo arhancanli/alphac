@@ -159,6 +159,14 @@
       "evidence": "artifacts/engineering/live_config_fingerprint.json; artifacts/engineering/book_drawdown_ladder.json; config/drawdown_control_contract.json activation.decision; docs/design/DRAWDOWN_CONTROL_V1_PROTOCOL.md; docs/design/OPERATOR_LOG_2026-09.md",
       "contaminates_forward_record": true,
       "note": "A trading change: the book is sized differently from this date whenever the book ladder is below 1. The forward-evidence epoch restarts on this date; returns before it are published as a prior epoch and never pooled (forward_evidence_contract rules.configuration_change). Re-pinned on 2026-09-15 from sha256:654432cc to sha256:553aff51: the activation PR also moved BookLadderCfg.source's code default from file to https so it equals configs/base.yaml, and the fingerprint surface reads that setting; the surface declared at activation still said file. The traded configuration is unchanged (every sleeve reads the public artifact, as this entry states); no new epoch."
+    },
+    {
+      "date": "2026-09-24",
+      "change": "v3 record WITHDRAWN and v4 re-baseline: the forward record restarts on 2026-09-24 on the same four sleeves and accounts at equal quarters, now reading corrected corporate actions (split corrections applied at the lake reader; weekly ingest scheduled and monitored). scripts/paper_trading_state.py GO_LIVE and every sleeve's go-live move to V4_GO_LIVE; v3 is published as WITHDRAWN with its reasons and frozen with a manifest digest.",
+      "reason": "Owner decision 2026-09-23: the v3 record is mistaken; withdraw it in the open and restart. The inputs it traded on were contaminated: the split kernel was inverted until 2026-09-14, no corporate action was ingested after 2026-08-02 (the weekly job was never scheduled), and stored split rows contradicting the raw bars were served as stored until 2026-09-23. The live sizing configuration is unchanged, but the data every equity feature reads changed materially, so pre- and post-change returns must not be pooled.",
+      "evidence": "alphac PRs #77 (corporate-actions schedule, health C6h) and #78 (split corrections at the reader); artifacts/audit/split_corrections.json; var/log/corp_actions_weekly.log; docs/design/OPERATOR_LOG_2026-09.md 2026-09-23.",
+      "note": "contaminates_forward_record is true although the fingerprint does not move: the fingerprint covers configuration, not data, and this change moves the data. It starts the current evidence epoch on 2026-09-24; the 2026-09-15 epoch (drawdown control activation) becomes a prior epoch, published beside it and never pooled.",
+      "contaminates_forward_record": true
     }
   ]
 }

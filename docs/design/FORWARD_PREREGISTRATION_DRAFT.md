@@ -99,8 +99,15 @@ EWMA's effective sample is smaller. Neither is being changed inside this test.
 
 ### 2.4 The start date
 
-**2026-08-07**, the v3 re-baseline, when all sleeves moved to fresh $1M paper accounts. The record
-before that date belongs to a different specification and is not part of this test.
+**2026-09-24**, the v4 re-baseline. The v3 record (2026-08-07 to 2026-09-24) is WITHDRAWN: the
+owner called it mistaken on 2026-09-23, and its inputs were contaminated (the split kernel was
+inverted until 2026-09-14, no corporate action entered the equity lake after 2026-08-02, and stored
+split rows that contradict the raw bars were served as stored until 2026-09-23). The same four
+sleeves continue on the same accounts at the same weights and the same live-config fingerprint;
+only the data they read was corrected. Nothing before 2026-09-24 is part of this test.
+
+(Drafted on the v3 record. The sentences above this section that date the record from 2026-08-07
+describe the draft's history and are left as written.)
 
 ---
 
@@ -150,7 +157,7 @@ realised and modelled costs.
 
 - Changing the sleeve set, the weights, the overlay or the sizing configuration and continuing to
   report one continuous record.
-- Reporting the record from a start date other than 2026-08-07.
+- Reporting the record from a start date other than 2026-09-24.
 - Reporting the book **with** the strategic tilt as though it were the neutral core.
 - Choosing a measurement window after seeing the data.
 - Reporting an INCONCLUSIVE result as a PASS.
@@ -196,8 +203,8 @@ UNSIGNED — REQUIRES OWNER
 signed_by:
 signed_at:
 config_fingerprint:  sha256:553aff517efdc069c2ee80747ef9a9d750da817ceeab8dbc344cae050b814e09
-record_start:        2026-08-07
-first_judgement:     2027-08-07  (1 year)
+record_start:        2026-09-24
+first_judgement:     2027-09-24  (1 year)
 ```
 
 On signing: commit, anchor into the transparency chain, publish to

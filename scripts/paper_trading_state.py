@@ -74,7 +74,27 @@ V2_ENDED = "2026-08-07"
 # printed +7.26% and AlphaTrend +894.01% out of nothing. Re-baselining in the open is the same
 # thing we did at v1->v2; silently splicing the curves is what we refuse to do.
 V3_GO_LIVE = "2026-08-07"
-GO_LIVE = V3_GO_LIVE  # the day the CURRENT live paper track record begins
+V3_ENDED = "2026-09-24"
+# v4 RE-BASELINE, 2026-09-24 — v3 is WITHDRAWN, not superseded, and the record restarts on data
+# the engine can vouch for.
+#
+# WHY. On 2026-09-23 the owner called the v3 record mistaken and chose withdrawal with a fresh
+# start over deletion. The inputs v3 traded on were contaminated, verified that day:
+#   * the shared split kernel adjusted ~90% of all splits the wrong way until 2026-09-14 (every
+#     equity feature of the live walk-forwards read that panel for the first five weeks of v3);
+#   * no split or dividend entered data/lake after 2026-08-02: scripts/corp_actions_weekly.sh was
+#     never scheduled, so every split announced later reached the panel as a fake crash or spike;
+#   * stored split rows that contradict the raw bars (reciprocal, phantom, duplicated, misdated)
+#     were served as stored until the reader corrections of 2026-09-23; the counts and every
+#     decision are in artifacts/audit/split_corrections.json;
+#   * the equity sleeves' published NAV was gross of every friction until the cost-charged curve
+#     of 2026-09-15.
+# WHAT IS NOT CLAIMED. Nobody measured how much any of this moved v3's returns, and v3 is not
+# withdrawn for its result: it is withdrawn because its inputs cannot support any result, good
+# or bad. The accounts are NOT reset — the brokers' own histories stay whole —
+# and v3 is frozen with a manifest digest by scripts/archive_live_record.py before v4's first mark.
+V4_GO_LIVE = "2026-09-24"
+GO_LIVE = V4_GO_LIVE  # the day the CURRENT live paper track record begins
 
 # The flagship ALPHAC carries a DISCLOSED strategic net-long BETA overlay on top of the two
 # market-neutral alpha sleeves. It is commoditized beta (you could buy 0.5 BTC + 0.5 SPY yourself),
@@ -156,7 +176,7 @@ EQUITY_LIVE_DB = Path(
 )  # AlphaMax REALIZED broker equity (live_cycle.py --profile equity)
 # AlphaMax went GENUINELY broker-executed on its own Alpaca paper account (2026-06-27). Its record
 # is RE-BASELINED to the v2 restart date (2026-06-29) — the pre-restart days were flat at baseline.
-EQ_GO_LIVE = V3_GO_LIVE  # v3: fresh $1M account PA3ECIF9O942 (was PA397834GG9R)
+EQ_GO_LIVE = V4_GO_LIVE  # v4: same account PA3ECIF9O942 (v3 withdrawn; fresh $1M since v3)
 # AlphaMax forward curve (realized, post-go-live) if the daily forward engine has written one.
 EQUITY_FWD_CURVE = Path("artifacts/walkforward/equity_live_fwd/equity.parquet")
 
@@ -165,7 +185,7 @@ EQUITY_FWD_CURVE = Path("artifacts/walkforward/equity_live_fwd/equity.parquet")
 # current allocation is justified only by measured drawdown reduction under the frozen equal-weight
 # rule. Equal-risk was measured and rejected because it over-weights AlphaTrend's low volatility.
 MF_WF = "managed_futures"
-MF_GO_LIVE = V3_GO_LIVE  # v3: fresh $1M account PA31FJRJQK69 (was PA3IQC5B7BC2)
+MF_GO_LIVE = V4_GO_LIVE  # v4: same account PA31FJRJQK69 (v3 withdrawn; fresh $1M since v3)
 MF_FWD_CURVE = Path("artifacts/walkforward/mf_live_fwd/equity.parquet")
 # AlphaTrend is GENUINELY broker-executed as of go-live: live_cycle.py submits its 17-ETF book to
 # Alpaca paper daily and records the realized marked-to-market account equity here. This realized
@@ -194,7 +214,8 @@ MF_LIVE_DB = Path("var/trading_managed_futures.sqlite")
 # comment previously carried — see artifacts/probe/cpi_surprise_size/result.json, verdict KILLED.
 # are all halved. See scripts/alphavintage_target.py for the full rationale.
 VINTAGE_WF = "alphavintage_live"
-VINTAGE_GO_LIVE = "2026-08-10"
+VINTAGE_GO_LIVE = "2026-08-10"  # its v3 start; the WEIGHT_SCHEDULE keeps it
+VINTAGE_V4_GO_LIVE = V4_GO_LIVE  # the day its CURRENT record begins
 VINTAGE_LIVE_DB = Path("var/trading_alphavintage.sqlite")
 ALPACA_RECONCILIATION = Path("artifacts/engineering/alpaca_broker_reconciliation.json")
 
@@ -689,7 +710,7 @@ def _daily_returns(curve: list[dict]) -> dict[str, float]:
 #: APPEND a new (date, weights) entry. Never edit an existing one — an edit rewrites history, which
 #: is precisely the defect this replaced. Entries must be in ascending date order; the loader
 #: asserts it, because an out-of-order entry would silently apply the wrong weights to a past day.
-WEIGHT_SCHEDULE: list[tuple[str, dict[str, float]]] = [
+V3_WEIGHT_SCHEDULE: list[tuple[str, dict[str, float]]] = [
     # v3 opens at EQUAL THIRDS, because that is what the money actually does: each sleeve holds its
     # own $1,000,000 account, so equal weights are now a real dollar allocation rather than a
     # reporting convention. Under v2 the published 40/40/20 sat on seeds of $932k / $932k / $100k,
@@ -715,6 +736,14 @@ WEIGHT_SCHEDULE: list[tuple[str, dict[str, float]]] = [
     # 1.82 pair is superseded and its artifact records verdict KILLED) and it does
     # NOT clear that gate either; it earns its quarter by being uncorrelated, not by being better.
     (VINTAGE_GO_LIVE, {"crypto": 1 / 4, "equity": 1 / 4, "mf": 1 / 4, "vintage": 1 / 4}),
+]
+# v4 (2026-09-24). The schedule above is v3's, kept verbatim as the WITHDRAWN record's history:
+# every past day's weights stay frozen, which is the rule this list exists for. The current record
+# starts at V4_GO_LIVE on the same four accounts, so it opens at the equal quarters v3 closed on,
+# for the same reason: each sleeve holds its own $1,000,000 account, and no sleeve's evidence
+# supports a fitted weight. Future changes are APPENDED here, never edited.
+WEIGHT_SCHEDULE: list[tuple[str, dict[str, float]]] = [
+    (V4_GO_LIVE, {"crypto": 1 / 4, "equity": 1 / 4, "mf": 1 / 4, "vintage": 1 / 4}),
 ]
 
 
@@ -1594,6 +1623,16 @@ def transparency_entries() -> list[str]:
         "across production restarts followed on 2026-09-06. The entry understated the code for "
         "nineteen days and now records both dates; the estimated drawdown cost while it was open "
         "is unchanged.",
+        f"{V4_GO_LIVE} RE-BASELINE (v3 -> v4), and v3 is WITHDRAWN. On 2026-09-23 the owner "
+        "called the v3 record mistaken. Verified that day: the split kernel adjusted about 90% of "
+        "splits the wrong way until 2026-09-14; no split or dividend reached the equity lake after "
+        "2026-08-02 because the weekly corporate-actions job was never scheduled; stored split "
+        "rows that contradict the raw bars were served as stored until reader corrections on "
+        "2026-09-23; and the equity NAV was gross of frictions until 2026-09-15. How much this "
+        "moved v3's returns was not measured, so NO v3 result is claimed, good or bad. v3 is not "
+        "deleted: the broker accounts were not reset and the record is frozen with a manifest "
+        f"digest. v4 restarts the forward record on {V4_GO_LIVE}, and its evidence epoch never "
+        "pools v3's returns.",
     ]
 
 
@@ -1747,7 +1786,7 @@ def main():
     # engine bar can neither be published nor leak into the combined book or the transparency chain.
     # AlphaVintage: REALIZED equity from its own Alpaca paper account (PA39G6N49JRY), seeded from
     # its own go-live. live_cycle.py --profile alphavintage writes a mark each daily run.
-    vintage_live = read_live_db(VINTAGE_LIVE_DB, go_live=VINTAGE_GO_LIVE)
+    vintage_live = read_live_db(VINTAGE_LIVE_DB, go_live=VINTAGE_V4_GO_LIVE)
     # Cost-charged twins of the three Alpaca curves (config/cost_realism_contract.json). The
     # crypto sleeve charges its frictions at the source, so its charged curve IS its live curve.
     cost_charges = read_cost_charges()
@@ -1763,16 +1802,16 @@ def main():
     )
     vintage_charged = read_live_db(
         VINTAGE_LIVE_DB,
-        go_live=VINTAGE_GO_LIVE,
+        go_live=VINTAGE_V4_GO_LIVE,
         charges=(cost_charges.get("alphavintage") or {}).get("charges_by_date"),
     )
     crypto_live = clamp_live(crypto_live)
     equity_live = clamp_live(equity_live)
     mf_live = clamp_live(mf_live) or [{"date": MF_GO_LIVE, "equity": 100000.0}]
-    vintage_live = clamp_live(vintage_live) or [{"date": VINTAGE_GO_LIVE, "equity": 100000.0}]
+    vintage_live = clamp_live(vintage_live) or [{"date": VINTAGE_V4_GO_LIVE, "equity": 100000.0}]
     equity_charged = clamp_live(equity_charged)
     mf_charged = clamp_live(mf_charged) or [{"date": MF_GO_LIVE, "equity": 100000.0}]
-    vintage_charged = clamp_live(vintage_charged) or [{"date": VINTAGE_GO_LIVE, "equity": 100000.0}]
+    vintage_charged = clamp_live(vintage_charged) or [{"date": VINTAGE_V4_GO_LIVE, "equity": 100000.0}]
     charged = {
         "alphaforge": crypto_live,
         "alphamax": equity_charged,
@@ -1796,7 +1835,7 @@ def main():
         for key, db, go_live in (
             ("alphamax", EQUITY_LIVE_DB, EQ_GO_LIVE),
             ("managed_futures", MF_LIVE_DB, MF_GO_LIVE),
-            ("alphavintage", VINTAGE_LIVE_DB, VINTAGE_GO_LIVE),
+            ("alphavintage", VINTAGE_LIVE_DB, VINTAGE_V4_GO_LIVE),
         )
         if key in cost_charges
     }
@@ -2009,6 +2048,31 @@ def main():
                 "$100k is too small for a wide dollar-neutral book: whole-share "
                 "truncation on shorts cost AlphaMax 8.79% of its short notional and "
                 "pushed it +2.40% NET LONG. At $1M that is 0.37% and +0.10%.",
+                "ended": V3_ENDED,
+                "status": "WITHDRAWN",
+                "withdrawn_because": [
+                    "the shared split kernel adjusted about 90% of all splits in the wrong "
+                    "direction until 2026-09-14, and every equity feature of the live "
+                    "walk-forwards read that panel",
+                    "no split or dividend entered the equity lake after 2026-08-02: the weekly "
+                    "corporate-actions job was never scheduled, so every split announced later "
+                    "reached the panel as a fake crash or spike",
+                    "stored split rows that contradict the raw bars (reciprocal, phantom, "
+                    "duplicated, misdated) were served as stored until the reader corrections "
+                    "of 2026-09-23 (artifacts/audit/split_corrections.json)",
+                    "the equity sleeves' published NAV was gross of every friction until the "
+                    "cost-charged curve of 2026-09-15",
+                ],
+                "not_claimed": "the effect of these defects on v3's returns was not measured; "
+                "v3 is withdrawn because its inputs cannot support any result, good or bad",
+            },
+            "v4": {
+                "go_live": V4_GO_LIVE,
+                "config": "the same four sleeves on the same accounts at equal quarters, on "
+                "corrected corporate actions (split corrections applied at the lake reader, "
+                "weekly ingest scheduled and monitored by health C6h)",
+                "why": "owner decision 2026-09-23: withdraw the mistaken v3 record in the open "
+                "and restart on data the engine can vouch for",
             },
             "disclosure": "v1 (2026-06-21..06-29) ran flat at the $100k baseline and is SUPERSEDED, "
             "NOT deleted: it remains in the signed transparency chain (seq 0..4) as opaque "
@@ -2020,6 +2084,10 @@ def main():
             "RESETS the forward record rather than splicing it: v2's last mark and "
             "v3's first mark are NOT one day's return, and reporting them as such "
             "would have invented +7.26% for AlphaMax and +894% for AlphaTrend. "
+            f"v3 ({V3_GO_LIVE}..{V3_ENDED}) is WITHDRAWN, not merely superseded: its inputs "
+            "were contaminated (see v3.withdrawn_because), so no result from it is claimed. "
+            "It is not deleted either: the accounts were not reset, and the record is frozen "
+            f"with a manifest digest. v4 restarts the forward record on {V4_GO_LIVE}. "
             "We re-baseline in the open; we never silently rewrite 'live since'.",
         },
         "algorithms": algorithms,

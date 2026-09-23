@@ -51,6 +51,7 @@ SLEEVES: dict[str, tuple[str, str | None]] = {
     "alphamax": ("alpaca_equity.env", "var/trading_equity.sqlite"),
     "alphatrend": ("alpaca.env", "var/trading_managed_futures.sqlite"),
     "alphaledger": ("alpaca_ledger.env", None),
+    "alphavintage": ("alpaca_vintage.env", "var/trading_alphavintage.sqlite"),
     "alphaforge_crypto": (None, "var/trading_crypto_perp.sqlite"),  # not an Alpaca account
 }
 
@@ -98,6 +99,7 @@ def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(prog="archive_live_record")
     ap.add_argument("--write", action="store_true", help="perform the freeze (default: dry run)")
     ap.add_argument("--out", default=None, help="archive dir (default: artifacts/archive/live_record_<UTC>)")
+    ap.add_argument("--reason", default=None, help="why this freeze happens; required with --write")
     a = ap.parse_args(argv)
 
     stamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
@@ -150,6 +152,12 @@ def main(argv: list[str] | None = None) -> int:
     if not a.write:
         print("\nDRY RUN — rerun with --write to perform the freeze.")
         return 0
+    # The 2026-08-07 freeze carried a hard-coded pre-reset reason; the 2026-09-24 freeze is a
+    # withdrawal with no reset. A manifest that states the wrong reason misleads the one reader it
+    # exists for, so the reason is written by whoever performs the freeze.
+    if not a.reason:
+        print("--write needs --reason: say why this record is being frozen")
+        return 2
 
     out.mkdir(parents=True, exist_ok=True)
     written: list[Path] = []
@@ -168,10 +176,7 @@ def main(argv: list[str] | None = None) -> int:
 
     manifest = {
         "frozen_at": datetime.now(UTC).isoformat(),
-        "reason": "pre-reset freeze: AlphaMax and AlphaTrend paper accounts re-seeded to a common "
-                  "size so every sleeve trades an adequately-sized book. An Alpaca paper reset "
-                  "erases broker-side equity history, so this snapshot is the only surviving copy "
-                  "of the first live period.",
+        "reason": a.reason,
         "files": {p.name: {"sha256": _sha256(p), "bytes": p.stat().st_size} for p in sorted(written)},
     }
     mpath = out / "MANIFEST.json"
