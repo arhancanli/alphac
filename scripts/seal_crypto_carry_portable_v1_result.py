@@ -7,6 +7,7 @@ import argparse
 import hashlib
 import json
 import math
+import sys
 from pathlib import Path
 from statistics import median
 from typing import Any, Final, cast
@@ -15,6 +16,7 @@ import pandas as pd
 
 from alphaforge.analytics.metrics import DAYS_PER_YEAR, daily_returns, sharpe
 from alphaforge.validation.experiments import config_hash, hypothesis_hash
+from alphaforge.validation.history import recover_bound_bytes
 from alphaforge.validation.input_snapshot import validate_input_snapshot
 
 ROOT: Final = Path(__file__).resolve().parents[1]
@@ -121,7 +123,17 @@ def _verify_declared_bindings(repo: Path, run: dict[str, Any]) -> list[dict[str,
         relative = cast(str, claimed["path"])
         observed = _binding(repo, relative)
         if observed["sha256"] != claimed.get("sha256"):
-            raise ResultSealError(f"frozen run binding drifted: {name}")
+            # The file moved on after the seal (configs/base.yaml at the 2026-09-15 brake
+            # activation, uv.lock at a dependency update). The seal stays verifiable if the exact
+            # bytes it bound are still at this path in a commit of this repository; name it.
+            found = recover_bound_bytes(repo, relative, str(claimed.get("sha256")))
+            if found is None:
+                raise ResultSealError(f"frozen run binding drifted: {name}")
+            commit, size = found
+            # The row is rebuilt exactly as the seal wrote it (so the receipt still hashes to
+            # what the admission closure bound); where the bytes were found goes to stderr.
+            print(f"{name}: bound bytes recovered from commit {commit[:12]}", file=sys.stderr)
+            observed = {"path": relative, "bytes": size, "sha256": claimed["sha256"]}
         if "content_hash" in claimed:
             source = _verified_hashed_json(repo / relative)
             if source["content_hash"] != claimed["content_hash"]:
