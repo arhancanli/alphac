@@ -92,6 +92,9 @@ DOWNLOAD_ENDPOINT: Final[str] = "https://data.binance.vision"
 """HTTPS download host for archive objects (zip files)."""
 
 _KLINES_PREFIX: Final[str] = "data/futures/um/monthly/klines/"
+#: Spot klines share the archive's 12-column kline format under their own prefix (2026-09-23:
+#: the spot leg of the cash-and-carry research; see config/data_source_rights_policy.json).
+_SPOT_KLINES_PREFIX: Final[str] = "data/spot/monthly/klines/"
 _FUNDING_PREFIX: Final[str] = "data/futures/um/monthly/fundingRate/"
 _S3_NS: Final[str] = "{http://s3.amazonaws.com/doc/2006-03-01/}"
 
@@ -195,12 +198,17 @@ class BinanceVisionClient:
         *,
         delay_s: float = 0.0,
         retry: Retrying | None = None,
+        market: MarketType = MarketType.PERP,
     ) -> None:
+        if market not in (MarketType.PERP, MarketType.SPOT):
+            raise ValueError(f"market must be PERP or SPOT, got {market!r}")
         if delay_s < 0.0:
             raise ValueError(f"delay_s must be >= 0, got {delay_s}")
         self._http = http if http is not None else httpx.Client(timeout=30.0)
         self._delay_s = delay_s
         self._retry = retry if retry is not None else transient_retry((httpx.TransportError,))
+        self._market = market
+        self._klines_prefix = _SPOT_KLINES_PREFIX if market is MarketType.SPOT else _KLINES_PREFIX
 
     # ------------------------------------------------------------------ transport
 
@@ -309,10 +317,10 @@ class BinanceVisionClient:
         This is the historical candidate set that makes pre-go-live delistings visible
         to seeding/universe code (finding 1).
         """
-        common_prefixes, _ = self._list(_KLINES_PREFIX)
+        common_prefixes, _ = self._list(self._klines_prefix)
         symbols: list[str] = []
         for prefix in common_prefixes:
-            name = prefix.removeprefix(_KLINES_PREFIX).strip("/")
+            name = prefix.removeprefix(self._klines_prefix).strip("/")
             if not name or "_" in name:
                 continue
             try:
@@ -336,7 +344,7 @@ class BinanceVisionClient:
         ``delisted_ts = last.next_month_first_ms()`` from it.
         """
         _require_symbol(symbol)
-        _, keys = self._list(f"{_KLINES_PREFIX}{symbol}/1h/")
+        _, keys = self._list(f"{self._klines_prefix}{symbol}/1h/")
         pattern = re.compile(rf"^{re.escape(symbol)}-1h-(\d{{4}})-(\d{{2}})\.zip$")
         months: list[YearMonth] = []
         for key in keys:
@@ -378,7 +386,7 @@ class BinanceVisionClient:
         ym = _require_month(year, month)
         what = f"ohlcv {symbol} {year:04d}-{month:02d}"
         url = (
-            f"{DOWNLOAD_ENDPOINT}/{_KLINES_PREFIX}{symbol}/1h/"
+            f"{DOWNLOAD_ENDPOINT}/{self._klines_prefix}{symbol}/1h/"
             f"{symbol}-1h-{year:04d}-{month:02d}.zip"
         )
         rows = self._download_csv_rows(url, what)
@@ -428,7 +436,7 @@ class BinanceVisionClient:
             if cur[0] == prev[0]:
                 raise SchemaError(f"{what}: duplicate open_time {cur[0]} in archive file")
 
-        instrument_id = SymbolMapper.to_instrument_id("BINANCE", MarketType.PERP, symbol)
+        instrument_id = SymbolMapper.to_instrument_id("BINANCE", self._market, symbol)
         n = len(parsed)
         ingested = now_ms()
         tbl = pa.Table.from_arrays(
@@ -472,6 +480,8 @@ class BinanceVisionClient:
                 out-of-window settlement timestamps.
             ValueError: ``year``/``month`` out of calendar bounds or bad ``symbol``.
         """
+        if self._market is MarketType.SPOT:
+            raise ValueError("spot markets settle no funding; use a PERP client for funding")
         _require_symbol(symbol)
         ym = _require_month(year, month)
         what = f"funding {symbol} {year:04d}-{month:02d}"
