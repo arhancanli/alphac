@@ -886,6 +886,19 @@ MUTATIONS: tuple[Mutation, ...] = (
             "no longer matches the sealed packet must still be provably rejected.",
         ],
     ),
+    Mutation(
+        "test_split_corrections.py",
+        "serve stored split rows without applying the lake's corrections",
+        REPO / "src" / "alphaforge" / "data" / "store" / "reader.py",
+        _replace(
+            "        result = apply_split_corrections(result, self._split_corrections)\n",
+            "",
+        ),
+        notes=[
+            "The reader is the one place every consumer reads corporate actions, so a reader "
+            "that forgets the correction file serves the reciprocal and phantom rows again.",
+        ],
+    ),
 )
 
 
