@@ -127,6 +127,11 @@ setopt pipefail   # ...so the redactor's exit status can never mask a failed ing
     echo "RESULT: NO corp-actions summary emitted after ${ELAPSED}s — the pass did not complete;"
     echo "RESULT: splits after the last successful pass are NOT in the lake until this succeeds."
   fi
+  # Rebuild the split corrections over the rows just ingested (scripts/build_split_corrections.py):
+  # a reciprocal, misdated, duplicated or phantom split fetched this week is served corrected
+  # from the next read instead of as a fake move. Only data/lake is ingested weekly.
+  uv run python scripts/build_split_corrections.py --lake data/lake --write \
+    || echo "WARN: split corrections NOT rebuilt — rows ingested this week are served as stored"
   echo "=== corp_actions_weekly done $(date -u '+%Y-%m-%dT%H:%M:%SZ') ==="
 } >> var/log/corp_actions_weekly.log 2>&1
 
