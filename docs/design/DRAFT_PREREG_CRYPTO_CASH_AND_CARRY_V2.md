@@ -1,6 +1,8 @@
 # PRE-REGISTRATION DRAFT — AlphaForge v2: hedged funding carry (cash-and-carry)
 
-**Status:** DRAFT. Not sealed, no identity reserved, no return computed. Author approval required
+**Status:** DRAFT. Not sealed, no identity reserved, no return computed. Named `DRAFT_PREREG_*`
+on purpose: `alphaforge.validation.prereg` enforces a machine-readable ```` ```prereg ```` block on
+every `PREREG_*.md`, and this becomes one, with that block, only when the author seals it. Author approval required
 before the reservation (Arhan Canli). Written 2026-09-23 while the spot archive was being ingested.
 **Family trial account:** `crypto_carry` (well under the single-family tripwire of 40).
 **Batch:** two selectable identities (PBO is defined only for a batch of two or more), one
