@@ -886,6 +886,21 @@ MUTATIONS: tuple[Mutation, ...] = (
             "no longer matches the sealed packet must still be provably rejected.",
         ],
     ),
+    Mutation(
+        "test_trial_budget_amendment.py",
+        "let an ordinal above the amended ceiling through",
+        REPO / "src" / "alphaforge" / "validation" / "trial_reservation.py",
+        _replace(
+            "        if ordinal > in_force.ceiling:\n"
+            "            raise ReservationError("
+            '"staged hypothesis-identity budget is exhausted")\n',
+            "",
+        ),
+        notes=[
+            "The amendment raises the ceiling to 500, not to infinity; without this check an "
+            "identity at 501 would validate with no owner decision behind it.",
+        ],
+    ),
 )
 
 

@@ -70,4 +70,12 @@ def test_the_audit_reads_the_held_review_from_beside_the_policy() -> None:
     loaded = module.load_policy(POLICY)
     assert 320 in loaded["staged_reviews_held"]
     assert 360 not in loaded["staged_reviews_held"]
-    assert loaded["staged_hard_reviews"] == [320, 360, 400]
+    # The policy's own reviews, plus the ones the owner's budget amendment added above 400.
+    policy = json.loads(POLICY.read_text())
+    amended = json.loads((POLICY.parent / "trial_accounting_budget_amendments.json").read_text())
+    expected = set(policy["prospective_v7_review"]["staged_hard_reviews"])
+    for amendment in amended["amendments"]:
+        expected |= set(amendment["staged_hard_reviews"])
+    assert loaded["staged_hard_reviews"] == sorted(expected)
+    assert {320, 360, 400} <= set(loaded["staged_hard_reviews"])
+    assert loaded["budget"] == max(expected)
