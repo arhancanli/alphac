@@ -45,6 +45,11 @@
 # splits+dividends endpoints (every ticker's actions in ~1 call per window), but that needs a
 # source-adapter change in src/alphaforge/data/sources/, outside this script.
 #
+# SCHEDULED 2026-09-23 (deploy/com.accapital.corpactions.plist.template, Saturday 22:00 local).
+# Until then this job had run exactly once, by hand, on 2026-08-02: no split or dividend reached
+# data/lake for seven weeks and nothing on the health board could see it. Health C6h now reads the
+# lake's newest partition and fails after 15 days without a write.
+#
 # NO STRATEGY KNOB LIVES HERE. This job writes only the corporate_actions dataset + its
 # per-instrument watermarks. Alphas, K, cadence, weights, universe and costs are untouched.
 
@@ -127,6 +132,11 @@ setopt pipefail   # ...so the redactor's exit status can never mask a failed ing
     echo "RESULT: NO corp-actions summary emitted after ${ELAPSED}s — the pass did not complete;"
     echo "RESULT: splits after the last successful pass are NOT in the lake until this succeeds."
   fi
+  # Rebuild the split corrections over the rows just ingested (scripts/build_split_corrections.py):
+  # a reciprocal, misdated, duplicated or phantom split fetched this week is served corrected
+  # from the next read instead of as a fake move. Only data/lake is ingested weekly.
+  uv run python scripts/build_split_corrections.py --lake data/lake --write \
+    || echo "WARN: split corrections NOT rebuilt — rows ingested this week are served as stored"
   echo "=== corp_actions_weekly done $(date -u '+%Y-%m-%dT%H:%M:%SZ') ==="
 } >> var/log/corp_actions_weekly.log 2>&1
 

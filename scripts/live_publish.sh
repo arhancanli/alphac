@@ -183,44 +183,50 @@ deploy_prod() {
   # ORDER IS LOAD-BEARING, same class as the paper-state/glassbox edge above: each step here
   # reads the previous one's output on disk, and the dependency is invisible in this file
   # because it is file-mediated. Pinned by tests/unit/test_publish_pipeline_order.py::EDGES.
-  # 1) 16 raw-row-free sleeve review archives; step 2, 5 and 8 below all read this receipt.
+  # 1) 16 raw-row-free sleeve review archives; steps 2, 9 and 10 below all read this receipt.
   uv run python scripts/package_all_sleeve_review_archives.py \
     || echo "WARN: all-sleeve review archives NOT rebuilt — publishing a receipt bound to stale archives"
-  # 1b) all-sleeve data-rights audit; steps 2 and 9 bind its content hash.
+  # 1b) all-sleeve data-rights audit; steps 2, 5, 6 and 10 bind its content hash.
   uv run python scripts/audit_all_sleeve_data_rights.py \
     || echo "WARN: all-sleeve data-rights audit NOT rebuilt — publishing receipts bound to a stale rights audit"
   # 2) clean-workspace reproduction audit; reads the archives step 1 just wrote.
   uv run python scripts/audit_clean_workspace_reproduction_contracts.py \
     || echo "WARN: clean-workspace reproduction audit NOT rebuilt — publishing a stale contract audit"
-  # 3) Wave 1 data-rights audit; reads external_submission_plan.json, which is rebuilt on its
-  # own schedule and has previously moved ahead of this audit.
-  uv run python scripts/audit_wave1_data_rights.py \
-    || echo "WARN: Wave 1 data-rights audit NOT rebuilt — publishing a receipt bound to a stale submission plan"
-  # 4) Wave 1 release-candidate archives; reads the rights audit step 3 just wrote.
-  uv run python scripts/package_wave1_release_candidates.py \
-    || echo "WARN: Wave 1 release candidates NOT repackaged — publishing archives bound to a stale rights audit"
-  # 5) repository submission worksheets; reads steps 1 AND 2 (archive bindings + reproduction
-  # contracts), so it must run after both.
-  uv run python scripts/build_repository_submission_worksheets.py \
-    || echo "WARN: repository submission worksheets NOT rebuilt — publishing a stale ARCHIVE_BINDING"
-  # 6) mechanical manuscript-style audit; independent of 1-5, bound to the publication standard
-  # doc and the papers themselves.
+  # 3) mechanical manuscript-style audit; independent of 1-2, bound to the publication standard
+  # doc and the papers themselves. Step 5 reads it.
   uv run python scripts/audit_publication_manuscript_style.py \
     || echo "WARN: publication manuscript-style audit NOT rebuilt — publishing a stale style receipt"
-  # 7) inflation-breakeven source-feasibility audit; local-only read of the macro vintage lake,
-  # independent of 1-6.
+  # 4) inflation-breakeven source-feasibility audit; local-only read of the macro vintage lake,
+  # independent of every other step here.
   uv run python scripts/audit_inflation_breakeven_feasibility.py \
     || echo "WARN: inflation-breakeven feasibility audit NOT rebuilt — publishing a stale result"
-  # 8) Stanford CS evidence map: the aggregator. Reads steps 1, 2 and 5 above plus admission,
-  # broker, forward-evidence, mutation and legacy-closure artifacts that already moved earlier
-  # in this run, so it MUST run last among the eight. research_export.py copies its output on.
-  uv run python scripts/build_stanford_evidence_map.py \
-    || echo "WARN: Stanford CS evidence map NOT rebuilt — publishing a stale portfolio evidence map"
-  # 9) external publication readiness: binds the data-rights audit, worksheets and the author
-  # technical-approval protocol, so it reads steps 1-5 and must run after them (found red on the
-  # first suite run after steps 1-8 were wired, 2026-09-06).
+  # 5) external publication readiness: binds the data-rights audit (1b), the manuscript-style
+  # audit (3) and the author technical-approval protocol. Steps 6 and 10 read it. Until
+  # 2026-09-23 it ran LAST, after the evidence map that reads it, so the map always carried the
+  # previous night's readiness receipt.
   uv run python scripts/audit_external_publication_readiness.py \
     || echo "WARN: external publication readiness NOT rebuilt — publishing a stale readiness receipt"
+  # 6) external submission plan: binds the rights audit's content hash and reads the readiness
+  # receipt (5); steps 7, 8 and 9 read it. It was "rebuilt on its own schedule" until 2026-09-23,
+  # which in practice meant never: every rights-policy change left it bound to a superseded
+  # audit and turned the nightly suite red (health C7b, 2026-09-22).
+  uv run python scripts/build_external_submission_plan.py \
+    || echo "WARN: external submission plan NOT rebuilt — publishing a plan bound to a stale rights audit"
+  # 7) Wave 1 data-rights audit; reads the plan step 6 just wrote.
+  uv run python scripts/audit_wave1_data_rights.py \
+    || echo "WARN: Wave 1 data-rights audit NOT rebuilt — publishing a receipt bound to a stale submission plan"
+  # 8) Wave 1 release-candidate archives; reads the rights audit step 7 just wrote and the plan.
+  uv run python scripts/package_wave1_release_candidates.py \
+    || echo "WARN: Wave 1 release candidates NOT repackaged — publishing archives bound to a stale rights audit"
+  # 9) repository submission worksheets; reads steps 1, 2 and 6 (archive bindings, reproduction
+  # contracts, the plan), so it must run after all three.
+  uv run python scripts/build_repository_submission_worksheets.py \
+    || echo "WARN: repository submission worksheets NOT rebuilt — publishing a stale ARCHIVE_BINDING"
+  # 10) Stanford CS evidence map: the aggregator. Reads steps 1, 2, 5 and 9 plus admission,
+  # broker, forward-evidence, mutation and legacy-closure artifacts that already moved earlier
+  # in this run, so it MUST run last among these. research_export.py copies its output on.
+  uv run python scripts/build_stanford_evidence_map.py \
+    || echo "WARN: Stanford CS evidence map NOT rebuilt — publishing a stale portfolio evidence map"
   uv run python scripts/research_export.py || { echo "research_export FAILED"; FAIL=1; }
   # publish the downloadable verifier, then SELF-CHECK that our own published record reproduces
   # (content hashes + signatures + golden master) before we ship it. A failure here means we'd be

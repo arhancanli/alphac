@@ -82,6 +82,7 @@ SUITE_BUDGET_S = 2700        # raised 900 -> 2700 on 2026-08-20, see check_suite
 MF_DB = os.path.join(AF, "var", "trading_managed_futures.sqlite")  # AlphaTrend realized curve
 EQUITY_DB = os.path.join(AF, "var", "trading_equity.sqlite")       # AlphaMax realized curve
 DERIBIT_SNAPSHOTS = os.path.join(AF, "data", "deribit", "snapshots")
+CORPORATE_ACTIONS_LAKE = os.path.join(AF, "data", "lake", "corporate_actions")
 KILL = os.path.join(AF, "var", "KILL")
 RESEND_ENV = os.path.join(HOME, ".config", "alphaforge", "resend.env")
 
@@ -525,6 +526,30 @@ def _latest_file_age_hours(directory: str, pattern: str = "*") -> tuple[float | 
     return age, str(latest)
 
 
+CORPORATE_ACTIONS_PASS_H = 8 * 24   # weekly job plus a day of slack
+CORPORATE_ACTIONS_WARN_H = 15 * 24  # one missed week is a warning; two is a failure
+
+
+def check_corporate_actions(lake: str = CORPORATE_ACTIONS_LAKE):
+    """C6h: the corporate-actions lake the equity panel adjusts through is still being written.
+
+    scripts/corp_actions_weekly.sh is the only writer, and until 2026-09-23 it was never
+    scheduled: one hand-run pass on 2026-08-02, then nothing, while every other loop stayed green.
+    A missed split reaches the live panel as a fake crash or spike. New dividends land every
+    week, so a healthy weekly pass always writes a partition; the newest one's age is the signal.
+    """
+    a, latest = _latest_file_age_hours(lake, "**/*.parquet")
+    if a is None:
+        add("C6h-corporate-actions", "loops", "corporate actions (splits/dividends) ingested",
+            "FAIL", "high", observed="no partitions", expected=f"<={CORPORATE_ACTIONS_PASS_H}h",
+            evidence=lake)
+        return
+    st = ("PASS" if a <= CORPORATE_ACTIONS_PASS_H
+          else "WARN" if a <= CORPORATE_ACTIONS_WARN_H else "FAIL")
+    add("C6h-corporate-actions", "loops", "corporate actions (splits/dividends) ingested", st,
+        "high", observed=f"{a:.1f}h", expected=f"<={CORPORATE_ACTIONS_PASS_H}h", evidence=latest)
+
+
 CRYPTO_REBALANCE_CADENCE_H = 168  # the blessed crypto carry cadence: weekly, epoch-anchored
 CRYPTO_REBALANCE_GRACE_H = 12       # a rebalance bar may land late (venue outage, retry)
 CRYPTO_FAILED_CYCLE_WINDOW_H = 8 * 24
@@ -678,6 +703,9 @@ def check_loops():
     add("C6e-deribit", "loops", "Deribit research snapshots accruing", st, "high",
         observed=f"{a:.1f}h" if a is not None else "no snapshots",
         expected="<=30h", evidence=latest)
+
+    # C6h: splits and dividends. Without them a split is a fake crash in the live equity panel.
+    check_corporate_actions()
 
 
 def check_honesty():
