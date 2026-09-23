@@ -1226,3 +1226,25 @@ published number or spend a research identity are marked DECISION and name who m
   observation is bound to a superseded contract hash and needs its read-only SSH run. Those are
   decisions and a remote check, not a publish cycle, so the health suite's self-heal stays disabled
   until they are made.
+- 2026-09-23 14:10Z. BYBIT TERMS READ; LIQUIDATION COLLECTOR INSTALLED ON FRANKFURT. The API Terms
+  page embeds a seven-page PDF (last updated 2026-01-16, SHA-256 b8d683cd…) that refuses automated
+  HTTP/2 clients; a real browser rendered it. Decision recorded in
+  `config/data_source_rights_policy.json`: internal collection and storage for paper research is
+  within the licensed use; raw rows are never published (clause 6.7); derived results stay not
+  cleared (9.2); a funded book or paid data product needs Bybit's written consent (6.9). A
+  read-only preflight found the host idle between cycles (62 GB free, 1.5 GB memory available,
+  venv aiohttp 3.14.3), then `collect_liquidations.py` and `af-liquidations.service` were copied
+  from main (SHA-256 325b1ffb… and 55e63624…, identical on both ends) and enabled at 14:10:13Z
+  after the :10 paper cycle. Both venues opened sessions (Bybit complete on every USDT perpetual,
+  Binance sampled); OKX stays uncollected. Memory 67 MB, no restarts. The three-year clock the
+  contract needs for `crypto_liquidation_pressure` starts today; nothing reads the lake until a
+  study is pre-registered.
+- 2026-09-23 14:30Z. THE SLEEVE GOAL AGAINST THE IDENTITY BUDGET. 51 identities remain under the
+  400 ceiling and an admissible test costs two, so about 25 tests remain. The historical planning
+  hit rate is 3 survivors in 46 tested candidates (0.065; Jeffreys 90% range 0.024–0.146,
+  `artifacts/analysis/admission_gate_power_audit/result.json`), and the prospective epoch has
+  admitted 0 of 121 closed identities. At 0.065, 25 tests give 1.6 expected new sleeves and a
+  probability below 0.0001 of the ten the owner's fourteen require; even at 0.146 it is 0.002.
+  A 50% chance of ten new sleeves needs about 148 tests (296 identities) at 0.065. The goal and the
+  ceiling cannot both hold; which one moves is the owner's decision, and a higher ceiling carries
+  its own multiplicity cost. Planning arithmetic, not a forecast.
