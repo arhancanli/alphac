@@ -243,6 +243,33 @@ EDGES: tuple[
         (
             "audit_clean_workspace_reproduction_contracts.py",
             "audit_external_publication_readiness.py",
+            "build_external_submission_plan.py",
+        ),
+        ("scripts/live_publish.sh",),
+    ),
+    # The submission plan (2026-09-23). It binds the rights audit's content hash and reads the
+    # readiness receipt, and three steps read it; it was "rebuilt on its own schedule", which
+    # meant never, so every rights-policy change left it stale and turned the nightly suite red
+    # (test_published_plan_matches_current_sources, health C7b, 2026-09-22).
+    (
+        "audit_publication_manuscript_style.py",
+        "artifacts/audit/publication_manuscript_style.json",
+        ("audit_external_publication_readiness.py",),
+        ("scripts/live_publish.sh",),
+    ),
+    (
+        "audit_external_publication_readiness.py",
+        "artifacts/audit/external_publication_readiness.json",
+        ("build_external_submission_plan.py",),
+        ("scripts/live_publish.sh",),
+    ),
+    (
+        "build_external_submission_plan.py",
+        "artifacts/publication/external_submission_plan.json",
+        (
+            "audit_wave1_data_rights.py",
+            "package_wave1_release_candidates.py",
+            "build_repository_submission_worksheets.py",
         ),
         ("scripts/live_publish.sh",),
     ),
