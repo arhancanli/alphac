@@ -16,8 +16,8 @@ import pandas as pd
 
 from alphaforge.analytics.metrics import DAYS_PER_YEAR, daily_returns, sharpe
 from alphaforge.validation.experiments import config_hash, hypothesis_hash
-from alphaforge.validation.input_snapshot import validate_input_snapshot
 from alphaforge.validation.history import recover_bound_bytes
+from alphaforge.validation.input_snapshot import validate_input_snapshot
 
 ROOT: Final = Path(__file__).resolve().parents[1]
 RUN_CONFIG: Final = Path("config/crypto_carry_portable_v1_run.json")
