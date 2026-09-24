@@ -1306,3 +1306,31 @@ published number or spend a research identity are marked DECISION and name who m
   three files and four lines. No paper was re-rendered and the human visual-inspection receipt is
   untouched. The bundle's own `current_book_diversification.json` remains the four-sleeve result
   it was sealed with; this binding says which code exists now, not that it reproduces that file.
+- 2026-09-24 02:00Z. RESERVED PACKET URLS WERE DEAD; STALE RECEIPTS HAD NO PRODUCER. Every forward
+  reservation names a stable `packet_public_path` before any return exists. Of the 121 forward
+  identities, only `crypto_carry_portable_v1` was published at its reserved URL; the other 120
+  answered 404 on canlicapital.com while each packet was live under its hash name. Seven of those
+  URLs were promised by more than one reservation (18 identities, authored 2026-09-13); the
+  reservations are sealed, so none of them may take the URL. `research_export.py` now publishes
+  103 byte-identical aliases and, at each shared URL, an index of every claimant (#89). Uniqueness
+  belongs at reservation time in `trial_reservation.py`, which is Frankfurt-pinned, so it waits for
+  the owner's re-pin. Separately, four nightly-suite reds shared one cause: the legacy identity
+  provenance and both sleeve-publication replay receipts describe current sources and no publish
+  job ever rebuilt them, so the 2026-09-15 ledger append and the reader change of #78 left them
+  stale for good. The replay refused, correctly, because `walkforward_input_snapshot_protocol`
+  binds `reader.py`; it was re-sealed by its own producer together with the replay correction that
+  binds it, after which both replays passed (internal and isolated). Step 0 of `live_publish.sh`
+  now rebuilds all three before their readers (#91); a refusal prints a warning and never heals
+  itself. The crypto run-test pair now re-verifies the executed reservation from its seal and git
+  history instead of re-running a pre-run gate that can never pass again after identity 230 (#87).
+  C7b now keeps the whole suite output in `var/health/suite_last.log` (#88).
+- 2026-09-24 04:35Z. SPOT ARCHIVE INGEST AND THE CASH-AND-CARRY READINESS AUDIT. The spot ingest
+  (#84) stopped at 01:08Z after 138 of 471 symbols: Binance's own archive file for EDUUSDT 2026-06
+  lists one hour twice, and the client refuses the file. The ingest now records such a month as
+  rejected with the reason and continues (#90); choosing one of two rows would be inventing. It
+  resumed at 03:19Z. `audit_crypto_cash_and_carry_v2_lake_readiness.py` (#92) applies the draft
+  universe rule of `DRAFT_PREREG_CRYPTO_CASH_AND_CARRY_V2.md` at every month end 2021-06..2026-06
+  and gates on ten eligible coins, reading only bar timestamps and perpetual quote volume, never
+  funding or prices. With 175 of 471 spot symbols ingested the minimum was 21 eligible over 61
+  month ends; the status stays incomplete until the full ingest stamps completion. No hypothesis
+  is registered and the four open questions of the draft remain the owner's.

@@ -183,6 +183,18 @@ deploy_prod() {
   # ORDER IS LOAD-BEARING, same class as the paper-state/glassbox edge above: each step here
   # reads the previous one's output on disk, and the dependency is invisible in this file
   # because it is file-mediated. Pinned by tests/unit/test_publish_pipeline_order.py::EDGES.
+  # 0) Receipts that describe CURRENT sources and had no producer in any publish job
+  # (2026-09-24): every var*/experiments.jsonl append or bound-source change left them stale for
+  # good, and four nightly-suite tests red. 0a is read by the rights audit (1b); 0b/0c by the
+  # reproduction audit, the readiness audit and research_export. The replay refuses, loudly, when
+  # an audit builder would change a governed result byte: that is a finding, never auto-healed.
+  uv run python scripts/reconstruct_legacy_identity_input_provenance.py \
+    || echo "WARN: legacy identity input provenance NOT rebuilt — the rights audit reads a stale one"
+  # One invocation line for both modes (test_publish_pipeline_order needs a single write site).
+  for replay_mode in internal isolated; do
+    uv run python scripts/verify_sleeve_publication_replays.py $([ "$replay_mode" = isolated ] && echo --isolated) \
+      || echo "WARN: $replay_mode sleeve publication replay REFUSED or failed — see output above; receipt is stale"
+  done
   # 1) 16 raw-row-free sleeve review archives; steps 2, 9 and 10 below all read this receipt.
   uv run python scripts/package_all_sleeve_review_archives.py \
     || echo "WARN: all-sleeve review archives NOT rebuilt — publishing a receipt bound to stale archives"

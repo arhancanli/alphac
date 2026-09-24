@@ -8,9 +8,9 @@ line of its own docstring, each pipeline's steps are the scripts it actually inv
 contract's boundary is the boundary it states about itself. A script with no docstring appears as
 having none.
 
-At a glance: **424 Python scripts**, **17 shell entry points**,
-**34 configuration contracts**, **31 engineering artifacts**,
-**443 unit test files**, **23 data directories**, **10 scheduled jobs**.
+At a glance: **426 Python scripts**, **17 shell entry points**,
+**35 configuration contracts**, **31 engineering artifacts**,
+**448 unit test files**, **24 data directories**, **10 scheduled jobs**.
 
 
 ## What runs on a timer
@@ -51,6 +51,14 @@ Canli Capital — daily AlphaVintage (CPI-surprise size spread) refresh.
 |---|---|---|
 | 1 | `scripts/alphavintage_target.py` | ALPHAVINTAGE — write the live target book as a walk-forward positions artifact. |
 | 2 | `scripts/live_cycle.py` | Genuine broker-executed live paper cycle — turns a sleeve from SIMULATION into REAL Alpaca fills. |
+
+### `scripts/corp_actions_weekly.sh`
+
+Canli Capital - WEEKLY corporate-actions ingest (splits + dividends) for the equity sleeve.
+
+| # | step | what it is |
+|---|---|---|
+| 1 | `scripts/build_split_corrections.py` | Judge every stored split against the raw bars and write each lake's correction file. |
 
 ### `scripts/eia930_sweep.sh`
 
@@ -106,16 +114,17 @@ Canli Capital - daily PUBLISH of the live track record to the public sites.
 | 30 | `scripts/package_all_sleeve_review_archives.py` | Build deterministic raw-row-free review archives for all sleeve papers. |
 | 31 | `scripts/audit_all_sleeve_data_rights.py` | Audit all sleeve bundles for raw-row exclusion and conservative source mapping. |
 | 32 | `scripts/audit_clean_workspace_reproduction_contracts.py` | Audit whether each publication archive can genuinely reproduce its result cleanly. |
-| 33 | `scripts/audit_wave1_data_rights.py` | Audit Wave 1 publication bundles against the conservative data-rights policy. |
-| 34 | `scripts/package_wave1_release_candidates.py` | Create deterministic, raw-row-free Wave 1 archive candidates and verify extraction. |
-| 35 | `scripts/build_repository_submission_worksheets.py` | Build fail-closed repository worksheets without performing account actions. |
-| 36 | `scripts/audit_publication_manuscript_style.py` | Audit mechanical manuscript-style and authorship boundaries without scoring prose quality. |
-| 37 | `scripts/audit_inflation_breakeven_feasibility.py` | Audit inflation-breakeven source feasibility without opening any return data. |
-| 38 | `scripts/build_stanford_evidence_map.py` | Build a compact, source-bound Stanford CS portfolio evidence map. |
-| 39 | `scripts/audit_external_publication_readiness.py` | Fail closed on external-publication claims and report the exact sleeve-paper blockers. |
-| 40 | `scripts/research_export.py` | Research data layer: emit research.json — the FULL honest gauntlet — from REAL artifacts. |
-| 41 | `scripts/reproduce.py` | Reproduce our numbers — the outsider's one-command verifier of the Canli Capital glass box. |
-| 42 | `scripts/check_retracted_claims.py` | Refuse to publish a claim this record has already withdrawn. |
+| 33 | `scripts/audit_publication_manuscript_style.py` | Audit mechanical manuscript-style and authorship boundaries without scoring prose quality. |
+| 34 | `scripts/audit_inflation_breakeven_feasibility.py` | Audit inflation-breakeven source feasibility without opening any return data. |
+| 35 | `scripts/audit_external_publication_readiness.py` | Fail closed on external-publication claims and report the exact sleeve-paper blockers. |
+| 36 | `scripts/build_external_submission_plan.py` | Build a fail-closed, repository-specific release queue for every sleeve paper. |
+| 37 | `scripts/audit_wave1_data_rights.py` | Audit Wave 1 publication bundles against the conservative data-rights policy. |
+| 38 | `scripts/package_wave1_release_candidates.py` | Create deterministic, raw-row-free Wave 1 archive candidates and verify extraction. |
+| 39 | `scripts/build_repository_submission_worksheets.py` | Build fail-closed repository worksheets without performing account actions. |
+| 40 | `scripts/build_stanford_evidence_map.py` | Build a compact, source-bound Stanford CS portfolio evidence map. |
+| 41 | `scripts/research_export.py` | Research data layer: emit research.json — the FULL honest gauntlet — from REAL artifacts. |
+| 42 | `scripts/reproduce.py` | Reproduce our numbers — the outsider's one-command verifier of the Canli Capital glass box. |
+| 43 | `scripts/check_retracted_claims.py` | Refuse to publish a claim this record has already withdrawn. |
 
 ### `scripts/live_tick.sh`
 
@@ -218,6 +227,7 @@ are the ones a reader has to know about; everything else is derived from them.
 | `config/sleeve_family_lineage.json` | This registry governs novelty only. |
 | `config/sleeve_publication_evidence.json` | This catalog maps already persisted research evidence into preparation bundles. |
 | `config/trial_accounting.json` | _(no stated boundary)_ |
+| `config/trial_accounting_budget_amendments.json` | _(no stated boundary)_ |
 | `config/trial_accounting_evidence_classes.json` | This file classifies evidence for trial accounting. |
 | `config/trial_accounting_reviews.json` | _(no stated boundary)_ |
 | `config/trial_accounting_v7_proposed.json` | _(no stated boundary)_ |
@@ -397,7 +407,7 @@ and is worth more than a hand-made taxonomy that would drift.
 | `audit_vate_2020_dividend_vendor_resolution.py` | Resolve the unsupported VATE/HCHC 2020 dividend row without opening returns. |
 | `audit_wave1_data_rights.py` | Audit Wave 1 publication bundles against the conservative data-rights policy. |
 
-### `build_*` (42)
+### `build_*` (43)
 
 | script | first line of its docstring |
 |---|---|
@@ -438,6 +448,7 @@ and is worth more than a hand-made taxonomy that would drift.
 | `build_sharadar_hdb_corrected_lake.py` | Build a versioned Sharadar lake that quarantines one proven HDB due-bill marker. |
 | `build_sleeve_atlas.py` | Build the governed ALPHAC candidate atlas without opening return data. |
 | `build_sleeve_publication_bundles.py` | Build deterministic, fail-closed preparation bundles for every sleeve lineage. |
+| `build_split_corrections.py` | Judge every stored split against the raw bars and write each lake's correction file. |
 | `build_stanford_evidence_map.py` | Build a compact, source-bound Stanford CS portfolio evidence map. |
 | `build_system_map.py` | Render docs/design/SYSTEM_MAP.md from the repository, not from memory. |
 | `build_tender_offer_blind_label_packet.py` | Build a deterministic, prediction-blind reviewer packet for the frozen SC 14D9 audit. |
@@ -504,10 +515,11 @@ and is worth more than a hand-made taxonomy that would drift.
 | `collect_repurchase_issuance_submissions.py` | Collect periodic-filing denominators for the repurchase/issuance feasibility audit. |
 | `collect_repurchase_item703_documents.py` | Collect the sealed Item 703 filing sample without parsing documents or returns. |
 
-### `ingest_*` (5)
+### `ingest_*` (6)
 
 | script | first line of its docstring |
 |---|---|
+| `ingest_binance_spot_archive.py` | Ingest Binance spot 1h klines from the public archive into their own lake, data/lake_spot. |
 | `ingest_eia_wpsr.py` | Ingest first-release EIA WPSR Table 4 inventory vintages from the dated archive. |
 | `ingest_insider_transactions.py` | Ingest the official SEC Form 3/4/5 flat files for the insider-cluster probe. |
 | `ingest_options_chain.py` | Backfill the historical US options chain from Alpaca — the dataset we wrongly believed impossible. |
@@ -758,6 +770,7 @@ and is worth more than a hand-made taxonomy that would drift.
 | `data/lake_sharadar/` |  |
 | `data/lake_sharadar_full/` |  |
 | `data/lake_shortint/` |  |
+| `data/lake_spot/` |  |
 | `data/paper/` |  |
 | `data/predictions/` |  |
 | `data/quality/` |  |

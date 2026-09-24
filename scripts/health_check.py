@@ -64,6 +64,9 @@ from pathlib import Path
 HOME = os.path.expanduser("~")
 AF = os.path.join(HOME, "alphaforge")
 HEALTH = os.path.join(AF, "var", "health")
+# The whole pytest output of the last C7b run. The board carries a count and five names; the rest
+# of a red suite lived nowhere, so every triage began by re-running ~460s of tests.
+SUITE_LOG = os.path.join(HEALTH, "suite_last.log")
 HIST = os.path.join(HEALTH, "history")
 STATE_JSON = os.path.join(AF, "data", "paper", "state.json")
 CRYPTO_DB = os.path.join(AF, "var", "trading_crypto_perp.sqlite")  # the ONLY live crypto DB
@@ -324,6 +327,38 @@ def _summary_line(out: str) -> str:
     return out.splitlines()[-1].strip() if out else ""
 
 
+def _suite_evidence(out: str) -> str:
+    """How many tests failed, which ones first, and pytest's own summary line.
+
+    Until 2026-09-23 this check quoted one line of output (the last that mentioned a failure),
+    which read as "one test is red" for a suite with eighteen failures. The count comes from the
+    FAILED/ERROR lines themselves, never from a sample of them.
+    """
+    failing = [
+        ln.split(" ", 1)[1].split(" - ", 1)[0].replace("tests/unit/", "")
+        for ln in out.splitlines()
+        if ln.startswith(("FAILED ", "ERROR "))
+    ]
+    summary = _summary_line(out)
+    if not failing:
+        return summary
+    shown = failing[:5]
+    more = f" +{len(failing) - len(shown)} more" if len(failing) > len(shown) else ""
+    text = f"{len(failing)} failing: " + ", ".join(shown) + more + f" | {summary}"
+    return text[:400]
+
+
+def save_suite_output(out: str, path=None) -> str:
+    """Write the full suite output atomically; the path is what the board cites."""
+    path = path or SUITE_LOG
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    tmp = path + ".tmp"
+    with open(tmp, "w", encoding="utf-8") as handle:
+        handle.write(out)
+    os.replace(tmp, path)
+    return os.path.relpath(path, AF)
+
+
 def check_suite():
     # Exclude the integration test that inspects the LIVE var/experiments.jsonl ledger:
     # it asserts clean-checkout properties (no duplicate hashes) that the live system's
@@ -358,10 +393,11 @@ def check_suite():
                  timeout=SUITE_BUDGET_S, env=UV_ENV)
     elapsed_s = time.monotonic() - t_started
     ok = rc == 0
+    saved = save_suite_output(out)
     add("C7b-suite", "tests", "Full pytest suite",
         "PASS" if ok else "FAIL", "high",
-        observed=f"exit={rc} in {elapsed_s:.0f}s, waited {waited}s for tick",
-        expected="exit=0", evidence=_summary_line(out))
+        observed=f"exit={rc} in {elapsed_s:.0f}s, waited {waited}s for tick; full output {saved}",
+        expected="exit=0", evidence=_suite_evidence(out))
     return ok
 
 
