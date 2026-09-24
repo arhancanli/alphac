@@ -53,3 +53,24 @@ def test_the_suite_check_uses_the_counting_evidence() -> None:
     source = (_ROOT / "scripts" / "health_check.py").read_text()
     body = source.split("def check_suite():", 1)[1].split("\ndef ", 1)[0]
     assert "evidence=_suite_evidence(out)" in body
+
+
+def test_the_full_suite_output_is_saved_where_the_board_can_cite_it(tmp_path: Path) -> None:
+    target = tmp_path / "var" / "health" / "suite_last.log"
+    HEALTH.save_suite_output(RED, str(target))
+    assert target.read_text(encoding="utf-8") == RED
+    assert not target.with_name("suite_last.log.tmp").exists()
+    assert HEALTH.SUITE_LOG.endswith("var/health/suite_last.log")
+
+
+def test_check_suite_saves_what_pytest_printed(tmp_path: Path, monkeypatch) -> None:
+    target = tmp_path / "suite_last.log"
+    recorded: list[tuple] = []
+    monkeypatch.setattr(HEALTH, "SUITE_LOG", str(target))
+    monkeypatch.setattr(HEALTH, "wait_for_tick_lock", lambda: (0, False))
+    monkeypatch.setattr(HEALTH, "sh", lambda *args, **kwargs: (1, RED))
+    monkeypatch.setattr(HEALTH, "add", lambda *args, **kwargs: recorded.append((args, kwargs)))
+    assert HEALTH.check_suite() is False
+    assert target.read_text(encoding="utf-8") == RED
+    ((args, kwargs),) = recorded
+    assert args[0] == "C7b-suite" and "full output" in kwargs["observed"]
