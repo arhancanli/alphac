@@ -37,9 +37,7 @@ def _maturity(observations: int, estimate: float | None, sleeves: int) -> dict:
 def _all_green() -> dict:
     return {
         "maturity": _maturity(800, 2.1, 14),
-        "shortfall": {
-            "sleeves": {"a": {"implementation_shortfall_bps_of_decision_notional": 10.0}}
-        },
+        "shortfall": {"sleeves": {"a": {"excess_over_at_open_fill_bps": 5.0}}},
         "drawdown_contract": {"activation": {"live": True}},
         "attestations": {
             "attestations": {
@@ -77,9 +75,7 @@ def test_an_attestation_needs_both_a_date_and_who_attested() -> None:
 
 def test_a_shortfall_over_the_limit_fails_execution() -> None:
     inputs = _all_green()
-    inputs["shortfall"]["sleeves"]["b"] = {
-        "implementation_shortfall_bps_of_decision_notional": 39.7
-    }
+    inputs["shortfall"]["sleeves"]["b"] = {"excess_over_at_open_fill_bps": 11.5}
     assert GATE_MODULE.evaluate(GATE, **inputs)["failing"] == ["X1_implementation_shortfall"]
 
 
