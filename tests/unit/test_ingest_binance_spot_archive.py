@@ -64,7 +64,7 @@ def test_spot_rows_land_in_their_own_lake_with_gaps_recorded_and_resume(tmp_path
         writer=LakeWriter(LakePaths(lake)),
         progress_path=progress,
     )
-    assert counts == {"written": 1, "rows": 3, "gaps": 1, "skipped": 0}
+    assert counts == {"written": 1, "rows": 3, "gaps": 1, "rejected": 0, "skipped": 0}
     assert all(path.startswith("/data/spot/monthly/klines/BTCUSDT/") for path in requests)
 
     rows = ds.dataset(lake / "ohlcv", format="parquet", partitioning="hive").to_table()
@@ -82,10 +82,48 @@ def test_spot_rows_land_in_their_own_lake_with_gaps_recorded_and_resume(tmp_path
         writer=LakeWriter(LakePaths(lake)),
         progress_path=progress,
     )
-    assert counts == {"written": 0, "rows": 0, "gaps": 0, "skipped": 2}
+    assert counts == {"written": 0, "rows": 0, "gaps": 0, "rejected": 0, "skipped": 2}
     assert again == []
 
 
 def test_the_spot_lake_is_not_the_main_lake() -> None:
     assert ingest_mod.LAKE == ROOT / "data" / "lake_spot"
     assert ingest_mod.months("2020-11", "2021-02") == [(2020, 11), (2020, 12), (2021, 1), (2021, 2)]
+
+
+def test_a_month_that_fails_validation_is_rejected_with_its_reason_and_the_run_continues(
+    tmp_path: Path,
+) -> None:
+    lake = tmp_path / "lake_spot"
+    progress = lake / "_ingest" / "progress.json"
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        if request.url.path.endswith("-2021-01.zip"):  # the same bar twice
+            return httpx.Response(200, content=_zip("\n".join([_row(JAN_2021), _row(JAN_2021)])))
+        return httpx.Response(200, content=_zip(_row(JAN_2021 + 31 * 24 * H1)))
+
+    client = BinanceVisionClient(
+        http=httpx.Client(transport=httpx.MockTransport(handler)), market=MarketType.SPOT
+    )
+    counts = ingest_mod.ingest(
+        ["BTCUSDT"],
+        [(2021, 1), (2021, 2)],
+        spot=client,
+        writer=LakeWriter(LakePaths(lake)),
+        progress_path=progress,
+    )
+    assert counts == {"written": 1, "rows": 1, "gaps": 0, "rejected": 1, "skipped": 0}
+    recorded = json.loads(progress.read_text())
+    assert recorded["done"]["BTCUSDT"] == ["2021-02"]
+    assert "duplicate open_time" in recorded["rejected"]["BTCUSDT"]["2021-01"]
+    rows = ds.dataset(lake / "ohlcv", format="parquet", partitioning="hive").to_table()
+    assert rows.num_rows == 1
+
+    again = ingest_mod.ingest(
+        ["BTCUSDT"],
+        [(2021, 1), (2021, 2)],
+        spot=client,
+        writer=LakeWriter(LakePaths(lake)),
+        progress_path=progress,
+    )
+    assert again["skipped"] == 2

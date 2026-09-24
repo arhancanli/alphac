@@ -14,7 +14,10 @@ strategy may trade is the preregistration's decision, not this script's, so it f
 every perpetual symbol the archive lists that also has a spot archive.
 
 Resumable: a (symbol, month) already written is skipped unless --refresh. Months the archive does
-not have (before listing, after delisting) are recorded as gaps, never invented.
+not have (before listing, after delisting) are recorded as gaps, never invented. A month whose
+archive file fails the client's validation (on 2026-09-24, EDUUSDT 2026-06 carried a duplicate
+open_time) is recorded as rejected with the reason and written nowhere: one bad vendor file
+stopped the whole run once, and repairing it by picking one of two rows would be inventing.
 
     uv run python scripts/ingest_binance_spot_archive.py [--symbols BTCUSDT,ETHUSDT] \
         [--start 2020-01] [--end 2026-08] [--limit N] [--dry-run]
@@ -32,7 +35,7 @@ from typing import Any
 REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO / "src"))
 
-from alphaforge.core.errors import DataGapError  # noqa: E402
+from alphaforge.core.errors import DataGapError, SchemaError  # noqa: E402
 from alphaforge.core.time import Timeframe  # noqa: E402
 from alphaforge.core.types import MarketType  # noqa: E402
 from alphaforge.data.schemas import Dataset  # noqa: E402
@@ -58,7 +61,7 @@ def months(start: str, end: str) -> list[tuple[int, int]]:
 def _load_progress(path: Path) -> dict[str, Any]:
     if path.is_file():
         return dict(json.loads(path.read_text()))
-    return {"done": {}, "gaps": {}}
+    return {"done": {}, "gaps": {}, "rejected": {}}
 
 
 def _save_progress(path: Path, progress: dict[str, Any]) -> None:
@@ -79,13 +82,15 @@ def ingest(
 ) -> dict[str, int]:
     """Fetch and write every (symbol, month); returns counts of written, gap and skipped files."""
     progress = _load_progress(progress_path)
-    counts = {"written": 0, "rows": 0, "gaps": 0, "skipped": 0}
+    progress.setdefault("rejected", {})
+    counts = {"written": 0, "rows": 0, "gaps": 0, "rejected": 0, "skipped": 0}
     for symbol in symbols:
         done = set(progress["done"].get(symbol, []))
         gaps = set(progress["gaps"].get(symbol, []))
+        rejected: dict[str, str] = dict(progress["rejected"].get(symbol, {}))
         for year, month in month_list:
             key = f"{year:04d}-{month:02d}"
-            if not refresh and (key in done or key in gaps):
+            if not refresh and (key in done or key in gaps or key in rejected):
                 counts["skipped"] += 1
                 continue
             try:
@@ -94,6 +99,10 @@ def ingest(
                 gaps.add(key)
                 counts["gaps"] += 1
                 continue
+            except SchemaError as exc:
+                rejected[key] = str(exc)
+                counts["rejected"] += 1
+                continue
             if table.num_rows:
                 writer.write(Dataset.OHLCV, table, tf=Timeframe.H1)
                 counts["rows"] += table.num_rows
@@ -101,6 +110,8 @@ def ingest(
             counts["written"] += 1
         progress["done"][symbol] = sorted(done)
         progress["gaps"][symbol] = sorted(gaps)
+        if rejected:
+            progress["rejected"][symbol] = dict(sorted(rejected.items()))
         _save_progress(progress_path, progress)
     return counts
 
