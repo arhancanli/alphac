@@ -150,10 +150,8 @@ def main() -> int:
     document = build(perp, spot, progress, perp_symbols=int(perp["coin"].nunique()))
     counts = document["eligible_count_by_month_end"]
     print(
-        print(
-            f"{document['status']}: min eligible {document['minimum_eligible']} "
-            f"over {len(counts)} month ends"
-        )
+        f"{document['status']}: min eligible {document['minimum_eligible']} "
+        f"over {len(counts)} month ends"
     )
     print("  " + " ".join(f"{m[:7]}={n}" for m, n in list(counts.items())[::6]))
     if args.write:
