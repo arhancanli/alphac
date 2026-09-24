@@ -21,6 +21,25 @@ mkdir -p var/log
 
 FAIL=0
 
+# PUBLISH LOCK (2026-09-24). The hourly tick (live_tick.sh, :25) regenerates the same evidence this
+# job does: the broker reconciliation, the paper state and forward_evidence_maturity.json. On
+# 2026-09-24 the publish ran 21 minutes (22:10-22:31) into the 22:25 tick; the tick rewrote the
+# reconciliation and the maturity file mid-publish and research_export refused on
+# "forward evidence maturity source drift: broker_reconciliation", so nothing reached the site.
+# The tick places no orders (trading is in the per-sleeve agents), so while this lock is held a
+# tick exits at once and regenerates an hour later. A lock older than 3 hours is a dead run's.
+mkdir -p var/locks
+PUBLISH_LOCK="var/locks/live_publish.lock"
+TICK_LOCK="var/locks/live_tick.lock"
+[ -d "$PUBLISH_LOCK" ] && [ -n "$(find "$PUBLISH_LOCK" -maxdepth 0 -mmin +180 2>/dev/null)" ] && rmdir "$PUBLISH_LOCK" 2>/dev/null
+if ! mkdir "$PUBLISH_LOCK" 2>/dev/null; then
+  echo "=== live_publish $(date -u '+%Y-%m-%dT%H:%M:%SZ'): another publish holds $PUBLISH_LOCK; exiting ===" >> var/log/live_publish.log
+  exit 0
+fi
+trap 'rmdir "$PUBLISH_LOCK" 2>/dev/null' EXIT
+# A tick already running finishes first (hourly ticks take ~4-8 min); wait up to 15 minutes.
+for _ in $(seq 1 90); do [ -d "$TICK_LOCK" ] || break; sleep 10; done
+
 # deploy_prod <project_dir> <label> [legacy_alias ...]
 # Retries the production deploy up to 3x; echoes the resulting URL; best-effort aliases.
 deploy_prod() {
