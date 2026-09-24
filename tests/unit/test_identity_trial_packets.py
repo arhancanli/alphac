@@ -180,14 +180,42 @@ def test_embedded_hash_validator_rejects_semantic_mutation() -> None:
 def test_published_identity_packet_trees_are_byte_identical() -> None:
     left = REPO.parent / "meridian" / "public" / "glassbox" / "trial-packets"
     right = REPO.parent / "meridian-app" / "public" / "glassbox" / "trial-packets"
-    left_files = {path.name: path.read_bytes() for path in left.glob("*.json")}
-    right_files = {path.name: path.read_bytes() for path in right.glob("*.json")}
+    left_files = {path.name: path.read_bytes() for path in left.iterdir() if path.is_file()}
+    right_files = {path.name: path.read_bytes() for path in right.iterdir() if path.is_file()}
     index = json.loads(left_files["index.json"])
     legacy_files = {f"{row['hypothesis_key']}.json" for row in index["packets"]}
-    prospective_files = {
-        "da5f5f47f99f9bd2.json",
-        "crypto_carry_portable_v1.json",
+    # The prospective set is whatever the forward index publishes, plus each packet again at
+    # the URL its reservation promised (research_export.reserved_packet_aliases). Typing two
+    # names here went red as soon as the 120-identity narrative batch was published.
+    forward = json.loads(left_files["forward_index.json"])
+    forward_keys = {row["hypothesis_key"] for row in forward["packets"] if row["public_path"]}
+    export = _research_export()
+    aliases, shared = export.reserved_packet_aliases(export.load_prospective_epoch_register())
+    assert aliases["da5f5f47f99f9bd2"] == "crypto_carry_portable_v1.json"
+    prospective_files = (
+        {f"{key}.json" for key in forward_keys}
+        | {aliases[key] for key in forward_keys if key in aliases}
+        | set(shared)
+    )
+    assert set(left_files) == legacy_files | prospective_files | {
+        "index.json",
+        "forward_index.json",
     }
-    assert set(left_files) == legacy_files | prospective_files | {"index.json"}
-    assert left_files["da5f5f47f99f9bd2.json"] == left_files["crypto_carry_portable_v1.json"]
+    for key in forward_keys & set(aliases):
+        assert left_files[aliases[key]] == left_files[f"{key}.json"], aliases[key]
+    for name, claimants in shared.items():
+        document = json.loads(left_files[name])
+        assert [row["hypothesis_key"] for row in document["claimants"]] == [
+            row["hypothesis_key"] for row in claimants
+        ]
     assert left_files == right_files
+
+
+def _research_export():
+    spec = importlib.util.spec_from_file_location(
+        "research_export_packet_aliases_test", REPO / "scripts" / "research_export.py"
+    )
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
