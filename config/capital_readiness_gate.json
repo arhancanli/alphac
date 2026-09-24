@@ -1,0 +1,19 @@
+{
+  "schema": "canli.alphac-capital-readiness-gate.v1",
+  "author": "Arhan Canli",
+  "status": "PROPOSED_NOT_IN_FORCE",
+  "purpose": "The conditions that must all hold before any real capital is placed with a broker for any ALPHAC sleeve. Until every criterion passes the only permitted trading is the existing paper trading. Proposed 2026-09-24 for the owner's execution pillar; thresholds marked proposed are the owner's to change.",
+  "criteria": [
+    {"id": "E1_forward_record_length", "group": "evidence", "kind": "measured", "rule": "forward daily return observations >= the contract's establishment minimum", "source": "artifacts/engineering/forward_evidence_maturity.json sharpe_evidence"},
+    {"id": "E2_forward_sharpe_target", "group": "evidence", "kind": "measured", "rule": "forward Sharpe point estimate exists and is >= the owner's governing target", "source": "artifacts/engineering/forward_evidence_maturity.json sharpe_evidence"},
+    {"id": "E3_realized_drawdown", "group": "evidence", "kind": "measured", "rule": "realized live max drawdown <= the owner's realized bound", "source": "artifacts/engineering/forward_evidence_maturity.json drawdown_evidence"},
+    {"id": "E4_provenance", "group": "evidence", "kind": "measured", "rule": "the forward record's provenance gate passes", "source": "artifacts/engineering/forward_evidence_maturity.json provenance_gate"},
+    {"id": "E5_qualified_sleeves", "group": "evidence", "kind": "measured", "rule": "current sleeves in the book >= the owner's sleeve goal", "source": "artifacts/engineering/forward_evidence_maturity.json diversification_evidence; config/owner_goals.json"},
+    {"id": "X1_implementation_shortfall", "group": "execution", "kind": "measured", "rule": "every sleeve's measured implementation shortfall is <= max_shortfall_bps (proposed 25 bp of decision notional)", "max_shortfall_bps": 25.0, "source": "artifacts/analysis/implementation_shortfall/result.json"},
+    {"id": "O1_drawdown_brake_live", "group": "operations", "kind": "measured", "rule": "the drawdown control contract is active on the live path", "source": "config/drawdown_control_contract.json activation.live"},
+    {"id": "O2_broker_reconciliation", "group": "operations", "kind": "attestation", "rule": "daily broker-to-ledger reconciliation with zero unexplained differences for 60 consecutive sessions"},
+    {"id": "O3_key_custody_and_kill_switch", "group": "operations", "kind": "attestation", "rule": "trading keys held outside the repository with least privilege, and a tested kill switch that flattens and halts every sleeve"},
+    {"id": "L1_legal_entity", "group": "legal", "kind": "attestation", "rule": "an adult-controlled legal entity or account holder able to contract with a broker; the owner is a minor and cannot hold these agreements alone"},
+    {"id": "L2_licensing", "group": "legal", "kind": "attestation", "rule": "qualified counsel confirms the regulatory position before managing any money that is not the account holder's own (in the UAE the regulator depends on the location: DFSA, FSRA or SCA); this document is not legal advice"}
+  ]
+}
