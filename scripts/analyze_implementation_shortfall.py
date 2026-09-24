@@ -14,6 +14,13 @@ THE THREE PARTS, per order, in basis points of its decision notional, positive =
 - opportunity:  decision close -> session close, for the unfilled quantity (missed trades).
 Sign s = +1 for a buy, -1 for a sell: a cost is s * (later price - earlier price) / decision.
 
+WHAT THE BACKTEST ALREADY PAYS. The walk-forward fills every order at the next open, so it pays
+the overnight gap too. The comparison that isolates what paper-live adds is the shortfall MINUS an
+at-open benchmark: every decision dollar at the session open plus a half-spread
+(`at_open_benchmark_bps`). Their difference, `excess_over_at_open_fill_bps`, is the cost of the
+limit-order policy (missed trades net of price improvement), which no backtest sees. On 2026-09-24
+AlphaMax measured 39.7 bp total, of which 28.2 bp was the overnight gap the backtest also pays.
+
 GUARDS. An order whose decision-to-session move exceeds 30% is excluded and counted (a split or a
 bad bar would pose as slippage); so is an order with no bar. Reads the trading databases and the
 lake read-only. Registers no hypothesis and changes no cost parameter. 0 trials.
@@ -43,6 +50,8 @@ SLEEVES: Final = {
 OUTPUT: Final = ROOT / "artifacts" / "analysis" / "implementation_shortfall" / "result.json"
 MAX_ABS_MOVE: Final = 0.30
 FILLED: Final = "filled"
+# The cost model's default equity half-spread (config/cost_realism_contract.json, bid_ask_spread).
+AT_OPEN_HALF_SPREAD_BPS: Final = 2.5
 
 
 def load_orders(db: Path) -> pd.DataFrame:
@@ -140,8 +149,12 @@ def summarize(frame: pd.DataFrame) -> dict[str, Any]:
         float((frame["delay_bps"] + frame["execution_bps"]).mul(filled_w).sum())
         + float(frame["opportunity_bps"].mul(unfilled_w).sum())
     ) / total
+    at_open = float((frame["delay_bps"] * notional).sum() / total) + AT_OPEN_HALF_SPREAD_BPS
     return {
         "orders": len(frame),
+        "at_open_benchmark_bps": at_open,
+        "at_open_half_spread_bps": AT_OPEN_HALF_SPREAD_BPS,
+        "excess_over_at_open_fill_bps": shortfall - at_open,
         "fill_rate_by_count": float((frame["filled_fraction"] > 0).mean()),
         "fill_rate_by_notional": float(filled_w.sum() / total),
         "decision_notional_usd": total,

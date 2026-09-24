@@ -67,3 +67,12 @@ def test_a_split_sized_move_or_a_missing_bar_is_excluded_and_counted() -> None:
     assert frame.empty and excluded["implausible_move"] == 1
     frame, excluded = IS.decompose(_order("buy", "filled", 101.0, 10.0), {})
     assert frame.empty and excluded["no_bar"] == 1
+
+
+def test_the_backtest_benchmark_pays_the_gap_so_the_excess_is_the_order_policys_cost() -> None:
+    missed, _ = IS.decompose(_order("buy", "expired", None, 0.0), _bars(100.0, 102.0, 104.0))
+    summary = IS.summarize(missed)
+    # At the open it would have paid the 200 bp gap plus the half-spread; missing it cost 400.
+    half = IS.AT_OPEN_HALF_SPREAD_BPS
+    assert round(summary["at_open_benchmark_bps"], 6) == round(200.0 + half, 6)
+    assert round(summary["excess_over_at_open_fill_bps"], 6) == round(400.0 - 200.0 - half, 6)
