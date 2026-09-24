@@ -8,9 +8,9 @@ line of its own docstring, each pipeline's steps are the scripts it actually inv
 contract's boundary is the boundary it states about itself. A script with no docstring appears as
 having none.
 
-At a glance: **425 Python scripts**, **17 shell entry points**,
+At a glance: **426 Python scripts**, **17 shell entry points**,
 **35 configuration contracts**, **31 engineering artifacts**,
-**445 unit test files**, **23 data directories**, **10 scheduled jobs**.
+**448 unit test files**, **24 data directories**, **10 scheduled jobs**.
 
 
 ## What runs on a timer
@@ -515,10 +515,11 @@ and is worth more than a hand-made taxonomy that would drift.
 | `collect_repurchase_issuance_submissions.py` | Collect periodic-filing denominators for the repurchase/issuance feasibility audit. |
 | `collect_repurchase_item703_documents.py` | Collect the sealed Item 703 filing sample without parsing documents or returns. |
 
-### `ingest_*` (5)
+### `ingest_*` (6)
 
 | script | first line of its docstring |
 |---|---|
+| `ingest_binance_spot_archive.py` | Ingest Binance spot 1h klines from the public archive into their own lake, data/lake_spot. |
 | `ingest_eia_wpsr.py` | Ingest first-release EIA WPSR Table 4 inventory vintages from the dated archive. |
 | `ingest_insider_transactions.py` | Ingest the official SEC Form 3/4/5 flat files for the insider-cluster probe. |
 | `ingest_options_chain.py` | Backfill the historical US options chain from Alpaca — the dataset we wrongly believed impossible. |
@@ -769,6 +770,7 @@ and is worth more than a hand-made taxonomy that would drift.
 | `data/lake_sharadar/` |  |
 | `data/lake_sharadar_full/` |  |
 | `data/lake_shortint/` |  |
+| `data/lake_spot/` |  |
 | `data/paper/` |  |
 | `data/predictions/` |  |
 | `data/quality/` |  |
