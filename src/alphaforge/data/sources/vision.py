@@ -169,6 +169,14 @@ def _require_finite(what: str, value: float) -> float:
     return value
 
 
+#: Statuses a public bucket returns while it is overloaded or throttling, worth retrying.
+TRANSIENT_STATUSES: Final[frozenset[int]] = frozenset({429, 500, 502, 503, 504})
+
+
+class TransientHTTPStatusError(httpx.HTTPStatusError):
+    """A 429/5xx answer; retried like a transport error, raised as a status error when exhausted."""
+
+
 class BinanceVisionClient:
     """Read-only client for the ``data.binance.vision`` public archive (USDT-M perps, 1h).
 
@@ -206,17 +214,36 @@ class BinanceVisionClient:
             raise ValueError(f"delay_s must be >= 0, got {delay_s}")
         self._http = http if http is not None else httpx.Client(timeout=30.0)
         self._delay_s = delay_s
-        self._retry = retry if retry is not None else transient_retry((httpx.TransportError,))
+        self._retry = (
+            retry
+            if retry is not None
+            else transient_retry((httpx.TransportError, TransientHTTPStatusError))
+        )
         self._market = market
         self._klines_prefix = _SPOT_KLINES_PREFIX if market is MarketType.SPOT else _KLINES_PREFIX
 
     # ------------------------------------------------------------------ transport
 
     def _get(self, url: str, params: dict[str, str] | None = None) -> httpx.Response:
-        """One GET with politeness delay and transient-transport retry; no status check."""
+        """One GET with politeness delay and transient retry.
+
+        A dropped connection and a 429/5xx answer are retried alike. On 2026-09-24 one 503 from
+        data.binance.vision ended a 471-symbol spot ingest at symbol 252; only transport errors
+        were retried then. Other statuses (404 gaps, 403) are returned for the caller to judge.
+        """
         if self._delay_s > 0.0:
             time.sleep(self._delay_s)
-        return self._retry(self._http.get, url, params=params)
+        return self._retry(self._get_once, url, params)
+
+    def _get_once(self, url: str, params: dict[str, str] | None) -> httpx.Response:
+        resp = self._http.get(url, params=params)
+        if resp.status_code in TRANSIENT_STATUSES:
+            raise TransientHTTPStatusError(
+                f"transient HTTP {resp.status_code} for {url}",
+                request=resp.request,
+                response=resp,
+            )
+        return resp
 
     def _list(self, prefix: str) -> tuple[list[str], list[str]]:
         """Full S3 listing under ``prefix`` with ``delimiter=/``, following pagination.
