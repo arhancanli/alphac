@@ -24,6 +24,7 @@ from alphaforge.data.sources.ccxt_source import FUNDING_PUBLICATION_LAG_MS
 from alphaforge.data.sources.vision import (
     S3_LIST_ENDPOINT,
     BinanceVisionClient,
+    TransientHTTPStatusError,
     YearMonth,
 )
 
@@ -449,6 +450,67 @@ class TestTransport:
         with pytest.raises(httpx.HTTPStatusError):
             client.list_symbols()
         assert calls["n"] == 1  # status errors are not transport errors
+
+    def test_a_transient_status_is_retried_then_served(self) -> None:
+        calls = {"n": 0}
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            calls["n"] += 1
+            if calls["n"] == 1:
+                return httpx.Response(503, text="Service Unavailable")
+            return httpx.Response(
+                200,
+                text=_listing_xml(
+                    request_prefix=KLINES_PREFIX, prefixes=(f"{KLINES_PREFIX}BTCUSDT/",)
+                ),
+            )
+
+        client = _client(
+            handler,
+            retry=transient_retry(
+                (httpx.TransportError, TransientHTTPStatusError), max_attempts=3, base_s=0.001
+            ),
+        )
+        assert client.list_symbols() == ["BTCUSDT"]
+        assert calls["n"] == 2
+
+    def test_a_transient_status_that_never_clears_is_a_status_error(self) -> None:
+        calls = {"n": 0}
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            calls["n"] += 1
+            return httpx.Response(503, text="Service Unavailable")
+
+        client = _client(
+            handler,
+            retry=transient_retry(
+                (httpx.TransportError, TransientHTTPStatusError), max_attempts=3, base_s=0.001
+            ),
+        )
+        with pytest.raises(httpx.HTTPStatusError):
+            client.list_symbols()
+        assert calls["n"] == 3
+
+    def test_the_default_policy_retries_transient_statuses_and_not_gaps(self) -> None:
+        client = BinanceVisionClient(
+            http=httpx.Client(transport=httpx.MockTransport(lambda r: httpx.Response(404)))
+        )
+        assert TransientHTTPStatusError in client._retry.retry.exception_types  # type: ignore[attr-defined]
+        calls = {"n": 0}
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            calls["n"] += 1
+            return httpx.Response(404)
+
+        gap_client = _client(
+            handler,
+            retry=transient_retry(
+                (httpx.TransportError, TransientHTTPStatusError), max_attempts=3, base_s=0.001
+            ),
+        )
+        with pytest.raises(DataGapError):
+            gap_client.fetch_ohlcv_month("BTCUSDT", 2021, 1)
+        assert calls["n"] == 1
 
     def test_politeness_delay_sleeps_before_each_request(self, monkeypatch) -> None:
         sleeps: list[float] = []
