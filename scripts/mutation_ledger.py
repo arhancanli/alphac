@@ -604,9 +604,12 @@ MUTATIONS: tuple[Mutation, ...] = (
     ),
     Mutation(
         "test_crypto_carry_portable_v1_run.py",
-        "change the reservation validator success status",
+        "change the reservation status the sealed reservation must carry",
         REPO / "src/alphaforge/validation/trial_reservation.py",
-        _replace('"VALIDATED_BEFORE_RETURN_COMPUTE"', '"MUTATED_RESERVATION_STATUS"'),
+        _replace(
+            'STATUS: Final[str] = "RETURN_IDENTITY_RESERVED"',
+            'STATUS: Final[str] = "MUTATED_RESERVATION_STATUS"',
+        ),
     ),
     Mutation(
         "test_wave1_data_rights.py",
