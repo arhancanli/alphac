@@ -151,6 +151,16 @@ def main() -> int:
         refresh=args.refresh,
     )
     print(f"done: {counts}")
+    if not (args.symbols or args.limit):
+        # A full default run that returned: every archived symbol was fetched, gapped or
+        # rejected. Readers (the cash-and-carry readiness audit) gate on this, never on a count.
+        progress = _load_progress(PROGRESS)
+        progress["complete"] = {
+            "at": dt.datetime.now(dt.UTC).isoformat(timespec="seconds"),
+            "symbols": len(symbols),
+            "end_month": args.end,
+        }
+        _save_progress(PROGRESS, progress)
     return 0
 
 
