@@ -9,60 +9,59 @@
   },
   "declared_fingerprint": "sha256:dd8dfa131b07c89528ebb1aa985c972155da9a4255d198861b7c5e842beff41b",
   "declared_surface": {
-    "strategy_settings": {
-      "allocator": "rank",
-      "rebalance_bars": 24,
-      "rebalance_anchor": "run",
-      "cov_window_bars": 720,
-      "cov_halflife_days": null,
-      "cov_min_periods": 240,
-      "realized_vol_halflife_bars": 240,
-      "cost_frac_oneway": 0.001
-    },
-    "risk_path_settings": {
-      "book_ladder_activation_live": true,
-      "book_ladder_dd_half_frac": 0.05,
-      "book_ladder_dd_flat_frac": 0.1,
-      "book_ladder_release_frac_of_half": 0.75,
-      "book_ladder_source": "https",
-      "book_ladder_max_age_days": 4,
-      "vol_target_ann": 0.15,
-      "vol_scale_max": 1.5,
-      "gross_max": 1.0,
-      "dd_halve_gross": -0.1,
-      "dd_flat_halt": -0.15,
-      "flat_cooldown_bars": 336,
-      "staleness_max_bars": 2,
-      "w_max": 0.15
+    "book_aggregation_settings": {
+      "book_level_drawdown_ladder": {
+        "activated_on": "2026-09-15",
+        "applied_by": "every sleeve multiplies its target gross by the published book multiplier",
+        "dd_flat_frac": 0.1,
+        "dd_half_frac": 0.05,
+        "flat_state": "ABSORBING_UNTIL_OWNER_REARM",
+        "release_frac_of_half": 0.75,
+        "source": "config/drawdown_control_contract.json"
+      },
+      "book_level_vol_target_ann": null,
+      "claim_boundary": "Constituent strategies own their internal sizing. ALPHAC combines their realized returns at the committed fixed-weight schedule and adds the separately disclosed strategic overlay. It applies no second book-level volatility target. It does apply the declared book-level drawdown ladder (half gross at 5.0% below the high-water mark, flat at 10.0%, absorbing until an owner rearm), which every sleeve reads before sizing.",
+      "missing_mark_policy": "ZERO_CONTRIBUTION_ON_MISSING_DAILY_SLEEVE_MARK",
+      "scheme": "fixed",
+      "strategic_overlay_is_book_vol_scaled": false
     },
     "book_composition": {
       "sleeves": {
-        "alphaforge": 0.25,
-        "alphamax": 0.25,
-        "managed_futures": 0.25,
-        "alphavintage": 0.25
+        "alphamax": 0.333,
+        "alphavintage": 0.333,
+        "managed_futures": 0.333
       },
-      "strategic_tilt_pct": 0.1,
       "strategic_tilt_mix": {
         "BTC": 0.5,
         "SPY": 0.5
-      }
-    },
-    "book_aggregation_settings": {
-      "scheme": "fixed",
-      "book_level_vol_target_ann": null,
-      "book_level_drawdown_ladder": {
-        "dd_half_frac": 0.05,
-        "dd_flat_frac": 0.1,
-        "release_frac_of_half": 0.75,
-        "flat_state": "ABSORBING_UNTIL_OWNER_REARM",
-        "applied_by": "every sleeve multiplies its target gross by the published book multiplier",
-        "source": "config/drawdown_control_contract.json",
-        "activated_on": "2026-09-15"
       },
-      "missing_mark_policy": "ZERO_CONTRIBUTION_ON_MISSING_DAILY_SLEEVE_MARK",
-      "strategic_overlay_is_book_vol_scaled": false,
-      "claim_boundary": "Constituent strategies own their internal sizing. ALPHAC combines their realized returns at the committed fixed-weight schedule and adds the separately disclosed strategic overlay. It applies no second book-level volatility target. It does apply the declared book-level drawdown ladder (half gross at 5.0% below the high-water mark, flat at 10.0%, absorbing until an owner rearm), which every sleeve reads before sizing."
+      "strategic_tilt_pct": 0.1
+    },
+    "risk_path_settings": {
+      "book_ladder_activation_live": true,
+      "book_ladder_dd_flat_frac": 0.1,
+      "book_ladder_dd_half_frac": 0.05,
+      "book_ladder_max_age_days": 4,
+      "book_ladder_release_frac_of_half": 0.75,
+      "book_ladder_source": "https",
+      "dd_flat_halt": -0.15,
+      "dd_halve_gross": -0.1,
+      "flat_cooldown_bars": 336,
+      "gross_max": 1.0,
+      "staleness_max_bars": 2,
+      "vol_scale_max": 1.5,
+      "vol_target_ann": 0.15,
+      "w_max": 0.15
+    },
+    "strategy_settings": {
+      "allocator": "rank",
+      "cost_frac_oneway": 0.001,
+      "cov_halflife_days": null,
+      "cov_min_periods": 240,
+      "cov_window_bars": 720,
+      "realized_vol_halflife_bars": 240,
+      "rebalance_anchor": "run",
+      "rebalance_bars": 24
     }
   },
   "declared_at": "2026-09-15",
