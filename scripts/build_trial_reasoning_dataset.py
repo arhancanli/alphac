@@ -40,6 +40,11 @@ SCHEMA: Final = "canli.trial-reasoning-record.v0"
 MANIFEST_SCHEMA: Final = "canli.trial-reasoning-dataset.v0"
 PUBLIC_REUSE_SOURCES: Final = frozenset({"SEC_PUBLIC_DATA_AND_FILINGS", "EIA_PUBLIC_DATA"})
 INDEX_FILES: Final = frozenset({"index.json", "forward_index.json"})
+# Instrument-id venue prefix -> the rights-policy source it implies. A packet's family is its trial
+# ACCOUNT (combined-book studies of equity momentum and crypto carry are charged to
+# managed_futures_trend), so sources read from the account alone can miss a venue the trial traded.
+# Adding these can only move a record to a stricter tier, never a looser one.
+VENUE_SOURCES: Final = {"BINANCE:": "BINANCE_EXCHANGE_MARKET_DATA"}
 
 
 def _canonical(value: Any) -> bytes:
@@ -64,6 +69,18 @@ def family_sources(
         if registry_key in by_sleeve:
             out[sleeve["trial_family_key"]] = by_sleeve[registry_key]
     return out
+
+
+def trial_sources(
+    account_sources: list[str] | None, configuration: dict[str, Any] | None
+) -> list[str]:
+    """The account's sources plus every venue the trial's own instruments name."""
+    found = set(account_sources or [])
+    for instrument in (configuration or {}).get("instrument_ids") or []:
+        for prefix, source in VENUE_SOURCES.items():
+            if str(instrument).startswith(prefix):
+                found.add(source)
+    return sorted(found)
 
 
 def rights_tier(sources: list[str] | None) -> str:
@@ -125,11 +142,16 @@ def build_record(
     root: Path = ROOT,
 ) -> dict[str, Any]:
     first = packet.get("immutable_first_measurement") or {}
+    configuration = packet.get("configuration") or {}
+    # Unmapped stays unmapped: a venue found in the instruments cannot stand in for the missing
+    # family review, so it only adds sources to an account that has a review.
+    sources = trial_sources(sources, configuration) if sources else sources
     sections = packet.get("required_sections") or {}
     record: dict[str, Any] = {
         "schema": SCHEMA,
         "hypothesis_key": packet["hypothesis_key"],
-        "family": packet.get("research_family_key"),
+        "family_trial_account": packet.get("research_family_key"),
+        "alpha_names": list(configuration.get("alpha_names") or []),
         "label": packet.get("label"),
         "evidence_date": packet.get("evidence_date"),
         "packet_status": packet.get("packet_status"),
@@ -215,7 +237,9 @@ def build(root: Path = ROOT) -> tuple[list[dict[str, Any]], dict[str, Any]]:
         ),
         "complete_packets": sum(1 for r in records if r["complete"]),
         "rights_tiers": dict(sorted(tiers.items())),
-        "families": dict(sorted(Counter(r["family"] for r in records).items())),
+        "family_trial_accounts": dict(
+            sorted(Counter(r["family_trial_account"] for r in records).items())
+        ),
         "failed_gate_frequency": dict(
             Counter(
                 gate.split(":")[0] + ":" + gate.split(":")[1] if gate.count(":") >= 1 else gate

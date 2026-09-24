@@ -99,3 +99,20 @@ def test_a_narrative_closure_keeps_every_failed_gate_and_no_closure_means_no_ver
     assert record["decision"]["headline"] == {"net_sharpe": -0.34}
     assert record["rights_tier"] == "UNMAPPED"
     assert DATASET.build_record(_packet("cccc"), None, ["YAHOO"])["decision"] is None
+
+
+def test_a_venue_the_trial_traded_is_added_to_its_accounts_sources_and_only_tightens() -> None:
+    packet = _packet("dddd") | {
+        "configuration": {
+            "alpha_names": ["carry_fund_21"],
+            "instrument_ids": ["BINANCE:PERP:BTCUSDT"],
+        }
+    }
+    record = DATASET.build_record(packet, None, ["SEC_PUBLIC_DATA_AND_FILINGS"])
+    assert record["data_sources"] == ["BINANCE_EXCHANGE_MARKET_DATA", "SEC_PUBLIC_DATA_AND_FILINGS"]
+    assert (
+        record["rights_tier"] == "FREE_RESULTS_ONLY"
+    )  # would be COMMERCIAL_CANDIDATE on SEC alone
+    assert record["family_trial_account"] == "managed_futures_trend"
+    assert record["alpha_names"] == ["carry_fund_21"]
+    assert DATASET.build_record(packet, None, None)["rights_tier"] == "UNMAPPED"
