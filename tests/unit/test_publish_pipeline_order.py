@@ -227,6 +227,30 @@ EDGES: tuple[
     # went red the moment a tracked publication bundle was rebound underneath them. Publish-only
     # (see the EDGES docstring above) because they audit near-static publication evidence, not
     # state that moves hourly.
+    # Current-source receipts with no publish-job producer until 2026-09-24 (see live_publish.sh
+    # step 0): the ledger grew on 09-15 and reader.py moved on 09-23, and all four stayed red.
+    (
+        "reconstruct_legacy_identity_input_provenance.py",
+        "artifacts/provenance/legacy_identity_input_provenance.json",
+        ("audit_all_sleeve_data_rights.py",),
+        ("scripts/live_publish.sh",),
+    ),
+    (
+        "verify_sleeve_publication_replays.py",
+        "artifacts/audit/sleeve_publication_replay_verification.json",
+        ("audit_external_publication_readiness.py", "research_export.py"),
+        ("scripts/live_publish.sh",),
+    ),
+    (
+        "verify_sleeve_publication_replays.py",
+        "artifacts/audit/sleeve_publication_isolated_replay_verification.json",
+        (
+            "audit_clean_workspace_reproduction_contracts.py",
+            "audit_external_publication_readiness.py",
+            "research_export.py",
+        ),
+        ("scripts/live_publish.sh",),
+    ),
     (
         "package_all_sleeve_review_archives.py",
         "artifacts/publication/all_sleeve_review_archives.json",
