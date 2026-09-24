@@ -658,10 +658,83 @@ def load_forward_packet_index() -> dict[str, Any] | None:
     return payload
 
 
+RESERVED_PACKET_PREFIX: Final[str] = "/glassbox/trial-packets/"
+RESERVED_PACKET_NAME = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]*")
+
+
+def reserved_packet_aliases(
+    register: dict[str, Any] | None,
+) -> tuple[dict[str, str], dict[str, list[dict[str, str]]]]:
+    """Where each reservation promised its packet at /glassbox/trial-packets/.
+
+    Every forward reservation declares a stable packet_public_path before any return exists
+    (trial_reservation.validate_reservation). Until 2026-09-24 only crypto_carry_portable_v1's
+    was published; every other reserved URL answered 404 while the packet lived under its hash
+    name. The path is read from the reservation the register binds, so it is the one promised
+    before the result, never one chosen after it.
+
+    Returns (aliases, shared). aliases maps a hypothesis key to the file name only it reserved.
+    shared maps a file name several reservations promised (seven such names were authored on
+    2026-09-13 and are sealed) to every identity that claimed it: no one of them may take the
+    URL, so it publishes an index of all of them instead.
+    """
+    claims: dict[str, list[dict[str, str]]] = {}
+    for row in (register or {}).get("identities", []):
+        reservation_path = row.get("reservation_path")
+        if not reservation_path:
+            continue
+        reservation = json.loads((REPO / reservation_path).read_text(encoding="utf-8"))
+        key = str(row["hypothesis_key"])
+        if reservation.get("hypothesis_identity") != key:
+            raise ValueError(f"{reservation_path}: reservation is not for {key}")
+        public_path = str(reservation.get("packet_public_path") or "")
+        name = public_path.removeprefix(RESERVED_PACKET_PREFIX)
+        if name == public_path or RESERVED_PACKET_NAME.fullmatch(name) is None:
+            raise ValueError(f"{reservation_path}: unpublishable packet path {public_path!r}")
+        if name in {"index.json", "forward_index.json"}:
+            raise ValueError(f"{reservation_path}: packet path collides with an index")
+        if name == f"{key}.json":
+            continue
+        claims.setdefault(name, []).append(
+            {
+                "hypothesis_key": key,
+                "return_identity_id": str(row.get("return_identity_id") or ""),
+                "reservation_path": str(reservation_path),
+                "packet_public_path": f"{RESERVED_PACKET_PREFIX}{key}.json",
+            }
+        )
+    aliases = {rows[0]["hypothesis_key"]: name for name, rows in claims.items() if len(rows) == 1}
+    shared = {
+        name: sorted(rows, key=lambda r: r["hypothesis_key"])
+        for name, rows in claims.items()
+        if len(rows) > 1
+    }
+    return aliases, shared
+
+
+def _shared_reserved_url_document(name: str, claimants: list[dict[str, str]]) -> str:
+    body = {
+        "schema": "canli.alphac-shared-reserved-packet-url.v1",
+        "reserved_public_path": f"{RESERVED_PACKET_PREFIX}{name}",
+        "claim_boundary": (
+            f"{len(claimants)} sealed reservations promised this same URL for their trial "
+            "packet. None of them is published here in preference to the others; each packet "
+            "is at its own hash path below. New reservations must reserve a unique URL."
+        ),
+        "claimants": claimants,
+    }
+    return json.dumps(body, indent=2, sort_keys=True) + "\n"
+
+
 def _copy_forward_identity_packets(target_dir: Path, index: dict[str, Any] | None) -> int:
-    """Publish every forward packet the index binds, verified against the index, plus the index."""
+    """Publish every forward packet the index binds, verified against the index, plus the index.
+
+    Each packet is also written, byte for byte, at the URL its reservation alone promised; a URL
+    several reservations promised gets an index of all of them.
+    """
     if index is None:
         return 0
+    aliases, shared = reserved_packet_aliases(load_prospective_epoch_register())
     copied = 0
     for row in index["packets"]:
         if row["public_path"] is None:
@@ -670,7 +743,12 @@ def _copy_forward_identity_packets(target_dir: Path, index: dict[str, Any] | Non
         if hashlib.sha256(source.read_bytes()).hexdigest() != row["packet_file_sha256"]:
             raise ValueError(f"{row['hypothesis_key']}: packet file moved since the index bound it")
         (target_dir / f"{row['hypothesis_key']}.json").write_bytes(source.read_bytes())
+        alias = aliases.get(row["hypothesis_key"])
+        if alias is not None:
+            (target_dir / alias).write_bytes(source.read_bytes())
         copied += 1
+    for name, claimants in shared.items():
+        (target_dir / name).write_text(_shared_reserved_url_document(name, claimants))
     (target_dir / "forward_index.json").write_text(FORWARD_PACKET_INDEX_JSON.read_text())
     return copied
 
