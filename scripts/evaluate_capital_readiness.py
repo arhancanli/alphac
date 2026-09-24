@@ -84,13 +84,12 @@ def evaluate(
             observed = {"current": current, "goal": sleeve_goal}
             passed = sleeve_goal is not None and current >= sleeve_goal
         elif cid == "X1_implementation_shortfall":
-            limit = float(criterion["max_shortfall_bps"])
+            limit = float(criterion["max_excess_bps"])
             sleeves = (shortfall or {}).get("sleeves") or {}
             measured = {
-                name: row.get("implementation_shortfall_bps_of_decision_notional")
-                for name, row in sleeves.items()
+                name: row.get("excess_over_at_open_fill_bps") for name, row in sleeves.items()
             }
-            observed = {"shortfall_bps": measured, "limit_bps": limit}
+            observed = {"excess_over_at_open_fill_bps": measured, "limit_bps": limit}
             passed = bool(measured) and all(v is not None and v <= limit for v in measured.values())
         elif cid == "O1_drawdown_brake_live":
             observed = bool(((drawdown_contract or {}).get("activation") or {}).get("live"))
