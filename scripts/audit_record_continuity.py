@@ -96,16 +96,29 @@ def mark_session_date(ts: int | float, *, trades_24_7: bool) -> str | None:
 def expected_days(start: dt.date, end: dt.date, *, trades_24_7: bool) -> list[str]:
     """Expected mark dates over the inclusive range, on the sleeve's actual calendar."""
     if trades_24_7:
-        return [
-            (start + dt.timedelta(days=i)).isoformat()
-            for i in range((end - start).days + 1)
-        ]
+        return [(start + dt.timedelta(days=i)).isoformat() for i in range((end - start).days + 1)]
     opens = XNYS.expected_bar_opens(
         _date_to_utc_midnight_ms(start),
         _date_to_utc_midnight_ms(end + dt.timedelta(days=1)),
         Timeframe.D1,
     )
     return [_epoch_to_date(value) for value in opens]
+
+
+XNYS_CLOSE_LOCAL = dt.time(16, 0)
+
+
+def last_closed_session_date(now: dt.datetime) -> dt.date:
+    """The latest New York date whose XNYS session can have closed by ``now``.
+
+    A session cannot be missing before it has closed. Until 2026-09-25 the equity expectation ran
+    through the UTC date of the audit, so at 01:20Z it expected a close for a session that had not
+    opened; one such phantom gap is noise on a long record and 50% of a two-day one (the first
+    v4 day), which failed the provenance gate and the site build. Holidays are handled by the
+    XNYS session set this date bounds.
+    """
+    local = now.astimezone(NEW_YORK)
+    return local.date() if local.time() >= XNYS_CLOSE_LOCAL else local.date() - dt.timedelta(days=1)
 
 
 def marked_days(db: Path, go_live: str, *, trades_24_7: bool) -> set[str]:
@@ -122,8 +135,7 @@ def marked_days(db: Path, go_live: str, *, trades_24_7: bool) -> set[str]:
     return {
         day
         for (ts,) in rows
-        if (day := mark_session_date(ts, trades_24_7=trades_24_7)) is not None
-        and day >= go_live
+        if (day := mark_session_date(ts, trades_24_7=trades_24_7)) is not None and day >= go_live
     }
 
 
@@ -133,7 +145,8 @@ def main() -> int:
         return 1
     state = json.loads(STATE.read_text())
     go_live = state["go_live_date"]
-    today = dt.datetime.now(tz=dt.UTC).date()
+    now = dt.datetime.now(tz=dt.UTC)
+    today = now.date()
     start = dt.date.fromisoformat(go_live)
     # Calendar days, not trading days: the crypto sleeve trades 24/7 and the equity sleeves do
     # not, so a weekend is a legitimate absence for some sleeves and a real gap for others. Both
@@ -149,7 +162,8 @@ def main() -> int:
         missing = [d for d in calendar_days if d not in marks]
         # The equity expectation is the real XNYS session set, not weekday arithmetic. That
         # distinction is load-bearing on exchange holidays. Crypto remains a UTC 24/7 calendar.
-        expected = expected_days(start, today, trades_24_7=spec["trades_24_7"])
+        end = today if spec["trades_24_7"] else min(today, last_closed_session_date(now))
+        expected = expected_days(start, end, trades_24_7=spec["trades_24_7"])
         expected_set = set(expected)
         real = [d for d in expected if d not in marks]
         legitimate = [d for d in missing if d not in expected_set]
