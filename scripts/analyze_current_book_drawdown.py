@@ -39,6 +39,14 @@ EPOCH: Final = dt.date(1970, 1, 1)
 FloatArray = npt.NDArray[np.float64]
 
 
+_COUNT_WORDS = {2: "two", 3: "three", 4: "four", 5: "five", 6: "six", 7: "seven", 8: "eight"}
+
+
+def _count_word(n: int) -> str:
+    """How many sleeves the book holds, in words, from the book itself (v4 suspended one)."""
+    return _COUNT_WORDS.get(n, str(n))
+
+
 def _sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
@@ -342,8 +350,9 @@ def build() -> dict[str, Any]:
             "market_factor_source_corpus": _corpus_binding(market_patterns),
         },
         "claim_boundary": (
-            "This is a zero-drift two-year risk simulation of the exact current four-sleeve "
-            "fixed-weight research composition and strategic overlay. It is stronger mapping "
+            "This is a zero-drift two-year risk simulation of the exact current "
+            f"{_count_word(len(sleeves))}-sleeve fixed-weight research composition and "
+            "strategic overlay. It is stronger mapping "
             "evidence than the fourteen-sleeve frontier cell, but it is not a funded result, a "
             "loss limit, a guarantee, or an established live expected-drawdown estimate. The "
             "common window begins after COVID and 2022, and neither model replays constituent "
