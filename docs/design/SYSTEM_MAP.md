@@ -8,9 +8,9 @@ line of its own docstring, each pipeline's steps are the scripts it actually inv
 contract's boundary is the boundary it states about itself. A script with no docstring appears as
 having none.
 
-At a glance: **426 Python scripts**, **17 shell entry points**,
-**35 configuration contracts**, **31 engineering artifacts**,
-**448 unit test files**, **24 data directories**, **10 scheduled jobs**.
+At a glance: **430 Python scripts**, **17 shell entry points**,
+**36 configuration contracts**, **32 engineering artifacts**,
+**453 unit test files**, **24 data directories**, **10 scheduled jobs**.
 
 
 ## What runs on a timer
@@ -111,20 +111,22 @@ Canli Capital - daily PUBLISH of the live track record to the public sites.
 | 27 | `scripts/sync_readme_forward_evidence.py` | Synchronize README forward headlines with the canonical maturity artifact. |
 | 28 | `scripts/analyze_forward_sleeve_contribution.py` | Attribute the published forward book to its realized sleeve curves. |
 | 29 | `scripts/audit_crypto_lab_carry_crash.py` | Seal the LABUSDT carry-crash incident from immutable local execution evidence. |
-| 30 | `scripts/package_all_sleeve_review_archives.py` | Build deterministic raw-row-free review archives for all sleeve papers. |
-| 31 | `scripts/audit_all_sleeve_data_rights.py` | Audit all sleeve bundles for raw-row exclusion and conservative source mapping. |
-| 32 | `scripts/audit_clean_workspace_reproduction_contracts.py` | Audit whether each publication archive can genuinely reproduce its result cleanly. |
-| 33 | `scripts/audit_publication_manuscript_style.py` | Audit mechanical manuscript-style and authorship boundaries without scoring prose quality. |
-| 34 | `scripts/audit_inflation_breakeven_feasibility.py` | Audit inflation-breakeven source feasibility without opening any return data. |
-| 35 | `scripts/audit_external_publication_readiness.py` | Fail closed on external-publication claims and report the exact sleeve-paper blockers. |
-| 36 | `scripts/build_external_submission_plan.py` | Build a fail-closed, repository-specific release queue for every sleeve paper. |
-| 37 | `scripts/audit_wave1_data_rights.py` | Audit Wave 1 publication bundles against the conservative data-rights policy. |
-| 38 | `scripts/package_wave1_release_candidates.py` | Create deterministic, raw-row-free Wave 1 archive candidates and verify extraction. |
-| 39 | `scripts/build_repository_submission_worksheets.py` | Build fail-closed repository worksheets without performing account actions. |
-| 40 | `scripts/build_stanford_evidence_map.py` | Build a compact, source-bound Stanford CS portfolio evidence map. |
-| 41 | `scripts/research_export.py` | Research data layer: emit research.json — the FULL honest gauntlet — from REAL artifacts. |
-| 42 | `scripts/reproduce.py` | Reproduce our numbers — the outsider's one-command verifier of the Canli Capital glass box. |
-| 43 | `scripts/check_retracted_claims.py` | Refuse to publish a claim this record has already withdrawn. |
+| 30 | `scripts/reconstruct_legacy_identity_input_provenance.py` | Classify legacy identity inputs by persisted ledger profile and namespace. |
+| 31 | `scripts/verify_sleeve_publication_replays.py` | Replay audit-only sleeve evidence builders and prove no result or trial ledger changed. |
+| 32 | `scripts/package_all_sleeve_review_archives.py` | Build deterministic raw-row-free review archives for all sleeve papers. |
+| 33 | `scripts/audit_all_sleeve_data_rights.py` | Audit all sleeve bundles for raw-row exclusion and conservative source mapping. |
+| 34 | `scripts/audit_clean_workspace_reproduction_contracts.py` | Audit whether each publication archive can genuinely reproduce its result cleanly. |
+| 35 | `scripts/audit_publication_manuscript_style.py` | Audit mechanical manuscript-style and authorship boundaries without scoring prose quality. |
+| 36 | `scripts/audit_inflation_breakeven_feasibility.py` | Audit inflation-breakeven source feasibility without opening any return data. |
+| 37 | `scripts/audit_external_publication_readiness.py` | Fail closed on external-publication claims and report the exact sleeve-paper blockers. |
+| 38 | `scripts/build_external_submission_plan.py` | Build a fail-closed, repository-specific release queue for every sleeve paper. |
+| 39 | `scripts/audit_wave1_data_rights.py` | Audit Wave 1 publication bundles against the conservative data-rights policy. |
+| 40 | `scripts/package_wave1_release_candidates.py` | Create deterministic, raw-row-free Wave 1 archive candidates and verify extraction. |
+| 41 | `scripts/build_repository_submission_worksheets.py` | Build fail-closed repository worksheets without performing account actions. |
+| 42 | `scripts/build_stanford_evidence_map.py` | Build a compact, source-bound Stanford CS portfolio evidence map. |
+| 43 | `scripts/research_export.py` | Research data layer: emit research.json — the FULL honest gauntlet — from REAL artifacts. |
+| 44 | `scripts/reproduce.py` | Reproduce our numbers — the outsider's one-command verifier of the Canli Capital glass box. |
+| 45 | `scripts/check_retracted_claims.py` | Refuse to publish a claim this record has already withdrawn. |
 
 ### `scripts/live_tick.sh`
 
@@ -200,6 +202,7 @@ are the ones a reader has to know about; everything else is derived from them.
 | `config/admission_v7_promotion.json` | _(no stated boundary)_ |
 | `config/author_protocol_review_registry.json` | This registry identifies protocols awaiting Arhan Canli's review. |
 | `config/book_ladder_rearms.json` | _(no stated boundary)_ |
+| `config/capital_readiness_gate.json` | PROPOSED_NOT_IN_FORCE. |
 | `config/clean_checkout_workspace_evidence_policy.json` | This policy classifies test modules by input availability only. |
 | `config/cost_realism_contract.json` | Model-charged frictions are a conservative accounting of what a funded book would pay on these exact fills, not a measurement of what one paid. |
 | `config/crypto_carry_portable_v1_prerun.json` | This contract freezes a source-availability decision before any portable-v1 return is computed. |
@@ -235,6 +238,7 @@ are the ones a reader has to know about; everything else is derived from them.
 | `artifacts/engineering/alphavintage_sealed_outcome.json` | The figures the published correction paper quotes, recomputed from the probe's own artifacts so a reader can check them. |
 | `artifacts/engineering/book_drawdown_ladder.json` | The declared book-level drawdown ladder replayed over the combined book's published daily paper marks. |
 | `artifacts/engineering/borrow_execution_contract.json` | These primitives prevent current borrow flags and general-collateral rates from being silently treated as historical security-level evidence. |
+| `artifacts/engineering/capital_readiness.json` | A readiness score, not investment advice or legal advice. |
 | `artifacts/engineering/claim_coverage_map.json` | Maps each PUBLISHED ARTIFACT to the mechanisms that guard it and records when each mechanism last ran, by running it. |
 | `artifacts/engineering/contract_and_unit_audit.json` | Three audit dimensions worked against the contract in force and the published bundle. |
 | `artifacts/engineering/corporate_action_contract.json` | The event-driven engine now accounts for source-bound splits, cash dividends, and metadata-confirmed delistings. |
@@ -269,7 +273,7 @@ Grouped by the verb they start with, which is this repository's only naming conv
 and is worth more than a hand-made taxonomy that would drift.
 
 
-### `analyze_*` (25)
+### `analyze_*` (26)
 
 | script | first line of its docstring |
 |---|---|
@@ -288,6 +292,7 @@ and is worth more than a hand-made taxonomy that would drift.
 | `analyze_feasible_frontier.py` | The feasibility frontier for a target book Sharpe: which (s_bar, rho_bar, N) reach it. |
 | `analyze_forward_sleeve_contribution.py` | Attribute the published forward book to its realized sleeve curves. |
 | `analyze_frontier_14.py` | The 14-sleeve frontier for the 2.25-3.0 in-sample support band and 11% expected DD. |
+| `analyze_implementation_shortfall.py` | Implementation shortfall of the live paper equity sleeves, decomposed and measured. |
 | `analyze_ledoit_wolf_effective_sample.py` | Is Ledoit-Wolf shrinkage mis-scaled on the live book? Measure, do not change anything. |
 | `analyze_live_covariance_memory.py` | What the LIVE covariance estimator actually does with a halflife parameter, per sleeve. |
 | `analyze_overlay_halflife_decision.py` | Cost the covariance-halflife change that the drawdown objective depends on. |
@@ -299,7 +304,7 @@ and is worth more than a hand-made taxonomy that would drift.
 | `analyze_target_2p5.py` | ANALYSIS — what would a book Sharpe of 2.5 actually require, and is it reachable? |
 | `analyze_trial_budget_cost.py` | Price a prospective trial budget before it is authorized. |
 
-### `audit_*` (103)
+### `audit_*` (104)
 
 | script | first line of its docstring |
 |---|---|
@@ -328,6 +333,7 @@ and is worth more than a hand-made taxonomy that would drift.
 | `audit_crypto_carry_first_rebalance_drift.py` | Exactly reproduce the crypto-carry replay's first-rebalance sizing drift. |
 | `audit_crypto_carry_full_path_drift.py` | Delimit the crypto-carry replay drift without pretending it is additive. |
 | `audit_crypto_carry_portable_prerun_readiness.py` | Fail-closed, zero-return readiness audit for crypto_carry_portable_v1. |
+| `audit_crypto_cash_and_carry_v2_lake_readiness.py` | Zero-return data readiness for the cash-and-carry redesign (its draft preregistration). |
 | `audit_crypto_extended_accounting.py` | Independently reconcile saved crypto control; computes no new strategy paths. |
 | `audit_crypto_extended_boundaries.py` | Check saved exposures against retained source bounds, without imputing funding. |
 | `audit_crypto_extended_horizon.py` | Verify complete calendar-year2022 returns from saved corrected replay observations. |
@@ -407,7 +413,7 @@ and is worth more than a hand-made taxonomy that would drift.
 | `audit_vate_2020_dividend_vendor_resolution.py` | Resolve the unsupported VATE/HCHC 2020 dividend row without opening returns. |
 | `audit_wave1_data_rights.py` | Audit Wave 1 publication bundles against the conservative data-rights policy. |
 
-### `build_*` (43)
+### `build_*` (44)
 
 | script | first line of its docstring |
 |---|---|
@@ -454,6 +460,7 @@ and is worth more than a hand-made taxonomy that would drift.
 | `build_tender_offer_blind_label_packet.py` | Build a deterministic, prediction-blind reviewer packet for the frozen SC 14D9 audit. |
 | `build_trial_accounting_v7.py` | Build the prospective staged trial-budget proposal authorized by the v7 power audit. |
 | `build_trial_packet_manifest.py` | Inventory one permanent evidence packet for every union hypothesis identity. |
+| `build_trial_reasoning_dataset.py` | Build the trial-reasoning dataset: every governed trial, as a record a model can learn from. |
 
 ### `probe_*` (45)
 
@@ -586,7 +593,7 @@ and is worth more than a hand-made taxonomy that would drift.
 | `verify_sleeve_publication_replays.py` | Replay audit-only sleeve evidence builders and prove no result or trial ledger changed. |
 | `verify_transparency.py` | Verify the public track-record chain, signatures and disclosed payloads. |
 
-### everything else (159)
+### everything else (160)
 
 | script | first line of its docstring |
 |---|---|
@@ -637,6 +644,7 @@ and is worth more than a hand-made taxonomy that would drift.
 | `download_sec_10k_item1a.py` | Download and extract the preregistered 10-K Item 1A corpus, without opening returns. |
 | `dvol_backfill.py` | Backfill the Deribit DVOL implied-vol index history (BTC + ETH) for Front-A VRP research. |
 | `eq_factor_family_report.py` | Honest synthesis for a family of equity-factor walk-forwards (glass-box decision tool). |
+| `evaluate_capital_readiness.py` | Score the capital-readiness gate: may any real capital be placed yet? (Today: no, and why.) |
 | `evaluate_forward_evidence_maturity.py` | Evaluate the ALPHAC paper record against a frozen forward-evidence contract. |
 | `exp1_crypto_decorr.py` | Experiment #1 — crypto MOMENTUM vs CARRY sleeve decorrelation. |
 | `exp2_crypto_vrp.py` | Experiment #2 — crypto VRP (variance-risk-premium) signal-validity SCREEN. |
