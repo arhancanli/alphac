@@ -41,6 +41,14 @@ EPOCH: Final = dt.date(1970, 1, 1)
 FloatArray = npt.NDArray[np.float64]
 
 
+_COUNT_WORDS = {2: "two", 3: "three", 4: "four", 5: "five", 6: "six", 7: "seven", 8: "eight"}
+
+
+def _count_word(n: int) -> str:
+    """How many sleeves the book holds, in words, from the book itself (v4 suspended one)."""
+    return _COUNT_WORDS.get(n, str(n))
+
+
 def _sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
@@ -422,9 +430,10 @@ def build() -> dict[str, Any]:
             "market_factor_source_corpus": drawdown_module._corpus_binding(market_patterns),
         },
         "claim_boundary": (
-            "Retrospective diversification measurement of the exact current four-sleeve research "
-            "specification and strategic overlay. It does not establish live-forward correlation, "
-            "alpha, the 1.5 Sharpe objective, a reweighting decision, or retroactive admission. "
+            f"Retrospective diversification measurement of the exact current "
+            f"{_count_word(len(sleeves))}-sleeve research specification and strategic overlay. "
+            "It does not establish live-forward correlation, alpha, the owner's forward Sharpe "
+            "target, a reweighting decision, or retroactive admission. "
             "The return data were known before this protocol and the research window ends before "
             "the broker-reconciled forward record begins."
         ),
