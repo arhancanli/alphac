@@ -10,6 +10,8 @@ import tarfile
 from pathlib import Path
 from typing import Any, Final
 
+from alphaforge.validation.history import recover_bound_bytes
+
 ROOT: Final = Path(__file__).resolve().parents[1]
 REGISTRY: Final = ROOT / "config/external_publication_registry.json"
 ARCHIVES: Final = ROOT / "artifacts/publication/all_sleeve_review_archives.json"
@@ -24,6 +26,31 @@ PREREG_INVESTMENT_UPSTREAM_REPLAY: Final = (
     ROOT / "artifacts/publication/prereg_investment_upstream_clean_workspace.json"
 )
 OUTPUT: Final = ROOT / "artifacts/publication/clean_workspace_reproduction_audit.json"
+
+
+def environment_record(root: Path, relative: str, expected: str) -> dict[str, Any]:
+    """One environment binding, valid when the current file or a commit holds the bound bytes.
+
+    A bundle names the environment it was built with. When the working file has moved on (uv.lock
+    after a dependency update), the binding still holds if those exact bytes are recoverable at
+    that path from this repository's history; the record names the commit. It fails when they are
+    not (validation/history.py, #85).
+    """
+    path = root / relative
+    current = _sha256(path) if path.is_file() else None
+    recovered = None if current == expected else recover_bound_bytes(root, relative, expected)
+    return {
+        "path": relative,
+        "present_in_author_workspace": path.is_file(),
+        "current_sha256": current,
+        "declared_sha256": expected,
+        "binding_valid": current == expected or recovered is not None,
+        "binding_source": (
+            "current_file"
+            if current == expected
+            else (f"git:{recovered[0]}" if recovered else "unrecoverable")
+        ),
+    }
 
 
 def _sha256(path: Path) -> str:
@@ -86,9 +113,7 @@ def build() -> dict[str, Any]:
     prereg_investment_replay = json.loads(PREREG_INVESTMENT_UPSTREAM_REPLAY.read_text())
     if alphamax_replay.get("content_hash") != _content_hash(alphamax_replay):
         raise ValueError("AlphaMax upstream replay receipt content hash is invalid")
-    if prereg_investment_replay.get("content_hash") != _content_hash(
-        prereg_investment_replay
-    ):
+    if prereg_investment_replay.get("content_hash") != _content_hash(prereg_investment_replay):
         raise ValueError("prereg_investment upstream replay receipt content hash is invalid")
     archive_by_key = {record["registry_key"]: record for record in archives["records"]}
     rights_by_key = {record["registry_key"]: record for record in rights["records"]}
@@ -113,15 +138,10 @@ def build() -> dict[str, Any]:
 
         env_records = []
         for relative, expected in reproduction["environment_bindings"].items():
-            path = ROOT / relative
             archive_member = f"{archive_root}/{relative}"
             env_records.append(
                 {
-                    "path": relative,
-                    "present_in_author_workspace": path.is_file(),
-                    "current_sha256": _sha256(path) if path.is_file() else None,
-                    "declared_sha256": expected,
-                    "binding_valid": path.is_file() and _sha256(path) == expected,
+                    **environment_record(ROOT, relative, expected),
                     "present_in_review_archive": archive_member in members,
                 }
             )
@@ -154,9 +174,7 @@ def build() -> dict[str, Any]:
             record["kind"] == "ENVIRONMENT_SETUP" or record["target_in_review_archive"]
             for record in command_records
         )
-        archive_has_environment = all(
-            record["present_in_review_archive"] for record in env_records
-        )
+        archive_has_environment = all(record["present_in_review_archive"] for record in env_records)
         archive_standalone = (
             archive_has_commands
             and archive_has_environment
@@ -246,15 +264,11 @@ def build() -> dict[str, Any]:
     archive_executable = sum(
         record["archive_standalone_reproduction_executable"] for record in records
     )
-    core_only_count = sum(
-        record["portable_core_only_reproduction_completed"] for record in records
-    )
+    core_only_count = sum(record["portable_core_only_reproduction_completed"] for record in records)
     full_decision_count = sum(
         record["portable_full_decision_reproduction_completed"] for record in records
     )
-    independent = sum(
-        record["independent_human_reproduction_completed"] for record in records
-    )
+    independent = sum(record["independent_human_reproduction_completed"] for record in records)
     upstream_strategy_replays = sum(
         record["upstream_strategy_curve_replays_completed"] for record in records
     )
@@ -281,8 +295,7 @@ def build() -> dict[str, Any]:
             "portable_full_decision_reproductions_completed": full_decision_count,
             "upstream_strategy_curve_replays_completed": upstream_strategy_replays,
             "upstream_historical_strategy_output_equivalences": sum(
-                record["upstream_historical_strategy_output_equivalences"]
-                for record in records
+                record["upstream_historical_strategy_output_equivalences"] for record in records
             ),
             "failed_upstream_strategy_replay_attempts_completed": 1,
             "independent_human_reproductions_completed": independent,
@@ -290,9 +303,7 @@ def build() -> dict[str, Any]:
         "isolated_dependency_audit": {
             "status": isolated["status"],
             "commands_executed": isolated["commands_executed"],
-            "sleeves_with_audit_command_executed": isolated[
-                "sleeves_with_audit_command_executed"
-            ],
+            "sleeves_with_audit_command_executed": isolated["sleeves_with_audit_command_executed"],
             "portable_clean_workspace_replay_completed": isolated[
                 "portable_clean_workspace_replay_completed"
             ],
