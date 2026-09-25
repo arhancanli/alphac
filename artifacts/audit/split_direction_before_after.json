@@ -1,0 +1,113 @@
+{
+ "audit": "scripts/audit_split_adjustment_direction.py (same classes and stored splits)",
+ "author": "Arhan Canli",
+ "claim_boundary": "Counts what each kernel produces from what the lakes store today; splits ingested after 2026-09-14 are included, so these are not the merge message's figures. It changes no lake, engine or result, opens no return path and spends no identity.",
+ "classes": "see the audit script",
+ "content_hash": "sha256:78cfbd3e21a676433025b66732438802e095035d32dc488667d4865bfbe98a24",
+ "generated_at": "2026-09-25T08:04:05.630117+00:00",
+ "lakes": [
+  {
+   "apple_2020": {
+    "current_adjusted_close_before": 124.81,
+    "ex_date": "2020-08-31",
+    "instrument_id": "XUSE:CASH:AAPLUSD",
+    "pre_fix_adjusted_close_before": 1996.92,
+    "raw_close_before": 499.23,
+    "raw_close_ex_date": 129.04,
+    "stored_ratio": 4.0
+   },
+   "current": {
+    "counts": {
+     "DOUBLED": 89,
+     "NEUTRALIZED": 3948,
+     "OTHER": 765,
+     "UNDETERMINED": 526
+    },
+    "determined": 4802,
+    "instruments_with_splits": 3168,
+    "splits": 5328,
+    "storage_conventions": {
+     "RECIPROCAL_OLD_PER_NEW": 90,
+     "UNDETERMINED": 282,
+     "UNRESOLVED": 196,
+     "UNRESOLVED_SMALL": 262,
+     "VENDOR_NEW_PER_OLD": 4254
+    }
+   },
+   "lake": "data/lake",
+   "pre_fix": {
+    "counts": {
+     "DOUBLED": 4272,
+     "NEUTRALIZED": 230,
+     "OTHER": 300,
+     "UNDETERMINED": 526
+    },
+    "determined": 4802,
+    "instruments_with_splits": 3168,
+    "splits": 5328,
+    "storage_conventions": {
+     "RECIPROCAL_OLD_PER_NEW": 90,
+     "UNDETERMINED": 282,
+     "UNRESOLVED": 196,
+     "UNRESOLVED_SMALL": 262,
+     "VENDOR_NEW_PER_OLD": 4254
+    }
+   }
+  },
+  {
+   "apple_2020": {
+    "current_adjusted_close_before": 124.81,
+    "ex_date": "2020-08-31",
+    "instrument_id": "XUSE:CASH:AAPLUSD",
+    "pre_fix_adjusted_close_before": 1996.92,
+    "raw_close_before": 499.23,
+    "raw_close_ex_date": 129.04,
+    "stored_ratio": 4.0
+   },
+   "current": {
+    "counts": {
+     "DOUBLED": 93,
+     "NEUTRALIZED": 3746,
+     "OTHER": 601,
+     "UNDETERMINED": 364
+    },
+    "determined": 4440,
+    "instruments_with_splits": 2801,
+    "splits": 4804,
+    "storage_conventions": {
+     "RECIPROCAL_OLD_PER_NEW": 93,
+     "UNDETERMINED": 219,
+     "UNRESOLVED": 130,
+     "UNRESOLVED_SMALL": 233,
+     "VENDOR_NEW_PER_OLD": 3984
+    }
+   },
+   "lake": "data/lake_sharadar",
+   "pre_fix": {
+    "counts": {
+     "DOUBLED": 4000,
+     "NEUTRALIZED": 208,
+     "OTHER": 232,
+     "UNDETERMINED": 364
+    },
+    "determined": 4440,
+    "instruments_with_splits": 2801,
+    "splits": 4804,
+    "storage_conventions": {
+     "RECIPROCAL_OLD_PER_NEW": 93,
+     "UNDETERMINED": 219,
+     "UNRESOLVED": 130,
+     "UNRESOLVED_SMALL": 233,
+     "VENDOR_NEW_PER_OLD": 3984
+    }
+   }
+  }
+ ],
+ "pre_fix_kernel": {
+  "commit": "f188caf3278c3acd2c49c11a62eda806ffc591d1",
+  "path": "src/alphaforge/features/library/equity_price.py",
+  "source_sha256": "sha256:50fddfdba9eb4cd7a37805133038ab6f2af44de33d0a460feba9de5a1e5e3c10",
+  "why": "first parent of 4395e24 (#37), the last commit whose kernel multiplied by the stored split factor"
+ },
+ "schema": "canli.alphac-split-direction-before-after.v1"
+}
