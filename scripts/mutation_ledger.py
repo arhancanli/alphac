@@ -603,6 +603,14 @@ MUTATIONS: tuple[Mutation, ...] = (
         ),
     ),
     Mutation(
+        "test_split_direction_before_after.py",
+        "measure the 'before' with the fixed kernel instead of the one that multiplied",
+        REPO / "scripts/audit_split_direction_before_after.py",
+        _replace(
+            'PRE_FIX_COMMIT: Final[str] = "4395e24~1"', 'PRE_FIX_COMMIT: Final[str] = "4395e24"'
+        ),
+    ),
+    Mutation(
         "test_reserved_packet_aliases.py",
         "give a URL several reservations promised to the first claimant",
         REPO / "scripts/research_export.py",
