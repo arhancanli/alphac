@@ -140,3 +140,20 @@ def test_an_unreviewed_sleeve_key_or_a_count_mismatch_fails_closed() -> None:
     del diversification["marginal_book_sharpe_research_diagnostics"]["new_sleeve"]
     with pytest.raises(RuntimeError, match="names 3 sleeves but reports 4"):
         _module().synchronize(evidence, README_TEMPLATE)
+
+
+def test_a_single_return_is_singular() -> None:
+    module = _module()
+    assert module.daily_returns_text(1) == "1 daily return"
+    assert module.daily_returns_text(36) == "36 daily returns"
+
+
+def test_a_restarted_record_says_it_restarted() -> None:
+    """A withdrawn record is not a prior epoch; the README must still say the record restarted."""
+    evidence = _evidence([])
+    evidence["record"]["evidence_epoch"] = {"starts_on": "2026-09-24"}
+    evidence["record"]["prior_epochs"] = []
+    updated = _module().synchronize(evidence, README_TEMPLATE)
+
+    assert "the record restarted on 2026-09-24 under a declared change" in updated
+    assert "withdrawn or superseded, not pooled" in updated
