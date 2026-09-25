@@ -3,6 +3,8 @@ from __future__ import annotations
 import importlib.util
 from pathlib import Path
 
+import pytest
+
 ROOT = Path(__file__).resolve().parents[2]
 SCRIPT = ROOT / "scripts" / "sync_readme_forward_evidence.py"
 
@@ -43,9 +45,14 @@ def _evidence(failed_checks: list[str]) -> dict:
             "current_composition_conservative_p95_max_drawdown": 0.16,
         },
         "diversification_evidence": {
-            "current_sleeves": 4,
+            "current_sleeves": 3,
             "target_total_sleeves": 14,
             "average_pairwise_correlation": 0.02,
+            "marginal_book_sharpe_research_diagnostics": {
+                "k30_dn_63": {},
+                "managed_futures": {},
+                "alphavintage_live": {},
+            },
         },
     }
 
@@ -84,7 +91,7 @@ def test_sync_reports_a_passing_provenance_gate_directly() -> None:
 def test_sync_derives_the_governing_target_and_the_realized_bound_from_the_evidence() -> None:
     updated = _module().synchronize(_evidence([]), README_TEMPLATE)
 
-    assert "| Paper sleeves | **4 / 14 planned**" in updated
+    assert "| Paper sleeves | **3 / 14 planned**" in updated
     assert (
         "| Forward Sharpe | **Not reportable** — 252 observations are required for an estimate "
         "and 756 for the project's establishment test; the governing forward target is **2.0** "
@@ -110,3 +117,26 @@ def test_sync_publishes_a_point_estimate_only_once_the_evidence_carries_one() ->
         "ESTIMATE_ELIGIBLE_TARGET_NOT_OBSERVED, not a real-money result |"
     ) in updated
     assert "Not reportable" not in updated
+
+
+def test_sleeve_names_come_from_the_book_so_a_suspended_sleeve_is_not_named() -> None:
+    updated = _module().synchronize(_evidence([]), README_TEMPLATE)
+
+    assert (
+        "| Paper sleeves | **3 / 14 planned** — equity momentum, managed-futures trend, "
+        "PIT macro surprise |"
+    ) in updated
+    assert "funding carry" not in updated
+
+
+def test_an_unreviewed_sleeve_key_or_a_count_mismatch_fails_closed() -> None:
+    evidence = _evidence([])
+    diversification = evidence["diversification_evidence"]
+    diversification["marginal_book_sharpe_research_diagnostics"]["new_sleeve"] = {}
+    diversification["current_sleeves"] = 4
+    with pytest.raises(RuntimeError, match="no reviewed name"):
+        _module().synchronize(evidence, README_TEMPLATE)
+
+    del diversification["marginal_book_sharpe_research_diagnostics"]["new_sleeve"]
+    with pytest.raises(RuntimeError, match="names 3 sleeves but reports 4"):
+        _module().synchronize(evidence, README_TEMPLATE)

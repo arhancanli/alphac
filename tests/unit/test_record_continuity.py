@@ -159,3 +159,16 @@ def test_weekend_current_snapshot_does_not_manufacture_an_equity_mark() -> None:
 def test_equity_expectations_use_xnys_sessions_not_weekdays() -> None:
     days = MOD.expected_days(dt.date(2021, 1, 1), dt.date(2021, 1, 5), trades_24_7=False)
     assert days == ["2021-01-04", "2021-01-05"]  # New Year's Day is not a session.
+
+
+@pytest.mark.parametrize(
+    ("now_utc", "expected"),
+    [
+        ("2026-09-25T01:20:00+00:00", "2026-09-24"),  # 21:20 ET on 09-24: that session closed
+        ("2026-09-25T19:00:00+00:00", "2026-09-24"),  # 15:00 ET on 09-25: still open
+        ("2026-09-25T20:30:00+00:00", "2026-09-25"),  # 16:30 ET on 09-25: closed
+    ],
+)
+def test_a_session_is_not_expected_before_it_has_closed(now_utc: str, expected: str) -> None:
+    now = dt.datetime.fromisoformat(now_utc)
+    assert MOD.last_closed_session_date(now).isoformat() == expected

@@ -49,6 +49,29 @@ def _epoch_clause(record: dict[str, Any]) -> str:
     )
 
 
+# Curve key in the current-book study -> the README's plain name. The study lists exactly the
+# sleeves in the book, so a suspended sleeve drops out of the README with it; an unknown key
+# fails closed rather than publishing a name nobody reviewed.
+SLEEVE_LABELS = {
+    "crypto_carry_wk": "funding carry",
+    "k30_dn_63": "equity momentum",
+    "managed_futures": "managed-futures trend",
+    "alphavintage_live": "PIT macro surprise",
+}
+
+
+def _sleeve_names(diversification: dict[str, Any]) -> str:
+    keys = list(diversification["marginal_book_sharpe_research_diagnostics"])
+    unknown = sorted(set(keys) - set(SLEEVE_LABELS))
+    if unknown:
+        raise RuntimeError(f"README has no reviewed name for book sleeve(s): {unknown}")
+    if len(keys) != int(diversification["current_sleeves"]):
+        raise RuntimeError(
+            f"book study names {len(keys)} sleeves but reports {diversification['current_sleeves']}"
+        )
+    return ", ".join(label for key, label in SLEEVE_LABELS.items() if key in keys)
+
+
 def _percentage(value: float, places: int) -> str:
     rendered = f"{value:.{places}%}"
     return rendered.replace("-", chr(0x2212))
@@ -97,7 +120,7 @@ def synchronize(evidence: dict[str, Any], readme: str) -> str:
         r"^\| Paper sleeves \|.*$",
         "| Paper sleeves | "
         f"**{diversification['current_sleeves']} / {diversification['target_total_sleeves']} "
-        "planned** — funding carry, equity momentum, managed-futures trend, PIT macro surprise |",
+        f"planned** — {_sleeve_names(diversification)} |",
     )
     readme = _replace_once(
         readme,

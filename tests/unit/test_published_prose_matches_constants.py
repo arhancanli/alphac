@@ -35,10 +35,11 @@ _WEIGHT_LITERAL = re.compile(r"\b\d{2}/\d{2}(?:/\d{2})?\b")
 
 def test_prose_derives_from_the_constant() -> None:
     assert _weights_prose() == WEIGHTS_PROSE
-    # "equal quarters" since 2026-08-10, when AlphaVintage became the fourth live sleeve.
+    # "equal thirds" since the v4 re-baseline (2026-09-24), when AlphaForge was suspended from the
+    # book; "equal quarters" from 2026-08-10, when AlphaVintage became the fourth live sleeve.
     # This literal is pinned deliberately: it is the one place a silent weight change would
     # otherwise slip into published prose without anyone re-reading the words.
-    assert WEIGHTS_PROSE == "equal quarters", (
+    assert WEIGHTS_PROSE == "equal thirds", (
         f"BOOK_WEIGHTS is {BOOK_WEIGHTS}, prose is {WEIGHTS_PROSE!r}"
     )
 

@@ -82,3 +82,24 @@ def test_current_artifact_is_bound_to_current_state() -> None:
         state_bytes
     ).hexdigest()
     assert artifact["record"]["daily_return_observations"] >= 1
+
+
+def test_a_state_without_the_suspended_sleeve_is_attributed() -> None:
+    """AlphaForge is suspended from v4 (2026-09-23): the current state has no alphaforge entry and
+    must still attribute the three sleeves that remain."""
+    state = {
+        "algorithms": [
+            _algorithm("alphac", 99.0),
+            _algorithm("alphamax", 101.0),
+            _algorithm("managed_futures", 97.0),
+            _algorithm("alphavintage", 100.0),
+        ]
+    }
+    schedule = [("2026-01-01", {"equity": 1 / 3, "mf": 1 / 3, "vintage": 1 / 3})]
+    result = attribute(state, schedule)
+    assert set(result["sleeve_additive_contributions"]) == {
+        "equity",
+        "managed_futures",
+        "macro_surprise",
+    }
+    assert result["largest_loss_driver"]["sleeve"] == "managed_futures"
