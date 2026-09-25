@@ -23,6 +23,14 @@ if ! mkdir "$LOCK" 2>/dev/null; then
   exit 0
 fi
 trap 'rmdir "$LOCK" 2>/dev/null' EXIT
+# A running publish owns the shared evidence (see PUBLISH LOCK in live_publish.sh); this tick places
+# no orders, so it steps aside and the next hourly run regenerates. A lock older than 3 hours is a
+# dead publish's and is ignored.
+PUBLISH_LOCK="var/locks/live_publish.lock"
+if [ -d "$PUBLISH_LOCK" ] && [ -z "$(find "$PUBLISH_LOCK" -maxdepth 0 -mmin +180 2>/dev/null)" ]; then
+  echo "=== live_tick $(date -u '+%Y-%m-%dT%H:%M:%SZ'): publish holds $PUBLISH_LOCK; skipping this hour ===" >> var/log/live_tick.log
+  exit 0
+fi
 WATCHDOG_S=2400   # 40 min cap: hourly cache-hit cycles are ~3 min; the once-daily
                   # blend-weight refresh (cache miss) is ~25 min -- 40 min bounds a
                   # hang while clearing the daily refresh with comfortable margin.
