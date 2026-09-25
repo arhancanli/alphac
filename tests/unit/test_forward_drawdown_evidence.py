@@ -19,6 +19,15 @@ def _module():
     return module
 
 
+def _paper_state():  # type: ignore[no-untyped-def]
+    path = Path(__file__).resolve().parents[2] / "scripts/paper_trading_state.py"
+    spec = importlib.util.spec_from_file_location("paper_state_for_drawdown_evidence", path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
 @pytest.fixture(scope="module")
 def sealer():
     return _module()
@@ -43,18 +52,28 @@ def test_seal_preserves_study_values_but_refuses_live_equivalence(sealer) -> Non
         0.1876321103559252
     )
     assert objective["live_expected_max_drawdown_established"] is False
+    # The current-composition figures are the current-book study's own (re-measured whenever the
+    # book changes: four sleeves in v3, three from v4), never literals typed here.
+    study = json.loads(sealer.CURRENT_BOOK_MODEL.read_text())["objective"]
     assert objective["current_composition_conservative_expected_max_drawdown"] == pytest.approx(
-        0.09318244976896804
+        study["conservative_modeled_expected_max_drawdown"]
     )
     assert objective["current_composition_conservative_p95_max_drawdown"] == pytest.approx(
-        0.16451440378785856
+        study["conservative_modeled_p95_max_drawdown"]
     )
     assert equivalence["passes"] is False
     assert set(equivalence["failed_checks"]) == set(equivalence["checks"])
-    assert equivalence["declared_live_sleeves"] == 4
+    assert equivalence["declared_live_sleeves"] == _paper_state().N_SLEEVES
     assert equivalence["declared_constituent_blend_strategy_volatility_target"] == 0.15
     assert equivalence["declared_live_book_level_volatility_target"] is None
-    assert equivalence["declared_live_book_level_drawdown_ladder"] is None
+    # Activated on 2026-09-15: the published ladder is the contract's, read from the contract.
+    control = json.loads(sealer.DRAWDOWN_CONTROL_CONTRACT.read_text())
+    ladder = equivalence["declared_live_book_level_drawdown_ladder"]
+    if control["activation"]["live"]:
+        for key in ("dd_half_frac", "dd_flat_frac", "release_frac_of_half"):
+            assert ladder[key] == control["ladder"][key]
+    else:
+        assert ladder is None
     assert payload["content_hash"] == sealer._content_hash(payload)
 
 
@@ -90,9 +109,7 @@ def test_live_declaration_drift_fails_closed(sealer) -> None:
 def test_flagship_aggregation_drift_fails_closed(sealer) -> None:
     live = json.loads(sealer.LIVE_CHANGE_CONTRACT.read_text())
     live = copy.deepcopy(live)
-    live["declared_surface"]["book_aggregation_settings"][
-        "book_level_vol_target_ann"
-    ] = 0.10
+    live["declared_surface"]["book_aggregation_settings"]["book_level_vol_target_ann"] = 0.10
     with pytest.raises(ValueError, match="does not bind the live specification"):
         sealer.build(live_change_contract=live)
 

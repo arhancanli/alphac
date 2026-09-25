@@ -1248,6 +1248,64 @@ published number or spend a research identity are marked DECISION and name who m
   A 50% chance of ten new sleeves needs about 148 tests (296 identities) at 0.065. The goal and the
   ceiling cannot both hold; which one moves is the owner's decision, and a higher ceiling carries
   its own multiplicity cost. Planning arithmetic, not a forecast.
+- 2026-09-23 18:30Z. THE OWNER WITHDRAWS V3; WHAT MADE IT MISTAKEN, FOUND AND FIXED. The owner
+  called the v3 record mistaken and chose, among delete, withdraw-and-restart, and withdraw with
+  voided trials, to withdraw it in the open and restart. Verified today, each on the live path:
+  (1) `scripts/corp_actions_weekly.sh` ran once by hand on 2026-08-02 and was never scheduled, so
+  no split or dividend entered `data/lake` for seven weeks while every loop stayed green (#77:
+  launchd template, health C6h on the lake's newest partition; backfill run 14:44Z; the agent is
+  installed and loaded). (2) Stored split rows that contradict the raw bars: in `data/lake`, 90
+  reciprocal, 83 phantom, 20 duplicated and 15 misdated; each wrote a fake move of the full ratio
+  into every adjusted series crossing it (#78: judged against the raw bars, every correction
+  verified through the engine's kernel and kept only if it shrinks the total adjusted movement
+  near the split, applied at `PITDataReader.corporate_actions`). (3) The nightly suite's only
+  failure was a submission plan no publish job rebuilt, and the evidence map read a readiness
+  receipt one step before it was written (#76). (4) Bybit's API terms, read in full (#75); the
+  liquidation collector runs on Frankfurt since 14:10Z. AlphaMax traded ALMS and DOCS during the
+  corporate-actions gap, small notional; none of the reciprocal or phantom names. How much any of
+  this moved v3's returns was not measured, which is why v3 is withdrawn rather than restated.
+- 2026-09-23 18:30Z. THE CEILING RISES BY AMENDMENT, AND WHAT IT DOES NOT BUY. The owner chose to
+  raise the identity ceiling in steps (#79). The 400 lives in a policy sealed into the v7 receipt,
+  so the raise is an amendment beside it: 500, staged reviews at 450 and 500, and 700 only if a
+  rule declared now is met at the 500 review. Priced with the production DSR: the three-year
+  hurdle rises 2.0% at 500 and 3.8% at 700; the hit rate's uncertainty is the real risk.
+  `docs/design/SLEEVE_QUEUE_V8.md` records the constraint that matters more: 0 of the 20
+  untouched families is testable without an independent reviewer or a data purchase, and the
+  owner has chosen free work only for now. No identity above 400 is spent until one is unlocked.
+- 2026-09-23 18:30Z. V4 PREPARED, NOT ACTIVE. v4 starts 2026-09-24 on the same four accounts at
+  equal quarters; v3 is published WITHDRAWN with its reasons, and a change_log entry with
+  contaminates_forward_record true starts the evidence epoch on the same day, pinned against the
+  published start by `tests/unit/test_v4_rebaseline.py`. The live-config fingerprint does not
+  move (553aff51; it hashes composition, weights and tilt, never dates), checked by generating the
+  v4 state in a sandbox that could not write to the publisher. Activation order: v3 frozen with
+  `scripts/archive_live_record.py --write --reason ...`, split corrections written, then merge
+  after the first 2026-09-24 mark so the book curve is never empty.
+- 2026-09-23 23:20Z. ALPHAFORGE SUSPENDED; V4 IS A THREE-SLEEVE BOOK. The owner asked for the
+  crypto funding-carry sleeve to come out of every book calculation and off the site until it is
+  fully repaired, its history hidden from public pages but kept in the frozen archive. v4 therefore
+  starts as AlphaMax, AlphaTrend and AlphaVintage at equal thirds (`SUSPENDED_SLEEVES`,
+  `BOOK_WEIGHTS`, `WEIGHT_SCHEDULE`, and `book_sleeve_curves()`, now the one composition every
+  study rebuilds). AlphaForge keeps paper-trading on Frankfurt off the record. What it costs, in
+  the engine's own numbers: the research book's in-sample Sharpe falls from 1.78 to 1.17 (neutral
+  core 0.66), and the average pairwise correlation rises from +0.0274 to +0.0345; the
+  current-composition drawdown study's conservative expected maximum drawdown is 0.0899, inside
+  the 0.11 objective. The live-config fingerprint moves 553aff51 -> dd8dfa13 and is re-pinned in
+  the live-change contract, the forward-evidence contract, the drawdown study and the unsigned
+  preregistration draft; `check_live_change_declared.py` passes on a sandbox-generated v4 state.
+  The site needed one change (canlicapital #212): the performance page's AlphaForge block would
+  otherwise have kept its authored "Holding cash" text for a sleeve whose state is no longer
+  published. Activation waits for two v4 marks (2026-09-25 after 01:00Z): the ladder, the evidence
+  evaluator and the contribution analysis all refuse a one-mark curve. Repairing AlphaForge is
+  the highest-value next item: it was the research book's largest contributor.
+- 2026-09-23 19:45Z. ONE SEALED BUNDLE REBOUND, BY THE DOCUMENTED PROCEDURE. CI's publication
+  integrity job refused #80: `scripts/analyze_current_book_diversification.py` is a code binding
+  of `publication/alphavintage/v1.0.0`, and the three-sleeve book changed it (it now rebuilds the
+  composition from `book_sleeve_curves()`). The bundle claims preparation integrity, not result
+  reproduction, so the verifier demands the current binding; the rebind followed the af0191b
+  procedure: the one `code_bindings` hash (b1beabaf -> 91717643), the RO-Crate and SHA256SUMS,
+  three files and four lines. No paper was re-rendered and the human visual-inspection receipt is
+  untouched. The bundle's own `current_book_diversification.json` remains the four-sleeve result
+  it was sealed with; this binding says which code exists now, not that it reproduces that file.
 - 2026-09-24 02:00Z. RESERVED PACKET URLS WERE DEAD; STALE RECEIPTS HAD NO PRODUCER. Every forward
   reservation names a stable `packet_public_path` before any return exists. Of the 121 forward
   identities, only `crypto_carry_portable_v1` was published at its reserved URL; the other 120
