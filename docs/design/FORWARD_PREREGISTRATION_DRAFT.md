@@ -44,14 +44,18 @@ since 2026-08-07 is data. With it, it is a test.
 
 ### 2.1 The book
 
-**ALPHAC Cross-Asset Book**, four sleeves at equal quarters:
+**ALPHAC Cross-Asset Book**, three sleeves at equal thirds from 2026-09-24:
 
 | key | sleeve | weight | mechanism |
 |---|---|---|---|
-| `alphaforge` | AlphaForge | 0.25 | Funding-rate carry, Binance USDT-M perpetuals, market-neutral |
-| `alphamax` | AlphaMax | 0.25 | 12-1 cross-sectional momentum, dollar-neutral, survivorship-free |
-| `managed_futures` | AlphaTrend | 0.25 | Time-series momentum, 17-market basket, inverse-vol weighted |
-| `alphavintage` | AlphaVintage | 0.25 | PIT CPI surprise as a dollar-neutral IWM-minus-SPY size spread |
+| `alphamax` | AlphaMax | 1/3 | 12-1 cross-sectional momentum, dollar-neutral, survivorship-free |
+| `managed_futures` | AlphaTrend | 1/3 | Time-series momentum, 17-market basket, inverse-vol weighted |
+| `alphavintage` | AlphaVintage | 1/3 | PIT CPI surprise as a dollar-neutral IWM-minus-SPY size spread |
+
+`alphaforge` (AlphaForge, funding-rate carry on Binance USDT-M perpetuals) was a quarter of the
+v3 book. The owner suspended it on 2026-09-23 for its defect history; it keeps paper-trading off
+the record while it is repaired, and its return is a configuration change under section 6, which
+restarts this test.
 
 Plus a **disclosed +10% strategic net-long overlay**, mixed 50/50 BTC/SPY, carried as a separate
 labelled line and never blended into the neutral sleeves.
@@ -65,7 +69,7 @@ restarts** — see §6.
 
 ### 2.2 The sizing configuration
 
-Bound to fingerprint `sha256:553aff51…b814e09`
+Bound to fingerprint `sha256:dd8dfa13…beff41b`
 (`artifacts/engineering/live_config_fingerprint.json`, declared in
 `config/live_change_contract.json`; re-pinned 2026-09-14 when coverage was extended to the
 book-level drawdown brake with its activation flag false, a coverage change, not a trading change):
@@ -99,8 +103,15 @@ EWMA's effective sample is smaller. Neither is being changed inside this test.
 
 ### 2.4 The start date
 
-**2026-08-07**, the v3 re-baseline, when all sleeves moved to fresh $1M paper accounts. The record
-before that date belongs to a different specification and is not part of this test.
+**2026-09-24**, the v4 re-baseline. The v3 record (2026-08-07 to 2026-09-24) is WITHDRAWN: the
+owner called it mistaken on 2026-09-23, and its inputs were contaminated (the split kernel was
+inverted until 2026-09-14, no corporate action entered the equity lake after 2026-08-02, and stored
+split rows that contradict the raw bars were served as stored until 2026-09-23). Three of the four
+sleeves continue on the same accounts at equal thirds, reading corrected data; AlphaForge is
+suspended (section 2.1), and the live-config fingerprint moved with the composition. Nothing before 2026-09-24 is part of this test.
+
+(Drafted on the v3 record. The sentences above this section that date the record from 2026-08-07
+describe the draft's history and are left as written.)
 
 ---
 
@@ -114,7 +125,7 @@ Stated forward and not in-sample deliberately: this book's own measured backtest
 target quoted in-sample is quoted in the units that flatter.
 
 **This is a target, not a prediction.** The honest expectation at the time of drafting is
-materially below it: today's per-sleeve quality (s̄ 0.469) with four sleeves does not produce 1.5,
+materially below it: today's per-sleeve quality (s̄ 0.469, measured on the four-sleeve book) with three sleeves does not produce 1.5,
 and nothing in this document asserts that it will.
 
 ---
@@ -150,7 +161,7 @@ realised and modelled costs.
 
 - Changing the sleeve set, the weights, the overlay or the sizing configuration and continuing to
   report one continuous record.
-- Reporting the record from a start date other than 2026-08-07.
+- Reporting the record from a start date other than 2026-09-24.
 - Reporting the book **with** the strategic tilt as though it were the neutral core.
 - Choosing a measurement window after seeing the data.
 - Reporting an INCONCLUSIVE result as a PASS.
@@ -195,9 +206,9 @@ UNSIGNED — REQUIRES OWNER
 
 signed_by:
 signed_at:
-config_fingerprint:  sha256:553aff517efdc069c2ee80747ef9a9d750da817ceeab8dbc344cae050b814e09
-record_start:        2026-08-07
-first_judgement:     2027-08-07  (1 year)
+config_fingerprint:  sha256:dd8dfa131b07c89528ebb1aa985c972155da9a4255d198861b7c5e842beff41b
+record_start:        2026-09-24
+first_judgement:     2027-09-24  (1 year)
 ```
 
 On signing: commit, anchor into the transparency chain, publish to

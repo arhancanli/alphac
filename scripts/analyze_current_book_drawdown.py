@@ -22,9 +22,7 @@ LIVE_CONTRACT: Final[Path] = REPO / "config/live_change_contract.json"
 ADMISSION_CONTRACT: Final[Path] = REPO / "config/sleeve_admission_contract.json"
 PAPER_STATE_SCRIPT: Final[Path] = REPO / "scripts/paper_trading_state.py"
 BOOK_IMPLEMENTATION: Final[Path] = REPO / "src/alphaforge/portfolio/book.py"
-MARKET_FACTOR_IMPLEMENTATION: Final[Path] = (
-    REPO / "src/alphaforge/portfolio/market_factor.py"
-)
+MARKET_FACTOR_IMPLEMENTATION: Final[Path] = REPO / "src/alphaforge/portfolio/market_factor.py"
 OUTPUT: Final[Path] = REPO / "artifacts/analysis/current_book_drawdown/result.json"
 
 PATHS: Final = 10_000
@@ -73,9 +71,7 @@ def _summarize(max_drawdowns: FloatArray) -> dict[str, float]:
         "expected_max_drawdown": float(np.mean(max_drawdowns)),
         "median_max_drawdown": float(np.median(max_drawdowns)),
         "p95_max_drawdown": float(np.quantile(max_drawdowns, 0.95)),
-        "max_drawdown_stderr": float(
-            np.std(max_drawdowns, ddof=1) / math.sqrt(max_drawdowns.size)
-        ),
+        "max_drawdown_stderr": float(np.std(max_drawdowns, ddof=1) / math.sqrt(max_drawdowns.size)),
     }
 
 
@@ -175,8 +171,7 @@ def _corpus_binding(patterns: list[str]) -> dict[str, Any]:
     if not files:
         raise FileNotFoundError("market-factor source corpus is empty")
     rows = [
-        {"path": str(Path(path).relative_to(REPO)), "sha256": _sha256(Path(path))}
-        for path in files
+        {"path": str(Path(path).relative_to(REPO)), "sha256": _sha256(Path(path))} for path in files
     ]
     digest = hashlib.sha256(
         json.dumps(rows, sort_keys=True, separators=(",", ":")).encode()
@@ -195,18 +190,12 @@ def build() -> dict[str, Any]:
     if aggregation != paper.book_aggregation_metadata():
         raise ValueError("declared aggregation does not match the running combine path")
     if live_contract["declared_fingerprint"] != (
-        "sha256:553aff517efdc069c2ee80747ef9a9d750da817ceeab8dbc344cae050b814e09"
+        "sha256:dd8dfa131b07c89528ebb1aa985c972155da9a4255d198861b7c5e842beff41b"
     ):
         raise ValueError("current-book drawdown protocol is bound to a different live fingerprint")
 
-    sleeves = [
-        paper.load_wf(paper.EQUITY_WF),
-        paper.load_wf(paper.CRYPTO_WF),
-        paper.load_wf(paper.MF_WF),
-        paper.load_probe_curve(
-            paper.VINTAGE_WF, "artifacts/probe/cpi_surprise_size/equity.parquet"
-        ),
-    ]
+    # The book as it is composed now (BOOK_WEIGHTS), never a hand-kept list of sleeves.
+    sleeves = paper.book_sleeve_curves()
     book = paper.combine_book(
         sleeves,
         scheme=paper.BOOK_AGGREGATION_SCHEME,
@@ -220,8 +209,7 @@ def build() -> dict[str, Any]:
         raise ValueError("constructed research book does not match the declared flagship policy")
     names = list(book.names)
     contributions = np.column_stack(
-        [book.weights[name] * book.sleeve_returns[name] for name in names]
-        + [book.overlay_returns]
+        [book.weights[name] * book.sleeve_returns[name] for name in names] + [book.overlay_returns]
     )
     if not np.allclose(np.sum(contributions, axis=1), book.book_returns, atol=1e-15):
         raise ValueError("component contributions do not reconstruct the exact book")
@@ -236,9 +224,7 @@ def build() -> dict[str, Any]:
         )
         for block in BLOCK_DAYS
     }
-    stress_correlation = float(
-        admission["thresholds"]["stressed_pairwise_correlation_max"]
-    )
+    stress_correlation = float(admission["thresholds"]["stressed_pairwise_correlation_max"])
     regime, regime_diagnostics = correlation_regime_drawdown(
         contributions,
         paths=PATHS,
@@ -249,12 +235,8 @@ def build() -> dict[str, Any]:
         seed=REGIME_SEED,
     )
     primary = bootstrap[str(PRIMARY_BLOCK_DAYS)]
-    conservative_expected = max(
-        primary["expected_max_drawdown"], regime["expected_max_drawdown"]
-    )
-    conservative_p95 = max(
-        primary["p95_max_drawdown"], regime["p95_max_drawdown"]
-    )
+    conservative_expected = max(primary["expected_max_drawdown"], regime["expected_max_drawdown"])
+    conservative_p95 = max(primary["p95_max_drawdown"], regime["p95_max_drawdown"])
     target = float(admission["thresholds"]["book_expected_max_drawdown_max"])
     start = EPOCH + dt.timedelta(days=int(book.window[0]))
     end = EPOCH + dt.timedelta(days=int(book.window[1]))
@@ -270,8 +252,7 @@ def build() -> dict[str, Any]:
         "author": "Arhan Canli",
         "capital_kind": "RESEARCH_SIMULATION_OVER_PAPER_SPECIFICATION",
         "status": (
-            "CURRENT_COMPOSITION_EXPECTED_WITHIN_OBJECTIVE_"
-            "HISTORICAL_TAIL_COVERAGE_INCOMPLETE"
+            "CURRENT_COMPOSITION_EXPECTED_WITHIN_OBJECTIVE_HISTORICAL_TAIL_COVERAGE_INCOMPLETE"
             if conservative_expected <= target
             else "CURRENT_COMPOSITION_EXPECTED_EXCEEDS_OBJECTIVE_"
             "HISTORICAL_TAIL_COVERAGE_INCOMPLETE"
