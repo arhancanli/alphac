@@ -1334,3 +1334,27 @@ published number or spend a research identity are marked DECISION and name who m
   funding or prices. With 175 of 471 spot symbols ingested the minimum was 21 eligible over 61
   month ends; the status stays incomplete until the full ingest stamps completion. No hypothesis
   is registered and the four open questions of the draft remain the owner's.
+- 2026-09-24 22:31Z. NIGHTLY PUBLISH COLLIDED WITH THE HOURLY TICK; RECOVERED BY HAND. Step 0 of the
+  publish (#91) lengthened it to 21 minutes, into the 22:25 tick, which rewrote the broker
+  reconciliation and `forward_evidence_maturity.json` mid-publish; `research_export` refused on
+  "forward evidence maturity source drift: broker_reconciliation" and the night's research data did
+  not reach the site. The publish was re-run at 22:39Z outside the tick window and finished OK at
+  23:01Z; the reserved packet aliases of #89 were then verified live (the MD&A narrative alias is
+  byte-identical to its hash-named packet; a URL four reservations promised serves an index of the
+  four). Root cause: nothing kept the two jobs apart. The publish now holds
+  `var/locks/live_publish.lock` and a tick that meets it steps aside; the tick places no orders
+  (#101).
+- 2026-09-25 02:41Z. V4 LIVE. #80 merged at 01:04Z (two v4 marks existed) and the publisher moved to
+  it. Four defects that only a record restart could expose surfaced in the first ticks and were
+  fixed in order: the published live-config fingerprint is measured from the previously published
+  state, so the first tick after a declared change carries the old one (it healed on the second
+  tick); the continuity audit expected an equity mark for a session that had not opened, a
+  phantom gap that was 50% of a two-day record (#104); the lineage registry still listed
+  AlphaForge as a current sleeve (#103); and the site's glass-box hero illustrated a fixed list of
+  four sleeves and refused a suspended one without a curve (canlicapital #217). The production site
+  checkout moved to canlicapital main, bringing the suspended-sleeve label (#212), and the 02:41Z
+  hourly deploy published v4. Verified on canlicapital.com: three sleeves in the book, AlphaForge
+  under `suspended_sleeves` since 2026-09-24 with its reason, `rebaseline.v3.status` WITHDRAWN,
+  and the performance page's "Suspended from the book" label. The same move shipped the company
+  data edge cache (canlicapital #216): the Apple record's server time measured 83 ms median (95 ms
+  p90) from the edge against 345 ms uncached. No return figure is claimed for v4: two marks.
