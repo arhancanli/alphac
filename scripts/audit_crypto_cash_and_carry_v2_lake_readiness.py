@@ -38,7 +38,8 @@ MIN_ELIGIBLE: Final = 10
 
 
 def _canonical(value: Any) -> bytes:
-    return json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode()
+    # The published verifier's convention (scripts/reproduce.py): default ensure_ascii.
+    return json.dumps(value, sort_keys=True, separators=(",", ":")).encode()
 
 
 def _content_hash(document: dict[str, Any]) -> str:

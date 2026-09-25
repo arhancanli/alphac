@@ -603,6 +603,15 @@ MUTATIONS: tuple[Mutation, ...] = (
         ),
     ),
     Mutation(
+        "test_reserved_packet_aliases.py",
+        "give a URL several reservations promised to the first claimant",
+        REPO / "scripts/research_export.py",
+        _replace(
+            "for name, rows in claims.items() if len(rows) == 1}",
+            "for name, rows in claims.items() if len(rows) >= 1}",
+        ),
+    ),
+    Mutation(
         "test_crypto_carry_portable_v1_run.py",
         "change the reservation status the sealed reservation must carry",
         REPO / "src/alphaforge/validation/trial_reservation.py",
