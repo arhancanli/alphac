@@ -105,20 +105,31 @@ def expected_days(start: dt.date, end: dt.date, *, trades_24_7: bool) -> list[st
     return [_epoch_to_date(value) for value in opens]
 
 
-XNYS_CLOSE_LOCAL = dt.time(16, 0)
+XNYS_OPEN_LOCAL = dt.time(9, 30)
 
 
-def last_closed_session_date(now: dt.datetime) -> dt.date:
-    """The latest New York date whose XNYS session can have closed by ``now``.
+def last_final_session_date(now: dt.datetime) -> dt.date:
+    """The latest XNYS session whose broker close can have been finalized by ``now``.
 
-    A session cannot be missing before it has closed. Until 2026-09-25 the equity expectation ran
-    through the UTC date of the audit, so at 01:20Z it expected a close for a session that had not
-    opened; one such phantom gap is noise on a long record and 50% of a two-day one (the first
-    v4 day), which failed the provenance gate and the site build. Holidays are handled by the
-    XNYS session set this date bounds.
+    Alpaca writes session D's 1D row (stamped ``(D + 1) 00:00 UTC``) at its overnight rollover,
+    hours after the 16:00 ET close: on 2026-09-25 at 07:20Z every equity account's ``last_equity``
+    still equalled its 2026-09-23 close and no 2026-09-24 row existed. Expecting a session from its
+    close therefore reported a phantom gap every morning, which was 100% of the first v4 day and
+    failed the provenance gate and the site build. The row is due once the NEXT session has opened,
+    which is after any overnight rollover; a genuinely missing mark is still reported, one session
+    later. Holidays and weekends come from the XNYS session set.
     """
     local = now.astimezone(NEW_YORK)
-    return local.date() if local.time() >= XNYS_CLOSE_LOCAL else local.date() - dt.timedelta(days=1)
+    sessions = [
+        dt.date.fromisoformat(day)
+        for day in expected_days(
+            local.date() - dt.timedelta(days=14), local.date(), trades_24_7=False
+        )
+    ]
+    opened = [
+        day for day in sessions if local >= dt.datetime.combine(day, XNYS_OPEN_LOCAL, NEW_YORK)
+    ]
+    return opened[-2]
 
 
 def marked_days(db: Path, go_live: str, *, trades_24_7: bool) -> set[str]:
@@ -162,7 +173,7 @@ def main() -> int:
         missing = [d for d in calendar_days if d not in marks]
         # The equity expectation is the real XNYS session set, not weekday arithmetic. That
         # distinction is load-bearing on exchange holidays. Crypto remains a UTC 24/7 calendar.
-        end = today if spec["trades_24_7"] else min(today, last_closed_session_date(now))
+        end = today if spec["trades_24_7"] else min(today, last_final_session_date(now))
         expected = expected_days(start, end, trades_24_7=spec["trades_24_7"])
         expected_set = set(expected)
         real = [d for d in expected if d not in marks]

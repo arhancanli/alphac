@@ -164,11 +164,23 @@ def test_equity_expectations_use_xnys_sessions_not_weekdays() -> None:
 @pytest.mark.parametrize(
     ("now_utc", "expected"),
     [
-        ("2026-09-25T01:20:00+00:00", "2026-09-24"),  # 21:20 ET on 09-24: that session closed
-        ("2026-09-25T19:00:00+00:00", "2026-09-24"),  # 15:00 ET on 09-25: still open
-        ("2026-09-25T20:30:00+00:00", "2026-09-25"),  # 16:30 ET on 09-25: closed
+        # 03:20 ET on Friday 09-25: Alpaca had not rolled 09-24 over; 09-23 is the last final close
+        ("2026-09-25T07:20:00+00:00", "2026-09-23"),
+        ("2026-09-25T13:29:00+00:00", "2026-09-23"),  # 09:29 ET: 09-25 has not opened
+        ("2026-09-25T13:30:00+00:00", "2026-09-24"),  # 09:30 ET: 09-25 opened, 09-24 is final
+        ("2026-09-25T20:30:00+00:00", "2026-09-24"),  # after 09-25's close, before Monday's open
+        ("2026-09-28T13:30:00+00:00", "2026-09-25"),  # Friday's close is final at Monday's open
     ],
 )
-def test_a_session_is_not_expected_before_it_has_closed(now_utc: str, expected: str) -> None:
+def test_a_session_is_not_expected_before_the_broker_has_finalized_it(
+    now_utc: str, expected: str
+) -> None:
     now = dt.datetime.fromisoformat(now_utc)
-    assert MOD.last_closed_session_date(now).isoformat() == expected
+    assert MOD.last_final_session_date(now).isoformat() == expected
+
+
+def test_the_first_v4_morning_is_not_a_gap() -> None:
+    """The exact state that failed provenance: go-live 09-24, audited at 07:20Z on 09-25."""
+    now = dt.datetime.fromisoformat("2026-09-25T07:20:00+00:00")
+    end = min(now.date(), MOD.last_final_session_date(now))
+    assert MOD.expected_days(dt.date(2026, 9, 24), end, trades_24_7=False) == []
