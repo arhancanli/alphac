@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import os
 import re
+import shutil
 import subprocess
 import time
 from pathlib import Path
@@ -43,8 +44,11 @@ def _tick_guard() -> str:
 
 
 def _run_guard(workdir: Path) -> subprocess.CompletedProcess[str]:
+    # The job runs under zsh; the guard uses nothing zsh-only, and CI's runner has only bash.
+    shell = shutil.which("zsh") or shutil.which("bash")
+    assert shell is not None
     return subprocess.run(
-        ["/bin/zsh", "-c", _tick_guard()], cwd=workdir, capture_output=True, text=True, check=False
+        [shell, "-c", _tick_guard()], cwd=workdir, capture_output=True, text=True, check=False
     )
 
 
