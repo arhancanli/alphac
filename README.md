@@ -20,20 +20,20 @@ is worthless if the code is hidden.
 
 We run this on paper capital. No real money has been deployed.
 
-**Evidence snapshot:** 2026-09-14. Later marks must update this table through the same
+**Evidence snapshot:** 2026-09-25. Later marks must update this table through the same
 artifact-bound publication pipeline; this is not a real-time broker display.
 
 | | |
 |---|---|
-| Paper sleeves | **4 / 14 planned** — funding carry, equity momentum, managed-futures trend, PIT macro surprise |
-| Forward record | **36 daily returns** from 2026-08-07 through 2026-09-14; cumulative return **−2.85165%**; provenance currently fails closed on incomplete evidence |
+| Paper sleeves | **3 / 14 planned** — equity momentum, managed-futures trend, PIT macro surprise |
+| Forward record | **1 daily return** from 2026-09-24 through 2026-09-25; cumulative return **0.15433%**; provenance currently fails closed on incomplete evidence; the record restarted on 2026-09-24 under a declared change, and earlier records are withdrawn or superseded, not pooled (canlicapital.com/progress) |
 | Forward Sharpe | **Not reportable** — 252 observations are required for an estimate and 756 for the project's establishment test; the governing forward target is **2.0** (owner goal, in force from 2026-09-14) |
-| Drawdown | Realized **3.87084%** to date against the owner's realized bound of **10%**, descriptive only; the current-composition model estimates **9.318% expected / 16.451% p95**, neither established by live evidence |
-| Cost drag | The evaluated curve is the **live curve** until the first cost-charged publish; see config/cost_realism_contract.json |
-| Diversification | Research-curve average pairwise correlation **+0.02483** across 4 sleeves; live-forward diversification is not established |
+| Drawdown | Realized **0.00000%** to date against the owner's realized bound of **10%**, descriptive only; the current-composition model estimates **8.988% expected / 15.855% p95**, neither established by live evidence |
+| Cost drag | The evaluated curve is the **cost charged curve**: model-charged commission, spread, impact and borrow on every Alpaca fill, cumulative drag on the base alphamax **28.7 bp**, alphavintage **13.0 bp**, managed_futures **9.0 bp**; latency, financing and cash yield are not charged (config/cost_realism_contract.json) |
+| Diversification | Research-curve average pairwise correlation **+0.03447** across 3 sleeves; live-forward diversification is not established |
 | DSR policy | Mandatory to measure and publish; **0.95 is a full-union portfolio-maturity threshold, not a per-sleeve or incremental-admission gate** |
 
-No forward Sharpe or expected maximum drawdown is established. The 36-return record is too short, and its provenance gate remains closed on the failed checks named in the evidence artifact.
+No forward Sharpe or expected maximum drawdown is established. The 1-return record is too short, and its provenance gate remains closed on the failed checks named in the evidence artifact.
 Historical simulations, modeled risk and broker-derived paper marks remain separately labelled;
 none is a promise about future returns.
 

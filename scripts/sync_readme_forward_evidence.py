@@ -35,12 +35,23 @@ def _target_in_force(sharpe: dict[str, Any]) -> str:
     return f"in force from {current[-1]['in_force_from']}"
 
 
+def daily_returns_text(count: int) -> str:
+    return f"{count} daily return" if count == 1 else f"{count} daily returns"
+
+
 def _epoch_clause(record: dict[str, Any]) -> str:
     """Name the evidence epoch when a declared live change split the record (never pooled)."""
     epoch = record.get("evidence_epoch")
     priors = record.get("prior_epochs") or []
-    if not epoch or not priors:
+    if not epoch:
         return ""
+    if not priors:
+        # A withdrawn or superseded record is not a prior epoch, so without this clause a
+        # restarted record read as the whole history.
+        return (
+            f"; the record restarted on {epoch['starts_on']} under a declared change, and "
+            "earlier records are withdrawn or superseded, not pooled (canlicapital.com/progress)"
+        )
     prior = priors[-1]
     return (
         f"; evidence epoch since {epoch['starts_on']}, the prior epoch's "
@@ -126,8 +137,8 @@ def synchronize(evidence: dict[str, Any], readme: str) -> str:
         readme,
         r"^\| Forward record \|.*$",
         "| Forward record | "
-        f"**{record['daily_return_observations']} daily returns** from {record['first_mark']} "
-        f"through {record['last_mark']}; cumulative return "
+        f"**{daily_returns_text(record['daily_return_observations'])}** "
+        f"from {record['first_mark']} through {record['last_mark']}; cumulative return "
         f"**{_percentage(float(record['cumulative_return']), 5)}**; {provenance_summary}"
         f"{_epoch_clause(record)} |",
     )
