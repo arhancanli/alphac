@@ -179,8 +179,13 @@ APP = "https://app.canlicapital.com"
 # re-pin under the standing rule above; a keystone that only ever drifts upward is measuring
 # nothing. Whether AlphaVintage keeps its quarter of the book remains an OPEN allocation
 # decision for the owner — this constant tracks what is published, it does not endorse it.
-EXPECT_INSAMPLE = 1.78        # was 1.82 until 2026-08-16 (AlphaVintage calendar correction)
-EXPECT_NEUTRAL_CORE = 1.38    # was 1.42 until 2026-08-16 (same cause, pre-overlay core)
+# Re-pinned 2026-09-26, direction DOWN on both: record v4 (#80, merged 2026-09-25) withdrew v3
+# and restarted the book as THREE sleeves at equal thirds with AlphaForge suspended, so the
+# published in-sample figures became the three-sleeve book's. The 2026-09-24 health run still
+# served 1.78 / 1.38; the 2026-09-25 run served 1.17 / 0.66 on every host (no drift), and the
+# current-book drawdown study regenerated on the v4 composition shows the same 1.17.
+EXPECT_INSAMPLE = 1.17        # was 1.78 until 2026-09-25 (v4 book); 1.82 until 2026-08-16
+EXPECT_NEUTRAL_CORE = 0.66    # was 1.38 until 2026-09-25 (same cause); 1.42 until 2026-08-16
 # The honest DEFLATED forward band. Updated 2026-07-29 from the superseded "0.7 to 1.0" to the
 # corrected "0.3 to 0.9" band that was deployed weeks earlier as a deliberate honesty fix — the
 # keystone had gone stale and was FALSE-ALARMING on the CORRECT public value, which is how a
