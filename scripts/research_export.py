@@ -922,6 +922,31 @@ FORWARD_SHARPE_EVIDENCE_STANDARD_MD: Final[Path] = (
 CURRENT_BOOK_DRAWDOWN_MODEL_MD: Final[Path] = (
     REPO / "docs" / "research" / "CURRENT_BOOK_DRAWDOWN_MODEL.md"
 )
+CURRENT_BOOK_DRAWDOWN_RESULT: Final[Path] = (
+    REPO / "artifacts" / "analysis" / "current_book_drawdown" / "result.json"
+)
+
+
+def _current_book_drawdown_paper() -> str:
+    """The drawdown paper as the current study result renders it.
+
+    Version 1.0 was typed by hand and kept the four-sleeve figures after record v4 changed the
+    book. Publishing the render of the live result keeps the page equal to the study; the
+    committed copy is used only when no result exists (a clean checkout).
+    """
+    if not CURRENT_BOOK_DRAWDOWN_RESULT.is_file():
+        return CURRENT_BOOK_DRAWDOWN_MODEL_MD.read_text()
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location(
+        "render_current_book_drawdown_paper",
+        Path(__file__).resolve().parent / "render_current_book_drawdown_paper.py",
+    )
+    if spec is None or spec.loader is None:  # pragma: no cover - defensive
+        raise ImportError("cannot load scripts/render_current_book_drawdown_paper.py")
+    renderer = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(renderer)
+    return str(renderer.render(json.loads(CURRENT_BOOK_DRAWDOWN_RESULT.read_text())))
 CURRENT_BOOK_DIVERSIFICATION_MODEL_MD: Final[Path] = (
     REPO / "docs" / "research" / "CURRENT_BOOK_DIVERSIFICATION_MODEL.md"
 )
@@ -4282,9 +4307,7 @@ def main(out_dir: Path = OUT_DIR) -> Path:
     (literature_dir / "forward-sharpe-evidence-standard.md").write_text(
         FORWARD_SHARPE_EVIDENCE_STANDARD_MD.read_text()
     )
-    (literature_dir / "current-book-drawdown-model.md").write_text(
-        CURRENT_BOOK_DRAWDOWN_MODEL_MD.read_text()
-    )
+    (literature_dir / "current-book-drawdown-model.md").write_text(_current_book_drawdown_paper())
     (literature_dir / "current-book-diversification-model.md").write_text(
         CURRENT_BOOK_DIVERSIFICATION_MODEL_MD.read_text()
     )
@@ -4981,7 +5004,7 @@ def main(out_dir: Path = OUT_DIR) -> Path:
             FORWARD_SHARPE_EVIDENCE_STANDARD_MD.read_text()
         )
         (app_literature_dir / "current-book-drawdown-model.md").write_text(
-            CURRENT_BOOK_DRAWDOWN_MODEL_MD.read_text()
+            _current_book_drawdown_paper()
         )
         (app_literature_dir / "current-book-diversification-model.md").write_text(
             CURRENT_BOOK_DIVERSIFICATION_MODEL_MD.read_text()
