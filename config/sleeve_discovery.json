@@ -370,8 +370,8 @@
         "return_data_opened": false,
         "return_hypotheses_spent": 0,
         "author_review_packet": "artifacts/governance/author_protocol_review_packets/merger-announcement-identity-v2/review_packet.json",
-        "author_review_packet_content_hash": "sha256:1b5e4a781dfd0fb9f188e541b38920cf6e93be07e9a5027cdae4172545e62dad",
-        "content_hash": "sha256:e2d294361c96994931849cef2e44faa464e3f2ab6a9ba1e05e9c4d6742f82b74"
+        "author_review_packet_content_hash": "sha256:8d0c46293333484d3e0d1b1f02d0ef93f976a2f9cc3ece671e3d37afcc9e86cf",
+        "content_hash": "sha256:ae10f38a55e86758ee2f949d9297603c59da901d82728918904f983366372795"
       },
       "tender_only_document_feasibility": {
         "protocol": "docs/design/FEASIBILITY_TENDER_OFFER_SPREAD.md",

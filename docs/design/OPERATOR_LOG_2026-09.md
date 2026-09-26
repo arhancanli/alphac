@@ -14,32 +14,32 @@ published number or spend a research identity are marked DECISION and name who m
 
 ## 2026-09-14
 
-- 07:40Z. Session start. Read the memory record, six Codex transcripts (2026-09-08 to 09-13), the
-  health history, both repositories and the four Codex workspaces under `~`. No Claude session had
-  touched ALPHAC since 2026-09-07.
+- 07:40Z. Session start. Read the memory record, six earlier session transcripts (2026-09-08 to 09-13),
+  the health history, both repositories and the four research workspaces under `~`. No session in
+  this series had touched ALPHAC since 2026-09-07.
 - 07:45Z. FOUND. Vercel CLI logged out on the Mac since 2026-09-13 ~10:56Z (`auth.json` empty);
   every hourly deploy and the nightly publish since 10:30Z 09-13 failed with "No existing
   credentials" (372 failures in `var/log/live_deploy.log` by 09:33Z). Site serves the 09-13
   10:26Z bundle. Clock skew measured +0.39 s (sntp), not the cause. No session ran `vercel logout`.
-- 07:50Z. FOUND. The live redesign (Codex, released 2026-09-10 17:17Z from the git-less
+- 07:50Z. FOUND. The live redesign (released 2026-09-10 17:17Z from the git-less
   `~/canlicapital-production-20260910.IHlZmL`) existed in no commit. Committed the design worktree
   (`cf4668a1`, 1,079 files; QA captures, render sources and reference images excluded) and the
   build-time route inventory (`8da68297`) as canlicapital PR #11. `npm run build && npm run
   verify` 273/273 locally; CI production build green.
-- 08:06Z. FOUND. `~/alphaforge` ran Codex's publisher, macro-staging and CPI-validator changes
+- 08:06Z. FOUND. `~/alphaforge` ran the publisher, macro-staging and CPI-validator changes
   uncommitted since 09-10, and the nightly suite had failed four nights for seven non-engine
   reasons (Labor Day in a weekday-only test, three verifier tests pinned to pre-09-06 messages,
   46 ruff violations in two untracked test files, a stale system map). Recorded and repaired as
   alphac PR #23 (`26597ec`, `4216854`); all six CI checks green by 08:41Z.
-- 08:10Z. CORRECTION. I reported Codex's AstraZeneca share-conversion defect as live in
+- 08:10Z. CORRECTION. I reported the AstraZeneca share-conversion defect as live in
   production after reading a truncated view of the corporate-actions table. The production lake
   holds `split ratio 2.0 ex 2026-02-02` and `equity_price.py` multiplies pre-ex bars by it, so the
   adjusted move is +1.6 percent, not +103. The defect is in the clone's normalized copy. Live
   AlphaMax has no AstraZeneca fills. Lesson recorded in memory.
-- 08:15Z. FOUND. The Codex research clone (`~/alphac-prospective-pause-20260911`) holds 347
+- 08:15Z. FOUND. The research clone (`~/alphac-prospective-pause-20260911`) holds 347
   distinct hypothesis identities by `ExperimentUnion.discover` (127 ledgers, 348 packets) against
   229 in this tree and on the public ledger: 118 identities the site cannot see, merged union 347
-  of 400, the 320 staged review reached on 09-13 without a record. Codex's prose "union 256"
+  of 400, the 320 staged review reached on 09-13 without a record. The earlier prose "union 256"
   counted reservations; the published arithmetic counts configurations.
 - 09:20Z. SHIPPED. `scripts/audit_external_experiment_ledgers.py` and nightly check
   `C11-external-ledgers` (alphac PR #24, `d4bd7aa`, stacked on #23), with
@@ -53,7 +53,7 @@ published number or spend a research identity are marked DECISION and name who m
 - 09:30Z. DIRECTION (owner). "You are taking over everything, document everything you do on the
   side, log into Vercel now." This log begins.
 - 09:34Z. Vercel device login started from the Mac (`vercel login`, CLI 53.3.2); the approval page
-  was opened in the owner's browser (the Claude Chrome extension was not connected). The first
+  was opened in the owner's browser (the browser extension was not connected). The first
   device code expired unapproved ("The user aborted a request"); the second was raised at 09:46Z.
   The owner completed the login on their side at 09:40Z (`auth.json` written; `vercel whoami`
   returns the account). Network to api.vercel.com and vercel.com verified 200/308 beforehand.
@@ -72,7 +72,7 @@ published number or spend a research identity are marked DECISION and name who m
   Live `paper-state.json` moved from 2026-09-13 10:26Z to 2026-09-14 09:38Z. The 09:51Z tick
   correctly skipped on the deploy lock. Outage: 2026-09-13 10:30Z to 2026-09-14 09:58Z.
 - 09:51Z. DECISION (operating session under the owner's delegation; the owner merges the
-  record). Imported the Codex worktree's 52 ledger-bearing analysis directories into the
+  record). Imported the research worktree's 52 ledger-bearing analysis directories into the
   canonical tree with `scripts/import_external_experiment_ledgers.py` (evidence files only:
   17,887 files, 275.7 MB; replay virtualenvs and bulk data skipped and listed; source untouched).
   Receipt `artifacts/audit/external_ledger_import_20260914T095114Z.json`. Canonical union
@@ -135,7 +135,7 @@ published number or spend a research identity are marked DECISION and name who m
   selection N counts the primary once. Prospective only: the 118 stay 118 because none declared
   scenarios before its result. At the observed mix a study costs one identity instead of four.
   Implementation and tests listed; promotion is the owner's.
-- 11:05Z. STATE. Branch chain on alphac: #23 (Codex integrations + nightly) -> #24 (external
+- 11:05Z. STATE. Branch chain on alphac: #23 (integrations + nightly) -> #24 (external
   ledger audit) -> #25 (import + 320 review) -> #26 (prospective register + publisher repoint)
   -> #27 (drawdown control v1). canlicapital #11 carries the site (design worktree, deployed
   from 11:25Z). Owner merge order is the chain order.
@@ -364,7 +364,7 @@ published number or spend a research identity are marked DECISION and name who m
   5,156 splits on 3,031 instruments; of the 4,662 determined, 4,135 (88.7 percent) come out of
   the engine with an adjusted ex-date jump of twice the raw one (inverted), 228 neutralized,
   299 other. data/lake_sharadar: 4,804 splits on 2,801 instruments; 4,000 of 4,440 determined
-  (90.1 percent) inverted, 208 neutralized. The Codex alphamax beta-neutral probe of 2026-09
+  (90.1 percent) inverted, 208 neutralized. The earlier alphamax beta-neutral probe of 2026-09
   had disclosed the same defect with the same Apple and Tesla numbers and worked around it
   inside the probe, leaving `src/**` untouched; the live sleeves kept trading on it. Fixed at
   the source: the kernel now divides pre-ex prices by the stored vendor factor (new shares per

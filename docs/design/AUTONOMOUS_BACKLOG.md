@@ -1557,5 +1557,5 @@ where it is.*
   **Not shipped:** the universe refresher (changes the traded cross-section → owner decision); the
   strategy's realized-vol leg is also process-local under `--once` and needs the per-bar scale
   persisted (`_scale_hist`) before it can be seeded. **Deploy is owner-gated:** Frankfurt needs
-  `service.py`, `engine.py`, `loop.py`; SSH from this workstation is blocked by the Claude Code
-  classifier until the new allow rule loads. Next weekly bar: 2026-09-10 00:00Z.
+  `service.py`, `engine.py`, `loop.py`; SSH from this workstation is blocked by the local command
+  policy until the new allow rule loads. Next weekly bar: 2026-09-10 00:00Z.

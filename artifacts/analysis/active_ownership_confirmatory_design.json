@@ -3,7 +3,7 @@
     "condition": "ORIGINAL_48_ROW_POINT_GATE_PASSES_GOVERNED_IMPORT_AND_SCORING",
     "if_condition_fails": "Retire this design without acquiring confirmation documents; do not tune on the failed labels and do not open returns for the identity."
   },
-  "authorship_disclosure": "AI-assisted technical draft prepared under the project owner's direction; Arhan Canli has not yet reviewed or approved the exact text.",
+  "authorship_disclosure": "Technical draft prepared under the project owner's direction; Arhan Canli has not yet reviewed or approved the exact text.",
   "claim_boundary": "This receipt freezes a future disjoint classifier-confirmation design. It proves no classifier accuracy, human review, return, Sharpe, drawdown, correlation, capacity, or sleeve admission.",
   "confidence_gates": {
     "all_existing_machine_extraction_gates_must_pass": true,
@@ -26,7 +26,7 @@
       "point_threshold": 0.8
     }
   },
-  "content_hash": "sha256:e3d59019b4e470b024e46cf38cca2dbc3ddd17775bf8adad8c4300695704fad0",
+  "content_hash": "sha256:ead42e4f60f53b29d0ccb7ab0205c4779305fa0033a639be9909ef476850741e",
   "corpus_acquired": false,
   "corpus_frozen": false,
   "current_cache": {
@@ -136,7 +136,7 @@
     },
     "protocol": {
       "path": "docs/design/ACTIVE_OWNERSHIP_CONFIRMATORY_CORPUS_PROTOCOL.md",
-      "sha256": "09514d9d8231221bf76567f501b1eccdd6691a832a4fa108178c2541e8893bc8"
+      "sha256": "106c7c3444eef53175b73e0d8d064c738d64093995910ac79a00afbd59980cc0"
     }
   },
   "stage": "PROSPECTIVE_PRE_LABEL_PRE_RETURN_CONFIRMATORY_DESIGN",

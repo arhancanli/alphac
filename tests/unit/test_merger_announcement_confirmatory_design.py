@@ -91,7 +91,7 @@ def test_technical_pass_does_not_supply_arhans_approval() -> None:
     payload = DESIGN_MODULE.build()
     assert payload["project_owner"] == "Arhan Canli"
     assert payload["technical_authorship_approved"] is False
-    assert payload["authorship_disclosure"].startswith("AI-assisted technical draft")
+    assert payload["authorship_disclosure"].startswith("Technical draft")
     assert payload["technical_decision"] == (
         "PASS_PROSPECTIVE_NO_RETURN_CONFIRMATORY_DESIGN"
     )

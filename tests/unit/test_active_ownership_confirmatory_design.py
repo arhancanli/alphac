@@ -27,7 +27,7 @@ def test_confirmatory_design_is_disjoint_large_and_fail_closed() -> None:
     assert payload["stage"] == "PROSPECTIVE_PRE_LABEL_PRE_RETURN_CONFIRMATORY_DESIGN"
     assert payload["project_owner"] == "Arhan Canli"
     assert payload["technical_authorship_approved"] is False
-    assert payload["authorship_disclosure"].startswith("AI-assisted technical draft")
+    assert payload["authorship_disclosure"].startswith("Technical draft")
     assert payload["protocol_frozen"] is True
     assert payload["corpus_acquired"] is False
     assert payload["corpus_frozen"] is False

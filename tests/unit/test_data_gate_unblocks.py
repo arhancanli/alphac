@@ -133,7 +133,7 @@ def test_staged_families_use_declared_current_artifacts_and_blockers() -> None:
         if "artifact_content_hash" in action
     }
     assert approval_actions[("merger_arbitrage",)]["artifact_content_hash"] == (
-        "sha256:e2d294361c96994931849cef2e44faa464e3f2ab6a9ba1e05e9c4d6742f82b74"
+        "sha256:ae10f38a55e86758ee2f949d9297603c59da901d82728918904f983366372795"
     )
     for family in ("merger_arbitrage", "treasury_auction_concession"):
         action = approval_actions[(family,)]

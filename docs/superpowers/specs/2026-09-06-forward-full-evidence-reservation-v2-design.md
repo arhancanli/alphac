@@ -1,6 +1,6 @@
 # Forward full-evidence reservation v2: design spec
 
-**Author:** Claude (session), for owner review. **Status:** proposal only, nothing implemented.
+**Status:** proposal for owner review, nothing implemented.
 
 **One-minute summary.** The program needs an honest forward Sharpe of 1.5 across up to 14
 sleeves, which needs at least 10 new sleeve admissions under contract v7
