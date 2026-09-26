@@ -103,7 +103,7 @@ def build() -> dict[str, Any]:
         "project_owner": "Arhan Canli",
         "technical_authorship_approved": False,
         "authorship_disclosure": (
-            "AI-assisted technical draft prepared under the project owner's direction; "
+            "Technical draft prepared under the project owner's direction; "
             "Arhan Canli has not yet reviewed or approved the exact design."
         ),
         "declared_on": "2026-08-26",

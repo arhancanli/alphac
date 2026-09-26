@@ -51,8 +51,13 @@ def test_stanford_evidence_map_is_compact_factual_and_fail_closed() -> None:
     assert contribution["external_validation"]["assigned_reviewers"] == 0
     assert contribution["external_validation"]["completed_reviews"] == 0
     assert contribution["external_validation"]["independent_replications"] == 0
-    assert "authorship" in contribution["ai_assisted_tooling"]["not_permitted_to_claim"]
-    assert "unaided authorship" in contribution["not_established"]
+    assert set(contribution) == {
+        "status",
+        "arhan_canli",
+        "libraries_services_and_data",
+        "external_validation",
+        "not_established",
+    }
     walkthrough = report["ninety_second_walkthrough"]
     assert walkthrough["total_seconds"] == 90
     assert walkthrough["chapters"][0]["start_second"] == 0

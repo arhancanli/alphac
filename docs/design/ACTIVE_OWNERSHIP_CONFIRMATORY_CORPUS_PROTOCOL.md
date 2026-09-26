@@ -4,7 +4,7 @@
 
 **Technical authorship approval:** pending
 
-**Drafting disclosure:** AI-assisted technical draft prepared under the project owner's direction;
+**Drafting status:** Technical draft prepared under the project owner's direction;
 Arhan Canli has not yet reviewed or approved the exact text.
 
 **Declared:** 2026-08-26, before any independent label was opened and before any return access

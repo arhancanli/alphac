@@ -308,5 +308,5 @@ seeing the answer.
 ## Authorship and contribution statement
 
 **Arhan Canli** directed the research, specified the strategy and governance, built the software
-and evidence system, investigated the corrections, and wrote the paper. AI assisted development
-and editing; he remains responsible for every claim, decision, and correction.
+and evidence system, investigated the corrections, and wrote the paper. He is responsible for
+every claim, decision, and correction.

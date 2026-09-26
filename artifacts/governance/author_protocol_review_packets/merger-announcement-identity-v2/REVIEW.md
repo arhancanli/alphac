@@ -3,8 +3,8 @@
 - **Author and reviewer:** Arhan Canli
 - **Status:** awaiting Arhan's review; no approval claimed
 - **Protocol SHA-256:** `a49a4c019fabc4a5dad8f777c79988b6125832be65d4990083ed2da14484739b`
-- **Evidence SHA-256:** `4a53e4ad16367f7e0f66613275296613948521bbe7249705a86e32dcdb3c1a62`
-- **Evidence content hash:** `sha256:e2d294361c96994931849cef2e44faa464e3f2ab6a9ba1e05e9c4d6742f82b74`
+- **Evidence SHA-256:** `efa77051fd3dfdc5069a727377376daaa6063897520cf34b46fcd8e71b401f4a`
+- **Evidence content hash:** `sha256:ae10f38a55e86758ee2f949d9297603c59da901d82728918904f983366372795`
 - **Required decision:** `APPROVED_FOR_DISJOINT_CONFIRMATION_CORPUS_ACQUISITION`
 
 ## What approval would authorize

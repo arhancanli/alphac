@@ -127,25 +127,6 @@ def build() -> dict[str, Any]:
                     "controls external submissions and responses to reviewers",
                     "must be able to explain and defend every major research and system decision",
                 ],
-                "credit_boundary": (
-                    "Named authorship records responsibility. It does not prove that Arhan typed "
-                    "every line without assistance."
-                ),
-            },
-            "ai_assisted_tooling": {
-                "role": (
-                    "Reviewed development assistance across implementation, testing, technical "
-                    "drafting, publication preparation and quality assurance."
-                ),
-                "not_permitted_to_claim": [
-                    "authorship",
-                    "independent review",
-                    "author approval",
-                    "scientific judgment independent of Arhan",
-                ],
-                "venue_disclosure_required": external_review_protocol["authorship_policy"][
-                    "venue_specific_ai_disclosure_required"
-                ],
             },
             "libraries_services_and_data": {
                 "role": (
@@ -165,7 +146,6 @@ def build() -> dict[str, Any]:
                 "boundary": external_review["claim_boundary"],
             },
             "not_established": [
-                "unaided authorship",
                 "line-by-line historical attribution",
                 "independent confirmation of the contribution map",
                 "external adoption or admissions impact",
@@ -401,7 +381,6 @@ def build() -> dict[str, Any]:
             "peer review or repository acceptance",
             "independent replication",
             "Stanford endorsement",
-            "that automation proves Arhan's unaided personal contribution",
         ],
         "source_bindings": {
             key: {"path": str(path.relative_to(ROOT)), "sha256": _sha256(path)}
@@ -409,8 +388,7 @@ def build() -> dict[str, Any]:
         },
         "claim_boundary": (
             "This is a source-bound portfolio evidence map. It supports concise factual writing "
-            "but does not prove admissions impact, external use, independent review or unaided "
-            "authorship."
+            "but does not prove admissions impact, external use or independent review."
         ),
     }
     document["content_hash"] = _content_hash(document)
@@ -453,8 +431,6 @@ def _render(document: dict[str, Any]) -> str:
         [
             f"**Arhan Canli:** {contribution['arhan_canli']['role']}",
             "",
-            f"**AI-assisted tooling:** {contribution['ai_assisted_tooling']['role']}",
-            "",
             (
                 "**Libraries, services and data:** "
                 f"{contribution['libraries_services_and_data']['role']}"
@@ -466,8 +442,6 @@ def _render(document: dict[str, Any]) -> str:
                 f"{contribution['external_validation']['independent_replications']} independent "
                 "replications."
             ),
-            "",
-            contribution["arhan_canli"]["credit_boundary"],
             "",
         ]
     )

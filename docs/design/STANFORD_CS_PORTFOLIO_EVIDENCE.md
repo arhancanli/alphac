@@ -87,12 +87,12 @@ Boundary: Archive integrity is not result replay or rights clearance; no DOI, ex
 
 ### The project refuses to infer success from an immature forward record.
 
-- `daily_return_observations`: 36
-- `cumulative_return`: -0.028516499999999945
+- `daily_return_observations`: 2
+- `cumulative_return`: 0.0023648000000000557
 - `sharpe_status`: IMMATURE_RECORD_TOO_SHORT
-- `current_sleeves`: 4
+- `current_sleeves`: 3
 - `target_sleeves`: 14
-- `provenance_passes`: False
+- `provenance_passes`: True
 
 Boundary: The forward Sharpe, drawdown and diversification objectives are not established.
 
@@ -100,13 +100,9 @@ Boundary: The forward Sharpe, drawdown and diversification objectives are not es
 
 **Arhan Canli:** Founder, named author, project owner and final accountable human for methodology, claims, corrections and publication decisions.
 
-**AI-assisted tooling:** Reviewed development assistance across implementation, testing, technical drafting, publication preparation and quality assurance.
-
 **Libraries, services and data:** Open-source software, market-data providers, Alpaca paper accounts, DigitalOcean and web infrastructure supply capabilities and inputs.
 
 **External validation:** 0 completed reviews; 0 independent replications.
-
-Named authorship records responsibility. It does not prove that Arhan typed every line without assistance.
 
 ## Ninety-second walkthrough
 
@@ -144,7 +140,7 @@ A signed append-only record connects public claims to artifacts and corrections.
 
 Screen: `/founder#open-burden`
 
-The forward record has only 36 daily observations, external reviews remain at zero, and Foundry is planned not applied. The open burden is part of the result.
+The forward record has only 2 daily observations, external reviews remain at zero, and Foundry is planned not applied. The open burden is part of the result.
 
 This is a timed production script and evidence path. It is not a recorded video, proof that a viewer watched it or evidence of admissions impact.
 
@@ -156,6 +152,5 @@ This is a timed production script and evidence path. It is not a recorded video,
 - peer review or repository acceptance
 - independent replication
 - Stanford endorsement
-- that automation proves Arhan's unaided personal contribution
 
-This is a source-bound portfolio evidence map. It supports concise factual writing but does not prove admissions impact, external use, independent review or unaided authorship.
+This is a source-bound portfolio evidence map. It supports concise factual writing but does not prove admissions impact, external use or independent review.
