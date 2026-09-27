@@ -220,7 +220,11 @@ def test_emitted_state_json_leads_with_the_flagship_and_carries_the_disclosure(p
     """End of the running path: the file the sites actually serve."""
     state = json.loads(STATE_JSON.read_text())
     algos = state["algorithms"]
-    assert [a["key"] for a in algos] == [a["key"] for a in pts.ALGOS]
+    # Suspended sleeves (owner, 2026-09-23) are out of the list and named in suspended_sleeves.
+    assert [a["key"] for a in algos] == [
+        a["key"] for a in pts.ALGOS if a["key"] not in pts.SUSPENDED_SLEEVES
+    ]
+    assert [s["key"] for s in state["suspended_sleeves"]] == list(pts.SUSPENDED_SLEEVES)
     assert algos[0]["key"] == "alphac" and algos[0]["flagship"] is True
     assert [a["rank"] for a in algos] == list(range(1, len(algos) + 1))
 

@@ -2639,11 +2639,26 @@ def build_program_status(state: dict[str, Any]) -> dict[str, Any]:
             },
         },
         "execution_provenance": {
+            # A suspended sleeve (paper_trading_state.SUSPENDED_SLEEVES, owner 2026-09-23) is out of
+            # the book and its numbers off the site; it is named here with the reason, never shown.
             "summary": (
                 f"{len(alpaca_sleeves)} sleeves use dedicated Alpaca paper accounts; "
-                "AlphaForge uses the local AlphaForge PaperBroker against live exchange order "
-                "books; ALPHAC is a derived composite and has no direct broker account."
+                + (
+                    "AlphaForge uses the local AlphaForge PaperBroker against live exchange order "
+                    "books; "
+                    if any(algo["key"] == "alphaforge" for algo in algorithms)
+                    else ""
+                )
+                + "".join(
+                    f"{item['name']} is suspended from the book since {item['since']}; "
+                    for item in state.get("suspended_sleeves", [])
+                )
+                + "ALPHAC is a derived composite and has no direct broker account."
             ),
+            "suspended_sleeves": [
+                {key: item[key] for key in ("key", "name", "since", "why", "returns_when")}
+                for item in state.get("suspended_sleeves", [])
+            ],
             "alpaca_broker_executed_sleeves": [algo["key"] for algo in alpaca_sleeves],
             "all_sleeves": [
                 {

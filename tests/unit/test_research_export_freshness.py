@@ -292,7 +292,11 @@ def test_program_status_composes_targets_live_provenance_and_evidence_gaps(modul
     }
     by_key = {item["key"]: item for item in execution["all_sleeves"]}
     assert by_key["alphac"]["execution"]["record_kind"] == "DERIVED_PAPER_BOOK"
-    assert by_key["alphaforge"]["execution"]["broker"] == "ALPHAFORGE_PAPERBROKER"
+    # AlphaForge is suspended (owner, 2026-09-23): named with its reason, never shown as a sleeve.
+    assert "alphaforge" not in by_key
+    assert [item["key"] for item in execution["suspended_sleeves"]] == ["alphaforge"]
+    assert "AlphaForge is suspended from the book since" in execution["summary"]
+    assert "PaperBroker" not in execution["summary"]
     assert all(
         item["execution"]["capital_kind"] == "PAPER_ONLY" for item in execution["all_sleeves"]
     )
