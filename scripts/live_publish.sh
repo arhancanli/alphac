@@ -204,7 +204,7 @@ deploy_prod() {
   # because it is file-mediated. Pinned by tests/unit/test_publish_pipeline_order.py::EDGES.
   # 0) Receipts that describe CURRENT sources and had no producer in any publish job
   # (2026-09-24): every var*/experiments.jsonl append or bound-source change left them stale for
-  # good, and four nightly-suite tests red. 0a is read by the rights audit (1b); 0b/0c by the
+  # good, and four nightly-suite tests red. 0a is read by the rights audit (1); 0b/0c by the
   # reproduction audit, the readiness audit and research_export. The replay refuses, loudly, when
   # an audit builder would change a governed result byte: that is a finding, never auto-healed.
   uv run python scripts/reconstruct_legacy_identity_input_provenance.py \
@@ -214,12 +214,14 @@ deploy_prod() {
     uv run python scripts/verify_sleeve_publication_replays.py $([ "$replay_mode" = isolated ] && echo --isolated) \
       || echo "WARN: $replay_mode sleeve publication replay REFUSED or failed — see output above; receipt is stale"
   done
-  # 1) 16 raw-row-free sleeve review archives; steps 2, 9 and 10 below all read this receipt.
-  uv run python scripts/package_all_sleeve_review_archives.py \
-    || echo "WARN: all-sleeve review archives NOT rebuilt — publishing a receipt bound to stale archives"
-  # 1b) all-sleeve data-rights audit; steps 2, 5, 6 and 10 bind its content hash.
+  # 1) all-sleeve data-rights audit; step 1b and steps 2, 5, 6 and 10 bind its content hash. It runs
+  # before 1b (2026-09-27): packaged first, the archive receipt bound the previous audit and was
+  # stale the moment this rebuilt, so its "matches current sources" test failed every night.
   uv run python scripts/audit_all_sleeve_data_rights.py \
     || echo "WARN: all-sleeve data-rights audit NOT rebuilt — publishing receipts bound to a stale rights audit"
+  # 1b) 16 raw-row-free sleeve review archives; steps 2, 9 and 10 below all read this receipt.
+  uv run python scripts/package_all_sleeve_review_archives.py \
+    || echo "WARN: all-sleeve review archives NOT rebuilt — publishing a receipt bound to stale archives"
   # 2) clean-workspace reproduction audit; reads the archives step 1 just wrote.
   uv run python scripts/audit_clean_workspace_reproduction_contracts.py \
     || echo "WARN: clean-workspace reproduction audit NOT rebuilt — publishing a stale contract audit"
@@ -231,7 +233,7 @@ deploy_prod() {
   # independent of every other step here.
   uv run python scripts/audit_inflation_breakeven_feasibility.py \
     || echo "WARN: inflation-breakeven feasibility audit NOT rebuilt — publishing a stale result"
-  # 5) external publication readiness: binds the data-rights audit (1b), the manuscript-style
+  # 5) external publication readiness: binds the data-rights audit (1), the manuscript-style
   # audit (3) and the author technical-approval protocol. Steps 6 and 10 read it. Until
   # 2026-09-23 it ran LAST, after the evidence map that reads it, so the map always carried the
   # previous night's readiness receipt.

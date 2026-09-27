@@ -46,13 +46,15 @@ def test_current_book_diversification_build_is_exact_and_fail_closed(monkeypatch
     monkeypatch.setattr(MODULE, "BOOTSTRAP_SAMPLES", 200)
     document = MODULE.build()
     assert document["content_hash"] == MODULE._content_hash(document)
+    # The v4 book (#80) is three sleeves; crypto_carry_wk left it on 2026-09-25.
     assert document["configuration"]["sleeves"] == [
         "alphavintage_live",
-        "crypto_carry_wk",
         "k30_dn_63",
         "managed_futures",
     ]
-    assert document["observed"]["exact_component_reconstruction_max_abs_error"] == 0.0
+    # The build refuses above 1e-15; the four-sleeve book happened to reconstruct to exactly 0.0,
+    # the three-sleeve one to 1.7e-18 (rounding).
+    assert document["observed"]["exact_component_reconstruction_max_abs_error"] <= 1e-15
     assert document["observed"]["average_pairwise_correlation"] > 0.0
     comparison = document["governing_comparison"]
     assert comparison["active_v7_has_no_global_average_correlation_point_gate"] is True
