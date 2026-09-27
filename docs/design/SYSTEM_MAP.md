@@ -8,9 +8,9 @@ line of its own docstring, each pipeline's steps are the scripts it actually inv
 contract's boundary is the boundary it states about itself. A script with no docstring appears as
 having none.
 
-At a glance: **430 Python scripts**, **17 shell entry points**,
+At a glance: **432 Python scripts**, **17 shell entry points**,
 **36 configuration contracts**, **32 engineering artifacts**,
-**455 unit test files**, **24 data directories**, **10 scheduled jobs**.
+**458 unit test files**, **24 data directories**, **10 scheduled jobs**.
 
 
 ## What runs on a timer
@@ -304,7 +304,7 @@ and is worth more than a hand-made taxonomy that would drift.
 | `analyze_target_2p5.py` | ANALYSIS — what would a book Sharpe of 2.5 actually require, and is it reachable? |
 | `analyze_trial_budget_cost.py` | Price a prospective trial budget before it is authorized. |
 
-### `audit_*` (104)
+### `audit_*` (105)
 
 | script | first line of its docstring |
 |---|---|
@@ -398,6 +398,7 @@ and is worth more than a hand-made taxonomy that would drift.
 | `audit_spinoff_form10_lineage.py` | Build a hash-bound Form 10 candidate lineage without opening prices or returns. |
 | `audit_spinoff_form_universe.py` | Measure the two structural facts the spin-off redesign note rests on, so neither is a memory. |
 | `audit_split_adjustment_direction.py` | Measure, split by split, what the shared adjusted-close engine does across every ex-date. |
+| `audit_split_direction_before_after.py` | Measure the 2026-09-14 split-direction defect: pre-fix kernel and current one, side by side. |
 | `audit_split_ratio_integrity.py` | AUDIT — how many stored split ratios disagree with the price move they should explain. |
 | `audit_tender_offer_document_feasibility.py` | Audit locked SC 14D9 document extraction without loading prices or returns. |
 | `audit_tender_offer_reachability.py` | Establish whether tender-offer parser work is justified, without opening returns. |
@@ -593,7 +594,7 @@ and is worth more than a hand-made taxonomy that would drift.
 | `verify_sleeve_publication_replays.py` | Replay audit-only sleeve evidence builders and prove no result or trial ledger changed. |
 | `verify_transparency.py` | Verify the public track-record chain, signatures and disclosed payloads. |
 
-### everything else (160)
+### everything else (161)
 
 | script | first line of its docstring |
 |---|---|
@@ -695,6 +696,7 @@ and is worth more than a hand-made taxonomy that would drift.
 | `reconstruct_energy_inventory_source_provenance.py` | Reconstruct the energy-inventory ETF source identity without overstating scope. |
 | `reconstruct_legacy_identity_input_provenance.py` | Classify legacy identity inputs by persisted ledger profile and namespace. |
 | `refresh_macro_vintage.py` | Refresh the PIT macro-vintage lake AND record when each vintage first reached us. |
+| `render_current_book_drawdown_paper.py` | Render the current-composition drawdown paper from the study result. |
 | `replay_crypto_carry_frozen_inputs.py` | Replay selected crypto carry on the current local state and audit drift. |
 | `replay_fundamental_single_identity.py` | Replay one corrected-universe fundamental trial without spending a new identity. |
 | `reproduce.py` | Reproduce our numbers — the outsider's one-command verifier of the Canli Capital glass box. |
