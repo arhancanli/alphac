@@ -265,6 +265,9 @@ EDGES: tuple[
         "audit_all_sleeve_data_rights.py",
         "artifacts/publication/all_sleeve_data_rights_audit.json",
         (
+            # The archive receipt binds this audit's content hash (2026-09-27: packaged first, it
+            # was stale the moment the audit rebuilt, every night).
+            "package_all_sleeve_review_archives.py",
             "audit_clean_workspace_reproduction_contracts.py",
             "audit_external_publication_readiness.py",
             "build_external_submission_plan.py",
