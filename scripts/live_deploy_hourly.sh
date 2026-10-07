@@ -75,6 +75,22 @@ PY
     exit 0
   fi
 
+  # COST GATE (2026-10-07, owner: Vercel bill to ~USD 30-35/month on Pro). Every production deploy
+  # rebuilds the site on Vercel (build minutes) and starts a fresh CDN cache, so crawlers re-render
+  # the ~900k company pages on the functions. Hourly deploys cost ~USD 6.5/day. Deploy at most once
+  # per DEPLOY_MIN_INTERVAL_S (default 6 h) since the last successful one. A correction that must go
+  # out sooner: `touch var/deploy_now` (consumed by the next run) or run with CANLI_DEPLOY_NOW=1.
+  DEPLOY_MIN_INTERVAL_S=${DEPLOY_MIN_INTERVAL_S:-21600}
+  if [ -f "$HASH_FILE" ] && [ "${CANLI_DEPLOY_NOW:-0}" != "1" ] && [ ! -f var/deploy_now ]; then
+    last_deploy=$(stat -f %m "$HASH_FILE" 2>/dev/null || stat -c %Y "$HASH_FILE" 2>/dev/null || echo 0)
+    age=$(( $(date +%s) - last_deploy ))
+    if [ "$age" -lt "$DEPLOY_MIN_INTERVAL_S" ]; then
+      echo "change pending; last deploy ${age}s ago < ${DEPLOY_MIN_INTERVAL_S}s cost gate — skipping (touch var/deploy_now to force)"
+      exit 0
+    fi
+  fi
+  rm -f var/deploy_now
+
   # shared lock: never deploy while the nightly full publish is deploying (they overlap by
   # schedule — hourly :05 vs publish 02:10 — and would otherwise race on the same two projects).
   if ! deploy_lock_acquire; then
