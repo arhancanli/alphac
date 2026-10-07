@@ -1,6 +1,40 @@
 # ALPHAC — the quant engine behind [canlicapital.com](https://canlicapital.com)
 
-[![ci](https://github.com/arhancanli/alphac/actions/workflows/ci.yml/badge.svg)](https://github.com/arhancanli/alphac/actions/workflows/ci.yml) [![license: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE) [![python 3.12](https://img.shields.io/badge/python-3.12-blue.svg)](pyproject.toml) [![live record](https://img.shields.io/badge/live%20record-paper%2C%20since%202026--08--07-orange.svg)](https://canlicapital.com/performance)
+[![GitHub stars](https://img.shields.io/github/stars/arhancanli/alphac?style=social)](https://github.com/arhancanli/alphac/stargazers) [![ci](https://github.com/arhancanli/alphac/actions/workflows/ci.yml/badge.svg)](https://github.com/arhancanli/alphac/actions/workflows/ci.yml) [![license: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE) [![python 3.12](https://img.shields.io/badge/python-3.12-blue.svg)](pyproject.toml) [![live record](https://img.shields.io/badge/live%20record-paper%2C%20since%202026--08--07-orange.svg)](https://canlicapital.com/performance)
+
+**An open-source quant research engine built so you cannot fool yourself.** Every strategy variant
+you try is counted, every decision sees only the data it could have seen at the time, and every number
+published from it can be checked, including the ones that went wrong.
+
+The strategies inside are well-known academic families (momentum, carry, trend, macro surprise). The
+guardrails are the point, and you can lift them into your own research:
+
+| Take this | It stops | Where |
+| --- | --- | --- |
+| Point-in-time reader | Lookahead: a decision at time T only sees records available at T | [`data/store/reader.py`](src/alphaforge/data/store/reader.py) |
+| Trial budget and deflated Sharpe | The best-of-many illusion: every variant ever tried is counted (229 so far) | [`validation/dsr.py`](src/alphaforge/validation/dsr.py), [`trial_budget.py`](src/alphaforge/validation/trial_budget.py) |
+| Overfitting tests (CPCV, PBO) | A backtest that only works on the split you happened to pick | [`validation/cpcv.py`](src/alphaforge/validation/cpcv.py), [`pbo.py`](src/alphaforge/validation/pbo.py) |
+| Voidable pre-registration | Moving the goalposts after seeing the holdout | [`validation/prereg.py`](src/alphaforge/validation/prereg.py), [`docs/design/`](docs/design) |
+| Kill log and retractions | Remembering only the winners | [`docs/retracted_claims.txt`](docs/retracted_claims.txt) |
+| Hash-chained transparency log | Silently rewriting a past claim | [`scripts/transparency_log.py`](scripts/transparency_log.py), [`anchor_transparency.py`](scripts/anchor_transparency.py) |
+
+Want one piece without the rest? The point-in-time lake and the backtester are also standalone:
+[canli-pit-lake](https://github.com/arhancanli/canli-pit-lake) and
+[canli-backtest](https://github.com/arhancanli/canli-backtest). To check a backtest from Claude or
+Cursor, use [canli-validation-mcp](https://github.com/arhancanli/canli-validation-mcp).
+
+### Try it
+
+```sh
+git clone https://github.com/arhancanli/alphac && cd alphac
+uv sync          # Python 3.12, pinned via uv
+uv run pytest    # the test suite
+uv run af --help # the research CLI
+```
+
+If one of these guardrails saves you from a backtest that wasn't real, a ⭐ helps other quants find it.
+
+## What it is
 
 ALPHAC is a cross-asset, market-neutral research and trading system, and this is all of it:
 the data lake, the point-in-time reader, the backtester, the walk-forward harness, the
