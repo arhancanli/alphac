@@ -1,6 +1,6 @@
 # ALPHAC — the quant engine behind [canlicapital.com](https://canlicapital.com)
 
-[![ci](https://github.com/arhancanli/alphac/actions/workflows/ci.yml/badge.svg)](https://github.com/arhancanli/alphac/actions/workflows/ci.yml) [![license: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE) [![python 3.12](https://img.shields.io/badge/python-3.12-blue.svg)](pyproject.toml) [![live record](https://img.shields.io/badge/live%20record-paper%2C%20since%202026--08--07-orange.svg)](https://canlicapital.com/performance)
+[![GitHub stars](https://img.shields.io/github/stars/arhancanli/alphac?style=social)](https://github.com/arhancanli/alphac/stargazers) [![ci](https://github.com/arhancanli/alphac/actions/workflows/ci.yml/badge.svg)](https://github.com/arhancanli/alphac/actions/workflows/ci.yml) [![license: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE) [![python 3.12](https://img.shields.io/badge/python-3.12-blue.svg)](pyproject.toml) [![live record](https://img.shields.io/badge/live%20record-paper%2C%20since%202026--08--07-orange.svg)](https://canlicapital.com/performance)
 
 ALPHAC is a cross-asset, market-neutral research and trading system, and this is all of it:
 the data lake, the point-in-time reader, the backtester, the walk-forward harness, the
@@ -8,6 +8,8 @@ multiple-testing machinery, the portfolio optimizer, the live broker loop, and e
 document and adversarial review that produced them.
 
 **Created and maintained by [Arhan Canli](https://github.com/arhancanli) for Canli Capital.**
+If any part of it (the point-in-time reader, the walk-forward harness, the trial accounting) is
+useful to you, a ⭐ helps other quants find it.
 Citation metadata is provided in [`CITATION.cff`](CITATION.cff).
 
 It is public because the claim we actually make is not *"this makes money."* It is
