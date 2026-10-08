@@ -32,7 +32,7 @@ dependencies = [
     "boto3>=1.43.31",
     "opentimestamps-client>=0.7.2",
     "databento>=0.80.0",
-    "pypdf>=6.16.1",
+    "pypdf>=6.19.0",
     "xlrd>=2.0.2",
     "openpyxl>=3.1.5",
 ]
