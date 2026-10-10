@@ -18,6 +18,7 @@ mkdir -p var/log
 . "$HOME/alphaforge/scripts/lib/bounded.sh"
 . "$HOME/alphaforge/scripts/lib/indexnow.sh"
 . "$HOME/alphaforge/scripts/lib/site_snapshot.sh"
+. "$HOME/alphaforge/scripts/lib/deploy_landed.sh"
 
 FAIL=0
 
@@ -56,6 +57,9 @@ deploy_prod() {
   for attempt in 1 2 3; do
     # BOUNDED (see scripts/lib/bounded.sh): unbounded, this is a 28h-outage-class hang.
     url=$(run_bounded 600 vercel deploy --prod --yes 2>&1 | tee "$out" | grep -oE "https://[a-z0-9-]+\.vercel\.app" | tail -1)
+    # A URL IS NOT SUCCESS: see scripts/lib/deploy_landed.sh, the same check the hourly job runs.
+    # This job's deploys now stamp the deploy clock both jobs share, so both must mean "landed".
+    deploy_landed "$label" "$url" "$(cat "$out" 2>/dev/null)" || url=""
     if [ -n "$url" ]; then
       echo "  [$label] prod: $url (attempt $attempt)"
       break
@@ -327,6 +331,15 @@ deploy_prod() {
 
   echo "--- deploy app ---"
   deploy_prod "$SITE_SNAPSHOT_ROOT/meridian-app" app ac-capital-app.vercel.app
+  APP_OK=$?
+
+  # ONE DEPLOY CLOCK (2026-10-10). The hourly job deploys only when nothing has landed for 24 h,
+  # counted from var/last_web_deploy.hash. Stamp it when both projects land here, with the hash of
+  # the snapshot just deployed, so the site deploys once a day instead of twice: every deploy
+  # starts the company pages' CDN cache cold. Stamped before IndexNow, which can be slow.
+  if [ "$LANDING_OK" = "0" ] && [ "$APP_OK" = "0" ]; then
+    echo "$SITE_SNAPSHOT_HASH" > "$HOME/alphaforge/var/last_web_deploy.hash"
+  fi
 
   echo "--- indexnow ---"
   # Same rule as the hourly job, from the same shared file rather than a second copy of it.

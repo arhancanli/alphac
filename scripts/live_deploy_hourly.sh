@@ -21,6 +21,7 @@ mkdir -p var/log
 . "$HOME/alphaforge/scripts/lib/bounded.sh"
 . "$HOME/alphaforge/scripts/lib/indexnow.sh"
 . "$HOME/alphaforge/scripts/lib/site_snapshot.sh"
+. "$HOME/alphaforge/scripts/lib/deploy_landed.sh"
 LOG="var/log/live_deploy.log"
 HASH_FILE="var/last_web_deploy.hash"
 
@@ -75,6 +76,26 @@ PY
     exit 0
   fi
 
+  # COST GATE (2026-10-07, owner: Vercel bill to ~USD 30-35/month on Pro). Every production deploy
+  # rebuilds the site on Vercel (build minutes) and starts a fresh CDN cache, so crawlers re-render
+  # the ~900k company pages on the functions. Hourly deploys cost ~USD 6.5/day.
+  # ONCE A DAY (2026-10-10). Company pages now stay at the edge for 7 days, so how often the site
+  # deploys is what sets the bill, and the served record gains one mark a day. The nightly publish
+  # stamps the same HASH_FILE when its deploy lands, so this job deploys only when no deploy by
+  # either job has landed for DEPLOY_MIN_INTERVAL_S (default 24 h), or when told to.
+  # A change or correction that must go out sooner: `touch var/deploy_now` or run with
+  # CANLI_DEPLOY_NOW=1. The flag stays until a deploy lands, so a forced deploy that fails is
+  # retried next hour instead of waiting out the gate.
+  DEPLOY_MIN_INTERVAL_S=${DEPLOY_MIN_INTERVAL_S:-86400}
+  if [ -f "$HASH_FILE" ] && [ "${CANLI_DEPLOY_NOW:-0}" != "1" ] && [ ! -f var/deploy_now ]; then
+    last_deploy=$(stat -f %m "$HASH_FILE" 2>/dev/null || stat -c %Y "$HASH_FILE" 2>/dev/null || echo 0)
+    age=$(( $(date +%s) - last_deploy ))
+    if [ "$age" -lt "$DEPLOY_MIN_INTERVAL_S" ]; then
+      echo "change pending; last deploy ${age}s ago < ${DEPLOY_MIN_INTERVAL_S}s cost gate — skipping (touch var/deploy_now to force)"
+      exit 0
+    fi
+  fi
+
   # shared lock: never deploy while the nightly full publish is deploying (they overlap by
   # schedule — hourly :05 vs publish 02:10 — and would otherwise race on the same two projects).
   if ! deploy_lock_acquire; then
@@ -113,22 +134,8 @@ PY
       # form has no such cap, so a future growth in pages cannot repeat the failure mode.
       raw=$(run_bounded 600 vercel deploy --prod --yes --archive=tgz 2>&1)
       url=$(printf '%s\n' "$raw" | grep -oE "https://[a-z0-9-]+\.vercel\.app" | tail -1)
-      # A URL IS NOT SUCCESS (2026-09-06). Vercel prints the deployment URL before it builds, and
-      # a build that dies (that day: ENOENT on a file .vercelignore had hidden) still leaves a URL
-      # in the output with status Error. This loop took the URL as proof and reported "prod: ..."
-      # while the domain kept serving the previous build. So: the CLI must exit clean, the output
-      # must not carry a build error, and the new deployment must answer 200 for the homepage.
-      if [ -n "$url" ] && printf '%s\n' "$raw" | grep -qE "Error: Command .* exited|Build Failed|status.*Error"; then
-        echo "  [$label] deployment $url reported a build error; not treating the URL as success"
-        url=""
-      fi
-      if [ -n "$url" ]; then
-        served=$(curl -s -o /dev/null --max-time 30 -w '%{http_code}' "$url/" 2>/dev/null || echo 000)
-        if [ "$served" != "200" ]; then
-          echo "  [$label] deployment $url answers HTTP $served for /; the build did not complete"
-          url=""
-        fi
-      fi
+      # A URL IS NOT SUCCESS (2026-09-06): see scripts/lib/deploy_landed.sh, shared with the nightly.
+      deploy_landed "$label" "$url" "$raw" || url=""
       if [ -n "$url" ]; then echo "  [$label] prod: $url (attempt $attempt)"; break; fi
       echo "  [$label] deploy attempt $attempt failed; retrying in $((attempt*8))s"
       printf '%s\n' "$raw" | tail -20 | sed "s/^/    [$label:err] /"
@@ -145,6 +152,14 @@ PY
   LANDING_OK=$?
   deploy_prod "$SITE_SNAPSHOT_ROOT/meridian-app" "app" "ac-capital-app.vercel.app"
 
+  # Stamp the clock the moment both deploys land, before the announcement below. On 2026-10-10 the
+  # tick's 1500 s watchdog killed this script inside IndexNow after both projects had deployed; the
+  # stamp at the end was never written, so the next hour would have deployed the same site again.
+  if [ "$FAIL" = "0" ]; then
+    echo "$NEW_HASH" > "$AF/$HASH_FILE"
+    rm -f "$AF/var/deploy_now"
+  fi
+
   # Tell the search engines, but ONLY if the landing deploy actually succeeded: submitting URLs
   # against a deploy that failed would advertise pages that may not be there. Loud on failure,
   # never fatal — see scripts/lib/indexnow.sh for why that is the right shape here and how a
@@ -157,7 +172,6 @@ PY
   indexnow_warn_if_stale
 
   if [ "$FAIL" = "0" ]; then
-    echo "$NEW_HASH" > "$AF/$HASH_FILE"
     echo "=== hourly deploy OK $(date -u '+%Y-%m-%dT%H:%M:%SZ') ==="
   else
     echo "=== hourly deploy INCOMPLETE (will retry next hour) ==="
