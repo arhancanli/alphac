@@ -8,8 +8,8 @@ nightly publish stamps that same file when its deploy lands: the site deploys on
 A STAMP IS ONLY AS GOOD AS THE SUCCESS IT RECORDS. The nightly publish used to count any printed
 URL as success, which the hourly job stopped doing on 2026-09-06 (Vercel prints the URL before it
 builds). Once the nightly's success also holds the hourly job back for a day, a false success would
-leave a dead build in place for that day. Both jobs therefore decide "landed" with one shared helper,
-scripts/lib/deploy_landed.sh, and neither carries its own copy: the same reason
+leave a dead build in place for that day. Both jobs therefore decide "landed" with one shared
+helper, scripts/lib/deploy_landed.sh, and neither carries its own copy: the same reason
 test_indexnow_is_in_the_deploy_path.py gives for the IndexNow submission.
 """
 
@@ -34,9 +34,9 @@ ANNOUNCE = 'indexnow_submit "$SITE_SNAPSHOT_ROOT/meridian"'
 def test_the_hourly_job_deploys_at_most_once_a_day_unless_told_to() -> None:
     source = HOURLY.read_text()
     assert "DEPLOY_MIN_INTERVAL_S=${DEPLOY_MIN_INTERVAL_S:-86400}" in source
-    gate = source.index("DEPLOY_MIN_INTERVAL_S=")
-    assert gate < source.index("deploy_lock_acquire"), "the cost gate must run before the deploy lock"
-    assert "var/deploy_now" in source[gate : source.index("deploy_lock_acquire")]
+    gate, lock = source.index("DEPLOY_MIN_INTERVAL_S="), source.index("deploy_lock_acquire")
+    assert gate < lock, "the cost gate must run before the deploy takes the lock"
+    assert "var/deploy_now" in source[gate:lock]
 
 
 def test_a_forced_deploy_stays_requested_until_one_lands() -> None:
@@ -81,7 +81,7 @@ def test_every_deploy_path_decides_landed_with_the_shared_helper(script: Path) -
     ("url", "output", "status", "landed"),
     [
         ("https://site-abc.vercel.app", "Production: https://site-abc.vercel.app", "200", True),
-        ("https://site-abc.vercel.app", 'Error: Command "npm run build" exited with 1', "200", False),
+        ("https://site-abc.vercel.app", 'Error: Command "npm run build" exited 1', "200", False),
         ("https://site-abc.vercel.app", "Build Failed", "200", False),
         ("https://site-abc.vercel.app", "Production: https://site-abc.vercel.app", "404", False),
         ("https://site-abc.vercel.app", "Production: https://site-abc.vercel.app", "000", False),
