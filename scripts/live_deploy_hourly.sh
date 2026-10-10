@@ -82,11 +82,14 @@ PY
   # ONCE A DAY (2026-10-10). Company pages now stay at the edge for 7 days, so how often the site
   # deploys is what sets the bill, and the served record gains one mark a day. The nightly publish
   # stamps the same HASH_FILE when its deploy lands, so this job deploys only when no deploy by
-  # either job has landed for DEPLOY_MIN_INTERVAL_S (default 24 h), or when told to.
+  # either job has landed for DEPLOY_MIN_INTERVAL_S, or when told to. 26 h, not 24: the nightly
+  # lands at a time that drifts with load, and at exactly 24 h this job would deploy minutes before
+  # a slightly late nightly deploy, twice in an hour. So this job is the fallback for a nightly
+  # publish that failed or ran 2 h late. scripts/health_check.py's C1 freshness bounds follow it.
   # A change or correction that must go out sooner: `touch var/deploy_now` or run with
   # CANLI_DEPLOY_NOW=1. The flag stays until a deploy lands, so a forced deploy that fails is
   # retried next hour instead of waiting out the gate.
-  DEPLOY_MIN_INTERVAL_S=${DEPLOY_MIN_INTERVAL_S:-86400}
+  DEPLOY_MIN_INTERVAL_S=${DEPLOY_MIN_INTERVAL_S:-93600}
   if [ -f "$HASH_FILE" ] && [ "${CANLI_DEPLOY_NOW:-0}" != "1" ] && [ ! -f var/deploy_now ]; then
     last_deploy=$(stat -f %m "$HASH_FILE" 2>/dev/null || stat -c %Y "$HASH_FILE" 2>/dev/null || echo 0)
     age=$(( $(date +%s) - last_deploy ))

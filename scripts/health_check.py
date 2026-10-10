@@ -489,13 +489,16 @@ def _freshness(url, idc, title, warn_h, fail_h):
 
 
 def check_data():
-    # Hourly web-deploy promise (2026-07-05, live_deploy_hourly.sh): the tick regenerates +
-    # redeploys the served state every hour, so it should never be more than ~1-2h old. The 6h
-    # warn absorbs laptop sleep / transient Vercel failures; >12h means the deploy is broken.
+    # Daily web-deploy promise (2026-10-10; it was hourly from 2026-07-05). Every deploy starts the
+    # company pages' CDN cache cold, so the site deploys once a day: the nightly publish, or
+    # live_deploy_hourly.sh as the fallback once nothing has landed for 26 h. The served state is
+    # therefore up to ~28 h old just before a deploy lands (26 h, plus the tick's hour, plus the
+    # state's age when it shipped). Past 30 h a day's deploy was missed; past 40 h the fallback
+    # missed too, and the deploy path is broken. Keep these in step with that gate.
     _, ga_land = _freshness(f"{LANDING}/paper-state.json", "C1-landing-fresh",
-                            "landing paper-state fresh", 6, 12)
+                            "landing paper-state fresh", 30, 40)
     _, ga_app = _freshness(f"{APP}/paper-state.json", "C1-app-fresh",
-                           "app paper-state fresh", 6, 12)
+                           "app paper-state fresh", 30, 40)
     if ga_land and ga_app:
         add("C1-hosts-match", "data", "both hosts same generated_at",
             "PASS" if ga_land == ga_app else "FAIL", "high",

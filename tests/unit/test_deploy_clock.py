@@ -32,8 +32,9 @@ ANNOUNCE = 'indexnow_submit "$SITE_SNAPSHOT_ROOT/meridian"'
 
 
 def test_the_hourly_job_deploys_at_most_once_a_day_unless_told_to() -> None:
+    """26 h: the hourly job is the fallback for a nightly publish that failed or ran late."""
     source = HOURLY.read_text()
-    assert "DEPLOY_MIN_INTERVAL_S=${DEPLOY_MIN_INTERVAL_S:-86400}" in source
+    assert "DEPLOY_MIN_INTERVAL_S=${DEPLOY_MIN_INTERVAL_S:-93600}" in source
     gate, lock = source.index("DEPLOY_MIN_INTERVAL_S="), source.index("deploy_lock_acquire")
     assert gate < lock, "the cost gate must run before the deploy takes the lock"
     assert "var/deploy_now" in source[gate:lock]
@@ -107,3 +108,14 @@ def test_landed_means_a_clean_build_that_answers_200(
         timeout=30,
     )
     assert (result.returncode == 0) is landed, result.stdout + result.stderr
+
+
+def test_the_health_check_expects_what_the_deploy_clock_delivers() -> None:
+    """A freshness check tighter than the deploy clock fails every day and stops being read."""
+    gate_s = int(re.search(r"DEPLOY_MIN_INTERVAL_S:-(\d+)", HOURLY.read_text()).group(1))
+    health = (REPO / "scripts" / "health_check.py").read_text()
+    bounds = re.findall(r'"(?:landing|app) paper-state fresh", (\d+), (\d+)\)', health)
+    assert len(bounds) == 2, "the landing and app freshness checks were not found"
+    for warn_h, fail_h in bounds:
+        assert int(warn_h) >= gate_s / 3600 + 2, "the health check warns before a deploy is due"
+        assert int(fail_h) > int(warn_h)
