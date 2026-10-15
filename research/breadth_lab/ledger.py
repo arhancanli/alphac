@@ -19,7 +19,7 @@ RUNS = [
     ("lab_smoothed.log", "stocks", "the same signals held as overlapping portfolios (mean of the last 3 monthly or 4 weekly rebalances)"),
     ("select1.log", "stocks-book", "selection rules for the netted book, base signals"),
     ("select_smoothed.log", "stocks-book", "selection rules for the netted book, overlapping-portfolio signals"),
-    ("select_both.log", "stocks-book", "selection rules for the netted book, base or overlapping per signal"),
+    ("band_search.log", "stocks-book", "no-trade band on the netted book (rule signals_pre_0.3, overlapping-portfolio signals)"),
     ("crypto_search.log", "crypto", "cash-and-carry per coin, on while trailing funding pays"),
 ]
 
@@ -36,6 +36,7 @@ def main() -> None:
                 lines.append({"block": block, "run": log.removesuffix(".log"), "definition": what, "variant": m.group(1), "search_result": json.loads(m.group(2))})
             elif row.startswith("{"):
                 lines.append({"block": block, "run": log.removesuffix(".log"), "definition": what, "variant": None, "search_result": json.loads(row)})
+    lines.append({"block": "stocks", "run": "smoke_test", "definition": "first engine run on mom_12_1 and rev_1m (same numbers as lab_round1)", "variant": None, "search_result": None})
     (HERE / "ledger.jsonl").write_text("".join(json.dumps(x) + "\n" for x in lines))
     print(f"{len(lines)} ledger lines")
 

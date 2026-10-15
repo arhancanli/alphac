@@ -54,3 +54,16 @@ the ledger joins the trial accounting first. The forward paper record stays the 
   search 2020-01-01 to 2022-12-31, test 2023-01-01 to 2026-09-30, under the same rules.
 - Search results so far (17 price signals and 14 fundamental signals inside 39 industries) are in
   `ledger.jsonl`; every one of them was computed on search years only.
+
+## Amendment 2 (2026-10-15): the freeze
+
+The selection is frozen in `frozen_selection.json`, chosen from search years only:
+1,026 stock sleeves (27 signals held as overlapping portfolios, in every industry with at least
+10 names, netted into one book with a no-trade band of 1.5), crypto cash-and-carry per coin
+(30-day funding lookback), and the two blocks at equal risk. The search ledger lists the 100-odd
+variants tried before it.
+
+frozen_selection.json sha256 8d1803de7e04d3ee16b5d9aa6f4aa5504ba79bd02a6268a7117972a3b615f786
+
+`test.py` refuses to run unless the file still has this sha256. It is run once, and its result is
+published whatever it shows.
