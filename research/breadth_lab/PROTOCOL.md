@@ -45,3 +45,12 @@ before netting across sleeves, which overstates them for a combined book.
 
 Admission. A sleeve enters the paper book only through the admission contract, and every variant in
 the ledger joins the trial accounting first. The forward paper record stays the final judge.
+
+## Amendment 1 (2026-10-15, before any crypto return was computed)
+
+- The stock data ends on 2026-06-18 (the Sharadar lake was last loaded in June), so the stock test
+  years run 2018-01-01 to 2026-06-18.
+- Crypto sleeves (Binance spot, perpetuals and funding, which start in 2020) use their own split:
+  search 2020-01-01 to 2022-12-31, test 2023-01-01 to 2026-09-30, under the same rules.
+- Search results so far (17 price signals and 14 fundamental signals inside 39 industries) are in
+  `ledger.jsonl`; every one of them was computed on search years only.
