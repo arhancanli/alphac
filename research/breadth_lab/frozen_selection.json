@@ -1,0 +1,5314 @@
+{
+ "schema": "canli.alphac-breadth-lab-frozen-selection.v1",
+ "frozen_on": "2026-10-15",
+ "author": "Arhan Canli",
+ "chosen_from": "search years only: stocks 1998-01-01..2017-12-31, crypto 2020-01-01..2022-12-31 (PROTOCOL.md)",
+ "stocks": {
+  "rule": "every overlapping-portfolio signal whose search-year book Sharpe before costs is at least 0.3 in absolute value, signed by that Sharpe, in every industry with at least 10 eligible names",
+  "signals": {
+   "mom_12_1_s": {
+    "sign": 1,
+    "overlap_rebalances": 3,
+    "rebalance": "M"
+   },
+   "mom_6_1_s": {
+    "sign": 1,
+    "overlap_rebalances": 3,
+    "rebalance": "M"
+   },
+   "rev_36_12_s": {
+    "sign": -1,
+    "overlap_rebalances": 3,
+    "rebalance": "M"
+   },
+   "rev_1w_s": {
+    "sign": 1,
+    "overlap_rebalances": 4,
+    "rebalance": "W"
+   },
+   "hi52_s": {
+    "sign": 1,
+    "overlap_rebalances": 3,
+    "rebalance": "M"
+   },
+   "lowvol_63_s": {
+    "sign": 1,
+    "overlap_rebalances": 3,
+    "rebalance": "M"
+   },
+   "lowbeta_252_s": {
+    "sign": 1,
+    "overlap_rebalances": 3,
+    "rebalance": "M"
+   },
+   "ivol_63_s": {
+    "sign": 1,
+    "overlap_rebalances": 3,
+    "rebalance": "M"
+   },
+   "max_21_s": {
+    "sign": 1,
+    "overlap_rebalances": 3,
+    "rebalance": "M"
+   },
+   "vol_shock_s": {
+    "sign": 1,
+    "overlap_rebalances": 3,
+    "rebalance": "M"
+   },
+   "amihud_63_s": {
+    "sign": -1,
+    "overlap_rebalances": 3,
+    "rebalance": "M"
+   },
+   "season_s": {
+    "sign": -1,
+    "overlap_rebalances": 3,
+    "rebalance": "M"
+   },
+   "overnight_252_s": {
+    "sign": -1,
+    "overlap_rebalances": 3,
+    "rebalance": "M"
+   },
+   "intraday_252_s": {
+    "sign": 1,
+    "overlap_rebalances": 3,
+    "rebalance": "M"
+   },
+   "gp_assets_s": {
+    "sign": 1,
+    "overlap_rebalances": 3,
+    "rebalance": "M"
+   },
+   "op_equity_s": {
+    "sign": 1,
+    "overlap_rebalances": 3,
+    "rebalance": "M"
+   },
+   "roa_s": {
+    "sign": 1,
+    "overlap_rebalances": 3,
+    "rebalance": "M"
+   },
+   "cfo_assets_s": {
+    "sign": 1,
+    "overlap_rebalances": 3,
+    "rebalance": "M"
+   },
+   "accruals_s": {
+    "sign": 1,
+    "overlap_rebalances": 3,
+    "rebalance": "M"
+   },
+   "asset_growth_s": {
+    "sign": 1,
+    "overlap_rebalances": 3,
+    "rebalance": "M"
+   },
+   "net_issuance_s": {
+    "sign": 1,
+    "overlap_rebalances": 3,
+    "rebalance": "M"
+   },
+   "book_to_market_s": {
+    "sign": -1,
+    "overlap_rebalances": 3,
+    "rebalance": "M"
+   },
+   "earnings_yield_s": {
+    "sign": -1,
+    "overlap_rebalances": 3,
+    "rebalance": "M"
+   },
+   "fcf_yield_s": {
+    "sign": 1,
+    "overlap_rebalances": 3,
+    "rebalance": "M"
+   },
+   "sales_yield_s": {
+    "sign": -1,
+    "overlap_rebalances": 3,
+    "rebalance": "M"
+   },
+   "sue_s": {
+    "sign": 1,
+    "overlap_rebalances": 3,
+    "rebalance": "M"
+   },
+   "revenue_surprise_s": {
+    "sign": 1,
+    "overlap_rebalances": 3,
+    "rebalance": "M"
+   }
+  },
+  "sleeves": [
+   [
+    "mom_12_1_s",
+    "Aircraft",
+    1
+   ],
+   [
+    "mom_12_1_s",
+    "Almost Nothing",
+    1
+   ],
+   [
+    "mom_12_1_s",
+    "Apparel",
+    1
+   ],
+   [
+    "mom_12_1_s",
+    "Automobiles and Trucks",
+    1
+   ],
+   [
+    "mom_12_1_s",
+    "Banking",
+    1
+   ],
+   [
+    "mom_12_1_s",
+    "Beer & Liquor",
+    1
+   ],
+   [
+    "mom_12_1_s",
+    "Business Services",
+    1
+   ],
+   [
+    "mom_12_1_s",
+    "Business Supplies",
+    1
+   ],
+   [
+    "mom_12_1_s",
+    "Chemicals",
+    1
+   ],
+   [
+    "mom_12_1_s",
+    "Coal",
+    1
+   ],
+   [
+    "mom_12_1_s",
+    "Communication",
+    1
+   ],
+   [
+    "mom_12_1_s",
+    "Computers",
+    1
+   ],
+   [
+    "mom_12_1_s",
+    "Construction",
+    1
+   ],
+   [
+    "mom_12_1_s",
+    "Construction Materials",
+    1
+   ],
+   [
+    "mom_12_1_s",
+    "Consumer Goods",
+    1
+   ],
+   [
+    "mom_12_1_s",
+    "Electrical Equipment",
+    1
+   ],
+   [
+    "mom_12_1_s",
+    "Electronic Equipment",
+    1
+   ],
+   [
+    "mom_12_1_s",
+    "Entertainment",
+    1
+   ],
+   [
+    "mom_12_1_s",
+    "Food Products",
+    1
+   ],
+   [
+    "mom_12_1_s",
+    "Healthcare",
+    1
+   ],
+   [
+    "mom_12_1_s",
+    "Insurance",
+    1
+   ],
+   [
+    "mom_12_1_s",
+    "Machinery",
+    1
+   ],
+   [
+    "mom_12_1_s",
+    "Measuring and Control Equipment",
+    1
+   ],
+   [
+    "mom_12_1_s",
+    "Medical Equipment",
+    1
+   ],
+   [
+    "mom_12_1_s",
+    "Non-Metallic and Industrial Metal Mining",
+    1
+   ],
+   [
+    "mom_12_1_s",
+    "Personal Services",
+    1
+   ],
+   [
+    "mom_12_1_s",
+    "Petroleum and Natural Gas",
+    1
+   ],
+   [
+    "mom_12_1_s",
+    "Pharmaceutical Products",
+    1
+   ],
+   [
+    "mom_12_1_s",
+    "Printing and Publishing",
+    1
+   ],
+   [
+    "mom_12_1_s",
+    "Real Estate",
+    1
+   ],
+   [
+    "mom_12_1_s",
+    "Restaraunts Hotels Motels",
+    1
+   ],
+   [
+    "mom_12_1_s",
+    "Retail",
+    1
+   ],
+   [
+    "mom_12_1_s",
+    "Rubber and Plastic Products",
+    1
+   ],
+   [
+    "mom_12_1_s",
+    "Shipping Containers",
+    1
+   ],
+   [
+    "mom_12_1_s",
+    "Steel Works Etc",
+    1
+   ],
+   [
+    "mom_12_1_s",
+    "Trading",
+    1
+   ],
+   [
+    "mom_12_1_s",
+    "Transportation",
+    1
+   ],
+   [
+    "mom_12_1_s",
+    "Utilities",
+    1
+   ],
+   [
+    "mom_12_1_s",
+    "Wholesale",
+    1
+   ],
+   [
+    "mom_6_1_s",
+    "Aircraft",
+    1
+   ],
+   [
+    "mom_6_1_s",
+    "Almost Nothing",
+    1
+   ],
+   [
+    "mom_6_1_s",
+    "Apparel",
+    1
+   ],
+   [
+    "mom_6_1_s",
+    "Automobiles and Trucks",
+    1
+   ],
+   [
+    "mom_6_1_s",
+    "Banking",
+    1
+   ],
+   [
+    "mom_6_1_s",
+    "Beer & Liquor",
+    1
+   ],
+   [
+    "mom_6_1_s",
+    "Business Services",
+    1
+   ],
+   [
+    "mom_6_1_s",
+    "Business Supplies",
+    1
+   ],
+   [
+    "mom_6_1_s",
+    "Chemicals",
+    1
+   ],
+   [
+    "mom_6_1_s",
+    "Coal",
+    1
+   ],
+   [
+    "mom_6_1_s",
+    "Communication",
+    1
+   ],
+   [
+    "mom_6_1_s",
+    "Computers",
+    1
+   ],
+   [
+    "mom_6_1_s",
+    "Construction",
+    1
+   ],
+   [
+    "mom_6_1_s",
+    "Construction Materials",
+    1
+   ],
+   [
+    "mom_6_1_s",
+    "Consumer Goods",
+    1
+   ],
+   [
+    "mom_6_1_s",
+    "Electrical Equipment",
+    1
+   ],
+   [
+    "mom_6_1_s",
+    "Electronic Equipment",
+    1
+   ],
+   [
+    "mom_6_1_s",
+    "Entertainment",
+    1
+   ],
+   [
+    "mom_6_1_s",
+    "Food Products",
+    1
+   ],
+   [
+    "mom_6_1_s",
+    "Healthcare",
+    1
+   ],
+   [
+    "mom_6_1_s",
+    "Insurance",
+    1
+   ],
+   [
+    "mom_6_1_s",
+    "Machinery",
+    1
+   ],
+   [
+    "mom_6_1_s",
+    "Measuring and Control Equipment",
+    1
+   ],
+   [
+    "mom_6_1_s",
+    "Medical Equipment",
+    1
+   ],
+   [
+    "mom_6_1_s",
+    "Non-Metallic and Industrial Metal Mining",
+    1
+   ],
+   [
+    "mom_6_1_s",
+    "Personal Services",
+    1
+   ],
+   [
+    "mom_6_1_s",
+    "Petroleum and Natural Gas",
+    1
+   ],
+   [
+    "mom_6_1_s",
+    "Pharmaceutical Products",
+    1
+   ],
+   [
+    "mom_6_1_s",
+    "Printing and Publishing",
+    1
+   ],
+   [
+    "mom_6_1_s",
+    "Real Estate",
+    1
+   ],
+   [
+    "mom_6_1_s",
+    "Restaraunts Hotels Motels",
+    1
+   ],
+   [
+    "mom_6_1_s",
+    "Retail",
+    1
+   ],
+   [
+    "mom_6_1_s",
+    "Rubber and Plastic Products",
+    1
+   ],
+   [
+    "mom_6_1_s",
+    "Shipping Containers",
+    1
+   ],
+   [
+    "mom_6_1_s",
+    "Steel Works Etc",
+    1
+   ],
+   [
+    "mom_6_1_s",
+    "Trading",
+    1
+   ],
+   [
+    "mom_6_1_s",
+    "Transportation",
+    1
+   ],
+   [
+    "mom_6_1_s",
+    "Utilities",
+    1
+   ],
+   [
+    "mom_6_1_s",
+    "Wholesale",
+    1
+   ],
+   [
+    "rev_36_12_s",
+    "Aircraft",
+    -1
+   ],
+   [
+    "rev_36_12_s",
+    "Almost Nothing",
+    -1
+   ],
+   [
+    "rev_36_12_s",
+    "Apparel",
+    -1
+   ],
+   [
+    "rev_36_12_s",
+    "Automobiles and Trucks",
+    -1
+   ],
+   [
+    "rev_36_12_s",
+    "Banking",
+    -1
+   ],
+   [
+    "rev_36_12_s",
+    "Beer & Liquor",
+    -1
+   ],
+   [
+    "rev_36_12_s",
+    "Business Services",
+    -1
+   ],
+   [
+    "rev_36_12_s",
+    "Business Supplies",
+    -1
+   ],
+   [
+    "rev_36_12_s",
+    "Chemicals",
+    -1
+   ],
+   [
+    "rev_36_12_s",
+    "Coal",
+    -1
+   ],
+   [
+    "rev_36_12_s",
+    "Communication",
+    -1
+   ],
+   [
+    "rev_36_12_s",
+    "Computers",
+    -1
+   ],
+   [
+    "rev_36_12_s",
+    "Construction",
+    -1
+   ],
+   [
+    "rev_36_12_s",
+    "Construction Materials",
+    -1
+   ],
+   [
+    "rev_36_12_s",
+    "Consumer Goods",
+    -1
+   ],
+   [
+    "rev_36_12_s",
+    "Electrical Equipment",
+    -1
+   ],
+   [
+    "rev_36_12_s",
+    "Electronic Equipment",
+    -1
+   ],
+   [
+    "rev_36_12_s",
+    "Entertainment",
+    -1
+   ],
+   [
+    "rev_36_12_s",
+    "Food Products",
+    -1
+   ],
+   [
+    "rev_36_12_s",
+    "Healthcare",
+    -1
+   ],
+   [
+    "rev_36_12_s",
+    "Insurance",
+    -1
+   ],
+   [
+    "rev_36_12_s",
+    "Machinery",
+    -1
+   ],
+   [
+    "rev_36_12_s",
+    "Measuring and Control Equipment",
+    -1
+   ],
+   [
+    "rev_36_12_s",
+    "Medical Equipment",
+    -1
+   ],
+   [
+    "rev_36_12_s",
+    "Non-Metallic and Industrial Metal Mining",
+    -1
+   ],
+   [
+    "rev_36_12_s",
+    "Personal Services",
+    -1
+   ],
+   [
+    "rev_36_12_s",
+    "Petroleum and Natural Gas",
+    -1
+   ],
+   [
+    "rev_36_12_s",
+    "Pharmaceutical Products",
+    -1
+   ],
+   [
+    "rev_36_12_s",
+    "Printing and Publishing",
+    -1
+   ],
+   [
+    "rev_36_12_s",
+    "Real Estate",
+    -1
+   ],
+   [
+    "rev_36_12_s",
+    "Restaraunts Hotels Motels",
+    -1
+   ],
+   [
+    "rev_36_12_s",
+    "Retail",
+    -1
+   ],
+   [
+    "rev_36_12_s",
+    "Rubber and Plastic Products",
+    -1
+   ],
+   [
+    "rev_36_12_s",
+    "Shipping Containers",
+    -1
+   ],
+   [
+    "rev_36_12_s",
+    "Steel Works Etc",
+    -1
+   ],
+   [
+    "rev_36_12_s",
+    "Trading",
+    -1
+   ],
+   [
+    "rev_36_12_s",
+    "Transportation",
+    -1
+   ],
+   [
+    "rev_36_12_s",
+    "Utilities",
+    -1
+   ],
+   [
+    "rev_36_12_s",
+    "Wholesale",
+    -1
+   ],
+   [
+    "rev_1w_s",
+    "Aircraft",
+    1
+   ],
+   [
+    "rev_1w_s",
+    "Almost Nothing",
+    1
+   ],
+   [
+    "rev_1w_s",
+    "Apparel",
+    1
+   ],
+   [
+    "rev_1w_s",
+    "Automobiles and Trucks",
+    1
+   ],
+   [
+    "rev_1w_s",
+    "Banking",
+    1
+   ],
+   [
+    "rev_1w_s",
+    "Beer & Liquor",
+    1
+   ],
+   [
+    "rev_1w_s",
+    "Business Services",
+    1
+   ],
+   [
+    "rev_1w_s",
+    "Business Supplies",
+    1
+   ],
+   [
+    "rev_1w_s",
+    "Chemicals",
+    1
+   ],
+   [
+    "rev_1w_s",
+    "Coal",
+    1
+   ],
+   [
+    "rev_1w_s",
+    "Communication",
+    1
+   ],
+   [
+    "rev_1w_s",
+    "Computers",
+    1
+   ],
+   [
+    "rev_1w_s",
+    "Construction",
+    1
+   ],
+   [
+    "rev_1w_s",
+    "Construction Materials",
+    1
+   ],
+   [
+    "rev_1w_s",
+    "Consumer Goods",
+    1
+   ],
+   [
+    "rev_1w_s",
+    "Electrical Equipment",
+    1
+   ],
+   [
+    "rev_1w_s",
+    "Electronic Equipment",
+    1
+   ],
+   [
+    "rev_1w_s",
+    "Entertainment",
+    1
+   ],
+   [
+    "rev_1w_s",
+    "Food Products",
+    1
+   ],
+   [
+    "rev_1w_s",
+    "Healthcare",
+    1
+   ],
+   [
+    "rev_1w_s",
+    "Insurance",
+    1
+   ],
+   [
+    "rev_1w_s",
+    "Machinery",
+    1
+   ],
+   [
+    "rev_1w_s",
+    "Measuring and Control Equipment",
+    1
+   ],
+   [
+    "rev_1w_s",
+    "Medical Equipment",
+    1
+   ],
+   [
+    "rev_1w_s",
+    "Non-Metallic and Industrial Metal Mining",
+    1
+   ],
+   [
+    "rev_1w_s",
+    "Personal Services",
+    1
+   ],
+   [
+    "rev_1w_s",
+    "Petroleum and Natural Gas",
+    1
+   ],
+   [
+    "rev_1w_s",
+    "Pharmaceutical Products",
+    1
+   ],
+   [
+    "rev_1w_s",
+    "Printing and Publishing",
+    1
+   ],
+   [
+    "rev_1w_s",
+    "Real Estate",
+    1
+   ],
+   [
+    "rev_1w_s",
+    "Restaraunts Hotels Motels",
+    1
+   ],
+   [
+    "rev_1w_s",
+    "Retail",
+    1
+   ],
+   [
+    "rev_1w_s",
+    "Rubber and Plastic Products",
+    1
+   ],
+   [
+    "rev_1w_s",
+    "Shipping Containers",
+    1
+   ],
+   [
+    "rev_1w_s",
+    "Steel Works Etc",
+    1
+   ],
+   [
+    "rev_1w_s",
+    "Trading",
+    1
+   ],
+   [
+    "rev_1w_s",
+    "Transportation",
+    1
+   ],
+   [
+    "rev_1w_s",
+    "Utilities",
+    1
+   ],
+   [
+    "rev_1w_s",
+    "Wholesale",
+    1
+   ],
+   [
+    "hi52_s",
+    "Aircraft",
+    1
+   ],
+   [
+    "hi52_s",
+    "Almost Nothing",
+    1
+   ],
+   [
+    "hi52_s",
+    "Apparel",
+    1
+   ],
+   [
+    "hi52_s",
+    "Automobiles and Trucks",
+    1
+   ],
+   [
+    "hi52_s",
+    "Banking",
+    1
+   ],
+   [
+    "hi52_s",
+    "Beer & Liquor",
+    1
+   ],
+   [
+    "hi52_s",
+    "Business Services",
+    1
+   ],
+   [
+    "hi52_s",
+    "Business Supplies",
+    1
+   ],
+   [
+    "hi52_s",
+    "Chemicals",
+    1
+   ],
+   [
+    "hi52_s",
+    "Coal",
+    1
+   ],
+   [
+    "hi52_s",
+    "Communication",
+    1
+   ],
+   [
+    "hi52_s",
+    "Computers",
+    1
+   ],
+   [
+    "hi52_s",
+    "Construction",
+    1
+   ],
+   [
+    "hi52_s",
+    "Construction Materials",
+    1
+   ],
+   [
+    "hi52_s",
+    "Consumer Goods",
+    1
+   ],
+   [
+    "hi52_s",
+    "Electrical Equipment",
+    1
+   ],
+   [
+    "hi52_s",
+    "Electronic Equipment",
+    1
+   ],
+   [
+    "hi52_s",
+    "Entertainment",
+    1
+   ],
+   [
+    "hi52_s",
+    "Food Products",
+    1
+   ],
+   [
+    "hi52_s",
+    "Healthcare",
+    1
+   ],
+   [
+    "hi52_s",
+    "Insurance",
+    1
+   ],
+   [
+    "hi52_s",
+    "Machinery",
+    1
+   ],
+   [
+    "hi52_s",
+    "Measuring and Control Equipment",
+    1
+   ],
+   [
+    "hi52_s",
+    "Medical Equipment",
+    1
+   ],
+   [
+    "hi52_s",
+    "Non-Metallic and Industrial Metal Mining",
+    1
+   ],
+   [
+    "hi52_s",
+    "Personal Services",
+    1
+   ],
+   [
+    "hi52_s",
+    "Petroleum and Natural Gas",
+    1
+   ],
+   [
+    "hi52_s",
+    "Pharmaceutical Products",
+    1
+   ],
+   [
+    "hi52_s",
+    "Printing and Publishing",
+    1
+   ],
+   [
+    "hi52_s",
+    "Real Estate",
+    1
+   ],
+   [
+    "hi52_s",
+    "Restaraunts Hotels Motels",
+    1
+   ],
+   [
+    "hi52_s",
+    "Retail",
+    1
+   ],
+   [
+    "hi52_s",
+    "Rubber and Plastic Products",
+    1
+   ],
+   [
+    "hi52_s",
+    "Shipping Containers",
+    1
+   ],
+   [
+    "hi52_s",
+    "Steel Works Etc",
+    1
+   ],
+   [
+    "hi52_s",
+    "Trading",
+    1
+   ],
+   [
+    "hi52_s",
+    "Transportation",
+    1
+   ],
+   [
+    "hi52_s",
+    "Utilities",
+    1
+   ],
+   [
+    "hi52_s",
+    "Wholesale",
+    1
+   ],
+   [
+    "lowvol_63_s",
+    "Aircraft",
+    1
+   ],
+   [
+    "lowvol_63_s",
+    "Almost Nothing",
+    1
+   ],
+   [
+    "lowvol_63_s",
+    "Apparel",
+    1
+   ],
+   [
+    "lowvol_63_s",
+    "Automobiles and Trucks",
+    1
+   ],
+   [
+    "lowvol_63_s",
+    "Banking",
+    1
+   ],
+   [
+    "lowvol_63_s",
+    "Beer & Liquor",
+    1
+   ],
+   [
+    "lowvol_63_s",
+    "Business Services",
+    1
+   ],
+   [
+    "lowvol_63_s",
+    "Business Supplies",
+    1
+   ],
+   [
+    "lowvol_63_s",
+    "Chemicals",
+    1
+   ],
+   [
+    "lowvol_63_s",
+    "Coal",
+    1
+   ],
+   [
+    "lowvol_63_s",
+    "Communication",
+    1
+   ],
+   [
+    "lowvol_63_s",
+    "Computers",
+    1
+   ],
+   [
+    "lowvol_63_s",
+    "Construction",
+    1
+   ],
+   [
+    "lowvol_63_s",
+    "Construction Materials",
+    1
+   ],
+   [
+    "lowvol_63_s",
+    "Consumer Goods",
+    1
+   ],
+   [
+    "lowvol_63_s",
+    "Electrical Equipment",
+    1
+   ],
+   [
+    "lowvol_63_s",
+    "Electronic Equipment",
+    1
+   ],
+   [
+    "lowvol_63_s",
+    "Entertainment",
+    1
+   ],
+   [
+    "lowvol_63_s",
+    "Food Products",
+    1
+   ],
+   [
+    "lowvol_63_s",
+    "Healthcare",
+    1
+   ],
+   [
+    "lowvol_63_s",
+    "Insurance",
+    1
+   ],
+   [
+    "lowvol_63_s",
+    "Machinery",
+    1
+   ],
+   [
+    "lowvol_63_s",
+    "Measuring and Control Equipment",
+    1
+   ],
+   [
+    "lowvol_63_s",
+    "Medical Equipment",
+    1
+   ],
+   [
+    "lowvol_63_s",
+    "Non-Metallic and Industrial Metal Mining",
+    1
+   ],
+   [
+    "lowvol_63_s",
+    "Personal Services",
+    1
+   ],
+   [
+    "lowvol_63_s",
+    "Petroleum and Natural Gas",
+    1
+   ],
+   [
+    "lowvol_63_s",
+    "Pharmaceutical Products",
+    1
+   ],
+   [
+    "lowvol_63_s",
+    "Printing and Publishing",
+    1
+   ],
+   [
+    "lowvol_63_s",
+    "Real Estate",
+    1
+   ],
+   [
+    "lowvol_63_s",
+    "Restaraunts Hotels Motels",
+    1
+   ],
+   [
+    "lowvol_63_s",
+    "Retail",
+    1
+   ],
+   [
+    "lowvol_63_s",
+    "Rubber and Plastic Products",
+    1
+   ],
+   [
+    "lowvol_63_s",
+    "Shipping Containers",
+    1
+   ],
+   [
+    "lowvol_63_s",
+    "Steel Works Etc",
+    1
+   ],
+   [
+    "lowvol_63_s",
+    "Trading",
+    1
+   ],
+   [
+    "lowvol_63_s",
+    "Transportation",
+    1
+   ],
+   [
+    "lowvol_63_s",
+    "Utilities",
+    1
+   ],
+   [
+    "lowvol_63_s",
+    "Wholesale",
+    1
+   ],
+   [
+    "lowbeta_252_s",
+    "Aircraft",
+    1
+   ],
+   [
+    "lowbeta_252_s",
+    "Almost Nothing",
+    1
+   ],
+   [
+    "lowbeta_252_s",
+    "Apparel",
+    1
+   ],
+   [
+    "lowbeta_252_s",
+    "Automobiles and Trucks",
+    1
+   ],
+   [
+    "lowbeta_252_s",
+    "Banking",
+    1
+   ],
+   [
+    "lowbeta_252_s",
+    "Beer & Liquor",
+    1
+   ],
+   [
+    "lowbeta_252_s",
+    "Business Services",
+    1
+   ],
+   [
+    "lowbeta_252_s",
+    "Business Supplies",
+    1
+   ],
+   [
+    "lowbeta_252_s",
+    "Chemicals",
+    1
+   ],
+   [
+    "lowbeta_252_s",
+    "Coal",
+    1
+   ],
+   [
+    "lowbeta_252_s",
+    "Communication",
+    1
+   ],
+   [
+    "lowbeta_252_s",
+    "Computers",
+    1
+   ],
+   [
+    "lowbeta_252_s",
+    "Construction",
+    1
+   ],
+   [
+    "lowbeta_252_s",
+    "Construction Materials",
+    1
+   ],
+   [
+    "lowbeta_252_s",
+    "Consumer Goods",
+    1
+   ],
+   [
+    "lowbeta_252_s",
+    "Electrical Equipment",
+    1
+   ],
+   [
+    "lowbeta_252_s",
+    "Electronic Equipment",
+    1
+   ],
+   [
+    "lowbeta_252_s",
+    "Entertainment",
+    1
+   ],
+   [
+    "lowbeta_252_s",
+    "Food Products",
+    1
+   ],
+   [
+    "lowbeta_252_s",
+    "Healthcare",
+    1
+   ],
+   [
+    "lowbeta_252_s",
+    "Insurance",
+    1
+   ],
+   [
+    "lowbeta_252_s",
+    "Machinery",
+    1
+   ],
+   [
+    "lowbeta_252_s",
+    "Measuring and Control Equipment",
+    1
+   ],
+   [
+    "lowbeta_252_s",
+    "Medical Equipment",
+    1
+   ],
+   [
+    "lowbeta_252_s",
+    "Non-Metallic and Industrial Metal Mining",
+    1
+   ],
+   [
+    "lowbeta_252_s",
+    "Personal Services",
+    1
+   ],
+   [
+    "lowbeta_252_s",
+    "Petroleum and Natural Gas",
+    1
+   ],
+   [
+    "lowbeta_252_s",
+    "Pharmaceutical Products",
+    1
+   ],
+   [
+    "lowbeta_252_s",
+    "Printing and Publishing",
+    1
+   ],
+   [
+    "lowbeta_252_s",
+    "Real Estate",
+    1
+   ],
+   [
+    "lowbeta_252_s",
+    "Restaraunts Hotels Motels",
+    1
+   ],
+   [
+    "lowbeta_252_s",
+    "Retail",
+    1
+   ],
+   [
+    "lowbeta_252_s",
+    "Rubber and Plastic Products",
+    1
+   ],
+   [
+    "lowbeta_252_s",
+    "Shipping Containers",
+    1
+   ],
+   [
+    "lowbeta_252_s",
+    "Steel Works Etc",
+    1
+   ],
+   [
+    "lowbeta_252_s",
+    "Trading",
+    1
+   ],
+   [
+    "lowbeta_252_s",
+    "Transportation",
+    1
+   ],
+   [
+    "lowbeta_252_s",
+    "Utilities",
+    1
+   ],
+   [
+    "lowbeta_252_s",
+    "Wholesale",
+    1
+   ],
+   [
+    "ivol_63_s",
+    "Aircraft",
+    1
+   ],
+   [
+    "ivol_63_s",
+    "Almost Nothing",
+    1
+   ],
+   [
+    "ivol_63_s",
+    "Apparel",
+    1
+   ],
+   [
+    "ivol_63_s",
+    "Automobiles and Trucks",
+    1
+   ],
+   [
+    "ivol_63_s",
+    "Banking",
+    1
+   ],
+   [
+    "ivol_63_s",
+    "Beer & Liquor",
+    1
+   ],
+   [
+    "ivol_63_s",
+    "Business Services",
+    1
+   ],
+   [
+    "ivol_63_s",
+    "Business Supplies",
+    1
+   ],
+   [
+    "ivol_63_s",
+    "Chemicals",
+    1
+   ],
+   [
+    "ivol_63_s",
+    "Coal",
+    1
+   ],
+   [
+    "ivol_63_s",
+    "Communication",
+    1
+   ],
+   [
+    "ivol_63_s",
+    "Computers",
+    1
+   ],
+   [
+    "ivol_63_s",
+    "Construction",
+    1
+   ],
+   [
+    "ivol_63_s",
+    "Construction Materials",
+    1
+   ],
+   [
+    "ivol_63_s",
+    "Consumer Goods",
+    1
+   ],
+   [
+    "ivol_63_s",
+    "Electrical Equipment",
+    1
+   ],
+   [
+    "ivol_63_s",
+    "Electronic Equipment",
+    1
+   ],
+   [
+    "ivol_63_s",
+    "Entertainment",
+    1
+   ],
+   [
+    "ivol_63_s",
+    "Food Products",
+    1
+   ],
+   [
+    "ivol_63_s",
+    "Healthcare",
+    1
+   ],
+   [
+    "ivol_63_s",
+    "Insurance",
+    1
+   ],
+   [
+    "ivol_63_s",
+    "Machinery",
+    1
+   ],
+   [
+    "ivol_63_s",
+    "Measuring and Control Equipment",
+    1
+   ],
+   [
+    "ivol_63_s",
+    "Medical Equipment",
+    1
+   ],
+   [
+    "ivol_63_s",
+    "Non-Metallic and Industrial Metal Mining",
+    1
+   ],
+   [
+    "ivol_63_s",
+    "Personal Services",
+    1
+   ],
+   [
+    "ivol_63_s",
+    "Petroleum and Natural Gas",
+    1
+   ],
+   [
+    "ivol_63_s",
+    "Pharmaceutical Products",
+    1
+   ],
+   [
+    "ivol_63_s",
+    "Printing and Publishing",
+    1
+   ],
+   [
+    "ivol_63_s",
+    "Real Estate",
+    1
+   ],
+   [
+    "ivol_63_s",
+    "Restaraunts Hotels Motels",
+    1
+   ],
+   [
+    "ivol_63_s",
+    "Retail",
+    1
+   ],
+   [
+    "ivol_63_s",
+    "Rubber and Plastic Products",
+    1
+   ],
+   [
+    "ivol_63_s",
+    "Shipping Containers",
+    1
+   ],
+   [
+    "ivol_63_s",
+    "Steel Works Etc",
+    1
+   ],
+   [
+    "ivol_63_s",
+    "Trading",
+    1
+   ],
+   [
+    "ivol_63_s",
+    "Transportation",
+    1
+   ],
+   [
+    "ivol_63_s",
+    "Utilities",
+    1
+   ],
+   [
+    "ivol_63_s",
+    "Wholesale",
+    1
+   ],
+   [
+    "max_21_s",
+    "Aircraft",
+    1
+   ],
+   [
+    "max_21_s",
+    "Almost Nothing",
+    1
+   ],
+   [
+    "max_21_s",
+    "Apparel",
+    1
+   ],
+   [
+    "max_21_s",
+    "Automobiles and Trucks",
+    1
+   ],
+   [
+    "max_21_s",
+    "Banking",
+    1
+   ],
+   [
+    "max_21_s",
+    "Beer & Liquor",
+    1
+   ],
+   [
+    "max_21_s",
+    "Business Services",
+    1
+   ],
+   [
+    "max_21_s",
+    "Business Supplies",
+    1
+   ],
+   [
+    "max_21_s",
+    "Chemicals",
+    1
+   ],
+   [
+    "max_21_s",
+    "Coal",
+    1
+   ],
+   [
+    "max_21_s",
+    "Communication",
+    1
+   ],
+   [
+    "max_21_s",
+    "Computers",
+    1
+   ],
+   [
+    "max_21_s",
+    "Construction",
+    1
+   ],
+   [
+    "max_21_s",
+    "Construction Materials",
+    1
+   ],
+   [
+    "max_21_s",
+    "Consumer Goods",
+    1
+   ],
+   [
+    "max_21_s",
+    "Electrical Equipment",
+    1
+   ],
+   [
+    "max_21_s",
+    "Electronic Equipment",
+    1
+   ],
+   [
+    "max_21_s",
+    "Entertainment",
+    1
+   ],
+   [
+    "max_21_s",
+    "Food Products",
+    1
+   ],
+   [
+    "max_21_s",
+    "Healthcare",
+    1
+   ],
+   [
+    "max_21_s",
+    "Insurance",
+    1
+   ],
+   [
+    "max_21_s",
+    "Machinery",
+    1
+   ],
+   [
+    "max_21_s",
+    "Measuring and Control Equipment",
+    1
+   ],
+   [
+    "max_21_s",
+    "Medical Equipment",
+    1
+   ],
+   [
+    "max_21_s",
+    "Non-Metallic and Industrial Metal Mining",
+    1
+   ],
+   [
+    "max_21_s",
+    "Personal Services",
+    1
+   ],
+   [
+    "max_21_s",
+    "Petroleum and Natural Gas",
+    1
+   ],
+   [
+    "max_21_s",
+    "Pharmaceutical Products",
+    1
+   ],
+   [
+    "max_21_s",
+    "Printing and Publishing",
+    1
+   ],
+   [
+    "max_21_s",
+    "Real Estate",
+    1
+   ],
+   [
+    "max_21_s",
+    "Restaraunts Hotels Motels",
+    1
+   ],
+   [
+    "max_21_s",
+    "Retail",
+    1
+   ],
+   [
+    "max_21_s",
+    "Rubber and Plastic Products",
+    1
+   ],
+   [
+    "max_21_s",
+    "Shipping Containers",
+    1
+   ],
+   [
+    "max_21_s",
+    "Steel Works Etc",
+    1
+   ],
+   [
+    "max_21_s",
+    "Trading",
+    1
+   ],
+   [
+    "max_21_s",
+    "Transportation",
+    1
+   ],
+   [
+    "max_21_s",
+    "Utilities",
+    1
+   ],
+   [
+    "max_21_s",
+    "Wholesale",
+    1
+   ],
+   [
+    "vol_shock_s",
+    "Aircraft",
+    1
+   ],
+   [
+    "vol_shock_s",
+    "Almost Nothing",
+    1
+   ],
+   [
+    "vol_shock_s",
+    "Apparel",
+    1
+   ],
+   [
+    "vol_shock_s",
+    "Automobiles and Trucks",
+    1
+   ],
+   [
+    "vol_shock_s",
+    "Banking",
+    1
+   ],
+   [
+    "vol_shock_s",
+    "Beer & Liquor",
+    1
+   ],
+   [
+    "vol_shock_s",
+    "Business Services",
+    1
+   ],
+   [
+    "vol_shock_s",
+    "Business Supplies",
+    1
+   ],
+   [
+    "vol_shock_s",
+    "Chemicals",
+    1
+   ],
+   [
+    "vol_shock_s",
+    "Coal",
+    1
+   ],
+   [
+    "vol_shock_s",
+    "Communication",
+    1
+   ],
+   [
+    "vol_shock_s",
+    "Computers",
+    1
+   ],
+   [
+    "vol_shock_s",
+    "Construction",
+    1
+   ],
+   [
+    "vol_shock_s",
+    "Construction Materials",
+    1
+   ],
+   [
+    "vol_shock_s",
+    "Consumer Goods",
+    1
+   ],
+   [
+    "vol_shock_s",
+    "Electrical Equipment",
+    1
+   ],
+   [
+    "vol_shock_s",
+    "Electronic Equipment",
+    1
+   ],
+   [
+    "vol_shock_s",
+    "Entertainment",
+    1
+   ],
+   [
+    "vol_shock_s",
+    "Food Products",
+    1
+   ],
+   [
+    "vol_shock_s",
+    "Healthcare",
+    1
+   ],
+   [
+    "vol_shock_s",
+    "Insurance",
+    1
+   ],
+   [
+    "vol_shock_s",
+    "Machinery",
+    1
+   ],
+   [
+    "vol_shock_s",
+    "Measuring and Control Equipment",
+    1
+   ],
+   [
+    "vol_shock_s",
+    "Medical Equipment",
+    1
+   ],
+   [
+    "vol_shock_s",
+    "Non-Metallic and Industrial Metal Mining",
+    1
+   ],
+   [
+    "vol_shock_s",
+    "Personal Services",
+    1
+   ],
+   [
+    "vol_shock_s",
+    "Petroleum and Natural Gas",
+    1
+   ],
+   [
+    "vol_shock_s",
+    "Pharmaceutical Products",
+    1
+   ],
+   [
+    "vol_shock_s",
+    "Printing and Publishing",
+    1
+   ],
+   [
+    "vol_shock_s",
+    "Real Estate",
+    1
+   ],
+   [
+    "vol_shock_s",
+    "Restaraunts Hotels Motels",
+    1
+   ],
+   [
+    "vol_shock_s",
+    "Retail",
+    1
+   ],
+   [
+    "vol_shock_s",
+    "Rubber and Plastic Products",
+    1
+   ],
+   [
+    "vol_shock_s",
+    "Shipping Containers",
+    1
+   ],
+   [
+    "vol_shock_s",
+    "Steel Works Etc",
+    1
+   ],
+   [
+    "vol_shock_s",
+    "Trading",
+    1
+   ],
+   [
+    "vol_shock_s",
+    "Transportation",
+    1
+   ],
+   [
+    "vol_shock_s",
+    "Utilities",
+    1
+   ],
+   [
+    "vol_shock_s",
+    "Wholesale",
+    1
+   ],
+   [
+    "amihud_63_s",
+    "Aircraft",
+    -1
+   ],
+   [
+    "amihud_63_s",
+    "Almost Nothing",
+    -1
+   ],
+   [
+    "amihud_63_s",
+    "Apparel",
+    -1
+   ],
+   [
+    "amihud_63_s",
+    "Automobiles and Trucks",
+    -1
+   ],
+   [
+    "amihud_63_s",
+    "Banking",
+    -1
+   ],
+   [
+    "amihud_63_s",
+    "Beer & Liquor",
+    -1
+   ],
+   [
+    "amihud_63_s",
+    "Business Services",
+    -1
+   ],
+   [
+    "amihud_63_s",
+    "Business Supplies",
+    -1
+   ],
+   [
+    "amihud_63_s",
+    "Chemicals",
+    -1
+   ],
+   [
+    "amihud_63_s",
+    "Coal",
+    -1
+   ],
+   [
+    "amihud_63_s",
+    "Communication",
+    -1
+   ],
+   [
+    "amihud_63_s",
+    "Computers",
+    -1
+   ],
+   [
+    "amihud_63_s",
+    "Construction",
+    -1
+   ],
+   [
+    "amihud_63_s",
+    "Construction Materials",
+    -1
+   ],
+   [
+    "amihud_63_s",
+    "Consumer Goods",
+    -1
+   ],
+   [
+    "amihud_63_s",
+    "Electrical Equipment",
+    -1
+   ],
+   [
+    "amihud_63_s",
+    "Electronic Equipment",
+    -1
+   ],
+   [
+    "amihud_63_s",
+    "Entertainment",
+    -1
+   ],
+   [
+    "amihud_63_s",
+    "Food Products",
+    -1
+   ],
+   [
+    "amihud_63_s",
+    "Healthcare",
+    -1
+   ],
+   [
+    "amihud_63_s",
+    "Insurance",
+    -1
+   ],
+   [
+    "amihud_63_s",
+    "Machinery",
+    -1
+   ],
+   [
+    "amihud_63_s",
+    "Measuring and Control Equipment",
+    -1
+   ],
+   [
+    "amihud_63_s",
+    "Medical Equipment",
+    -1
+   ],
+   [
+    "amihud_63_s",
+    "Non-Metallic and Industrial Metal Mining",
+    -1
+   ],
+   [
+    "amihud_63_s",
+    "Personal Services",
+    -1
+   ],
+   [
+    "amihud_63_s",
+    "Petroleum and Natural Gas",
+    -1
+   ],
+   [
+    "amihud_63_s",
+    "Pharmaceutical Products",
+    -1
+   ],
+   [
+    "amihud_63_s",
+    "Printing and Publishing",
+    -1
+   ],
+   [
+    "amihud_63_s",
+    "Real Estate",
+    -1
+   ],
+   [
+    "amihud_63_s",
+    "Restaraunts Hotels Motels",
+    -1
+   ],
+   [
+    "amihud_63_s",
+    "Retail",
+    -1
+   ],
+   [
+    "amihud_63_s",
+    "Rubber and Plastic Products",
+    -1
+   ],
+   [
+    "amihud_63_s",
+    "Shipping Containers",
+    -1
+   ],
+   [
+    "amihud_63_s",
+    "Steel Works Etc",
+    -1
+   ],
+   [
+    "amihud_63_s",
+    "Trading",
+    -1
+   ],
+   [
+    "amihud_63_s",
+    "Transportation",
+    -1
+   ],
+   [
+    "amihud_63_s",
+    "Utilities",
+    -1
+   ],
+   [
+    "amihud_63_s",
+    "Wholesale",
+    -1
+   ],
+   [
+    "season_s",
+    "Aircraft",
+    -1
+   ],
+   [
+    "season_s",
+    "Almost Nothing",
+    -1
+   ],
+   [
+    "season_s",
+    "Apparel",
+    -1
+   ],
+   [
+    "season_s",
+    "Automobiles and Trucks",
+    -1
+   ],
+   [
+    "season_s",
+    "Banking",
+    -1
+   ],
+   [
+    "season_s",
+    "Beer & Liquor",
+    -1
+   ],
+   [
+    "season_s",
+    "Business Services",
+    -1
+   ],
+   [
+    "season_s",
+    "Business Supplies",
+    -1
+   ],
+   [
+    "season_s",
+    "Chemicals",
+    -1
+   ],
+   [
+    "season_s",
+    "Coal",
+    -1
+   ],
+   [
+    "season_s",
+    "Communication",
+    -1
+   ],
+   [
+    "season_s",
+    "Computers",
+    -1
+   ],
+   [
+    "season_s",
+    "Construction",
+    -1
+   ],
+   [
+    "season_s",
+    "Construction Materials",
+    -1
+   ],
+   [
+    "season_s",
+    "Consumer Goods",
+    -1
+   ],
+   [
+    "season_s",
+    "Electrical Equipment",
+    -1
+   ],
+   [
+    "season_s",
+    "Electronic Equipment",
+    -1
+   ],
+   [
+    "season_s",
+    "Entertainment",
+    -1
+   ],
+   [
+    "season_s",
+    "Food Products",
+    -1
+   ],
+   [
+    "season_s",
+    "Healthcare",
+    -1
+   ],
+   [
+    "season_s",
+    "Insurance",
+    -1
+   ],
+   [
+    "season_s",
+    "Machinery",
+    -1
+   ],
+   [
+    "season_s",
+    "Measuring and Control Equipment",
+    -1
+   ],
+   [
+    "season_s",
+    "Medical Equipment",
+    -1
+   ],
+   [
+    "season_s",
+    "Non-Metallic and Industrial Metal Mining",
+    -1
+   ],
+   [
+    "season_s",
+    "Personal Services",
+    -1
+   ],
+   [
+    "season_s",
+    "Petroleum and Natural Gas",
+    -1
+   ],
+   [
+    "season_s",
+    "Pharmaceutical Products",
+    -1
+   ],
+   [
+    "season_s",
+    "Printing and Publishing",
+    -1
+   ],
+   [
+    "season_s",
+    "Real Estate",
+    -1
+   ],
+   [
+    "season_s",
+    "Restaraunts Hotels Motels",
+    -1
+   ],
+   [
+    "season_s",
+    "Retail",
+    -1
+   ],
+   [
+    "season_s",
+    "Rubber and Plastic Products",
+    -1
+   ],
+   [
+    "season_s",
+    "Shipping Containers",
+    -1
+   ],
+   [
+    "season_s",
+    "Steel Works Etc",
+    -1
+   ],
+   [
+    "season_s",
+    "Trading",
+    -1
+   ],
+   [
+    "season_s",
+    "Transportation",
+    -1
+   ],
+   [
+    "season_s",
+    "Utilities",
+    -1
+   ],
+   [
+    "season_s",
+    "Wholesale",
+    -1
+   ],
+   [
+    "overnight_252_s",
+    "Aircraft",
+    -1
+   ],
+   [
+    "overnight_252_s",
+    "Almost Nothing",
+    -1
+   ],
+   [
+    "overnight_252_s",
+    "Apparel",
+    -1
+   ],
+   [
+    "overnight_252_s",
+    "Automobiles and Trucks",
+    -1
+   ],
+   [
+    "overnight_252_s",
+    "Banking",
+    -1
+   ],
+   [
+    "overnight_252_s",
+    "Beer & Liquor",
+    -1
+   ],
+   [
+    "overnight_252_s",
+    "Business Services",
+    -1
+   ],
+   [
+    "overnight_252_s",
+    "Business Supplies",
+    -1
+   ],
+   [
+    "overnight_252_s",
+    "Chemicals",
+    -1
+   ],
+   [
+    "overnight_252_s",
+    "Coal",
+    -1
+   ],
+   [
+    "overnight_252_s",
+    "Communication",
+    -1
+   ],
+   [
+    "overnight_252_s",
+    "Computers",
+    -1
+   ],
+   [
+    "overnight_252_s",
+    "Construction",
+    -1
+   ],
+   [
+    "overnight_252_s",
+    "Construction Materials",
+    -1
+   ],
+   [
+    "overnight_252_s",
+    "Consumer Goods",
+    -1
+   ],
+   [
+    "overnight_252_s",
+    "Electrical Equipment",
+    -1
+   ],
+   [
+    "overnight_252_s",
+    "Electronic Equipment",
+    -1
+   ],
+   [
+    "overnight_252_s",
+    "Entertainment",
+    -1
+   ],
+   [
+    "overnight_252_s",
+    "Food Products",
+    -1
+   ],
+   [
+    "overnight_252_s",
+    "Healthcare",
+    -1
+   ],
+   [
+    "overnight_252_s",
+    "Insurance",
+    -1
+   ],
+   [
+    "overnight_252_s",
+    "Machinery",
+    -1
+   ],
+   [
+    "overnight_252_s",
+    "Measuring and Control Equipment",
+    -1
+   ],
+   [
+    "overnight_252_s",
+    "Medical Equipment",
+    -1
+   ],
+   [
+    "overnight_252_s",
+    "Non-Metallic and Industrial Metal Mining",
+    -1
+   ],
+   [
+    "overnight_252_s",
+    "Personal Services",
+    -1
+   ],
+   [
+    "overnight_252_s",
+    "Petroleum and Natural Gas",
+    -1
+   ],
+   [
+    "overnight_252_s",
+    "Pharmaceutical Products",
+    -1
+   ],
+   [
+    "overnight_252_s",
+    "Printing and Publishing",
+    -1
+   ],
+   [
+    "overnight_252_s",
+    "Real Estate",
+    -1
+   ],
+   [
+    "overnight_252_s",
+    "Restaraunts Hotels Motels",
+    -1
+   ],
+   [
+    "overnight_252_s",
+    "Retail",
+    -1
+   ],
+   [
+    "overnight_252_s",
+    "Rubber and Plastic Products",
+    -1
+   ],
+   [
+    "overnight_252_s",
+    "Shipping Containers",
+    -1
+   ],
+   [
+    "overnight_252_s",
+    "Steel Works Etc",
+    -1
+   ],
+   [
+    "overnight_252_s",
+    "Trading",
+    -1
+   ],
+   [
+    "overnight_252_s",
+    "Transportation",
+    -1
+   ],
+   [
+    "overnight_252_s",
+    "Utilities",
+    -1
+   ],
+   [
+    "overnight_252_s",
+    "Wholesale",
+    -1
+   ],
+   [
+    "intraday_252_s",
+    "Aircraft",
+    1
+   ],
+   [
+    "intraday_252_s",
+    "Almost Nothing",
+    1
+   ],
+   [
+    "intraday_252_s",
+    "Apparel",
+    1
+   ],
+   [
+    "intraday_252_s",
+    "Automobiles and Trucks",
+    1
+   ],
+   [
+    "intraday_252_s",
+    "Banking",
+    1
+   ],
+   [
+    "intraday_252_s",
+    "Beer & Liquor",
+    1
+   ],
+   [
+    "intraday_252_s",
+    "Business Services",
+    1
+   ],
+   [
+    "intraday_252_s",
+    "Business Supplies",
+    1
+   ],
+   [
+    "intraday_252_s",
+    "Chemicals",
+    1
+   ],
+   [
+    "intraday_252_s",
+    "Coal",
+    1
+   ],
+   [
+    "intraday_252_s",
+    "Communication",
+    1
+   ],
+   [
+    "intraday_252_s",
+    "Computers",
+    1
+   ],
+   [
+    "intraday_252_s",
+    "Construction",
+    1
+   ],
+   [
+    "intraday_252_s",
+    "Construction Materials",
+    1
+   ],
+   [
+    "intraday_252_s",
+    "Consumer Goods",
+    1
+   ],
+   [
+    "intraday_252_s",
+    "Electrical Equipment",
+    1
+   ],
+   [
+    "intraday_252_s",
+    "Electronic Equipment",
+    1
+   ],
+   [
+    "intraday_252_s",
+    "Entertainment",
+    1
+   ],
+   [
+    "intraday_252_s",
+    "Food Products",
+    1
+   ],
+   [
+    "intraday_252_s",
+    "Healthcare",
+    1
+   ],
+   [
+    "intraday_252_s",
+    "Insurance",
+    1
+   ],
+   [
+    "intraday_252_s",
+    "Machinery",
+    1
+   ],
+   [
+    "intraday_252_s",
+    "Measuring and Control Equipment",
+    1
+   ],
+   [
+    "intraday_252_s",
+    "Medical Equipment",
+    1
+   ],
+   [
+    "intraday_252_s",
+    "Non-Metallic and Industrial Metal Mining",
+    1
+   ],
+   [
+    "intraday_252_s",
+    "Personal Services",
+    1
+   ],
+   [
+    "intraday_252_s",
+    "Petroleum and Natural Gas",
+    1
+   ],
+   [
+    "intraday_252_s",
+    "Pharmaceutical Products",
+    1
+   ],
+   [
+    "intraday_252_s",
+    "Printing and Publishing",
+    1
+   ],
+   [
+    "intraday_252_s",
+    "Real Estate",
+    1
+   ],
+   [
+    "intraday_252_s",
+    "Restaraunts Hotels Motels",
+    1
+   ],
+   [
+    "intraday_252_s",
+    "Retail",
+    1
+   ],
+   [
+    "intraday_252_s",
+    "Rubber and Plastic Products",
+    1
+   ],
+   [
+    "intraday_252_s",
+    "Shipping Containers",
+    1
+   ],
+   [
+    "intraday_252_s",
+    "Steel Works Etc",
+    1
+   ],
+   [
+    "intraday_252_s",
+    "Trading",
+    1
+   ],
+   [
+    "intraday_252_s",
+    "Transportation",
+    1
+   ],
+   [
+    "intraday_252_s",
+    "Utilities",
+    1
+   ],
+   [
+    "intraday_252_s",
+    "Wholesale",
+    1
+   ],
+   [
+    "gp_assets_s",
+    "Aircraft",
+    1
+   ],
+   [
+    "gp_assets_s",
+    "Apparel",
+    1
+   ],
+   [
+    "gp_assets_s",
+    "Automobiles and Trucks",
+    1
+   ],
+   [
+    "gp_assets_s",
+    "Banking",
+    1
+   ],
+   [
+    "gp_assets_s",
+    "Business Services",
+    1
+   ],
+   [
+    "gp_assets_s",
+    "Business Supplies",
+    1
+   ],
+   [
+    "gp_assets_s",
+    "Chemicals",
+    1
+   ],
+   [
+    "gp_assets_s",
+    "Coal",
+    1
+   ],
+   [
+    "gp_assets_s",
+    "Communication",
+    1
+   ],
+   [
+    "gp_assets_s",
+    "Computers",
+    1
+   ],
+   [
+    "gp_assets_s",
+    "Construction",
+    1
+   ],
+   [
+    "gp_assets_s",
+    "Construction Materials",
+    1
+   ],
+   [
+    "gp_assets_s",
+    "Consumer Goods",
+    1
+   ],
+   [
+    "gp_assets_s",
+    "Electrical Equipment",
+    1
+   ],
+   [
+    "gp_assets_s",
+    "Electronic Equipment",
+    1
+   ],
+   [
+    "gp_assets_s",
+    "Entertainment",
+    1
+   ],
+   [
+    "gp_assets_s",
+    "Food Products",
+    1
+   ],
+   [
+    "gp_assets_s",
+    "Healthcare",
+    1
+   ],
+   [
+    "gp_assets_s",
+    "Insurance",
+    1
+   ],
+   [
+    "gp_assets_s",
+    "Machinery",
+    1
+   ],
+   [
+    "gp_assets_s",
+    "Measuring and Control Equipment",
+    1
+   ],
+   [
+    "gp_assets_s",
+    "Medical Equipment",
+    1
+   ],
+   [
+    "gp_assets_s",
+    "Non-Metallic and Industrial Metal Mining",
+    1
+   ],
+   [
+    "gp_assets_s",
+    "Personal Services",
+    1
+   ],
+   [
+    "gp_assets_s",
+    "Petroleum and Natural Gas",
+    1
+   ],
+   [
+    "gp_assets_s",
+    "Pharmaceutical Products",
+    1
+   ],
+   [
+    "gp_assets_s",
+    "Printing and Publishing",
+    1
+   ],
+   [
+    "gp_assets_s",
+    "Real Estate",
+    1
+   ],
+   [
+    "gp_assets_s",
+    "Restaraunts Hotels Motels",
+    1
+   ],
+   [
+    "gp_assets_s",
+    "Retail",
+    1
+   ],
+   [
+    "gp_assets_s",
+    "Rubber and Plastic Products",
+    1
+   ],
+   [
+    "gp_assets_s",
+    "Shipping Containers",
+    1
+   ],
+   [
+    "gp_assets_s",
+    "Steel Works Etc",
+    1
+   ],
+   [
+    "gp_assets_s",
+    "Trading",
+    1
+   ],
+   [
+    "gp_assets_s",
+    "Transportation",
+    1
+   ],
+   [
+    "gp_assets_s",
+    "Utilities",
+    1
+   ],
+   [
+    "gp_assets_s",
+    "Wholesale",
+    1
+   ],
+   [
+    "op_equity_s",
+    "Aircraft",
+    1
+   ],
+   [
+    "op_equity_s",
+    "Apparel",
+    1
+   ],
+   [
+    "op_equity_s",
+    "Automobiles and Trucks",
+    1
+   ],
+   [
+    "op_equity_s",
+    "Banking",
+    1
+   ],
+   [
+    "op_equity_s",
+    "Business Services",
+    1
+   ],
+   [
+    "op_equity_s",
+    "Business Supplies",
+    1
+   ],
+   [
+    "op_equity_s",
+    "Chemicals",
+    1
+   ],
+   [
+    "op_equity_s",
+    "Coal",
+    1
+   ],
+   [
+    "op_equity_s",
+    "Communication",
+    1
+   ],
+   [
+    "op_equity_s",
+    "Computers",
+    1
+   ],
+   [
+    "op_equity_s",
+    "Construction",
+    1
+   ],
+   [
+    "op_equity_s",
+    "Construction Materials",
+    1
+   ],
+   [
+    "op_equity_s",
+    "Consumer Goods",
+    1
+   ],
+   [
+    "op_equity_s",
+    "Electrical Equipment",
+    1
+   ],
+   [
+    "op_equity_s",
+    "Electronic Equipment",
+    1
+   ],
+   [
+    "op_equity_s",
+    "Entertainment",
+    1
+   ],
+   [
+    "op_equity_s",
+    "Food Products",
+    1
+   ],
+   [
+    "op_equity_s",
+    "Healthcare",
+    1
+   ],
+   [
+    "op_equity_s",
+    "Insurance",
+    1
+   ],
+   [
+    "op_equity_s",
+    "Machinery",
+    1
+   ],
+   [
+    "op_equity_s",
+    "Measuring and Control Equipment",
+    1
+   ],
+   [
+    "op_equity_s",
+    "Medical Equipment",
+    1
+   ],
+   [
+    "op_equity_s",
+    "Non-Metallic and Industrial Metal Mining",
+    1
+   ],
+   [
+    "op_equity_s",
+    "Personal Services",
+    1
+   ],
+   [
+    "op_equity_s",
+    "Petroleum and Natural Gas",
+    1
+   ],
+   [
+    "op_equity_s",
+    "Pharmaceutical Products",
+    1
+   ],
+   [
+    "op_equity_s",
+    "Printing and Publishing",
+    1
+   ],
+   [
+    "op_equity_s",
+    "Real Estate",
+    1
+   ],
+   [
+    "op_equity_s",
+    "Restaraunts Hotels Motels",
+    1
+   ],
+   [
+    "op_equity_s",
+    "Retail",
+    1
+   ],
+   [
+    "op_equity_s",
+    "Rubber and Plastic Products",
+    1
+   ],
+   [
+    "op_equity_s",
+    "Shipping Containers",
+    1
+   ],
+   [
+    "op_equity_s",
+    "Steel Works Etc",
+    1
+   ],
+   [
+    "op_equity_s",
+    "Trading",
+    1
+   ],
+   [
+    "op_equity_s",
+    "Transportation",
+    1
+   ],
+   [
+    "op_equity_s",
+    "Utilities",
+    1
+   ],
+   [
+    "op_equity_s",
+    "Wholesale",
+    1
+   ],
+   [
+    "roa_s",
+    "Aircraft",
+    1
+   ],
+   [
+    "roa_s",
+    "Apparel",
+    1
+   ],
+   [
+    "roa_s",
+    "Automobiles and Trucks",
+    1
+   ],
+   [
+    "roa_s",
+    "Banking",
+    1
+   ],
+   [
+    "roa_s",
+    "Business Services",
+    1
+   ],
+   [
+    "roa_s",
+    "Business Supplies",
+    1
+   ],
+   [
+    "roa_s",
+    "Chemicals",
+    1
+   ],
+   [
+    "roa_s",
+    "Coal",
+    1
+   ],
+   [
+    "roa_s",
+    "Communication",
+    1
+   ],
+   [
+    "roa_s",
+    "Computers",
+    1
+   ],
+   [
+    "roa_s",
+    "Construction",
+    1
+   ],
+   [
+    "roa_s",
+    "Construction Materials",
+    1
+   ],
+   [
+    "roa_s",
+    "Consumer Goods",
+    1
+   ],
+   [
+    "roa_s",
+    "Electrical Equipment",
+    1
+   ],
+   [
+    "roa_s",
+    "Electronic Equipment",
+    1
+   ],
+   [
+    "roa_s",
+    "Entertainment",
+    1
+   ],
+   [
+    "roa_s",
+    "Food Products",
+    1
+   ],
+   [
+    "roa_s",
+    "Healthcare",
+    1
+   ],
+   [
+    "roa_s",
+    "Insurance",
+    1
+   ],
+   [
+    "roa_s",
+    "Machinery",
+    1
+   ],
+   [
+    "roa_s",
+    "Measuring and Control Equipment",
+    1
+   ],
+   [
+    "roa_s",
+    "Medical Equipment",
+    1
+   ],
+   [
+    "roa_s",
+    "Non-Metallic and Industrial Metal Mining",
+    1
+   ],
+   [
+    "roa_s",
+    "Personal Services",
+    1
+   ],
+   [
+    "roa_s",
+    "Petroleum and Natural Gas",
+    1
+   ],
+   [
+    "roa_s",
+    "Pharmaceutical Products",
+    1
+   ],
+   [
+    "roa_s",
+    "Printing and Publishing",
+    1
+   ],
+   [
+    "roa_s",
+    "Real Estate",
+    1
+   ],
+   [
+    "roa_s",
+    "Restaraunts Hotels Motels",
+    1
+   ],
+   [
+    "roa_s",
+    "Retail",
+    1
+   ],
+   [
+    "roa_s",
+    "Rubber and Plastic Products",
+    1
+   ],
+   [
+    "roa_s",
+    "Shipping Containers",
+    1
+   ],
+   [
+    "roa_s",
+    "Steel Works Etc",
+    1
+   ],
+   [
+    "roa_s",
+    "Trading",
+    1
+   ],
+   [
+    "roa_s",
+    "Transportation",
+    1
+   ],
+   [
+    "roa_s",
+    "Utilities",
+    1
+   ],
+   [
+    "roa_s",
+    "Wholesale",
+    1
+   ],
+   [
+    "cfo_assets_s",
+    "Aircraft",
+    1
+   ],
+   [
+    "cfo_assets_s",
+    "Apparel",
+    1
+   ],
+   [
+    "cfo_assets_s",
+    "Automobiles and Trucks",
+    1
+   ],
+   [
+    "cfo_assets_s",
+    "Banking",
+    1
+   ],
+   [
+    "cfo_assets_s",
+    "Business Services",
+    1
+   ],
+   [
+    "cfo_assets_s",
+    "Business Supplies",
+    1
+   ],
+   [
+    "cfo_assets_s",
+    "Chemicals",
+    1
+   ],
+   [
+    "cfo_assets_s",
+    "Coal",
+    1
+   ],
+   [
+    "cfo_assets_s",
+    "Communication",
+    1
+   ],
+   [
+    "cfo_assets_s",
+    "Computers",
+    1
+   ],
+   [
+    "cfo_assets_s",
+    "Construction",
+    1
+   ],
+   [
+    "cfo_assets_s",
+    "Construction Materials",
+    1
+   ],
+   [
+    "cfo_assets_s",
+    "Consumer Goods",
+    1
+   ],
+   [
+    "cfo_assets_s",
+    "Electrical Equipment",
+    1
+   ],
+   [
+    "cfo_assets_s",
+    "Electronic Equipment",
+    1
+   ],
+   [
+    "cfo_assets_s",
+    "Entertainment",
+    1
+   ],
+   [
+    "cfo_assets_s",
+    "Food Products",
+    1
+   ],
+   [
+    "cfo_assets_s",
+    "Healthcare",
+    1
+   ],
+   [
+    "cfo_assets_s",
+    "Insurance",
+    1
+   ],
+   [
+    "cfo_assets_s",
+    "Machinery",
+    1
+   ],
+   [
+    "cfo_assets_s",
+    "Measuring and Control Equipment",
+    1
+   ],
+   [
+    "cfo_assets_s",
+    "Medical Equipment",
+    1
+   ],
+   [
+    "cfo_assets_s",
+    "Non-Metallic and Industrial Metal Mining",
+    1
+   ],
+   [
+    "cfo_assets_s",
+    "Personal Services",
+    1
+   ],
+   [
+    "cfo_assets_s",
+    "Petroleum and Natural Gas",
+    1
+   ],
+   [
+    "cfo_assets_s",
+    "Pharmaceutical Products",
+    1
+   ],
+   [
+    "cfo_assets_s",
+    "Printing and Publishing",
+    1
+   ],
+   [
+    "cfo_assets_s",
+    "Real Estate",
+    1
+   ],
+   [
+    "cfo_assets_s",
+    "Restaraunts Hotels Motels",
+    1
+   ],
+   [
+    "cfo_assets_s",
+    "Retail",
+    1
+   ],
+   [
+    "cfo_assets_s",
+    "Rubber and Plastic Products",
+    1
+   ],
+   [
+    "cfo_assets_s",
+    "Shipping Containers",
+    1
+   ],
+   [
+    "cfo_assets_s",
+    "Steel Works Etc",
+    1
+   ],
+   [
+    "cfo_assets_s",
+    "Trading",
+    1
+   ],
+   [
+    "cfo_assets_s",
+    "Transportation",
+    1
+   ],
+   [
+    "cfo_assets_s",
+    "Utilities",
+    1
+   ],
+   [
+    "cfo_assets_s",
+    "Wholesale",
+    1
+   ],
+   [
+    "accruals_s",
+    "Aircraft",
+    1
+   ],
+   [
+    "accruals_s",
+    "Apparel",
+    1
+   ],
+   [
+    "accruals_s",
+    "Automobiles and Trucks",
+    1
+   ],
+   [
+    "accruals_s",
+    "Banking",
+    1
+   ],
+   [
+    "accruals_s",
+    "Business Services",
+    1
+   ],
+   [
+    "accruals_s",
+    "Business Supplies",
+    1
+   ],
+   [
+    "accruals_s",
+    "Chemicals",
+    1
+   ],
+   [
+    "accruals_s",
+    "Coal",
+    1
+   ],
+   [
+    "accruals_s",
+    "Communication",
+    1
+   ],
+   [
+    "accruals_s",
+    "Computers",
+    1
+   ],
+   [
+    "accruals_s",
+    "Construction",
+    1
+   ],
+   [
+    "accruals_s",
+    "Construction Materials",
+    1
+   ],
+   [
+    "accruals_s",
+    "Consumer Goods",
+    1
+   ],
+   [
+    "accruals_s",
+    "Electrical Equipment",
+    1
+   ],
+   [
+    "accruals_s",
+    "Electronic Equipment",
+    1
+   ],
+   [
+    "accruals_s",
+    "Entertainment",
+    1
+   ],
+   [
+    "accruals_s",
+    "Food Products",
+    1
+   ],
+   [
+    "accruals_s",
+    "Healthcare",
+    1
+   ],
+   [
+    "accruals_s",
+    "Insurance",
+    1
+   ],
+   [
+    "accruals_s",
+    "Machinery",
+    1
+   ],
+   [
+    "accruals_s",
+    "Measuring and Control Equipment",
+    1
+   ],
+   [
+    "accruals_s",
+    "Medical Equipment",
+    1
+   ],
+   [
+    "accruals_s",
+    "Non-Metallic and Industrial Metal Mining",
+    1
+   ],
+   [
+    "accruals_s",
+    "Personal Services",
+    1
+   ],
+   [
+    "accruals_s",
+    "Petroleum and Natural Gas",
+    1
+   ],
+   [
+    "accruals_s",
+    "Pharmaceutical Products",
+    1
+   ],
+   [
+    "accruals_s",
+    "Printing and Publishing",
+    1
+   ],
+   [
+    "accruals_s",
+    "Real Estate",
+    1
+   ],
+   [
+    "accruals_s",
+    "Restaraunts Hotels Motels",
+    1
+   ],
+   [
+    "accruals_s",
+    "Retail",
+    1
+   ],
+   [
+    "accruals_s",
+    "Rubber and Plastic Products",
+    1
+   ],
+   [
+    "accruals_s",
+    "Shipping Containers",
+    1
+   ],
+   [
+    "accruals_s",
+    "Steel Works Etc",
+    1
+   ],
+   [
+    "accruals_s",
+    "Trading",
+    1
+   ],
+   [
+    "accruals_s",
+    "Transportation",
+    1
+   ],
+   [
+    "accruals_s",
+    "Utilities",
+    1
+   ],
+   [
+    "accruals_s",
+    "Wholesale",
+    1
+   ],
+   [
+    "asset_growth_s",
+    "Aircraft",
+    1
+   ],
+   [
+    "asset_growth_s",
+    "Apparel",
+    1
+   ],
+   [
+    "asset_growth_s",
+    "Automobiles and Trucks",
+    1
+   ],
+   [
+    "asset_growth_s",
+    "Banking",
+    1
+   ],
+   [
+    "asset_growth_s",
+    "Business Services",
+    1
+   ],
+   [
+    "asset_growth_s",
+    "Business Supplies",
+    1
+   ],
+   [
+    "asset_growth_s",
+    "Chemicals",
+    1
+   ],
+   [
+    "asset_growth_s",
+    "Coal",
+    1
+   ],
+   [
+    "asset_growth_s",
+    "Communication",
+    1
+   ],
+   [
+    "asset_growth_s",
+    "Computers",
+    1
+   ],
+   [
+    "asset_growth_s",
+    "Construction",
+    1
+   ],
+   [
+    "asset_growth_s",
+    "Construction Materials",
+    1
+   ],
+   [
+    "asset_growth_s",
+    "Consumer Goods",
+    1
+   ],
+   [
+    "asset_growth_s",
+    "Electrical Equipment",
+    1
+   ],
+   [
+    "asset_growth_s",
+    "Electronic Equipment",
+    1
+   ],
+   [
+    "asset_growth_s",
+    "Entertainment",
+    1
+   ],
+   [
+    "asset_growth_s",
+    "Food Products",
+    1
+   ],
+   [
+    "asset_growth_s",
+    "Healthcare",
+    1
+   ],
+   [
+    "asset_growth_s",
+    "Insurance",
+    1
+   ],
+   [
+    "asset_growth_s",
+    "Machinery",
+    1
+   ],
+   [
+    "asset_growth_s",
+    "Measuring and Control Equipment",
+    1
+   ],
+   [
+    "asset_growth_s",
+    "Medical Equipment",
+    1
+   ],
+   [
+    "asset_growth_s",
+    "Non-Metallic and Industrial Metal Mining",
+    1
+   ],
+   [
+    "asset_growth_s",
+    "Personal Services",
+    1
+   ],
+   [
+    "asset_growth_s",
+    "Petroleum and Natural Gas",
+    1
+   ],
+   [
+    "asset_growth_s",
+    "Pharmaceutical Products",
+    1
+   ],
+   [
+    "asset_growth_s",
+    "Printing and Publishing",
+    1
+   ],
+   [
+    "asset_growth_s",
+    "Real Estate",
+    1
+   ],
+   [
+    "asset_growth_s",
+    "Restaraunts Hotels Motels",
+    1
+   ],
+   [
+    "asset_growth_s",
+    "Retail",
+    1
+   ],
+   [
+    "asset_growth_s",
+    "Rubber and Plastic Products",
+    1
+   ],
+   [
+    "asset_growth_s",
+    "Shipping Containers",
+    1
+   ],
+   [
+    "asset_growth_s",
+    "Steel Works Etc",
+    1
+   ],
+   [
+    "asset_growth_s",
+    "Trading",
+    1
+   ],
+   [
+    "asset_growth_s",
+    "Transportation",
+    1
+   ],
+   [
+    "asset_growth_s",
+    "Utilities",
+    1
+   ],
+   [
+    "asset_growth_s",
+    "Wholesale",
+    1
+   ],
+   [
+    "net_issuance_s",
+    "Aircraft",
+    1
+   ],
+   [
+    "net_issuance_s",
+    "Apparel",
+    1
+   ],
+   [
+    "net_issuance_s",
+    "Automobiles and Trucks",
+    1
+   ],
+   [
+    "net_issuance_s",
+    "Banking",
+    1
+   ],
+   [
+    "net_issuance_s",
+    "Business Services",
+    1
+   ],
+   [
+    "net_issuance_s",
+    "Business Supplies",
+    1
+   ],
+   [
+    "net_issuance_s",
+    "Chemicals",
+    1
+   ],
+   [
+    "net_issuance_s",
+    "Coal",
+    1
+   ],
+   [
+    "net_issuance_s",
+    "Communication",
+    1
+   ],
+   [
+    "net_issuance_s",
+    "Computers",
+    1
+   ],
+   [
+    "net_issuance_s",
+    "Construction",
+    1
+   ],
+   [
+    "net_issuance_s",
+    "Construction Materials",
+    1
+   ],
+   [
+    "net_issuance_s",
+    "Consumer Goods",
+    1
+   ],
+   [
+    "net_issuance_s",
+    "Electrical Equipment",
+    1
+   ],
+   [
+    "net_issuance_s",
+    "Electronic Equipment",
+    1
+   ],
+   [
+    "net_issuance_s",
+    "Entertainment",
+    1
+   ],
+   [
+    "net_issuance_s",
+    "Food Products",
+    1
+   ],
+   [
+    "net_issuance_s",
+    "Healthcare",
+    1
+   ],
+   [
+    "net_issuance_s",
+    "Insurance",
+    1
+   ],
+   [
+    "net_issuance_s",
+    "Machinery",
+    1
+   ],
+   [
+    "net_issuance_s",
+    "Measuring and Control Equipment",
+    1
+   ],
+   [
+    "net_issuance_s",
+    "Medical Equipment",
+    1
+   ],
+   [
+    "net_issuance_s",
+    "Non-Metallic and Industrial Metal Mining",
+    1
+   ],
+   [
+    "net_issuance_s",
+    "Personal Services",
+    1
+   ],
+   [
+    "net_issuance_s",
+    "Petroleum and Natural Gas",
+    1
+   ],
+   [
+    "net_issuance_s",
+    "Pharmaceutical Products",
+    1
+   ],
+   [
+    "net_issuance_s",
+    "Printing and Publishing",
+    1
+   ],
+   [
+    "net_issuance_s",
+    "Real Estate",
+    1
+   ],
+   [
+    "net_issuance_s",
+    "Restaraunts Hotels Motels",
+    1
+   ],
+   [
+    "net_issuance_s",
+    "Retail",
+    1
+   ],
+   [
+    "net_issuance_s",
+    "Rubber and Plastic Products",
+    1
+   ],
+   [
+    "net_issuance_s",
+    "Shipping Containers",
+    1
+   ],
+   [
+    "net_issuance_s",
+    "Steel Works Etc",
+    1
+   ],
+   [
+    "net_issuance_s",
+    "Trading",
+    1
+   ],
+   [
+    "net_issuance_s",
+    "Transportation",
+    1
+   ],
+   [
+    "net_issuance_s",
+    "Utilities",
+    1
+   ],
+   [
+    "net_issuance_s",
+    "Wholesale",
+    1
+   ],
+   [
+    "book_to_market_s",
+    "Aircraft",
+    -1
+   ],
+   [
+    "book_to_market_s",
+    "Almost Nothing",
+    -1
+   ],
+   [
+    "book_to_market_s",
+    "Apparel",
+    -1
+   ],
+   [
+    "book_to_market_s",
+    "Automobiles and Trucks",
+    -1
+   ],
+   [
+    "book_to_market_s",
+    "Banking",
+    -1
+   ],
+   [
+    "book_to_market_s",
+    "Business Services",
+    -1
+   ],
+   [
+    "book_to_market_s",
+    "Business Supplies",
+    -1
+   ],
+   [
+    "book_to_market_s",
+    "Chemicals",
+    -1
+   ],
+   [
+    "book_to_market_s",
+    "Coal",
+    -1
+   ],
+   [
+    "book_to_market_s",
+    "Communication",
+    -1
+   ],
+   [
+    "book_to_market_s",
+    "Computers",
+    -1
+   ],
+   [
+    "book_to_market_s",
+    "Construction",
+    -1
+   ],
+   [
+    "book_to_market_s",
+    "Construction Materials",
+    -1
+   ],
+   [
+    "book_to_market_s",
+    "Consumer Goods",
+    -1
+   ],
+   [
+    "book_to_market_s",
+    "Electrical Equipment",
+    -1
+   ],
+   [
+    "book_to_market_s",
+    "Electronic Equipment",
+    -1
+   ],
+   [
+    "book_to_market_s",
+    "Entertainment",
+    -1
+   ],
+   [
+    "book_to_market_s",
+    "Food Products",
+    -1
+   ],
+   [
+    "book_to_market_s",
+    "Healthcare",
+    -1
+   ],
+   [
+    "book_to_market_s",
+    "Insurance",
+    -1
+   ],
+   [
+    "book_to_market_s",
+    "Machinery",
+    -1
+   ],
+   [
+    "book_to_market_s",
+    "Measuring and Control Equipment",
+    -1
+   ],
+   [
+    "book_to_market_s",
+    "Medical Equipment",
+    -1
+   ],
+   [
+    "book_to_market_s",
+    "Non-Metallic and Industrial Metal Mining",
+    -1
+   ],
+   [
+    "book_to_market_s",
+    "Personal Services",
+    -1
+   ],
+   [
+    "book_to_market_s",
+    "Petroleum and Natural Gas",
+    -1
+   ],
+   [
+    "book_to_market_s",
+    "Pharmaceutical Products",
+    -1
+   ],
+   [
+    "book_to_market_s",
+    "Printing and Publishing",
+    -1
+   ],
+   [
+    "book_to_market_s",
+    "Real Estate",
+    -1
+   ],
+   [
+    "book_to_market_s",
+    "Restaraunts Hotels Motels",
+    -1
+   ],
+   [
+    "book_to_market_s",
+    "Retail",
+    -1
+   ],
+   [
+    "book_to_market_s",
+    "Rubber and Plastic Products",
+    -1
+   ],
+   [
+    "book_to_market_s",
+    "Shipping Containers",
+    -1
+   ],
+   [
+    "book_to_market_s",
+    "Steel Works Etc",
+    -1
+   ],
+   [
+    "book_to_market_s",
+    "Trading",
+    -1
+   ],
+   [
+    "book_to_market_s",
+    "Transportation",
+    -1
+   ],
+   [
+    "book_to_market_s",
+    "Utilities",
+    -1
+   ],
+   [
+    "book_to_market_s",
+    "Wholesale",
+    -1
+   ],
+   [
+    "earnings_yield_s",
+    "Aircraft",
+    -1
+   ],
+   [
+    "earnings_yield_s",
+    "Apparel",
+    -1
+   ],
+   [
+    "earnings_yield_s",
+    "Automobiles and Trucks",
+    -1
+   ],
+   [
+    "earnings_yield_s",
+    "Banking",
+    -1
+   ],
+   [
+    "earnings_yield_s",
+    "Business Services",
+    -1
+   ],
+   [
+    "earnings_yield_s",
+    "Business Supplies",
+    -1
+   ],
+   [
+    "earnings_yield_s",
+    "Chemicals",
+    -1
+   ],
+   [
+    "earnings_yield_s",
+    "Coal",
+    -1
+   ],
+   [
+    "earnings_yield_s",
+    "Communication",
+    -1
+   ],
+   [
+    "earnings_yield_s",
+    "Computers",
+    -1
+   ],
+   [
+    "earnings_yield_s",
+    "Construction",
+    -1
+   ],
+   [
+    "earnings_yield_s",
+    "Construction Materials",
+    -1
+   ],
+   [
+    "earnings_yield_s",
+    "Consumer Goods",
+    -1
+   ],
+   [
+    "earnings_yield_s",
+    "Electrical Equipment",
+    -1
+   ],
+   [
+    "earnings_yield_s",
+    "Electronic Equipment",
+    -1
+   ],
+   [
+    "earnings_yield_s",
+    "Entertainment",
+    -1
+   ],
+   [
+    "earnings_yield_s",
+    "Food Products",
+    -1
+   ],
+   [
+    "earnings_yield_s",
+    "Healthcare",
+    -1
+   ],
+   [
+    "earnings_yield_s",
+    "Insurance",
+    -1
+   ],
+   [
+    "earnings_yield_s",
+    "Machinery",
+    -1
+   ],
+   [
+    "earnings_yield_s",
+    "Measuring and Control Equipment",
+    -1
+   ],
+   [
+    "earnings_yield_s",
+    "Medical Equipment",
+    -1
+   ],
+   [
+    "earnings_yield_s",
+    "Non-Metallic and Industrial Metal Mining",
+    -1
+   ],
+   [
+    "earnings_yield_s",
+    "Personal Services",
+    -1
+   ],
+   [
+    "earnings_yield_s",
+    "Petroleum and Natural Gas",
+    -1
+   ],
+   [
+    "earnings_yield_s",
+    "Pharmaceutical Products",
+    -1
+   ],
+   [
+    "earnings_yield_s",
+    "Printing and Publishing",
+    -1
+   ],
+   [
+    "earnings_yield_s",
+    "Real Estate",
+    -1
+   ],
+   [
+    "earnings_yield_s",
+    "Restaraunts Hotels Motels",
+    -1
+   ],
+   [
+    "earnings_yield_s",
+    "Retail",
+    -1
+   ],
+   [
+    "earnings_yield_s",
+    "Rubber and Plastic Products",
+    -1
+   ],
+   [
+    "earnings_yield_s",
+    "Shipping Containers",
+    -1
+   ],
+   [
+    "earnings_yield_s",
+    "Steel Works Etc",
+    -1
+   ],
+   [
+    "earnings_yield_s",
+    "Trading",
+    -1
+   ],
+   [
+    "earnings_yield_s",
+    "Transportation",
+    -1
+   ],
+   [
+    "earnings_yield_s",
+    "Utilities",
+    -1
+   ],
+   [
+    "earnings_yield_s",
+    "Wholesale",
+    -1
+   ],
+   [
+    "fcf_yield_s",
+    "Aircraft",
+    1
+   ],
+   [
+    "fcf_yield_s",
+    "Apparel",
+    1
+   ],
+   [
+    "fcf_yield_s",
+    "Automobiles and Trucks",
+    1
+   ],
+   [
+    "fcf_yield_s",
+    "Banking",
+    1
+   ],
+   [
+    "fcf_yield_s",
+    "Business Services",
+    1
+   ],
+   [
+    "fcf_yield_s",
+    "Business Supplies",
+    1
+   ],
+   [
+    "fcf_yield_s",
+    "Chemicals",
+    1
+   ],
+   [
+    "fcf_yield_s",
+    "Coal",
+    1
+   ],
+   [
+    "fcf_yield_s",
+    "Communication",
+    1
+   ],
+   [
+    "fcf_yield_s",
+    "Computers",
+    1
+   ],
+   [
+    "fcf_yield_s",
+    "Construction",
+    1
+   ],
+   [
+    "fcf_yield_s",
+    "Construction Materials",
+    1
+   ],
+   [
+    "fcf_yield_s",
+    "Consumer Goods",
+    1
+   ],
+   [
+    "fcf_yield_s",
+    "Electrical Equipment",
+    1
+   ],
+   [
+    "fcf_yield_s",
+    "Electronic Equipment",
+    1
+   ],
+   [
+    "fcf_yield_s",
+    "Entertainment",
+    1
+   ],
+   [
+    "fcf_yield_s",
+    "Food Products",
+    1
+   ],
+   [
+    "fcf_yield_s",
+    "Healthcare",
+    1
+   ],
+   [
+    "fcf_yield_s",
+    "Insurance",
+    1
+   ],
+   [
+    "fcf_yield_s",
+    "Machinery",
+    1
+   ],
+   [
+    "fcf_yield_s",
+    "Measuring and Control Equipment",
+    1
+   ],
+   [
+    "fcf_yield_s",
+    "Medical Equipment",
+    1
+   ],
+   [
+    "fcf_yield_s",
+    "Non-Metallic and Industrial Metal Mining",
+    1
+   ],
+   [
+    "fcf_yield_s",
+    "Personal Services",
+    1
+   ],
+   [
+    "fcf_yield_s",
+    "Petroleum and Natural Gas",
+    1
+   ],
+   [
+    "fcf_yield_s",
+    "Pharmaceutical Products",
+    1
+   ],
+   [
+    "fcf_yield_s",
+    "Printing and Publishing",
+    1
+   ],
+   [
+    "fcf_yield_s",
+    "Real Estate",
+    1
+   ],
+   [
+    "fcf_yield_s",
+    "Restaraunts Hotels Motels",
+    1
+   ],
+   [
+    "fcf_yield_s",
+    "Retail",
+    1
+   ],
+   [
+    "fcf_yield_s",
+    "Rubber and Plastic Products",
+    1
+   ],
+   [
+    "fcf_yield_s",
+    "Shipping Containers",
+    1
+   ],
+   [
+    "fcf_yield_s",
+    "Steel Works Etc",
+    1
+   ],
+   [
+    "fcf_yield_s",
+    "Trading",
+    1
+   ],
+   [
+    "fcf_yield_s",
+    "Transportation",
+    1
+   ],
+   [
+    "fcf_yield_s",
+    "Utilities",
+    1
+   ],
+   [
+    "fcf_yield_s",
+    "Wholesale",
+    1
+   ],
+   [
+    "sales_yield_s",
+    "Aircraft",
+    -1
+   ],
+   [
+    "sales_yield_s",
+    "Apparel",
+    -1
+   ],
+   [
+    "sales_yield_s",
+    "Automobiles and Trucks",
+    -1
+   ],
+   [
+    "sales_yield_s",
+    "Banking",
+    -1
+   ],
+   [
+    "sales_yield_s",
+    "Business Services",
+    -1
+   ],
+   [
+    "sales_yield_s",
+    "Business Supplies",
+    -1
+   ],
+   [
+    "sales_yield_s",
+    "Chemicals",
+    -1
+   ],
+   [
+    "sales_yield_s",
+    "Coal",
+    -1
+   ],
+   [
+    "sales_yield_s",
+    "Communication",
+    -1
+   ],
+   [
+    "sales_yield_s",
+    "Computers",
+    -1
+   ],
+   [
+    "sales_yield_s",
+    "Construction",
+    -1
+   ],
+   [
+    "sales_yield_s",
+    "Construction Materials",
+    -1
+   ],
+   [
+    "sales_yield_s",
+    "Consumer Goods",
+    -1
+   ],
+   [
+    "sales_yield_s",
+    "Electrical Equipment",
+    -1
+   ],
+   [
+    "sales_yield_s",
+    "Electronic Equipment",
+    -1
+   ],
+   [
+    "sales_yield_s",
+    "Entertainment",
+    -1
+   ],
+   [
+    "sales_yield_s",
+    "Food Products",
+    -1
+   ],
+   [
+    "sales_yield_s",
+    "Healthcare",
+    -1
+   ],
+   [
+    "sales_yield_s",
+    "Insurance",
+    -1
+   ],
+   [
+    "sales_yield_s",
+    "Machinery",
+    -1
+   ],
+   [
+    "sales_yield_s",
+    "Measuring and Control Equipment",
+    -1
+   ],
+   [
+    "sales_yield_s",
+    "Medical Equipment",
+    -1
+   ],
+   [
+    "sales_yield_s",
+    "Non-Metallic and Industrial Metal Mining",
+    -1
+   ],
+   [
+    "sales_yield_s",
+    "Personal Services",
+    -1
+   ],
+   [
+    "sales_yield_s",
+    "Petroleum and Natural Gas",
+    -1
+   ],
+   [
+    "sales_yield_s",
+    "Pharmaceutical Products",
+    -1
+   ],
+   [
+    "sales_yield_s",
+    "Printing and Publishing",
+    -1
+   ],
+   [
+    "sales_yield_s",
+    "Real Estate",
+    -1
+   ],
+   [
+    "sales_yield_s",
+    "Restaraunts Hotels Motels",
+    -1
+   ],
+   [
+    "sales_yield_s",
+    "Retail",
+    -1
+   ],
+   [
+    "sales_yield_s",
+    "Rubber and Plastic Products",
+    -1
+   ],
+   [
+    "sales_yield_s",
+    "Shipping Containers",
+    -1
+   ],
+   [
+    "sales_yield_s",
+    "Steel Works Etc",
+    -1
+   ],
+   [
+    "sales_yield_s",
+    "Trading",
+    -1
+   ],
+   [
+    "sales_yield_s",
+    "Transportation",
+    -1
+   ],
+   [
+    "sales_yield_s",
+    "Utilities",
+    -1
+   ],
+   [
+    "sales_yield_s",
+    "Wholesale",
+    -1
+   ],
+   [
+    "sue_s",
+    "Aircraft",
+    1
+   ],
+   [
+    "sue_s",
+    "Apparel",
+    1
+   ],
+   [
+    "sue_s",
+    "Automobiles and Trucks",
+    1
+   ],
+   [
+    "sue_s",
+    "Banking",
+    1
+   ],
+   [
+    "sue_s",
+    "Business Services",
+    1
+   ],
+   [
+    "sue_s",
+    "Business Supplies",
+    1
+   ],
+   [
+    "sue_s",
+    "Chemicals",
+    1
+   ],
+   [
+    "sue_s",
+    "Coal",
+    1
+   ],
+   [
+    "sue_s",
+    "Communication",
+    1
+   ],
+   [
+    "sue_s",
+    "Computers",
+    1
+   ],
+   [
+    "sue_s",
+    "Construction",
+    1
+   ],
+   [
+    "sue_s",
+    "Construction Materials",
+    1
+   ],
+   [
+    "sue_s",
+    "Consumer Goods",
+    1
+   ],
+   [
+    "sue_s",
+    "Electrical Equipment",
+    1
+   ],
+   [
+    "sue_s",
+    "Electronic Equipment",
+    1
+   ],
+   [
+    "sue_s",
+    "Entertainment",
+    1
+   ],
+   [
+    "sue_s",
+    "Food Products",
+    1
+   ],
+   [
+    "sue_s",
+    "Healthcare",
+    1
+   ],
+   [
+    "sue_s",
+    "Insurance",
+    1
+   ],
+   [
+    "sue_s",
+    "Machinery",
+    1
+   ],
+   [
+    "sue_s",
+    "Measuring and Control Equipment",
+    1
+   ],
+   [
+    "sue_s",
+    "Medical Equipment",
+    1
+   ],
+   [
+    "sue_s",
+    "Non-Metallic and Industrial Metal Mining",
+    1
+   ],
+   [
+    "sue_s",
+    "Personal Services",
+    1
+   ],
+   [
+    "sue_s",
+    "Petroleum and Natural Gas",
+    1
+   ],
+   [
+    "sue_s",
+    "Pharmaceutical Products",
+    1
+   ],
+   [
+    "sue_s",
+    "Printing and Publishing",
+    1
+   ],
+   [
+    "sue_s",
+    "Real Estate",
+    1
+   ],
+   [
+    "sue_s",
+    "Restaraunts Hotels Motels",
+    1
+   ],
+   [
+    "sue_s",
+    "Retail",
+    1
+   ],
+   [
+    "sue_s",
+    "Rubber and Plastic Products",
+    1
+   ],
+   [
+    "sue_s",
+    "Steel Works Etc",
+    1
+   ],
+   [
+    "sue_s",
+    "Trading",
+    1
+   ],
+   [
+    "sue_s",
+    "Transportation",
+    1
+   ],
+   [
+    "sue_s",
+    "Utilities",
+    1
+   ],
+   [
+    "sue_s",
+    "Wholesale",
+    1
+   ],
+   [
+    "revenue_surprise_s",
+    "Aircraft",
+    1
+   ],
+   [
+    "revenue_surprise_s",
+    "Apparel",
+    1
+   ],
+   [
+    "revenue_surprise_s",
+    "Automobiles and Trucks",
+    1
+   ],
+   [
+    "revenue_surprise_s",
+    "Banking",
+    1
+   ],
+   [
+    "revenue_surprise_s",
+    "Business Services",
+    1
+   ],
+   [
+    "revenue_surprise_s",
+    "Business Supplies",
+    1
+   ],
+   [
+    "revenue_surprise_s",
+    "Chemicals",
+    1
+   ],
+   [
+    "revenue_surprise_s",
+    "Coal",
+    1
+   ],
+   [
+    "revenue_surprise_s",
+    "Communication",
+    1
+   ],
+   [
+    "revenue_surprise_s",
+    "Computers",
+    1
+   ],
+   [
+    "revenue_surprise_s",
+    "Construction",
+    1
+   ],
+   [
+    "revenue_surprise_s",
+    "Construction Materials",
+    1
+   ],
+   [
+    "revenue_surprise_s",
+    "Consumer Goods",
+    1
+   ],
+   [
+    "revenue_surprise_s",
+    "Electrical Equipment",
+    1
+   ],
+   [
+    "revenue_surprise_s",
+    "Electronic Equipment",
+    1
+   ],
+   [
+    "revenue_surprise_s",
+    "Entertainment",
+    1
+   ],
+   [
+    "revenue_surprise_s",
+    "Food Products",
+    1
+   ],
+   [
+    "revenue_surprise_s",
+    "Healthcare",
+    1
+   ],
+   [
+    "revenue_surprise_s",
+    "Insurance",
+    1
+   ],
+   [
+    "revenue_surprise_s",
+    "Machinery",
+    1
+   ],
+   [
+    "revenue_surprise_s",
+    "Measuring and Control Equipment",
+    1
+   ],
+   [
+    "revenue_surprise_s",
+    "Medical Equipment",
+    1
+   ],
+   [
+    "revenue_surprise_s",
+    "Non-Metallic and Industrial Metal Mining",
+    1
+   ],
+   [
+    "revenue_surprise_s",
+    "Personal Services",
+    1
+   ],
+   [
+    "revenue_surprise_s",
+    "Petroleum and Natural Gas",
+    1
+   ],
+   [
+    "revenue_surprise_s",
+    "Pharmaceutical Products",
+    1
+   ],
+   [
+    "revenue_surprise_s",
+    "Printing and Publishing",
+    1
+   ],
+   [
+    "revenue_surprise_s",
+    "Real Estate",
+    1
+   ],
+   [
+    "revenue_surprise_s",
+    "Restaraunts Hotels Motels",
+    1
+   ],
+   [
+    "revenue_surprise_s",
+    "Retail",
+    1
+   ],
+   [
+    "revenue_surprise_s",
+    "Rubber and Plastic Products",
+    1
+   ],
+   [
+    "revenue_surprise_s",
+    "Steel Works Etc",
+    1
+   ],
+   [
+    "revenue_surprise_s",
+    "Trading",
+    1
+   ],
+   [
+    "revenue_surprise_s",
+    "Transportation",
+    1
+   ],
+   [
+    "revenue_surprise_s",
+    "Utilities",
+    1
+   ],
+   [
+    "revenue_surprise_s",
+    "Wholesale",
+    1
+   ]
+  ],
+  "book": {
+   "netting": "positions summed per stock across sleeves before costs",
+   "no_trade_band": 1.5,
+   "target_vol": 0.1,
+   "sleeve_max_leverage": 5.0,
+   "book_max_leverage": 20.0,
+   "min_names_per_industry": 10,
+   "leverage_updates": "at each sleeve's rebalance; book scale at month ends",
+   "costs": {
+    "one_way_by_adv": {
+     ">=50m": 0.001,
+     ">=10m": 0.002,
+     "below": 0.004
+    },
+    "borrow_per_year": 0.005,
+    "hedge_one_way": 5e-05
+   }
+  }
+ },
+ "crypto": {
+  "rule": "cash-and-carry per coin (long Binance spot, short the same coin's perpetual), on while the trailing mean daily funding is above the threshold",
+  "params": {
+   "lookback": 30,
+   "threshold": 0.0
+  },
+  "defaults": {
+   "min_perp_qv": 20000000.0,
+   "cost_major": 0.0015,
+   "cost_minor": 0.003,
+   "target_vol": 0.1,
+   "max_leverage": 2.0
+  }
+ },
+ "combined": {
+  "weighting": "stocks and crypto at equal risk (each scaled to the target volatility on stock days), the sum scaled again to the target volatility"
+ },
+ "code_commit_before_freeze": "9b9be7ecd813f8ec7a6230b7a6bf07c23b8495c1"
+}
