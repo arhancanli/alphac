@@ -65,7 +65,10 @@ def main() -> None:
                      "test": stats(cbook.loc[CRYPTO_TEST[0]:CRYPTO_TEST[1]], periods=365),
                      "test_before_costs": stats(cg.mean(axis=1).loc[CRYPTO_TEST[0]:CRYPTO_TEST[1]], periods=365).get("sharpe"),
                      "coins_with_a_sleeve_in_test": int((cn.loc[CRYPTO_TEST[0]:].notna().sum() >= 60).sum()),
-                     "by_year": {str(y): stats(g, periods=365).get("sharpe") for y, g in cbook.loc[CRYPTO_TEST[0]:].groupby(cbook.loc[CRYPTO_TEST[0]:].index.year)}}
+                     "by_year": {str(y): stats(g, periods=365).get("sharpe") for y, g in cbook.loc[CRYPTO_TEST[0]:].groupby(cbook.loc[CRYPTO_TEST[0]:].index.year)},
+                     "by_year_before_costs": {str(y): stats(g, periods=365).get("sharpe") for y, g in cg.mean(axis=1).loc[CRYPTO_TEST[0]:].groupby(cg.mean(axis=1).loc[CRYPTO_TEST[0]:].index.year)},
+                     "avg_coins_on_by_year": {str(y): round(float(g.sum(axis=1).mean()), 1) for y, g in (on > 0).loc[CRYPTO_TEST[0]:].groupby((on > 0).loc[CRYPTO_TEST[0]:].index.year)},
+                     "mean_daily_funding_when_on_by_year": {str(y): float(f"{g.stack().mean():.6f}") for y, g in w["funding"].where(on > 0).loc[CRYPTO_TEST[0]:].groupby(w["funding"].loc[CRYPTO_TEST[0]:].index.year)}}
 
     # Both blocks at equal risk on the days both trade (stock days), then the whole at TARGET_VOL.
     s_days = net.dropna()
@@ -76,6 +79,8 @@ def main() -> None:
     sw = both.loc[window[0]:window[1]]
     out["combined"] = {"blocks": "stocks and crypto at equal risk", "window": window, "test": stats(combo.loc[window[0]:window[1]]),
                        "block_correlation": round(float(sw.corr().iloc[0, 1]), 3) if len(sw) > 60 else None,
+                       "by_year": {str(y): stats(g).get("sharpe") for y, g in combo.loc[window[0]:window[1]].groupby(combo.loc[window[0]:window[1]].index.year)},
+                       "since_2025": stats(combo.loc["2025-01-01":window[1]]),
                        "sleeves": len(selection) + out["crypto"]["coins_with_a_sleeve_in_test"]}
     (HERE / "test_result.json").write_text(json.dumps(out, indent=1))
     print(json.dumps(out, indent=1))
