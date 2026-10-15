@@ -67,3 +67,33 @@ frozen_selection.json sha256 8d1803de7e04d3ee16b5d9aa6f4aa5504ba79bd02a6268a7117
 
 `test.py` refuses to run unless the file still has this sha256. It is run once, and its result is
 published whatever it shows.
+
+## Amendment 3 (2026-10-15): round 2, written before any round-2 return was computed
+
+Round 1 is tested (`RESULTS.md`). The owner asked to keep improving. Round 2 keeps the rigid rule
+(every choice on search years only) with one honest difference: the test years have now been seen
+once, so round 2's test is a second look, not an untouched one. It is reported next to round 1's,
+and the ledger carries both rounds' variants. Only data after today (the forward paper record) is
+fully clean.
+
+What round 2 may add, all chosen on search years:
+
+- Stocks (search 1998-01-01 to 2017-12-31, test 2018-01-01 to 2026-06-18): new fundamental signals
+  from the full Sharadar SF1 file (as-reported quarterly rows, usable from their SEC filing date,
+  as in the lake), new price signals, and changes to how sleeves are weighted and hedged in the book.
+- Futures, a new block: one sleeve per market and signal (trend at several horizons, carry from the
+  curve), from the Databento CME daily contracts in `data/lake_fut_db` (37 markets from June 2010;
+  each contract's expiry year is inferred from the bar's date, because CME symbols carry one year
+  digit). Search 2010-06-06 to 2017-12-31, test 2018-01-01 to 2026-06-26. Earlier ALPHAC research
+  (the AlphaTrend family) already looked at trend on futures in these years, so this block's test
+  is not untouched either. Costs one way: 2 bp for equity index, rates and currency futures, 5 bp
+  for energy, metals and grains, 10 bp for thin markets (livestock, oats, palladium, platinum,
+  Nikkei, Russell); a roll trades both contracts.
+- Crypto cross-section, a new block: signals ranked across Binance perpetuals inside liquidity
+  tiers, dollar neutral, funding paid or received. Search 2020-01-01 to 2022-12-31, test
+  2023-01-01 to 2026-09-30. Costs as in round 1 (15 bp one way for majors, 30 bp for the rest).
+- The crypto cash-and-carry rule stays as frozen in round 1. Any new rule designed after seeing
+  2025-26 can only be judged on data after 2026-09-30.
+
+The round-2 selection is frozen in `frozen_selection_round2.json`; its sha256 is recorded here
+before the test years are opened again, and the round-2 test runner refuses to run otherwise.
