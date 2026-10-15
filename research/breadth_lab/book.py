@@ -25,8 +25,11 @@ def _read(mode: str, signal: str, tag: str) -> pd.DataFrame:
     return f.astype("float64")
 
 
-def positions(c: Ctx, mode: str, selection: list[tuple[str, str, int]]) -> tuple[pd.DataFrame, pd.Series]:
-    """Stock positions and the market hedge per unit of book capital, before the book's own scaling."""
+def positions(c: Ctx, mode: str, selection: list[tuple[str, str, int]], timing: dict[str, pd.DataFrame] | None = None) -> tuple[pd.DataFrame, pd.Series]:
+    """Stock positions and the market hedge per unit of book capital, before the book's own scaling.
+
+    ``timing`` (round 2) maps a signal to a month-end frame of multipliers per industry (decided at that close);
+    a sleeve's size is multiplied by it from the second close after, like its leverage. None: round 1's book."""
     n = len(selection)
     pos = np.zeros(c.r.shape)
     hedge = np.zeros(len(c.r))
@@ -43,13 +46,17 @@ def positions(c: Ctx, mode: str, selection: list[tuple[str, str, int]]) -> tuple
         hold = lambda f: f.where(on.notna(), axis=0).ffill().shift(2).fillna(0.0)  # noqa: E731
         lev = hold(_read(mode, sig, "lev").reindex(c.r.index))
         beta = hold(_read(mode, sig, "beta").reindex(c.r.index))
+        mult = None
+        if timing is not None and sig in timing:
+            mult = timing[sig].reindex(c.r.index).ffill().shift(2).fillna(0.0)
         for ind, sign in picks.items():
             if ind not in lev.columns:
                 continue
             cols = np.flatnonzero((industry == ind).to_numpy())
-            scale = (lev[ind].to_numpy() * sign / n)[:, None]
+            k = lev[ind].to_numpy() * (mult[ind].to_numpy() if mult is not None and ind in mult.columns else 1.0)
+            scale = (k * sign / n)[:, None]
             pos[:, cols] += w.iloc[:, cols].to_numpy() * scale
-            hedge -= beta[ind].to_numpy() * lev[ind].to_numpy() * sign / n
+            hedge -= beta[ind].to_numpy() * k * sign / n
     return pd.DataFrame(pos, index=c.r.index, columns=c.r.columns), pd.Series(hedge, index=c.r.index)
 
 
@@ -88,8 +95,8 @@ def account(c: Ctx, pos: pd.DataFrame, hedge: pd.Series, scale: pd.Series | None
     return net.where(live), pd.Series(gross, index=c.r.index).where(live), expo
 
 
-def book(c: Ctx, mode: str, selection: list[tuple[str, str, int]], band: float = 0.0) -> dict:
-    pos, hedge = positions(c, mode, selection)
+def book(c: Ctx, mode: str, selection: list[tuple[str, str, int]], band: float = 0.0, timing: dict[str, pd.DataFrame] | None = None) -> dict:
+    pos, hedge = positions(c, mode, selection, timing)
     net0, _, _ = account(c, pos, hedge)
     vol = net0.rolling(126, min_periods=63).std() * np.sqrt(252)
     # The book's own scale moves at month ends only, for the same reason.
