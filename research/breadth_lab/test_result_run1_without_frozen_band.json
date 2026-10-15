@@ -1,0 +1,84 @@
+{
+ "frozen_selection_sha256": "8d1803de7e04d3ee16b5d9aa6f4aa5504ba79bd02a6268a7117972a3b615f786",
+ "stocks": {
+  "sleeves": 1026,
+  "test_years": [
+   "2018-01-01",
+   "2026-06-18"
+  ],
+  "test": {
+   "days": 2127,
+   "sharpe": 0.522,
+   "t": 1.52,
+   "ann_return": 0.0586,
+   "ann_vol": 0.1122,
+   "max_dd": -0.22
+  },
+  "test_before_costs": 0.816,
+  "search_years_same_code": {
+   "days": 4718,
+   "sharpe": 1.01,
+   "t": 4.37,
+   "ann_return": 0.1116,
+   "ann_vol": 0.1106,
+   "max_dd": -0.2072
+  },
+  "by_year": {
+   "2018": 1.137,
+   "2019": 0.288,
+   "2020": -0.846,
+   "2021": 1.929,
+   "2022": -0.103,
+   "2023": 0.792,
+   "2024": 1.866,
+   "2025": 0.037,
+   "2026": 0.163
+  },
+  "gross_exposure": 3.08,
+  "turnover_per_year": 20.8,
+  "cost_per_year": 0.0464
+ },
+ "crypto": {
+  "params": {
+   "lookback": 30,
+   "threshold": 0.0
+  },
+  "test_years": [
+   "2023-01-01",
+   "2026-09-30"
+  ],
+  "test": {
+   "days": 1341,
+   "sharpe": 4.187,
+   "t": 8.03,
+   "ann_return": 0.074,
+   "ann_vol": 0.0177,
+   "max_dd": -0.0613
+  },
+  "test_before_costs": 8.033,
+  "coins_with_a_sleeve_in_test": 259,
+  "by_year": {
+   "2023": 7.123,
+   "2024": 11.991,
+   "2025": 0.421,
+   "2026": -3.008
+  }
+ },
+ "combined": {
+  "blocks": "stocks and crypto at equal risk",
+  "window": [
+   "2023-01-01",
+   "2026-06-18"
+  ],
+  "test": {
+   "days": 868,
+   "sharpe": 3.156,
+   "t": 5.86,
+   "ann_return": 0.335,
+   "ann_vol": 0.1061,
+   "max_dd": -0.1795
+  },
+  "block_correlation": 0.037,
+  "sleeves": 1285
+ }
+}
