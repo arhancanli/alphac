@@ -17,7 +17,7 @@ import pandas as pd
 from research.breadth_lab import book as bk
 from research.breadth_lab import crypto as cr
 from research.breadth_lab.lab import TARGET_VOL, context, run, stats
-from research.breadth_lab.panel import Panel
+from research.breadth_lab.panel import CACHE, Panel
 
 HERE = Path(__file__).resolve().parent
 FROZEN = HERE / "frozen_selection.json"
@@ -42,12 +42,15 @@ def main() -> None:
     if sha != recorded_sha256():
         raise SystemExit(f"frozen_selection.json is {sha}, not the sha256 PROTOCOL.md recorded: refusing to open the test years.")
     frozen = json.loads(FROZEN.read_text())
-    out: dict = {"frozen_selection_sha256": sha}
+    out: dict = {"frozen_selection_sha256": sha, "run": "2: applies the frozen no-trade band that run 1 omitted (test_result_run1_without_frozen_band.json)"}
 
     selection = [(s, i, int(g)) for s, i, g in frozen["stocks"]["sleeves"]]
-    run("test", sorted({s for s, _, _ in selection}))
+    needed = sorted({s for s, _, _ in selection})
+    if not all((CACHE / "test" / f"{s}.weights.parquet").exists() for s in needed):
+        run("test", needed)
     c = context(Panel("test"))
-    b = bk.book(c, "test", selection)
+    # Run 1 omitted this: the frozen book trades through a no-trade band (frozen_selection.json).
+    b = bk.book(c, "test", selection, band=float(frozen["stocks"]["book"]["no_trade_band"]))
     net, gross = b["_net"], b["_gross"]
     out["stocks"] = {"sleeves": len(selection), "test_years": STOCK_TEST,
                      "test": stats(net.loc[STOCK_TEST[0]:STOCK_TEST[1]]), "test_before_costs": stats(gross.loc[STOCK_TEST[0]:STOCK_TEST[1]]).get("sharpe"),
