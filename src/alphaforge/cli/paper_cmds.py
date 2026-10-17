@@ -165,6 +165,14 @@ class _InstrumentsAdapter:
                 out[iid] = inst
         return out
 
+    def lookup(self, instrument_id: str, cycle_ts: Ms) -> Instrument | None:
+        """The record for a HELD instrument that has left the universe (same asset class
+        only), so the loop can mark and exit it. ``None`` when there is no such record."""
+        inst = self._instruments.get(instrument_id, cycle_ts)
+        if inst is None or inst.asset_class != self._asset_class:
+            return None
+        return inst
+
 
 class _UniverseRefresherAdapter:
     """The live loop's monthly universe refresh, scoped to this profile's asset class.
@@ -858,6 +866,7 @@ def _build_loop(settings: Settings, *, cash: float) -> _LoopBundle:
         cost_inputs_factory=_CostInputsFactory(reader, LakeCostInputs.WARMUP_MS),
         ctx_factory=_ContextFactory(reader, settings.data.timeframe),
         instruments_factory=instr_factory,
+        instrument_lookup=instr_factory.lookup,
         universe_refresher=universe_refresher,
         initial_cash=cash,
         funding_source=_funding_source,

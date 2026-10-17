@@ -354,6 +354,9 @@ def build_loop(
     clock: Clock | None = None,
     uncovered_instrument: str | None = None,
     book_ladder: object | None = None,
+    second_instrument: str | None = None,
+    instruments_factory: object | None = None,
+    instrument_lookup: object | None = None,
 ) -> tuple[LiveLoop, TradingStore, PaperBroker, ScriptedStrategy | object]:
     """Wire a LiveLoop over real broker/store/risk + injected decision/data seams.
 
@@ -371,6 +374,10 @@ def build_loop(
     if uncovered_instrument is not None:
         # In the universe + broker map, but with NO registered book -> dropped.
         instrument_map[uncovered_instrument] = make_instrument(uncovered_instrument)
+    if second_instrument is not None:
+        # A second, fully covered instrument (registered book), for universe-change tests.
+        instrument_map[second_instrument] = make_instrument(second_instrument)
+        src.set_book(make_book(second_instrument))
     broker = PaperBroker(instrument_map, cost_model, book_source=src, initial_cash=100_000.0)
     store = TradingStore(tmp_path / "trading.sqlite")
     settings = Settings()
@@ -408,7 +415,12 @@ def build_loop(
         watermark=watermark if watermark is not None else FreshWatermark(),
         cost_inputs_factory=FakeCostFactory(FixedCostInputs()),
         ctx_factory=FakeContextFactory(),  # type: ignore[arg-type]
-        instruments_factory=FakeInstruments(dict(instrument_map)),
+        instruments_factory=(
+            instruments_factory  # type: ignore[arg-type]
+            if instruments_factory is not None
+            else FakeInstruments(dict(instrument_map))
+        ),
+        instrument_lookup=instrument_lookup,  # type: ignore[arg-type]
         clock=clock if clock is not None else (lambda: T0 + 90_000),
     )
     return loop, store, broker, strat
@@ -1245,3 +1257,77 @@ class TestBookLadderLogging:
         assert stub.reads == 3
         warns = [m for _lvl, m in alerter.records if "book ladder read failed" in m]
         assert len(warns) == 1 and "fail-open at x1.00" in warns[0]
+
+
+# --------------------------------------------------------------------------- universe exits
+
+ETH = "BINANCE:PERP:ETHUSDT"
+
+
+class _ShrinkingInstruments:
+    """BTC+ETH at T0; from the next cycle on, ETH has left the PIT universe."""
+
+    def __call__(self, cycle_ts: Ms) -> Mapping[str, Instrument]:
+        out = {BTC: make_instrument(BTC)}
+        if cycle_ts == T0:
+            out[ETH] = make_instrument(ETH)
+        return out
+
+
+class _MembersThenFlattenHeld:
+    """Targets every current member at 10% and flattens held non-members to 0.0,
+    the way BlendStrategy does (``pre_mult.setdefault(iid, 0.0)`` for ctx.positions)."""
+
+    def on_bar_close(self, ctx: object) -> Mapping[str, float]:
+        targets = dict.fromkeys(ctx.instruments, 0.10)  # type: ignore[attr-defined]
+        for iid in ctx.positions:  # type: ignore[attr-defined]
+            targets.setdefault(iid, 0.0)
+        return targets
+
+
+class TestHeldPositionLeavesUniverse:
+    """FOUND 2026-10-17 on the crypto sleeve: the 2026-10-01 monthly refresh dropped
+    1000PEPEUSDT while the book still held a short, and every cycle since then failed with
+    ``KeyError: fill references unknown instrument`` from the ledger seed, so the sleeve
+    stopped marking. A held ex-member must stay in the BOOK (ledger, marks, orders) so the
+    strategy's exit order can close it; it must not re-enter the decision universe."""
+
+    def test_held_ex_member_is_closed_not_crashed(self, tmp_path: Path) -> None:
+        def lookup(iid: str, cycle_ts: Ms) -> Instrument | None:
+            del cycle_ts
+            return make_instrument(iid)
+
+        loop, store, broker, _ = build_loop(
+            tmp_path,
+            strategy=_MembersThenFlattenHeld(),
+            second_instrument=ETH,
+            instruments_factory=_ShrinkingInstruments(),
+            instrument_lookup=lookup,
+        )
+        try:
+            first = loop.run_cycle(T0)
+            assert first.status == "ok"
+            assert ETH in broker.state.positions
+
+            second = loop.run_cycle(T0 + HOUR)
+            assert second.status == "ok", second.detail
+            assert ETH not in broker.state.positions
+            assert BTC in broker.state.positions
+        finally:
+            store.close()
+
+    def test_unresolvable_held_instrument_fails_with_a_clear_reason(self, tmp_path: Path) -> None:
+        loop, store, _broker, _ = build_loop(
+            tmp_path,
+            strategy=_MembersThenFlattenHeld(),
+            second_instrument=ETH,
+            instruments_factory=_ShrinkingInstruments(),
+            instrument_lookup=lambda iid, cycle_ts: None,
+        )
+        try:
+            assert loop.run_cycle(T0).status == "ok"
+            second = loop.run_cycle(T0 + HOUR)
+            assert second.status == "failed"
+            assert "held position" in second.detail and ETH in second.detail
+        finally:
+            store.close()

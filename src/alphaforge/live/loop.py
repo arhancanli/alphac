@@ -512,6 +512,10 @@ class LiveLoop:
         instruments_factory: returns the tradable ``{id: Instrument}`` as of a
             ``cycle_ts`` (the PIT universe x instrument record).
         universe_refresher: optional monthly :class:`UniverseRefresher`.
+        instrument_lookup: resolves ``(instrument_id, cycle_ts)`` to its record for a
+            HELD position that is no longer a universe member, so the book can still
+            mark and exit it. ``None`` resolves nothing (a held ex-member then fails the
+            cycle with a clear reason).
         ledger_factory: builds a fresh :class:`Ledger` seeded with the broker's
             current book (for ``weights_to_orders`` sizing).
         clock: wall-clock read (defaults to :func:`~alphaforge.core.time.now_ms`).
@@ -541,6 +545,7 @@ class LiveLoop:
         ctx_factory: _ContextFactory,
         instruments_factory: _InstrumentsFactory,
         universe_refresher: UniverseRefresher | None = None,
+        instrument_lookup: _InstrumentLookup | None = None,
         # Funding settlements for the window just closed. Optional and defaulted so every
         # existing caller and test is unaffected: a loop without one books no funding, which
         # is exactly what shipped before 2026-08-06. Wired for the crypto profile in
@@ -575,6 +580,7 @@ class LiveLoop:
         self._ctx_factory = ctx_factory
         self._instruments_factory = instruments_factory
         self._universe_refresher = universe_refresher
+        self._instrument_lookup = instrument_lookup
         self._funding_source = funding_source
         self._ledger_factory = ledger_factory if ledger_factory is not None else _default_ledger
         self._clock: _Clock = now_ms if clock is None else clock
@@ -1276,7 +1282,7 @@ class LiveLoop:
         # (~51% of its lifetime backtest PnL). Ordering matters: funding settles against the
         # position that was actually held through the settlement, so it must land before the
         # strategy re-decides and changes that position.
-        self._settle_funding(cycle_ts, instruments)
+        self._settle_funding(cycle_ts, self._with_held(cycle_ts, instruments))
 
         # (2) monthly boundary: refresh the universe BEFORE signals (finding 21).
         #
@@ -1326,9 +1332,16 @@ class LiveLoop:
         self._record_last_targets(cycle_ts)
         self._log_book_ladder(cycle_ts)
 
-        # (5) discretize -> pre-trade -> accepted orders (deterministic ids).
+        # (5) discretize -> pre-trade -> accepted orders (deterministic ids). The BOOK
+        # universe adds held ex-members to the decision universe so their exit orders
+        # (the strategy targets them at 0.0) can be sized and marked.
         report = self._decide_and_place(
-            cycle_ts, targets, account, instruments, now=now, degraded=freshness.degraded
+            cycle_ts,
+            targets,
+            account,
+            self._with_held(cycle_ts, instruments, account=account),
+            now=now,
+            degraded=freshness.degraded,
         )
 
         # (7) persist the post-trade book + equity + paper_state; finish 'ok'. The overlay
@@ -1347,6 +1360,49 @@ class LiveLoop:
                 f"equity={marked.equity_quote:.2f}",
             )
         return report
+
+    def _with_held(
+        self,
+        cycle_ts: Ms,
+        instruments: Mapping[str, Instrument],
+        *,
+        account: AccountState | None = None,
+    ) -> dict[str, Instrument]:
+        """The decision universe plus every HELD instrument that has left it.
+
+        FOUND 2026-10-17: the crypto sleeve's 2026-10-01 universe refresh dropped
+        1000PEPEUSDT while the book held a short. The ledger seed then raised
+        ``KeyError: fill references unknown instrument`` on every cycle and the sleeve
+        stopped marking for 16 days. A held ex-member is resolved through
+        ``instrument_lookup`` and kept in the BOOK so it can be marked and closed; it
+        is never added to the decision context, so it cannot be re-selected.
+        """
+        if account is None:
+            account = self._broker.account_at(cycle_ts)
+        out = dict(instruments)
+        missing: list[str] = []
+        for pos in account.positions:
+            iid = pos.instrument_id
+            if pos.qty == 0.0 or iid in out:
+                continue
+            inst = (
+                self._instrument_lookup(iid, cycle_ts)
+                if self._instrument_lookup is not None
+                else None
+            )
+            if inst is None:
+                missing.append(iid)
+            else:
+                out[iid] = inst
+        if missing:
+            raise KeyError(
+                f"held position(s) outside the universe with no instrument record: "
+                f"{sorted(missing)}"
+            )
+        added = sorted(set(out) - set(instruments))
+        if added:
+            _log.warning("cycle.held_ex_members", cycle_ts=cycle_ts, instruments=added)
+        return out
 
     def _restore_last_targets(self) -> None:
         """Hand the strategy its recorded pre-multiplier book (duck-typed seam, boot only)."""
@@ -1913,6 +1969,7 @@ if TYPE_CHECKING:
     type _CostInputsFactory = Callable[[Ms, Sequence[str]], CostInputSource]
     type _ContextFactory = Callable[..., StrategyContext]
     type _InstrumentsFactory = Callable[[Ms], Mapping[str, Instrument]]
+    type _InstrumentLookup = Callable[[str, Ms], Instrument | None]
     type _LedgerFactory = Callable[
         [float, Mapping[str, Instrument], AccountState, Mapping[str, float]], Ledger
     ]
