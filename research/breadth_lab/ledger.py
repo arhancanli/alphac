@@ -30,6 +30,11 @@ RUNS = [
     ("r2_industries.log", "stocks-industries", "round 2: industry rotation, whole industries ranked against each other"),
     ("r2_books_a.log", "stocks-book", "round 2: netted books with the new signals, with and without factor momentum (band 1.5)"),
     ("r2_books_b.log", "stocks-book", "round 2: further netted-book variants"),
+    # Round 3 (PROTOCOL amendments 4 and 5), search years only.
+    ("r3_run.log", "stocks-pods", "round 3: 52 signals x 4 cell schemes, pods, per-sleeve flexible admission (amendment 4); brake figures from a central layer that re-levered braked books (bug)"),
+    ("r3_select_fixed.log", "stocks-pods", "round 3 rerun after the brake fix: the book is sized from the plain book, capped at 5x"),
+    ("r3b_families.log", "stocks-pods", "round 3 variant B (amendment 5, after seeing round 3): family admission; brake figures from the bugged central layer"),
+    ("r3b_families_fixed.log", "stocks-pods", "round 3 variant B rerun after the brake fix"),
 ]
 
 

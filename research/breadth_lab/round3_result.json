@@ -1,0 +1,172 @@
+{
+ "protocol": "PROTOCOL.md amendment 4",
+ "years": "1998-01-01..2017-12-31",
+ "search": {
+  "candidates": 10785,
+  "admitted": 2715,
+  "admitted_by_scheme": {
+   "ind48": 349,
+   "ind48xL": 457,
+   "ind48xS": 332,
+   "ind150": 1577
+  },
+  "avg_pairwise_corr_admitted": 0.0075,
+  "effective_bets_sleeves": 255.5,
+  "pods": 20,
+  "effective_bets_pods": 11.3,
+  "book": {
+   "days": 4677,
+   "sharpe": 3.656,
+   "t": 15.75,
+   "ann_return": 0.3797,
+   "ann_vol": 0.1039,
+   "max_dd": -0.1058
+  },
+  "book_with_pod_brake": {
+   "days": 4677,
+   "sharpe": 3.529,
+   "t": 15.2,
+   "ann_return": 0.3135,
+   "ann_vol": 0.0888,
+   "max_dd": -0.0644
+  },
+  "sleeves_per_pod": {
+   "0": 591,
+   "1": 275,
+   "2": 300,
+   "3": 216,
+   "4": 197,
+   "5": 102,
+   "6": 149,
+   "7": 103,
+   "8": 86,
+   "9": 108,
+   "10": 75,
+   "11": 54,
+   "12": 69,
+   "13": 58,
+   "14": 48,
+   "15": 82,
+   "16": 83,
+   "17": 14,
+   "18": 47,
+   "19": 58
+  },
+  "pod_members": {
+   "0": [
+    "book_to_market_s",
+    "sales_yield_s",
+    "hi52_s",
+    "intraday_252_s",
+    "mom_12_1_s",
+    "resid_mom_s",
+    "updays_s",
+    "mom_6_1_s",
+    "vol_shock_s",
+    "revenue_surprise_s",
+    "sue_s",
+    "mom_12_7_s"
+   ],
+   "1": [
+    "cfo_assets_s",
+    "roa_s",
+    "roic_s",
+    "fscore_s",
+    "op_equity_s",
+    "gp_assets_s"
+   ],
+   "2": [
+    "earnings_yield_s",
+    "ebitda_ev_s",
+    "fcf_yield_s",
+    "net_issuance_s",
+    "payout_yield_s",
+    "xfin_s"
+   ],
+   "3": [
+    "ivol_63_s",
+    "lowvol_63_s",
+    "max_21_s",
+    "turnover_s",
+    "lowbeta_252_s"
+   ],
+   "4": [
+    "amihud_63_s",
+    "small_63_s",
+    "dvol_cv_s"
+   ],
+   "5": [
+    "asset_growth_s",
+    "inv_growth_s"
+   ],
+   "6": [
+    "capex_growth_s",
+    "rev_36_12_s"
+   ],
+   "7": [
+    "cash_assets_s",
+    "rnd_mv_s"
+   ],
+   "8": [
+    "intraday_21_s",
+    "rev_1m_s"
+   ],
+   "9": [
+    "overnight_21_s",
+    "overnight_252_s"
+   ],
+   "10": [
+    "accruals_s"
+   ],
+   "11": [
+    "ato_change_s"
+   ],
+   "12": [
+    "capex_assets_s"
+   ],
+   "13": [
+    "debt_issuance_s"
+   ],
+   "14": [
+    "dsales_dinv_s"
+   ],
+   "15": [
+    "noa_s"
+   ],
+   "16": [
+    "oper_leverage_s"
+   ],
+   "17": [
+    "rev_1w_s"
+   ],
+   "18": [
+    "season_s"
+   ],
+   "19": [
+    "skew_252_s"
+   ]
+  }
+ },
+ "split": {
+  "chosen_on": "1998-01-01..2007-12-31",
+  "admitted_on_first": 2188,
+  "held_into_second": 2167,
+  "second_half_book": {
+   "days": 2392,
+   "sharpe": -0.904,
+   "t": -2.78,
+   "ann_return": -0.0922,
+   "ann_vol": 0.102,
+   "max_dd": -0.6205
+  },
+  "second_half_book_with_pod_brake": {
+   "days": 2392,
+   "sharpe": -0.364,
+   "t": -1.12,
+   "ann_return": -0.0131,
+   "ann_vol": 0.036,
+   "max_dd": -0.186
+  }
+ },
+ "seconds": 3
+}

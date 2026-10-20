@@ -73,3 +73,37 @@ The nine ideas: momentum and value together (8 signals), low risk and liquidity 
 growth and long-term reversal (3), cash yields and issuance (3), and four on their own: accruals,
 overnight returns, weekly reversal, seasonality. More signals inside these groups add almost nothing.
 New ideas have to come from new data or new markets.
+
+## Round 3: pods and flexible admission (2026-10-20, search years only)
+
+The owner asked for 10,000 sleeves with very weak correlations and a flexible bar, organized as
+pods. 52 stock signals were built in four cell schemes (48 industries, each industry's larger and
+smaller names, 150 industries): 10,785 candidate sleeves. Signals that move together form a pod.
+The correlation side worked: 2,715 sleeves were admitted with an average pairwise correlation of
+0.0075, 255.5 independent bets across sleeves and 11.3 across 20 pods.
+
+The bar did not survive the split check (chosen on 1998-2007, run on 2008-2017):
+
+| Admission | 2008-2017 book | With pod brakes |
+|---|---|---|
+| Each sleeve positive after its costs (amendment 4) | -0.90, drawdown -62% | -0.36, drawdown -19% |
+| Whole families judged, all their sleeves kept (amendment 5, chosen after seeing the first) | -0.13, drawdown -43% | 0.22, drawdown -14% |
+
+The sleeves the first rule chose averaged a Sharpe of 0.355 after costs on the years that chose
+them and -0.013 afterwards, 49% of them positive: a per-sleeve bar, however low, selects luck, and
+breadth multiplies whatever average edge is left, here slightly below zero. Judging families
+instead raised the out-of-sample average to 0.025 and the book to about break-even; the pod brakes
+cut the drawdowns by more than half. The search-year books (3.66 and 1.08) were chosen on their own
+years and are not evidence.
+
+One error, fixed and published: the first central layer re-levered braked books back to the
+target volatility, which undid the brakes and, when every pod was braked, divided by almost zero.
+The book is now sized from the plain book and capped at 5x; both runs are in the ledger before and
+after the fix.
+
+What it means: US stock anomalies charged their own costs one sleeve at a time carry almost no edge
+in 2008-2017, so more sleeves of them cannot raise the Sharpe. Two levers remain. Costs: thousands
+of sleeves trade the same stocks, so a netted book with a no-trade band pays far less than the sum
+of the sleeves (rounds 1-2 cut the stock book's costs from 5.7% to 1.2% a year that way); the
+round-3 families have to be judged as a netted book next. New ideas: pods from other markets and
+data, each with its own edge.

@@ -1,0 +1,160 @@
+{
+ "protocol": "PROTOCOL.md amendment 5 (variant B: family admission)",
+ "years": "1998-01-01..2017-12-31",
+ "families_admitted": 46,
+ "search_chosen_on_same_years": {
+  "candidates": 10785,
+  "admitted": 957,
+  "admitted_by_scheme": {
+   "ind48": 331,
+   "ind48xL": 147,
+   "ind48xS": 27,
+   "ind150": 452
+  },
+  "avg_pairwise_corr_admitted": 0.0186,
+  "effective_bets_sleeves": 185.8,
+  "pods": 5,
+  "effective_bets_pods": 2.9,
+  "book": {
+   "days": 4677,
+   "sharpe": 1.076,
+   "t": 4.63,
+   "ann_return": 0.1116,
+   "ann_vol": 0.1037,
+   "max_dd": -0.2401
+  },
+  "book_with_pod_brake": {
+   "days": 4677,
+   "sharpe": 1.075,
+   "t": 4.63,
+   "ann_return": 0.0716,
+   "ann_vol": 0.0666,
+   "max_dd": -0.1023
+  },
+  "sleeves_per_pod": {
+   "0": 271,
+   "1": 305,
+   "2": 98,
+   "3": 252,
+   "4": 31
+  },
+  "pod_members": {
+   "0": [
+    "book_to_market_s",
+    "sales_yield_s",
+    "hi52_s",
+    "intraday_252_s",
+    "mom_12_1_s",
+    "resid_mom_s",
+    "updays_s",
+    "mom_6_1_s",
+    "vol_shock_s",
+    "revenue_surprise_s",
+    "sue_s",
+    "mom_12_7_s"
+   ],
+   "1": [
+    "cfo_assets_s",
+    "roa_s",
+    "roic_s",
+    "fscore_s",
+    "op_equity_s",
+    "gp_assets_s"
+   ],
+   "2": [
+    "earnings_yield_s",
+    "ebitda_ev_s",
+    "fcf_yield_s",
+    "net_issuance_s",
+    "payout_yield_s",
+    "xfin_s"
+   ],
+   "3": [
+    "ivol_63_s",
+    "lowvol_63_s",
+    "max_21_s",
+    "turnover_s",
+    "lowbeta_252_s"
+   ],
+   "4": [
+    "amihud_63_s",
+    "small_63_s",
+    "dvol_cv_s"
+   ],
+   "5": [
+    "asset_growth_s",
+    "inv_growth_s"
+   ],
+   "6": [
+    "capex_growth_s",
+    "rev_36_12_s"
+   ],
+   "7": [
+    "cash_assets_s",
+    "rnd_mv_s"
+   ],
+   "8": [
+    "intraday_21_s",
+    "rev_1m_s"
+   ],
+   "9": [
+    "overnight_21_s",
+    "overnight_252_s"
+   ],
+   "10": [
+    "accruals_s"
+   ],
+   "11": [
+    "ato_change_s"
+   ],
+   "12": [
+    "capex_assets_s"
+   ],
+   "13": [
+    "debt_issuance_s"
+   ],
+   "14": [
+    "dsales_dinv_s"
+   ],
+   "15": [
+    "noa_s"
+   ],
+   "16": [
+    "oper_leverage_s"
+   ],
+   "17": [
+    "rev_1w_s"
+   ],
+   "18": [
+    "season_s"
+   ],
+   "19": [
+    "skew_252_s"
+   ]
+  }
+ },
+ "split": {
+  "chosen_on": "1998-01-01..2007-12-31",
+  "families_admitted_on_first": 58,
+  "admitted_on_first": 1172,
+  "held_into_second": 1163,
+  "second_half_avg_sleeve_sharpe": 0.025,
+  "second_half_book": {
+   "days": 2392,
+   "sharpe": -0.132,
+   "t": -0.41,
+   "ann_return": -0.0136,
+   "ann_vol": 0.1031,
+   "max_dd": -0.4327
+  },
+  "second_half_book_with_pod_brake": {
+   "days": 2392,
+   "sharpe": 0.217,
+   "t": 0.67,
+   "ann_return": 0.0102,
+   "ann_vol": 0.0469,
+   "max_dd": -0.1361
+  }
+ },
+ "seconds": 3
+}
