@@ -166,3 +166,15 @@ sleeve, strict about the family.
 - Reported exactly as round 3: the 2008-2017 book chosen on 1998-2007, with and without the brake,
   and the search-year book labelled as chosen on its own years.
 Both trials are logged in the ledger.
+
+## Amendment 6 (2026-10-20): round 3 traded as one netted account, written before it was computed
+
+Variant B's split selection (amendment 5, chosen on 1998-2007) is traded as one account, the way
+`book.py` trades rounds 1-2: every sleeve's stock positions are summed first, so opposite trades in
+the same stock cancel before any cost is paid; the market hedges are one position; costs are paid
+on the account's net trades, plus borrow on its shorts. Each sleeve enters with its own leverage
+and hedge ratio (recomputed exactly as built), at the weight W_pod / n_pod: pods weighted by
+1 / (1 + their average correlation with the other pods) on 1998-2007, equal weight inside a pod.
+The account is scaled at month ends to the 10% target with its trailing volatility (cap 20x, as
+`book.py`). Reported for 2008-2017, before and after costs, with no band and with the round-1
+frozen no-trade band of 1.5. Nothing else is chosen in this step.
