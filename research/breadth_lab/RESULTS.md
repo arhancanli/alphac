@@ -133,3 +133,19 @@ Caveats: one split, and variant B was chosen after seeing round 3's first result
 the band of 1.5 is round 1's frozen value, not tuned here; the 1998-2007 figures (1.8-1.9) are on
 the selection years. Netting across sleeves is standard practice at multi-strategy funds; the
 measurement at this breadth is the new part, and novelty is not claimed before a prior-art check.
+
+### The netting law (amendment 7, costs only, 1998-2017)
+
+Random sets of K of the 10,785 candidate sleeves at equal weight; the share of the summed
+standalone cost that one account pays for the same positions:
+
+| Sleeves | 10 | 30 | 100 | 300 | 1,000 | 3,000 | 10,785 |
+|---|---|---|---|---|---|---|---|
+| Share paid | 0.99 | 0.93 | 0.81 | 0.62 | 0.46 | 0.36 | 0.30 |
+
+Few sleeves rarely hold the same names, so they barely net. From about 100 sleeves on the share
+falls quickly, then flattens near 0.3 at full breadth: trades that point the same way cannot cancel
+(momentum sleeves in every industry buy last year's winners together). Return correlation limits
+how much risk breadth removes; trade correlation limits how much cost netting removes. At breadth a
+sleeve's cost is mostly the cost of its idea's common trade, not its own turnover. Overall slope of
+log share on log K: -0.19 (not a single power law).
