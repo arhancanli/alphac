@@ -86,7 +86,7 @@ def build(only: list[str] | None = None) -> None:
     for name in signals():
         if only and name not in only:
             continue
-        todo = [k for k in SCHEMES if not (OUT / f"{name}.{k}.net.parquet").exists()]
+        todo = [k for k in SCHEMES if not all((OUT / f"{name}.{k}.{t}.parquet").exists() for t in ("net", "gross"))]
         if not todo:
             continue
         t1 = time.time()
@@ -101,8 +101,9 @@ def build(only: list[str] | None = None) -> None:
             raw = sleeve_returns(cc, w)
             pre, lev, beta = hedge_and_scale(cc, sleeve_returns(cc, w, before_costs=True), parts=True)
             net = (raw - beta.mul(cc.market, axis=0)) * lev
-            net.columns = [f"{name}|{scheme}|{b}" for b in net.columns]
-            net.astype("float32").to_parquet(OUT / f"{name}.{scheme}.net.parquet")
+            for frame, tag in ((net, "net"), (pre, "gross")):
+                frame.columns = [f"{name}|{scheme}|{b}" for b in frame.columns]
+                frame.astype("float32").to_parquet(OUT / f"{name}.{scheme}.{tag}.parquet")
         print(name, signs[name], f"{time.time() - t1:.0f}s", flush=True)
     path = OUT / "signs.json"
     merged = json.loads(path.read_text()) if path.exists() else {}
@@ -111,8 +112,8 @@ def build(only: list[str] | None = None) -> None:
 
 # ---- admission -------------------------------------------------------------------------------------
 
-def candidates(a: str, z: str) -> pd.DataFrame:
-    frames = [pd.read_parquet(p) for p in sorted(OUT.glob("*.net.parquet"))]
+def candidates(a: str, z: str, tag: str = "net") -> pd.DataFrame:
+    frames = [pd.read_parquet(p) for p in sorted(OUT.glob(f"*.{tag}.parquet"))]
     x = pd.concat(frames, axis=1).astype("float32").loc[a:z]
     return x.loc[:, x.notna().sum() >= 756]
 
@@ -302,11 +303,83 @@ def select() -> dict:
     return result
 
 
+# ---- amendment 6: variant B's split selection traded as one netted account --------------------------
+
+def netted_split(bands: tuple[float, ...] = (0.0, 1.5)) -> dict:
+    from research.breadth_lab.book import MAX_BOOK_LEVERAGE, account
+    t0 = time.time()
+    first = candidates(*FIRST)
+    a1, _, pods1, chosen1 = admit_families(first, FIRST)
+    cols = list(first.columns[a1])
+    pod = pd.Series([pods1[k.split("|")[0]] for k in cols], index=cols)
+    books = pd.DataFrame({p: first[pod.index[pod == p]].mean(axis=1) for p in sorted(pod.unique())})
+    pc = weekly_corr(books).fillna(0.0).to_numpy()
+    k = pc.shape[0]
+    wpod = pd.Series(1.0 / (1.0 + (pc.sum(axis=1) - 1.0) / max(k - 1, 1)), index=books.columns)
+    wpod = wpod / wpod.sum()
+    count = pod.value_counts()
+    weight = {col: float(wpod[pod[col]]) / int(count[pod[col]]) for col in cols}
+    del first
+    signals()
+    c = context(Panel("search"))
+    cells = {"ind48": (c, None), "ind48xL": (c, "L"), "ind48xS": (c, "S"),
+             "ind150": (dataclasses.replace(c, bucket=c.p.meta["industry"]), None)}
+    signs = json.loads((OUT / "signs.json").read_text())
+    pos = np.zeros(c.r.shape)
+    hedge = np.zeros(len(c.r))
+    families: dict[str, list[str]] = {}
+    for col in cols:
+        families.setdefault(family_of(col), []).append(col)
+    for fam, members in families.items():
+        name, scheme = fam.split("|")
+        fn, freq = lab.SIGNALS[name]
+        sig = fn(c) * signs[name]
+        dates = c.month_ends if freq == "M" else c.week_ends
+        dates = dates[dates.isin(c.r.index)]
+        cc, half = cells[scheme]
+        wr = smoothed(cc, cell_weights(cc, sig, dates, half), lab.SMOOTH.get(name, 1))
+        _, lev, beta = hedge_and_scale(cc, sleeve_returns(cc, wr, before_costs=True), parts=True)
+        w = wr.reindex(c.r.index).ffill().fillna(0.0).shift(2).fillna(0.0)
+        # As book.py: leverage and hedge ratio move only when the sleeve rebalances.
+        on = pd.Series(np.nan, index=c.r.index)
+        on.loc[wr.index] = 1.0
+        lev, beta = (f.reindex(c.r.index).where(on.notna(), axis=0).ffill().shift(2).fillna(0.0) for f in (lev, beta))
+        bucket = cc.bucket.reindex(c.r.columns)
+        for col in members:
+            cell = col.split("|", 2)[2]
+            if cell not in lev.columns:
+                continue
+            idx = np.flatnonzero((bucket == cell).to_numpy())
+            size = lev[cell].to_numpy() * weight[col]
+            pos[:, idx] += w.iloc[:, idx].to_numpy() * size[:, None]
+            hedge -= beta[cell].to_numpy() * size
+        print(fam, len(members), flush=True)
+    pos = pd.DataFrame(pos, index=c.r.index, columns=c.r.columns)
+    hedge = pd.Series(hedge, index=c.r.index)
+    net0, _, _ = account(c, pos, hedge)
+    vol = net0.rolling(126, min_periods=63).std() * np.sqrt(252)
+    target = (TARGET_VOL / vol).clip(upper=MAX_BOOK_LEVERAGE)
+    scale = target.where(target.index.isin(c.month_ends)).ffill().shift(2)
+    result = {"protocol": "PROTOCOL.md amendment 6", "chosen_on": f"{FIRST[0]}..{FIRST[1]}", "sleeves": len(cols),
+              "families": len(families), "pods": int(pod.nunique())}
+    for band in bands:
+        net, gross, expo = account(c, pos, hedge, scale, band)
+        net, gross = net.where(scale.notna()), gross.where(scale.notna())
+        result[f"band_{band:g}"] = {"second_half_net": stats(net.loc[SECOND[0]:SECOND[1]]),
+                                    "second_half_before_costs": stats(gross.loc[SECOND[0]:SECOND[1]]),
+                                    "first_half_net": stats(net.loc[FIRST[0]:FIRST[1]]), **expo}
+        print(f"band_{band:g}", json.dumps(result[f"band_{band:g}"]), flush=True)
+    result["seconds"] = round(time.time() - t0)
+    (HERE / "round3c_netted.json").write_text(json.dumps(result, indent=1))
+    return result
+
+
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--build", action="store_true")
     ap.add_argument("--select", action="store_true")
     ap.add_argument("--families", action="store_true", help="variant B (amendment 5)")
+    ap.add_argument("--netted", action="store_true", help="variant B traded as one netted account (amendment 6)")
     ap.add_argument("--only", default=None, help="comma list of signals to build")
     a = ap.parse_args()
     if a.build:
@@ -315,3 +388,5 @@ if __name__ == "__main__":
         select()
     if a.families:
         select_families()
+    if a.netted:
+        netted_split()

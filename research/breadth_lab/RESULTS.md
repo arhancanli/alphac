@@ -107,3 +107,29 @@ of sleeves trade the same stocks, so a netted book with a no-trade band pays far
 of the sleeves (rounds 1-2 cut the stock book's costs from 5.7% to 1.2% a year that way); the
 round-3 families have to be judged as a netted book next. New ideas: pods from other markets and
 data, each with its own edge.
+
+## Round 3, traded as one account: the crossing dividend (2026-10-20)
+
+The family selection above (58 families, 1,163 sleeves, chosen on 1998-2007) was traded the way
+one account would trade it (amendment 6): every sleeve's stock positions summed first, so opposite
+trades in the same stock cancel before any cost is paid. Same sleeves, same years, 2008-2017:
+
+| How costs are paid | Costs a year | Sharpe after costs | Sharpe before costs | Drawdown |
+|---|---|---|---|---|
+| Each sleeve pays for its own trades | about 11% | -0.13 | 1.02 | -43% |
+| One netted account | 3.4% | 0.59 (t 1.9) | 1.02 | -26% |
+| Netted, with the round-1 no-trade band of 1.5 | 1.3% | 0.82 (t 2.6) | 1.06 | -19% |
+
+Before costs the edge is the same in every row: sleeves averaging a Sharpe of 0.12 before costs
+(0.025 after their own costs) make a book of about 1.0, the breadth arithmetic working out of
+sample. What changes is what the trading costs. Thousands of sleeves trade the same stocks in
+opposite directions; the account pays only for the net, so costs grow far more slowly than the
+number of sleeves while the edge grows with it. A sleeve that cannot pay for itself alone can still
+add to a large netted book, which is why a per-sleeve cost bar is the wrong bar at breadth. Next:
+measure how the netted cost per sleeve falls as the number of sleeves grows (10 to 10,000), and
+judge a sleeve by its edge against its marginal cost inside the netted account.
+
+Caveats: one split, and variant B was chosen after seeing round 3's first result (amendment 5);
+the band of 1.5 is round 1's frozen value, not tuned here; the 1998-2007 figures (1.8-1.9) are on
+the selection years. Netting across sleeves is standard practice at multi-strategy funds; the
+measurement at this breadth is the new part, and novelty is not claimed before a prior-art check.

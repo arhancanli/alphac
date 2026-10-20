@@ -35,6 +35,8 @@ RUNS = [
     ("r3_select_fixed.log", "stocks-pods", "round 3 rerun after the brake fix: the book is sized from the plain book, capped at 5x"),
     ("r3b_families.log", "stocks-pods", "round 3 variant B (amendment 5, after seeing round 3): family admission; brake figures from the bugged central layer"),
     ("r3b_families_fixed.log", "stocks-pods", "round 3 variant B rerun after the brake fix"),
+    ("r3b_before_costs.log", "stocks-pods", "round 3 variant B split selection measured before costs (diagnostic, nothing chosen)"),
+    ("r3c_netted.log", "stocks-pods", "round 3 variant B split selection traded as one netted account, no band and the round-1 band 1.5 (amendment 6)"),
 ]
 
 
