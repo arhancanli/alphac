@@ -44,6 +44,8 @@ def sleeve_positions(years: tuple[str, str] = pods.SEARCH, signs: dict[str, int]
     index: list[np.ndarray] = []
     held: list[np.ndarray] = []
     for name in pods.signals():
+        if name not in signs:  # a library smaller than the registry (amendment 13)
+            continue
         fn, freq = lab.SIGNALS[name]
         sig = fn(c) * signs[name]
         dates = c.month_ends if freq == "M" else c.week_ends
