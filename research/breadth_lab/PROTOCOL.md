@@ -239,3 +239,35 @@ Reported: variant D's 2008-2017 record (chosen on 1998-2007), before and after c
 ablations so the gain can be attributed: D with variant C's pod weights, and D with round 1's
 band (target 1.5). All three are trials on this split, logged in the ledger beside A, B and C
 (nine in all). The 2018-2026 test window stays unused.
+
+## Amendment 10 (2026-10-20): round 4, new ideas from local data, written before it was computed
+
+Variant D showed that breadth inside an idea adds little: a pod's sleeves share its idea's alpha
+however little their daily noise correlates. Round 4 adds ideas. Forty published stock signals
+that rounds 1-3 lack, from the daily panel and the as-reported SF1 quarters (each row usable from
+its filing date, flows trailing four quarters, market value as round 2), all monthly with three
+overlapping portfolios, run through the same engine (48-industry sleeves, then the four cell
+schemes of amendment 4):
+- Balance sheet and distress: book leverage, market leverage, current ratio, Altman Z (without
+  retained earnings), Ohlson O, tangibility, intangibles to assets, cash flow to debt.
+- Margins, growth and quality: gross margin, change in operating margin, change in ROE, change in
+  ROA, sales growth, sales growth minus SG&A growth, gross-margin growth minus sales growth, sales
+  growth minus receivables growth, SG&A to assets, tax to pre-tax income, change in depreciation
+  rate, PP&E growth, capex to depreciation, asset turnover, working-capital accruals, change in
+  dividends, stock compensation to assets, change in R&D, quarters of rising earnings (up to 8),
+  volatility of cash flow and of ROA (8 quarters).
+- Prices and trading: coskewness, downside beta, correlation with the previous day's market (price
+  delay), zero-return days, momentum acceleration (6-1 minus 12-7 months).
+- Calendar: the earnings announcement premium (expected to file in the coming month: filed two or
+  eleven months before it).
+Each signal's sign is set on 1998-2007 (amendment 9); pods are formed as before (|corr| >= 0.5).
+
+Two books, both chosen on 1998-2007 and run on 2008-2017 (two more trials on the split):
+1. Primary: variant D's rules on the whole library, with one change written after seeing variant
+   D: pods weighted as ideas, every pod expected to earn the same Sharpe (capital proportional to
+   inverse(R) x 1 / sigma, R the pods' weekly correlations shrunk toward zero), so a new idea with
+   few sleeves is not starved by a big pod. Shrinkage from {1.0 (equal risk), 0.75, 0.5, 0.25} by
+   the same validation (fit 1998-2002, run 2003-2007).
+2. Secondary: variant D's rules exactly, on the whole library, so the new ideas' effect can be read
+   against variant D.
+Also reported: how many pods the new signals form or join, and their sleeves.
