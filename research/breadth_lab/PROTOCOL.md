@@ -354,3 +354,9 @@ The selection is written to frozen_variant_d.json and its sha256 recorded here b
 after 2017 is computed. test_d.py refuses to run otherwise, runs once on 2018-01-01 to 2026-06-18
 with round 1's costs, and its result is published whatever it shows. The stock test years were
 opened once before (round 1's book, amendment 2), so this is their second look, counted as a trial.
+
+The freeze (search years only): netted share 0.2976; shrinkage 0.75 (fitted 1998-2007, run 2008-2017:
+0.75 1.30, 0.5 1.23, 0.25 1.15); band target 2.0 (1998-2017 after costs 1.54, the best of the grid);
+2,652 sleeves.
+
+frozen_variant_d.json sha256 cf18b49fb1de129ddb4a413df10cbc40ac474f3c127b6a56910109845e3dc106
