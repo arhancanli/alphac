@@ -1,0 +1,249 @@
+{
+ "protocol": "PROTOCOL.md amendment 11",
+ "chosen_on": "1998-01-01..2002-12-31",
+ "checked_on": "2003-01-01..2007-12-31",
+ "netted_share": 0.2624,
+ "candidates": 9529,
+ "candidate_families": 336,
+ "rules": {
+  "bar": {
+   "families": 207,
+   "sleeves": 2866,
+   "pods": 27,
+   "new_signal_sleeves": 1346,
+   "chosen_years_net": {
+    "days": 942,
+    "sharpe": 3.879,
+    "t": 7.5,
+    "ann_return": 0.3098,
+    "ann_vol": 0.0799,
+    "max_dd": -0.031
+   },
+   "check_years_net": {
+    "days": 1258,
+    "sharpe": -0.903,
+    "t": -2.02,
+    "ann_return": -0.0788,
+    "ann_vol": 0.0873,
+    "max_dd": -0.3808
+   },
+   "check_years_before_costs": {
+    "days": 1258,
+    "sharpe": -0.379,
+    "t": -0.85,
+    "ann_return": -0.033,
+    "ann_vol": 0.0871,
+    "max_dd": -0.2788
+   },
+   "mean_gross_exposure": 4.82,
+   "turnover_per_year": 12.0,
+   "cost_per_year": 0.0269,
+   "names_held": 1183
+  },
+  "both_halves": {
+   "families": 116,
+   "sleeves": 1927,
+   "pods": 24,
+   "new_signal_sleeves": 945,
+   "chosen_years_net": {
+    "days": 942,
+    "sharpe": 3.397,
+    "t": 6.57,
+    "ann_return": 0.3038,
+    "ann_vol": 0.0894,
+    "max_dd": -0.0754
+   },
+   "check_years_net": {
+    "days": 1258,
+    "sharpe": -0.874,
+    "t": -1.95,
+    "ann_return": -0.0821,
+    "ann_vol": 0.0939,
+    "max_dd": -0.4355
+   },
+   "check_years_before_costs": {
+    "days": 1258,
+    "sharpe": -0.342,
+    "t": -0.76,
+    "ann_return": -0.032,
+    "ann_vol": 0.0937,
+    "max_dd": -0.3311
+   },
+   "mean_gross_exposure": 5.27,
+   "turnover_per_year": 12.5,
+   "cost_per_year": 0.0296,
+   "names_held": 1188
+  },
+  "t2": {
+   "families": 71,
+   "sleeves": 1154,
+   "pods": 15,
+   "new_signal_sleeves": 579,
+   "chosen_years_net": {
+    "days": 942,
+    "sharpe": 4.033,
+    "t": 7.8,
+    "ann_return": 0.3828,
+    "ann_vol": 0.0949,
+    "max_dd": -0.0792
+   },
+   "check_years_net": {
+    "days": 1258,
+    "sharpe": -0.071,
+    "t": -0.16,
+    "ann_return": -0.0072,
+    "ann_vol": 0.101,
+    "max_dd": -0.2925
+   },
+   "check_years_before_costs": {
+    "days": 1258,
+    "sharpe": 0.366,
+    "t": 0.82,
+    "ann_return": 0.0369,
+    "ann_vol": 0.1008,
+    "max_dd": -0.2561
+   },
+   "mean_gross_exposure": 5.5,
+   "turnover_per_year": 10.9,
+   "cost_per_year": 0.0249,
+   "names_held": 1146
+  },
+  "shrunk": {
+   "families": 307,
+   "sleeves": 3828,
+   "pods": 30,
+   "new_signal_sleeves": 1809,
+   "chosen_years_net": {
+    "days": 942,
+    "sharpe": 3.269,
+    "t": 6.32,
+    "ann_return": 0.229,
+    "ann_vol": 0.0701,
+    "max_dd": -0.0629
+   },
+   "check_years_net": {
+    "days": 1258,
+    "sharpe": -0.721,
+    "t": -1.61,
+    "ann_return": -0.0586,
+    "ann_vol": 0.0813,
+    "max_dd": -0.3305
+   },
+   "check_years_before_costs": {
+    "days": 1258,
+    "sharpe": -0.223,
+    "t": -0.5,
+    "ann_return": -0.0181,
+    "ann_vol": 0.0811,
+    "max_dd": -0.2373
+   },
+   "mean_gross_exposure": 4.2,
+   "turnover_per_year": 10.5,
+   "cost_per_year": 0.0241,
+   "names_held": 1173
+  },
+  "idea_first": {
+   "families": 250,
+   "sleeves": 3129,
+   "pods": 22,
+   "new_signal_sleeves": 1484,
+   "chosen_years_net": {
+    "days": 942,
+    "sharpe": 3.758,
+    "t": 7.27,
+    "ann_return": 0.3086,
+    "ann_vol": 0.0821,
+    "max_dd": -0.0421
+   },
+   "check_years_net": {
+    "days": 1258,
+    "sharpe": -0.533,
+    "t": -1.19,
+    "ann_return": -0.0471,
+    "ann_vol": 0.0882,
+    "max_dd": -0.351
+   },
+   "check_years_before_costs": {
+    "days": 1258,
+    "sharpe": 0.03,
+    "t": 0.07,
+    "ann_return": 0.0026,
+    "ann_vol": 0.088,
+    "max_dd": -0.2237
+   },
+   "mean_gross_exposure": 4.8,
+   "turnover_per_year": 13.1,
+   "cost_per_year": 0.0302,
+   "names_held": 1153
+  },
+  "everything": {
+   "families": 307,
+   "sleeves": 3847,
+   "pods": 30,
+   "new_signal_sleeves": 1817,
+   "chosen_years_net": {
+    "days": 942,
+    "sharpe": 3.273,
+    "t": 6.33,
+    "ann_return": 0.2268,
+    "ann_vol": 0.0693,
+    "max_dd": -0.0605
+   },
+   "check_years_net": {
+    "days": 1258,
+    "sharpe": -0.741,
+    "t": -1.66,
+    "ann_return": -0.0603,
+    "ann_vol": 0.0815,
+    "max_dd": -0.3368
+   },
+   "check_years_before_costs": {
+    "days": 1258,
+    "sharpe": -0.244,
+    "t": -0.54,
+    "ann_return": -0.0198,
+    "ann_vol": 0.0813,
+    "max_dd": -0.2445
+   },
+   "mean_gross_exposure": 4.2,
+   "turnover_per_year": 10.4,
+   "cost_per_year": 0.0241,
+   "names_held": 1172
+  },
+  "bar_52": {
+   "families": 119,
+   "sleeves": 1683,
+   "pods": 15,
+   "new_signal_sleeves": 0,
+   "chosen_years_net": {
+    "days": 942,
+    "sharpe": 3.251,
+    "t": 6.29,
+    "ann_return": 0.283,
+    "ann_vol": 0.087,
+    "max_dd": -0.0645
+   },
+   "check_years_net": {
+    "days": 1258,
+    "sharpe": -0.805,
+    "t": -1.8,
+    "ann_return": -0.0811,
+    "ann_vol": 0.1008,
+    "max_dd": -0.4179
+   },
+   "check_years_before_costs": {
+    "days": 1258,
+    "sharpe": -0.285,
+    "t": -0.64,
+    "ann_return": -0.0286,
+    "ann_vol": 0.1005,
+    "max_dd": -0.2846
+   },
+   "mean_gross_exposure": 5.57,
+   "turnover_per_year": 13.1,
+   "cost_per_year": 0.032,
+   "names_held": 1156
+  }
+ },
+ "seconds": 2342
+}

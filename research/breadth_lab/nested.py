@@ -29,23 +29,23 @@ BAND, EDGE = 0.75, True
 RULES = ("bar", "both_halves", "t2", "shrunk", "idea_first", "everything", "bar_52")
 
 
-def cut_context():
-    """The engine's context on a panel that ends on 2007-12-31."""
+def cut_context(end: str = END):
+    """The engine's context on a panel that ends on ``end``."""
     p = Panel("search")
-    keep = p.dates <= pd.Timestamp(END, tz=p.dates.tz)
+    keep = p.dates <= pd.Timestamp(end, tz=p.dates.tz)
     for a in ("total", "overnight", "intraday", "close", "dollar_volume"):
         setattr(p, a, getattr(p, a).loc[keep])
     p.dates = p.dates[keep]
     return context(p)
 
 
-def family_scores(judged: pd.DataFrame, fam: pd.Series) -> pd.DataFrame:
+def family_scores(judged: pd.DataFrame, fam: pd.Series, halves: tuple = HALVES) -> pd.DataFrame:
     """Per family: its book's Sharpe at marginal cost on the choosing years, in each half, and its years of data."""
     rows = {}
     for f, cols in fam.groupby(fam).groups.items():
         b = lab.book(judged[cols].astype("float64"))
-        rows[f] = {"sharpe": stats(b).get("sharpe", np.nan), "h1": stats(b.loc[HALVES[0][0]:HALVES[0][1]]).get("sharpe", np.nan),
-                   "h2": stats(b.loc[HALVES[1][0]:HALVES[1][1]]).get("sharpe", np.nan), "years": b.dropna().shape[0] / 252.0}
+        rows[f] = {"sharpe": stats(b).get("sharpe", np.nan), "h1": stats(b.loc[halves[0][0]:halves[0][1]]).get("sharpe", np.nan),
+                   "h2": stats(b.loc[halves[1][0]:halves[1][1]]).get("sharpe", np.nan), "years": b.dropna().shape[0] / 252.0}
     return pd.DataFrame(rows).T.astype("float64")
 
 
@@ -78,23 +78,28 @@ def chosen_by(rule: str, sc: pd.DataFrame, judged: pd.DataFrame, fam: pd.Series,
     return {f: float(s[f]) for f in sc.index[keep.fillna(False).to_numpy()]}
 
 
-def main() -> dict:
+def main(choose: tuple[str, str] = CHOOSE, check: tuple[str, str] = CHECK, end: str = END, rules: tuple[str, ...] = RULES,
+         share: float | None = None, out: str = "round5_nested.json", protocol: str = "PROTOCOL.md amendment 11") -> dict:
+    """The nested check; with other windows, the chosen rule's run on 2008-2017 (amendment 11's last step)."""
     from research.breadth_lab.book import MAX_BOOK_LEVERAGE, account
     from research.breadth_lab.netting_law import full_share
     t0 = time.time()
     built = json.loads((pods.OUT / "signs.json").read_text())
-    own = {n: pods.sign_on(n, *CHOOSE) for n in pods.signals()}
-    share = full_share(CHOOSE, own)
-    print("netted_share_1998_2002", round(share, 4), flush=True)
-    net = pods.candidates(*CHOOSE)
-    gross = pods.candidates(*CHOOSE, tag="gross").reindex(columns=net.columns)
+    own = {n: pods.sign_on(n, *choose) for n in pods.signals()}
+    if share is None:
+        share = full_share(choose, own)
+    print(f"netted_share_{choose[0][:4]}_{choose[1][:4]}", round(share, 4), flush=True)
+    mid = pd.Timestamp(choose[0]) + (pd.Timestamp(choose[1]) - pd.Timestamp(choose[0])) / 2
+    halves = ((choose[0], str(mid.date())), (str((mid + pd.Timedelta(days=1)).date()), choose[1]))
+    net = pods.candidates(*choose)
+    gross = pods.candidates(*choose, tag="gross").reindex(columns=net.columns)
     flip = pd.Series([own[k.split("|")[0]] * built[k.split("|")[0]] for k in net.columns], index=net.columns).astype("float32")
     cost = gross - net
     gross = gross.mul(flip, axis=1)
     net, judged = gross - cost, gross - share * cost
     del cost, gross
     fam = pd.Series([pods.family_of(k) for k in net.columns], index=net.columns)
-    sc = family_scores(judged, fam)
+    sc = family_scores(judged, fam, halves)
     rho = pods.approx_corr(net.resample("W-FRI").sum(min_count=3))
     pod_of_signal = pods.pods_of(net)
     pod = np.array([pod_of_signal[k.split("|")[0]] for k in net.columns])
@@ -102,7 +107,7 @@ def main() -> dict:
     new = {f"{n}_s" for n in round4.NEW}
     print("candidates", net.shape[1], "families", len(sc), "pods", int(pod.max()) + 1, f"{time.time() - t0:.0f}s", flush=True)
     selections = {}
-    for rule in RULES:
+    for rule in rules:
         chosen = chosen_by(rule, sc, judged, fam, pod_of_signal)
         if rule == "bar_52":
             chosen = {f: v for f, v in chosen.items() if f.split("|")[0] not in new}
@@ -115,8 +120,8 @@ def main() -> dict:
         print(rule, "families", len(chosen), "sleeves", len(cols), flush=True)
     standalone = net
     del judged
-    c = cut_context()
-    result = {"protocol": "PROTOCOL.md amendment 11", "chosen_on": f"{CHOOSE[0]}..{CHOOSE[1]}", "checked_on": f"{CHECK[0]}..{CHECK[1]}",
+    c = cut_context(end)
+    result = {"protocol": protocol, "chosen_on": f"{choose[0]}..{choose[1]}", "checked_on": f"{check[0]}..{check[1]}",
               "netted_share": round(share, 4), "candidates": int(net.shape[1]), "candidate_families": len(sc), "rules": {}}
     for rule, cols in selections.items():
         if not cols:
@@ -137,14 +142,25 @@ def main() -> dict:
         n, g = n.where(scale.notna()), g.where(scale.notna())
         result["rules"][rule] = {"families": len({pods.family_of(k) for k in cols}), "sleeves": len(cols), "pods": int(pod_s.nunique()),
                                  "new_signal_sleeves": int(sum(k.split("|")[0] in new for k in cols)),
-                                 "chosen_years_net": stats(n.loc[CHOOSE[0]:CHOOSE[1]]), "check_years_net": stats(n.loc[CHECK[0]:CHECK[1]]),
-                                 "check_years_before_costs": stats(g.loc[CHECK[0]:CHECK[1]]), **expo}
+                                 "chosen_years_net": stats(n.loc[choose[0]:choose[1]]), "check_years_net": stats(n.loc[check[0]:check[1]]),
+                                 "check_years_before_costs": stats(g.loc[check[0]:check[1]]), **expo}
         print(f"rule_{rule}", json.dumps(result["rules"][rule]), flush=True)
         del pos, hedge
     result["seconds"] = round(time.time() - t0)
-    (HERE / "round5_nested.json").write_text(json.dumps(result, indent=1))
+    (HERE / out).write_text(json.dumps(result, indent=1))
     return result
 
 
+def split_run() -> dict:
+    """Amendment 11's last step: the rule with the best 2003-2007 record, chosen on 1998-2007, run on 2008-2017.
+    The 1998-2007 netted share for this library and these signs is round 4's (the same computation)."""
+    nested = json.loads((HERE / "round5_nested.json").read_text())["rules"]
+    best = max(nested, key=lambda r: nested[r].get("check_years_net", {}).get("sharpe", -9.0))
+    share = json.loads((HERE / "round4_d_rules.json").read_text())["netted_share_used"]
+    print("carried_rule", best, flush=True)
+    return main(pods.FIRST, pods.SECOND, pods.SECOND[1], (best,), share, "round5_split.json", "PROTOCOL.md amendment 11 (the chosen rule on 2008-2017)")
+
+
 if __name__ == "__main__":
-    main()
+    import sys
+    split_run() if "--split" in sys.argv else main()

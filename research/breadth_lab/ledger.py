@@ -41,6 +41,8 @@ RUNS = [
     ("r3e_netted_variant_c.log", "stocks-pods", "round 3 variant C: families judged on marginal netted cost (share 0.30 measured on 1998-2007), traded as one netted account (amendment 8)"),
     ("r4_signals.log", "stocks", "round 4: 35 new stock signals' 48-industry sleeves (amendment 10)"),
     ("r4_books.log", "stocks-pods", "round 4: the 87-signal library chosen on 1998-2007, pods weighted as ideas, and variant D's rules (amendment 10)"),
+    ("r5_nested.log", "stocks-pods", "round 5: seven admission rules chosen on 1998-2002, run on 2003-2007 on a panel cut at 2007 (amendment 11)"),
+    ("r5_split.log", "stocks-pods", "round 5: the best nested rule (t >= 2) chosen on 1998-2007, run on 2008-2017 (amendment 11)"),
     ("r3f_variant_d.log", "stocks-pods", "round 3 variant D: selection-year signs, pods weighted for diversification (shrink by a 1998-2002/2003-2007 validation), band rule and width chosen on 1998-2007; two ablations (amendment 9)"),
 ]
 

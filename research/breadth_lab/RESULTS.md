@@ -226,3 +226,33 @@ read after the fact:
 The 2003-2007 validation that chose the shrinkage was not clean: the families were chosen on
 1998-2007, so they had already been picked partly on 2003-2007. A clean check chooses the families
 on 1998-2002 alone. Trials on the 2008-2017 split: 13.
+
+## Round 5: admission rules under a clean nested check (amendment 11)
+
+Families chosen on 1998-2002 alone (87 signals, 9,529 candidate sleeves, 336 families, netted share
+0.26), the netted account run on 2003-2007 on a panel cut at 2007-12-31:
+
+| Rule | Families | Sleeves | 1998-2002 (chosen there) | 2003-2007 after costs | Before costs |
+|---|---|---|---|---|---|
+| Bar 0.3 (variants C, D) | 207 | 2,866 | 3.88 | -0.90 | -0.38 |
+| Both halves | 116 | 1,927 | 3.40 | -0.87 | -0.34 |
+| t of at least 2 | 71 | 1,154 | 4.03 | -0.07 | 0.37 |
+| Shrunk (empirical Bayes) | 307 | 3,828 | 3.27 | -0.72 | -0.22 |
+| Idea first | 250 | 3,129 | 3.76 | -0.53 | 0.03 |
+| Everything | 307 | 3,847 | 3.27 | -0.74 | -0.24 |
+| Bar, 52 old signals | 119 | 1,683 | 3.25 | -0.81 | -0.29 |
+
+Every rule loses on 2003-2007, even with no admission at all: the directions learned from 1998-2002
+(the bubble and its crash) turned in 2003-2007. Signs learned from the data matched the next
+period's in 55 of 87 signals from five years and 63 of 87 from ten; the published directions (as
+coded) matched in 52 and 58. Many signals have almost no true effect, so their direction is close
+to a coin flip and they add cost without edge.
+
+As amendment 11 set, the best rule on 2003-2007 (t of at least 2) was chosen on 1998-2007 and run
+on 2008-2017 (netted share 0.2428, round 4's identical measurement): 75 families, 1,695 sleeves,
+15 pods; 0.57 after costs (t 1.8), 1.02 before, drawdown -25%; 1998-2007, chosen there: 2.36.
+Below variant D (1.04), which stays the frozen design. Trials on the 2008-2017 split: 14.
+
+What rounds 3-5 establish: inside one heavily studied market, choosing among more signals or
+choosing more strictly does not raise the out-of-sample book; netting and trading do (variants C
+and D), and the next independent alpha has to come from other markets and data.

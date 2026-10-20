@@ -1,0 +1,45 @@
+{
+ "protocol": "PROTOCOL.md amendment 11 (the chosen rule on 2008-2017)",
+ "chosen_on": "1998-01-01..2007-12-31",
+ "checked_on": "2008-01-01..2017-12-31",
+ "netted_share": 0.2428,
+ "candidates": 14533,
+ "candidate_families": 348,
+ "rules": {
+  "t2": {
+   "families": 75,
+   "sleeves": 1695,
+   "pods": 15,
+   "new_signal_sleeves": 370,
+   "chosen_years_net": {
+    "days": 2200,
+    "sharpe": 2.356,
+    "t": 6.96,
+    "ann_return": 0.2277,
+    "ann_vol": 0.0966,
+    "max_dd": -0.1226
+   },
+   "check_years_net": {
+    "days": 2518,
+    "sharpe": 0.572,
+    "t": 1.81,
+    "ann_return": 0.052,
+    "ann_vol": 0.0909,
+    "max_dd": -0.2486
+   },
+   "check_years_before_costs": {
+    "days": 2518,
+    "sharpe": 1.016,
+    "t": 3.21,
+    "ann_return": 0.0924,
+    "ann_vol": 0.0909,
+    "max_dd": -0.1599
+   },
+   "mean_gross_exposure": 4.96,
+   "turnover_per_year": 12.5,
+   "cost_per_year": 0.027,
+   "names_held": 1571
+  }
+ },
+ "seconds": 234
+}
