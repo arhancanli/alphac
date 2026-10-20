@@ -1,0 +1,49 @@
+{
+ "frozen_variant_d_sha256": "cf18b49fb1de129ddb4a413df10cbc40ac474f3c127b6a56910109845e3dc106",
+ "sleeves": 2652,
+ "families": 104,
+ "pods": 15,
+ "test_years": [
+  "2018-01-01",
+  "2026-06-18"
+ ],
+ "test": {
+  "days": 2127,
+  "sharpe": 0.555,
+  "t": 1.61,
+  "ann_return": 0.053,
+  "ann_vol": 0.0955,
+  "max_dd": -0.2408
+ },
+ "test_before_costs": {
+  "days": 2127,
+  "sharpe": 0.823,
+  "t": 2.39,
+  "ann_return": 0.0784,
+  "ann_vol": 0.0953,
+  "max_dd": -0.1945
+ },
+ "by_year": {
+  "2018": 1.266,
+  "2019": -0.554,
+  "2020": -1.306,
+  "2021": 2.093,
+  "2022": 0.524,
+  "2023": 1.862,
+  "2024": 0.656,
+  "2025": 1.584,
+  "2026": -0.544
+ },
+ "search_years_same_code": {
+  "days": 4718,
+  "sharpe": 1.535,
+  "t": 6.64,
+  "ann_return": 0.1442,
+  "ann_vol": 0.0939,
+  "max_dd": -0.179
+ },
+ "mean_gross_exposure": 4.58,
+ "turnover_per_year": 9.0,
+ "cost_per_year": 0.0192,
+ "names_held": 1129
+}

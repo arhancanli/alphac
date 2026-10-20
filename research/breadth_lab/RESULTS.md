@@ -256,3 +256,33 @@ Below variant D (1.04), which stays the frozen design. Trials on the 2008-2017 s
 What rounds 3-5 establish: inside one heavily studied market, choosing among more signals or
 choosing more strictly does not raise the out-of-sample book; netting and trading do (variants C
 and D), and the next independent alpha has to come from other markets and data.
+
+## Variant D's test on 2018-2026 (amendment 13)
+
+Frozen on 1998-2017 only: the 52 signals of rounds 1-2, 2,652 sleeves, 104 families, 15 pods,
+shrinkage 0.75, band target 2.0; frozen_variant_d.json sha256 cf18b49f... recorded and pushed before
+the test years were opened. The first attempt crashed before computing any return (the runner did
+not register the round-2 signals; fixed in a99712f); the test then ran once. Published as it came
+out:
+
+| | Sharpe after costs | Before costs | Return a year | Drawdown | Costs a year |
+|---|---|---|---|---|---|
+| 1998-2017, chosen there | 1.54 (t 6.6) | | 14.4% | -17.9% | 2.1% |
+| 2018-2026, test | 0.56 (t 1.6) | 0.82 | 5.3% | -24.1% | 1.9% |
+| Round 1's frozen stock book, same test years | 0.73 (t 2.1) | 0.85 | 7.2% | -14.8% | |
+
+By year (after costs): 2018 1.27, 2019 -0.55, 2020 -1.31, 2021 2.09, 2022 0.52, 2023 1.86, 2024 0.66,
+2025 1.58, 2026 (to June) -0.54. The losses are 2019-2020, when value, quality and low risk fell
+together.
+
+The test confirms a positive edge after costs, at about half its 2008-2017 level, with a drawdown
+well beyond the 10% goal; and the elaborate design does not beat round 1's simpler frozen book on
+years neither had seen. With the round-1 book's look (amendment 2), the stock test years have now
+been opened twice.
+
+Costs checked (spreads.py): each stock's half-spread estimated from its daily close, high and low
+(Abdi and Ranaldo), plus 1 bp commission, floor 2 bp. Median one-way cost of the names in each tier,
+1998-2007 / 2008-2017 / 2018-2026: 10 bp tier 11 / 13 / 13 bp; 20 bp tier 10 / 14 / 17 bp; 40 bp
+tier 20 / 20 / 21 bp (the estimator is known to read high for the most liquid names). The same
+frozen trades at the estimated costs: 0.51 on the test years (costs 2.0% a year). The tiers are not
+what holds the book back; its edge before costs is.

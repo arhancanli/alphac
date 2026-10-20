@@ -1,0 +1,64 @@
+{
+ "method": "Abdi-Ranaldo half-spread over 126 trading days, lagged 2, plus 1 bp commission, floor 2 bp, cap 200 bp; tiers where no estimate",
+ "median_one_way_by_tier_and_period": {
+  "tier_10bp": {
+   "1998-2007": 0.00112,
+   "2008-2017": 0.00127,
+   "2018-2026": 0.00133
+  },
+  "tier_20bp": {
+   "1998-2007": 0.00096,
+   "2008-2017": 0.00135,
+   "2018-2026": 0.00167
+  },
+  "tier_40bp": {
+   "1998-2007": 0.00204,
+   "2008-2017": 0.00203,
+   "2018-2026": 0.00213
+  }
+ },
+ "tier_costs": {
+  "test_years": {
+   "days": 2127,
+   "sharpe": 0.555,
+   "t": 1.61,
+   "ann_return": 0.053,
+   "ann_vol": 0.0955,
+   "max_dd": -0.2408
+  },
+  "2008_2017": {
+   "days": 2518,
+   "sharpe": 1.572,
+   "t": 4.97,
+   "ann_return": 0.14,
+   "ann_vol": 0.089,
+   "max_dd": -0.0938
+  },
+  "mean_gross_exposure": 4.58,
+  "turnover_per_year": 9.0,
+  "cost_per_year": 0.0192,
+  "names_held": 1129
+ },
+ "estimated_costs": {
+  "test_years": {
+   "days": 2127,
+   "sharpe": 0.513,
+   "t": 1.49,
+   "ann_return": 0.0491,
+   "ann_vol": 0.0958,
+   "max_dd": -0.2592
+  },
+  "2008_2017": {
+   "days": 2518,
+   "sharpe": 1.582,
+   "t": 5.0,
+   "ann_return": 0.1409,
+   "ann_vol": 0.089,
+   "max_dd": -0.0931
+  },
+  "mean_gross_exposure": 4.58,
+  "turnover_per_year": 9.0,
+  "cost_per_year": 0.0198,
+  "names_held": 1129
+ }
+}
