@@ -338,3 +338,19 @@ before costs; the best single signal, twelve-month trend, 0.38), and round 2's c
 cross-section lost after costs on 2020-2022. Running amendment 12 would be a second search of the
 same years for a small addition (basis momentum, skewness, sector cells), so no return of it was
 computed.
+
+## Amendment 13 (2026-10-20): variant D frozen on all search years and tested once on 2018-2026
+
+Owner, 2026-10-20: "ok go ahead" (to running variant D once on the held-back years). The design is
+variant D, the best on 2008-2017 in rounds 3-5, on the 52 signals of rounds 1-2 (round 4's
+thirty-five failed and are left out), with every rule of amendment 9 re-run on all search years:
+- signs, the netted share at full breadth, marginal-cost returns, families (bar 0.3), pods and the
+  correlation rules from 1998-2017;
+- pods weighted for diversification, the shrinkage chosen from {0.75, 0.5, 0.25} by fitting on
+  1998-2007 and running on 2008-2017 (amendment 9's split, one level up);
+- the band rule and width chosen from amendment 9's grid by the account's 1998-2017 record after
+  costs.
+The selection is written to frozen_variant_d.json and its sha256 recorded here before any return
+after 2017 is computed. test_d.py refuses to run otherwise, runs once on 2018-01-01 to 2026-06-18
+with round 1's costs, and its result is published whatever it shows. The stock test years were
+opened once before (round 1's book, amendment 2), so this is their second look, counted as a trial.
