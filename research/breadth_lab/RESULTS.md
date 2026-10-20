@@ -198,3 +198,31 @@ two ablations; trial Sharpes spread 0.66): the expected best of 11 null trials i
 deflated Sharpe is 0.46 (probability its true Sharpe is above zero, before deflation: 0.9996). The
 2008-2017 split is used up for design choices; the next gains are to be judged on new ideas, and
 the frozen design once on the 2018-2026 test window (the owner's call).
+
+## Round 4: thirty-five new ideas from local data (amendment 10)
+
+Thirty-five published stock signals added (87 in the library, 348 candidate families). Netted share
+on 1998-2007 at full breadth: 0.24 (more sleeves, more netting). Chosen on 1998-2007: 3,842
+sleeves, 181 families, 27 pods (9 made only of new signals, 7 mixing old and new).
+
+| 2008-2017 | Sharpe after costs | Before costs | Costs a year | Drawdown | 1998-2007 (chosen there) |
+|---|---|---|---|---|---|
+| Variant D (52 signals) | 1.04 (t 3.3) | 1.57 | 3.5% | -11.0% | 2.76 |
+| Round 4, pods weighted as ideas | 0.41 (t 1.3) | 1.09 | 3.2% | -20.9% | 3.17 |
+| Round 4, variant D's rules | 0.46 (t 1.5) | 1.23 | 3.7% | -20.1% | 3.20 |
+
+Round 4 fails out of sample and is not adopted; variant D stays the frozen design. Three reasons,
+read after the fact:
+1. The new signals faded after 2008 far more than the old. A diagnostic that selects nothing (each
+   signal's 48-industry book at its 1998-2007 sign, after its own costs): the 14 old signals at 0.3
+   or more on 1998-2007 averaged 0.34 on 2008-2017; the 4 new ones, 0.14; all new signals fell from
+   -0.27 to -0.54 on average against -0.22 to -0.16 for the old. Most are accounting anomalies
+   published 1995-2010, the kind that decay once known.
+2. A larger pool picked more luck: with 348 families judged on ten years at a bar of 0.3, more of
+   the admitted families are there by chance (the 1998-2007 book rose to 3.2 while 2008-2017 fell).
+3. Weighting pods as ideas at shrinkage 0.25 gave no capital to the four largest established pods
+   (low risk, momentum, value, quality: each correlated with the others) and spread it over smaller,
+   mostly new pods.
+The 2003-2007 validation that chose the shrinkage was not clean: the families were chosen on
+1998-2007, so they had already been picked partly on 2003-2007. A clean check chooses the families
+on 1998-2002 alone. Trials on the 2008-2017 split: 13.

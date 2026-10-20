@@ -1,0 +1,491 @@
+{
+ "protocol": "PROTOCOL.md amendment 10 (round4_d_rules)",
+ "weighting": "sleeves",
+ "chosen_on": "1998-01-01..2007-12-31",
+ "sleeves": 3842,
+ "families": 181,
+ "pods": 27,
+ "netted_share_used": 0.2428,
+ "signals_flipped_to_selection_sign": [
+  "accruals_s",
+  "capex_assets_s",
+  "capex_growth_s",
+  "cash_assets_s",
+  "ddep_s",
+  "ddiv_s",
+  "dmargin_s",
+  "drnd_s",
+  "dsales_drec_s",
+  "eap_s",
+  "intang_assets_s",
+  "season_s",
+  "small_63_s",
+  "tax_income_s"
+ ],
+ "validation_2003_2007": {
+  "0.75": 2.203,
+  "0.5": 2.401,
+  "0.25": 2.48
+ },
+ "shrink": 0.25,
+ "pod_capital": {
+  "0": 0.0339,
+  "1": 0.0,
+  "2": 0.0437,
+  "3": 0.0,
+  "4": 0.0091,
+  "5": 0.0359,
+  "6": 0.0964,
+  "7": 0.0697,
+  "8": 0.094,
+  "10": 0.0159,
+  "11": 0.0084,
+  "12": 0.0045,
+  "13": 0.119,
+  "14": 0.0824,
+  "15": 0.0001,
+  "16": 0.0146,
+  "17": 0.014,
+  "18": 0.0238,
+  "19": 0.0085,
+  "20": 0.0344,
+  "24": 0.0787,
+  "25": 0.0241,
+  "27": 0.0076,
+  "29": 0.0366,
+  "30": 0.0637,
+  "33": 0.0463,
+  "34": 0.0347
+ },
+ "pod_capital_variant_c_rule": {
+  "0": 0.0349,
+  "1": 0.0332,
+  "2": 0.0365,
+  "3": 0.0333,
+  "4": 0.0338,
+  "5": 0.0358,
+  "6": 0.0379,
+  "7": 0.0397,
+  "8": 0.0375,
+  "10": 0.0358,
+  "11": 0.0362,
+  "12": 0.035,
+  "13": 0.0383,
+  "14": 0.0414,
+  "15": 0.0361,
+  "16": 0.0381,
+  "17": 0.0374,
+  "18": 0.038,
+  "19": 0.0345,
+  "20": 0.0366,
+  "24": 0.0387,
+  "25": 0.0372,
+  "27": 0.036,
+  "29": 0.0428,
+  "30": 0.0387,
+  "33": 0.0393,
+  "34": 0.0376
+ },
+ "band_grid_1998_2007": {
+  "target_1": {
+   "first_half_net": {
+    "days": 2200,
+    "sharpe": 3.101,
+    "t": 9.16,
+    "ann_return": 0.188,
+    "ann_vol": 0.0606,
+    "max_dd": -0.0558
+   },
+   "mean_gross_exposure": 4.24,
+   "turnover_per_year": 11.7,
+   "cost_per_year": 0.0266,
+   "names_held": 1095
+  },
+  "target_1.5": {
+   "first_half_net": {
+    "days": 2200,
+    "sharpe": 2.699,
+    "t": 7.97,
+    "ann_return": 0.1609,
+    "ann_vol": 0.0596,
+    "max_dd": -0.0702
+   },
+   "mean_gross_exposure": 3.9,
+   "turnover_per_year": 8.2,
+   "cost_per_year": 0.0187,
+   "names_held": 892
+  },
+  "target_2": {
+   "first_half_net": {
+    "days": 2200,
+    "sharpe": 2.594,
+    "t": 7.66,
+    "ann_return": 0.1449,
+    "ann_vol": 0.0559,
+    "max_dd": -0.0527
+   },
+   "mean_gross_exposure": 3.48,
+   "turnover_per_year": 6.0,
+   "cost_per_year": 0.0136,
+   "names_held": 716
+  },
+  "edge_0.25": {
+   "first_half_net": {
+    "days": 2200,
+    "sharpe": 3.201,
+    "t": 9.46,
+    "ann_return": 0.1933,
+    "ann_vol": 0.0604,
+    "max_dd": -0.0682
+   },
+   "mean_gross_exposure": 4.42,
+   "turnover_per_year": 15.7,
+   "cost_per_year": 0.0355,
+   "names_held": 1451
+  },
+  "edge_0.5": {
+   "first_half_net": {
+    "days": 2200,
+    "sharpe": 3.192,
+    "t": 9.43,
+    "ann_return": 0.1855,
+    "ann_vol": 0.0581,
+    "max_dd": -0.0608
+   },
+   "mean_gross_exposure": 4.18,
+   "turnover_per_year": 10.3,
+   "cost_per_year": 0.0236,
+   "names_held": 1298
+  },
+  "edge_0.75": {
+   "first_half_net": {
+    "days": 2200,
+    "sharpe": 3.05,
+    "t": 9.01,
+    "ann_return": 0.1704,
+    "ann_vol": 0.0559,
+    "max_dd": -0.0548
+   },
+   "mean_gross_exposure": 3.89,
+   "turnover_per_year": 7.4,
+   "cost_per_year": 0.0172,
+   "names_held": 1192
+  },
+  "edge_1": {
+   "first_half_net": {
+    "days": 2200,
+    "sharpe": 2.87,
+    "t": 8.48,
+    "ann_return": 0.154,
+    "ann_vol": 0.0537,
+    "max_dd": -0.0483
+   },
+   "mean_gross_exposure": 3.59,
+   "turnover_per_year": 5.6,
+   "cost_per_year": 0.013,
+   "names_held": 1095
+  }
+ },
+ "band": "edge_0.25",
+ "pods_detail": {
+  "0": {
+   "sleeves": 490,
+   "signals": [
+    "dbeta_252_s",
+    "ddiv_s",
+    "lowbeta_252_s",
+    "lowvol_63_s",
+    "max_21_s",
+    "net_issuance_s",
+    "payout_yield_s",
+    "roa_vol_s",
+    "turnover_s",
+    "xfin_s"
+   ],
+   "round4_signals": [
+    "dbeta_252_s",
+    "ddiv_s",
+    "roa_vol_s"
+   ]
+  },
+  "1": {
+   "sleeves": 344,
+   "signals": [
+    "hi52_s",
+    "intraday_252_s",
+    "mom_12_1_s",
+    "mom_6_1_s",
+    "resid_mom_s",
+    "updays_s",
+    "vol_shock_s"
+   ],
+   "round4_signals": []
+  },
+  "3": {
+   "sleeves": 280,
+   "signals": [
+    "cfo_assets_s",
+    "cfo_debt_s",
+    "fscore_s",
+    "op_equity_s",
+    "roa_s",
+    "roic_s"
+   ],
+   "round4_signals": [
+    "cfo_debt_s"
+   ]
+  },
+  "6": {
+   "sleeves": 178,
+   "signals": [
+    "amihud_63_s",
+    "dvol_cv_s"
+   ],
+   "round4_signals": []
+  },
+  "7": {
+   "sleeves": 105,
+   "signals": [
+    "book_lev_s",
+    "current_ratio_s"
+   ],
+   "round4_signals": [
+    "book_lev_s",
+    "current_ratio_s"
+   ]
+  },
+  "8": {
+   "sleeves": 152,
+   "signals": [
+    "capex_dep_s",
+    "capex_growth_s",
+    "ppe_growth_s"
+   ],
+   "round4_signals": [
+    "capex_dep_s",
+    "ppe_growth_s"
+   ]
+  },
+  "11": {
+   "sleeves": 70,
+   "signals": [
+    "rnd_mv_s"
+   ],
+   "round4_signals": []
+  },
+  "13": {
+   "sleeves": 163,
+   "signals": [
+    "intang_assets_s",
+    "tangibility_s"
+   ],
+   "round4_signals": [
+    "intang_assets_s",
+    "tangibility_s"
+   ]
+  },
+  "14": {
+   "sleeves": 194,
+   "signals": [
+    "overnight_21_s",
+    "overnight_252_s"
+   ],
+   "round4_signals": []
+  },
+  "16": {
+   "sleeves": 29,
+   "signals": [
+    "capex_assets_s"
+   ],
+   "round4_signals": []
+  },
+  "17": {
+   "sleeves": 29,
+   "signals": [
+    "coskew_252_s"
+   ],
+   "round4_signals": [
+    "coskew_252_s"
+   ]
+  },
+  "18": {
+   "sleeves": 27,
+   "signals": [
+    "ddep_s"
+   ],
+   "round4_signals": [
+    "ddep_s"
+   ]
+  },
+  "19": {
+   "sleeves": 91,
+   "signals": [
+    "debt_issuance_s"
+   ],
+   "round4_signals": []
+  },
+  "20": {
+   "sleeves": 73,
+   "signals": [
+    "dsales_dinv_s"
+   ],
+   "round4_signals": []
+  },
+  "24": {
+   "sleeves": 75,
+   "signals": [
+    "gross_margin_s"
+   ],
+   "round4_signals": [
+    "gross_margin_s"
+   ]
+  },
+  "25": {
+   "sleeves": 127,
+   "signals": [
+    "lag_corr_252_s"
+   ],
+   "round4_signals": [
+    "lag_corr_252_s"
+   ]
+  },
+  "27": {
+   "sleeves": 96,
+   "signals": [
+    "mom_accel_s"
+   ],
+   "round4_signals": [
+    "mom_accel_s"
+   ]
+  },
+  "29": {
+   "sleeves": 107,
+   "signals": [
+    "rev_1w_s"
+   ],
+   "round4_signals": []
+  },
+  "30": {
+   "sleeves": 126,
+   "signals": [
+    "rev_36_12_s"
+   ],
+   "round4_signals": []
+  },
+  "33": {
+   "sleeves": 34,
+   "signals": [
+    "tax_income_s"
+   ],
+   "round4_signals": [
+    "tax_income_s"
+   ]
+  },
+  "34": {
+   "sleeves": 130,
+   "signals": [
+    "zero_days_252_s"
+   ],
+   "round4_signals": [
+    "zero_days_252_s"
+   ]
+  },
+  "2": {
+   "sleeves": 286,
+   "signals": [
+    "book_to_market_s",
+    "earnings_yield_s",
+    "ebitda_ev_s",
+    "mkt_lev_s",
+    "sales_yield_s",
+    "zscore_s"
+   ],
+   "round4_signals": [
+    "mkt_lev_s",
+    "zscore_s"
+   ]
+  },
+  "4": {
+   "sleeves": 197,
+   "signals": [
+    "droa_s",
+    "droe_s",
+    "ni_streak_s",
+    "sue_s"
+   ],
+   "round4_signals": [
+    "droa_s",
+    "droe_s",
+    "ni_streak_s"
+   ]
+  },
+  "5": {
+   "sleeves": 236,
+   "signals": [
+    "asset_growth_s",
+    "inv_growth_s",
+    "noa_s",
+    "revenue_surprise_s"
+   ],
+   "round4_signals": []
+  },
+  "10": {
+   "sleeves": 61,
+   "signals": [
+    "asset_turnover_s",
+    "oper_leverage_s"
+   ],
+   "round4_signals": [
+    "asset_turnover_s"
+   ]
+  },
+  "12": {
+   "sleeves": 116,
+   "signals": [
+    "gp_assets_s",
+    "sga_assets_s"
+   ],
+   "round4_signals": [
+    "sga_assets_s"
+   ]
+  },
+  "15": {
+   "sleeves": 26,
+   "signals": [
+    "ato_change_s"
+   ],
+   "round4_signals": []
+  }
+ },
+ "round4_d_rules": {
+  "second_half_net": {
+   "days": 2518,
+   "sharpe": 0.464,
+   "t": 1.47,
+   "ann_return": 0.0322,
+   "ann_vol": 0.0694,
+   "max_dd": -0.2009
+  },
+  "second_half_before_costs": {
+   "days": 2518,
+   "sharpe": 1.226,
+   "t": 3.87,
+   "ann_return": 0.0849,
+   "ann_vol": 0.0692,
+   "max_dd": -0.093
+  },
+  "first_half_net": {
+   "days": 2200,
+   "sharpe": 3.201,
+   "t": 9.46,
+   "ann_return": 0.1933,
+   "ann_vol": 0.0604,
+   "max_dd": -0.0682
+  },
+  "mean_gross_exposure": 5.06,
+  "turnover_per_year": 17.3,
+  "cost_per_year": 0.0372,
+  "names_held": 1729
+ },
+ "seconds": 495
+}
