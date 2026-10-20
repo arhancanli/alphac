@@ -330,3 +330,11 @@ December 2017. 2018-2026 stays untouched, the same test window as the stock book
 - Reported for June 2010 to 2017: each pod and the futures book after costs; their weekly
   correlation with variant D's stock book over the same years (out of sample for variant D); and
   the combined book, the stock book and the futures book at equal risk, scaled to 10%.
+
+Amendment 12 was not run. After writing it, the round-2 futures block (amendment 3) was found to
+have searched the same markets and years with trend at four horizons, carry and cross-sectional
+momentum: its book of all futures signals earned -0.13 after costs on June 2010 to 2017 (0.19
+before costs; the best single signal, twelve-month trend, 0.38), and round 2's crypto
+cross-section lost after costs on 2020-2022. Running amendment 12 would be a second search of the
+same years for a small addition (basis momentum, skewness, sector cells), so no return of it was
+computed.
