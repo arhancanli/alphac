@@ -299,3 +299,34 @@ selection years, and nothing after 2007 enters any number (the account runs on a
   record after and before costs. The rule with the best 2003-2007 Sharpe after costs is then run
   once as chosen on 1998-2007 and scored on 2008-2017 (trial 14 on that split), and becomes the
   candidate for the frozen design.
+
+## Amendment 12 (2026-10-20): round 6, futures pods from local data, written before it was computed
+
+Rounds 3-5 showed that the next independent alpha has to come from other markets. Round 6 builds
+futures sleeves on the local CME data: daily bars of every outright contract of 39 markets, June
+2010 to June 2026 (calendar spreads dropped). A contract is identified by its exchange id and dated
+by its last trade, since one-digit year codes repeat each decade. Search years: June 2010 to
+December 2017. 2018-2026 stays untouched, the same test window as the stock book.
+- Continuous returns: each day the held contract is the one with the most volume over the last five
+  days among those expiring more than a week later. Returns are taken inside one contract, so a
+  roll costs two trades and adds no price gap. The second contract is the next to expire after it.
+- Signals, each in its published direction, nothing chosen on the data: time-series momentum over
+  one, three and twelve months (the sign of the past return; Moskowitz, Ooi and Pedersen); carry
+  (front over second contract, annualised by the time between their expiries; Koijen, Moskowitz,
+  Pedersen and Vrugt), as a time series (its sign) and across markets; cross-sectional momentum
+  (twelve months skipping the last; Asness, Moskowitz and Pedersen); basis momentum (twelve-month
+  return of the front minus the second contract; Boons and Prado); skewness (negated 252-day
+  skewness; Fernandez-Perez, Frijns, Fuertes and Miffre).
+- Sleeves: a time-series sleeve per market and signal, sized to 10% volatility with the market's
+  trailing 63-day volatility (at most 5x); a cross-sectional sleeve per sector (energy, metals,
+  grains, livestock, rates, currencies, stock indices; at least three markets) and one across all
+  markets, rank-demeaned with risk-parity sizes, scaled to 10%. Rebalanced at week ends, traded at
+  the next close and earning from the second close after, as in the stock engine.
+- Costs one-way per unit of notional: 1 bp for markets averaging 200,000 contracts a day or more,
+  2 bp from 20,000, else 5 bp; a roll trades twice. Sleeves in the same market are netted into one
+  position per market before costs.
+- Pods: one per idea (trend, carry, cross-sectional momentum, basis momentum, skewness); equal
+  risk across pods and across the sleeves inside a pod; scales move at month ends.
+- Reported for June 2010 to 2017: each pod and the futures book after costs; their weekly
+  correlation with variant D's stock book over the same years (out of sample for variant D); and
+  the combined book, the stock book and the futures book at equal risk, scaled to 10%.
