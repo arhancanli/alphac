@@ -97,3 +97,47 @@ What round 2 may add, all chosen on search years:
 
 The round-2 selection is frozen in `frozen_selection_round2.json`; its sha256 is recorded here
 before the test years are opened again, and the round-2 test runner refuses to run otherwise.
+
+## Amendment 4 (2026-10-20): round 3, pods and flexible admission, written before any round-3 return was computed
+
+Owner, 2026-10-20: "lets try to get to 10k sleeves all with very very weak corellations and dont
+make the juding rubric on whether we shuld get the sleeve or not so strict be flexible", and the pod
+structure he asked for on 2026-10-12 ("run it like citadel ... hundreds of these pods and each
+consists of levers which make each other stronger"). The governing rule (config/owner_goals.json,
+2026-10-20): correlation between sleeves matters most; be flexible about each sleeve, never about
+correlation. Round 3 uses the search years only (stocks 1998-2017). No round-3 return on the test
+years is computed; the stock test window was used once (amendment 2) and any second look is the
+owner's decision and is counted as a trial. Nothing is admitted to the paper book.
+
+**Candidate sleeves.** Every overlapping-portfolio stock signal registered in rounds 1 and 2,
+signed at the signal level by its search-year book Sharpe before costs (as round 1), built in three
+cell schemes, with the same costs, borrow, market hedge and volatility scaling as rounds 1-2:
+- `ind48`: each Fama-French 48 industry (the round 1-2 sleeves);
+- `ind48xL`, `ind48xS`: each industry split at its median 63-day dollar volume on every rebalance date
+  (larger and smaller names), each half normalized to gross 1 inside the industry;
+- `ind150`: each of Sharadar's 150 industries.
+A cell needs at least 6 eligible names on a rebalance date (flexible; rounds 1-2 used 10).
+
+**Pods.** Signals are grouped into pods by joining signal books whose weekly correlation is 0.5 or
+more in absolute value (average linkage, `effective_bets.idea_clusters`). A pod is one idea; its
+sleeves are its levers.
+
+**Admission (flexible, correlation first).** A candidate is admitted when all three hold:
+1. its search-year Sharpe after its own costs is above 0 (it pays for itself; no t-statistic bar);
+2. its weekly correlation with every sleeve already admitted in its pod is below 0.5 in absolute
+   value (no near-duplicates);
+3. its average weekly correlation with all sleeves already admitted is below 0.05 (weakly
+   correlated with the book).
+Order: inside each pod by Sharpe after costs, pods taken in turn. Correlations use weekly sums and at
+least 104 shared weeks; pairs with fewer shared weeks count as 0.
+
+**The central layer.** Equal weight on sleeves inside a pod (each sleeve is already scaled to 10%
+volatility); pods weighted in proportion to 1 / (1 + their average correlation with the other
+pods); the sum scaled to the 10% target with a trailing volatility, lagged a day. A pod brake is
+reported beside the plain book: a pod's weight halves when its own shadow record is 5% below its
+peak and goes to zero at 7.5%, judged on yesterday's record.
+
+**Reported.** Candidates; admitted sleeves; effective independent bets at the sleeve level
+(participation ratio N^2 / sum of squared correlations), the pod level and the idea level; book
+statistics on the search years with and without the brake; and a split check: admission run on
+1998-2007 alone, the book's 2008-2017 record reported as it comes out.
