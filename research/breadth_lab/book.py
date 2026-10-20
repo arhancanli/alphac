@@ -52,7 +52,8 @@ def positions(c: Ctx, mode: str, selection: list[tuple[str, str, int]], timing: 
         for ind, sign in picks.items():
             if ind not in lev.columns:
                 continue
-            cols = np.flatnonzero((industry == ind).to_numpy())
+            # An industry-rotation sleeve (round 2) spans every industry under the pseudo-industry "ALL".
+            cols = np.arange(len(industry)) if ind == "ALL" else np.flatnonzero((industry == ind).to_numpy())
             k = lev[ind].to_numpy() * (mult[ind].to_numpy() if mult is not None and ind in mult.columns else 1.0)
             scale = (k * sign / n)[:, None]
             pos[:, cols] += w.iloc[:, cols].to_numpy() * scale

@@ -21,6 +21,15 @@ RUNS = [
     ("select_smoothed.log", "stocks-book", "selection rules for the netted book, overlapping-portfolio signals"),
     ("band_search.log", "stocks-book", "no-trade band on the netted book (rule signals_pre_0.3, overlapping-portfolio signals)"),
     ("crypto_search.log", "crypto", "cash-and-carry per coin, on while trailing funding pays"),
+    # Round 2 (PROTOCOL amendment 3), search years only.
+    ("r2_futures_search.log", "futures", "round 2: trend at 21/63/126/252 days, carry and cross-sectional momentum per CME market (a first run with a book-scaling bug on the same six variants was discarded unread past the bug)"),
+    ("r2_futures_search2.log", "futures", "round 2: slower trend variants (monthly, blended 126+252, sign of the 12-month return) beside the first six"),
+    ("r2_crypto_xs_search.log", "crypto-xs", "round 2: ten signals ranked across perpetuals inside four liquidity tiers"),
+    ("r2_signals_price.log", "stocks", "round 2: six new price signals inside industries, overlapping portfolios"),
+    ("r2_signals_fund.log", "stocks", "round 2: fifteen new fundamental signals from the full SF1 file inside industries, overlapping portfolios"),
+    ("r2_industries.log", "stocks-industries", "round 2: industry rotation, whole industries ranked against each other"),
+    ("r2_books_a.log", "stocks-book", "round 2: netted books with the new signals, with and without factor momentum (band 1.5)"),
+    ("r2_books_b.log", "stocks-book", "round 2: further netted-book variants"),
 ]
 
 
