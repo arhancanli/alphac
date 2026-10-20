@@ -54,3 +54,22 @@ the band the frozen file already named; nothing in the frozen file changed.
 No sleeve here is admitted to the paper book. The 100-odd variants in `ledger.jsonl` join the trial
 accounting before any admission. The forward paper record is the only clean test left, and the
 recent years say the edge may be thinner now than the test window's average.
+
+## How many distinct ideas the stock book holds (2026-10-20, search years only)
+
+`effective_bets.py` counts independent bets at three levels (weekly returns, 1998-2017, the 27 frozen
+signals; output `var/breadth_lab/effective_bets_search.json`):
+
+| Level | Count |
+|---|---|
+| Sleeves | 1,026 |
+| Independent bets across sleeves | 158 |
+| Signal families | 27 |
+| Independent bets across family books | 5.6 |
+| Ideas (families joined while their books correlate 0.5 or more) | 9 |
+
+The sleeve-level 158 counts industry noise that carries no edge; the family level is the honest count.
+The nine ideas: momentum and value together (8 signals), low risk and liquidity (5), profitability (4),
+growth and long-term reversal (3), cash yields and issuance (3), and four on their own: accruals,
+overnight returns, weekly reversal, seasonality. More signals inside these groups add almost nothing.
+New ideas have to come from new data or new markets.
