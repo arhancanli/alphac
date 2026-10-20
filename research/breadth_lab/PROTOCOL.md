@@ -190,3 +190,17 @@ computed with the round-1 cost per name: the sum of what each sleeve pays for it
 what one account pays for the summed positions' trades. Reported: the netted share of the summed
 cost by K, and the slope of its logarithm against log K (independent trades give -0.5 once
 sleeves overlap in the same names; none at all give 0).
+
+## Amendment 8 (2026-10-20): variant C, admission on marginal netted cost, written before it was computed
+
+The netting law says a sleeve inside a full-breadth account pays about 30% of its standalone cost.
+Variant C judges families on that marginal cost instead of the standalone cost:
+- The full-breadth netted share s is measured again on the selection years alone (1998-2007, all
+  candidate sleeves with three years of data there, one draw), so nothing from 2008-2017 enters.
+- Each sleeve's return at marginal cost is its before-cost return minus s times its standalone cost
+  (before-cost minus after-cost return).
+- A family is admitted when its book's Sharpe at marginal cost on 1998-2007 is at least 0.3 and its
+  sign agrees (as variant B). All its sleeves are kept, subject to the correlation rules of
+  amendment 4, in the same order as variant B.
+- The selection is traded as one netted account exactly as amendment 6 (no band, and band 1.5), and
+  its 2008-2017 record is reported as it comes out, beside variant B's.
