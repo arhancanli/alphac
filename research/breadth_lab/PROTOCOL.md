@@ -178,3 +178,15 @@ and hedge ratio (recomputed exactly as built), at the weight W_pod / n_pod: pods
 The account is scaled at month ends to the 10% target with its trailing volatility (cap 20x, as
 `book.py`). Reported for 2008-2017, before and after costs, with no band and with the round-1
 frozen no-trade band of 1.5. Nothing else is chosen in this step.
+
+## Amendment 7 (2026-10-20): the netting law, written before it was computed
+
+A measurement of costs, not of returns, on the search years (1998-2017); nothing is selected. For
+every one of the 10,785 round-3 candidate sleeves, its stock positions (cell weights times its own
+leverage, held between rebalances as `book.py` does) are sampled on a weekly grid. For K in 10, 30,
+100, 300, 1,000, 3,000 and all sleeves, random sets of K sleeves (seeded; 20 sets at K <= 100, 5 at
+300 and 1,000, 2 at 3,000, the full set once) are combined at equal weight, and two costs are
+computed with the round-1 cost per name: the sum of what each sleeve pays for its own trades, and
+what one account pays for the summed positions' trades. Reported: the netted share of the summed
+cost by K, and the slope of its logarithm against log K (independent trades give -0.5 once
+sleeves overlap in the same names; none at all give 0).
