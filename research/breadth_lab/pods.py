@@ -21,7 +21,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from research.breadth_lab import lab, round2
+from research.breadth_lab import lab, round2, round4
 from research.breadth_lab.effective_bets import idea_clusters, participation, weekly_corr
 from research.breadth_lab.lab import TARGET_VOL, Ctx, context, hedge_and_scale, sleeve_returns, smoothed, stats
 from research.breadth_lab.panel import CACHE, Panel
@@ -41,7 +41,9 @@ SECOND = ("2008-01-01", "2017-12-31")
 
 
 def signals() -> list[str]:
+    """The library: every overlapping-portfolio signal of rounds 1-2 and, from amendment 10, round 4."""
     round2.register()
+    round4.register()
     return sorted(n for n in lab.SIGNALS if n.endswith("_s"))
 
 
@@ -407,21 +409,35 @@ def diversified(books: pd.DataFrame, shrink: float) -> pd.Series:
     return pd.Series(w / w.sum(), index=books.columns)
 
 
+def as_ideas(books: pd.DataFrame, shrink: float) -> pd.Series:
+    """Capital per pod when every pod (idea) is expected to earn the same Sharpe (amendment 10): inverse(R) x 1 / sigma,
+    with the pods' weekly correlations shrunk toward zero; long only, summing to one."""
+    vol = books.std().to_numpy()
+    if np.isnan(vol).any():
+        raise ValueError("a pod has no record in the fitting years")
+    rho = (1.0 - shrink) * weekly_corr(books).fillna(0.0).to_numpy() + shrink * np.eye(len(vol))
+    w = np.clip(np.linalg.solve(rho, np.ones(len(vol))) / vol, 0.0, None)
+    return pd.Series(w / w.sum(), index=books.columns)
+
+
 def _scaled(raw: pd.Series) -> pd.Series:
     """A book scaled to the target with its trailing volatility, lagged a day, from its first live day."""
     raw = raw.where(raw != 0)
     return raw * (TARGET_VOL / (raw.rolling(126, min_periods=63).std() * np.sqrt(252)).shift(1))
 
 
-def netted_d() -> dict:
-    """Variant D, chosen on 1998-2007 and run once on 2008-2017, with its two ablations."""
+def netted_d(weighting: str = "sleeves", share: float | None = None, ablations: bool = True,
+             out: str = "round3f_variant_d.json", tag: str = "d") -> dict:
+    """Variant D, chosen on 1998-2007 and run once on 2008-2017, with its two ablations. ``weighting="ideas"``
+    and the other options serve round 4 (amendment 10): pods weighted as ideas, one netted share for two books."""
     from research.breadth_lab.book import MAX_BOOK_LEVERAGE, account
     from research.breadth_lab.netting_law import full_share
     t0 = time.time()
     built = json.loads((OUT / "signs.json").read_text())
     own = {n: sign_on(n, *FIRST) for n in signals()}
-    share = full_share(FIRST, own)
-    print("netted_share_1998_2007", round(share, 4), flush=True)
+    if share is None:
+        share = full_share(FIRST, own)
+        print("netted_share_1998_2007", round(share, 4), flush=True)
     first = candidates(*FIRST)
     gross = candidates(*FIRST, tag="gross").reindex(columns=first.columns)
     flip = pd.Series([own[k.split("|")[0]] * built[k.split("|")[0]] for k in first.columns], index=first.columns).astype("float32")
@@ -435,13 +451,14 @@ def netted_d() -> dict:
     count = pod.value_counts()
     books = pd.DataFrame({p: judged[pod.index[pod == p]].astype("float64").mean(axis=1) for p in sorted(pod.unique())})
     fit, run = VALIDATION
+    weigh, shrinks = (as_ideas, (1.0, *SHRINKS)) if weighting == "ideas" else (diversified, SHRINKS)
     check = {}
-    for lam in SHRINKS:
-        w = diversified(books.loc[fit[0]:fit[1]], lam)
+    for lam in shrinks:
+        w = weigh(books.loc[fit[0]:fit[1]], lam)
         check[lam] = stats(_scaled(books.fillna(0.0).mul(w, axis=1).sum(axis=1)).loc[run[0]:run[1]]).get("sharpe")
-        print(f"validation_shrink_{lam:g}", json.dumps({"run_2003_2007_sharpe": check[lam]}), flush=True)
+        print(f"{tag}_validation_shrink_{lam:g}", json.dumps({"run_2003_2007_sharpe": check[lam]}), flush=True)
     shrink = max(check, key=lambda k: check[k])
-    wpod = diversified(books, shrink)
+    wpod = weigh(books, shrink)
     standalone = pd.DataFrame({p: net[pod.index[pod == p]].astype("float64").mean(axis=1) for p in sorted(pod.unique())})
     pc = weekly_corr(standalone).fillna(0.0).to_numpy()
     wc = pd.Series(1.0 / (1.0 + (pc.sum(axis=1) - 1.0) / max(len(pc) - 1, 1)), index=standalone.columns)
@@ -472,28 +489,36 @@ def netted_d() -> dict:
     for key, (band, edge) in options.items():
         n1, _, expo = account(cw, pos.loc[a:z], hedge.loc[a:z], scale.loc[a:z], band, edge)
         grid[key] = {"first_half_net": stats(n1.where(scale.loc[a:z].notna())), **expo}
-        print(f"grid_{key}", json.dumps(grid[key]), flush=True)
+        print(f"{tag}_grid_{key}", json.dumps(grid[key]), flush=True)
     best = max(grid, key=lambda k: grid[k]["first_half_net"].get("sharpe", -9.0))
     band, edge = options[best]
-    result = {"protocol": "PROTOCOL.md amendment 9 (variant D)", "chosen_on": f"{FIRST[0]}..{FIRST[1]}", "sleeves": len(cols),
+    members = {}
+    for k in cols:
+        members.setdefault(str(pod[k]), set()).add(k.split("|")[0])
+    new = {f"{n}_s" for n in round4.NEW}
+    result = {"protocol": "PROTOCOL.md amendment 9 (variant D)" if tag == "d" else f"PROTOCOL.md amendment 10 ({tag})",
+              "weighting": weighting, "chosen_on": f"{FIRST[0]}..{FIRST[1]}", "sleeves": len(cols),
               "families": len({family_of(k) for k in cols}), "pods": int(pod.nunique()), "netted_share_used": round(share, 4),
               "signals_flipped_to_selection_sign": sorted(n for n in own if own[n] != built[n]),
               "validation_2003_2007": {str(k): v for k, v in check.items()}, "shrink": shrink,
               "pod_capital": {str(p): round(float(x), 4) for p, x in wpod.items()},
               "pod_capital_variant_c_rule": {str(p): round(float(x), 4) for p, x in wc.items()},
-              "band_grid_1998_2007": grid, "band": best}
+              "band_grid_1998_2007": grid, "band": best,
+              "pods_detail": {p: {"sleeves": int((pod.astype(str) == p).sum()), "signals": sorted(v), "round4_signals": sorted(v & new)}
+                              for p, v in members.items()}}
     d = report(pos, hedge, scale, band, edge)
-    d.pop("_net").to_frame("net").to_parquet(OUT / "variant_d_net.parquet")
-    result["d"] = d
-    print("d", json.dumps(d), flush=True)
-    result["ablation_round1_band"] = {k: v for k, v in report(pos, hedge, scale, 1.5, False).items() if k != "_net"}
-    print("ablation_round1_band", json.dumps(result["ablation_round1_band"]), flush=True)
-    del pos, hedge
-    pos, hedge, scale = build_account(wc)
-    result["ablation_variant_c_pod_weights"] = {k: v for k, v in report(pos, hedge, scale, band, edge).items() if k != "_net"}
-    print("ablation_variant_c_pod_weights", json.dumps(result["ablation_variant_c_pod_weights"]), flush=True)
+    d.pop("_net").to_frame("net").to_parquet(OUT / ("variant_d_net.parquet" if tag == "d" else f"{tag}_net.parquet"))
+    result[tag] = d
+    print(tag, json.dumps(d), flush=True)
+    if ablations:
+        result["ablation_round1_band"] = {k: v for k, v in report(pos, hedge, scale, 1.5, False).items() if k != "_net"}
+        print("ablation_round1_band", json.dumps(result["ablation_round1_band"]), flush=True)
+        del pos, hedge
+        pos, hedge, scale = build_account(wc)
+        result["ablation_variant_c_pod_weights"] = {k: v for k, v in report(pos, hedge, scale, band, edge).items() if k != "_net"}
+        print("ablation_variant_c_pod_weights", json.dumps(result["ablation_variant_c_pod_weights"]), flush=True)
     result["seconds"] = round(time.time() - t0)
-    (HERE / "round3f_variant_d.json").write_text(json.dumps(result, indent=1))
+    (HERE / out).write_text(json.dumps(result, indent=1))
     return result
 
 
