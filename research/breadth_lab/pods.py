@@ -186,12 +186,13 @@ def sign_on(name: str, a: str, z: str) -> int:
     return 1 if stats(lab.book(gross)).get("sharpe", 0.0) >= 0 else -1
 
 
-def admit_families(sleeves: pd.DataFrame, years: tuple[str, str], judged: pd.DataFrame | None = None) -> tuple[list[int], np.ndarray, dict[str, int], dict[str, float]]:
-    """Variant B; with ``judged`` (variant C, amendment 8) families are judged on those returns instead."""
+def admit_families(sleeves: pd.DataFrame, years: tuple[str, str], judged: pd.DataFrame | None = None, signed: bool = False) -> tuple[list[int], np.ndarray, dict[str, int], dict[str, float]]:
+    """Variant B; with ``judged`` (variant C, amendment 8) families are judged on those returns instead.
+    ``signed`` (variant D, amendment 9): the sleeves already carry their selection-year sign, so none is left out."""
     judged = sleeves if judged is None else judged
     built = json.loads((OUT / "signs.json").read_text())
     fam = pd.Series([family_of(k) for k in sleeves.columns], index=sleeves.columns)
-    agrees = {n: sign_on(n, *years) == built[n] for n in {f.split("|")[0] for f in fam}}
+    agrees = {n: signed or sign_on(n, *years) == built[n] for n in {f.split("|")[0] for f in fam}}
     chosen: dict[str, float] = {}
     for f, cols in fam.groupby(fam).groups.items():
         if not agrees[f.split("|")[0]]:
@@ -331,9 +332,31 @@ def netted_split(bands: tuple[float, ...] = (0.0, 1.5), variant: str = "B") -> d
     del first
     signals()
     c = context(Panel("search"))
+    pos, hedge = _positions(c, cols, weight, json.loads((OUT / "signs.json").read_text()))
+    net0, _, _ = account(c, pos, hedge)
+    vol = net0.rolling(126, min_periods=63).std() * np.sqrt(252)
+    target = (TARGET_VOL / vol).clip(upper=MAX_BOOK_LEVERAGE)
+    scale = target.where(target.index.isin(c.month_ends)).ffill().shift(2)
+    result = {"protocol": "PROTOCOL.md amendment 6" if variant == "B" else "PROTOCOL.md amendment 8 (variant C)",
+              "chosen_on": f"{FIRST[0]}..{FIRST[1]}", "sleeves": len(cols), "families": len({family_of(k) for k in cols}),
+              "pods": int(pod.nunique()), "netted_share_used": share}
+    for band in bands:
+        net, gross, expo = account(c, pos, hedge, scale, band)
+        net, gross = net.where(scale.notna()), gross.where(scale.notna())
+        result[f"band_{band:g}"] = {"second_half_net": stats(net.loc[SECOND[0]:SECOND[1]]),
+                                    "second_half_before_costs": stats(gross.loc[SECOND[0]:SECOND[1]]),
+                                    "first_half_net": stats(net.loc[FIRST[0]:FIRST[1]]), **expo}
+        print(f"band_{band:g}", json.dumps(result[f"band_{band:g}"]), flush=True)
+    result["seconds"] = round(time.time() - t0)
+    (HERE / ("round3c_netted.json" if variant == "B" else "round3e_netted_variant_c.json")).write_text(json.dumps(result, indent=1))
+    return result
+
+
+def _positions(c: Ctx, cols: list[str], weight: dict[str, float], signs: dict[str, int]) -> tuple[pd.DataFrame, pd.Series]:
+    """The sleeves summed into one account: each sleeve's stock positions (cell weights times its own leverage)
+    and market hedge at its weight, every signal at the sign given."""
     cells = {"ind48": (c, None), "ind48xL": (c, "L"), "ind48xS": (c, "S"),
              "ind150": (dataclasses.replace(c, bucket=c.p.meta["industry"]), None)}
-    signs = json.loads((OUT / "signs.json").read_text())
     pos = np.zeros(c.r.shape)
     hedge = np.zeros(len(c.r))
     families: dict[str, list[str]] = {}
@@ -363,24 +386,114 @@ def netted_split(bands: tuple[float, ...] = (0.0, 1.5), variant: str = "B") -> d
             pos[:, idx] += w.iloc[:, idx].to_numpy() * size[:, None]
             hedge -= beta[cell].to_numpy() * size
         print(fam, len(members), flush=True)
-    pos = pd.DataFrame(pos, index=c.r.index, columns=c.r.columns)
-    hedge = pd.Series(hedge, index=c.r.index)
-    net0, _, _ = account(c, pos, hedge)
-    vol = net0.rolling(126, min_periods=63).std() * np.sqrt(252)
-    target = (TARGET_VOL / vol).clip(upper=MAX_BOOK_LEVERAGE)
-    scale = target.where(target.index.isin(c.month_ends)).ffill().shift(2)
-    result = {"protocol": "PROTOCOL.md amendment 6" if variant == "B" else "PROTOCOL.md amendment 8 (variant C)",
-              "chosen_on": f"{FIRST[0]}..{FIRST[1]}", "sleeves": len(cols), "families": len(families),
-              "pods": int(pod.nunique()), "netted_share_used": share}
-    for band in bands:
-        net, gross, expo = account(c, pos, hedge, scale, band)
+    return pd.DataFrame(pos, index=c.r.index, columns=c.r.columns), pd.Series(hedge, index=c.r.index)
+
+
+# ---- variant D (amendment 9): selection-year signs, pods weighted for diversification, the band's edge ---
+
+SHRINKS = (0.75, 0.5, 0.25)
+VALIDATION = (("1998-01-01", "2002-12-31"), ("2003-01-01", "2007-12-31"))
+BAND_GRID = ((1.0, False), (1.5, False), (2.0, False), (0.25, True), (0.5, True), (0.75, True), (1.0, True))
+
+
+def diversified(books: pd.DataFrame, shrink: float) -> pd.Series:
+    """Capital per pod for the most diversified book, inverse(Sigma) x 1 (every sleeve expected to earn the same
+    Sharpe), with the pods' weekly correlations shrunk toward zero; long only, summing to one."""
+    vol = books.std().to_numpy()
+    if np.isnan(vol).any():
+        raise ValueError("a pod has no record in the fitting years")
+    rho = (1.0 - shrink) * weekly_corr(books).fillna(0.0).to_numpy() + shrink * np.eye(len(vol))
+    w = np.clip(np.linalg.solve(np.outer(vol, vol) * rho, np.ones(len(vol))), 0.0, None)
+    return pd.Series(w / w.sum(), index=books.columns)
+
+
+def _scaled(raw: pd.Series) -> pd.Series:
+    """A book scaled to the target with its trailing volatility, lagged a day, from its first live day."""
+    raw = raw.where(raw != 0)
+    return raw * (TARGET_VOL / (raw.rolling(126, min_periods=63).std() * np.sqrt(252)).shift(1))
+
+
+def netted_d() -> dict:
+    """Variant D, chosen on 1998-2007 and run once on 2008-2017, with its two ablations."""
+    from research.breadth_lab.book import MAX_BOOK_LEVERAGE, account
+    from research.breadth_lab.netting_law import full_share
+    t0 = time.time()
+    built = json.loads((OUT / "signs.json").read_text())
+    own = {n: sign_on(n, *FIRST) for n in signals()}
+    share = full_share(FIRST, own)
+    print("netted_share_1998_2007", round(share, 4), flush=True)
+    first = candidates(*FIRST)
+    gross = candidates(*FIRST, tag="gross").reindex(columns=first.columns)
+    flip = pd.Series([own[k.split("|")[0]] * built[k.split("|")[0]] for k in first.columns], index=first.columns).astype("float32")
+    cost = gross - first
+    gross = gross.mul(flip, axis=1)
+    net, judged = gross - cost, gross - share * cost
+    del first, cost
+    a1, _, pods1, _ = admit_families(net, FIRST, judged, signed=True)
+    cols = list(net.columns[a1])
+    pod = pd.Series([pods1[k.split("|")[0]] for k in cols], index=cols)
+    count = pod.value_counts()
+    books = pd.DataFrame({p: judged[pod.index[pod == p]].astype("float64").mean(axis=1) for p in sorted(pod.unique())})
+    fit, run = VALIDATION
+    check = {}
+    for lam in SHRINKS:
+        w = diversified(books.loc[fit[0]:fit[1]], lam)
+        check[lam] = stats(_scaled(books.fillna(0.0).mul(w, axis=1).sum(axis=1)).loc[run[0]:run[1]]).get("sharpe")
+        print(f"validation_shrink_{lam:g}", json.dumps({"run_2003_2007_sharpe": check[lam]}), flush=True)
+    shrink = max(check, key=lambda k: check[k])
+    wpod = diversified(books, shrink)
+    standalone = pd.DataFrame({p: net[pod.index[pod == p]].astype("float64").mean(axis=1) for p in sorted(pod.unique())})
+    pc = weekly_corr(standalone).fillna(0.0).to_numpy()
+    wc = pd.Series(1.0 / (1.0 + (pc.sum(axis=1) - 1.0) / max(len(pc) - 1, 1)), index=standalone.columns)
+    wc = wc / wc.sum()
+    del net, gross, judged
+    signals()
+    c = context(Panel("search"))
+
+    def build_account(wp: pd.Series) -> tuple[pd.DataFrame, pd.Series, pd.Series]:
+        weight = {col: float(wp[pod[col]]) / int(count[pod[col]]) for col in cols}
+        pos, hedge = _positions(c, cols, weight, own)
+        net0, _, _ = account(c, pos, hedge)
+        target = (TARGET_VOL / (net0.rolling(126, min_periods=63).std() * np.sqrt(252))).clip(upper=MAX_BOOK_LEVERAGE)
+        return pos, hedge, target.where(target.index.isin(c.month_ends)).ffill().shift(2)
+
+    def report(pos: pd.DataFrame, hedge: pd.Series, scale: pd.Series, band: float, edge: bool) -> dict:
+        net, gross, expo = account(c, pos, hedge, scale, band, edge)
         net, gross = net.where(scale.notna()), gross.where(scale.notna())
-        result[f"band_{band:g}"] = {"second_half_net": stats(net.loc[SECOND[0]:SECOND[1]]),
-                                    "second_half_before_costs": stats(gross.loc[SECOND[0]:SECOND[1]]),
-                                    "first_half_net": stats(net.loc[FIRST[0]:FIRST[1]]), **expo}
-        print(f"band_{band:g}", json.dumps(result[f"band_{band:g}"]), flush=True)
+        return {"second_half_net": stats(net.loc[SECOND[0]:SECOND[1]]), "second_half_before_costs": stats(gross.loc[SECOND[0]:SECOND[1]]),
+                "first_half_net": stats(net.loc[FIRST[0]:FIRST[1]]), **expo, "_net": net}
+
+    pos, hedge, scale = build_account(wpod)
+    # The band is chosen on the selection years alone: the account is run on 1998-2007 only.
+    a, z = FIRST
+    cw = dataclasses.replace(c, r=c.r.loc[a:z], r0=c.r0.loc[a:z], market=c.market.loc[a:z], cost=c.cost.loc[a:z])
+    options = {f"{'edge' if e else 'target'}_{b:g}": (b, e) for b, e in BAND_GRID}
+    grid = {}
+    for key, (band, edge) in options.items():
+        n1, _, expo = account(cw, pos.loc[a:z], hedge.loc[a:z], scale.loc[a:z], band, edge)
+        grid[key] = {"first_half_net": stats(n1.where(scale.loc[a:z].notna())), **expo}
+        print(f"grid_{key}", json.dumps(grid[key]), flush=True)
+    best = max(grid, key=lambda k: grid[k]["first_half_net"].get("sharpe", -9.0))
+    band, edge = options[best]
+    result = {"protocol": "PROTOCOL.md amendment 9 (variant D)", "chosen_on": f"{FIRST[0]}..{FIRST[1]}", "sleeves": len(cols),
+              "families": len({family_of(k) for k in cols}), "pods": int(pod.nunique()), "netted_share_used": round(share, 4),
+              "signals_flipped_to_selection_sign": sorted(n for n in own if own[n] != built[n]),
+              "validation_2003_2007": {str(k): v for k, v in check.items()}, "shrink": shrink,
+              "pod_capital": {str(p): round(float(x), 4) for p, x in wpod.items()},
+              "pod_capital_variant_c_rule": {str(p): round(float(x), 4) for p, x in wc.items()},
+              "band_grid_1998_2007": grid, "band": best}
+    d = report(pos, hedge, scale, band, edge)
+    d.pop("_net").to_frame("net").to_parquet(OUT / "variant_d_net.parquet")
+    result["d"] = d
+    print("d", json.dumps(d), flush=True)
+    result["ablation_round1_band"] = {k: v for k, v in report(pos, hedge, scale, 1.5, False).items() if k != "_net"}
+    print("ablation_round1_band", json.dumps(result["ablation_round1_band"]), flush=True)
+    del pos, hedge
+    pos, hedge, scale = build_account(wc)
+    result["ablation_variant_c_pod_weights"] = {k: v for k, v in report(pos, hedge, scale, band, edge).items() if k != "_net"}
+    print("ablation_variant_c_pod_weights", json.dumps(result["ablation_variant_c_pod_weights"]), flush=True)
     result["seconds"] = round(time.time() - t0)
-    (HERE / ("round3c_netted.json" if variant == "B" else "round3e_netted_variant_c.json")).write_text(json.dumps(result, indent=1))
+    (HERE / "round3f_variant_d.json").write_text(json.dumps(result, indent=1))
     return result
 
 
@@ -391,6 +504,7 @@ if __name__ == "__main__":
     ap.add_argument("--families", action="store_true", help="variant B (amendment 5)")
     ap.add_argument("--netted", action="store_true", help="variant B traded as one netted account (amendment 6)")
     ap.add_argument("--netted-c", action="store_true", help="variant C: marginal netted cost admission (amendment 8)")
+    ap.add_argument("--netted-d", action="store_true", help="variant D: selection-year signs, diversified pods, the band's edge (amendment 9)")
     ap.add_argument("--only", default=None, help="comma list of signals to build")
     a = ap.parse_args()
     if a.build:
@@ -403,3 +517,5 @@ if __name__ == "__main__":
         netted_split()
     if a.netted_c:
         netted_split(variant="C")
+    if a.netted_d:
+        netted_d()

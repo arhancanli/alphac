@@ -28,8 +28,9 @@ REPEATS = {10: 20, 30: 20, 100: 20, 300: 5, 1000: 5, 3000: 2}
 SEED = 20261020
 
 
-def sleeve_positions(years: tuple[str, str] = pods.SEARCH) -> tuple[list[str], list[np.ndarray], list[np.ndarray], np.ndarray, int]:
-    """Per sleeve: the column indices of its names and its weekly positions in them; weekly cost per name."""
+def sleeve_positions(years: tuple[str, str] = pods.SEARCH, signs: dict[str, int] | None = None) -> tuple[list[str], list[np.ndarray], list[np.ndarray], np.ndarray, int]:
+    """Per sleeve: the column indices of its names and its weekly positions in them; weekly cost per name.
+    ``signs`` (amendment 9) trades each signal at a given sign instead of the one it was built with."""
     keep = set(pods.candidates(*years).columns)
     pods.signals()
     c = context(Panel("search"))
@@ -38,7 +39,7 @@ def sleeve_positions(years: tuple[str, str] = pods.SEARCH) -> tuple[list[str], l
     cost = c.cost.reindex(weeks).to_numpy(dtype="float32")
     cells = {"ind48": (c, None), "ind48xL": (c, "L"), "ind48xS": (c, "S"),
              "ind150": (dataclasses.replace(c, bucket=c.p.meta["industry"]), None)}
-    signs = json.loads((pods.OUT / "signs.json").read_text())
+    signs = json.loads((pods.OUT / "signs.json").read_text()) if signs is None else signs
     names: list[str] = []
     index: list[np.ndarray] = []
     held: list[np.ndarray] = []
@@ -85,9 +86,9 @@ def costs(members: np.ndarray, index: list[np.ndarray], held: list[np.ndarray], 
     return alone / years, netted / years
 
 
-def full_share(years: tuple[str, str]) -> float:
+def full_share(years: tuple[str, str], signs: dict[str, int] | None = None) -> float:
     """The netted share for all candidate sleeves with three years of data in ``years`` (one draw)."""
-    names, index, held, cost, width = sleeve_positions(years)
+    names, index, held, cost, width = sleeve_positions(years, signs)
     alone, netted = costs(np.arange(len(names)), index, held, cost, width)
     return netted / alone
 

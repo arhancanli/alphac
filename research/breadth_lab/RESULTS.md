@@ -166,3 +166,35 @@ Judging on marginal cost let in families whose edge is strong but expensive to t
 before-cost edge rose from about 1.0 to 1.5); the no-trade band is what makes them pay. Trials on
 this split so far: variants A, B and C, each with and without the band. The 2018-2026 stock test
 window stays unused for round 3; looking at it is the owner's decision and counts as a trial.
+
+### Variant D: selection-year signs, pods weighted for diversification, trading to the band's edge (amendment 9)
+
+Every choice made on 1998-2007: the six signals whose sign flips were traded at their 1998-2007
+sign (none of their families passes, so the selection is variant C's: 111 families, 2,355 sleeves,
+14 pods; netted share 0.305). The shrinkage was chosen by fitting on 1998-2002 and running on
+2003-2007 (lambda 0.75: 1.90, 0.5: 2.14, 0.25: 2.32), and the band on the account's 1998-2007
+record after costs (target 1.0/1.5/2.0: 2.60/2.50/2.42; edge 0.25/0.5/0.75/1.0: 2.51/2.73/2.76/2.75):
+edge 0.75. Pod capital: 23% to the low-risk and issuance pod (526 sleeves), none to momentum or
+profitability.
+
+| 2008-2017 | Sharpe after costs | Before costs | Costs a year | Turnover | Drawdown |
+|---|---|---|---|---|---|
+| Variant C, netted, band 1.5 | 1.03 (t 3.3) | 1.48 | 3.3% | 16.3x | -13.6% |
+| Variant D | 1.04 (t 3.3) | 1.57 | 3.5% | 16.2x | -11.0% |
+| D with round 1's band (target 1.5) | 0.93 | 1.50 | 3.9% | 18.7x | -11.7% |
+| D with variant C's pod weights | 1.08 | 1.50 | 2.9% | 14.0x | -14.1% |
+
+Trading to the band's edge adds 0.05-0.12 out of sample. Weighting pods for diversification raised
+the 1998-2007 record (2.12 to 2.76) and the 2003-2007 validation (1.75 to 2.32), but not 2008-2017
+(1.04 against 1.08 with variant C's weights), though it cut the drawdown from -14% to -11%. The
+reason is the round's main lesson: the weights assumed a pod's Sharpe grows with its independent
+sleeves (inverse(Sigma) x 1 with equal Sharpe per sleeve), and out of sample it does not: a pod of
+526 sleeves on eight signals carries about eight signals' worth of alpha, however little its daily
+noise correlates. Diversification counted in daily noise is not diversification of alpha; only new
+ideas add independent alpha.
+
+Trial accounting on this split (11 variants: A, B, C each with and without brake or band, D and its
+two ablations; trial Sharpes spread 0.66): the expected best of 11 null trials is 1.08, so D's
+deflated Sharpe is 0.46 (probability its true Sharpe is above zero, before deflation: 0.9996). The
+2008-2017 split is used up for design choices; the next gains are to be judged on new ideas, and
+the frozen design once on the 2018-2026 test window (the owner's call).

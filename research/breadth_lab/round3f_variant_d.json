@@ -1,0 +1,246 @@
+{
+ "protocol": "PROTOCOL.md amendment 9 (variant D)",
+ "chosen_on": "1998-01-01..2007-12-31",
+ "sleeves": 2355,
+ "families": 111,
+ "pods": 14,
+ "netted_share_used": 0.3052,
+ "signals_flipped_to_selection_sign": [
+  "accruals_s",
+  "capex_assets_s",
+  "capex_growth_s",
+  "cash_assets_s",
+  "season_s",
+  "small_63_s"
+ ],
+ "validation_2003_2007": {
+  "0.75": 1.899,
+  "0.5": 2.142,
+  "0.25": 2.321
+ },
+ "shrink": 0.25,
+ "pod_capital": {
+  "0": 0.2305,
+  "1": 0.0,
+  "2": 0.0,
+  "3": 0.1111,
+  "4": 0.1262,
+  "5": 0.0015,
+  "6": 0.1232,
+  "7": 0.0109,
+  "8": 0.1217,
+  "9": 0.0489,
+  "13": 0.0367,
+  "14": 0.0654,
+  "16": 0.0396,
+  "17": 0.0844
+ },
+ "pod_capital_variant_c_rule": {
+  "0": 0.0652,
+  "1": 0.066,
+  "2": 0.0624,
+  "3": 0.0728,
+  "4": 0.0747,
+  "5": 0.0713,
+  "6": 0.0747,
+  "7": 0.0682,
+  "8": 0.0827,
+  "9": 0.067,
+  "13": 0.0676,
+  "14": 0.0718,
+  "16": 0.0685,
+  "17": 0.0869
+ },
+ "band_grid_1998_2007": {
+  "target_1": {
+   "first_half_net": {
+    "days": 2200,
+    "sharpe": 2.602,
+    "t": 7.69,
+    "ann_return": 0.2266,
+    "ann_vol": 0.0871,
+    "max_dd": -0.1026
+   },
+   "mean_gross_exposure": 5.2,
+   "turnover_per_year": 26.4,
+   "cost_per_year": 0.0577,
+   "names_held": 1092
+  },
+  "target_1.5": {
+   "first_half_net": {
+    "days": 2200,
+    "sharpe": 2.499,
+    "t": 7.38,
+    "ann_return": 0.2179,
+    "ann_vol": 0.0872,
+    "max_dd": -0.0989
+   },
+   "mean_gross_exposure": 4.85,
+   "turnover_per_year": 18.4,
+   "cost_per_year": 0.0405,
+   "names_held": 898
+  },
+  "target_2": {
+   "first_half_net": {
+    "days": 2200,
+    "sharpe": 2.421,
+    "t": 7.15,
+    "ann_return": 0.21,
+    "ann_vol": 0.0867,
+    "max_dd": -0.0972
+   },
+   "mean_gross_exposure": 4.46,
+   "turnover_per_year": 13.5,
+   "cost_per_year": 0.0301,
+   "names_held": 767
+  },
+  "edge_0.25": {
+   "first_half_net": {
+    "days": 2200,
+    "sharpe": 2.509,
+    "t": 7.41,
+    "ann_return": 0.2218,
+    "ann_vol": 0.0884,
+    "max_dd": -0.1063
+   },
+   "mean_gross_exposure": 5.39,
+   "turnover_per_year": 34.2,
+   "cost_per_year": 0.0746,
+   "names_held": 1443
+  },
+  "edge_0.5": {
+   "first_half_net": {
+    "days": 2200,
+    "sharpe": 2.727,
+    "t": 8.06,
+    "ann_return": 0.2317,
+    "ann_vol": 0.085,
+    "max_dd": -0.0968
+   },
+   "mean_gross_exposure": 5.14,
+   "turnover_per_year": 22.2,
+   "cost_per_year": 0.049,
+   "names_held": 1288
+  },
+  "edge_0.75": {
+   "first_half_net": {
+    "days": 2200,
+    "sharpe": 2.758,
+    "t": 8.15,
+    "ann_return": 0.2272,
+    "ann_vol": 0.0824,
+    "max_dd": -0.0976
+   },
+   "mean_gross_exposure": 4.84,
+   "turnover_per_year": 15.8,
+   "cost_per_year": 0.0353,
+   "names_held": 1199
+  },
+  "edge_1": {
+   "first_half_net": {
+    "days": 2200,
+    "sharpe": 2.754,
+    "t": 8.14,
+    "ann_return": 0.2206,
+    "ann_vol": 0.0801,
+    "max_dd": -0.0954
+   },
+   "mean_gross_exposure": 4.52,
+   "turnover_per_year": 11.8,
+   "cost_per_year": 0.0267,
+   "names_held": 1092
+  }
+ },
+ "band": "edge_0.75",
+ "d": {
+  "second_half_net": {
+   "days": 2518,
+   "sharpe": 1.044,
+   "t": 3.3,
+   "ann_return": 0.0958,
+   "ann_vol": 0.0917,
+   "max_dd": -0.11
+  },
+  "second_half_before_costs": {
+   "days": 2518,
+   "sharpe": 1.566,
+   "t": 4.95,
+   "ann_return": 0.1435,
+   "ann_vol": 0.0916,
+   "max_dd": -0.0988
+  },
+  "first_half_net": {
+   "days": 2200,
+   "sharpe": 2.758,
+   "t": 8.15,
+   "ann_return": 0.2272,
+   "ann_vol": 0.0824,
+   "max_dd": -0.0976
+  },
+  "mean_gross_exposure": 5.24,
+  "turnover_per_year": 16.2,
+  "cost_per_year": 0.0345,
+  "names_held": 1574
+ },
+ "ablation_round1_band": {
+  "second_half_net": {
+   "days": 2518,
+   "sharpe": 0.929,
+   "t": 2.94,
+   "ann_return": 0.0843,
+   "ann_vol": 0.0907,
+   "max_dd": -0.1165
+  },
+  "second_half_before_costs": {
+   "days": 2518,
+   "sharpe": 1.504,
+   "t": 4.75,
+   "ann_return": 0.1362,
+   "ann_vol": 0.0906,
+   "max_dd": -0.1074
+  },
+  "first_half_net": {
+   "days": 2200,
+   "sharpe": 2.499,
+   "t": 7.38,
+   "ann_return": 0.2179,
+   "ann_vol": 0.0872,
+   "max_dd": -0.0989
+  },
+  "mean_gross_exposure": 5.23,
+  "turnover_per_year": 18.7,
+  "cost_per_year": 0.0392,
+  "names_held": 1259
+ },
+ "ablation_variant_c_pod_weights": {
+  "second_half_net": {
+   "days": 2518,
+   "sharpe": 1.079,
+   "t": 3.41,
+   "ann_return": 0.1013,
+   "ann_vol": 0.0939,
+   "max_dd": -0.1408
+  },
+  "second_half_before_costs": {
+   "days": 2518,
+   "sharpe": 1.495,
+   "t": 4.72,
+   "ann_return": 0.1404,
+   "ann_vol": 0.0939,
+   "max_dd": -0.1305
+  },
+  "first_half_net": {
+   "days": 2200,
+   "sharpe": 2.119,
+   "t": 6.26,
+   "ann_return": 0.2035,
+   "ann_vol": 0.096,
+   "max_dd": -0.1183
+  },
+  "mean_gross_exposure": 4.86,
+  "turnover_per_year": 14.0,
+  "cost_per_year": 0.0288,
+  "names_held": 1550
+ },
+ "seconds": 988
+}

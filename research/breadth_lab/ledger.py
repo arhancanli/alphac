@@ -39,6 +39,7 @@ RUNS = [
     ("r3c_netted.log", "stocks-pods", "round 3 variant B split selection traded as one netted account, no band and the round-1 band 1.5 (amendment 6)"),
     ("r3d_netting_law.log", "stocks-pods", "the netting law: share of the summed standalone cost one account pays, by number of sleeves (amendment 7; costs only)"),
     ("r3e_netted_variant_c.log", "stocks-pods", "round 3 variant C: families judged on marginal netted cost (share 0.30 measured on 1998-2007), traded as one netted account (amendment 8)"),
+    ("r3f_variant_d.log", "stocks-pods", "round 3 variant D: selection-year signs, pods weighted for diversification (shrink by a 1998-2002/2003-2007 validation), band rule and width chosen on 1998-2007; two ablations (amendment 9)"),
 ]
 
 

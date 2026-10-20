@@ -61,9 +61,10 @@ def positions(c: Ctx, mode: str, selection: list[tuple[str, str, int]], timing: 
     return pd.DataFrame(pos, index=c.r.index, columns=c.r.columns), pd.Series(hedge, index=c.r.index)
 
 
-def banded(target: np.ndarray, band: float) -> np.ndarray:
+def banded(target: np.ndarray, band: float, edge: bool = False) -> np.ndarray:
     """Positions that follow the target but skip any change smaller than ``band`` times the day's mean
-    absolute target position; a name leaving the target is always closed."""
+    absolute target position; a name leaving the target is always closed. With ``edge`` (amendment 9) a
+    name that drifts out of the band is traded back only to the band's edge, not to its target."""
     if band <= 0:
         return target
     held = np.zeros_like(target)
@@ -71,17 +72,20 @@ def banded(target: np.ndarray, band: float) -> np.ndarray:
     for t in range(target.shape[0]):
         tgt = target[t]
         size = np.abs(tgt[tgt != 0]).mean() if np.any(tgt != 0) else 0.0
-        move = (np.abs(tgt - cur) > band * size) | (tgt == 0)
-        cur = np.where(move, tgt, cur)
+        if edge:
+            cur = np.where(tgt == 0, 0.0, np.clip(cur, tgt - band * size, tgt + band * size))
+        else:
+            move = (np.abs(tgt - cur) > band * size) | (tgt == 0)
+            cur = np.where(move, tgt, cur)
         held[t] = cur
     return held
 
 
-def account(c: Ctx, pos: pd.DataFrame, hedge: pd.Series, scale: pd.Series | None = None, band: float = 0.0) -> tuple[pd.Series, pd.Series, dict]:
+def account(c: Ctx, pos: pd.DataFrame, hedge: pd.Series, scale: pd.Series | None = None, band: float = 0.0, edge: bool = False) -> tuple[pd.Series, pd.Series, dict]:
     """Daily return net of netted trading costs and borrow, before-cost return, and exposure figures."""
     if scale is not None:
         pos, hedge = pos.mul(scale, axis=0), hedge * scale
-    p = banded(np.nan_to_num(pos.to_numpy()), band)
+    p = banded(np.nan_to_num(pos.to_numpy()), band, edge)
     h = np.nan_to_num(hedge.to_numpy())
     gross = (p * c.r0.to_numpy()).sum(axis=1) + h * c.market.to_numpy()
     trades = np.abs(np.diff(p, axis=0, prepend=0.0))

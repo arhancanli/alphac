@@ -1,0 +1,24 @@
+{
+ "trials": {
+  "A": -0.904,
+  "A_brake": -0.364,
+  "B": -0.132,
+  "B_brake": 0.217,
+  "B_netted": 0.589,
+  "B_netted_band": 0.816,
+  "C_netted": 0.185,
+  "C_netted_band": 1.028,
+  "D": 1.044,
+  "D_round1_band": 0.929,
+  "D_variant_c_pod_weights": 1.079
+ },
+ "n_trials": 11,
+ "trial_sharpe_std_annual": 0.664,
+ "expected_max_of_null_annual": 1.077,
+ "sharpe_annual": 1.044,
+ "days": 2518,
+ "skew": 0.471,
+ "kurtosis": 7.58,
+ "psr_vs_zero": 0.9996,
+ "dsr": 0.459
+}
