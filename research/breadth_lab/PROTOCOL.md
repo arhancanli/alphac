@@ -273,3 +273,29 @@ Two books, both chosen on 1998-2007 and run on 2008-2017 (two more trials on the
 2. Secondary: variant D's rules exactly, on the whole library, so the new ideas' effect can be read
    against variant D.
 Also reported: how many pods the new signals form or join, and their sleeves.
+
+## Amendment 11 (2026-10-20): round 5, admission rules compared by a nested check, written before it was computed
+
+Rounds 3-4 chose families on 1998-2007; every version looked 2-3 there and 0.4-1.0 on 2008-2017,
+and the 2003-2007 checks that guided variant D and round 4 were not clean (the families had been
+chosen on those years too). Round 5 compares admission rules where the check is clean, inside the
+selection years, and nothing after 2007 enters any number (the account runs on a panel cut at
+2007-12-31):
+- Families are chosen on 1998-2002 alone: signs, the netted share at full breadth, marginal-cost
+  returns, pods and the correlation rules all from 1998-2002, with at least three years of data
+  there. The netted account then runs on 2003-2007.
+- Six rules on the 87-signal library: (1) bar: family Sharpe at marginal cost at least 0.3
+  (variants C and D); (2) both halves: the bar, and positive in each half of 1998-2002 (1998 to
+  mid-2000, mid-2000 to 2002); (3) t of at least 2 (Sharpe times the square root of its years);
+  (4) shrunk: each family's Sharpe shrunk toward the mean of all families by its noise (empirical
+  Bayes, weight tau^2 / (tau^2 + 1/years), tau^2 the spread of the families' Sharpes beyond
+  noise), at least 0.3; (5) idea first: a pod is admitted when its book of all its candidate
+  families has a Sharpe of at least 0.3, then each of its families with a positive Sharpe;
+  (6) everything: every family at its 1998-2002 sign. Plus (7): the bar on the 52 signals of
+  rounds 1-2, for reference.
+- The same for all: the correlation rules of amendment 4, pods weighted by variant C's rule, equal
+  weight inside a pod, the account scaled to 10% as before, trading to the band's edge at 0.75.
+- Reported for each: families, sleeves, pods, the 1998-2002 record (chosen there) and the 2003-2007
+  record after and before costs. The rule with the best 2003-2007 Sharpe after costs is then run
+  once as chosen on 1998-2007 and scored on 2008-2017 (trial 14 on that split), and becomes the
+  candidate for the frozen design.
