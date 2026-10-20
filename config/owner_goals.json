@@ -14,6 +14,88 @@
     "how": "This file, projected by src/alphaforge/research/owner_goals.py into every public objective block; config/forward_evidence_contract.json forward_sharpe_target_history and realized_max_drawdown_bound record the same goals on the evaluation side."
   },
   "scope": "The combined paper portfolio, never any single sleeve. Nothing in this file is established by this file; each goal names the evidence that would establish it and the artifact that reports the current state.",
+  "governing_rule": {
+    "recorded_on": "2026-10-20",
+    "source_document": "docs/design/ALPHAC_OWNER_GOALS_2026-10-20.md",
+    "headline": true,
+    "decision": {
+      "by": "Arhan Canli (owner)",
+      "approval_words": "yes change it bro",
+      "words": [
+        {
+          "on": "2026-10-15",
+          "words": "test some ideas and remember at such volume sleeves we can be very flexible as long as just the corelation is very weak between sleeves it will be an abselute gold mine and also when testing and trying to find things be very very flexible and dont be rigit use your superior intelligence and reasoning to get us to 1000 sleeves"
+        },
+        {
+          "on": "2026-10-15",
+          "words": "we find the perfect formula on how to get un imaginable sharpe ratios through tens of thousands of sleeves with low corellation"
+        },
+        {
+          "on": "2026-10-17",
+          "words": "we need the sharpe ratio to be far beyond that for the algorithm alphac since remember we discuessed the importance of sleevss and there corellation and that how we could derive nomrally impossible statistics through it"
+        },
+        {
+          "on": "2026-10-20",
+          "words": "remember the thing with the breath lab and all of the hundreds of thousands of sleeves and also when i told you the thing that matters most is the corellation and also make sure you grasp everything"
+        }
+      ]
+    },
+    "rule": "Correlation between sleeves is what matters most. Be flexible about each sleeve, never about correlation: a sleeve may be individually weak if it is weakly correlated with the book and clears its own costs.",
+    "sleeve_target": {
+      "scale_words": "hundreds of thousands",
+      "at_least": 100000,
+      "history": [
+        {
+          "on": "2026-09-14",
+          "target": "at least 14 qualified economically distinct sleeves"
+        },
+        {
+          "on": "2026-10-15",
+          "target": "1,000 sleeves"
+        },
+        {
+          "on": "2026-10-15",
+          "target": "tens of thousands of sleeves"
+        },
+        {
+          "on": "2026-10-20",
+          "target": "hundreds of thousands of sleeves"
+        }
+      ]
+    },
+    "headline_metric": {
+      "name": "effective independent bets",
+      "definition": "Participation ratio of the correlation matrix of the family books (each family's sleeves averaged into one book), reported beside the sleeve count; research/breadth_lab/effective_bets.py.",
+      "identity": "effective bets = N / (1 + (N - 1) * rho_bar) <= 1 / rho_bar",
+      "ladder": [
+        {
+          "by": "2027-06-30",
+          "at_least": 25
+        },
+        {
+          "by": "2027-12-31",
+          "at_least": 100
+        },
+        {
+          "by": "2028-12-31",
+          "at_least": 300,
+          "words": "several hundred"
+        }
+      ]
+    },
+    "sharpe_direction": {
+      "words": "far beyond 2",
+      "ladder": [
+        2.0,
+        3.0,
+        5.0
+      ],
+      "basis": "Combined book, forward record after real costs; each rung is claimed only on a record long enough to tell it from luck (deflated Sharpe, Null Zoo)."
+    },
+    "admission_principle": "Families are admitted on their correlation to the book first. Until a family admission path is written and approved, config/sleeve_admission_contract.json stays the admission rule in force.",
+    "checkpoints_still_evaluated": "goals.combined_forward_sharpe (above 2, the ladder's first rung), goals.qualified_economically_distinct_sleeves (at least 14, the first checkpoint of independent ideas) and goals.combined_max_drawdown (at most 10%) stay the values the forward-evidence and capital-readiness contracts evaluate. This rule moves neither them nor the forward record's target history.",
+    "claim_boundary": "Targets, not results. Nothing here establishes a sleeve, a bet count or a Sharpe ratio."
+  },
   "goals": {
     "combined_forward_sharpe": {
       "target": 2.0,
