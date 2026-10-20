@@ -20,6 +20,7 @@ Nothing here reads return data, spends a hypothesis, or establishes a target.
 from __future__ import annotations
 
 import hashlib
+import itertools
 import json
 import math
 import re
@@ -68,6 +69,28 @@ def load_owner_goals(path: Path = OWNER_GOALS_PATH) -> dict[str, Any]:
         raise ValueError("qualified_economically_distinct_sleeves.minimum must be an int >= 2")
     if sleeves["comparison"] != "AT_LEAST":
         raise ValueError("qualified_economically_distinct_sleeves.comparison must be AT_LEAST")
+    # The owner's 2026-10-20 headline (docs/design/ALPHAC_OWNER_GOALS_2026-10-20.md): correlation
+    # first, hundreds of thousands of sleeves. The goals above stay the checkpoints evaluated today,
+    # so the rule may only extend them: its sleeve target at or above the checkpoint, its Sharpe
+    # ladder starting at the checkpoint target and rising.
+    rule = goals.get("governing_rule")
+    if not isinstance(rule, dict) or "correlation" not in str(rule.get("rule", "")).lower():
+        raise ValueError("governing_rule must state the owner's correlation-first rule")
+    target = rule["sleeve_target"]["at_least"]
+    if not (type(target) is int and target >= sleeves["minimum"]):
+        raise ValueError("governing_rule.sleeve_target.at_least must be an int >= the checkpoint")
+    ladder = rule["sharpe_direction"]["ladder"]
+    if not (
+        ladder
+        and ladder[0] == sharpe["target"]
+        and all(a < b for a, b in itertools.pairwise(ladder))
+    ):
+        raise ValueError("governing_rule.sharpe_direction.ladder must start at the target and rise")
+    bets = rule["headline_metric"]["ladder"]
+    if not all(
+        a["by"] < b["by"] and a["at_least"] < b["at_least"] for a, b in itertools.pairwise(bets)
+    ):
+        raise ValueError("governing_rule.headline_metric.ladder must rise in date and count")
     pin = goals["supersedes"]["sleeve_admission_contract_objective"]
     for key in ("path", "sha256", *_PINNED_OBJECTIVE_KEYS):
         if key not in pin:
