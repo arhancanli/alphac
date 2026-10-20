@@ -204,3 +204,38 @@ Variant C judges families on that marginal cost instead of the standalone cost:
   amendment 4, in the same order as variant B.
 - The selection is traded as one netted account exactly as amendment 6 (no band, and band 1.5), and
   its 2008-2017 record is reported as it comes out, beside variant B's.
+
+## Amendment 9 (2026-10-20): variant D, written before it was computed
+
+Three changes to variant C. Every choice is made inside the selection years (1998-2007); nothing
+from 2008-2017 is read until the frozen design runs once.
+
+1. Signs from the selection years. Variants B and C left a signal out when its 1998-2007 sign
+   disagreed with the sign its sleeves were built with, and the built sign came from all search
+   years (1998-2017), so that rule used 2008-2017 information. Six of the 52 signals disagree
+   (accruals, capex to assets, capex growth, cash to assets, seasonality, small size). Checked on
+   1998-2007 alone: no family of the six passes variant C's bar at its own 1998-2007 sign, so
+   variant C's selection is unchanged and its record stands. From variant D on, every signal trades
+   at its selection-year sign and none is left out; the netted share is measured again with those
+   signs (netting depends on how sleeves' trades line up).
+2. Pods weighted for diversification. Variant C gives every pod about the same capital, so a pod
+   of 526 sleeves worth about 130 independent bets carries less risk than a pod of 30. Variant D
+   gives pods capital in proportion to inverse(Sigma) x 1, the most diversified book when every
+   sleeve is expected to earn the same Sharpe (the owner's breadth rule), from each pod's daily
+   volatility and its weekly correlations with the other pods on 1998-2007 at marginal cost, the
+   correlations shrunk toward zero by a weight lambda; negative weights are set to zero; equal
+   weight inside a pod as before. Lambda is chosen from {0.75, 0.5, 0.25} by a validation split
+   inside the selection years: weights fitted on 1998-2002, run on 2003-2007, the best Sharpe at
+   marginal cost wins. A check of exactly this, on 1998-2007 data only, was run before this
+   amendment was written: on 2003-2007, variant C's weights 1.75, lambda 0.75 1.90, 0.5 2.14,
+   0.25 2.32. The run applies the rule as written.
+3. Trading to the edge of the band. Round 1's band trades a name all the way back to its target
+   once it drifts more than the band (times the day's mean absolute position); the classic answer
+   for proportional costs is to trade only back to the edge of the no-trade band. Variant D chooses
+   the rule and width from target {1.0, 1.5, 2.0} and edge {0.25, 0.5, 0.75, 1.0} by the netted
+   account's Sharpe after costs on 1998-2007, computed on those years alone.
+
+Reported: variant D's 2008-2017 record (chosen on 1998-2007), before and after costs, and two
+ablations so the gain can be attributed: D with variant C's pod weights, and D with round 1's
+band (target 1.5). All three are trials on this split, logged in the ledger beside A, B and C
+(nine in all). The 2018-2026 test window stays unused.
