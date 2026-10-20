@@ -106,6 +106,7 @@ def main() -> dict:
     if sha != recorded_sha256():
         raise SystemExit(f"frozen_variant_d.json is {sha}, not the sha256 PROTOCOL.md recorded: refusing to open the test years.")
     f = json.loads(FROZEN.read_text())
+    pods.signals()  # registers rounds 2 and 4 in the engine; the first test attempt crashed here before any return
     c = context(Panel("test"))
     pos, hedge = pods._positions(c, f["sleeves"], f["weights"], f["signs"])
     scale = _scale(c, pos, hedge)

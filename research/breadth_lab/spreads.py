@@ -47,6 +47,7 @@ def main() -> dict:
     from research.breadth_lab.lab import context
     from research.breadth_lab.panel import Panel
     from research.breadth_lab.test_d import FROZEN, TEST, _scale
+    pods.signals()
     c = context(Panel("test"))
     half = half_spreads(c)
     est = (half + COMMISSION).clip(FLOOR, CAP).where(c.eligible).fillna(c.cost)
