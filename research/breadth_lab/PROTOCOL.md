@@ -243,10 +243,12 @@ band (target 1.5). All three are trials on this split, logged in the ledger besi
 ## Amendment 10 (2026-10-20): round 4, new ideas from local data, written before it was computed
 
 Variant D showed that breadth inside an idea adds little: a pod's sleeves share its idea's alpha
-however little their daily noise correlates. Round 4 adds ideas. Forty published stock signals
+however little their daily noise correlates. Round 4 adds ideas. Thirty-five published stock signals (first written as forty, a miscount
+corrected before anything was computed)
 that rounds 1-3 lack, from the daily panel and the as-reported SF1 quarters (each row usable from
 its filing date, flows trailing four quarters, market value as round 2), all monthly with three
-overlapping portfolios, run through the same engine (48-industry sleeves, then the four cell
+overlapping portfolios (except the announcement premium, a one-month effect, held one month;
+corrected before computing), run through the same engine (48-industry sleeves, then the four cell
 schemes of amendment 4):
 - Balance sheet and distress: book leverage, market leverage, current ratio, Altman Z (without
   retained earnings), Ohlson O, tangibility, intangibles to assets, cash flow to debt.
