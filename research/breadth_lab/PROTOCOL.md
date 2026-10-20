@@ -141,3 +141,28 @@ peak and goes to zero at 7.5%, judged on yesterday's record.
 (participation ratio N^2 / sum of squared correlations), the pod level and the idea level; book
 statistics on the search years with and without the brake; and a split check: admission run on
 1998-2007 alone, the book's 2008-2017 record reported as it comes out.
+
+## Amendment 5 (2026-10-20): round 3, variant B, written AFTER round 3's split result was seen
+
+Round 3 as specified (amendment 4) came out: 10,785 candidates, 2,715 admitted, average pairwise
+correlation 0.0075, 255.5 effective bets at the sleeve level and 11.3 across 20 pods; search-year
+book 3.66 (selection on the same years, not evidence). Split check: chosen on 1998-2007, the book's
+2008-2017 Sharpe was -0.90 (-0.18 with the pod brake). Diagnosis: the 2,167 sleeves carried into
+2008-2017 averaged a Sharpe after costs of 0.355 on the years that chose them and -0.013 after;
+49% were positive. A per-sleeve bar of "positive after costs" selects luck, and breadth multiplies
+whatever average edge is left. Round 3's result stands as recorded.
+
+Variant B, a second trial on the same split, chosen after seeing that result: flexible about each
+sleeve, strict about the family.
+- A family is one signal in one cell scheme. Its book is the equal-weighted mean of its sleeves,
+  scaled to the target volatility with a trailing volatility, lagged a day (`lab.book`).
+- A family is admitted when its book's Sharpe after costs on the selection years is at least 0.3,
+  and the signal's sign recomputed on the selection years alone (48-industry book before costs)
+  agrees with the sign the sleeves were built with; a signal whose sign disagrees is left out.
+- Every sleeve of an admitted family with at least three years of data is kept, whatever its own
+  Sharpe, except that the correlation rules of amendment 4 still apply: below 0.5 in absolute value
+  with every sleeve already admitted in its pod, and an average below 0.05 with all admitted.
+  Order: families by their book's Sharpe inside each pod, pods in turn; sleeves in a fixed order.
+- Reported exactly as round 3: the 2008-2017 book chosen on 1998-2007, with and without the brake,
+  and the search-year book labelled as chosen on its own years.
+Both trials are logged in the ledger.
