@@ -1,0 +1,69 @@
+{
+ "protocol": "PROTOCOL.md amendment 8 (variant C)",
+ "chosen_on": "1998-01-01..2007-12-31",
+ "sleeves": 2355,
+ "families": 111,
+ "pods": 14,
+ "netted_share_used": 0.30456668678343485,
+ "band_0": {
+  "second_half_net": {
+   "days": 2518,
+   "sharpe": 0.185,
+   "t": 0.59,
+   "ann_return": 0.0195,
+   "ann_vol": 0.1051,
+   "max_dd": -0.2576
+  },
+  "second_half_before_costs": {
+   "days": 2518,
+   "sharpe": 1.56,
+   "t": 4.93,
+   "ann_return": 0.1628,
+   "ann_vol": 0.1043,
+   "max_dd": -0.161
+  },
+  "first_half_net": {
+   "days": 2200,
+   "sharpe": 1.403,
+   "t": 4.15,
+   "ann_return": 0.1516,
+   "ann_vol": 0.1081,
+   "max_dd": -0.1633
+  },
+  "mean_gross_exposure": 5.57,
+  "turnover_per_year": 65.0,
+  "cost_per_year": 0.1345,
+  "names_held": 1786
+ },
+ "band_1.5": {
+  "second_half_net": {
+   "days": 2518,
+   "sharpe": 1.028,
+   "t": 3.25,
+   "ann_return": 0.0972,
+   "ann_vol": 0.0945,
+   "max_dd": -0.1355
+  },
+  "second_half_before_costs": {
+   "days": 2518,
+   "sharpe": 1.479,
+   "t": 4.67,
+   "ann_return": 0.1397,
+   "ann_vol": 0.0945,
+   "max_dd": -0.1143
+  },
+  "first_half_net": {
+   "days": 2200,
+   "sharpe": 1.934,
+   "t": 5.72,
+   "ann_return": 0.1893,
+   "ann_vol": 0.0979,
+   "max_dd": -0.1183
+  },
+  "mean_gross_exposure": 4.83,
+  "turnover_per_year": 16.3,
+  "cost_per_year": 0.0329,
+  "names_held": 1270
+ },
+ "seconds": 838
+}

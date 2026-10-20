@@ -28,13 +28,13 @@ REPEATS = {10: 20, 30: 20, 100: 20, 300: 5, 1000: 5, 3000: 2}
 SEED = 20261020
 
 
-def sleeve_positions() -> tuple[list[str], list[np.ndarray], list[np.ndarray], np.ndarray, int]:
+def sleeve_positions(years: tuple[str, str] = pods.SEARCH) -> tuple[list[str], list[np.ndarray], list[np.ndarray], np.ndarray, int]:
     """Per sleeve: the column indices of its names and its weekly positions in them; weekly cost per name."""
-    keep = set(pods.candidates(*pods.SEARCH).columns)
+    keep = set(pods.candidates(*years).columns)
     pods.signals()
     c = context(Panel("search"))
     weeks = c.week_ends[c.week_ends.isin(c.r.index)]
-    weeks = weeks[(weeks >= pd.Timestamp(pods.SEARCH[0], tz=weeks.tz)) & (weeks <= pd.Timestamp(pods.SEARCH[1], tz=weeks.tz))]
+    weeks = weeks[(weeks >= pd.Timestamp(years[0], tz=weeks.tz)) & (weeks <= pd.Timestamp(years[1], tz=weeks.tz))]
     cost = c.cost.reindex(weeks).to_numpy(dtype="float32")
     cells = {"ind48": (c, None), "ind48xL": (c, "L"), "ind48xS": (c, "S"),
              "ind150": (dataclasses.replace(c, bucket=c.p.meta["industry"]), None)}
@@ -83,6 +83,13 @@ def costs(members: np.ndarray, index: list[np.ndarray], held: list[np.ndarray], 
     netted = float((np.abs(np.diff(account, axis=0)) * cost[1:]).sum())
     years = (cost.shape[0] - 1) / 52.0
     return alone / years, netted / years
+
+
+def full_share(years: tuple[str, str]) -> float:
+    """The netted share for all candidate sleeves with three years of data in ``years`` (one draw)."""
+    names, index, held, cost, width = sleeve_positions(years)
+    alone, netted = costs(np.arange(len(names)), index, held, cost, width)
+    return netted / alone
 
 
 def main() -> None:

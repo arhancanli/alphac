@@ -110,7 +110,7 @@ data, each with its own edge.
 
 ## Round 3, traded as one account: the crossing dividend (2026-10-20)
 
-The family selection above (58 families, 1,163 sleeves, chosen on 1998-2007) was traded the way
+The family selection above (58 families passed the bar on 1998-2007; after the correlation rules 55 families and 1,172 sleeves were traded) was traded the way
 one account would trade it (amendment 6): every sleeve's stock positions summed first, so opposite
 trades in the same stock cancel before any cost is paid. Same sleeves, same years, 2008-2017:
 
@@ -149,3 +149,20 @@ falls quickly, then flattens near 0.3 at full breadth: trades that point the sam
 how much risk breadth removes; trade correlation limits how much cost netting removes. At breadth a
 sleeve's cost is mostly the cost of its idea's common trade, not its own turnover. Overall slope of
 log share on log K: -0.19 (not a single power law).
+
+### Variant C: judge families on their marginal cost inside the account (amendment 8)
+
+The netted share on 1998-2007 alone was 0.30. Each family was judged on its before-cost return
+minus 0.30 of its standalone cost, then traded as one netted account. Chosen on 1998-2007:
+111 families, 2,355 sleeves, 14 pods (variant B: 55, 1,172, 9).
+
+| 2008-2017 | Sharpe after costs | Before costs | Costs a year | Turnover | Drawdown |
+|---|---|---|---|---|---|
+| Variant B, netted, band 1.5 | 0.82 (t 2.6) | 1.06 | 1.3% | 6.4x | -19% |
+| Variant C, netted, band 1.5 | 1.03 (t 3.3) | 1.48 | 3.3% | 16.3x | -13.6% |
+| Variant C, netted, no band | 0.19 (t 0.6) | 1.56 | 13.5% | 65x | -26% |
+
+Judging on marginal cost let in families whose edge is strong but expensive to trade alone (the
+before-cost edge rose from about 1.0 to 1.5); the no-trade band is what makes them pay. Trials on
+this split so far: variants A, B and C, each with and without the band. The 2018-2026 stock test
+window stays unused for round 3; looking at it is the owner's decision and counts as a trial.

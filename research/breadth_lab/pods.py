@@ -186,7 +186,9 @@ def sign_on(name: str, a: str, z: str) -> int:
     return 1 if stats(lab.book(gross)).get("sharpe", 0.0) >= 0 else -1
 
 
-def admit_families(sleeves: pd.DataFrame, years: tuple[str, str]) -> tuple[list[int], np.ndarray, dict[str, int], dict[str, float]]:
+def admit_families(sleeves: pd.DataFrame, years: tuple[str, str], judged: pd.DataFrame | None = None) -> tuple[list[int], np.ndarray, dict[str, int], dict[str, float]]:
+    """Variant B; with ``judged`` (variant C, amendment 8) families are judged on those returns instead."""
+    judged = sleeves if judged is None else judged
     built = json.loads((OUT / "signs.json").read_text())
     fam = pd.Series([family_of(k) for k in sleeves.columns], index=sleeves.columns)
     agrees = {n: sign_on(n, *years) == built[n] for n in {f.split("|")[0] for f in fam}}
@@ -194,7 +196,7 @@ def admit_families(sleeves: pd.DataFrame, years: tuple[str, str]) -> tuple[list[
     for f, cols in fam.groupby(fam).groups.items():
         if not agrees[f.split("|")[0]]:
             continue
-        sharpe = stats(lab.book(sleeves[cols].astype("float64"))).get("sharpe")
+        sharpe = stats(lab.book(judged[cols].astype("float64"))).get("sharpe")
         if sharpe is not None and sharpe >= FAMILY_BAR:
             chosen[f] = sharpe
     rho = approx_corr(sleeves.resample("W-FRI").sum(min_count=3))
@@ -305,11 +307,18 @@ def select() -> dict:
 
 # ---- amendment 6: variant B's split selection traded as one netted account --------------------------
 
-def netted_split(bands: tuple[float, ...] = (0.0, 1.5)) -> dict:
+def netted_split(bands: tuple[float, ...] = (0.0, 1.5), variant: str = "B") -> dict:
     from research.breadth_lab.book import MAX_BOOK_LEVERAGE, account
     t0 = time.time()
     first = candidates(*FIRST)
-    a1, _, pods1, chosen1 = admit_families(first, FIRST)
+    judged, share = None, None
+    if variant == "C":
+        from research.breadth_lab.netting_law import full_share
+        share = full_share(FIRST)
+        gross = candidates(*FIRST, tag="gross").reindex(columns=first.columns)
+        judged = gross - share * (gross - first)
+        print("netted_share_1998_2007", round(share, 4), flush=True)
+    a1, _, pods1, chosen1 = admit_families(first, FIRST, judged)
     cols = list(first.columns[a1])
     pod = pd.Series([pods1[k.split("|")[0]] for k in cols], index=cols)
     books = pd.DataFrame({p: first[pod.index[pod == p]].mean(axis=1) for p in sorted(pod.unique())})
@@ -360,8 +369,9 @@ def netted_split(bands: tuple[float, ...] = (0.0, 1.5)) -> dict:
     vol = net0.rolling(126, min_periods=63).std() * np.sqrt(252)
     target = (TARGET_VOL / vol).clip(upper=MAX_BOOK_LEVERAGE)
     scale = target.where(target.index.isin(c.month_ends)).ffill().shift(2)
-    result = {"protocol": "PROTOCOL.md amendment 6", "chosen_on": f"{FIRST[0]}..{FIRST[1]}", "sleeves": len(cols),
-              "families": len(families), "pods": int(pod.nunique())}
+    result = {"protocol": "PROTOCOL.md amendment 6" if variant == "B" else "PROTOCOL.md amendment 8 (variant C)",
+              "chosen_on": f"{FIRST[0]}..{FIRST[1]}", "sleeves": len(cols), "families": len(families),
+              "pods": int(pod.nunique()), "netted_share_used": share}
     for band in bands:
         net, gross, expo = account(c, pos, hedge, scale, band)
         net, gross = net.where(scale.notna()), gross.where(scale.notna())
@@ -370,7 +380,7 @@ def netted_split(bands: tuple[float, ...] = (0.0, 1.5)) -> dict:
                                     "first_half_net": stats(net.loc[FIRST[0]:FIRST[1]]), **expo}
         print(f"band_{band:g}", json.dumps(result[f"band_{band:g}"]), flush=True)
     result["seconds"] = round(time.time() - t0)
-    (HERE / "round3c_netted.json").write_text(json.dumps(result, indent=1))
+    (HERE / ("round3c_netted.json" if variant == "B" else "round3e_netted_variant_c.json")).write_text(json.dumps(result, indent=1))
     return result
 
 
@@ -380,6 +390,7 @@ if __name__ == "__main__":
     ap.add_argument("--select", action="store_true")
     ap.add_argument("--families", action="store_true", help="variant B (amendment 5)")
     ap.add_argument("--netted", action="store_true", help="variant B traded as one netted account (amendment 6)")
+    ap.add_argument("--netted-c", action="store_true", help="variant C: marginal netted cost admission (amendment 8)")
     ap.add_argument("--only", default=None, help="comma list of signals to build")
     a = ap.parse_args()
     if a.build:
@@ -390,3 +401,5 @@ if __name__ == "__main__":
         select_families()
     if a.netted:
         netted_split()
+    if a.netted_c:
+        netted_split(variant="C")
