@@ -147,9 +147,38 @@ def test_no_variable_declared_here_is_reserved_by_zsh() -> None:
 
 def test_the_submission_is_bounded() -> None:
     """Every external call in this repo is bounded; an unbounded one hung for 28 hours once."""
-    assert re.search(r"run_bounded \d+ npm run", LIB.read_text()), (
+    source = LIB.read_text()
+    assert re.search(r'run_bounded "\$INDEXNOW_TIMEOUT_SECONDS" npm run', source), (
         "the IndexNow call is not bounded, and it reaches a third-party API over the network"
     )
+    limit = re.search(r'INDEXNOW_TIMEOUT_SECONDS="\$\{INDEXNOW_TIMEOUT_SECONDS:-(\d+)\}"', source)
+    assert limit and int(limit.group(1)) >= 600, (
+        "120 s killed every submission from 2026-10-21 to 10-25 on a loaded machine"
+    )
+
+
+@pytest.mark.parametrize("shell", ["sh", "zsh", "bash"])
+def test_a_submitter_killed_at_the_limit_says_so(shell: str, tmp_path: Path) -> None:
+    """SIGKILL leaves no output, so for five days the log blamed PATH for the time limit."""
+    if shutil.which(shell) is None:
+        pytest.skip(f"{shell} is not installed on this machine")
+    marker = tmp_path / "marker.json"
+    fake = tmp_path / "site"
+    fake.mkdir()
+    (fake / "package.json").write_text(
+        json.dumps(
+            {"name": "fake", "scripts": {"indexnow": "node -e \"setTimeout(() => {}, 20000)\""}}
+        )
+    )
+    script = (
+        f'. {REPO}/scripts/lib/bounded.sh\n'
+        f'. {REPO}/scripts/lib/indexnow.sh\n'
+        f'INDEXNOW_TIMEOUT_SECONDS=2 INDEXNOW_MARKER={marker} indexnow_submit {fake}\n'
+    )
+    result = subprocess.run([shell, "-c", script], capture_output=True, text=True, cwd=REPO)
+    assert result.returncode == 0, result.stderr
+    assert "killed at the 2 s limit" in result.stdout, result.stdout
+    assert json.loads(marker.read_text())["status"] == "FAILED"
 
 
 def test_a_failure_never_fails_the_deploy_but_is_always_recorded() -> None:

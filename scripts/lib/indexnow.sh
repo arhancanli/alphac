@@ -20,6 +20,10 @@
 
 INDEXNOW_MARKER="${INDEXNOW_MARKER:-$HOME/alphaforge/var/log/indexnow_last.json}"
 INDEXNOW_STALE_SECONDS="${INDEXNOW_STALE_SECONDS:-93600}"   # 26h: one missed hourly run is fine
+# 2026-10-26: the old 120 s limit killed every attempt from 10-21 on (and some in September). With
+# ~916K sitemap URLs to diff against an 82 MB state file, a run on a loaded machine outgrew it, and
+# SIGKILL leaves no output, so the log blamed PATH. A dry run alone takes 13 s at load 90.
+INDEXNOW_TIMEOUT_SECONDS="${INDEXNOW_TIMEOUT_SECONDS:-600}"
 
 # ⚠️ NAMING, IN THIS FILE SPECIFICALLY. This is sourced by scripts that run under BOTH /bin/sh and
 # /bin/zsh, and zsh reserves several lowercase names as read-only special parameters — `status`
@@ -34,14 +38,18 @@ INDEXNOW_STALE_SECONDS="${INDEXNOW_STALE_SECONDS:-93600}"   # 26h: one missed ho
 # Submit, bounded, and record the outcome either way. Never returns non-zero.
 indexnow_submit() {
   local site="${1:-$HOME/meridian}"
-  local now out outcome count
+  local now out outcome count rc
   now=$(date -u '+%Y-%m-%dT%H:%M:%SZ')
   mkdir -p "$(dirname "$INDEXNOW_MARKER")"
 
-  if ! out=$( cd "$site" && run_bounded 120 npm run --silent indexnow 2>&1 ); then
+  out=$( cd "$site" && run_bounded "$INDEXNOW_TIMEOUT_SECONDS" npm run --silent indexnow 2>&1 ); rc=$?
+  if [ "$rc" -ne 0 ]; then
     outcome="FAILED"
     echo "  [indexnow] SUBMISSION FAILED — search engines were NOT told about this deploy"
-    if [ -n "$out" ]; then
+    # Checked first: on Linux the shell adds its own "Killed" line to the captured output.
+    if [ "$rc" -eq 137 ]; then
+      echo "    [indexnow:err] the submitter was killed at the ${INDEXNOW_TIMEOUT_SECONDS} s limit before it finished"
+    elif [ -n "$out" ]; then
       printf '%s\n' "$out" | tail -8 | sed 's/^/    [indexnow:err] /'
     else
       echo "    [indexnow:err] the submitter produced no output at all — check that npm is on"
