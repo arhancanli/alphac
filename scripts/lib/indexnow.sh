@@ -46,10 +46,11 @@ indexnow_submit() {
   if [ "$rc" -ne 0 ]; then
     outcome="FAILED"
     echo "  [indexnow] SUBMISSION FAILED — search engines were NOT told about this deploy"
-    if [ -n "$out" ]; then
-      printf '%s\n' "$out" | tail -8 | sed 's/^/    [indexnow:err] /'
-    elif [ "$rc" -eq 137 ]; then
+    # Checked first: on Linux the shell adds its own "Killed" line to the captured output.
+    if [ "$rc" -eq 137 ]; then
       echo "    [indexnow:err] the submitter was killed at the ${INDEXNOW_TIMEOUT_SECONDS} s limit before it finished"
+    elif [ -n "$out" ]; then
+      printf '%s\n' "$out" | tail -8 | sed 's/^/    [indexnow:err] /'
     else
       echo "    [indexnow:err] the submitter produced no output at all — check that npm is on"
       echo "    [indexnow:err] PATH for this job; the deploy scripts export it, a bare shell does not"
