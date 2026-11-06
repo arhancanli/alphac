@@ -104,6 +104,8 @@ def regime_batches(
     """The published study's correlation-regime draws, yielded as book-return matrices."""
     centered = contributions - np.mean(contributions, axis=0)
     vol = np.std(centered, axis=0, ddof=1)
+    if np.any(vol <= 0.0):
+        raise ValueError("every regime component must have positive observed volatility")
     calm_corr = nearest_correlation(np.corrcoef(centered, rowvar=False))
     stress_corr = np.full_like(calm_corr, stress_correlation)
     np.fill_diagonal(stress_corr, 1.0)
@@ -282,14 +284,10 @@ def build() -> dict[str, Any]:
     if live_contract["declared_fingerprint"] != published["configuration"]["live_fingerprint"]:
         raise ValueError("published drawdown study is bound to a different live fingerprint")
 
-    sleeves = [
-        paper.load_wf(paper.EQUITY_WF),
-        paper.load_wf(paper.CRYPTO_WF),
-        paper.load_wf(paper.MF_WF),
-        paper.load_probe_curve(
-            paper.VINTAGE_WF, "artifacts/probe/cpi_surprise_size/equity.parquet"
-        ),
-    ]
+    # The book as it is composed now (BOOK_WEIGHTS), built as the published study builds it, never
+    # a hand-kept list: the list kept here after v4 held the suspended AlphaForge sleeve at zero
+    # weight, and its all-zero column broke the regime model every night from 2026-09-25.
+    sleeves = paper.book_sleeve_curves()
     book = paper.combine_book(
         sleeves,
         scheme=paper.BOOK_AGGREGATION_SCHEME,
