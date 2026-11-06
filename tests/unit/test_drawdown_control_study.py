@@ -116,6 +116,34 @@ def test_evaluate_reports_every_declared_measure_and_the_ladder_reduces_the_tail
     )
 
 
+def test_the_study_rebuilds_the_book_the_published_study_rebuilds() -> None:
+    # A hand-kept sleeve list held the suspended AlphaForge sleeve at zero weight after v4; its
+    # all-zero contribution column broke the regime model every night from 2026-09-25.
+    source = SCRIPT.read_text()
+    assert "sleeves = paper.book_sleeve_curves()" in source
+    assert "CRYPTO_WF" not in source
+
+
+def test_regime_draws_refuse_a_component_without_volatility() -> None:
+    rng = np.random.default_rng(7)
+    contributions = np.column_stack(
+        [rng.normal(0.0, 0.01, 300), rng.normal(0.0, 0.01, 300), np.zeros(300)]
+    )
+    batches = MOD.regime_batches(
+        contributions,
+        paths=10,
+        horizon_days=20,
+        stress_correlation=0.5,
+        stress_share=0.1,
+        mean_stress_run_days=5.0,
+        seed=1,
+        batch_size=10,
+        nearest_correlation=lambda matrix: matrix,
+    )
+    with pytest.raises(ValueError, match="positive observed volatility"):
+        next(batches)
+
+
 def test_acceptance_applies_the_declared_thresholds_to_the_worse_model() -> None:
     def cell(p95, p99):
         return {"zero_drift": {"absorbing": {"max_drawdown": {"p95": p95, "p99": p99}}}}
